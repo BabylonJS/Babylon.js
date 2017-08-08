@@ -4884,6 +4884,37 @@ var BABYLON;
 (function (BABYLON) {
     var __decoratorInitialStore = {};
     var __mergedStore = {};
+    var _copySource = function (creationFunction, source, instanciate) {
+        var destination = creationFunction();
+        // Tags
+        if (BABYLON.Tags) {
+            BABYLON.Tags.AddTagsTo(destination, source.tags);
+        }
+        var classStore = getMergedStore(destination);
+        // Properties
+        for (var property in classStore) {
+            var propertyDescriptor = classStore[property];
+            var sourceProperty = source[property];
+            var propertyType = propertyDescriptor.type;
+            if (sourceProperty !== undefined && sourceProperty !== null) {
+                switch (propertyType) {
+                    case 0: // Value
+                    case 6:
+                        destination[property] = sourceProperty;
+                        break;
+                    case 1: // Texture
+                    case 2: // Color3
+                    case 3: // FresnelParameters
+                    case 4: // Vector2
+                    case 5: // Vector3
+                    case 7:
+                        destination[property] = instanciate ? sourceProperty : sourceProperty.clone();
+                        break;
+                }
+            }
+        }
+        return destination;
+    };
     function getDirectStore(target) {
         var classKey = target.getClassName();
         if (!__decoratorInitialStore[classKey]) {
@@ -5106,35 +5137,10 @@ var BABYLON;
             return destination;
         };
         SerializationHelper.Clone = function (creationFunction, source) {
-            var destination = creationFunction();
-            // Tags
-            if (BABYLON.Tags) {
-                BABYLON.Tags.AddTagsTo(destination, source.tags);
-            }
-            var classStore = getMergedStore(destination);
-            // Properties
-            for (var property in classStore) {
-                var propertyDescriptor = classStore[property];
-                var sourceProperty = source[property];
-                var propertyType = propertyDescriptor.type;
-                if (sourceProperty !== undefined && sourceProperty !== null) {
-                    switch (propertyType) {
-                        case 0: // Value
-                        case 6:
-                            destination[property] = sourceProperty;
-                            break;
-                        case 1: // Texture
-                        case 2: // Color3
-                        case 3: // FresnelParameters
-                        case 4: // Vector2
-                        case 5: // Vector3
-                        case 7:
-                            destination[property] = sourceProperty.clone();
-                            break;
-                    }
-                }
-            }
-            return destination;
+            return _copySource(creationFunction, source, false);
+        };
+        SerializationHelper.Instanciate = function (creationFunction, source) {
+            return _copySource(creationFunction, source, true);
         };
         return SerializationHelper;
     }());
@@ -24903,6 +24909,9 @@ var BABYLON;
             var scene = this.getScene();
             var engine = scene.getEngine();
             var checkReady = function () {
+                if (!_this._scene || !_this._scene.getEngine()) {
+                    return;
+                }
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
@@ -46500,8 +46509,11 @@ var BABYLON;
                 subMeshes.push.apply(subMeshes, mesh.subMeshes);
             }
             var checkReady = function () {
+                if (!_this._scene || !_this._scene.getEngine()) {
+                    return;
+                }
                 var subMesh = subMeshes[currentIndex];
-                if (_this._scene && _this._scene.getEngine() && _this.isReady(subMesh, options ? options.useInstances : false)) {
+                if (_this.isReady(subMesh, options ? options.useInstances : false)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
                         if (onCompiled) {
