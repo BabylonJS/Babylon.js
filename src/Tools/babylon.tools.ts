@@ -424,7 +424,7 @@
                     noIndexedDB();
                 }
                 else {
-                    var textureName = url.substring(5).toLowerCase();
+                    var textureName = decodeURIComponent(url.substring(5).toLowerCase());
                     if (FilesInput.FilesToLoad[textureName]) {
                         try {
                             var blobURL;
@@ -492,7 +492,7 @@
             };
 
             if (url.indexOf("file:") !== -1) {
-                var fileName = url.substring(5).toLowerCase();
+                var fileName = decodeURIComponent(url.substring(5).toLowerCase());
                 if (FilesInput.FilesToLoad[fileName]) {
                     Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
                 }

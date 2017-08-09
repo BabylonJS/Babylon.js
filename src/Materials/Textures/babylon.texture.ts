@@ -339,7 +339,19 @@
 
         public getClassName(): string {
             return "Texture";
-        }     
+        }
+
+        public dispose(): void {
+            super.dispose();
+
+            if (this.onLoadObservable) {
+                this.onLoadObservable.clear();
+                this._onLoadObservable = null;
+            }
+
+            this._delayedOnLoad = null;
+            this._delayedOnError = null;
+        }
 
         // Statics
         public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
