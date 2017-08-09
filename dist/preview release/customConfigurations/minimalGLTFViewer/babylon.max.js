@@ -10705,7 +10705,7 @@ var BABYLON;
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
-            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
@@ -31414,6 +31414,9 @@ var BABYLON;
             ]);
         };
         ArcRotateCameraPointersInput.prototype.detachControl = function (element) {
+            BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "blur", handler: this._onLostFocus }
+            ]);
             if (element && this._observer) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
                 this._observer = null;
@@ -31430,9 +31433,6 @@ var BABYLON;
                 this._onLostFocus = null;
                 this._onContextMenu = null;
             }
-            BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "blur", handler: this._onLostFocus }
-            ]);
             this.camera = null;
         };
         ArcRotateCameraPointersInput.prototype.getClassName = function () {
