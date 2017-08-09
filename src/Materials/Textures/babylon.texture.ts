@@ -80,6 +80,7 @@
         private _cachedUAng: number;
         private _cachedVAng: number;
         private _cachedWAng: number;
+        private _cachedProjectionMatrixId: number;
         private _cachedCoordinatesMode: number;
         public _samplingMode: number;
         private _buffer: any;
@@ -260,13 +261,20 @@
         }
 
         public getReflectionTextureMatrix(): Matrix {
+            let scene = this.getScene();
             if (
                 this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
                 this.uScale === this._cachedUScale &&
                 this.vScale === this._cachedVScale &&
                 this.coordinatesMode === this._cachedCoordinatesMode) {
-                return this._cachedTextureMatrix;
+                    if (this.coordinatesMode === Texture.PROJECTION_MODE) {
+                        if (this._cachedProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
+                            return this._cachedTextureMatrix;
+                        }
+                    } else {
+                        return this._cachedTextureMatrix;
+                    }
             }
 
             if (!this._cachedTextureMatrix) {
@@ -299,14 +307,16 @@
                     this._projectionModeMatrix.m[14] = 1.0;
                     this._projectionModeMatrix.m[15] = 1.0;
 
-                    this.getScene().getProjectionMatrix().multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
+                    let projectionMatrix = scene.getProjectionMatrix();
+                    this._cachedProjectionMatrixId = projectionMatrix.updateFlag;
+                    projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
                     break;
                 default:
                     Matrix.IdentityToRef(this._cachedTextureMatrix);
                     break;
             }
             
-            this.getScene().markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
                 return (mat.getActiveTextures().indexOf(this) !== -1);
             });
 
