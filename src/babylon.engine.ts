@@ -1304,8 +1304,8 @@
          * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
          */
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this.getRenderWidth());
-            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this.getRenderHeight());
+            var width = requiredWidth || this.getRenderWidth();
+            var height = requiredHeight || this.getRenderHeight();
             var x = viewport.x || 0;
             var y = viewport.y || 0;
 
@@ -1495,7 +1495,11 @@
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
             }
 
-            gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
+            if (this._cachedViewport) {
+                this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);            
+            } else {
+                gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
+            }
 
             this.wipeCaches();
         }
