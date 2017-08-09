@@ -4071,7 +4071,7 @@
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
-            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
@@ -4087,6 +4087,17 @@
             if (index >= 0) {
                 Engine.Instances.splice(index, 1);
             }
+
+            this._workingCanvas = null;
+            this._workingContext = null;
+            this._currentBufferPointers = null;
+            this._renderingCanvas = null;
+            this._currentProgram = null;
+
+            this.onResizeObservable.clear();
+            this.onCanvasBlurObservable.clear();
+
+            BABYLON.Effect.ResetCache();
         }
 
         // Loading screen

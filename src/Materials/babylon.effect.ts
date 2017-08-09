@@ -1014,5 +1014,9 @@
         // Statics
         public static ShadersStore = {};
         public static IncludesShadersStore = {};
+
+        public static ResetCache() {
+            Effect._baseCache = {};
+        }
     }
 } 
