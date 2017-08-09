@@ -19996,12 +19996,20 @@ var BABYLON;
         };
         Texture.prototype.getReflectionTextureMatrix = function () {
             var _this = this;
+            var scene = this.getScene();
             if (this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
                 this.uScale === this._cachedUScale &&
                 this.vScale === this._cachedVScale &&
                 this.coordinatesMode === this._cachedCoordinatesMode) {
-                return this._cachedTextureMatrix;
+                if (this.coordinatesMode === Texture.PROJECTION_MODE) {
+                    if (this._cachedProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
+                        return this._cachedTextureMatrix;
+                    }
+                }
+                else {
+                    return this._cachedTextureMatrix;
+                }
             }
             if (!this._cachedTextureMatrix) {
                 this._cachedTextureMatrix = BABYLON.Matrix.Zero();
@@ -20029,13 +20037,15 @@ var BABYLON;
                     this._projectionModeMatrix.m[13] = 0.5;
                     this._projectionModeMatrix.m[14] = 1.0;
                     this._projectionModeMatrix.m[15] = 1.0;
-                    this.getScene().getProjectionMatrix().multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
+                    var projectionMatrix = scene.getProjectionMatrix();
+                    this._cachedProjectionMatrixId = projectionMatrix.updateFlag;
+                    projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
                     break;
                 default:
                     BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
                     break;
             }
-            this.getScene().markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
+            scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
                 return (mat.getActiveTextures().indexOf(_this) !== -1);
             });
             return this._cachedTextureMatrix;
