@@ -4071,7 +4071,7 @@
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
-            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);

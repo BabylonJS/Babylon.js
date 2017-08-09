@@ -206,6 +206,10 @@ module BABYLON {
         }
 
         public detachControl(element: HTMLElement) {
+            Tools.UnregisterTopRootEvents([
+                { name: "blur", handler: this._onLostFocus }
+            ]);
+
             if (element && this._observer) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
                 this._observer = null;
@@ -225,10 +229,6 @@ module BABYLON {
                 this._onLostFocus = null;
                 this._onContextMenu = null;
             }
-
-            Tools.UnregisterTopRootEvents([
-                { name: "blur", handler: this._onLostFocus }
-            ]);
 
             this.camera = null;
         }
