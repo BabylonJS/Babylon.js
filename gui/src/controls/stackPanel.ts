@@ -5,18 +5,11 @@ module BABYLON.GUI {
         private _isVertical = true;
         private _manualWidth = false;
         private _manualHeight = false;
+        private _doNotTrackManualChanges = false;
         private _tempMeasureStore = Measure.Empty();
 
         public get isVertical(): boolean {
             return this._isVertical;
-        }
-
-        public get manualWidth(): boolean {
-            return this._manualWidth;
-        }
-
-        public get manualHeight(): boolean {
-            return this._manualHeight;
         }
 
         public set isVertical(value: boolean) {
@@ -27,24 +20,42 @@ module BABYLON.GUI {
             this._isVertical = value;
             this._markAsDirty();
         }
+       
+        public set width(value: string | number ) {
+            if (!this._doNotTrackManualChanges) {
+                this._manualWidth = true;
+            }
 
-        public set manualWidth(value: boolean) {
-            if (this._manualWidth === value) {
+            if (this._width.toString(this._host) === value) {
                 return;
             }
 
-            this._manualWidth = value;
-            this._markAsDirty();
-        }  
-
-        public set manualHeight(value: boolean) {
-            if (this._manualHeight === value) {
-                return;
+            if (this._width.fromString(value)) {
+                this._markAsDirty();
             }
+        }
 
-            this._manualHeight = value;
-            this._markAsDirty();
+        public get width(): string | number {
+            return this._width.toString(this._host);
         }        
+
+        public set height(value: string | number ) {
+            if (!this._doNotTrackManualChanges) {
+                this._manualHeight = true;
+            }
+
+            if (this._height.toString(this._host) === value) {
+                return;
+            }
+
+            if (this._height.fromString(value)) {
+                this._markAsDirty();
+            }
+        }        
+                
+        public get height(): string | number  {
+            return this._height.toString(this._host);
+        }
     
         constructor(public name?: string) {
             super(name);
@@ -88,31 +99,41 @@ module BABYLON.GUI {
 
                 child._currentMeasure.copyFrom(this._tempMeasureStore);
             }
+            
+            this._doNotTrackManualChanges = true;
+
             // Let stack panel width and height default to stackHeight and stackWidth if dimensions are not specified.
             // User can now define their own height and width for stack panel.
-            if(!this._manualHeight) {
+
+            let panelWidthChanged = false;
+            let panelHeightChanged = false;
+
+            let previousHeight = this.height;
+            let previousWidth = this.width;
+
+            if (!this._manualHeight) {
                 // do not specify height if strictly defined by user
                 this.height = stackHeight + "px";
             }
-            if(!this._manualWidth) {
+            if (!this._manualWidth) {
                 // do not specify width if strictly defined by user
                 this.width = stackWidth + "px";
             }
 
-            let panelChanged = false;
-            if (this._isVertical) {
-                let previousHeight = this.height;
-                panelChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
+            panelWidthChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
+            panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
 
+            if (panelHeightChanged) {
                 this._height.ignoreAdaptiveScaling = true;
-            } else {
-                let previousWidth = this.width;
-                panelChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
+            }
 
+            if (panelWidthChanged) {
                 this._width.ignoreAdaptiveScaling = true;
             }
 
-            if (panelChanged) {
+            this._doNotTrackManualChanges = false;
+
+            if (panelWidthChanged || panelHeightChanged) {
                 this._markAllAsDirty();
             }
             
