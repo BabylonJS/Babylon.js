@@ -1484,7 +1484,7 @@
             }
         }
 
-        public bindFramebuffer(texture: WebGLTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number): void {
+        public bindFramebuffer(texture: WebGLTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
             if (this._currentRenderTarget) {
                 this.unBindFramebuffer(this._currentRenderTarget);
             }
@@ -1495,7 +1495,7 @@
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
             }
 
-            if (this._cachedViewport) {
+            if (this._cachedViewport && !forceFullscreenViewport) {
                 this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);            
             } else {
                 gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
