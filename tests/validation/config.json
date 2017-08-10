@@ -189,10 +189,11 @@
     },
     {
       "title": "Reflection probes",
+      "renderCount": 10,
       "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
       "functionToCall": "CreateReflectionProbeTestScene ",
       "referenceImage": "refprobe.png"
-    },
+    },   
     {
       "title": "PBRMetallicRoughnessMaterial",
       "playgroundId": "#2FDQT5#13",

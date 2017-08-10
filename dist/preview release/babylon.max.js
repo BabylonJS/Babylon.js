@@ -8434,8 +8434,8 @@ var BABYLON;
          * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
          */
         Engine.prototype.setViewport = function (viewport, requiredWidth, requiredHeight) {
-            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this.getRenderWidth());
-            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this.getRenderHeight());
+            var width = requiredWidth || this.getRenderWidth();
+            var height = requiredHeight || this.getRenderHeight();
             var x = viewport.x || 0;
             var y = viewport.y || 0;
             this._cachedViewport = viewport;
@@ -8570,7 +8570,7 @@ var BABYLON;
                 this.vrDisplaysPromise = navigator.getVRDisplays().then(getWebVRDevices);
             }
         };
-        Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight) {
+        Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight, forceFullscreenViewport) {
             if (this._currentRenderTarget) {
                 this.unBindFramebuffer(this._currentRenderTarget);
             }
@@ -8580,7 +8580,12 @@ var BABYLON;
             if (texture.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
             }
-            gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
+            if (this._cachedViewport && !forceFullscreenViewport) {
+                this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
+            }
+            else {
+                gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
+            }
             this.wipeCaches();
         };
         Engine.prototype.bindUnboundFramebuffer = function (framebuffer) {
@@ -19995,12 +20000,20 @@ var BABYLON;
         };
         Texture.prototype.getReflectionTextureMatrix = function () {
             var _this = this;
+            var scene = this.getScene();
             if (this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
                 this.uScale === this._cachedUScale &&
                 this.vScale === this._cachedVScale &&
                 this.coordinatesMode === this._cachedCoordinatesMode) {
-                return this._cachedTextureMatrix;
+                if (this.coordinatesMode === Texture.PROJECTION_MODE) {
+                    if (this._cachedProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
+                        return this._cachedTextureMatrix;
+                    }
+                }
+                else {
+                    return this._cachedTextureMatrix;
+                }
             }
             if (!this._cachedTextureMatrix) {
                 this._cachedTextureMatrix = BABYLON.Matrix.Zero();
@@ -20028,13 +20041,15 @@ var BABYLON;
                     this._projectionModeMatrix.m[13] = 0.5;
                     this._projectionModeMatrix.m[14] = 1.0;
                     this._projectionModeMatrix.m[15] = 1.0;
-                    this.getScene().getProjectionMatrix().multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
+                    var projectionMatrix = scene.getProjectionMatrix();
+                    this._cachedProjectionMatrixId = projectionMatrix.updateFlag;
+                    projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
                     break;
                 default:
                     BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
                     break;
             }
-            this.getScene().markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
+            scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
                 return (mat.getActiveTextures().indexOf(_this) !== -1);
             });
             return this._cachedTextureMatrix;
@@ -45952,11 +45967,11 @@ var BABYLON;
             }
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
-                this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight);
+                this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight, true);
             }
             else {
                 this._scaleRatio.copyFromFloats(1, 1);
-                this._engine.bindFramebuffer(target);
+                this._engine.bindFramebuffer(target, 0, undefined, undefined, true);
             }
             this.onActivateObservable.notifyObservers(camera);
             // Clear
