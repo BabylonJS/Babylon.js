@@ -334,6 +334,7 @@
                 camera = this.activeCamera;
                 engine.setViewport(this.activeCamera.viewport, this._size, this._size);
 
+
                 if (this.activeCamera !== scene.activeCamera) {
                     scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
                 }
@@ -408,7 +409,9 @@
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
+
             engine.setViewport(scene.activeCamera.viewport);
+
 
             scene.resetCachedMaterial();
         }
@@ -422,11 +425,7 @@
                 this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
             else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-                if (this.isCube) {
-                    engine.bindFramebuffer(this._texture, faceIndex);
-                } else {
-                    engine.bindFramebuffer(this._texture);
-                }
+                engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, !this.sceneLevelRender);
             }
 
             this.onBeforeRenderObservable.notifyObservers(faceIndex);

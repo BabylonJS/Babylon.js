@@ -2711,6 +2711,7 @@
 
             //Camera Custom Render Targets
             let currentActiveCamera = this.activeCamera;
+
             let cameraCustomRenderTargets = this.customRenderTargets.filter(target => !target.sceneLevelRender);
             if (this.renderTargetsEnabled && cameraCustomRenderTargets.length) {
                 Tools.StartPerformanceCounter("Camera Custom render targets", this.customRenderTargets.length > 0);
@@ -2720,8 +2721,6 @@
                         this._renderId++;
 
                         this.activeCamera = renderTarget.activeCamera || this.activeCamera;
-                        // Viewport
-                        engine.setViewport(this.activeCamera.viewport);
                         // Camera
                         this.updateTransformMatrix();
                         renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
