@@ -79,6 +79,10 @@ module BABYLON.GUI {
         public get layer(): Layer {
             return this._layerToDispose;
         }   
+
+        public get rootContainer(): Container {
+            return this._rootContainer;
+        }
        
         constructor(name: string, width = 0, height = 0, scene: Scene, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
