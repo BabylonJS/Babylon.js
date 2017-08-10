@@ -3818,6 +3818,11 @@
             return hdrSkybox;
         }
 
+        public createDefaultVRExperience(): VRExperienceHelper {
+            var vrHelper = new BABYLON.VRExperienceHelper(this, null);
+            return vrHelper;
+        }
+
         // Tags
         private _getByTags(list: any[], tagsQuery: string, forEach?: (item: any) => void): any[] {
             if (tagsQuery === undefined) {

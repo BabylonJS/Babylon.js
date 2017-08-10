@@ -18978,6 +18978,10 @@ var BABYLON;
             }
             return hdrSkybox;
         };
+        Scene.prototype.createDefaultVRExperience = function () {
+            var vrHelper = new BABYLON.VRExperienceHelper(this, null);
+            return vrHelper;
+        };
         // Tags
         Scene.prototype._getByTags = function (list, tagsQuery, forEach) {
             if (tagsQuery === undefined) {
