@@ -2685,13 +2685,14 @@
 
             var beforeRenderTargetDate = Tools.Now;
 
+            //Camera-specific render targets
             if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
                 this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
             }
 
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
-                Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
+                Tools.StartPerformanceCounter("Camera Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     let renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
@@ -2700,12 +2701,43 @@
                         renderTarget.render(hasSpecialRenderTargetCamera, this.dumpNextRenderTargets);
                     }
                 }
-                Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
+                Tools.EndPerformanceCounter("Camera Render targets", this._renderTargets.length > 0);
 
                 this._intermediateRendering = false;
                 this._renderId++;
 
                 needsRestoreFrameBuffer = true; // Restore back buffer
+            }
+
+            //Camera Custom Render Targets
+            let currentActiveCamera = this.activeCamera;
+            let cameraCustomRenderTargets = this.customRenderTargets.filter(target => !target.sceneLevelRender);
+            if (this.renderTargetsEnabled && cameraCustomRenderTargets.length) {
+                Tools.StartPerformanceCounter("Camera Custom render targets", this.customRenderTargets.length > 0);
+
+                cameraCustomRenderTargets.forEach(renderTarget => {
+                    if (renderTarget._shouldRender()) {
+                        this._renderId++;
+
+                        this.activeCamera = renderTarget.activeCamera || this.activeCamera;
+                        // Viewport
+                        engine.setViewport(this.activeCamera.viewport);
+                        // Camera
+                        this.updateTransformMatrix();
+                        renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
+                    }
+                });
+
+                Tools.EndPerformanceCounter("Camera Custom render targets", this.customRenderTargets.length > 0);
+
+                this._renderId++;
+            }
+
+            this.activeCamera = currentActiveCamera;
+
+            // Restore back buffer
+            if (cameraCustomRenderTargets.length) {
+                engine.restoreDefaultFramebuffer();
             }
 
             // Render HighlightLayer Texture
@@ -2943,10 +2975,12 @@
             var beforeRenderTargetDate = Tools.Now;
             var engine = this.getEngine();
             var currentActiveCamera = this.activeCamera;
-            if (this.renderTargetsEnabled) {
+            let cameraCustomRenderTargets = this.customRenderTargets.filter(target => target.sceneLevelRender);
+
+            if (this.renderTargetsEnabled && cameraCustomRenderTargets.length) {
                 Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-                for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
-                    var renderTarget = this.customRenderTargets[customIndex];
+
+                cameraCustomRenderTargets.forEach(renderTarget => {
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
 
@@ -2963,7 +2997,8 @@
 
                         renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
                     }
-                }
+                });
+
                 Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
 
                 this._renderId++;
