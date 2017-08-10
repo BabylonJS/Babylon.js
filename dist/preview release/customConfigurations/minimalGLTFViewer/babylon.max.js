@@ -8570,7 +8570,7 @@ var BABYLON;
                 this.vrDisplaysPromise = navigator.getVRDisplays().then(getWebVRDevices);
             }
         };
-        Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight) {
+        Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight, forceFullscreenViewport) {
             if (this._currentRenderTarget) {
                 this.unBindFramebuffer(this._currentRenderTarget);
             }
@@ -8580,7 +8580,7 @@ var BABYLON;
             if (texture.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
             }
-            if (this._cachedViewport) {
+            if (this._cachedViewport && !forceFullscreenViewport) {
                 this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
             }
             else {
@@ -34398,11 +34398,11 @@ var BABYLON;
             }
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
-                this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight);
+                this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight, true);
             }
             else {
                 this._scaleRatio.copyFromFloats(1, 1);
-                this._engine.bindFramebuffer(target);
+                this._engine.bindFramebuffer(target, 0, undefined, undefined, true);
             }
             this.onActivateObservable.notifyObservers(camera);
             // Clear
