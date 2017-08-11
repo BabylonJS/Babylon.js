@@ -30,7 +30,7 @@ module BABYLON {
         public set blurKernel(value: number) {
             this.blurKernelX = value;
             this.blurKernelY = value;
-        }        
+        }
 
         public set blurKernelX(value: number) {
             if (this._blurKernelX === value) {
@@ -43,7 +43,7 @@ module BABYLON {
 
         public get blurKernelX(): number {
             return this._blurKernelX;
-        }        
+        }
 
         public set blurKernelY(value: number) {
             if (this._blurKernelY === value) {
@@ -56,11 +56,11 @@ module BABYLON {
 
         public get blurKernelY(): number {
             return this._blurKernelY;
-        }             
+        }
 
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
-
+            this.sceneLevelRender = false;
             this.onBeforeRenderObservable.add(() => {
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
                 this._savedViewMatrix = scene.getViewMatrix();
@@ -83,7 +83,7 @@ module BABYLON {
 
                 delete scene.clipPlane;
             });
-        }     
+        }
 
         private _preparePostProcesses(): void {
             this.clearPostProcesses(true);
@@ -107,9 +107,9 @@ module BABYLON {
                 this._blurY.alwaysForcePOT = this._blurRatio !== 1;
 
                 this.addPostProcess(this._blurX);
-                this.addPostProcess(this._blurY);   
+                this.addPostProcess(this._blurY);
             }
-        }   
+        }
 
         public clone(): MirrorTexture {
             var textureSize = this.getSize();

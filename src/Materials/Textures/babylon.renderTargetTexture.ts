@@ -40,7 +40,9 @@
         public activeCamera: Camera;
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
         public useCameraPostProcesses: boolean;
-        
+        // should this render target be rendered at scene level or camera level?
+        public sceneLevelRender: boolean;
+
         private _postProcessManager: PostProcessManager;
         private _postProcesses: PostProcess[];
 
@@ -50,7 +52,7 @@
         * An event triggered when the texture is unbind.
         * @type {BABYLON.Observable}
         */
-        public onBeforeBindObservable = new Observable<RenderTargetTexture>();        
+        public onBeforeBindObservable = new Observable<RenderTargetTexture>();
 
         /**
         * An event triggered when the texture is unbind.
@@ -160,6 +162,9 @@
                 this._texture = scene.getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
 
+            //default is true - this will render at scene level
+            this.sceneLevelRender = true;
+
         }
 
         public get samples(): number {
@@ -170,7 +175,7 @@
             if (this._samples === value) {
                 return;
             }
-            
+
             this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
         }
 
@@ -320,7 +325,7 @@
                 return;
             }
 
-            this.onBeforeBindObservable.notifyObservers(this);            
+            this.onBeforeBindObservable.notifyObservers(this);
 
             // Set custom projection.
             // Needs to be before binding to prevent changing the aspect ratio.
@@ -329,8 +334,8 @@
                 camera = this.activeCamera;
                 engine.setViewport(this.activeCamera.viewport, this._size, this._size);
 
-                if (this.activeCamera !== scene.activeCamera)
-                {
+
+                if (this.activeCamera !== scene.activeCamera) {
                     scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
                 }
             }
@@ -356,7 +361,7 @@
                     }
 
                     mesh._preActivateForIntermediateRendering(sceneRenderId);
-                    
+
                     let isMasked;
                     if (!this.renderList) {
                         isMasked = ((mesh.layerMask & camera.layerMask) === 0);
@@ -377,17 +382,17 @@
             }
 
             for (var particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
-                    var particleSystem = scene.particleSystems[particleIndex];
+                var particleSystem = scene.particleSystems[particleIndex];
 
-                    let emitter: any = particleSystem.emitter;
-                    if (!particleSystem.isStarted() || !emitter || !emitter.position || !emitter.isEnabled()) {
-                        continue;
-                    }
-
-                    if (currentRenderList.indexOf(emitter) >= 0) {
-                        this._renderingManager.dispatchParticles(particleSystem);
-                    }
+                let emitter: any = particleSystem.emitter;
+                if (!particleSystem.isStarted() || !emitter || !emitter.position || !emitter.isEnabled()) {
+                    continue;
                 }
+
+                if (currentRenderList.indexOf(emitter) >= 0) {
+                    this._renderingManager.dispatchParticles(particleSystem);
+                }
+            }
 
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
@@ -404,12 +409,14 @@
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
+
             engine.setViewport(scene.activeCamera.viewport);
+
 
             scene.resetCachedMaterial();
         }
 
-        private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength:number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
+        private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength: number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -418,11 +425,7 @@
                 this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
             else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-                if (this.isCube) {
-                    engine.bindFramebuffer(this._texture, faceIndex);
-                } else {
-                    engine.bindFramebuffer(this._texture);
-                }
+                engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, !this.sceneLevelRender);
             }
 
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
@@ -467,7 +470,7 @@
                 }
 
                 engine.unBindFramebuffer(this._texture, this.isCube, () => {
-                    this.onAfterRenderObservable.notifyObservers(faceIndex);    
+                    this.onAfterRenderObservable.notifyObservers(faceIndex);
                 });
             } else {
                 this.onAfterRenderObservable.notifyObservers(faceIndex);
@@ -487,7 +490,7 @@
             opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
             alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
             transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null): void {
-            
+
             this._renderingManager.setRenderingOrder(renderingGroupId,
                 opaqueSortCompareFn,
                 alphaTestSortCompareFn,
@@ -500,7 +503,7 @@
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
          */
-        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {            
+        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {
             this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
         }
 
