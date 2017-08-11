@@ -18549,6 +18549,10 @@ var BABYLON;
             if (BABYLON.AudioEngine) {
                 this.disposeSounds();
             }
+            // VR Helper
+            if (this.VRHelper) {
+                this.VRHelper.dispose();
+            }
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
             var index;
@@ -18984,8 +18988,7 @@ var BABYLON;
             return hdrSkybox;
         };
         Scene.prototype.createDefaultVRExperience = function () {
-            var vrHelper = new BABYLON.VRExperienceHelper(this, null);
-            return vrHelper;
+            this.VRHelper = new BABYLON.VRExperienceHelper(this, null);
         };
         // Tags
         Scene.prototype._getByTags = function (list, tagsQuery, forEach) {
