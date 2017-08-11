@@ -22,6 +22,10 @@ module BABYLON {
             this.world.timeStep = timeStep;
         }
 
+        public getTimeStep(): number {
+          return this.world.timeStep;
+        }
+
         private _tmpImpostorsArray: Array<PhysicsImpostor> = [];
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {

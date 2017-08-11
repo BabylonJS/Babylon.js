@@ -194,6 +194,8 @@
         autoEnableWebVR?: boolean;
         disableWebGL2Support?: boolean;
         audioEngine?: boolean;
+        deterministicLockstep?: boolean;
+        lockstepMaxSteps?: number;
     }
 
     /**
@@ -385,11 +387,11 @@
 
         public static get ALPHA_INTERPOLATE(): number {
             return Engine._ALPHA_INTERPOLATE;
-        }        
+        }
 
         public static get ALPHA_SCREENMODE(): number {
             return Engine._ALPHA_SCREENMODE;
-        }           
+        }
 
         public static get DELAYLOADSTATE_NONE(): number {
             return Engine._DELAYLOADSTATE_NONE;
@@ -451,11 +453,11 @@
 
         public static get SCALEMODE_NEAREST(): number {
             return Engine._SCALEMODE_NEAREST;
-        }      
+        }
 
         public static get SCALEMODE_CEILING(): number {
             return Engine._SCALEMODE_CEILING;
-        }           
+        }
 
         public static get Version(): string {
             return "3.0-beta";
@@ -488,7 +490,7 @@
          */
         public onCanvasBlurObservable = new Observable<Engine>();
 
-        //WebVR 
+        //WebVR
 
         //The new WebVR uses promises.
         //this promise resolves with the current devices available.
@@ -499,6 +501,8 @@
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
         private _vrAnimationFrameHandler: number;
+        private _deterministicLockstep: boolean = false;
+        private _lockstepMaxSteps: number = 4;
 
         // Private Members
         public _gl: WebGLRenderingContext;
@@ -621,12 +625,20 @@
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             this._renderingCanvas = canvas;
 
-            Engine.Instances.push(this);            
+            Engine.Instances.push(this);
 
             options = options || {};
 
             if (antialias != null) {
                 options.antialias = antialias;
+            }
+
+            if (options.deterministicLockstep === undefined) {
+                options.deterministicLockstep = false;
+            }
+
+            if (options.lockstepMaxSteps === undefined) {
+                options.lockstepMaxSteps = 4;
             }
 
             if (options.preserveDrawingBuffer === undefined) {
@@ -640,6 +652,9 @@
             if (options.stencil === undefined) {
                 options.stencil = true;
             }
+
+            this._deterministicLockstep = options.deterministicLockstep;
+            this._lockstepMaxSteps = options.lockstepMaxSteps;
 
             // GL
             if (!options.disableWebGL2Support) {
@@ -753,7 +768,7 @@
 
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
 
-            // Vertex array object 
+            // Vertex array object
             if (this._webGLVersion > 1) {
                 this._caps.vertexArrayObject = true;
             } else {
@@ -768,7 +783,7 @@
                     this._caps.vertexArrayObject = false;
                 }
             }
-            // Instances count            
+            // Instances count
             if (this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
             } else {
@@ -786,7 +801,7 @@
 
             // Intelligently add supported compressed formats in order to check for.
             // Check for ASTC support first as it is most powerful and to be very cross platform.
-            // Next PVRTC & DXT, which are probably superior to ETC1/2.  
+            // Next PVRTC & DXT, which are probably superior to ETC1/2.
             // Likely no hardware which supports both PVR & DXT, so order matters little.
             // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
             if (this._caps.astc ) this.texturesSupported.push('-astc.ktx');
@@ -884,6 +899,14 @@
 
             this._workingCanvas = document.createElement("canvas");
             this._workingContext = this._workingCanvas.getContext("2d");
+        }
+
+        public isDeterministicLockStep(): boolean {
+          return this._deterministicLockstep;
+        }
+
+        public getLockstepMaxSteps(): number {
+          return this._lockstepMaxSteps;
         }
 
         public resetTextureCache() {
@@ -1303,7 +1326,7 @@
                     Tools.Error("No WebVR devices found!");
                     callback(null);
                 }
-            });            
+            });
         }
 
         public initWebVR(): void {
@@ -1932,7 +1955,7 @@
             }
         }
 
-        
+
         public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
@@ -2189,7 +2212,7 @@
 
         // States
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-            // Culling        
+            // Culling
             var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
             var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
             var cullFace = this.cullBackFaces ? showSide : hideSide;
@@ -2271,11 +2294,11 @@
                 case Engine.ALPHA_INTERPOLATE:
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
                     this._alphaState.alphaBlend = true;
-                    break;    
+                    break;
                 case Engine.ALPHA_SCREENMODE:
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
                     this._alphaState.alphaBlend = true;
-                    break;                                      
+                    break;
             }
             if (!noDepthWriteChange) {
                 this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
@@ -2303,7 +2326,7 @@
             this.resetTextureCache();
             this._currentEffect = null;
 
-            // 6/8/2017: deltakosh: Should not be required anymore. 
+            // 6/8/2017: deltakosh: Should not be required anymore.
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
             if (bruteForce) {
                 this._stencilState.reset();
@@ -2323,20 +2346,20 @@
         /**
          * Set the compressed texture format to use, based on the formats you have, and the formats
          * supported by the hardware / browser.
-         * 
+         *
          * Khronos Texture Container (.ktx) files are used to support this.  This format has the
          * advantage of being specifically designed for OpenGL.  Header elements directly correspond
          * to API arguments needed to compressed textures.  This puts the burden on the container
          * generator to house the arcane code for determining these for current & future formats.
-         * 
+         *
          * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
          * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-         * 
+         *
          * Note: The result of this call is not taken into account when a texture is base64.
-         * 
+         *
          * @param {Array<string>} formatsAvailable- The list of those format families you have created
          * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
-         * 
+         *
          * Current families are astc, dxt, pvrtc, etc2, & etc1.
          * @returns The extension selected.
          */
@@ -2369,7 +2392,7 @@
          * @param {ArrayBuffer | HTMLImageElement} buffer- A source of a file previously fetched as either an ArrayBuffer (compressed or image format) or HTMLImageElement (image format)
          * @param {WebGLTexture} fallback- An internal argument in case the function must be called again, due to etc1 not having alpha capabilities.
          * @param {number} format-  Internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures.
-         * 
+         *
          * @returns {WebGLTexture} for assignment back into BABYLON.Texture
          */
         public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: ArrayBuffer | HTMLImageElement = null, fallBack?: WebGLTexture, format?: number): WebGLTexture {
@@ -2388,7 +2411,7 @@
                 BABYLON.Tools.Warn("DDS files deprecated since 3.0, use KTX files");
             }
             var isTGA = (extension === ".tga");
-            
+
             // determine if a ktx file should be substituted
             var isKTX = false;
             if (this._textureFormatInUse && !isBase64 && !fallBack) {
@@ -2402,7 +2425,7 @@
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.onLoadedCallbacks = [];
-            
+
             if (onLoad) {
                 texture.onLoadedCallbacks.push(onLoad);
             }
@@ -2418,7 +2441,7 @@
                     onError();
                 }
             };
-            
+
             var callback: (arrayBuffer: any) => void;
 
             // processing for non-image formats
@@ -2501,7 +2524,7 @@
                 else if (buffer instanceof Array || typeof buffer === "string")
                     Tools.LoadImage(buffer, onload, onerror, scene.database);
                 else
-                    onload(buffer);                
+                    onload(buffer);
             }
 
             return texture;
@@ -2827,7 +2850,7 @@
 
             var width = size.width || size;
             var height = size.height || size;
-            
+
             var textures = [];
             var attachments = []
 
@@ -2866,7 +2889,7 @@
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
                 gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
-            
+
                 gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture, 0);
 
 
@@ -3354,8 +3377,8 @@
 
         public createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer: ArrayBuffer) => ArrayBufferView[],
-            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][]), 
-            onLoad: () => void = null, 
+            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][]),
+            onLoad: () => void = null,
             onError: () => void = null,
             samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
             invertY = false): WebGLTexture {
@@ -3371,7 +3394,7 @@
                     onError();
                 }
             };
-            
+
             var internalCallback = (data) => {
                 var rgbeDataArrays = callback(data);
 
@@ -3590,7 +3613,7 @@
             }
 
 
-            var internalTexture = texture.isReady() ? texture.getInternalTexture() : 
+            var internalTexture = texture.isReady() ? texture.getInternalTexture() :
                 (texture.isCube ? this.emptyCubeTexture : this.emptyTexture);
 
             if (this._activeTexturesCache[channel] === internalTexture) {
@@ -3738,7 +3761,7 @@
             if (!this._externalData) {
                 this._externalData = new StringDictionary<Object>();
             }
-            
+
             return this._externalData.remove(key);
         }
 
@@ -3867,7 +3890,7 @@
         }
 
         public get loadingScreen(): ILoadingScreen {
-            if (!this._loadingScreen && DefaultLoadingScreen) 
+            if (!this._loadingScreen && DefaultLoadingScreen)
                 this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             return this._loadingScreen;
         }

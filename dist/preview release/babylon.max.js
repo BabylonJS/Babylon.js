@@ -7175,6 +7175,8 @@ var BABYLON;
              * Observable event triggered each time the canvas lost focus
              */
             this.onCanvasBlurObservable = new BABYLON.Observable();
+            this._deterministicLockstep = false;
+            this._lockstepMaxSteps = 4;
             this._windowIsBackground = false;
             this._webGLVersion = 1.0;
             this._badOS = false;
@@ -7231,6 +7233,12 @@ var BABYLON;
             if (antialias != null) {
                 options.antialias = antialias;
             }
+            if (options.deterministicLockstep === undefined) {
+                options.deterministicLockstep = false;
+            }
+            if (options.lockstepMaxSteps === undefined) {
+                options.lockstepMaxSteps = 4;
+            }
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
@@ -7240,6 +7248,8 @@ var BABYLON;
             if (options.stencil === undefined) {
                 options.stencil = true;
             }
+            this._deterministicLockstep = options.deterministicLockstep;
+            this._lockstepMaxSteps = options.lockstepMaxSteps;
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -7333,7 +7343,7 @@ var BABYLON;
             }
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
-            // Vertex array object 
+            // Vertex array object
             if (this._webGLVersion > 1) {
                 this._caps.vertexArrayObject = true;
             }
@@ -7349,7 +7359,7 @@ var BABYLON;
                     this._caps.vertexArrayObject = false;
                 }
             }
-            // Instances count            
+            // Instances count
             if (this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
             }
@@ -7367,7 +7377,7 @@ var BABYLON;
             }
             // Intelligently add supported compressed formats in order to check for.
             // Check for ASTC support first as it is most powerful and to be very cross platform.
-            // Next PVRTC & DXT, which are probably superior to ETC1/2.  
+            // Next PVRTC & DXT, which are probably superior to ETC1/2.
             // Likely no hardware which supports both PVR & DXT, so order matters little.
             // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
             if (this._caps.astc)
@@ -7830,6 +7840,12 @@ var BABYLON;
             }
             this._workingCanvas = document.createElement("canvas");
             this._workingContext = this._workingCanvas.getContext("2d");
+        };
+        Engine.prototype.isDeterministicLockStep = function () {
+            return this._deterministicLockstep;
+        };
+        Engine.prototype.getLockstepMaxSteps = function () {
+            return this._lockstepMaxSteps;
         };
         Engine.prototype.resetTextureCache = function () {
             for (var index = 0; index < this._maxTextureChannels; index++) {
@@ -8895,7 +8911,7 @@ var BABYLON;
         Engine.prototype.setState = function (culling, zOffset, force, reverseSide) {
             if (zOffset === void 0) { zOffset = 0; }
             if (reverseSide === void 0) { reverseSide = false; }
-            // Culling        
+            // Culling
             var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
             var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
             var cullFace = this.cullBackFaces ? showSide : hideSide;
@@ -8997,7 +9013,7 @@ var BABYLON;
             }
             this.resetTextureCache();
             this._currentEffect = null;
-            // 6/8/2017: deltakosh: Should not be required anymore. 
+            // 6/8/2017: deltakosh: Should not be required anymore.
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
             if (bruteForce) {
                 this._stencilState.reset();
@@ -15420,6 +15436,16 @@ var BABYLON;
             */
             this.onMeshRemovedObservable = new BABYLON.Observable();
             /**
+            * An event triggered after rendering the scene
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeStepObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after rendering the scene
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterStepObservable = new BABYLON.Observable();
+            /**
              * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
              * The RenderinGroupInfo class contains all the information about the context in which the observable is called
              * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -15447,6 +15473,10 @@ var BABYLON;
             this._previousStartingPointerPosition = new BABYLON.Vector2(0, 0);
             this._startingPointerTime = 0;
             this._previousStartingPointerTime = 0;
+            // Deterministic lockstep
+            this._timeAccumulator = 0;
+            this._currentStepId = 0;
+            this._currentInternalStep = 0;
             // Coordinate system
             /**
             * use right-handed coordinate system on this scene.
@@ -15711,6 +15741,26 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Scene.prototype, "beforeStep", {
+            set: function (callback) {
+                if (this.onBeforeStepObservable) {
+                    this.onBeforeStepObservable.remove(this._onBeforeStepObserver);
+                }
+                this._onBeforeStepObserver = this.onBeforeStepObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "afterStep", {
+            set: function (callback) {
+                if (this.onAfterStepObservable) {
+                    this.onAfterStepObservable.remove(this._onAfterStepObserver);
+                }
+                this._onAfterStepObserver = this.onAfterStepObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene.prototype, "unTranslatedPointer", {
             get: function () {
                 return new BABYLON.Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
@@ -15732,6 +15782,14 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Scene.prototype.getStepId = function () {
+            return this._currentStepId;
+        };
+        ;
+        Scene.prototype.getInternalStep = function () {
+            return this._currentInternalStep;
+        };
+        ;
         Object.defineProperty(Scene.prototype, "fogEnabled", {
             get: function () {
                 return this._fogEnabled;
@@ -16573,6 +16631,18 @@ var BABYLON;
         Scene.prototype.unregisterAfterRender = function (func) {
             this.onAfterRenderObservable.removeCallback(func);
         };
+        Scene.prototype.registerBeforeStep = function (func) {
+            this.onBeforeStepObservable.add(func);
+        };
+        Scene.prototype.unregisterBeforeStep = function (func) {
+            this.onBeforeStepObservable.removeCallback(func);
+        };
+        Scene.prototype.registerAfterStep = function (func) {
+            this.onAfterStepObservable.add(func);
+        };
+        Scene.prototype.unregisterAfterStep = function (func) {
+            this.onAfterStepObservable.removeCallback(func);
+        };
         Scene.prototype._addPendingData = function (data) {
             this._pendingData.push(data);
         };
@@ -16754,7 +16824,7 @@ var BABYLON;
         Scene.prototype.removeMesh = function (toRemove) {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if mesh found
                 this.meshes.splice(index, 1);
             }
             //notify the collision coordinator
@@ -16767,7 +16837,7 @@ var BABYLON;
         Scene.prototype.removeSkeleton = function (toRemove) {
             var index = this.skeletons.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if found 
+                // Remove from the scene if found
                 this.skeletons.splice(index, 1);
             }
             return index;
@@ -16775,7 +16845,7 @@ var BABYLON;
         Scene.prototype.removeMorphTargetManager = function (toRemove) {
             var index = this.morphTargetManagers.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if found 
+                // Remove from the scene if found
                 this.morphTargetManagers.splice(index, 1);
             }
             return index;
@@ -16783,7 +16853,7 @@ var BABYLON;
         Scene.prototype.removeLight = function (toRemove) {
             var index = this.lights.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if mesh found
                 this.lights.splice(index, 1);
                 this.sortLightsByPriority();
             }
@@ -16793,7 +16863,7 @@ var BABYLON;
         Scene.prototype.removeCamera = function (toRemove) {
             var index = this.cameras.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if mesh found
                 this.cameras.splice(index, 1);
             }
             // Remove from activeCameras
@@ -17663,15 +17733,41 @@ var BABYLON;
             if (this.simplificationQueue && !this.simplificationQueue.running) {
                 this.simplificationQueue.executeNext();
             }
-            // Animations
-            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-            this._animationRatio = deltaTime * (60.0 / 1000.0);
-            this._animate();
-            // Physics
-            if (this._physicsEngine) {
-                BABYLON.Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._step(deltaTime / 1000.0);
-                BABYLON.Tools.EndPerformanceCounter("Physics");
+            if (this._engine.isDeterministicLockStep()) {
+                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) / 1000;
+                var defaultTimeStep = this._physicsEngine.getTimeStep();
+                var maxSubSteps = this._engine.getLockstepMaxSteps();
+                this._timeAccumulator += deltaTime;
+                // compute the amount of fixed steps we should have taken since the last step
+                var internalSteps = Math.floor(this._timeAccumulator / defaultTimeStep);
+                internalSteps = Math.min(internalSteps, maxSubSteps);
+                for (this._currentInternalStep = 0; this._currentInternalStep < internalSteps; this._currentInternalStep++) {
+                    this.onBeforeStepObservable.notifyObservers(this);
+                    // Animations
+                    this._animationRatio = defaultTimeStep * (60.0 / 1000.0);
+                    this._animate();
+                    // Physics
+                    if (this._physicsEngine) {
+                        BABYLON.Tools.StartPerformanceCounter("Physics");
+                        this._physicsEngine._step(defaultTimeStep);
+                        BABYLON.Tools.EndPerformanceCounter("Physics");
+                    }
+                    this._timeAccumulator -= defaultTimeStep;
+                    this.onAfterStepObservable.notifyObservers(this);
+                    this._currentStepId++;
+                }
+            }
+            else {
+                // Animations
+                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
+                this._animationRatio = deltaTime * (60.0 / 1000.0);
+                this._animate();
+                // Physics
+                if (this._physicsEngine) {
+                    BABYLON.Tools.StartPerformanceCounter("Physics");
+                    this._physicsEngine._step(deltaTime / 1000.0);
+                    BABYLON.Tools.EndPerformanceCounter("Physics");
+                }
             }
             // Before render
             this.onBeforeRenderObservable.notifyObservers(this);
@@ -17956,7 +18052,7 @@ var BABYLON;
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
             }
-            // Smart arrays            
+            // Smart arrays
             if (this.activeCamera) {
                 this.activeCamera._activeMeshes.dispose();
                 this.activeCamera = null;
@@ -18294,6 +18390,9 @@ var BABYLON;
                 return true;
             }
             try {
+                if (plugin === undefined) {
+                    plugin == new BABYLON.CannonJSPlugin(!this._engine.isDeterministicLockStep());
+                }
                 this._physicsEngine = new BABYLON.PhysicsEngine(gravity, plugin);
                 return true;
             }
@@ -58196,6 +58295,12 @@ var BABYLON;
             if (newTimeStep === void 0) { newTimeStep = 1 / 60; }
             this._physicsPlugin.setTimeStep(newTimeStep);
         };
+        /**
+         * Get the time step of the physics engine.
+         */
+        PhysicsEngine.prototype.getTimeStep = function () {
+            return this._physicsPlugin.getTimeStep();
+        };
         PhysicsEngine.prototype.dispose = function () {
             this._impostors.forEach(function (impostor) {
                 impostor.dispose();
@@ -58337,6 +58442,9 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.setTimeStep = function (timeStep) {
             this._fixedTimeStep = timeStep;
+        };
+        CannonJSPlugin.prototype.getTimeStep = function () {
+            return this._fixedTimeStep;
         };
         CannonJSPlugin.prototype.executeStep = function (delta, impostors) {
             this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
@@ -58632,7 +58740,7 @@ var BABYLON;
                 //calculate the translation
                 var translation = mesh.getBoundingInfo().boundingBox.centerWorld.subtract(center).subtract(mesh.position).negate();
                 this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSizeWorld.y, translation.z);
-                //add it inverted to the delta 
+                //add it inverted to the delta
                 this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.centerWorld.subtract(c));
                 this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSizeWorld.y;
                 mesh.setPivotMatrix(oldPivot);
@@ -58740,6 +58848,9 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.setTimeStep = function (timeStep) {
             this.world.timeStep = timeStep;
+        };
+        OimoJSPlugin.prototype.getTimeStep = function () {
+            return this.world.timeStep;
         };
         OimoJSPlugin.prototype.executeStep = function (delta, impostors) {
             var _this = this;
