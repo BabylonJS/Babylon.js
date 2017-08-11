@@ -22,6 +22,10 @@ module BABYLON {
             this.world.timeStep = timeStep;
         }
 
+        public getTimeStep(): number {
+          return this.world.timeStep;
+        }
+
         private _tmpImpostorsArray: Array<PhysicsImpostor> = [];
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
@@ -414,7 +418,7 @@ module BABYLON {
             mesh.position.x = body.position.x;
             mesh.position.y = body.position.y;
             mesh.position.z = body.position.z;
-            
+
             mesh.rotationQuaternion.x = body.orientation.x;
             mesh.rotationQuaternion.y = body.orientation.y;
             mesh.rotationQuaternion.z = body.orientation.z;

@@ -221,7 +221,7 @@
          * Forward main pass or through the imageProcessingPostProcess if present.
          * As in the majority of the scene they are the same (exception for multi camera),
          * this is easier to reference from here than from all the materials and post process.
-         * 
+         *
          * No setter as we it is a shared configuration, you can set the values instead.
          */
         public get imageProcessingConfiguration(): ImageProcessingConfiguration {
@@ -383,6 +383,34 @@
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
 
         /**
+        * An event triggered before calculating deterministic simulation step
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeStepObservable = new Observable<Scene>();
+
+        private _onBeforeStepObserver: Observer<Scene>;
+        public set beforeStep(callback: (data:Scene, state: EventState) => void) {
+            if (this.onBeforeStepObservable) {
+                this.onBeforeStepObservable.remove(this._onBeforeStepObserver);
+            }
+            this._onBeforeStepObserver = this.onBeforeStepObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after calculating deterministic simulation step
+        * @type {BABYLON.Observable}
+        */
+        public onAfterStepObservable = new Observable<Scene>();
+
+        private _onAfterStepObserver: Observer<Scene>;
+        public set afterStep(callback: (data:Scene, state: EventState) => void) {
+            if (this.onAfterStepObservable) {
+                this.onAfterStepObservable.remove(this._onAfterStepObserver);
+            }
+            this._onAfterStepObserver = this.onAfterStepObservable.add(callback);
+        }
+
+        /**
          * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
          * The RenderinGroupInfo class contains all the information about the context in which the observable is called
          * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -458,6 +486,11 @@
         private _startingPointerTime = 0;
         private _previousStartingPointerTime = 0;
 
+        // Deterministic lockstep
+        private _timeAccumulator: number = 0;
+        private _currentStepId: number = 0;
+        private _currentInternalStep: number = 0;
+
         // Mirror
         public _mirroredCameraPosition: Vector3;
 
@@ -481,6 +514,14 @@
         public get useRightHandedSystem(): boolean {
             return this._useRightHandedSystem;
         }
+
+        public getStepId(): number {
+            return this._currentStepId;
+        };
+
+        public getInternalStep(): number {
+            return this._currentInternalStep;
+        };
 
         // Fog
 
@@ -1598,6 +1639,8 @@
             this._cachedVisibility = null;
         }
 
+
+
         public registerBeforeRender(func: () => void): void {
             this.onBeforeRenderObservable.add(func);
         }
@@ -1612,6 +1655,22 @@
 
         public unregisterAfterRender(func: () => void): void {
             this.onAfterRenderObservable.removeCallback(func);
+        }
+
+        public registerBeforeStep(func: () => void): void {
+            this.onBeforeStepObservable.add(func);
+        }
+
+        public unregisterBeforeStep(func: () => void): void {
+            this.onBeforeStepObservable.removeCallback(func);
+        }
+
+        public registerAfterStep(func: () => void): void {
+            this.onAfterStepObservable.add(func);
+        }
+
+        public unregisterAfterStep(func: () => void): void {
+            this.onAfterStepObservable.removeCallback(func);
         }
 
         public _addPendingData(data): void {
@@ -1663,7 +1722,7 @@
         // Animations
         /**
          * Will start the animation sequence of a given target
-         * @param target - the target 
+         * @param target - the target
          * @param {number} from - from which frame should animation start
          * @param {number} to - till which frame should animation run.
          * @param {boolean} [loop] - should the animation loop
@@ -1729,7 +1788,7 @@
 
         /**
          * Will stop the animation of the given target
-         * @param target - the target 
+         * @param target - the target
          * @param animationName - the name of the animation to stop (all animations will be stopped is empty)
          * @see beginAnimation
          */
@@ -1828,7 +1887,7 @@
         public removeMesh(toRemove: AbstractMesh): number {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if mesh found
                 this.meshes.splice(index, 1);
             }
             //notify the collision coordinator
@@ -1844,7 +1903,7 @@
         public removeSkeleton(toRemove: Skeleton): number {
             var index = this.skeletons.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if found 
+                // Remove from the scene if found
                 this.skeletons.splice(index, 1);
             }
 
@@ -1854,7 +1913,7 @@
         public removeMorphTargetManager(toRemove: MorphTargetManager): number {
             var index = this.morphTargetManagers.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if found 
+                // Remove from the scene if found
                 this.morphTargetManagers.splice(index, 1);
             }
 
@@ -1864,7 +1923,7 @@
         public removeLight(toRemove: Light): number {
             var index = this.lights.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if mesh found
                 this.lights.splice(index, 1);
                 this.sortLightsByPriority();
             }
@@ -1875,7 +1934,7 @@
         public removeCamera(toRemove: Camera): number {
             var index = this.cameras.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if mesh found
                 this.cameras.splice(index, 1);
             }
             // Remove from activeCameras
@@ -2415,7 +2474,7 @@
         /**
          * Return a the first highlight layer of the scene with a given name.
          * @param name The name of the highlight layer to look for.
-         * @return The highlight layer if found otherwise null. 
+         * @return The highlight layer if found otherwise null.
          */
         public getHighlightLayerByName(name: string): HighlightLayer {
             for (var index = 0; index < this.highlightLayers.length; index++) {
@@ -2923,16 +2982,56 @@
                 this.simplificationQueue.executeNext();
             }
 
-            // Animations
-            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-            this._animationRatio = deltaTime * (60.0 / 1000.0);
-            this._animate();
+            if(this._engine.isDeterministicLockStep()){
+              var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) / 1000;
+              var defaultTimeStep = this._physicsEngine.getTimeStep();
+              var maxSubSteps = this._engine.getLockstepMaxSteps();
 
-            // Physics
-            if (this._physicsEngine) {
-                Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._step(deltaTime / 1000.0);
-                Tools.EndPerformanceCounter("Physics");
+              this._timeAccumulator += deltaTime;
+
+              // compute the amount of fixed steps we should have taken since the last step
+              var internalSteps = Math.floor(this._timeAccumulator / defaultTimeStep);
+              internalSteps = Math.min(internalSteps, maxSubSteps);
+
+              for(this._currentInternalStep=0; this._currentInternalStep<internalSteps; this._currentInternalStep++){
+
+                this.onBeforeStepObservable.notifyObservers(this);
+
+                // Animations
+                this._animationRatio = defaultTimeStep * (60.0 / 1000.0);
+                this._animate();
+
+                // Physics
+                if (this._physicsEngine) {
+                   Tools.StartPerformanceCounter("Physics");
+                   this._physicsEngine._step(defaultTimeStep);
+                   Tools.EndPerformanceCounter("Physics");
+                }
+                this._timeAccumulator -= defaultTimeStep;
+
+                this.onAfterStepObservable.notifyObservers(this);
+                this._currentStepId++;
+
+                if((internalSteps>1) && (this._currentInternalStep != internalSteps-1)) {
+                    // Q: can this be optimized by putting some code in the afterStep callback?
+                    // I had to put this code here, otherwise mesh attached to bones of another mesh skeleton,
+                    // would return incorrect positions for internal stepIds (non-rendered steps)
+                    this._evaluateActiveMeshes();
+                }
+              }
+            }
+            else {
+              // Animations
+              var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
+              this._animationRatio = deltaTime * (60.0 / 1000.0);
+              this._animate();
+
+              // Physics
+              if (this._physicsEngine) {
+                 Tools.StartPerformanceCounter("Physics");
+                 this._physicsEngine._step(deltaTime / 1000.0);
+                 Tools.EndPerformanceCounter("Physics");
+              }
             }
 
             // Before render
@@ -3269,7 +3368,7 @@
                 this._depthRenderer.dispose();
             }
 
-            // Smart arrays            
+            // Smart arrays
             if (this.activeCamera) {
                 this.activeCamera._activeMeshes.dispose();
                 this.activeCamera = null;
@@ -3864,7 +3963,7 @@
         /**
          * Overrides the default sort function applied in the renderging group to prepare the meshes.
          * This allowed control for front to back rendering or reversly depending of the special needs.
-         * 
+         *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
          * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
@@ -3883,7 +3982,7 @@
 
         /**
          * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         * 
+         *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
          * @param depth Automatically clears depth between groups if true and autoClear is true.
