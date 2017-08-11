@@ -28,6 +28,10 @@
             this._fixedTimeStep = timeStep;
         }
 
+        public getTimeStep(): number {
+          return this._fixedTimeStep;
+        }
+
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
             // Delta is in seconds, should be provided in milliseconds
             this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
@@ -376,7 +380,7 @@
                 var translation = mesh.getBoundingInfo().boundingBox.centerWorld.subtract(center).subtract(mesh.position).negate();
 
                 this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSizeWorld.y, translation.z);
-                //add it inverted to the delta 
+                //add it inverted to the delta
                 this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.centerWorld.subtract(c));
                 this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSizeWorld.y;
 

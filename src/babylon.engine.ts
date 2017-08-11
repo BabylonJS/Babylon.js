@@ -272,6 +272,8 @@
         autoEnableWebVR?: boolean;
         disableWebGL2Support?: boolean;
         audioEngine?: boolean;
+        deterministicLockstep?: boolean;
+        lockstepMaxSteps?: number;
     }
 
     /**
@@ -563,7 +565,7 @@
          */
         public onCanvasBlurObservable = new Observable<Engine>();
 
-        //WebVR 
+        //WebVR
 
         //The new WebVR uses promises.
         //this promise resolves with the current devices available.
@@ -621,6 +623,10 @@
 
         private _renderingQueueLaunched = false;
         private _activeRenderLoops = [];
+
+        // Deterministic lockstepMaxSteps
+        private _deterministicLockstep: boolean = false;
+        private _lockstepMaxSteps: number = 4;
 
         // FPS
         private _performanceMonitor = new PerformanceMonitor();
@@ -723,6 +729,14 @@
                     options.antialias = antialias;
                 }
 
+                if (options.deterministicLockstep === undefined) {
+                    options.deterministicLockstep = false;
+                }
+
+                if (options.lockstepMaxSteps === undefined) {
+                    options.lockstepMaxSteps = 4;
+                }
+
                 if (options.preserveDrawingBuffer === undefined) {
                     options.preserveDrawingBuffer = false;
                 }
@@ -734,6 +748,9 @@
                 if (options.stencil === undefined) {
                     options.stencil = true;
                 }
+
+                this._deterministicLockstep = options.deterministicLockstep;
+                this._lockstepMaxSteps = options.lockstepMaxSteps;
 
                 // GL
                 if (!options.disableWebGL2Support) {
@@ -829,7 +846,7 @@
             // Constants
             this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
             this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.         
+            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
             this._gl.DEPTH24_STENCIL8 = 35056;
 
             // Extensions
@@ -865,7 +882,7 @@
 
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
 
-            // Vertex array object 
+            // Vertex array object
             if (this._webGLVersion > 1) {
                 this._caps.vertexArrayObject = true;
             } else {
@@ -880,7 +897,7 @@
                     this._caps.vertexArrayObject = false;
                 }
             }
-            // Instances count            
+            // Instances count
             if (this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
             } else {
@@ -898,7 +915,7 @@
 
             // Intelligently add supported compressed formats in order to check for.
             // Check for ASTC support first as it is most powerful and to be very cross platform.
-            // Next PVRTC & DXT, which are probably superior to ETC1/2.  
+            // Next PVRTC & DXT, which are probably superior to ETC1/2.
             // Likely no hardware which supports both PVR & DXT, so order matters little.
             // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
             if (this._caps.astc) this.texturesSupported.push('-astc.ktx');
@@ -1012,6 +1029,14 @@
             for (var index = 0; index < this._maxTextureChannels; index++) {
                 this._activeTexturesCache[index] = null;
             }
+        }
+
+        public isDeterministicLockStep(): boolean {
+          return this._deterministicLockstep;
+        }
+
+        public getLockstepMaxSteps(): number {
+          return this._lockstepMaxSteps;
         }
 
         public getGlInfo() {
@@ -1496,7 +1521,7 @@
             }
 
             if (this._cachedViewport && !forceFullscreenViewport) {
-                this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);            
+                this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
             } else {
                 gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
             }
@@ -2340,7 +2365,7 @@
 
         // States
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-            // Culling        
+            // Culling
             var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
             var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
             var cullFace = this.cullBackFaces ? showSide : hideSide;
@@ -2462,7 +2487,7 @@
             this.resetTextureCache();
             this._currentEffect = null;
 
-            // 6/8/2017: deltakosh: Should not be required anymore. 
+            // 6/8/2017: deltakosh: Should not be required anymore.
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
             if (bruteForce) {
                 this._currentProgram = null;
@@ -2484,20 +2509,20 @@
         /**
          * Set the compressed texture format to use, based on the formats you have, and the formats
          * supported by the hardware / browser.
-         * 
+         *
          * Khronos Texture Container (.ktx) files are used to support this.  This format has the
          * advantage of being specifically designed for OpenGL.  Header elements directly correspond
          * to API arguments needed to compressed textures.  This puts the burden on the container
          * generator to house the arcane code for determining these for current & future formats.
-         * 
+         *
          * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
          * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-         * 
+         *
          * Note: The result of this call is not taken into account when a texture is base64.
-         * 
+         *
          * @param {Array<string>} formatsAvailable- The list of those format families you have created
          * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
-         * 
+         *
          * Current families are astc, dxt, pvrtc, etc2, & etc1.
          * @returns The extension selected.
          */
@@ -2530,7 +2555,7 @@
          * @param {ArrayBuffer | HTMLImageElement} buffer- A source of a file previously fetched as either an ArrayBuffer (compressed or image format) or HTMLImageElement (image format)
          * @param {WebGLTexture} fallback- An internal argument in case the function must be called again, due to etc1 not having alpha capabilities.
          * @param {number} format-  Internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures.
-         * 
+         *
          * @returns {WebGLTexture} for assignment back into BABYLON.Texture
          */
         public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: ArrayBuffer | HTMLImageElement = null, fallBack?: WebGLTexture, format?: number): WebGLTexture {
@@ -3909,7 +3934,7 @@
 
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            
+
 
             if (internalTexture.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
                 value = 1;
