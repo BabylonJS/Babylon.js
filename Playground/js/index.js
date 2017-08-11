@@ -965,7 +965,8 @@
                         automaticLayout: true,
                         readOnly: false,
                         theme: "vs",
-                        contextmenu: false
+                        contextmenu: false,
+                        folding: true
                     });
 
                     run();
