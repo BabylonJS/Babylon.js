@@ -249,7 +249,7 @@ module BABYLON {
          * @param space The space that the translation is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public translate (vec: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public translate(vec: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var lm = this.getLocalMatrix();
 
@@ -302,7 +302,7 @@ module BABYLON {
          * @param space The space that the position is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setPosition (position: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setPosition(position: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var lm = this.getLocalMatrix();
 
@@ -364,7 +364,7 @@ module BABYLON {
          * @param z The scale of the bone on the z axis.
          * @param scaleChildren Set this to true if children of the bone should be scaled.
          */
-        public setScale (x: number, y: number, z: number, scaleChildren = false): void {
+        public setScale(x: number, y: number, z: number, scaleChildren = false): void {
 
             if (this.animations[0] && !this.animations[0].isStopped()) {
                 if (!scaleChildren) {
@@ -386,7 +386,7 @@ module BABYLON {
          * @param z The amount to scale the bone on the z axis.
          * @param scaleChildren Set this to true if children of the bone should be scaled.
          */
-        public scale (x: number, y: number, z: number, scaleChildren = false): void {
+        public scale(x: number, y: number, z: number, scaleChildren = false): void {
 	
             var locMat = this.getLocalMatrix();
             var origLocMat = Bone._tmpMats[0];
@@ -449,7 +449,7 @@ module BABYLON {
          * @param space The space that the axes of rotation are in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setYawPitchRoll (yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setYawPitchRoll(yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
 	
             var rotMat = Bone._tmpMats[0];
             Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
@@ -471,7 +471,7 @@ module BABYLON {
          * @param space The space that the axis is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public rotate (axis: Vector3, amount: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public rotate(axis: Vector3, amount: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
             
             var rmat = Bone._tmpMats[0];
             rmat.m[12] = 0;
@@ -491,7 +491,7 @@ module BABYLON {
          * @param space The space that the axis is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setAxisAngle (axis: Vector3, angle: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setAxisAngle(axis: Vector3, angle: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMat = Bone._tmpMats[0];
             Matrix.RotationAxisToRef(axis, angle, rotMat);
@@ -510,7 +510,7 @@ module BABYLON {
          * @param space The space that the rotation is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setRotation (rotation: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setRotation(rotation: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
             
             this.setYawPitchRoll(rotation.y, rotation.x, rotation.z, space, mesh);
 
@@ -522,7 +522,7 @@ module BABYLON {
          * @param space The space that the rotation is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setRotationQuaternion (quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setRotationQuaternion(quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Bone._tmpMats[0];
 
@@ -543,7 +543,7 @@ module BABYLON {
          * @param space The space that the rotation is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setRotationMatrix (rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setRotationMatrix(rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Bone._tmpMats[0];
             
@@ -558,7 +558,7 @@ module BABYLON {
 
         }
 
-        private _rotateWithMatrix (rmat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        private _rotateWithMatrix(rmat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var lmat = this.getLocalMatrix();
             var lx = lmat.m[12];
@@ -670,7 +670,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @returns The position of the bone
          */
-        public getPosition (space = Space.LOCAL, mesh?: AbstractMesh): Vector3 {
+        public getPosition(space = Space.LOCAL, mesh?: AbstractMesh): Vector3 {
 
             var pos = Vector3.Zero();
 
@@ -686,7 +686,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @param result The vector3 to copy the position to.
          */
-        public getPositionToRef (space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
+        public getPositionToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
 
             if(space == Space.LOCAL){
 
@@ -729,7 +729,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @returns The absolute position of the bone
          */
-        public getAbsolutePosition (mesh?: AbstractMesh): Vector3 {
+        public getAbsolutePosition(mesh?: AbstractMesh): Vector3 {
 
             var pos = Vector3.Zero();
 
@@ -744,7 +744,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @param result The vector3 to copy the absolute position to.
          */
-        public getAbsolutePositionToRef (mesh: AbstractMesh, result: Vector3) {
+        public getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3) {
 
             this.getPositionToRef(Space.WORLD, mesh, result);
 
@@ -753,7 +753,7 @@ module BABYLON {
         /**
          * Compute the absolute transforms of this bone and its children.
          */
-        public computeAbsoluteTransforms (): void {
+        public computeAbsoluteTransforms(): void {
 
             if (this._parent) {
                 this._localMatrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
@@ -808,7 +808,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @returns The world direction
          */
-        public getDirection (localAxis: Vector3, mesh?: AbstractMesh): Vector3{
+        public getDirection(localAxis: Vector3, mesh?: AbstractMesh): Vector3{
 
             var result = Vector3.Zero();
 
@@ -824,7 +824,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @param result The vector3 that the world direction will be copied to.
          */
-        public getDirectionToRef (localAxis: Vector3, mesh: AbstractMesh, result: Vector3): void {
+        public getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh, result: Vector3): void {
 
             var wm:Matrix;
 
@@ -903,7 +903,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @param result The quaternion that the rotation should be copied to.
          */
-        public getRotationQuaternionToRef( space = Space.LOCAL, mesh: AbstractMesh, result: Quaternion): void{
+        public getRotationQuaternionToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Quaternion): void{
 
             if(space == Space.LOCAL){
 

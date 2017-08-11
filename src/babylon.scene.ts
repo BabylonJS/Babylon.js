@@ -701,6 +701,9 @@
         private _audioEnabled = true;
         private _headphone = false;
 
+        // VR Helper
+        public VRHelper: VRExperienceHelper;
+
         //Simplification Queue
         public simplificationQueue: SimplificationQueue;
 
@@ -3307,6 +3310,11 @@
                 this.disposeSounds();
             }
 
+            // VR Helper
+            if (this.VRHelper) {
+                this.VRHelper.dispose();
+            }
+
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
             var index;
@@ -3818,9 +3826,8 @@
             return hdrSkybox;
         }
 
-        public createDefaultVRExperience(): VRExperienceHelper {
-            var vrHelper = new BABYLON.VRExperienceHelper(this, null);
-            return vrHelper;
+        public createDefaultVRExperience() {
+            this.VRHelper = new BABYLON.VRExperienceHelper(this, null);
         }
 
         // Tags
