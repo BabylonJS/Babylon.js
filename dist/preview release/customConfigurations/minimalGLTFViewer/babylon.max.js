@@ -7361,36 +7361,6 @@ var BABYLON;
             mag: magFilter
         };
     };
-    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
-        if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-        var engine = scene.getEngine();
-        if (!engine) {
-            return;
-        }
-        var potWidth = engine.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize) : width;
-        var potHeight = engine.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize) : height;
-        engine._bindTextureDirectly(gl.TEXTURE_2D, texture);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
-        texture._baseWidth = width;
-        texture._baseHeight = height;
-        texture._width = potWidth;
-        texture._height = potHeight;
-        texture.isReady = true;
-        processFunction(potWidth, potHeight);
-        var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
-        if (!noMipmap && !isCompressed) {
-            gl.generateMipmap(gl.TEXTURE_2D);
-        }
-        engine._bindTextureDirectly(gl.TEXTURE_2D, null);
-        engine.resetTextureCache();
-        scene._removePendingData(texture);
-        texture.onLoadedCallbacks.forEach(function (callback) {
-            callback();
-        });
-        texture.onLoadedCallbacks = [];
-    };
     var partialLoad = function (url, index, loadedImages, scene, onfinish, onErrorCallBack) {
         if (onErrorCallBack === void 0) { onErrorCallBack = null; }
         var img;
@@ -9500,8 +9470,9 @@ var BABYLON;
                 if (isKTX) {
                     callback = function (data) {
                         var ktx = new BABYLON.Internals.KhronosTextureContainer(data, 1);
-                        prepareWebGLTexture(texture, _this._gl, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, function () {
+                        _this._prepareWebGLTexture(texture, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, function () {
                             ktx.uploadLevels(_this._gl, !noMipmap);
+                            return false;
                         }, samplingMode);
                     };
                 }
@@ -9509,8 +9480,9 @@ var BABYLON;
                     callback = function (arrayBuffer) {
                         var data = new Uint8Array(arrayBuffer);
                         var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
-                        prepareWebGLTexture(texture, _this._gl, scene, header.width, header.height, invertY, noMipmap, false, function () {
+                        _this._prepareWebGLTexture(texture, scene, header.width, header.height, invertY, noMipmap, false, function () {
                             BABYLON.Internals.TGATools.UploadContent(_this._gl, data);
+                            return false;
                         }, samplingMode);
                     };
                 }
@@ -9518,8 +9490,9 @@ var BABYLON;
                     callback = function (data) {
                         var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
-                        prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
+                        _this._prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
                             BABYLON.Internals.DDSTools.UploadDDSLevels(_this, data, info, loadMipmap, 1);
+                            return false;
                         }, samplingMode);
                     };
                 }
@@ -9535,30 +9508,28 @@ var BABYLON;
             }
             else {
                 var onload = function (img) {
-                    prepareWebGLTexture(texture, _this._gl, scene, img.width, img.height, invertY, noMipmap, false, function (potWidth, potHeight) {
+                    _this._prepareWebGLTexture(texture, scene, img.width, img.height, invertY, noMipmap, false, function (potWidth, potHeight, continuationCallback) {
+                        var gl = _this._gl;
                         var isPot = (img.width === potWidth && img.height === potHeight);
-                        if (!isPot) {
-                            _this._prepareWorkingCanvas();
-                            _this._workingCanvas.width = potWidth;
-                            _this._workingCanvas.height = potHeight;
-                            if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-                                _this._workingContext.imageSmoothingEnabled = false;
-                                _this._workingContext.mozImageSmoothingEnabled = false;
-                                _this._workingContext.oImageSmoothingEnabled = false;
-                                _this._workingContext.webkitImageSmoothingEnabled = false;
-                                _this._workingContext.msImageSmoothingEnabled = false;
-                            }
-                            _this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-                            if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-                                _this._workingContext.imageSmoothingEnabled = true;
-                                _this._workingContext.mozImageSmoothingEnabled = true;
-                                _this._workingContext.oImageSmoothingEnabled = true;
-                                _this._workingContext.webkitImageSmoothingEnabled = true;
-                                _this._workingContext.msImageSmoothingEnabled = true;
-                            }
+                        var internalFormat = format ? _this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
+                        if (isPot) {
+                            gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
+                            return false;
                         }
-                        var internalFormat = format ? _this._getInternalFormat(format) : ((extension === ".jpg") ? _this._gl.RGB : _this._gl.RGBA);
-                        _this._gl.texImage2D(_this._gl.TEXTURE_2D, 0, internalFormat, internalFormat, _this._gl.UNSIGNED_BYTE, isPot ? img : _this._workingCanvas);
+                        // Using shaders to rescale because canvas.drawImage is lossy
+                        var source = gl.createTexture();
+                        _this._bindTextureDirectly(gl.TEXTURE_2D, source);
+                        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                        _this._rescaleTexture(source, texture, scene, internalFormat, function () {
+                            _this._releaseTexture(source);
+                            _this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+                            continuationCallback();
+                        });
+                        return true;
                     }, samplingMode);
                 };
                 if (!fromData || isBase64)
@@ -9569,6 +9540,35 @@ var BABYLON;
                     onload(buffer);
             }
             return texture;
+        };
+        Engine.prototype._rescaleTexture = function (source, destination, scene, internalFormat, onComplete) {
+            var _this = this;
+            var rtt = this.createRenderTargetTexture({
+                width: destination._width,
+                height: destination._height,
+            }, {
+                generateMipMaps: false,
+                type: Engine.TEXTURETYPE_UNSIGNED_INT,
+                samplingMode: BABYLON.Texture.BILINEAR_SAMPLINGMODE,
+                generateDepthBuffer: false,
+                generateStencilBuffer: false
+            });
+            if (!this._rescalePostProcess) {
+                this._rescalePostProcess = new BABYLON.PassPostProcess("rescale", 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            }
+            this._rescalePostProcess.getEffect().executeWhenCompiled(function () {
+                _this._rescalePostProcess.onApply = function (effect) {
+                    effect._bindTexture("textureSampler", source);
+                };
+                scene.postProcessManager.directRender([_this._rescalePostProcess], rtt);
+                _this._bindTextureDirectly(_this._gl.TEXTURE_2D, destination);
+                _this._gl.copyTexImage2D(_this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination._width, destination._height, 0);
+                _this.unBindFramebuffer(rtt);
+                _this._releaseTexture(rtt);
+                if (onComplete) {
+                    onComplete();
+                }
+            });
         };
         Engine.prototype._getInternalFormat = function (format) {
             var internalFormat = this._gl.RGBA;
@@ -10365,6 +10365,43 @@ var BABYLON;
             return texture;
         };
         ;
+        Engine.prototype._prepareWebGLTextureContinuation = function (texture, scene, noMipmap, isCompressed, samplingMode) {
+            var gl = this._gl;
+            var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+            if (!noMipmap && !isCompressed) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+            }
+            this._bindTextureDirectly(gl.TEXTURE_2D, null);
+            this.resetTextureCache();
+            scene._removePendingData(texture);
+            texture.onLoadedCallbacks.forEach(function (callback) {
+                callback();
+            });
+            texture.onLoadedCallbacks = [];
+        };
+        Engine.prototype._prepareWebGLTexture = function (texture, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
+            var _this = this;
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            var potWidth = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(width, this.getCaps().maxTextureSize) : width;
+            var potHeight = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(height, this.getCaps().maxTextureSize) : height;
+            var gl = this._gl;
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            texture._baseWidth = width;
+            texture._baseHeight = height;
+            texture._width = potWidth;
+            texture._height = potHeight;
+            texture.isReady = true;
+            if (processFunction(potWidth, potHeight, function () {
+                _this._prepareWebGLTextureContinuation(texture, scene, noMipmap, isCompressed, samplingMode);
+            })) {
+                // Returning as texture needs extra async steps
+                return;
+            }
+            this._prepareWebGLTextureContinuation(texture, scene, noMipmap, isCompressed, samplingMode);
+        };
         Engine.prototype._convertRGBtoRGBATextureData = function (rgbData, width, height, textureType) {
             // Create new RGBA data container.
             var rgbaData;
@@ -10688,6 +10725,10 @@ var BABYLON;
             if (this._emptyCubeTexture) {
                 this._releaseTexture(this._emptyCubeTexture);
                 this._emptyCubeTexture = null;
+            }
+            // Rescale PP
+            if (this._rescalePostProcess) {
+                this._rescalePostProcess.dispose();
             }
             // Release scenes
             while (this.scenes.length) {
@@ -15884,6 +15925,7 @@ var BABYLON;
             this.animationsEnabled = true;
             this.constantlyUpdateMeshUnderPointer = false;
             this.hoverCursor = "pointer";
+            this.defaultCursor = "";
             // Metadata
             this.metadata = null;
             // Events
@@ -16790,7 +16832,7 @@ var BABYLON;
                         }
                     }
                     else {
-                        canvas.style.cursor = "";
+                        canvas.style.cursor = _this.defaultCursor;
                     }
                 }
                 else {
@@ -16809,7 +16851,7 @@ var BABYLON;
                     else {
                         _this.setPointerOverSprite(null);
                         // Restore pointer
-                        canvas.style.cursor = "";
+                        canvas.style.cursor = _this.defaultCursor;
                     }
                 }
                 if (_this.onPointerMove) {
@@ -23508,13 +23550,11 @@ var BABYLON;
         };
         // Methods
         Effect.prototype.executeWhenCompiled = function (func) {
-            var _this = this;
             if (this.isReady()) {
                 func(this);
                 return;
             }
-            var observer = this.onCompileObservable.add(function (effect) {
-                _this.onCompileObservable.remove(observer);
+            this.onCompileObservable.add(function (effect) {
                 func(effect);
             });
         };
@@ -23752,6 +23792,7 @@ var BABYLON;
                     this.onCompiled(this);
                 }
                 this.onCompileObservable.notifyObservers(this);
+                this.onCompileObservable.clear();
             }
             catch (e) {
                 this._compilationError = e.message;
@@ -32264,6 +32305,7 @@ var BABYLON;
             _this.renderParticles = true;
             _this.renderSprites = false;
             _this.coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
+            _this.ignoreCameraViewport = false;
             // Events
             /**
             * An event triggered when the texture is unbind.
@@ -32612,12 +32654,7 @@ var BABYLON;
                 this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
             else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-                if (this.isCube) {
-                    engine.bindFramebuffer(this._texture, faceIndex);
-                }
-                else {
-                    engine.bindFramebuffer(this._texture);
-                }
+                engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport);
             }
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
             // Clear
