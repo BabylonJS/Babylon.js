@@ -247,6 +247,7 @@
         public constantlyUpdateMeshUnderPointer = false;
 
         public hoverCursor = "pointer";
+        public defaultCursor: string = "";
 
         // Metadata
         public metadata: any = null;
@@ -1220,7 +1221,7 @@
                             canvas.style.cursor = this.hoverCursor;
                         }
                     } else {
-                        canvas.style.cursor = "";
+                        canvas.style.cursor = this.defaultCursor;
                     }
                 } else {
                     this.setPointerOverMesh(null);
@@ -1237,7 +1238,7 @@
                     } else {
                         this.setPointerOverSprite(null);
                         // Restore pointer
-                        canvas.style.cursor = "";
+                        canvas.style.cursor = this.defaultCursor;
                     }
                 }
 
