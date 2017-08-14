@@ -247,6 +247,7 @@
         public constantlyUpdateMeshUnderPointer = false;
 
         public hoverCursor = "pointer";
+        public defaultCursor: string = "";
 
         // Metadata
         public metadata: any = null;
@@ -1024,10 +1025,9 @@
             this._unTranslatedPointerX = this._pointerX;
             this._unTranslatedPointerY = this._pointerY;
 
-            if (this.cameraToUseForPointers) {
-                this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
-                this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
-            }
+            let cameraToUse = this.cameraToUseForPointers ? this.cameraToUseForPointers : this.activeCamera;
+            this._pointerX = this._pointerX - cameraToUse.viewport.x * this._engine.getRenderWidth();
+            this._pointerY = this._pointerY - cameraToUse.viewport.y * this._engine.getRenderHeight();
         }
 
         private _createUbo(): void {
@@ -1220,7 +1220,7 @@
                             canvas.style.cursor = this.hoverCursor;
                         }
                     } else {
-                        canvas.style.cursor = "";
+                        canvas.style.cursor = this.defaultCursor;
                     }
                 } else {
                     this.setPointerOverMesh(null);
@@ -1237,7 +1237,7 @@
                     } else {
                         this.setPointerOverSprite(null);
                         // Restore pointer
-                        canvas.style.cursor = "";
+                        canvas.style.cursor = this.defaultCursor;
                     }
                 }
 
