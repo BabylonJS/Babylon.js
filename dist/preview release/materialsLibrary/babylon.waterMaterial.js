@@ -112,6 +112,7 @@ var BABYLON;
             * @param {number}: Defines the waves speed
             */
             _this.waveSpeed = 1.0;
+            _this._renderTargets = new BABYLON.SmartArray(16);
             /*
             * Private members
             */
@@ -119,8 +120,14 @@ var BABYLON;
             _this._reflectionTransform = BABYLON.Matrix.Zero();
             _this._lastTime = 0;
             _this._lastDeltaTime = 0;
-            // Create render targets
             _this._createRenderTargets(scene, renderTargetSize);
+            // Create render targets
+            _this.getRenderTargetTextures = function () {
+                _this._renderTargets.reset();
+                _this._renderTargets.push(_this._reflectionRTT);
+                _this._renderTargets.push(_this._refractionRTT);
+                return _this._renderTargets;
+            };
             return _this;
         }
         Object.defineProperty(WaterMaterial.prototype, "useLogarithmicDepth", {
@@ -382,11 +389,11 @@ var BABYLON;
             this._refractionRTT = new BABYLON.RenderTargetTexture(name + "_refraction", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
             this._refractionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
             this._refractionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+            this._refractionRTT.ignoreCameraViewport = true;
             this._reflectionRTT = new BABYLON.RenderTargetTexture(name + "_reflection", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
             this._reflectionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
             this._reflectionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
-            scene.customRenderTargets.push(this._refractionRTT);
-            scene.customRenderTargets.push(this._reflectionRTT);
+            this._reflectionRTT.ignoreCameraViewport = true;
             var isVisible;
             var clipPlane = null;
             var savedViewMatrix;
@@ -405,7 +412,7 @@ var BABYLON;
                 if (_this._mesh) {
                     _this._mesh.isVisible = isVisible;
                 }
-                // Clip plane
+                // Clip plane 
                 scene.clipPlane = clipPlane;
             };
             this._reflectionRTT.onBeforeRender = function () {
