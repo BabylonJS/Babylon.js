@@ -507,15 +507,15 @@ var BABYLON;
                     Matrix2D._TempCompose1.multiplyToRef(Matrix2D._TempPostTranslationMatrix, result);
                 }
             };
+            Matrix2D._TempPreTranslationMatrix = Matrix2D.Identity();
+            Matrix2D._TempPostTranslationMatrix = Matrix2D.Identity();
+            Matrix2D._TempRotationMatrix = Matrix2D.Identity();
+            Matrix2D._TempScalingMatrix = Matrix2D.Identity();
+            Matrix2D._TempCompose0 = Matrix2D.Identity();
+            Matrix2D._TempCompose1 = Matrix2D.Identity();
+            Matrix2D._TempCompose2 = Matrix2D.Identity();
             return Matrix2D;
         }());
-        Matrix2D._TempPreTranslationMatrix = Matrix2D.Identity();
-        Matrix2D._TempPostTranslationMatrix = Matrix2D.Identity();
-        Matrix2D._TempRotationMatrix = Matrix2D.Identity();
-        Matrix2D._TempScalingMatrix = Matrix2D.Identity();
-        Matrix2D._TempCompose0 = Matrix2D.Identity();
-        Matrix2D._TempCompose1 = Matrix2D.Identity();
-        Matrix2D._TempCompose2 = Matrix2D.Identity();
         GUI.Matrix2D = Matrix2D;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
@@ -628,12 +628,12 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            // Static
+            ValueAndUnit._Regex = /(^-?\d*(\.\d+)?)(%|px)?/;
+            ValueAndUnit._UNITMODE_PERCENTAGE = 0;
+            ValueAndUnit._UNITMODE_PIXEL = 1;
             return ValueAndUnit;
         }());
-        // Static
-        ValueAndUnit._Regex = /(^-?\d*(\.\d+)?)(%|px)?/;
-        ValueAndUnit._UNITMODE_PERCENTAGE = 0;
-        ValueAndUnit._UNITMODE_PIXEL = 1;
         GUI.ValueAndUnit = ValueAndUnit;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
@@ -1548,16 +1548,16 @@ var BABYLON;
                 context.scale(1 / width, 1 / height);
                 context.translate(-x, -y);
             };
+            // Statics
+            Control._HORIZONTAL_ALIGNMENT_LEFT = 0;
+            Control._HORIZONTAL_ALIGNMENT_RIGHT = 1;
+            Control._HORIZONTAL_ALIGNMENT_CENTER = 2;
+            Control._VERTICAL_ALIGNMENT_TOP = 0;
+            Control._VERTICAL_ALIGNMENT_BOTTOM = 1;
+            Control._VERTICAL_ALIGNMENT_CENTER = 2;
+            Control._FontHeightSizes = {};
             return Control;
         }());
-        // Statics
-        Control._HORIZONTAL_ALIGNMENT_LEFT = 0;
-        Control._HORIZONTAL_ALIGNMENT_RIGHT = 1;
-        Control._HORIZONTAL_ALIGNMENT_CENTER = 2;
-        Control._VERTICAL_ALIGNMENT_TOP = 0;
-        Control._VERTICAL_ALIGNMENT_BOTTOM = 1;
-        Control._VERTICAL_ALIGNMENT_CENTER = 2;
-        Control._FontHeightSizes = {};
         GUI.Control = Control;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
@@ -3200,13 +3200,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            // Static
+            Image._STRETCH_NONE = 0;
+            Image._STRETCH_FILL = 1;
+            Image._STRETCH_UNIFORM = 2;
+            Image._STRETCH_EXTEND = 3;
             return Image;
         }(GUI.Control));
-        // Static
-        Image._STRETCH_NONE = 0;
-        Image._STRETCH_FILL = 1;
-        Image._STRETCH_UNIFORM = 2;
-        Image._STRETCH_EXTEND = 3;
         GUI.Image = Image;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
