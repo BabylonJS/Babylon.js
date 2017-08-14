@@ -1025,10 +1025,9 @@
             this._unTranslatedPointerX = this._pointerX;
             this._unTranslatedPointerY = this._pointerY;
 
-            if (this.cameraToUseForPointers) {
-                this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
-                this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
-            }
+            let cameraToUse = this.cameraToUseForPointers ? this.cameraToUseForPointers : this.activeCamera;
+            this._pointerX = this._pointerX - cameraToUse.viewport.x * this._engine.getRenderWidth();
+            this._pointerY = this._pointerY - cameraToUse.viewport.y * this._engine.getRenderHeight();
         }
 
         private _createUbo(): void {
