@@ -242,7 +242,8 @@ var BABYLON;
                 this._rootContainer._draw(measure, context);
             };
             AdvancedDynamicTexture.prototype._doPicking = function (x, y, type) {
-                var engine = this.getScene().getEngine();
+                var scene = this.getScene();
+                var engine = scene.getEngine();
                 var textureSize = this.getSize();
                 if (this._isFullscreen) {
                     x = x * (textureSize.width / engine.getRenderWidth());
@@ -270,8 +271,13 @@ var BABYLON;
                         && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                         return;
                     }
+                    var camera = scene.activeCamera;
+                    var engine = scene.getEngine();
+                    var viewport = camera.viewport;
+                    var x = (scene.pointerX - viewport.x * engine.getRenderWidth()) / viewport.width;
+                    var y = (scene.pointerY - viewport.y * engine.getRenderHeight()) / viewport.height;
                     _this._shouldBlockPointer = false;
-                    _this._doPicking(scene.pointerX, scene.pointerY, pi.type);
+                    _this._doPicking(x, y, pi.type);
                     pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
                 });
                 this._attachToOnBlur(scene);
