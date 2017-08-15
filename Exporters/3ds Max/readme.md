@@ -1,78 +1,7 @@
 3DS Max to Babylon.js exporter
 ==============================
 
-This exporter is designed for 3ds Max 2013, 2015 and 2016 (Use 2015 version for 3dsMax 2016). You just have to unzip the content of the archive to [3ds max folder\bin\assemblies]
-
-**Before extracting, please go to downloaded .zip properties and click Unblock button**
-
-If you right click on the scene, on a light, on a camera or on a mesh you fill have a [Babylon...] menu. 
-
-To export you can use the [Babylon] menu in the main menu bar.
-
-## Exported features
-- *Scene*
- - Clear color
- - Ambient color
- - Fog
-- *Cameras*
- - Fov
- - MinZ
- - MaxZ
- - Speed (*)
- - Inertia (*)
- - Collisions (*)
- - Position
- - Target / Rotation
- - Animations: Position, Fov
-- *Lights*
- - Omni / spot / directional / Ambient(Hemispheric)
- - Shadows maps for directional lights (Variance shadow maps can be actived by checking [Absolute Map Bias] in light properties)
- - Inclusion / exclusion lists
- - Position / direction
- - Intensity
- - Diffuse
- - Specular
- - Animations: Position, Direction, intensity, diffuse
- - Range 
-- *Meshes*
- - Visibility
- - Renderable
- - Shadows
- - Collisions (*)
- - Pickable (*)
- - Position / rotation / scaling
- - Smoothing groups
- - Skin
- - Geometry (position, normal, texture coordinates (2 channels))
- - Show Bounding box and submeshes bounding boxes (*)
- - Animations: Position, scaling, rotation, visibility, bones
-- *Materials*
- - Multi-materials
- - Alpha
- - Diffuse color and texture
- - Ambient color and texture
- - Specular color and texture
- - Bump
- - Emissive color and texture
- - Opacity texture
- - Reflection texture
- - Fresnel for diffuse, emissive, opacity and reflection
-- *Textures*
- - UV offset / scaling / angle
- - Level
- - Coordinates mode (Spherical, planar, explicit)
- - Wrapping (Clamp, mirror, wrap)
-- Hierarchies are exported
-
-(*): Through custom UI
-
-## Animations
-Cameras, lights and meshes have custom properties (Right-click and select "Babylon properties" menu) to automatically launch animations at startup.
-
-Animations are exported by sampling keyframes which can generate a lot of data. To reduce file size, you can opt to use linear interpolation instead of bezier or TCB.
-
-## Consideration about bones
-To ensure that bones are correctly exported, you have to use the Skin modifier. Skin should be positioned at origin.
+Documentation: http://doc.babylonjs.com/exporters/3dsmax
 
 ## Apache License 2.0 (Apache)
 
