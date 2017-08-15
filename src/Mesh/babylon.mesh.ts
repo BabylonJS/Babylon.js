@@ -1484,6 +1484,15 @@
                     highlightLayer.removeExcludedMesh(this);
                 }
             }
+		
+            // Dispose meshes in LOD levels
+            for (let i = 0; i < this._LODLevels.length; i++) {
+                let mesh = this._LODLevels[i].mesh;
+                if (mesh) {
+                    mesh.dispose(doNotRecurse);
+                }
+            }
+            
             super.dispose(doNotRecurse);
         }
 
