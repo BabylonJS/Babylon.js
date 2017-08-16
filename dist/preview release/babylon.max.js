@@ -18323,6 +18323,7 @@ var BABYLON;
             var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = true;
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
                     var renderTarget = this.customRenderTargets[customIndex];
                     if (renderTarget._shouldRender()) {
@@ -18338,6 +18339,7 @@ var BABYLON;
                     }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = false;
                 this._renderId++;
             }
             // Restore back buffer

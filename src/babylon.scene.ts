@@ -2944,6 +2944,7 @@
             var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
                 Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = true;
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
                     var renderTarget = this.customRenderTargets[customIndex];
                     if (renderTarget._shouldRender()) {
@@ -2964,7 +2965,7 @@
                     }
                 }
                 Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-
+                this._intermediateRendering = false;
                 this._renderId++;
             }
 
