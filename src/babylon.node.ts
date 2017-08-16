@@ -106,6 +106,49 @@ module BABYLON {
             return this._scene.getEngine();
         }
 
+        // Behaviors
+        private _behaviors = new Array<Behavior<Node>>();
+
+        public addBehavior(behavior: Behavior<Node>): Node {
+            var index = this._behaviors.indexOf(behavior);
+
+            if (index !== -1) {
+                return;
+            }
+
+            behavior.attach(this);
+            this._behaviors.push(behavior);
+
+            return this;
+        }
+
+        public removeBehavior(behavior: Behavior<Node>): Node {
+            var index = this._behaviors.indexOf(behavior);
+
+            if (index === -1) {
+                return;
+            } 
+
+            this._behaviors[index].detach(this);
+            this._behaviors.splice(index, 1);
+
+            return this;
+        }     
+        
+        public get behaviors(): Behavior<Node>[] {
+            return this._behaviors;
+        }
+
+        public getBehaviorByName(name: string): Behavior<Node> {
+            for (var behavior of this._behaviors) {
+                if (behavior.name === name) {
+                    return behavior;
+                }
+            }
+
+            return null;
+        }
+
         // override it in derived class
         public getWorldMatrix(): Matrix {
             return Matrix.Identity();
@@ -365,6 +408,11 @@ module BABYLON {
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
+
+            // Behaviors
+            for (var behavior of this._behaviors) {
+                behavior.detach(this);
+            }
         }
         
         public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
