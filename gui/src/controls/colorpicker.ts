@@ -1,7 +1,5 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
-var DOMImage = Image;
-
 module BABYLON.GUI {
     export class ColorPicker extends Control {
         private _colorWheelCanvas: HTMLCanvasElement;
