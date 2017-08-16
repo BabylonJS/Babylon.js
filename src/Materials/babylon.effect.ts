@@ -254,8 +254,7 @@
                 return;
             }
             
-            var observer = this.onCompileObservable.add((effect) => {
-                this.onCompileObservable.remove(observer);
+            this.onCompileObservable.add((effect) => {
                 func(effect);
             });
         }
@@ -534,6 +533,7 @@
                     this.onCompiled(this);
                 }
                 this.onCompileObservable.notifyObservers(this);
+                this.onCompileObservable.clear();
             } catch (e) {
                 this._compilationError = e.message;
 

@@ -133,6 +133,8 @@ module BABYLON {
         @serialize()
         public waveSpeed: number = 1.0;
 
+        protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
+
 		/*
 		* Private members
 		*/
@@ -157,8 +159,17 @@ module BABYLON {
         constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
             super(name, scene);
 
-            // Create render targets
             this._createRenderTargets(scene, renderTargetSize);
+
+            // Create render targets
+            this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
+                this._renderTargets.reset();
+                this._renderTargets.push(this._reflectionRTT);
+                this._renderTargets.push(this._refractionRTT);
+
+                return this._renderTargets;
+            }
+
         }
 
         @serialize()
@@ -468,13 +479,12 @@ module BABYLON {
             this._refractionRTT = new RenderTargetTexture(name + "_refraction", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
             this._refractionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
             this._refractionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+            this._refractionRTT.ignoreCameraViewport = true;
 
             this._reflectionRTT = new RenderTargetTexture(name + "_reflection", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
             this._reflectionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
             this._reflectionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
-
-            scene.customRenderTargets.push(this._refractionRTT);
-            scene.customRenderTargets.push(this._reflectionRTT);
+            this._reflectionRTT.ignoreCameraViewport = true;
 
             var isVisible: boolean;
             var clipPlane = null;
@@ -498,7 +508,7 @@ module BABYLON {
                     this._mesh.isVisible = isVisible;
                 }
 
-                // Clip plane
+                // Clip plane 
                 scene.clipPlane = clipPlane;
             };
 
@@ -616,7 +626,7 @@ module BABYLON {
 
         public getClassName(): string {
             return "WaterMaterial";
-        }        
+        }
 
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {

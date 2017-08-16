@@ -291,7 +291,7 @@
 
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
-                    engine.bindFramebuffer(this._texture, face);
+                    engine.bindFramebuffer(this._texture, face, undefined, undefined, true);
 
                     // VBOs
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
@@ -310,7 +310,7 @@
                     }
                 }
             } else {
-                engine.bindFramebuffer(this._texture);
+                engine.bindFramebuffer(this._texture, 0, undefined, undefined, true);
 
                 // VBOs
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
