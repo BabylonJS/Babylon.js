@@ -179,7 +179,7 @@
                         this._loadFragmentShader(fragmentSource, (fragmentCode) => {
                             this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
                                 this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
-                                    this._prepareEffect(migratedVertexCode, migratedFragmentCode, this._attributesNames, this.defines, this._fallbacks);
+                                    this._prepareEffect(migratedVertexCode, migratedFragmentCode, this._attributesNames, this.defines, this._fallbacks, baseName);
                                 });
                             });
                         });
@@ -500,9 +500,13 @@
             return source;
         }
 
-        private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
+        private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks, baseName?: string): void {
             try {
                 var engine = this._engine;
+                if (baseName) {
+                    vertexSourceCode = "#define SHADER_NAME vertex:" + baseName + "\n" + vertexSourceCode;
+                    fragmentSourceCode = "#define SHADER_NAME fragment:" + baseName + "\n" + fragmentSourceCode;
+                }
 
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
