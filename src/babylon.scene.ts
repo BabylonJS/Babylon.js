@@ -2571,7 +2571,11 @@
                 if (mesh.alwaysSelectAsActiveMesh || mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
+                        
                     mesh._activate(this._renderId);
+                    if (meshLOD !== mesh) {
+                        meshLOD._activate(this._renderId);
+                    }
 
                     this._activeMesh(mesh, meshLOD);
                 }
@@ -2944,6 +2948,7 @@
             var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
                 Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = true;
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
                     var renderTarget = this.customRenderTargets[customIndex];
                     if (renderTarget._shouldRender()) {
@@ -2964,7 +2969,7 @@
                     }
                 }
                 Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-
+                this._intermediateRendering = false;
                 this._renderId++;
             }
 
