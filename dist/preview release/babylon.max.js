@@ -18023,6 +18023,9 @@ var BABYLON;
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
+                    if (meshLOD !== mesh) {
+                        meshLOD._activate(this._renderId);
+                    }
                     this._activeMesh(mesh, meshLOD);
                 }
             }
@@ -23534,7 +23537,7 @@ var BABYLON;
                         _this._loadFragmentShader(fragmentSource, function (fragmentCode) {
                             _this._processIncludes(fragmentCode, function (fragmentCodeWithIncludes) {
                                 _this._processShaderConversion(fragmentCodeWithIncludes, true, function (migratedFragmentCode) {
-                                    _this._prepareEffect(migratedVertexCode, migratedFragmentCode, _this._attributesNames, _this.defines, _this._fallbacks);
+                                    _this._prepareEffect(migratedVertexCode, migratedFragmentCode, _this._attributesNames, _this.defines, _this._fallbacks, baseName);
                                 });
                             });
                         });
@@ -23808,9 +23811,13 @@ var BABYLON;
             }
             return source;
         };
-        Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
+        Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks, baseName) {
             try {
                 var engine = this._engine;
+                if (baseName) {
+                    vertexSourceCode = "#define SHADER_NAME vertex:" + baseName + "\n" + vertexSourceCode;
+                    fragmentSourceCode = "#define SHADER_NAME fragment:" + baseName + "\n" + fragmentSourceCode;
+                }
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 if (engine.webGLVersion > 1) {
                     for (var name in this._uniformBuffersNames) {
