@@ -458,13 +458,13 @@
                 return;
             }
 
-            if (textures[index].isRenderTarget || textures[index] instanceof BABYLON.DynamicTexture) {
+            if (textures[index].isRenderTarget || textures[index] instanceof BABYLON.DynamicTexture || textures[index].name.indexOf("data:") !== -1) {
                 addTexturesToZip(zip, index + 1, textures, folder, then);
                 return;
             }
 
             if (textures[index].isCube) {
-                if (textures[index]._extensions) {
+                if (textures[index]._extensions && textures[index].name.indexOf("dds") === -1) {
                     for (var i = 0; i < 6; i++) {
                         textures.push({ name: textures[index].name + textures[index]._extensions[i] });
                     }
@@ -486,10 +486,10 @@
                 url = textures[index].video.currentSrc;
             } else {
                 // url = textures[index].name;
-                url = textures[index].url;
+                url = textures[index].url ? textures[index].url : textures[index].name;
             }
 
-            var name = textures[index].name;
+            var name = textures[index].name.replace("textures/", "");
             // var name = url.substr(url.lastIndexOf("/") + 1);
 
             if (url != null) {
@@ -965,7 +965,8 @@
                         automaticLayout: true,
                         readOnly: false,
                         theme: "vs",
-                        contextmenu: false
+                        contextmenu: false,
+                        folding: true
                     });
 
                     run();

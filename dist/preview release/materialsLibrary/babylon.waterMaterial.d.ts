@@ -66,6 +66,7 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        protected _renderTargets: SmartArray<RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
         private _reflectionRTT;
