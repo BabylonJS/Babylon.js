@@ -388,27 +388,11 @@
         */
         public onBeforeStepObservable = new Observable<Scene>();
 
-        private _onBeforeStepObserver: Observer<Scene>;
-        public set beforeStep(callback: (data:Scene, state: EventState) => void) {
-            if (this.onBeforeStepObservable) {
-                this.onBeforeStepObservable.remove(this._onBeforeStepObserver);
-            }
-            this._onBeforeStepObserver = this.onBeforeStepObservable.add(callback);
-        }
-
         /**
         * An event triggered after calculating deterministic simulation step
         * @type {BABYLON.Observable}
         */
         public onAfterStepObservable = new Observable<Scene>();
-
-        private _onAfterStepObserver: Observer<Scene>;
-        public set afterStep(callback: (data:Scene, state: EventState) => void) {
-            if (this.onAfterStepObservable) {
-                this.onAfterStepObservable.remove(this._onAfterStepObserver);
-            }
-            this._onAfterStepObserver = this.onAfterStepObservable.add(callback);
-        }
 
         /**
          * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
@@ -1655,22 +1639,6 @@
 
         public unregisterAfterRender(func: () => void): void {
             this.onAfterRenderObservable.removeCallback(func);
-        }
-
-        public registerBeforeStep(func: () => void): void {
-            this.onBeforeStepObservable.add(func);
-        }
-
-        public unregisterBeforeStep(func: () => void): void {
-            this.onBeforeStepObservable.removeCallback(func);
-        }
-
-        public registerAfterStep(func: () => void): void {
-            this.onAfterStepObservable.add(func);
-        }
-
-        public unregisterAfterStep(func: () => void): void {
-            this.onAfterStepObservable.removeCallback(func);
         }
 
         public _addPendingData(data): void {
@@ -2984,7 +2952,12 @@
 
             if(this._engine.isDeterministicLockStep()){
               var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) / 1000;
-              var defaultTimeStep = this._physicsEngine.getTimeStep();
+
+              var defaultTimeStep = (60.0 / 1000.0);
+              if (this._physicsEngine) {
+                defaultTimeStep = this._physicsEngine.getTimeStep();
+              }
+
               var maxSubSteps = this._engine.getLockstepMaxSteps();
 
               this._timeAccumulator += deltaTime;

@@ -16298,26 +16298,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene.prototype, "beforeStep", {
-            set: function (callback) {
-                if (this.onBeforeStepObservable) {
-                    this.onBeforeStepObservable.remove(this._onBeforeStepObserver);
-                }
-                this._onBeforeStepObserver = this.onBeforeStepObservable.add(callback);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Scene.prototype, "afterStep", {
-            set: function (callback) {
-                if (this.onAfterStepObservable) {
-                    this.onAfterStepObservable.remove(this._onAfterStepObserver);
-                }
-                this._onAfterStepObserver = this.onAfterStepObservable.add(callback);
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Scene.prototype, "unTranslatedPointer", {
             get: function () {
                 return new BABYLON.Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
@@ -17192,18 +17172,6 @@ var BABYLON;
         };
         Scene.prototype.unregisterAfterRender = function (func) {
             this.onAfterRenderObservable.removeCallback(func);
-        };
-        Scene.prototype.registerBeforeStep = function (func) {
-            this.onBeforeStepObservable.add(func);
-        };
-        Scene.prototype.unregisterBeforeStep = function (func) {
-            this.onBeforeStepObservable.removeCallback(func);
-        };
-        Scene.prototype.registerAfterStep = function (func) {
-            this.onAfterStepObservable.add(func);
-        };
-        Scene.prototype.unregisterAfterStep = function (func) {
-            this.onAfterStepObservable.removeCallback(func);
         };
         Scene.prototype._addPendingData = function (data) {
             this._pendingData.push(data);
@@ -18295,7 +18263,10 @@ var BABYLON;
             }
             if (this._engine.isDeterministicLockStep()) {
                 var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) / 1000;
-                var defaultTimeStep = this._physicsEngine.getTimeStep();
+                var defaultTimeStep = (60.0 / 1000.0);
+                if (this._physicsEngine) {
+                    defaultTimeStep = this._physicsEngine.getTimeStep();
+                }
                 var maxSubSteps = this._engine.getLockstepMaxSteps();
                 this._timeAccumulator += deltaTime;
                 // compute the amount of fixed steps we should have taken since the last step
