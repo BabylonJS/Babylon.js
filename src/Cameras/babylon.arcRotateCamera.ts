@@ -194,6 +194,26 @@ module BABYLON {
         protected _localDirection: Vector3;
         protected _transformedDirection: Vector3;
 
+        // Behaviors
+        private _bouncingBehavior: BouncingBehavior;
+        public get useBouncingBehavior(): boolean {
+            return this._bouncingBehavior != null;
+        }
+
+        public set useBouncingBehavior(value: boolean) {
+            if (value === this.useBouncingBehavior) {
+                return;
+            }
+
+            if (value) {
+                this._bouncingBehavior = new BouncingBehavior();
+                this.addBehavior(this._bouncingBehavior);
+            } else {
+                this.removeBehavior(this._bouncingBehavior);
+                this._bouncingBehavior = null;
+            }
+        }
+
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
         public checkCollisions = false;

@@ -126,6 +126,7 @@
         // Observables
         public onViewMatrixChangedObservable = new Observable<Camera>();
         public onProjectionMatrixChangedObservable = new Observable<Camera>();
+        public onAfterCheckInputsObservable = new Observable<Camera>();
 
         // Cache
         private _computedViewMatrix = Matrix.Identity();
@@ -296,6 +297,7 @@
         }
 
         public _checkInputs(): void {
+            this.onAfterCheckInputsObservable.notifyObservers(this);
         }
 
         public get rigCameras(): Camera[] {
@@ -548,6 +550,7 @@
             // Observables
             this.onViewMatrixChangedObservable.clear();
             this.onProjectionMatrixChangedObservable.clear();
+            this.onAfterCheckInputsObservable.clear();
 
             // Animations
             this.getScene().stopAnimation(this);
