@@ -924,9 +924,6 @@ var INSPECTOR;
             enumerable: true,
             configurable: true
         });
-        /** Should be overriden in subclasses */
-        Adapter.prototype.highlight = function (b) { };
-        ;
         // a unique name for this adapter, to retrieve its own key in the local storage
         Adapter._name = BABYLON.Geometry.RandomId();
         return Adapter;
@@ -1368,16 +1365,6 @@ var INSPECTOR;
         LightAdapter.prototype.isVisible = function () {
             return this._obj.isEnabled();
         };
-        /** Returns some information about this mesh */
-        // public getInfo() : string {
-        //     return `${(this._obj as BABYLON.AbstractMesh).getTotalVertices()} vertices`;
-        // }
-        /** Overrides super.highlight */
-        LightAdapter.prototype.highlight = function (b) {
-            this.actualObject.renderOutline = b;
-            this.actualObject.outlineWidth = 0.25;
-            this.actualObject.outlineColor = BABYLON.Color3.Yellow();
-        };
         LightAdapter._PROPERTIES = [
             'position',
             'diffuse',
@@ -1443,19 +1430,6 @@ var INSPECTOR;
         /** No tools for a material adapter */
         MaterialAdapter.prototype.getTools = function () {
             return [];
-        };
-        /** Overrides super.highlight.
-         * Highlighting a material outlines all meshes linked to this material
-         */
-        MaterialAdapter.prototype.highlight = function (b) {
-            var material = this.actualObject;
-            var meshes = material.getBindedMeshes();
-            for (var _i = 0, meshes_1 = meshes; _i < meshes_1.length; _i++) {
-                var mesh = meshes_1[_i];
-                mesh.renderOutline = b;
-                mesh.outlineWidth = 0.25;
-                mesh.outlineColor = BABYLON.Color3.Yellow();
-            }
         };
         return MaterialAdapter;
     }(INSPECTOR.Adapter));
@@ -1543,12 +1517,6 @@ var INSPECTOR;
         /** Returns some information about this mesh */
         MeshAdapter.prototype.getInfo = function () {
             return this._obj.getTotalVertices() + " vertices";
-        };
-        /** Overrides super.highlight */
-        MeshAdapter.prototype.highlight = function (b) {
-            this.actualObject.renderOutline = b;
-            this.actualObject.outlineWidth = 0.25;
-            this.actualObject.outlineColor = BABYLON.Color3.Yellow();
         };
         /** Draw X, Y and Z axis for the actual object if this adapter.
          * Should be called only one time as it will fill this._axis
@@ -2734,10 +2702,6 @@ var INSPECTOR;
         Tab.prototype.select = function (item) {
             // To define in subclasses if needed 
         };
-        /** Highlight the given node, and downplay all others */
-        Tab.prototype.highlightNode = function (item) {
-            // To define in subclasses if needed
-        };
         /**
          * Returns the total width in pixel of this tab, 0 by default
         */
@@ -2832,24 +2796,10 @@ var INSPECTOR;
         };
         /** Select an item in the tree */
         PropertyTab.prototype.select = function (item) {
-            // Remove the node highlight
-            this.highlightNode();
             // Active the node
             this.activateNode(item);
             // Display its details
             this.displayDetails(item);
-        };
-        /** Highlight the given node, and downplay all others */
-        PropertyTab.prototype.highlightNode = function (item) {
-            if (this._treeItems) {
-                for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
-                    var node = _a[_i];
-                    node.highlight(false);
-                }
-            }
-            if (item) {
-                item.highlight(true);
-            }
         };
         /** Set the given item as active in the tree */
         PropertyTab.prototype.activateNode = function (item) {
@@ -3208,8 +3158,6 @@ var INSPECTOR;
         };
         /** Select an item in the tree */
         TextureTab.prototype.select = function (item) {
-            // Remove the node highlight
-            this.highlightNode();
             // Active the node
             this.activateNode(item);
             // Display its details
@@ -3224,18 +3172,6 @@ var INSPECTOR;
                 }
             }
             item.active(true);
-        };
-        /** Highlight the given node, and downplay all others */
-        TextureTab.prototype.highlightNode = function (item) {
-            if (this._treeItems) {
-                for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
-                    var node = _a[_i];
-                    node.highlight(false);
-                }
-            }
-            if (item) {
-                item.highlight(true);
-            }
         };
         return TextureTab;
     }(INSPECTOR.Tab));
@@ -4846,7 +4782,6 @@ var INSPECTOR;
         /**
          * Add an event listener on the item :
          * - one click display details
-         * - on mouse hover the item is highlighted
          */
         TreeItem.prototype._addEvent = function () {
             var _this = this;
@@ -4861,27 +4796,6 @@ var INSPECTOR;
                 }
                 e.stopPropagation();
             });
-            // Highlight on mouse over
-            this._div.addEventListener('mouseover', function (e) {
-                _this._tab.highlightNode(_this);
-                e.stopPropagation();
-            });
-            // Remove highlight on mouse out
-            this._div.addEventListener('mouseout', function (e) {
-                _this._tab.highlightNode();
-            });
-        };
-        /** Highlight or downplay this node */
-        TreeItem.prototype.highlight = function (b) {
-            // Remove highlight for all children 
-            if (!b) {
-                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
-                    var child = _a[_i];
-                    child._adapter.highlight(b);
-                }
-            }
-            // Highlight this node
-            this._adapter.highlight(b);
         };
         /** Returns true if the node is folded, false otherwise */
         TreeItem.prototype._isFolded = function () {
