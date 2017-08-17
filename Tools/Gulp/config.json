@@ -22,7 +22,7 @@
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
                 "mapTexture", "dynamicFloatArray",
-                "imageProcessing", "serialization", "probes", "layer", "textureTools"
+                "imageProcessing", "serialization", "probes", "layer", "textureTools", "cameraBehaviors"
         ],
         "minimal": ["standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
@@ -36,7 +36,7 @@
                 "debug", "textureTools", "hdr",
                 "loader",
                 "materialsLibrary/babylon.gridMaterial.js",
-                "loaders/babylon.glTFFileLoader.js"
+                "loaders/babylon.glTFFileLoader.js", "cameraBehaviors", "morphTargets"
         ],
         "distributed": ["minimalGLTFViewer"]
     },
@@ -96,7 +96,17 @@
                 "particles.vertex",
                 "particles.fragment"
             ]
-        },         
+        },       
+        "cameraBehaviors" : 
+        {
+            "files": [
+                "../../src/Behaviors/Cameras/babylon.framingBehavior.js",
+                "../../src/Behaviors/Cameras/babylon.bouncingBehavior.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },                   
         "textureTools" : 
         {
             "files": [

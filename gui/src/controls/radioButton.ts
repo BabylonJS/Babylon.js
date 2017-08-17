@@ -1,7 +1,5 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
-var DOMImage = Image;
-
 module BABYLON.GUI {
     export class RadioButton extends Control {
         private _isChecked = false;

@@ -1,7 +1,5 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
-var DOMImage = Image;
-
 module BABYLON.GUI {
     export class Line extends Control {
         private _lineWidth = 1;
