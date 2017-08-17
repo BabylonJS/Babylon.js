@@ -10,14 +10,14 @@ module BABYLON {
         private _idleRotationSpinupTime = 2000;  
        
 		/**
-		* Sets the flag that indicates if user zooming should stop model animation.
+		* Sets the flag that indicates if user zooming should stop animation.
 		*/
 		public set zoomStopsAnimation(flag: boolean) {
 			this._zoomStopsAnimation = flag;
 		}
 
 		/**
-		* Gets the flag that indicates if user zooming should stop model animation.
+		* Gets the flag that indicates if user zooming should stop animation.
 		*/
 		public get zoomStopsAnimation(): boolean {
 			return this._zoomStopsAnimation;

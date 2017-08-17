@@ -8,14 +8,14 @@ module BABYLON {
         }        
 
 		/**
-		 * The easing function to use when the camera bounces
+		 * The easing function used by animations
 		 */
-		public bounceEasingFunction = new BackEase(0.3);
+		public static EasingFunction = new BackEase(0.3);
 
 		/**
-		 * The easing mode to use when the camera bounces
+		 * The easing mode used by animations
 		 */
-        public bounceEasingMode = EasingFunction.EASINGMODE_EASEOUT;   
+        public static EasingMode = EasingFunction.EASINGMODE_EASEOUT;   
         
         /**
          * The duration of the animation, in milliseconds
@@ -79,8 +79,8 @@ module BABYLON {
 		 */
 		private _applyBoundRadiusAnimation(radiusDelta: number): void {
 			if (!this._radiusBounceTransition) {
-				this.bounceEasingFunction.setEasingMode(this.bounceEasingMode);
-				this._radiusBounceTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, this.bounceEasingFunction);
+				BouncingBehavior.EasingFunction.setEasingMode(BouncingBehavior.EasingMode);
+				this._radiusBounceTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, BouncingBehavior.EasingFunction);
 			}
             // Prevent zoom until bounce has completed
             this._cachedWheelPrecision = this._attachedCamera.wheelPrecision;

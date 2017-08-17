@@ -87,25 +87,10 @@ module INSPECTOR{
         
         /** Select an item in the tree */
         public select(item:TreeItem) {            
-            // Remove the node highlight
-            this.highlightNode();
             // Active the node
             this.activateNode(item);
             // Display its details
             this.displayDetails(item); 
-        }
-        
-
-        /** Highlight the given node, and downplay all others */
-         public highlightNode(item?:TreeItem) {
-            if (this._treeItems) {
-                for (let node of this._treeItems) {
-                    node.highlight(false);
-                }
-            }
-            if (item) {
-                item.highlight(true);
-            }
         }
 
         /** Set the given item as active in the tree */
