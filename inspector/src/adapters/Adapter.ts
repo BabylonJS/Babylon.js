@@ -1,10 +1,6 @@
 module INSPECTOR {
 
-    export interface IHighlight {
-        highlight: (b: boolean) => void
-    }
-
-    export abstract class Adapter implements IHighlight {
+    export abstract class Adapter {
 
         protected _obj: any;
         // a unique name for this adapter, to retrieve its own key in the local storage
@@ -48,8 +44,5 @@ module INSPECTOR {
 
         /** Returns the list of tools available for this adapter */
         public abstract getTools(): Array<AbstractTreeTool>;
-
-        /** Should be overriden in subclasses */
-        public highlight(b: boolean) { };
     }
 }

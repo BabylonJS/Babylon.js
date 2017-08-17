@@ -78,12 +78,6 @@ module INSPECTOR {
             return `${(this._obj as BABYLON.AbstractMesh).getTotalVertices()} vertices`;
         }
 
-        /** Overrides super.highlight */
-        public highlight(b: boolean) {
-            this.actualObject.renderOutline = b;
-            this.actualObject.outlineWidth = 0.25;
-            this.actualObject.outlineColor = BABYLON.Color3.Yellow();
-        }
         /** Draw X, Y and Z axis for the actual object if this adapter.
          * Should be called only one time as it will fill this._axis
          */

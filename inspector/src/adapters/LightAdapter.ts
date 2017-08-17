@@ -59,12 +59,5 @@ module INSPECTOR {
         // public getInfo() : string {
         //     return `${(this._obj as BABYLON.AbstractMesh).getTotalVertices()} vertices`;
         // }
-        
-        /** Overrides super.highlight */
-        public highlight(b:boolean) {
-            this.actualObject.renderOutline = b;
-			this.actualObject.outlineWidth = 0.25;
-			this.actualObject.outlineColor = BABYLON.Color3.Yellow();
-        }
     }
 }

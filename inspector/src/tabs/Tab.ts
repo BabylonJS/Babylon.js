@@ -61,12 +61,6 @@ module INSPECTOR {
             // To define in subclasses if needed 
         }
 
-
-        /** Highlight the given node, and downplay all others */
-        public highlightNode(item?: TreeItem) {
-            // To define in subclasses if needed
-        }
-
         /** 
          * Returns the total width in pixel of this tab, 0 by default
         */
