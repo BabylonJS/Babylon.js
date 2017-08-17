@@ -1,7 +1,5 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
-var DOMImage = Image;
-
 module BABYLON.GUI {
     export class Slider extends Control {
         private _thumbWidth = new ValueAndUnit(30, ValueAndUnit.UNITMODE_PIXEL, false);
