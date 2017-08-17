@@ -24,16 +24,23 @@
             this.gravity = gravity;
             this._physicsPlugin.setGravity(this.gravity);
         }
-        
+
         /**
          * Set the time step of the physics engine.
-         * default is 1/60. 
+         * default is 1/60.
          * To slow it down, enter 1/600 for example.
          * To speed it up, 1/30
          * @param {number} newTimeStep the new timestep to apply to this world.
          */
         public setTimeStep(newTimeStep: number = 1 / 60) {
             this._physicsPlugin.setTimeStep(newTimeStep);
+        }
+
+        /**
+         * Get the time step of the physics engine.
+         */
+        public getTimeStep(): number {
+            return this._physicsPlugin.getTimeStep();
         }
 
         public dispose(): void {
@@ -51,7 +58,7 @@
         public static Epsilon = 0.001;
 
         //new methods and parameters
-        
+
         private _impostors: Array<PhysicsImpostor> = [];
         private _joints: Array<PhysicsImpostorJoint> = [];
 
@@ -84,7 +91,7 @@
                 }
             }
         }
-        
+
         /**
          * Add a joint to the physics engine
          * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
@@ -111,7 +118,7 @@
             if (matchingJoints.length) {
                 this._physicsPlugin.removeJoint(matchingJoints[0]);
                 //TODO remove it from the list as well
-                
+
             }
         }
 
@@ -139,7 +146,7 @@
         public getPhysicsPlugin(): IPhysicsEnginePlugin {
             return this._physicsPlugin;
         }
-        
+
         public getImpostorForPhysicsObject(object: IPhysicsEnabledObject) {
             for (var i = 0; i < this._impostors.length; ++i) {
                 if (this._impostors[i].object === object) {
@@ -162,6 +169,7 @@
         name: string;
         setGravity(gravity: Vector3);
         setTimeStep(timeStep: number);
+        getTimeStep(): number;
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void; //not forgetting pre and post events
         applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
         applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
