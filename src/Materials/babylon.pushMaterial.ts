@@ -42,7 +42,7 @@
         }
 
         protected _mustRebind(scene: Scene, effect: Effect, visibility: number = 0) {
-            return scene.isCachedMaterialValid(this, effect, visibility);
+            return scene.isCachedMaterialInvalid(this, effect, visibility);
         }
     }
 } 

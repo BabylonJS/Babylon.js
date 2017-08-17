@@ -932,7 +932,7 @@
             return this._cachedVisibility;
         }
 
-        public isCachedMaterialValid(material: Material, effect: Effect, visibility: number = 0) {
+        public isCachedMaterialInvalid(material: Material, effect: Effect, visibility: number = 1) {
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
         }
 
