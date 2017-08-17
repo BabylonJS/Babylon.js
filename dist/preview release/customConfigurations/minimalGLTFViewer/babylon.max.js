@@ -16574,8 +16574,8 @@ var BABYLON;
         Scene.prototype.getCachedVisibility = function () {
             return this._cachedVisibility;
         };
-        Scene.prototype.isCachedMaterialValid = function (material, effect, visibility) {
-            if (visibility === void 0) { visibility = 0; }
+        Scene.prototype.isCachedMaterialInvalid = function (material, effect, visibility) {
+            if (visibility === void 0) { visibility = 1; }
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
         };
         Scene.prototype.getBoundingBoxRenderer = function () {
@@ -25026,6 +25026,7 @@ var BABYLON;
         };
         Material.prototype._afterBind = function (mesh) {
             this._scene._cachedMaterial = this;
+            this._scene._cachedVisibility = mesh.visibility;
             this.onBindObservable.notifyObservers(mesh);
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
@@ -25807,7 +25808,7 @@ var BABYLON;
         };
         PushMaterial.prototype._mustRebind = function (scene, effect, visibility) {
             if (visibility === void 0) { visibility = 0; }
-            return scene.isCachedMaterialValid(this, effect, visibility);
+            return scene.isCachedMaterialInvalid(this, effect, visibility);
         };
         return PushMaterial;
     }(BABYLON.Material));
