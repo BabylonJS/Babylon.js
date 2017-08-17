@@ -101,7 +101,8 @@
         {
             "files": [
                 "../../src/Behaviors/Cameras/babylon.framingBehavior.js",
-                "../../src/Behaviors/Cameras/babylon.bouncingBehavior.js"
+                "../../src/Behaviors/Cameras/babylon.bouncingBehavior.js",
+                "../../src/Behaviors/Cameras/babylon.autoRotationBehavior.js"
             ],
             "dependUpon" : [
                 "core"

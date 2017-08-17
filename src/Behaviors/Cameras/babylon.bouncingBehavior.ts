@@ -35,10 +35,10 @@ module BABYLON {
         
         // Connection
         private _attachedCamera: ArcRotateCamera;
-        private _onAfterCheckInputsObservabler: Observer<Camera>;
+        private _onAfterCheckInputsObserver: Observer<Camera>;
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
-            this._onAfterCheckInputsObservabler = camera.onAfterCheckInputsObservable.add(() => {
+            this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
 				// Add the bounce animation to the lower radius limit
 				if (this._isRadiusAtLimit(this._attachedCamera.lowerRadiusLimit)) {
 					this._applyBoundRadiusAnimation(this.lowerRadiusTransitionRange);
@@ -52,7 +52,7 @@ module BABYLON {
         }
         
         public detach(camera: ArcRotateCamera): void {
-            camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObservabler);
+            camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
         }
 
         // Animations
