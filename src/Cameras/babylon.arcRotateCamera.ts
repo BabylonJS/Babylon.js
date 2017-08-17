@@ -251,8 +251,9 @@ module BABYLON {
                 this._autoRotationBehavior = null;
             }
         }        
-        
 
+        public onMeshTargetChangedObservable = new Observable<AbstractMesh>();
+        
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
         public checkCollisions = false;
@@ -502,6 +503,8 @@ module BABYLON {
                 }
                 this._targetHost = <AbstractMesh>target;
                 this._target = this._getTargetPosition();
+
+                this.onMeshTargetChangedObservable.notifyObservers(this._targetHost);
             } else {
                 var newTarget = <Vector3>target;
                 var currentTarget = this._getTargetPosition();
@@ -510,6 +513,7 @@ module BABYLON {
                 }
                 this._target = newTarget;
                 this._targetBoundingCenter = null;
+                this.onMeshTargetChangedObservable.notifyObservers(null);
             }
 
             this.rebuildAnglesAndRadius();

@@ -62,6 +62,15 @@
             return this.boundingBox.isInFrustum(frustumPlanes);
         }
 
+        /**
+		 * Gets the world distance between the min and max points of the bounding box
+		 */
+		public get diagonalLength(): number {
+            let boundingBox = this.boundingBox;
+            let size = boundingBox.maximumWorld.subtract(boundingBox.minimumWorld);
+		    return size.length();
+		}     
+
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
             return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
         }

@@ -133,7 +133,6 @@ module INSPECTOR {
         /**
          * Add an event listener on the item : 
          * - one click display details
-         * - on mouse hover the item is highlighted
          */
         protected _addEvent() {
             this._div.addEventListener('click', (e) => {
@@ -146,28 +145,6 @@ module INSPECTOR {
                 }
                 e.stopPropagation();
             });
-
-            // Highlight on mouse over
-            this._div.addEventListener('mouseover', (e) => {
-                this._tab.highlightNode(this);
-                e.stopPropagation();
-            });
-            // Remove highlight on mouse out
-            this._div.addEventListener('mouseout', (e) => {
-                this._tab.highlightNode();
-            });
-        }
-
-        /** Highlight or downplay this node */
-        public highlight(b: boolean) {
-            // Remove highlight for all children 
-            if (!b) {
-                for (let child of this.children) {
-                    child._adapter.highlight(b);
-                }
-            }
-            // Highlight this node
-            this._adapter.highlight(b);
         }
 
         /** Returns true if the node is folded, false otherwise */

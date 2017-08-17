@@ -713,7 +713,7 @@
         public _activate(renderId: number): void {
             this._renderId = renderId;
         }
-
+   
         /**
          * Returns the last update of the World matrix
          * Returns a Matrix.  

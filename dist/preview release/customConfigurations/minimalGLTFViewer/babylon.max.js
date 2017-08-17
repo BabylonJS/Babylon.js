@@ -7448,6 +7448,9 @@ var BABYLON;
             this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
+            // Deterministic lockstepMaxSteps
+            this._deterministicLockstep = false;
+            this._lockstepMaxSteps = 4;
             // FPS
             this._performanceMonitor = new BABYLON.PerformanceMonitor();
             this._fps = 60;
@@ -7500,6 +7503,12 @@ var BABYLON;
                 if (antialias != null) {
                     options.antialias = antialias;
                 }
+                if (options.deterministicLockstep === undefined) {
+                    options.deterministicLockstep = false;
+                }
+                if (options.lockstepMaxSteps === undefined) {
+                    options.lockstepMaxSteps = 4;
+                }
                 if (options.preserveDrawingBuffer === undefined) {
                     options.preserveDrawingBuffer = false;
                 }
@@ -7509,6 +7518,8 @@ var BABYLON;
                 if (options.stencil === undefined) {
                     options.stencil = true;
                 }
+                this._deterministicLockstep = options.deterministicLockstep;
+                this._lockstepMaxSteps = options.lockstepMaxSteps;
                 // GL
                 if (!options.disableWebGL2Support) {
                     try {
@@ -7590,7 +7601,7 @@ var BABYLON;
             // Constants
             this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
             this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.         
+            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
             this._gl.DEPTH24_STENCIL8 = 35056;
             // Extensions
             this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
@@ -7618,7 +7629,7 @@ var BABYLON;
             }
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
-            // Vertex array object 
+            // Vertex array object
             if (this._webGLVersion > 1) {
                 this._caps.vertexArrayObject = true;
             }
@@ -7634,7 +7645,7 @@ var BABYLON;
                     this._caps.vertexArrayObject = false;
                 }
             }
-            // Instances count            
+            // Instances count
             if (this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
             }
@@ -7652,7 +7663,7 @@ var BABYLON;
             }
             // Intelligently add supported compressed formats in order to check for.
             // Check for ASTC support first as it is most powerful and to be very cross platform.
-            // Next PVRTC & DXT, which are probably superior to ETC1/2.  
+            // Next PVRTC & DXT, which are probably superior to ETC1/2.
             // Likely no hardware which supports both PVR & DXT, so order matters little.
             // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
             if (this._caps.astc)
@@ -8155,6 +8166,12 @@ var BABYLON;
             for (var index = 0; index < this._maxTextureChannels; index++) {
                 this._activeTexturesCache[index] = null;
             }
+        };
+        Engine.prototype.isDeterministicLockStep = function () {
+            return this._deterministicLockstep;
+        };
+        Engine.prototype.getLockstepMaxSteps = function () {
+            return this._lockstepMaxSteps;
         };
         Engine.prototype.getGlInfo = function () {
             return {
@@ -9247,7 +9264,7 @@ var BABYLON;
         Engine.prototype.setState = function (culling, zOffset, force, reverseSide) {
             if (zOffset === void 0) { zOffset = 0; }
             if (reverseSide === void 0) { reverseSide = false; }
-            // Culling        
+            // Culling
             var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
             var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
             var cullFace = this.cullBackFaces ? showSide : hideSide;
@@ -9355,7 +9372,7 @@ var BABYLON;
             }
             this.resetTextureCache();
             this._currentEffect = null;
-            // 6/8/2017: deltakosh: Should not be required anymore. 
+            // 6/8/2017: deltakosh: Should not be required anymore.
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
             if (bruteForce) {
                 this._currentProgram = null;
@@ -11634,6 +11651,18 @@ var BABYLON;
                 return false;
             return this.boundingBox.isInFrustum(frustumPlanes);
         };
+        Object.defineProperty(BoundingInfo.prototype, "diagonalLength", {
+            /**
+             * Gets the world distance between the min and max points of the bounding box
+             */
+            get: function () {
+                var boundingBox = this.boundingBox;
+                var size = boundingBox.maximumWorld.subtract(boundingBox.minimumWorld);
+                return size.length();
+            },
+            enumerable: true,
+            configurable: true
+        });
         BoundingInfo.prototype.isCompletelyInFrustum = function (frustumPlanes) {
             return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
         };
@@ -16046,6 +16075,16 @@ var BABYLON;
             */
             this.onMeshRemovedObservable = new BABYLON.Observable();
             /**
+            * An event triggered before calculating deterministic simulation step
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeStepObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after calculating deterministic simulation step
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterStepObservable = new BABYLON.Observable();
+            /**
              * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
              * The RenderinGroupInfo class contains all the information about the context in which the observable is called
              * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -16074,6 +16113,10 @@ var BABYLON;
             this._previousStartingPointerPosition = new BABYLON.Vector2(0, 0);
             this._startingPointerTime = 0;
             this._previousStartingPointerTime = 0;
+            // Deterministic lockstep
+            this._timeAccumulator = 0;
+            this._currentStepId = 0;
+            this._currentInternalStep = 0;
             // Coordinate system
             /**
             * use right-handed coordinate system on this scene.
@@ -16376,6 +16419,18 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Scene.prototype.setStepId = function (newStepId) {
+            this._currentStepId = newStepId;
+        };
+        ;
+        Scene.prototype.getStepId = function () {
+            return this._currentStepId;
+        };
+        ;
+        Scene.prototype.getInternalStep = function () {
+            return this._currentInternalStep;
+        };
+        ;
         Object.defineProperty(Scene.prototype, "fogEnabled", {
             get: function () {
                 return this._fogEnabled;
@@ -17398,7 +17453,7 @@ var BABYLON;
         Scene.prototype.removeMesh = function (toRemove) {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if mesh found
                 this.meshes.splice(index, 1);
             }
             //notify the collision coordinator
@@ -17411,7 +17466,7 @@ var BABYLON;
         Scene.prototype.removeSkeleton = function (toRemove) {
             var index = this.skeletons.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if found 
+                // Remove from the scene if found
                 this.skeletons.splice(index, 1);
             }
             return index;
@@ -17419,7 +17474,7 @@ var BABYLON;
         Scene.prototype.removeMorphTargetManager = function (toRemove) {
             var index = this.morphTargetManagers.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if found 
+                // Remove from the scene if found
                 this.morphTargetManagers.splice(index, 1);
             }
             return index;
@@ -17427,7 +17482,7 @@ var BABYLON;
         Scene.prototype.removeLight = function (toRemove) {
             var index = this.lights.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if mesh found
                 this.lights.splice(index, 1);
                 this.sortLightsByPriority();
             }
@@ -17437,7 +17492,7 @@ var BABYLON;
         Scene.prototype.removeCamera = function (toRemove) {
             var index = this.cameras.indexOf(toRemove);
             if (index !== -1) {
-                // Remove from the scene if mesh found 
+                // Remove from the scene if mesh found
                 this.cameras.splice(index, 1);
             }
             // Remove from activeCameras
@@ -18309,15 +18364,50 @@ var BABYLON;
             if (this.simplificationQueue && !this.simplificationQueue.running) {
                 this.simplificationQueue.executeNext();
             }
-            // Animations
-            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-            this._animationRatio = deltaTime * (60.0 / 1000.0);
-            this._animate();
-            // Physics
-            if (this._physicsEngine) {
-                BABYLON.Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._step(deltaTime / 1000.0);
-                BABYLON.Tools.EndPerformanceCounter("Physics");
+            if (this._engine.isDeterministicLockStep()) {
+                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) / 1000;
+                var defaultTimeStep = (60.0 / 1000.0);
+                if (this._physicsEngine) {
+                    defaultTimeStep = this._physicsEngine.getTimeStep();
+                }
+                var maxSubSteps = this._engine.getLockstepMaxSteps();
+                this._timeAccumulator += deltaTime;
+                // compute the amount of fixed steps we should have taken since the last step
+                var internalSteps = Math.floor(this._timeAccumulator / defaultTimeStep);
+                internalSteps = Math.min(internalSteps, maxSubSteps);
+                for (this._currentInternalStep = 0; this._currentInternalStep < internalSteps; this._currentInternalStep++) {
+                    this.onBeforeStepObservable.notifyObservers(this);
+                    // Animations
+                    this._animationRatio = defaultTimeStep * (60.0 / 1000.0);
+                    this._animate();
+                    // Physics
+                    if (this._physicsEngine) {
+                        BABYLON.Tools.StartPerformanceCounter("Physics");
+                        this._physicsEngine._step(defaultTimeStep);
+                        BABYLON.Tools.EndPerformanceCounter("Physics");
+                    }
+                    this._timeAccumulator -= defaultTimeStep;
+                    this.onAfterStepObservable.notifyObservers(this);
+                    this._currentStepId++;
+                    if ((internalSteps > 1) && (this._currentInternalStep != internalSteps - 1)) {
+                        // Q: can this be optimized by putting some code in the afterStep callback?
+                        // I had to put this code here, otherwise mesh attached to bones of another mesh skeleton,
+                        // would return incorrect positions for internal stepIds (non-rendered steps)
+                        this._evaluateActiveMeshes();
+                    }
+                }
+            }
+            else {
+                // Animations
+                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
+                this._animationRatio = deltaTime * (60.0 / 1000.0);
+                this._animate();
+                // Physics
+                if (this._physicsEngine) {
+                    BABYLON.Tools.StartPerformanceCounter("Physics");
+                    this._physicsEngine._step(deltaTime / 1000.0);
+                    BABYLON.Tools.EndPerformanceCounter("Physics");
+                }
             }
             // Before render
             this.onBeforeRenderObservable.notifyObservers(this);
@@ -18607,7 +18697,7 @@ var BABYLON;
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
             }
-            // Smart arrays            
+            // Smart arrays
             if (this.activeCamera) {
                 this.activeCamera._activeMeshes.dispose();
                 this.activeCamera = null;
@@ -25026,7 +25116,12 @@ var BABYLON;
         };
         Material.prototype._afterBind = function (mesh) {
             this._scene._cachedMaterial = this;
-            this._scene._cachedVisibility = mesh.visibility;
+            if (mesh) {
+                this._scene._cachedVisibility = mesh.visibility;
+            }
+            else {
+                this._scene._cachedVisibility = 1;
+            }
             this.onBindObservable.notifyObservers(mesh);
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
@@ -31669,6 +31764,7 @@ var BABYLON;
             _this._viewMatrix = new BABYLON.Matrix();
             // Panning
             _this.panningAxis = new BABYLON.Vector3(1, 1, 0);
+            _this.onMeshTargetChangedObservable = new BABYLON.Observable();
             _this.checkCollisions = false;
             _this.collisionRadius = new BABYLON.Vector3(0.5, 0.5, 0.5);
             _this._previousPosition = BABYLON.Vector3.Zero();
@@ -32109,6 +32205,7 @@ var BABYLON;
                 }
                 this._targetHost = target;
                 this._target = this._getTargetPosition();
+                this.onMeshTargetChangedObservable.notifyObservers(this._targetHost);
             }
             else {
                 var newTarget = target;
@@ -32118,6 +32215,7 @@ var BABYLON;
                 }
                 this._target = newTarget;
                 this._targetBoundingCenter = null;
+                this.onMeshTargetChangedObservable.notifyObservers(null);
             }
             this.rebuildAnglesAndRadius();
         };
@@ -49694,16 +49792,14 @@ var BABYLON;
     var FramingBehavior = (function () {
         function FramingBehavior() {
             this._mode = FramingBehavior.IgnoreBoundsSizeMode;
-            this._radius = 0;
-            this._elevation = 0;
+            this._radiusOffset = 0;
+            this._elevation = 0.3;
             this._positionY = 0;
-            this._defaultElevation = 0;
-            this._elevationReturnTime = 2;
-            this._elevationReturnWaitTime = 0;
+            this._defaultElevation = 0.3;
+            this._elevationReturnTime = 1500;
+            this._elevationReturnWaitTime = 1000;
             this._zoomStopsAnimation = false;
-            this._framingTime = 1.0;
-            this._easingFunction = new BABYLON.ExponentialEase();
-            this._easingMode = BABYLON.EasingFunction.EASINGMODE_EASEINOUT;
+            this._framingTime = 1500;
             this._isPointerDown = false;
             this._lastFrameTime = null;
             this._lastInteractionTime = -Infinity;
@@ -49715,38 +49811,6 @@ var BABYLON;
         Object.defineProperty(FramingBehavior.prototype, "name", {
             get: function () {
                 return "Framing";
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FramingBehavior.prototype, "easingFunction", {
-            /**
-             * Gets the easing function to use for transitions
-             */
-            get: function () {
-                return this._easingFunction;
-            },
-            /**
-             * Sets the easing function to use for transitions
-             */
-            set: function (value) {
-                this._easingFunction = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FramingBehavior.prototype, "easingMode", {
-            /**
-             * Gets the easing function to use for transitions
-             */
-            get: function () {
-                return this._easingMode;
-            },
-            /**
-             * Sets the easing function to use for transitions
-             */
-            set: function (value) {
-                this._easingMode = value;
             },
             enumerable: true,
             configurable: true
@@ -49767,31 +49831,31 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(FramingBehavior.prototype, "radius", {
+        Object.defineProperty(FramingBehavior.prototype, "radiusOffset", {
             /**
-             * Gets the radius of the camera relative to the framed model's bounding box.
+             * Gets the radius of the camera relative to the target's bounding box.
              */
             get: function () {
-                return this._radius;
+                return this._radiusOffset;
             },
             /**
-             * Sets the radius of the camera relative to the framed model's bounding box.
+             * Sets the radius of the camera relative to the target's bounding box.
              */
             set: function (radius) {
-                this._radius = radius;
+                this._radiusOffset = radius;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(FramingBehavior.prototype, "elevation", {
             /**
-             * Gets the elevation of the camera from the framed model, in radians.
+             * Gets the elevation of the camera from the target, in radians.
              */
             get: function () {
                 return this._elevation;
             },
             /**
-             * Sets the elevation of the camera from the framed model, in radians.
+             * Sets the elevation of the camera from the target, in radians.
              */
             set: function (elevation) {
                 this._elevation = elevation;
@@ -49912,6 +49976,11 @@ var BABYLON;
                     _this._isPointerDown = false;
                 }
             });
+            this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add(function (mesh) {
+                if (mesh) {
+                    _this.zoomOnMesh(mesh);
+                }
+            });
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(function () {
                 // Stop the animation if there is user interaction and the animation should stop for this interaction
                 _this._applyUserInteraction();
@@ -49924,6 +49993,97 @@ var BABYLON;
             var scene = this._attachedCamera.getScene();
             scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
             camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+            camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+        };
+        /**
+         * Targets the given mesh and updates zoom level accordingly.
+         * @param mesh  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param applyToLowerLimit Optional. Indicates if the calculated target radius should be applied to the
+         *		camera's lower radius limit too.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         */
+        FramingBehavior.prototype.zoomOnMesh = function (mesh, radius, applyToLowerLimit, framingPositionY, focusOnOriginXZ) {
+            if (applyToLowerLimit === void 0) { applyToLowerLimit = false; }
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = true; }
+            if (framingPositionY == null) {
+                framingPositionY = this._positionY;
+            }
+            // sets the radius and lower radius bounds
+            if (radius == null) {
+                // Small delta ensures camera is not always at lower zoom limit.
+                var delta = 0.1;
+                if (this._mode === FramingBehavior.FitFrustumSidesMode) {
+                    var position = this._calculateLowerRadiusFromModelBoundingSphere(mesh, this.radiusOffset);
+                    this._attachedCamera.lowerRadiusLimit = position - delta;
+                    radius = position;
+                }
+                else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
+                    radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh, this.radiusOffset);
+                }
+            }
+            var zoomTarget;
+            var zoomTargetY;
+            mesh.computeWorldMatrix(true);
+            var modelWorldPosition = new BABYLON.Vector3(0, 0, 0);
+            var modelWorldScale = new BABYLON.Vector3(0, 0, 0);
+            mesh.getWorldMatrix().decompose(modelWorldScale, new BABYLON.Quaternion(), modelWorldPosition);
+            //find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
+            var bottom = modelWorldPosition.y + mesh.getBoundingInfo().minimum.y;
+            var top = modelWorldPosition.y + mesh.getBoundingInfo().maximum.y;
+            zoomTargetY = bottom + (top - bottom) * framingPositionY;
+            if (applyToLowerLimit) {
+                this._attachedCamera.lowerRadiusLimit = radius;
+            }
+            if (!this._radiusTransition) {
+                FramingBehavior.EasingFunction.setEasingMode(FramingBehavior.EasingMode);
+                this._radiusTransition = BABYLON.Animation.CreateAnimation("radius", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
+            }
+            // transition to new radius
+            this._animatables.push(BABYLON.Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 60, this._radiusTransition, this._framingTime));
+            if (focusOnOriginXZ) {
+                zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
+            }
+            else {
+                zoomTarget = new BABYLON.Vector3(modelWorldPosition.x, zoomTargetY, modelWorldPosition.z);
+            }
+            // if (!this._vectorTransition) {
+            // 	FramingBehavior.EasingFunction.setEasingMode(FramingBehavior.EasingMode);
+            // 	this._vectorTransition = Animation.CreateAnimation("target", Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
+            // }			
+            // this._animatables.push(Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 
+            // 						60, this._vectorTransition, this._framingTime));
+        };
+        /**
+         * Calculates the lowest radius for the camera based on the bounding box of the mesh.
+         * @param mesh The mesh on which to base the calculation. mesh boundingInfo used to estimate necessary
+         *			  frustum width.
+         * @param framingRadius An additional factor to add to the return camera radius.
+         * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
+         *		 to fully enclose the mesh in the viewing frustum.
+         */
+        FramingBehavior.prototype._calculateLowerRadiusFromModelBoundingSphere = function (mesh, framingRadius) {
+            var boxVectorGlobalDiagonal = mesh.getBoundingInfo().diagonalLength;
+            var frustumSlope = this._getFrustumSlope();
+            // Formula for setting distance
+            // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
+            var radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
+            // Horizon distance
+            var radius = radiusWithoutFraming * framingRadius;
+            var distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.x * frustumSlope.x));
+            var distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
+            var distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
+            var camera = this._attachedCamera;
+            if (camera.lowerRadiusLimit && this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
+                // Don't exceed the requested limit
+                distance = distance < camera.lowerRadiusLimit ? camera.lowerRadiusLimit : distance;
+            }
+            // Don't exceed the upper radius limit
+            if (camera.upperRadiusLimit) {
+                distance = distance > camera.upperRadiusLimit ? camera.upperRadiusLimit : distance;
+            }
+            return distance;
         };
         /**
          * Keeps the camera above the ground plane. If the user pulls the camera below the ground plane, the camera
@@ -49940,13 +50100,33 @@ var BABYLON;
                 //Transition to new position
                 this.stopAllAnimations();
                 if (!this._betaTransition) {
-                    this.easingFunction.setEasingMode(this.easingMode);
-                    this._betaTransition = BABYLON.Animation.CreateAnimation("beta", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, this.easingFunction);
+                    FramingBehavior.EasingFunction.setEasingMode(FramingBehavior.EasingMode);
+                    this._betaTransition = BABYLON.Animation.CreateAnimation("beta", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
                 }
-                BABYLON.Animation.TransitionTo("beta", defaultBeta, this._attachedCamera, this._attachedCamera.getScene(), 60, this._betaTransition, this._elevationReturnTime, function () {
+                this._animatables.push(BABYLON.Animation.TransitionTo("beta", defaultBeta, this._attachedCamera, this._attachedCamera.getScene(), 60, this._betaTransition, this._elevationReturnTime, function () {
+                    _this._clearAnimationLocks();
                     _this.stopAllAnimations();
-                });
+                }));
             }
+        };
+        /**
+         * Returns the frustum slope based on the canvas ratio and camera FOV
+         * @returns The frustum slope represented as a Vector2 with X and Y slopes
+         */
+        FramingBehavior.prototype._getFrustumSlope = function () {
+            // Calculate the viewport ratio
+            // Aspect Ratio is Height/Width.
+            var camera = this._attachedCamera;
+            var engine = camera.getScene().getEngine();
+            var aspectRatio = engine.getAspectRatio(camera);
+            // Camera FOV is the vertical field of view (top-bottom) in radians.
+            // Slope of the frustum top/bottom planes in view space, relative to the forward vector.
+            var frustumSlopeY = Math.tan(camera.fov / 2);
+            // Slope of the frustum left/right planes in view space, relative to the forward vector.
+            // Provides the amount that one side (e.g. left) of the frustum gets wider for every unit
+            // along the forward vector.
+            var frustumSlopeX = frustumSlopeY / aspectRatio;
+            return new BABYLON.Vector2(frustumSlopeX, frustumSlopeY);
         };
         /**
          * Returns true if user is scrolling.
@@ -49970,12 +50150,19 @@ var BABYLON;
             return this._zoomStopsAnimation ? zoomHasHitLimit : this._userIsZooming();
         };
         /**
+         * Removes all animation locks. Allows new animations to be added to any of the arcCamera properties.
+         */
+        FramingBehavior.prototype._clearAnimationLocks = function () {
+            this._betaIsAnimating = false;
+        };
+        /**
          *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
          */
         FramingBehavior.prototype._applyUserInteraction = function () {
             if (this._userIsMoving() && !this._shouldAnimationStopForInteraction()) {
                 this._lastInteractionTime = BABYLON.Tools.Now;
                 this.stopAllAnimations();
+                this._clearAnimationLocks();
             }
         };
         /**
@@ -49998,6 +50185,14 @@ var BABYLON;
                 this._attachedCamera.inertialPanningY !== 0 ||
                 this._isPointerDown;
         };
+        /**
+         * The easing function used by animations
+         */
+        FramingBehavior.EasingFunction = new BABYLON.ExponentialEase();
+        /**
+         * The easing mode used by animations
+         */
+        FramingBehavior.EasingMode = BABYLON.EasingFunction.EASINGMODE_EASEINOUT;
         // Statics
         /**
          * The camera can move all the way towards the model.
@@ -50021,14 +50216,6 @@ var BABYLON;
      */
     var BouncingBehavior = (function () {
         function BouncingBehavior() {
-            /**
-             * The easing function to use when the camera bounces
-             */
-            this.bounceEasingFunction = new BABYLON.BackEase(0.3);
-            /**
-             * The easing mode to use when the camera bounces
-             */
-            this.bounceEasingMode = BABYLON.EasingFunction.EASINGMODE_EASEOUT;
             /**
              * The duration of the animation, in milliseconds
              */
@@ -50088,8 +50275,8 @@ var BABYLON;
         BouncingBehavior.prototype._applyBoundRadiusAnimation = function (radiusDelta) {
             var _this = this;
             if (!this._radiusBounceTransition) {
-                this.bounceEasingFunction.setEasingMode(this.bounceEasingMode);
-                this._radiusBounceTransition = BABYLON.Animation.CreateAnimation("radius", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, this.bounceEasingFunction);
+                BouncingBehavior.EasingFunction.setEasingMode(BouncingBehavior.EasingMode);
+                this._radiusBounceTransition = BABYLON.Animation.CreateAnimation("radius", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, BouncingBehavior.EasingFunction);
             }
             // Prevent zoom until bounce has completed
             this._cachedWheelPrecision = this._attachedCamera.wheelPrecision;
@@ -50118,6 +50305,14 @@ var BABYLON;
                 this._animatables.shift();
             }
         };
+        /**
+         * The easing function used by animations
+         */
+        BouncingBehavior.EasingFunction = new BABYLON.BackEase(0.3);
+        /**
+         * The easing mode used by animations
+         */
+        BouncingBehavior.EasingMode = BABYLON.EasingFunction.EASINGMODE_EASEOUT;
         return BouncingBehavior;
     }());
     BABYLON.BouncingBehavior = BouncingBehavior;
@@ -50147,13 +50342,13 @@ var BABYLON;
         });
         Object.defineProperty(AutoRotationBehavior.prototype, "zoomStopsAnimation", {
             /**
-            * Gets the flag that indicates if user zooming should stop model animation.
+            * Gets the flag that indicates if user zooming should stop animation.
             */
             get: function () {
                 return this._zoomStopsAnimation;
             },
             /**
-            * Sets the flag that indicates if user zooming should stop model animation.
+            * Sets the flag that indicates if user zooming should stop animation.
             */
             set: function (flag) {
                 this._zoomStopsAnimation = flag;
