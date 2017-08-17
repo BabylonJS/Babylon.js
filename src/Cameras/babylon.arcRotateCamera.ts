@@ -466,6 +466,10 @@ module BABYLON {
             var radiusv3 = this.position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
 
+            if (this.radius === 0) {
+                this.radius = 0.0001; // Just to avoid division by zero
+            }
+
             // Alpha
             this.alpha = Math.acos(radiusv3.x / Math.sqrt(Math.pow(radiusv3.x, 2) + Math.pow(radiusv3.z, 2)));
 
