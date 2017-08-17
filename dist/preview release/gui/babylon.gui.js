@@ -2104,7 +2104,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var DOMImage = Image;
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -2314,7 +2313,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var DOMImage = Image;
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -2519,7 +2517,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var DOMImage = Image;
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -2645,7 +2642,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var DOMImage = Image;
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -3355,7 +3351,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var DOMImage = Image;
 var BABYLON;
 (function (BABYLON) {
     var GUI;

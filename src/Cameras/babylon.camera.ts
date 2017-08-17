@@ -552,6 +552,9 @@
             this.onProjectionMatrixChangedObservable.clear();
             this.onAfterCheckInputsObservable.clear();
 
+            // Inputs
+            this.inputs.clear();
+
             // Animations
             this.getScene().stopAnimation(this);
 

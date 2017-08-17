@@ -229,8 +229,6 @@ module BABYLON {
                 this._onLostFocus = null;
                 this._onContextMenu = null;
             }
-
-            this.camera = null;
         }
 
         getClassName(): string {

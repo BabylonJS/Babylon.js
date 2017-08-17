@@ -214,6 +214,45 @@ module BABYLON {
             }
         }
 
+        private _framingBehavior: FramingBehavior;
+        public get useFramingBehavior(): boolean {
+            return this._framingBehavior != null;
+        }
+
+        public set useFramingBehavior(value: boolean) {
+            if (value === this.useFramingBehavior) {
+                return;
+            }
+
+            if (value) {
+                this._framingBehavior = new FramingBehavior();
+                this.addBehavior(this._framingBehavior);
+            } else {
+                this.removeBehavior(this._framingBehavior);
+                this._framingBehavior = null;
+            }
+        }        
+
+        private _autoRotationBehavior: AutoRotationBehavior;
+        public get useAutoRotationBehavior(): boolean {
+            return this._autoRotationBehavior != null;
+        }
+
+        public set useAutoRotationBehavior(value: boolean) {
+            if (value === this.useAutoRotationBehavior) {
+                return;
+            }
+
+            if (value) {
+                this._autoRotationBehavior = new AutoRotationBehavior();
+                this.addBehavior(this._autoRotationBehavior);
+            } else {
+                this.removeBehavior(this._autoRotationBehavior);
+                this._autoRotationBehavior = null;
+            }
+        }        
+        
+
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
         public checkCollisions = false;

@@ -353,7 +353,6 @@ declare module BABYLON.GUI {
 }
 
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Line extends Control {
         name: string;
@@ -387,7 +386,6 @@ declare module BABYLON.GUI {
 }
 
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Slider extends Control {
         name: string;
@@ -418,7 +416,6 @@ declare module BABYLON.GUI {
 }
 
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Checkbox extends Control {
         name: string;
@@ -439,7 +436,6 @@ declare module BABYLON.GUI {
 }
 
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class RadioButton extends Control {
         name: string;
@@ -548,7 +544,6 @@ declare module BABYLON.GUI {
 }
 
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class ColorPicker extends Control {
         name: string;

@@ -55,6 +55,7 @@ module BABYLON {
                 var input = this.attached[cam];
                 if (input === inputToRemove) {
                     input.detachControl(this.attachedElement);
+                    input.camera = null;
                     delete this.attached[cam];
                     this.rebuildInputCheck();
                 }
@@ -66,6 +67,7 @@ module BABYLON {
                 var input = this.attached[cam];
                 if (input.getClassName() === inputType) {
                     input.detachControl(this.attachedElement);
+                    input.camera = null;
                     delete this.attached[cam];
                     this.rebuildInputCheck();
                 }
@@ -99,7 +101,7 @@ module BABYLON {
             }
         }
 
-        public detachElement(element: HTMLElement) {
+        public detachElement(element: HTMLElement, disconnect = false) {
             if (this.attachedElement !== element) {
                 return;
             }
@@ -107,6 +109,10 @@ module BABYLON {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 this.attached[cam].detachControl(element);
+
+                if (disconnect) {
+                    this.attached[cam].camera = null;
+                }
             }
 
             this.attachedElement = null;
@@ -125,7 +131,7 @@ module BABYLON {
 
         public clear() {
             if (this.attachedElement) {
-                this.detachElement(this.attachedElement);
+                this.detachElement(this.attachedElement, true);
             }
             this.attached = {};
             this.attachedElement = null;
