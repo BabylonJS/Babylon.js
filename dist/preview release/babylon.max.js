@@ -16361,6 +16361,10 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Scene.prototype.setStepId = function (newStepId) {
+            this._currentStepId = newStepId;
+        };
+        ;
         Scene.prototype.getStepId = function () {
             return this._currentStepId;
         };

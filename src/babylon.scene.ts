@@ -500,6 +500,10 @@
             return this._useRightHandedSystem;
         }
 
+        public setStepId(newStepId: number): void {
+            this._currentStepId = newStepId;
+        };
+
         public getStepId(): number {
             return this._currentStepId;
         };
@@ -2965,7 +2969,7 @@
               var internalSteps = Math.floor(this._timeAccumulator / defaultTimeStep);
               internalSteps = Math.min(internalSteps, maxSubSteps);
 
-              for(this._currentInternalStep=0; this._currentInternalStep<internalSteps; this._currentInternalStep++){
+              for(this._currentInternalStep = 0; this._currentInternalStep < internalSteps; this._currentInternalStep++){
 
                 this.onBeforeStepObservable.notifyObservers(this);
 
@@ -2984,7 +2988,7 @@
                 this.onAfterStepObservable.notifyObservers(this);
                 this._currentStepId++;
 
-                if((internalSteps>1) && (this._currentInternalStep != internalSteps-1)) {
+                if((internalSteps > 1) && (this._currentInternalStep != internalSteps - 1)) {
                     // Q: can this be optimized by putting some code in the afterStep callback?
                     // I had to put this code here, otherwise mesh attached to bones of another mesh skeleton,
                     // would return incorrect positions for internal stepIds (non-rendered steps)
