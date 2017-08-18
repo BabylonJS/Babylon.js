@@ -23693,12 +23693,6 @@ var BABYLON;
         Effect.prototype.getCompilationError = function () {
             return this._compilationError;
         };
-        Effect.prototype.getVertexShaderSource = function () {
-            return this._evaluateDefinesOnString(this._engine.getVertexShaderSource(this._program));
-        };
-        Effect.prototype.getFragmentShaderSource = function () {
-            return this._evaluateDefinesOnString(this._engine.getFragmentShaderSource(this._program));
-        };
         // Methods
         Effect.prototype.executeWhenCompiled = function (func) {
             if (this.isReady()) {
@@ -24231,110 +24225,6 @@ var BABYLON;
                 this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
             }
             return this;
-        };
-        Effect.prototype._recombineShader = function (node) {
-            if (node.define) {
-                if (node.condition) {
-                    var defineIndex = this.defines.indexOf("#define " + node.define);
-                    if (defineIndex === -1) {
-                        return null;
-                    }
-                    var nextComma = this.defines.indexOf("\n", defineIndex);
-                    var defineValue = this.defines.substr(defineIndex + 7, nextComma - defineIndex - 7).replace(node.define, "").trim();
-                    var condition = defineValue + node.condition;
-                    if (!eval(condition)) {
-                        return null;
-                    }
-                }
-                else if (node.ndef) {
-                    if (this.defines.indexOf("#define " + node.define) !== -1) {
-                        return null;
-                    }
-                }
-                else if (this.defines.indexOf("#define " + node.define) === -1) {
-                    return null;
-                }
-            }
-            var result = "";
-            for (var index = 0; index < node.children.length; index++) {
-                var line = node.children[index];
-                if (line.children) {
-                    var combined = this._recombineShader(line);
-                    if (combined !== null) {
-                        result += combined + "\r\n";
-                    }
-                    continue;
-                }
-                if (line.length > 0) {
-                    result += line + "\r\n";
-                }
-            }
-            return result;
-        };
-        Effect.prototype._evaluateDefinesOnString = function (shaderString) {
-            var root = {
-                children: []
-            };
-            var currentNode = root;
-            var lines = shaderString.split("\n");
-            for (var index = 0; index < lines.length; index++) {
-                var line = lines[index].trim();
-                // #ifdef
-                var pos = line.indexOf("#ifdef ");
-                if (pos !== -1) {
-                    var define = line.substr(pos + 7);
-                    var newNode = {
-                        condition: null,
-                        ndef: false,
-                        define: define,
-                        children: [],
-                        parent: currentNode
-                    };
-                    currentNode.children.push(newNode);
-                    currentNode = newNode;
-                    continue;
-                }
-                // #ifndef
-                var pos = line.indexOf("#ifndef ");
-                if (pos !== -1) {
-                    var define = line.substr(pos + 8);
-                    newNode = {
-                        condition: null,
-                        define: define,
-                        ndef: true,
-                        children: [],
-                        parent: currentNode
-                    };
-                    currentNode.children.push(newNode);
-                    currentNode = newNode;
-                    continue;
-                }
-                // #if
-                var pos = line.indexOf("#if ");
-                if (pos !== -1) {
-                    var define = line.substr(pos + 4).trim();
-                    var conditionPos = define.indexOf(" ");
-                    newNode = {
-                        condition: define.substr(conditionPos + 1),
-                        define: define.substr(0, conditionPos),
-                        ndef: false,
-                        children: [],
-                        parent: currentNode
-                    };
-                    currentNode.children.push(newNode);
-                    currentNode = newNode;
-                    continue;
-                }
-                // #endif
-                pos = line.indexOf("#endif");
-                if (pos !== -1) {
-                    currentNode = currentNode.parent;
-                    continue;
-                }
-                currentNode.children.push(line);
-            }
-            // Recombine
-            return this._recombineShader(root);
         };
         Effect.ResetCache = function () {
             Effect._baseCache = {};
@@ -35133,6 +35023,7 @@ var BABYLON;
                 if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
                     return;
                 }
+                this._targetHost = null;
                 this._target = newTarget;
                 this._targetBoundingCenter = null;
                 this.onMeshTargetChangedObservable.notifyObservers(null);
@@ -70023,8 +69914,22 @@ var BABYLON;
             if (framingPositionY == null) {
                 framingPositionY = this._positionY;
             }
-            // sets the radius and lower radius bounds
             mesh.computeWorldMatrix(true);
+            var zoomTarget;
+            var center = mesh.getBoundingInfo().boundingSphere.centerWorld;
+            if (focusOnOriginXZ) {
+                zoomTarget = new BABYLON.Vector3(0, center.y, 0);
+            }
+            else {
+                zoomTarget = center.clone();
+            }
+            // if (!this._vectorTransition) {
+            // 	this._vectorTransition = Animation.CreateAnimation("target", Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
+            // }			
+            // this._animatables.push(Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 
+            // 						60, this._vectorTransition, this._framingTime));
+            this._attachedCamera.setTarget(zoomTarget);
+            // sets the radius and lower radius bounds
             if (radius == null) {
                 // Small delta ensures camera is not always at lower zoom limit.
                 var delta = 0.1;
@@ -70037,33 +69942,15 @@ var BABYLON;
                     radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
                 }
             }
-            var zoomTarget;
-            var zoomTargetY;
-            var modelWorldPosition = new BABYLON.Vector3(0, 0, 0);
-            var modelWorldScale = new BABYLON.Vector3(0, 0, 0);
-            mesh.getWorldMatrix().decompose(modelWorldScale, new BABYLON.Quaternion(), modelWorldPosition);
-            //find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
-            var bottom = modelWorldPosition.y + mesh.getBoundingInfo().minimum.y;
-            var top = modelWorldPosition.y + mesh.getBoundingInfo().maximum.y;
-            zoomTargetY = bottom + (top - bottom) * framingPositionY;
             if (applyToLowerLimit) {
                 this._attachedCamera.lowerRadiusLimit = radius;
             }
-            if (focusOnOriginXZ) {
-                zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
-            }
-            else {
-                zoomTarget = new BABYLON.Vector3(modelWorldPosition.x, zoomTargetY, modelWorldPosition.z);
-            }
-            if (!this._vectorTransition) {
-                this._vectorTransition = BABYLON.Animation.CreateAnimation("target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
-            }
-            this._animatables.push(BABYLON.Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 60, this._vectorTransition, this._framingTime));
             // transition to new radius
-            if (!this._radiusTransition) {
-                this._radiusTransition = BABYLON.Animation.CreateAnimation("radius", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
-            }
-            this._animatables.push(BABYLON.Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 60, this._radiusTransition, this._framingTime));
+            // if (!this._radiusTransition) {
+            // 	this._radiusTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
+            // }
+            // this._animatables.push(Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
+            // 						60, this._radiusTransition, this._framingTime));															
         };
         /**
          * Calculates the lowest radius for the camera based on the bounding box of the mesh.
@@ -70079,6 +69966,7 @@ var BABYLON;
             // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
             var radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
             // Horizon distance
+            var sphereRadius = mesh.getBoundingInfo().boundingSphere.radiusWorld;
             var radius = radiusWithoutFraming * this._relativeRadius;
             var distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.x * frustumSlope.x));
             var distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
@@ -70188,7 +70076,7 @@ var BABYLON;
         /**
          * The camera is not allowed to zoom closer to the model than the point at which the adjusted bounding sphere touches the frustum sides
          */
-        FramingBehavior.FitFrustumSidesMode = 0;
+        FramingBehavior.FitFrustumSidesMode = 1;
         return FramingBehavior;
     }());
     BABYLON.FramingBehavior = FramingBehavior;

@@ -66,6 +66,23 @@
         }
         currentScene.activeCamera.attachControl(canvas);
 
+        // Enable camera's behaviors
+        currentScene.activeCamera.useBouncingBehavior = true;
+        currentScene.activeCamera.useAutoRotationBehavior  = true;
+        currentScene.activeCamera.useFramingBehavior = true;
+
+        if (currentScene.meshes.length) {
+            // Let's zoom on the first object with geometry
+            for (var index = 0; index < currentScene.meshes.length; index++) {
+                var mesh = currentScene.meshes[index];
+
+                if (mesh.getTotalVertices()) {
+                    currentScene.activeCamera.setTarget(mesh);
+                    break;
+                }
+            }
+        }
+
         // Environment
         if (currentScene.loadingPluginName === "gltf") {
             var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("Assets/environment.dds", currentScene);
