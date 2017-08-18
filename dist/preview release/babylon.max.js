@@ -23693,12 +23693,6 @@ var BABYLON;
         Effect.prototype.getCompilationError = function () {
             return this._compilationError;
         };
-        Effect.prototype.getVertexShaderSource = function () {
-            return this._evaluateDefinesOnString(this._engine.getVertexShaderSource(this._program));
-        };
-        Effect.prototype.getFragmentShaderSource = function () {
-            return this._evaluateDefinesOnString(this._engine.getFragmentShaderSource(this._program));
-        };
         // Methods
         Effect.prototype.executeWhenCompiled = function (func) {
             if (this.isReady()) {
@@ -24231,110 +24225,6 @@ var BABYLON;
                 this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
             }
             return this;
-        };
-        Effect.prototype._recombineShader = function (node) {
-            if (node.define) {
-                if (node.condition) {
-                    var defineIndex = this.defines.indexOf("#define " + node.define);
-                    if (defineIndex === -1) {
-                        return null;
-                    }
-                    var nextComma = this.defines.indexOf("\n", defineIndex);
-                    var defineValue = this.defines.substr(defineIndex + 7, nextComma - defineIndex - 7).replace(node.define, "").trim();
-                    var condition = defineValue + node.condition;
-                    if (!eval(condition)) {
-                        return null;
-                    }
-                }
-                else if (node.ndef) {
-                    if (this.defines.indexOf("#define " + node.define) !== -1) {
-                        return null;
-                    }
-                }
-                else if (this.defines.indexOf("#define " + node.define) === -1) {
-                    return null;
-                }
-            }
-            var result = "";
-            for (var index = 0; index < node.children.length; index++) {
-                var line = node.children[index];
-                if (line.children) {
-                    var combined = this._recombineShader(line);
-                    if (combined !== null) {
-                        result += combined + "\r\n";
-                    }
-                    continue;
-                }
-                if (line.length > 0) {
-                    result += line + "\r\n";
-                }
-            }
-            return result;
-        };
-        Effect.prototype._evaluateDefinesOnString = function (shaderString) {
-            var root = {
-                children: []
-            };
-            var currentNode = root;
-            var lines = shaderString.split("\n");
-            for (var index = 0; index < lines.length; index++) {
-                var line = lines[index].trim();
-                // #ifdef
-                var pos = line.indexOf("#ifdef ");
-                if (pos !== -1) {
-                    var define = line.substr(pos + 7);
-                    var newNode = {
-                        condition: null,
-                        ndef: false,
-                        define: define,
-                        children: [],
-                        parent: currentNode
-                    };
-                    currentNode.children.push(newNode);
-                    currentNode = newNode;
-                    continue;
-                }
-                // #ifndef
-                var pos = line.indexOf("#ifndef ");
-                if (pos !== -1) {
-                    var define = line.substr(pos + 8);
-                    newNode = {
-                        condition: null,
-                        define: define,
-                        ndef: true,
-                        children: [],
-                        parent: currentNode
-                    };
-                    currentNode.children.push(newNode);
-                    currentNode = newNode;
-                    continue;
-                }
-                // #if
-                var pos = line.indexOf("#if ");
-                if (pos !== -1) {
-                    var define = line.substr(pos + 4).trim();
-                    var conditionPos = define.indexOf(" ");
-                    newNode = {
-                        condition: define.substr(conditionPos + 1),
-                        define: define.substr(0, conditionPos),
-                        ndef: false,
-                        children: [],
-                        parent: currentNode
-                    };
-                    currentNode.children.push(newNode);
-                    currentNode = newNode;
-                    continue;
-                }
-                // #endif
-                pos = line.indexOf("#endif");
-                if (pos !== -1) {
-                    currentNode = currentNode.parent;
-                    continue;
-                }
-                currentNode.children.push(line);
-            }
-            // Recombine
-            return this._recombineShader(root);
         };
         Effect.ResetCache = function () {
             Effect._baseCache = {};
@@ -35133,6 +35023,7 @@ var BABYLON;
                 if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
                     return;
                 }
+                this._targetHost = null;
                 this._target = newTarget;
                 this._targetBoundingCenter = null;
                 this.onMeshTargetChangedObservable.notifyObservers(null);
@@ -36249,7 +36140,7 @@ var BABYLON;
             var endFrame = frameRate * (duration / 1000);
             transition.setKeys([{
                     frame: 0,
-                    value: host[property]
+                    value: host[property].clone ? host[property].clone() : host[property]
                 },
                 {
                     frame: endFrame,
@@ -48299,14 +48190,15 @@ var BABYLON;
             if (this._filesToLoad && this._filesToLoad.length > 0) {
                 var files_1 = [];
                 var folders = [];
+                var items = event.dataTransfer ? event.dataTransfer.items : null;
                 for (var i = 0; i < this._filesToLoad.length; i++) {
                     var fileToLoad = this._filesToLoad[i];
                     var name_1 = fileToLoad.name.toLowerCase();
                     var type = fileToLoad.type;
                     var entry = void 0;
                     fileToLoad.correctName = name_1;
-                    if (event.dataTransfer && event.dataTransfer.items) {
-                        var item = event.dataTransfer.items[i];
+                    if (items) {
+                        var item = items[i];
                         if (item.getAsEntry) {
                             entry = item.getAsEntry();
                         }
@@ -69804,8 +69696,7 @@ var BABYLON;
     var FramingBehavior = (function () {
         function FramingBehavior() {
             this._mode = FramingBehavior.IgnoreBoundsSizeMode;
-            this._relativeRadius = 1.0;
-            this._elevation = 0.3;
+            this._radiusScale = 1.0;
             this._positionY = 0;
             this._defaultElevation = 0.3;
             this._elevationReturnTime = 1500;
@@ -69843,47 +69734,31 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(FramingBehavior.prototype, "relativeRadius", {
+        Object.defineProperty(FramingBehavior.prototype, "radiusScale", {
             /**
-             * Gets the radius of the camera relative to the target's bounding box.
+             * Gets the scale applied to the radius
              */
             get: function () {
-                return this._relativeRadius;
+                return this._radiusScale;
             },
             /**
-             * Sets the radius of the camera relative to the target's bounding box.
+             * Sets the scale applied to the radius (1 by default)
              */
             set: function (radius) {
-                this._relativeRadius = radius;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FramingBehavior.prototype, "elevation", {
-            /**
-             * Gets the elevation of the camera from the target, in radians.
-             */
-            get: function () {
-                return this._elevation;
-            },
-            /**
-             * Sets the elevation of the camera from the target, in radians.
-             */
-            set: function (elevation) {
-                this._elevation = elevation;
+                this._radiusScale = radius;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(FramingBehavior.prototype, "positionY", {
             /**
-             * Gets the Y offset of the primary model from the camera's focus.
+             * Gets the Y offset of the primary mesh from the camera's focus.
              */
             get: function () {
                 return this._positionY;
             },
             /**
-             * Sets the Y offset of the primary model from the camera's focus.
+             * Sets the Y offset of the primary mesh from the camera's focus.
              */
             set: function (positionY) {
                 this._positionY = positionY;
@@ -69945,13 +69820,13 @@ var BABYLON;
         });
         Object.defineProperty(FramingBehavior.prototype, "zoomStopsAnimation", {
             /**
-            * Gets the flag that indicates if user zooming should stop model animation.
+            * Gets the flag that indicates if user zooming should stop animation.
             */
             get: function () {
                 return this._zoomStopsAnimation;
             },
             /**
-            * Sets the flag that indicates if user zooming should stop model animation.
+            * Sets the flag that indicates if user zooming should stop animation.
             */
             set: function (flag) {
                 this._zoomStopsAnimation = flag;
@@ -69961,13 +69836,13 @@ var BABYLON;
         });
         Object.defineProperty(FramingBehavior.prototype, "framingTime", {
             /**
-             * Gets the transition time when framing the model, in milliseconds
+             * Gets the transition time when framing the mesh, in milliseconds
             */
             get: function () {
                 return this._framingTime;
             },
             /**
-             * Sets the transition time when framing the model, in milliseconds
+             * Sets the transition time when framing the mesh, in milliseconds
             */
             set: function (time) {
                 this._framingTime = time;
@@ -70018,13 +69893,26 @@ var BABYLON;
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          */
         FramingBehavior.prototype.zoomOnMesh = function (mesh, radius, applyToLowerLimit, framingPositionY, focusOnOriginXZ) {
-            if (applyToLowerLimit === void 0) { applyToLowerLimit = false; }
-            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = true; }
+            if (applyToLowerLimit === void 0) { applyToLowerLimit = true; }
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
             if (framingPositionY == null) {
                 framingPositionY = this._positionY;
             }
-            // sets the radius and lower radius bounds
             mesh.computeWorldMatrix(true);
+            var zoomTarget;
+            var center = mesh.getBoundingInfo().boundingSphere.centerWorld;
+            if (focusOnOriginXZ) {
+                zoomTarget = new BABYLON.Vector3(0, center.y, 0);
+            }
+            else {
+                zoomTarget = center.clone();
+            }
+            if (!this._vectorTransition) {
+                this._vectorTransition = BABYLON.Animation.CreateAnimation("target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
+            }
+            this._betaIsAnimating = true;
+            this._animatables.push(BABYLON.Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 60, this._vectorTransition, this._framingTime));
+            // sets the radius and lower radius bounds
             if (radius == null) {
                 // Small delta ensures camera is not always at lower zoom limit.
                 var delta = 0.1;
@@ -70037,28 +69925,10 @@ var BABYLON;
                     radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
                 }
             }
-            var zoomTarget;
-            var zoomTargetY;
-            var modelWorldPosition = new BABYLON.Vector3(0, 0, 0);
-            var modelWorldScale = new BABYLON.Vector3(0, 0, 0);
-            mesh.getWorldMatrix().decompose(modelWorldScale, new BABYLON.Quaternion(), modelWorldPosition);
-            //find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
-            var bottom = modelWorldPosition.y + mesh.getBoundingInfo().minimum.y;
-            var top = modelWorldPosition.y + mesh.getBoundingInfo().maximum.y;
-            zoomTargetY = bottom + (top - bottom) * framingPositionY;
             if (applyToLowerLimit) {
-                this._attachedCamera.lowerRadiusLimit = radius;
+                this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld;
+                ;
             }
-            if (focusOnOriginXZ) {
-                zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
-            }
-            else {
-                zoomTarget = new BABYLON.Vector3(modelWorldPosition.x, zoomTargetY, modelWorldPosition.z);
-            }
-            if (!this._vectorTransition) {
-                this._vectorTransition = BABYLON.Animation.CreateAnimation("target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
-            }
-            this._animatables.push(BABYLON.Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 60, this._vectorTransition, this._framingTime));
             // transition to new radius
             if (!this._radiusTransition) {
                 this._radiusTransition = BABYLON.Animation.CreateAnimation("radius", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
@@ -70079,7 +69949,7 @@ var BABYLON;
             // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
             var radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
             // Horizon distance
-            var radius = radiusWithoutFraming * this._relativeRadius;
+            var radius = radiusWithoutFraming * this._radiusScale;
             var distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.x * frustumSlope.x));
             var distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
             var distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
@@ -70158,8 +70028,10 @@ var BABYLON;
         FramingBehavior.prototype.stopAllAnimations = function () {
             this._attachedCamera.animations = [];
             while (this._animatables.length) {
-                this._animatables[0].onAnimationEnd = null;
-                this._animatables[0].stop();
+                if (this._animatables[0]) {
+                    this._animatables[0].onAnimationEnd = null;
+                    this._animatables[0].stop();
+                }
                 this._animatables.shift();
             }
         };
@@ -70182,13 +70054,13 @@ var BABYLON;
         FramingBehavior.EasingMode = BABYLON.EasingFunction.EASINGMODE_EASEINOUT;
         // Statics
         /**
-         * The camera can move all the way towards the model.
+         * The camera can move all the way towards the mesh.
          */
         FramingBehavior.IgnoreBoundsSizeMode = 0;
         /**
-         * The camera is not allowed to zoom closer to the model than the point at which the adjusted bounding sphere touches the frustum sides
+         * The camera is not allowed to zoom closer to the mesh than the point at which the adjusted bounding sphere touches the frustum sides
          */
-        FramingBehavior.FitFrustumSidesMode = 0;
+        FramingBehavior.FitFrustumSidesMode = 1;
         return FramingBehavior;
     }());
     BABYLON.FramingBehavior = FramingBehavior;
@@ -70215,6 +70087,7 @@ var BABYLON;
              * Length of the distance animated by the transition when upper radius is reached
              */
             this.upperRadiusTransitionRange = -2;
+            this._autoTransitionRange = false;
             // Animations
             this._radiusIsAnimating = false;
             this._radiusBounceTransition = null;
@@ -70223,6 +70096,42 @@ var BABYLON;
         Object.defineProperty(BouncingBehavior.prototype, "name", {
             get: function () {
                 return "Bouncing";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BouncingBehavior.prototype, "autoTransitionRange", {
+            /**
+             * Gets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
+             */
+            get: function () {
+                return this._autoTransitionRange;
+            },
+            /**
+             * Sets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
+             * Transition ranges will be set to 5% of the bounding box diagonal in world space
+             */
+            set: function (value) {
+                var _this = this;
+                if (this._autoTransitionRange === value) {
+                    return;
+                }
+                this._autoTransitionRange = value;
+                var camera = this._attachedCamera;
+                if (value) {
+                    this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add(function (mesh) {
+                        if (!mesh) {
+                            return;
+                        }
+                        mesh.computeWorldMatrix(true);
+                        var diagonal = mesh.getBoundingInfo().diagonalLength;
+                        _this.lowerRadiusTransitionRange = diagonal * 0.05;
+                        _this.upperRadiusTransitionRange = diagonal * 0.05;
+                    });
+                }
+                else if (this._onMeshTargetChangedObserver) {
+                    camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+                }
             },
             enumerable: true,
             configurable: true
@@ -70243,6 +70152,9 @@ var BABYLON;
         };
         BouncingBehavior.prototype.detach = function (camera) {
             camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+            if (this._onMeshTargetChangedObserver) {
+                camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+            }
         };
         /**
          * Checks if the camera radius is at the specified limit. Takes into account animation locks.

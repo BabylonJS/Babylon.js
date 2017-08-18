@@ -511,6 +511,7 @@ module BABYLON {
                 if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
                    return;
                 }
+                this._targetHost = null;
                 this._target = newTarget;
                 this._targetBoundingCenter = null;
                 this.onMeshTargetChangedObservable.notifyObservers(null);
