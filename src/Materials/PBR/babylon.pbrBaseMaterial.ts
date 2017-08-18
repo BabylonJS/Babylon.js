@@ -1050,10 +1050,12 @@
             // Matrices
             this.bindOnlyWorldMatrix(world);
 
+            let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+
             // Bones
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
-            if (this._mustRebind(scene, effect, mesh.visibility)) {
+            if (mustRebind) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
 
                 this.bindViewProjection(effect);
@@ -1270,7 +1272,7 @@
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 
-            if (this._mustRebind(scene, effect) || !this.isFrozen) {
+            if (mustRebind || !this.isFrozen) {
                 // Lights
                 if (scene.lightsEnabled && !this._disableLighting) {
                     MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights, this._usePhysicalLightFalloff);
