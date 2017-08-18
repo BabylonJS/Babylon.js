@@ -30,7 +30,6 @@ module INSPECTOR {
             this._meshTab = new MeshTab(this, this._inspector);
             this._tabs.push(new TextureTab(this, this._inspector));
             this._tabs.push(this._meshTab);
-            this._tabs.push(new ShaderTab(this, this._inspector));
             this._tabs.push(new LightTab(this, this._inspector));
             this._tabs.push(new MaterialTab(this, this._inspector));
             if(BABYLON.GUI){

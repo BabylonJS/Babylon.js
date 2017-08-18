@@ -221,13 +221,30 @@ module BABYLON {
 		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
 		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
 		 */
-		public zoomOnMesh(mesh: AbstractMesh, radius?: number, applyToLowerLimit: boolean = false, framingPositionY?: number, focusOnOriginXZ: boolean = true): void {
+		public zoomOnMesh(mesh: AbstractMesh, radius?: number, applyToLowerLimit: boolean = false, framingPositionY?: number, focusOnOriginXZ: boolean = false): void {
 			if (framingPositionY == null) {
 				framingPositionY = this._positionY;
 			}
 
-			// sets the radius and lower radius bounds
 			mesh.computeWorldMatrix(true);
+			
+			let zoomTarget: BABYLON.Vector3;
+			let center = mesh.getBoundingInfo().boundingSphere.centerWorld;
+
+			if (focusOnOriginXZ) {	
+				zoomTarget = new BABYLON.Vector3(0, center.y, 0);
+			} else {
+				zoomTarget = center.clone();
+			}
+
+			if (!this._vectorTransition) {
+				this._vectorTransition = Animation.CreateAnimation("target", Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
+			}			
+
+			this._animatables.push(Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 
+									60, this._vectorTransition, this._framingTime));
+
+			// sets the radius and lower radius bounds
 			if (radius == null) {
 				// Small delta ensures camera is not always at lower zoom limit.
 				let delta = 0.1;
@@ -240,43 +257,17 @@ module BABYLON {
 				}
 			}
 
-			let zoomTarget: BABYLON.Vector3;
-			let zoomTargetY: number;
-
-			let modelWorldPosition = new BABYLON.Vector3(0, 0, 0);
-			let modelWorldScale = new BABYLON.Vector3(0, 0, 0);
-
-			mesh.getWorldMatrix().decompose(modelWorldScale, new BABYLON.Quaternion(), modelWorldPosition);
-
-			//find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
-			let bottom = modelWorldPosition.y + mesh.getBoundingInfo().minimum.y;
-			let top = modelWorldPosition.y + mesh.getBoundingInfo().maximum.y;
-			zoomTargetY = bottom + (top - bottom) * framingPositionY;
-
 			if (applyToLowerLimit) {
 				this._attachedCamera.lowerRadiusLimit = radius;
 			}
 
-			if (focusOnOriginXZ) {	
-				zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
-			} else {
-				zoomTarget = new BABYLON.Vector3(modelWorldPosition.x, zoomTargetY, modelWorldPosition.z);
-			}
-
-			if (!this._vectorTransition) {
-				this._vectorTransition = Animation.CreateAnimation("target", Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
-			}			
-
-			this._animatables.push(Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 
-									60, this._vectorTransition, this._framingTime));
-
 			// transition to new radius
-			if (!this._radiusTransition) {
-				this._radiusTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
-			}
+			// if (!this._radiusTransition) {
+			// 	this._radiusTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
+			// }
 
-			this._animatables.push(Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
-									60, this._radiusTransition, this._framingTime));															
+			// this._animatables.push(Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
+			// 						60, this._radiusTransition, this._framingTime));															
 		}	
 		
 		/**
@@ -295,6 +286,7 @@ module BABYLON {
 			let radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
 
 			// Horizon distance
+			let sphereRadius = mesh.getBoundingInfo().boundingSphere.radiusWorld;
 			let radius = radiusWithoutFraming * this._relativeRadius;
 			let distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.x * frustumSlope.x));
 			let distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
@@ -322,8 +314,8 @@ module BABYLON {
 			let timeSinceInteraction = Tools.Now - this._lastInteractionTime;
 			let defaultBeta = Math.PI * 0.5 - this._defaultElevation;
 			let limitBeta = Math.PI * 0.5;
-            
-            // Bring the camera back up if below the ground plane
+			
+			// Bring the camera back up if below the ground plane
 			if (!this._betaIsAnimating && this._attachedCamera.beta > limitBeta && timeSinceInteraction >= this._elevationReturnWaitTime) {
                 this._betaIsAnimating = true;
                 
@@ -416,6 +408,6 @@ module BABYLON {
         /**
          * The camera is not allowed to zoom closer to the model than the point at which the adjusted bounding sphere touches the frustum sides
          */
-        public static FitFrustumSidesMode = 0;
+        public static FitFrustumSidesMode = 1;
     }
 }
