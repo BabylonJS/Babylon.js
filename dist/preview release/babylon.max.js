@@ -11808,7 +11808,7 @@ var BABYLON;
             _this.useOctreeForRenderingSelection = true;
             _this.useOctreeForPicking = true;
             _this.useOctreeForCollisions = true;
-            _this.layerMask = 0x0FFFFFFF;
+            _this._layerMask = 0x0FFFFFFF;
             /**
              * True if the mesh must be rendered in any case.
              */
@@ -12062,6 +12062,20 @@ var BABYLON;
                 }
                 this._applyFog = value;
                 this._markSubMeshesAsMiscDirty();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "layerMask", {
+            get: function () {
+                return this._layerMask;
+            },
+            set: function (value) {
+                if (value === this._layerMask) {
+                    return;
+                }
+                this._layerMask = value;
+                this._resyncLightSources();
             },
             enumerable: true,
             configurable: true
