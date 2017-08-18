@@ -3,14 +3,8 @@
 namespace BabylonExport.Entities
 {
     [DataContract]
-    public class BabylonAbstractMesh: BabylonIAnimatable
+    public class BabylonAbstractMesh: BabylonNode
     {
-        [DataMember]
-        public string id { get; set; }
-
-        [DataMember]
-        public string name { get; set; }
-        
         [DataMember]
         public float[] position { get; set; }
 
@@ -25,24 +19,6 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public BabylonActions actions { get; set; }
-
-        [DataMember]
-        public BabylonAnimation[] animations { get; set; }
-
-        [DataMember]
-        public bool autoAnimate { get; set; }
-
-        [DataMember]
-        public int autoAnimateFrom { get; set; }
-
-        [DataMember]
-        public int autoAnimateTo { get; set; }
-
-        [DataMember]
-        public bool autoAnimateLoop { get; set; }
-
-        [DataMember]
-        public string parentId { get; set; }
 
         public BabylonAbstractMesh()
         {

@@ -48,6 +48,7 @@
             this.chkHidden = new System.Windows.Forms.CheckBox();
             this.butExportAndRun = new System.Windows.Forms.Button();
             this.butClose = new System.Windows.Forms.Button();
+            this.chkGltf = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -57,7 +58,7 @@
             this.butExport.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butExport.Enabled = false;
             this.butExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExport.Location = new System.Drawing.Point(211, 153);
+            this.butExport.Location = new System.Drawing.Point(210, 166);
             this.butExport.Name = "butExport";
             this.butExport.Size = new System.Drawing.Size(197, 27);
             this.butExport.TabIndex = 0;
@@ -116,9 +117,9 @@
             this.treeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView.Location = new System.Drawing.Point(12, 186);
+            this.treeView.Location = new System.Drawing.Point(12, 199);
             this.treeView.Name = "treeView";
-            this.treeView.Size = new System.Drawing.Size(799, 324);
+            this.treeView.Size = new System.Drawing.Size(799, 311);
             this.treeView.TabIndex = 6;
             // 
             // butCancel
@@ -192,7 +193,7 @@
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Location = new System.Drawing.Point(12, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(493, 136);
+            this.groupBox1.Size = new System.Drawing.Size(493, 154);
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
             // 
@@ -245,7 +246,7 @@
             this.butExportAndRun.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butExportAndRun.Enabled = false;
             this.butExportAndRun.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExportAndRun.Location = new System.Drawing.Point(414, 153);
+            this.butExportAndRun.Location = new System.Drawing.Point(413, 166);
             this.butExportAndRun.Name = "butExportAndRun";
             this.butExportAndRun.Size = new System.Drawing.Size(197, 27);
             this.butExportAndRun.TabIndex = 14;
@@ -265,11 +266,24 @@
             this.butClose.UseVisualStyleBackColor = true;
             this.butClose.Click += new System.EventHandler(this.butClose_Click);
             // 
+            // chkGltf
+            // 
+            this.chkGltf.AutoSize = true;
+            this.chkGltf.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkGltf.Location = new System.Drawing.Point(30, 133);
+            this.chkGltf.Name = "chkGltf";
+            this.chkGltf.Size = new System.Drawing.Size(135, 17);
+            this.chkGltf.TabIndex = 17;
+            this.chkGltf.Text = "Generate glTF file";
+            this.chkGltf.UseVisualStyleBackColor = true;
+            this.chkGltf.CheckedChanged += new System.EventHandler(this.chkGltf_CheckedChanged);
+            // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(823, 551);
+            this.Controls.Add(this.chkGltf);
             this.Controls.Add(this.butExportAndRun);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBox2);
@@ -316,5 +330,6 @@
         private System.Windows.Forms.CheckBox chkOnlySelected;
         private System.Windows.Forms.Button butClose;
         private System.Windows.Forms.CheckBox chkBinary;
+        private System.Windows.Forms.CheckBox chkGltf;
     }
 }

@@ -5,6 +5,30 @@ namespace BabylonExport.Entities
     [DataContract]
     public class BabylonTexture
     {
+        public enum AddressMode
+        {
+            CLAMP_ADDRESSMODE = 0,
+            WRAP_ADDRESSMODE = 1,
+            MIRROR_ADDRESSMODE = 2
+        }
+
+        public enum SamplingMode
+        {
+            // Constants
+            NEAREST_NEAREST_MIPLINEAR = 1, // nearest is mag = nearest and min = nearest and mip = linear
+            LINEAR_LINEAR_MIPNEAREST = 2, // Bilinear is mag = linear and min = linear and mip = nearest
+            LINEAR_LINEAR_MIPLINEAR = 3, // Trilinear is mag = linear and min = linear and mip = linear
+            NEAREST_NEAREST_MIPNEAREST = 4,
+            NEAREST_LINEAR_MIPNEAREST = 5,
+            NEAREST_LINEAR_MIPLINEAR = 6,
+            NEAREST_LINEAR = 7,
+            NEAREST_NEAREST = 8,
+            LINEAR_NEAREST_MIPNEAREST = 9,
+            LINEAR_NEAREST_MIPLINEAR = 10,
+            LINEAR_LINEAR = 11,
+            LINEAR_NEAREST = 12
+        }
+
         [DataMember]
         public string name { get; set; }
 
@@ -45,10 +69,10 @@ namespace BabylonExport.Entities
         public float wAng { get; set; }
 
         [DataMember]
-        public int wrapU { get; set; }
+        public AddressMode wrapU { get; set; }
 
         [DataMember]
-        public int wrapV { get; set; }
+        public AddressMode wrapV { get; set; }
 
         [DataMember]
         public int coordinatesIndex { get; set; }
@@ -72,7 +96,7 @@ namespace BabylonExport.Entities
         public string[] extensions { get; set; }
 
         [DataMember]
-        public int samplingMode { get; set; }
+        public SamplingMode samplingMode { get; set; }
 
         public BabylonTexture()
         {
@@ -84,11 +108,11 @@ namespace BabylonExport.Entities
             uAng = 0;
             vAng = 0;
             wAng = 0;
-            wrapU = 1;
-            wrapV = 1;
+            wrapU = AddressMode.WRAP_ADDRESSMODE;
+            wrapV = AddressMode.WRAP_ADDRESSMODE;
             hasAlpha = false;
             coordinatesIndex = 0;
-            samplingMode = 3;
+            samplingMode = SamplingMode.LINEAR_LINEAR_MIPLINEAR;
         }
     }
 }
