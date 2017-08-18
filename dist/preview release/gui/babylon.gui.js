@@ -271,7 +271,7 @@ var BABYLON;
                         && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                         return;
                     }
-                    var camera = scene.activeCamera;
+                    var camera = scene.cameraToUseForPointers || scene.activeCamera;
                     var engine = scene.getEngine();
                     var viewport = camera.viewport;
                     var x = (scene.pointerX - viewport.x * engine.getRenderWidth()) / viewport.width;

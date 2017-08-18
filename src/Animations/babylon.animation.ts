@@ -543,7 +543,6 @@
             if (this.targetPropertyPath.length > 1) {
                 var property = this._target[this.targetPropertyPath[0]];
 
-
                 for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
                     property = property[this.targetPropertyPath[index]];
                 }
