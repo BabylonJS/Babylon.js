@@ -71,6 +71,12 @@
         currentScene.activeCamera.useAutoRotationBehavior  = true;
         currentScene.activeCamera.useFramingBehavior = true;
 
+        var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
+        framingBehavior.framingTime = 0;
+
+        var bouncingBehavior = currentScene.activeCamera.getBehaviorByName("Bouncing");
+        bouncingBehavior.autoTransitionRange = true;        
+
         if (currentScene.meshes.length) {
             // Let's zoom on the first object with geometry
             for (var index = 0; index < currentScene.meshes.length; index++) {
