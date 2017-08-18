@@ -939,9 +939,12 @@ module BABYLON {
             // Matrices        
             this.bindOnlyWorldMatrix(world);
 
+            let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+            
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
-            if (this._mustRebind(scene, effect, mesh.visibility)) {
+            
+            if (mustRebind) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 
                 this.bindViewProjection(effect);
@@ -1107,7 +1110,7 @@ module BABYLON {
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 
-            if (this._mustRebind(scene, effect) || !this.isFrozen) {
+            if (mustRebind || !this.isFrozen) {
                 // Lights
                 if (scene.lightsEnabled && !this._disableLighting) {
                     MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);

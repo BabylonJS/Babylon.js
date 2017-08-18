@@ -41,7 +41,7 @@
             this.getScene()._cachedEffect = effect;
         }
 
-        protected _mustRebind(scene: Scene, effect: Effect, visibility: number = 0) {
+        protected _mustRebind(scene: Scene, effect: Effect, visibility: number = 1) {
             return scene.isCachedMaterialInvalid(this, effect, visibility);
         }
     }
