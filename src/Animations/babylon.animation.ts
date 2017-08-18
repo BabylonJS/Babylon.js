@@ -208,7 +208,7 @@
 
 			transition.setKeys([{
 				frame: 0,
-				value: host[property]
+				value: host[property].clone ? host[property].clone() : host[property]
 			},
 			{
 				frame: endFrame,

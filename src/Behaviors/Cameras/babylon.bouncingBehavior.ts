@@ -32,10 +32,49 @@ module BABYLON {
          */
         public upperRadiusTransitionRange = -2;          
 
+		private _autoTransitionRange = false;
+
+		/**
+		 * Gets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
+		 */
+		public get autoTransitionRange(): boolean {
+			return this._autoTransitionRange;
+		}
+
+		/**
+		 * Sets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
+		 * Transition ranges will be set to 5% of the bounding box diagonal in world space
+		 */
+		public set autoTransitionRange(value: boolean) {
+			if (this._autoTransitionRange === value) {
+				return;
+			}
+
+			this._autoTransitionRange = value;
+
+			let camera = this._attachedCamera;
+
+			if (value) {
+				this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((mesh) => {
+					if (!mesh) {
+						return;
+					}
+
+					mesh.computeWorldMatrix(true);
+					let diagonal = mesh.getBoundingInfo().diagonalLength;
+
+					this.lowerRadiusTransitionRange = diagonal * 0.05;
+					this.upperRadiusTransitionRange = diagonal * 0.05;
+				});
+			} else if (this._onMeshTargetChangedObserver) {
+				camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+			}
+		}
         
         // Connection
         private _attachedCamera: ArcRotateCamera;
-        private _onAfterCheckInputsObserver: Observer<Camera>;
+		private _onAfterCheckInputsObserver: Observer<Camera>;	
+		private _onMeshTargetChangedObserver: Observer<AbstractMesh>;
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
@@ -52,7 +91,10 @@ module BABYLON {
         }
         
         public detach(camera: ArcRotateCamera): void {
-            camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			if (this._onMeshTargetChangedObserver) {
+				camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+			}
         }
 
         // Animations

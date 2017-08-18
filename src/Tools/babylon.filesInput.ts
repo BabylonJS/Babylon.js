@@ -128,6 +128,8 @@
         
                 let files = [];
                 let folders = [];
+                var items = event.dataTransfer ? event.dataTransfer.items : null;
+
                 for (var i = 0; i < this._filesToLoad.length; i++) {
                     let fileToLoad:any =  this._filesToLoad[i];
                     let name = fileToLoad.name.toLowerCase();
@@ -136,8 +138,8 @@
 
                     fileToLoad.correctName = name;
                     
-                    if (event.dataTransfer && event.dataTransfer.items) {
-                        let item = event.dataTransfer.items[i];
+                    if (items) {
+                        let item = items[i];
                         if (item.getAsEntry) {
                             entry = item.getAsEntry();
                         } else if (item.webkitGetAsEntry) {
