@@ -67,6 +67,7 @@
     <Compile Include="BabylonLensFlareSystem.cs" />
     <Compile Include="BabylonLight.cs" />
     <Compile Include="BabylonMaterial.cs" />
+    <Compile Include="BabylonNode.cs" />
     <Compile Include="BabylonPBRMaterial.cs" />
     <Compile Include="BabylonShaderMaterial.cs" />
     <Compile Include="BabylonStandardMaterial.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="BabylonSound.cs" />
     <Compile Include="BabylonSubMesh.cs" />
     <Compile Include="BabylonTexture.cs" />
+    <Compile Include="BabylonQuaternion.cs" />
     <Compile Include="BabylonUniversalCamera.cs" />
     <Compile Include="BabylonVector3.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
