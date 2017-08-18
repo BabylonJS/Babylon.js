@@ -249,7 +249,21 @@
         public useOctreeForPicking = true;
         public useOctreeForCollisions = true;
 
-        public layerMask: number = 0x0FFFFFFF;
+        private _layerMask: number = 0x0FFFFFFF;
+
+        public get layerMask(): number {
+            return this._layerMask;
+        }
+
+        public set layerMask(value: number) {
+            if (value === this._layerMask) {
+                return;
+            }
+
+            this._layerMask = value;
+            this._resyncLightSources();
+        }
+
         /**
          * True if the mesh must be rendered in any case.  
          */

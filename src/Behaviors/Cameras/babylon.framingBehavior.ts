@@ -5,7 +5,7 @@ module BABYLON {
         }
 
         private _mode = FramingBehavior.IgnoreBoundsSizeMode;
-        private _radiusOffset = 0;
+        private _relativeRadius = 1.0;
         private _elevation = 0.3;
         private _positionY = 0;
         private _defaultElevation = 0.3;
@@ -41,15 +41,15 @@ module BABYLON {
 	    /**
 		 * Sets the radius of the camera relative to the target's bounding box.
 		 */
-		public set radiusOffset(radius: number) {
-			this._radiusOffset = radius;
+		public set relativeRadius(radius: number) {
+			this._relativeRadius = radius;
 		}
 
 		/**
 		 * Gets the radius of the camera relative to the target's bounding box.
 		 */
-		public get radiusOffset(): number {
-			return this._radiusOffset;
+		public get relativeRadius(): number {
+			return this._relativeRadius;
 		}
 
 		/**
@@ -165,8 +165,10 @@ module BABYLON {
 
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
-            let scene = this._attachedCamera.getScene();
-
+			let scene = this._attachedCamera.getScene();
+			
+			FramingBehavior.EasingFunction.setEasingMode(FramingBehavior.EasingMode);
+			
             this._onPrePointerObservableObserver = scene.onPrePointerObservable.add((pointerInfoPre) => {
                 if (pointerInfoPre.type === PointerEventTypes.POINTERDOWN) {
                     this._isPointerDown = true;
@@ -225,22 +227,22 @@ module BABYLON {
 			}
 
 			// sets the radius and lower radius bounds
+			mesh.computeWorldMatrix(true);
 			if (radius == null) {
 				// Small delta ensures camera is not always at lower zoom limit.
 				let delta = 0.1;
 				if (this._mode === FramingBehavior.FitFrustumSidesMode) {
-					let position = this._calculateLowerRadiusFromModelBoundingSphere(mesh, this.radiusOffset);
+					let position = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
 					this._attachedCamera.lowerRadiusLimit = position - delta;
 					radius = position;
 				} else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
-					radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh, this.radiusOffset);
+					radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
 				}
 			}
 
 			let zoomTarget: BABYLON.Vector3;
 			let zoomTargetY: number;
 
-			mesh.computeWorldMatrix(true);
 			let modelWorldPosition = new BABYLON.Vector3(0, 0, 0);
 			let modelWorldScale = new BABYLON.Vector3(0, 0, 0);
 
@@ -255,39 +257,36 @@ module BABYLON {
 				this._attachedCamera.lowerRadiusLimit = radius;
 			}
 
-			if (!this._radiusTransition) {
-				FramingBehavior.EasingFunction.setEasingMode(FramingBehavior.EasingMode);
-				this._radiusTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
-			}
-
-			// transition to new radius
-			this._animatables.push(Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
-									60, this._radiusTransition, this._framingTime));
-
 			if (focusOnOriginXZ) {	
 				zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
 			} else {
 				zoomTarget = new BABYLON.Vector3(modelWorldPosition.x, zoomTargetY, modelWorldPosition.z);
 			}
 
-			// if (!this._vectorTransition) {
-			// 	FramingBehavior.EasingFunction.setEasingMode(FramingBehavior.EasingMode);
-			// 	this._vectorTransition = Animation.CreateAnimation("target", Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
-			// }			
+			if (!this._vectorTransition) {
+				this._vectorTransition = Animation.CreateAnimation("target", Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
+			}			
 
-			// this._animatables.push(Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 
-			// 						60, this._vectorTransition, this._framingTime));
+			this._animatables.push(Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 
+									60, this._vectorTransition, this._framingTime));
+
+			// transition to new radius
+			if (!this._radiusTransition) {
+				this._radiusTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
+			}
+
+			this._animatables.push(Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
+									60, this._radiusTransition, this._framingTime));															
 		}	
 		
 		/**
 		 * Calculates the lowest radius for the camera based on the bounding box of the mesh.
 		 * @param mesh The mesh on which to base the calculation. mesh boundingInfo used to estimate necessary
 		 *			  frustum width.
-		 * @param framingRadius An additional factor to add to the return camera radius.
 		 * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
 		 *		 to fully enclose the mesh in the viewing frustum.
 		 */
-		protected _calculateLowerRadiusFromModelBoundingSphere(mesh: AbstractMesh, framingRadius: number): number {
+		protected _calculateLowerRadiusFromModelBoundingSphere(mesh: AbstractMesh): number {
             let boxVectorGlobalDiagonal = mesh.getBoundingInfo().diagonalLength;
 			let frustumSlope: BABYLON.Vector2 = this._getFrustumSlope();
 
@@ -296,7 +295,7 @@ module BABYLON {
 			let radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
 
 			// Horizon distance
-			let radius = radiusWithoutFraming * framingRadius;
+			let radius = radiusWithoutFraming * this._relativeRadius;
 			let distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.x * frustumSlope.x));
 			let distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
 			let distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
@@ -332,7 +331,6 @@ module BABYLON {
                 this.stopAllAnimations();
                 
                 if (!this._betaTransition) {
-                    FramingBehavior.EasingFunction.setEasingMode(FramingBehavior.EasingMode);
                     this._betaTransition = Animation.CreateAnimation("beta", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
                 }
 
@@ -369,30 +367,6 @@ module BABYLON {
 		}		
 
 		/**
-		 * Returns true if user is scrolling. 
-		 * @return true if user is scrolling.
-		 */
-		protected _userIsZooming(): boolean {
-			return this._attachedCamera.inertialRadiusOffset !== 0;
-		}        
-
-		/**
-		 * Indicates if default model animation (rotation) should stop for the current user interaction.
-		 * 
-		 * @return True if the model animation (rotation) should stop when given the current user interaction.
-		 */
-		protected _shouldAnimationStopForInteraction(): boolean {
-			var zoomHasHitLimit = false;
-			if (this._lastFrameRadius === this._attachedCamera.radius && this._attachedCamera.inertialRadiusOffset !== 0) {
-				zoomHasHitLimit = true;
-			}
-
-			// Update the record of previous radius - works as an approx. indicator of hitting radius limits
-			this._lastFrameRadius = this._attachedCamera.radius;
-			return this._zoomStopsAnimation ? zoomHasHitLimit : this._userIsZooming();
-		}        
-
-		/**
 		 * Removes all animation locks. Allows new animations to be added to any of the arcCamera properties.
 		 */
 		private _clearAnimationLocks(): void {
@@ -403,7 +377,7 @@ module BABYLON {
 		 *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
 		 */          
         private _applyUserInteraction(): void {
-			if (this._userIsMoving() && !this._shouldAnimationStopForInteraction()) {
+			if (this._userIsMoving()) {
                 this._lastInteractionTime = Tools.Now;
 				this.stopAllAnimations();				
 				this._clearAnimationLocks();

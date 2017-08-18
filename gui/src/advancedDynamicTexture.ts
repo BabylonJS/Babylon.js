@@ -296,7 +296,7 @@ module BABYLON.GUI {
                     return;
                 }
 
-                let camera = scene.activeCamera;
+                let camera = scene.cameraToUseForPointers || scene.activeCamera;
                 let engine = scene.getEngine();
                 let viewport = camera.viewport;
                 let x = (scene.pointerX - viewport.x * engine.getRenderWidth()) / viewport.width;
