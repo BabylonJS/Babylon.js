@@ -49511,30 +49511,39 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var FilesInput = (function () {
-        /// Register to core BabylonJS object: engine, scene, rendering canvas, callback function when the scene will be loaded,
-        /// loading progress callback and optionnal addionnal logic to call in the rendering loop
-        function FilesInput(p_engine, p_scene, p_canvas, p_sceneLoadedCallback, p_progressCallback, p_additionnalRenderLoopLogicCallback, p_textureLoadingCallback, p_startingProcessingFilesCallback) {
-            this._engine = p_engine;
-            this._canvas = p_canvas;
-            this._currentScene = p_scene;
-            this._sceneLoadedCallback = p_sceneLoadedCallback;
-            this._progressCallback = p_progressCallback;
-            this._additionnalRenderLoopLogicCallback = p_additionnalRenderLoopLogicCallback;
-            this._textureLoadingCallback = p_textureLoadingCallback;
-            this._startingProcessingFilesCallback = p_startingProcessingFilesCallback;
+        function FilesInput(engine, scene, sceneLoadedCallback, progressCallback, additionalRenderLoopLogicCallback, textureLoadingCallback, startingProcessingFilesCallback, onReloadCallback) {
+            this._engine = engine;
+            this._currentScene = scene;
+            this._sceneLoadedCallback = sceneLoadedCallback;
+            this._progressCallback = progressCallback;
+            this._additionalRenderLoopLogicCallback = additionalRenderLoopLogicCallback;
+            this._textureLoadingCallback = textureLoadingCallback;
+            this._startingProcessingFilesCallback = startingProcessingFilesCallback;
+            this._onReloadCallback = onReloadCallback;
         }
-        FilesInput.prototype.monitorElementForDragNDrop = function (p_elementToMonitor) {
+        FilesInput.prototype.monitorElementForDragNDrop = function (elementToMonitor) {
             var _this = this;
-            if (p_elementToMonitor) {
-                this._elementToMonitor = p_elementToMonitor;
-                this._elementToMonitor.addEventListener("dragenter", function (e) { _this.drag(e); }, false);
-                this._elementToMonitor.addEventListener("dragover", function (e) { _this.drag(e); }, false);
-                this._elementToMonitor.addEventListener("drop", function (e) { _this.drop(e); }, false);
+            if (elementToMonitor) {
+                this._elementToMonitor = elementToMonitor;
+                this._dragEnterHandler = function (e) { _this.drag(e); };
+                this._dragOverHandler = function (e) { _this.drag(e); };
+                this._dropHandler = function (e) { _this.drop(e); };
+                this._elementToMonitor.addEventListener("dragenter", this._dragEnterHandler, false);
+                this._elementToMonitor.addEventListener("dragover", this._dragOverHandler, false);
+                this._elementToMonitor.addEventListener("drop", this._dropHandler, false);
             }
         };
+        FilesInput.prototype.dispose = function () {
+            if (!this._elementToMonitor) {
+                return;
+            }
+            this._elementToMonitor.removeEventListener("dragenter", this._dragEnterHandler);
+            this._elementToMonitor.removeEventListener("dragover", this._dragOverHandler);
+            this._elementToMonitor.removeEventListener("drop", this._dropHandler);
+        };
         FilesInput.prototype.renderFunction = function () {
-            if (this._additionnalRenderLoopLogicCallback) {
-                this._additionnalRenderLoopLogicCallback();
+            if (this._additionalRenderLoopLogicCallback) {
+                this._additionalRenderLoopLogicCallback();
             }
             if (this._currentScene) {
                 if (this._textureLoadingCallback) {
@@ -49592,7 +49601,12 @@ var BABYLON;
                     FilesInput.FilesToLoad[name] = files[i];
                 }
             }
-            this.reload();
+            if (this._onReloadCallback) {
+                this._onReloadCallback(this._sceneFileToLoad);
+            }
+            else {
+                this.reload();
+            }
         };
         FilesInput.prototype.loadFiles = function (event) {
             var _this = this;
@@ -49657,7 +49671,6 @@ var BABYLON;
         };
         FilesInput.prototype.reload = function () {
             var _this = this;
-            var that = this;
             // If a ".babylon" file has been provided
             if (this._sceneFileToLoad) {
                 if (this._currentScene) {
@@ -49669,13 +49682,15 @@ var BABYLON;
                     this._currentScene.dispose();
                 }
                 BABYLON.SceneLoader.Load("file:", this._sceneFileToLoad, this._engine, function (newScene) {
-                    that._currentScene = newScene;
+                    _this._currentScene = newScene;
+                    if (_this._sceneLoadedCallback) {
+                        _this._sceneLoadedCallback(_this._sceneFileToLoad, _this._currentScene);
+                    }
                     // Wait for textures and shaders to be ready
-                    that._currentScene.executeWhenReady(function () {
-                        if (that._sceneLoadedCallback) {
-                            that._sceneLoadedCallback(_this._sceneFileToLoad, that._currentScene);
-                        }
-                        that._engine.runRenderLoop(function () { that.renderFunction(); });
+                    _this._currentScene.executeWhenReady(function () {
+                        _this._engine.runRenderLoop(function () {
+                            _this.renderFunction();
+                        });
                     });
                 }, function (progress) {
                     if (_this._progressCallback) {
@@ -49756,13 +49771,13 @@ var BABYLON;
         });
         Object.defineProperty(FramingBehavior.prototype, "positionY", {
             /**
-             * Gets the Y offset of the primary mesh from the camera's focus.
+             * Gets the Y offset of the target mesh from the camera's focus.
              */
             get: function () {
                 return this._positionY;
             },
             /**
-             * Sets the Y offset of the primary mesh from the camera's focus.
+             * Sets the Y offset of the target mesh from the camera's focus.
              */
             set: function (positionY) {
                 this._positionY = positionY;
