@@ -15,6 +15,7 @@
     var currentHelpCounter;
     var currentScene;
     var enableDebugLayer = false;
+    var currentPluginName;
 
     currentHelpCounter = localStorage.getItem("helpcounter");
 
@@ -24,6 +25,8 @@
 
     // Setting up some GLTF values
     BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
+        currentPluginName = plugin.name;
+
         if (plugin.name !== "gltf") {
             return;
         }
@@ -90,7 +93,7 @@
         }
 
         // Environment
-        if (currentScene.loadingPluginName === "gltf") {
+        if (currentPluginName === "gltf") {
             var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("Assets/environment.dds", currentScene);
             hdrTexture.gammaSpace = false;
                         
@@ -121,7 +124,7 @@
         }
     };
 
-    filesInput = new BABYLON.FilesInput(engine, null, canvas, sceneLoaded);
+    filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded);
     filesInput.monitorElementForDragNDrop(canvas);
 
     window.addEventListener("keydown", function (evt) {
