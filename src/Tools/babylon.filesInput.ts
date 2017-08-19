@@ -8,6 +8,7 @@
         private _additionnalRenderLoopLogicCallback;
         private _textureLoadingCallback;
         private _startingProcessingFilesCallback;
+        private _onReloadCallback;
         private _elementToMonitor: HTMLElement;
         public static FilesToLoad: File[] = new Array();
 
@@ -16,8 +17,8 @@
 
         /// Register to core BabylonJS object: engine, scene, rendering canvas, callback function when the scene will be loaded,
         /// loading progress callback and optionnal addionnal logic to call in the rendering loop
-        constructor(p_engine: Engine, p_scene: Scene, p_canvas: HTMLCanvasElement, p_sceneLoadedCallback,
-            p_progressCallback, p_additionnalRenderLoopLogicCallback, p_textureLoadingCallback, p_startingProcessingFilesCallback) {
+        constructor(p_engine: Engine, p_scene: Scene, p_canvas: HTMLCanvasElement, p_sceneLoadedCallback, p_progressCallback,
+            p_additionnalRenderLoopLogicCallback, p_textureLoadingCallback, p_startingProcessingFilesCallback, p_onReloadCallback) {
             this._engine = p_engine;
             this._canvas = p_canvas;
             this._currentScene = p_scene;
@@ -26,6 +27,7 @@
             this._additionnalRenderLoopLogicCallback = p_additionnalRenderLoopLogicCallback;
             this._textureLoadingCallback = p_textureLoadingCallback;
             this._startingProcessingFilesCallback = p_startingProcessingFilesCallback;
+            this._onReloadCallback = p_onReloadCallback;
         }
 
         public monitorElementForDragNDrop(p_elementToMonitor: HTMLElement): void {
@@ -108,7 +110,12 @@
                 }
             }
 
-            this.reload();
+            if (this._onReloadCallback) {
+                this._onReloadCallback(this._sceneFileToLoad);
+            }
+            else {
+                this.reload();
+            }
         }
 
         public loadFiles(event): void {
