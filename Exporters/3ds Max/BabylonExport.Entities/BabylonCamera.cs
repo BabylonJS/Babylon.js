@@ -3,17 +3,8 @@
 namespace BabylonExport.Entities
 {
     [DataContract]
-    public class BabylonCamera : BabylonIAnimatable
+    public class BabylonCamera : BabylonNode
     {
-        [DataMember]
-        public string name { get; set; }
-
-        [DataMember]
-        public string id { get; set; }
-
-        [DataMember]
-        public string parentId { get; set; }
-
         [DataMember]
         public string lockedTargetId { get; set; }
 
@@ -55,21 +46,6 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public float[] ellipsoid { get; set; }
-
-        [DataMember]
-        public bool autoAnimate { get; set; }
-
-        [DataMember]
-        public int autoAnimateFrom { get; set; }
-
-        [DataMember]
-        public int autoAnimateTo { get; set; }
-
-        [DataMember]
-        public bool autoAnimateLoop { get; set; }
-
-        [DataMember]
-        public BabylonAnimation[] animations { get; set; }
 
         [DataMember]
         public int mode { get; set; }

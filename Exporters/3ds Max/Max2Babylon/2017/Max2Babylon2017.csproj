@@ -191,6 +191,11 @@
     <Compile Include="..\Tools\WebServer.cs">
       <Link>Tools\WebServer.cs</Link>
     </Compile>
+    <Compile Include="Exporter\BabylonExporter.GLTFExporter.Material.cs" />
+    <Compile Include="Exporter\BabylonExporter.GLTFExporter.Texture.cs" />
+    <Compile Include="Exporter\BabylonExporter.GLTFExporter.Mesh.cs" />
+    <Compile Include="Exporter\BabylonExporter.GLTFExporter.cs" />
+    <Compile Include="Exporter\GLTFGlobalVertex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -243,6 +248,10 @@
     <ProjectReference Include="..\..\BabylonFileConverter\BabylonFileConverter.csproj">
       <Project>{a6b76356-1d1c-4c82-8199-a6406da85a95}</Project>
       <Name>BabylonFileConverter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GltfExport.Entities\GLTFExport.Entities.csproj">
+      <Project>{65686998-09ac-4a14-b23f-7fce6ba994cf}</Project>
+      <Name>GLTFExport.Entities</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

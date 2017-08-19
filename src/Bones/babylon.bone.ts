@@ -11,6 +11,10 @@ module BABYLON {
         public animations = new Array<Animation>();
         public length: number;
 
+        // Set this value to map this bone to a different index in the transform matrices.
+        // Set this value to -1 to exclude the bone from the transform matrices.
+        public _index: number;
+
         private _skeleton: Skeleton;
         private _localMatrix: Matrix;
         private _restPose: Matrix;
@@ -37,12 +41,13 @@ module BABYLON {
             }
         }
 
-        constructor(public name: string, skeleton: Skeleton, parentBone: Bone = null, matrix?: Matrix, restPose?: Matrix) {
+        constructor(public name: string, skeleton: Skeleton, parentBone: Bone = null, localMatrix?: Matrix, restPose?: Matrix, baseMatrix?: Matrix, index?: number) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
-            this._localMatrix = matrix ? matrix : Matrix.Identity();
-            this._baseMatrix = this._localMatrix.clone();
+            this._localMatrix = localMatrix ? localMatrix : Matrix.Identity();
             this._restPose = restPose ? restPose : this._localMatrix.clone();
+            this._baseMatrix = baseMatrix ? baseMatrix : this._localMatrix.clone();
+            this._index = index;
 
             skeleton.bones.push(this);
 
