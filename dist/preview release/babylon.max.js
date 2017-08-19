@@ -56834,7 +56834,7 @@ var BABYLON;
                 }
                 if (bone._index !== -1) {
                     var mappedIndex = bone._index === undefined ? index : bone._index;
-                    bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), targetMatrix, bone._index * 16);
+                    bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), targetMatrix, mappedIndex * 16);
                 }
             }
             this._identity.copyToArray(targetMatrix, this.bones.length * 16);
