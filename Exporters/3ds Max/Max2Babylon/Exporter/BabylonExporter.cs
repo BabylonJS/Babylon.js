@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Autodesk.Max;
+using BabylonExport.Entities;
+using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Autodesk.Max;
-using BabylonExport.Entities;
-using Newtonsoft.Json;
 using Color = System.Drawing.Color;
-using System.Runtime.InteropServices;
 
 namespace Max2Babylon
 {
@@ -77,7 +75,7 @@ namespace Max2Babylon
             }
         }
 
-        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, bool generateBinary, Form callerForm)
+        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, bool generateBinary, bool exportGltf, Form callerForm)
         {
             var gameConversionManger = Loader.Global.ConversionManager;
             gameConversionManger.CoordSystem = Autodesk.Max.IGameConversionManager.CoordSystem.D3d;
@@ -342,10 +340,15 @@ namespace Max2Babylon
             }
 
             ReportProgressChanged(100);
+
+            // Export glTF
+            if (exportGltf)
+            {
+                ExportGltf(babylonScene, outputFile, generateBinary);
+            }
+
             watch.Stop();
             RaiseMessage(string.Format("Exportation done in {0:0.00}s", watch.ElapsedMilliseconds / 1000.0), Color.Blue);
         }
-
-
     }
 }

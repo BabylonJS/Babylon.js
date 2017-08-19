@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace BabylonExport.Entities
+﻿namespace BabylonExport.Entities
 {
     public interface BabylonIAnimatable
     {
