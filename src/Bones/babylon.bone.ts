@@ -47,7 +47,7 @@ module BABYLON {
             this._localMatrix = localMatrix ? localMatrix : Matrix.Identity();
             this._restPose = restPose ? restPose : this._localMatrix.clone();
             this._baseMatrix = baseMatrix ? baseMatrix : this._localMatrix.clone();
-            this._index = index === undefined ? undefined : index;
+            this._index = index;
 
             skeleton.bones.push(this);
 
