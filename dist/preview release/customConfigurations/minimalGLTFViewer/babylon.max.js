@@ -11779,6 +11779,11 @@ var BABYLON;
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
             _this.position = BABYLON.Vector3.Zero();
+            _this._gl = _this.getEngine()._gl;
+            _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NO_VALUE;
+            _this.occlusionRetryCount = -1;
+            _this.occlusionQuery = _this._gl.createQuery();
+            _this.isOcclusionQueryInProgress = false;
             _this._rotation = BABYLON.Vector3.Zero();
             _this._scaling = BABYLON.Vector3.One();
             _this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
@@ -13807,6 +13812,9 @@ var BABYLON;
         AbstractMesh._BILLBOARDMODE_Y = 2;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
+        AbstractMesh.OCCLUSION_TYPE_NO_VALUE = 0;
+        AbstractMesh.OCCLUSION_TYPE_OPTIMISITC = 1;
+        AbstractMesh.OCCLUSION_TYPE_STRICT = 2;
         AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
         AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
@@ -21450,6 +21458,26 @@ var BABYLON;
          * Returns the Mesh.
          */
         Mesh.prototype.render = function (subMesh, enableAlphaMode) {
+            // check occlusion query in progress
+            if (this.occlusionType !== BABYLON.AbstractMesh.OCCLUSION_TYPE_NO_VALUE && this.isOcclusionQueryInProgress) {
+                console.log("Enter occlusion check");
+                var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE);
+                console.log("isOcclusionQueryAvailable" + isOcclusionQueryAvailable);
+                if (isOcclusionQueryAvailable) {
+                    var occlusionQueryResult = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT);
+                    console.log("occlusionQueryResult" + occlusionQueryResult);
+                    this.isOcclusionQueryInProgress = false;
+                    if (occlusionQueryResult === 1) {
+                        // draw
+                    }
+                    else {
+                        return this;
+                    }
+                }
+                else {
+                    return this;
+                }
+            }
             var scene = this.getScene();
             // Managing instances
             var batch = this._getInstancesRenderList(subMesh._id);
@@ -21507,7 +21535,16 @@ var BABYLON;
                 effectiveMaterial.bind(world, this);
             }
             // Draw
-            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
+            if (this.occlusionType !== BABYLON.AbstractMesh.OCCLUSION_TYPE_NO_VALUE) {
+                console.log("Enter Draw");
+                this._gl.beginQuery(this._gl.ANY_SAMPLES_PASSED, this.occlusionQuery);
+                this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
+                this._gl.endQuery(this._gl.ANY_SAMPLES_PASSED);
+                this.isOcclusionQueryInProgress = true;
+            }
+            else {
+                this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
+            }
             // Unbind
             effectiveMaterial.unbind();
             // Outline - step 2
