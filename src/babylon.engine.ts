@@ -3681,6 +3681,10 @@
 
         private _prepareWebGLTextureContinuation(texture: WebGLTexture, scene: Scene, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void {
             var gl = this._gl;
+            if (!gl) {
+                return;
+            }
+
             var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
 
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -3707,6 +3711,10 @@
             var potHeight = this.needPOTTextures ? Tools.GetExponentOfTwo(height, this.getCaps().maxTextureSize) : height;
 
             var gl = this._gl;
+            if (!gl) {
+                return;
+            }
+
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
