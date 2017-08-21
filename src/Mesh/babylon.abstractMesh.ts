@@ -128,6 +128,7 @@
         protected _gl = this.getEngine()._gl;
         public occlusionType = AbstractMesh.OCCLUSION_TYPE_NO_VALUE;
         public occlusionRetryCount = -1;
+        public isOccluded = false;
         public occlusionQuery = this._gl.createQuery();
         public isOcclusionQueryInProgress = false;
         private _rotation = Vector3.Zero();

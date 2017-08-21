@@ -11782,6 +11782,7 @@ var BABYLON;
             _this._gl = _this.getEngine()._gl;
             _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NO_VALUE;
             _this.occlusionRetryCount = -1;
+            _this.isOccluded = false;
             _this.occlusionQuery = _this._gl.createQuery();
             _this.isOcclusionQueryInProgress = false;
             _this._rotation = BABYLON.Vector3.Zero();
@@ -20492,6 +20493,9 @@ var BABYLON;
             _this._areNormalsFrozen = false; // Will be used by ribbons mainly
             // Will be used to save a source mesh reference, If any
             _this._source = null;
+            _this._vertexBuffers = {};
+            _this.frontColor = new BABYLON.Color3(1, 1, 1);
+            _this.backColor = new BABYLON.Color3(0.1, 0.1, 0.1);
             if (source) {
                 // Source mesh
                 _this._source = source;
@@ -21452,6 +21456,50 @@ var BABYLON;
             }
             return this;
         };
+        Mesh.prototype._prepareRessources = function () {
+            if (this._caaaaolorasaShader) {
+                return;
+            }
+            var scene = this.getScene();
+            this._caaaaolorasaShader = new BABYLON.ShaderMaterial("caaaaolorasaShader", scene, "color", {
+                attributes: ["aaaa"],
+                uniforms: ["world", "viewProjection", "color"]
+            });
+            var engine = scene.getEngine();
+            var boxdata = BABYLON.VertexData.CreateBox({ size: 1.0 });
+            this._vertexBuffers["aaaa"] = new BABYLON.VertexBuffer(engine, boxdata.positions, "aaaa", false);
+            this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
+        };
+        Mesh.prototype.renderOcclusionBoundingMesh = function () {
+            if (this.isOcclusionQueryInProgress) {
+                console.log("Enter occlusion check");
+                var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE);
+                console.log("isOcclusionQueryAvailable " + isOcclusionQueryAvailable);
+                if (isOcclusionQueryAvailable) {
+                    var occlusionQueryResult = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT);
+                    console.log("occlusionQueryResult " + occlusionQueryResult);
+                    this.isOccluded = true;
+                    this.isOcclusionQueryInProgress = false;
+                    if (occlusionQueryResult === 1) {
+                        this.isOccluded = false;
+                        return true;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+            var scene = this.getScene();
+            console.log("Enter Draw Bound");
+            this._gl.beginQuery(this._gl.ANY_SAMPLES_PASSED, this.occlusionQuery);
+            var _boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(scene);
+            _boundingBoxRenderer.showBackLines = false;
+            _boundingBoxRenderer.renderList.push(this._boundingInfo.boundingBox);
+            _boundingBoxRenderer.render();
+            this._gl.endQuery(this._gl.ANY_SAMPLES_PASSED);
+            this.isOcclusionQueryInProgress = true;
+            return false;
+        };
         /**
          * Triggers the draw call for the mesh.
          * Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager.
@@ -21459,24 +21507,12 @@ var BABYLON;
          */
         Mesh.prototype.render = function (subMesh, enableAlphaMode) {
             // check occlusion query in progress
-            if (this.occlusionType !== BABYLON.AbstractMesh.OCCLUSION_TYPE_NO_VALUE && this.isOcclusionQueryInProgress) {
-                console.log("Enter occlusion check");
-                var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE);
-                console.log("isOcclusionQueryAvailable" + isOcclusionQueryAvailable);
-                if (isOcclusionQueryAvailable) {
-                    var occlusionQueryResult = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT);
-                    console.log("occlusionQueryResult" + occlusionQueryResult);
-                    this.isOcclusionQueryInProgress = false;
-                    if (occlusionQueryResult === 1) {
-                        // draw
-                    }
-                    else {
-                        return this;
-                    }
+            if (this.occlusionType !== BABYLON.AbstractMesh.OCCLUSION_TYPE_NO_VALUE) {
+                var isRenderMesh = this.renderOcclusionBoundingMesh();
+                if (!isRenderMesh) {
+                    return;
                 }
-                else {
-                    return this;
-                }
+                console.log("Enter Draw Mesh");
             }
             var scene = this.getScene();
             // Managing instances
@@ -21535,16 +21571,7 @@ var BABYLON;
                 effectiveMaterial.bind(world, this);
             }
             // Draw
-            if (this.occlusionType !== BABYLON.AbstractMesh.OCCLUSION_TYPE_NO_VALUE) {
-                console.log("Enter Draw");
-                this._gl.beginQuery(this._gl.ANY_SAMPLES_PASSED, this.occlusionQuery);
-                this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
-                this._gl.endQuery(this._gl.ANY_SAMPLES_PASSED);
-                this.isOcclusionQueryInProgress = true;
-            }
-            else {
-                this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
-            }
+            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
             // Unbind
             effectiveMaterial.unbind();
             // Outline - step 2
