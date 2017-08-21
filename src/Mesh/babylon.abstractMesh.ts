@@ -10,6 +10,8 @@
         public static OCCLUSION_TYPE_NO_VALUE = 0;
         public static OCCLUSION_TYPE_OPTIMISITC = 1;
         public static OCCLUSION_TYPE_STRICT = 2;
+        public static OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
+        public static OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
 
         public static get BILLBOARDMODE_NONE(): number {
             return AbstractMesh._BILLBOARDMODE_NONE;
@@ -131,6 +133,7 @@
         public isOccluded = false;
         public occlusionQuery = this._gl.createQuery();
         public isOcclusionQueryInProgress = false;
+        public occlusionQueryAlgorithmType= AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
         private _rotation = Vector3.Zero();
         private _rotationQuaternion: Quaternion;
         private _scaling = Vector3.One();

@@ -11785,6 +11785,7 @@ var BABYLON;
             _this.isOccluded = false;
             _this.occlusionQuery = _this._gl.createQuery();
             _this.isOcclusionQueryInProgress = false;
+            _this.occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
             _this._rotation = BABYLON.Vector3.Zero();
             _this._scaling = BABYLON.Vector3.One();
             _this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
@@ -13816,6 +13817,8 @@ var BABYLON;
         AbstractMesh.OCCLUSION_TYPE_NO_VALUE = 0;
         AbstractMesh.OCCLUSION_TYPE_OPTIMISITC = 1;
         AbstractMesh.OCCLUSION_TYPE_STRICT = 2;
+        AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
+        AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
         AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
         AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
@@ -20448,6 +20451,72 @@ var BABYLON;
         return _InstancesBatch;
     }());
     BABYLON._InstancesBatch = _InstancesBatch;
+    var OcclusionBoundingBoxRenderer = (function () {
+        function OcclusionBoundingBoxRenderer(scene) {
+            this.frontColor = new BABYLON.Color3(1, 1, 1);
+            this.backColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            this._vertexBuffers = {};
+            this._scene = scene;
+        }
+        OcclusionBoundingBoxRenderer.prototype._prepareRessources = function () {
+            if (this._colorShader) {
+                return;
+            }
+            this._colorShader = new BABYLON.ShaderMaterial("colorShader", this._scene, "color", {
+                attributes: [BABYLON.VertexBuffer.PositionKind],
+                uniforms: ["world", "viewProjection", "color"]
+            });
+            var engine = this._scene.getEngine();
+            var boxdata = BABYLON.VertexData.CreateBox({ size: 1.0 });
+            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = new BABYLON.VertexBuffer(engine, boxdata.positions, BABYLON.VertexBuffer.PositionKind, false);
+            this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
+        };
+        OcclusionBoundingBoxRenderer.prototype.render = function (mesh) {
+            this._prepareRessources();
+            if (!this._colorShader.isReady()) {
+                return;
+            }
+            var engine = this._scene.getEngine();
+            engine.setDepthWrite(false);
+            engine.setColorWrite(false);
+            this._colorShader._preBind();
+            var boundingBox = mesh._boundingInfo.boundingBox;
+            var min = boundingBox.minimum;
+            var max = boundingBox.maximum;
+            var diff = max.subtract(min);
+            var median = min.add(diff.scale(0.5));
+            var worldMatrix = BABYLON.Matrix.Scaling(diff.x, diff.y, diff.z)
+                .multiply(BABYLON.Matrix.Translation(median.x, median.y, median.z))
+                .multiply(boundingBox.getWorldMatrix());
+            // VBOs
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
+            // Front
+            engine.setDepthFunctionToLess();
+            this._scene.resetCachedMaterial();
+            this._colorShader.setColor4("color", this.frontColor.toColor4());
+            this._colorShader.bind(worldMatrix);
+            // Draw order
+            engine.draw(false, 0, 24);
+            this._colorShader.unbind();
+            engine.setDepthFunctionToLessOrEqual();
+            engine.setDepthWrite(true);
+            engine.setColorWrite(true);
+        };
+        OcclusionBoundingBoxRenderer.prototype.dispose = function () {
+            if (!this._colorShader) {
+                return;
+            }
+            this._colorShader.dispose();
+            var buffer = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = null;
+            }
+            this._scene.getEngine()._releaseBuffer(this._indexBuffer);
+        };
+        return OcclusionBoundingBoxRenderer;
+    }());
+    BABYLON.OcclusionBoundingBoxRenderer = OcclusionBoundingBoxRenderer;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
         /**
@@ -20493,9 +20562,6 @@ var BABYLON;
             _this._areNormalsFrozen = false; // Will be used by ribbons mainly
             // Will be used to save a source mesh reference, If any
             _this._source = null;
-            _this._vertexBuffers = {};
-            _this.frontColor = new BABYLON.Color3(1, 1, 1);
-            _this.backColor = new BABYLON.Color3(0.1, 0.1, 0.1);
             if (source) {
                 // Source mesh
                 _this._source = source;
@@ -21456,21 +21522,11 @@ var BABYLON;
             }
             return this;
         };
-        Mesh.prototype._prepareRessources = function () {
-            if (this._caaaaolorasaShader) {
-                return;
-            }
-            var scene = this.getScene();
-            this._caaaaolorasaShader = new BABYLON.ShaderMaterial("caaaaolorasaShader", scene, "color", {
-                attributes: ["aaaa"],
-                uniforms: ["world", "viewProjection", "color"]
-            });
-            var engine = scene.getEngine();
-            var boxdata = BABYLON.VertexData.CreateBox({ size: 1.0 });
-            this._vertexBuffers["aaaa"] = new BABYLON.VertexBuffer(engine, boxdata.positions, "aaaa", false);
-            this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
-        };
         Mesh.prototype.renderOcclusionBoundingMesh = function () {
+            var scene = this.getScene();
+            if (!this._occlusionBoundingBoxRenderer) {
+                this._occlusionBoundingBoxRenderer = new OcclusionBoundingBoxRenderer(scene);
+            }
             if (this.isOcclusionQueryInProgress) {
                 console.log("Enter occlusion check");
                 var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE);
@@ -21489,15 +21545,27 @@ var BABYLON;
                     return false;
                 }
             }
-            var scene = this.getScene();
             console.log("Enter Draw Bound");
-            this._gl.beginQuery(this._gl.ANY_SAMPLES_PASSED, this.occlusionQuery);
-            var _boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(scene);
-            _boundingBoxRenderer.showBackLines = false;
-            _boundingBoxRenderer.renderList.push(this._boundingInfo.boundingBox);
-            _boundingBoxRenderer.render();
-            this._gl.endQuery(this._gl.ANY_SAMPLES_PASSED);
+            var occlusionAlgorithmType = this.occlusionQueryAlgorithmType == BABYLON.AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+            this._gl.beginQuery(occlusionAlgorithmType, this.occlusionQuery);
+            this._occlusionBoundingBoxRenderer.render(this);
+            this._gl.endQuery(occlusionAlgorithmType);
             this.isOcclusionQueryInProgress = true;
+            var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE);
+            console.log("isOcclusionQueryAvailable " + isOcclusionQueryAvailable);
+            if (isOcclusionQueryAvailable) {
+                var occlusionQueryResult = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT);
+                console.log("occlusionQueryResult " + occlusionQueryResult);
+                this.isOccluded = true;
+                this.isOcclusionQueryInProgress = false;
+                if (occlusionQueryResult === 1) {
+                    this.isOccluded = false;
+                    return true;
+                }
+            }
+            else {
+                return false;
+            }
             return false;
         };
         /**
@@ -21824,6 +21892,9 @@ var BABYLON;
             if (this._instancesBuffer) {
                 this._instancesBuffer.dispose();
                 this._instancesBuffer = null;
+            }
+            if (this._occlusionBoundingBoxRenderer) {
+                this._occlusionBoundingBoxRenderer.dispose();
             }
             while (this.instances.length) {
                 this.instances[0].dispose();
