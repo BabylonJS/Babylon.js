@@ -5,6 +5,94 @@
         public renderSelf = new Array<boolean>();
     }
 
+    export class OcclusionBoundingBoxRenderer {
+        public frontColor = new Color3(1, 1, 1);
+        public backColor = new Color3(0.1, 0.1, 0.1);
+
+        private _scene: Scene;
+        private _colorShader: ShaderMaterial;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
+        private _indexBuffer: WebGLBuffer;
+
+        constructor(scene: Scene) {
+            this._scene = scene;
+        }
+
+        private _prepareRessources(): void {
+            if (this._colorShader) {
+                return;
+            }
+
+            this._colorShader = new ShaderMaterial("colorShader", this._scene, "color",
+                {
+                    attributes: [VertexBuffer.PositionKind],
+                    uniforms: ["world", "viewProjection", "color"]
+                });
+
+
+            var engine = this._scene.getEngine();
+            var boxdata = VertexData.CreateBox({ size: 1.0 });
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, boxdata.positions, VertexBuffer.PositionKind, false);
+            this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
+        }
+
+        public render(mesh: Mesh): void {
+
+            this._prepareRessources();
+
+            if (!this._colorShader.isReady()) {
+                return;
+            }
+
+            var engine = this._scene.getEngine();
+            engine.setDepthWrite(false);
+            engine.setColorWrite(false);
+            this._colorShader._preBind();
+
+            var boundingBox = mesh._boundingInfo.boundingBox;
+            var min = boundingBox.minimum;
+            var max = boundingBox.maximum;
+            var diff = max.subtract(min);
+            var median = min.add(diff.scale(0.5));
+
+            var worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z)
+                .multiply(Matrix.Translation(median.x, median.y, median.z))
+                .multiply(boundingBox.getWorldMatrix());
+
+            // VBOs
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
+
+            // Front
+            engine.setDepthFunctionToLess();
+            this._scene.resetCachedMaterial();
+            this._colorShader.setColor4("color", this.frontColor.toColor4());
+            this._colorShader.bind(worldMatrix);
+
+            // Draw order
+            engine.draw(false, 0, 24);
+
+            this._colorShader.unbind();
+            engine.setDepthFunctionToLessOrEqual();
+            engine.setDepthWrite(true);
+            engine.setColorWrite(true);
+        }
+
+        public dispose(): void {
+            if (!this._colorShader) {
+                return;
+            }
+
+            this._colorShader.dispose();
+
+            var buffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
+            }
+            this._scene.getEngine()._releaseBuffer(this._indexBuffer);
+        }
+    }
+
     export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Consts
         public static _FRONTSIDE: number = 0;
@@ -135,6 +223,8 @@
 
         private _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
         private _sourceNormals: Float32Array;   // Will be used to save original normals when using software skinning
+
+        private _occlusionBoundingBoxRenderer: OcclusionBoundingBoxRenderer;
 
         // Will be used to save a source mesh reference, If any
         private _source: BABYLON.Mesh = null;
@@ -1103,6 +1193,10 @@
 
         private renderOcclusionBoundingMesh() {
 
+            var scene = this.getScene();
+            if (!this._occlusionBoundingBoxRenderer) {
+                this._occlusionBoundingBoxRenderer = new OcclusionBoundingBoxRenderer(scene);
+            }
 
             if (this.isOcclusionQueryInProgress) {
 
@@ -1125,17 +1219,32 @@
                 }
             }
 
-
-            var scene = this.getScene();
-
             console.log("Enter Draw Bound");
-            this._gl.beginQuery(this._gl.ANY_SAMPLES_PASSED, this.occlusionQuery);
-            var _boundingBoxRenderer = new BoundingBoxRenderer(scene);
-            _boundingBoxRenderer.showBackLines=false;
-            _boundingBoxRenderer.renderList.push(this._boundingInfo.boundingBox);
-            _boundingBoxRenderer.render();
-            this._gl.endQuery(this._gl.ANY_SAMPLES_PASSED);
+
+            var occlusionAlgorithmType = this.occlusionQueryAlgorithmType == AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+
+            this._gl.beginQuery(occlusionAlgorithmType, this.occlusionQuery);
+            this._occlusionBoundingBoxRenderer.render(this);
+            this._gl.endQuery(occlusionAlgorithmType);
             this.isOcclusionQueryInProgress = true;
+
+
+            var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
+            console.log("isOcclusionQueryAvailable " + isOcclusionQueryAvailable);
+            if (isOcclusionQueryAvailable) {
+                var occlusionQueryResult = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT) as number;
+                console.log("occlusionQueryResult " + occlusionQueryResult);
+
+                this.isOccluded = true;
+                this.isOcclusionQueryInProgress = false;
+                if (occlusionQueryResult === 1) {
+                    this.isOccluded = false;
+                    return true;
+                }
+            }
+            else {
+                return false;
+            }
 
             return false;
         }
@@ -1519,6 +1628,10 @@
             if (this._instancesBuffer) {
                 this._instancesBuffer.dispose();
                 this._instancesBuffer = null;
+            }
+
+            if (this._occlusionBoundingBoxRenderer) {
+                this._occlusionBoundingBoxRenderer.dispose();
             }
 
             while (this.instances.length) {
