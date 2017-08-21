@@ -918,7 +918,7 @@
                     if (this._unIndexed) {
                         engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
                     } else {
-                        engine.draw(false, 0, instancesCount > 0 ? subMesh.linesIndexCount / 2 : subMesh.linesIndexCount, instancesCount);
+                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
                     }
                     break;
 
@@ -1058,8 +1058,7 @@
                 instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
             }
 
-            this.geometry._bind(effect);
-
+            this._bind(subMesh, effect, fillMode);
             this._draw(subMesh, fillMode, instancesCount);
 
             engine.unbindInstanceAttributes();
@@ -1166,7 +1165,10 @@
 
             // Bind
             var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode);
-            this._bind(subMesh, effect, fillMode);
+
+            if (!hardwareInstancedRendering) { // Binding will be done later because we need to add more info to the VB
+                this._bind(subMesh, effect, fillMode);
+            }
 
             var world = this.getWorldMatrix();
             
