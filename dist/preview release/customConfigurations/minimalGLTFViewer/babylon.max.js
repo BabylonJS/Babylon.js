@@ -10389,6 +10389,9 @@ var BABYLON;
         ;
         Engine.prototype._prepareWebGLTextureContinuation = function (texture, scene, noMipmap, isCompressed, samplingMode) {
             var gl = this._gl;
+            if (!gl) {
+                return;
+            }
             var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
@@ -10409,6 +10412,9 @@ var BABYLON;
             var potWidth = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(width, this.getCaps().maxTextureSize) : width;
             var potHeight = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(height, this.getCaps().maxTextureSize) : height;
             var gl = this._gl;
+            if (!gl) {
+                return;
+            }
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
             texture._baseWidth = width;
@@ -36841,11 +36847,13 @@ var BABYLON;
                             if (!this._reflectivityTexture.isReadyOrNotBlocking()) {
                                 return false;
                             }
+                            defines.METALLICWORKFLOW = false;
                             BABYLON.MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
                             defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
                             defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
                         }
                         else {
+                            defines.METALLICWORKFLOW = false;
                             defines.REFLECTIVITY = false;
                         }
                         if (this._microSurfaceTexture) {
