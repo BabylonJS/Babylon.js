@@ -701,10 +701,12 @@
                                 return false;
                             }
 
+                            defines.METALLICWORKFLOW = false;
                             MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
                             defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
                             defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
                         } else {
+                            defines.METALLICWORKFLOW = false;
                             defines.REFLECTIVITY = false;
                         }
 
