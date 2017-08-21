@@ -378,12 +378,18 @@
             return url;
         }
 
+        public static PreprocessUrl = (url: string) => {
+            return url;
+        }
+
         public static LoadImage(url: any, onload, onerror, database): HTMLImageElement {
             if (url instanceof ArrayBuffer) {
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
 
             url = Tools.CleanUrl(url);
+
+            url = Tools.PreprocessUrl(url);
 
             var img = new Image();
 
@@ -454,6 +460,8 @@
         //ANY
         public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest) => void): void {
             url = Tools.CleanUrl(url);
+
+            url = Tools.PreprocessUrl(url);
 
             var noIndexedDB = () => {
                 var request = new XMLHttpRequest();
