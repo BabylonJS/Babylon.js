@@ -1101,33 +1101,61 @@
             return this;
         }
 
+        private renderOcclusionBoundingMesh() {
+
+
+            if (this.isOcclusionQueryInProgress) {
+
+                console.log("Enter occlusion check");
+                var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
+                console.log("isOcclusionQueryAvailable " + isOcclusionQueryAvailable);
+                if (isOcclusionQueryAvailable) {
+                    var occlusionQueryResult = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT) as number;
+                    console.log("occlusionQueryResult " + occlusionQueryResult);
+
+                    this.isOccluded = true;
+                    this.isOcclusionQueryInProgress = false;
+                    if (occlusionQueryResult === 1) {
+                        this.isOccluded = false;
+                        return true;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+
+
+            var scene = this.getScene();
+
+            console.log("Enter Draw Bound");
+            this._gl.beginQuery(this._gl.ANY_SAMPLES_PASSED, this.occlusionQuery);
+            var _boundingBoxRenderer = new BoundingBoxRenderer(scene);
+            _boundingBoxRenderer.showBackLines=false;
+            _boundingBoxRenderer.renderList.push(this._boundingInfo.boundingBox);
+            _boundingBoxRenderer.render();
+            this._gl.endQuery(this._gl.ANY_SAMPLES_PASSED);
+            this.isOcclusionQueryInProgress = true;
+
+            return false;
+        }
+
         /**
          * Triggers the draw call for the mesh.
          * Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager.   
          * Returns the Mesh.   
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
-            
-            // check occlusion query in progress
-            if (this.occlusionType !== AbstractMesh.OCCLUSION_TYPE_NO_VALUE && this.isOcclusionQueryInProgress) {
-                console.log("Enter occlusion check");
-                var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
-                console.log("isOcclusionQueryAvailable" + isOcclusionQueryAvailable);
-                if (isOcclusionQueryAvailable) {
-                    var occlusionQueryResult = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT) as number;
-                    console.log("occlusionQueryResult" + occlusionQueryResult);
 
-                    this.isOcclusionQueryInProgress = false;
-                    if (occlusionQueryResult === 1) {
-                        // draw
-                    }
-                    else {
-                        return this;
-                    }
+            // check occlusion query in progress
+
+            if (this.occlusionType !== AbstractMesh.OCCLUSION_TYPE_NO_VALUE) {
+                var isRenderMesh = this.renderOcclusionBoundingMesh();
+                if (!isRenderMesh) {
+                    return;
                 }
-                else {
-                    return this;
-                }
+
+                console.log("Enter Draw Mesh");
             }
 
             var scene = this.getScene();
@@ -1200,16 +1228,7 @@
             }
 
             // Draw
-            if (this.occlusionType !== AbstractMesh.OCCLUSION_TYPE_NO_VALUE) {
-                console.log("Enter Draw");
-                this._gl.beginQuery(this._gl.ANY_SAMPLES_PASSED, this.occlusionQuery);
-                this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
-                this._gl.endQuery(this._gl.ANY_SAMPLES_PASSED);
-                this.isOcclusionQueryInProgress = true;
-            }
-            else {
-                this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
-            }
+            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
 
             // Unbind
             effectiveMaterial.unbind();
