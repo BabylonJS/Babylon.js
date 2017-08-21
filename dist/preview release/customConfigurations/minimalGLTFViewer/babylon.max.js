@@ -21291,7 +21291,7 @@ var BABYLON;
                         engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
                     }
                     else {
-                        engine.draw(false, 0, instancesCount > 0 ? subMesh.linesIndexCount / 2 : subMesh.linesIndexCount, instancesCount);
+                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
                     }
                     break;
                 default:
@@ -21410,7 +21410,7 @@ var BABYLON;
             else {
                 instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
             }
-            this.geometry._bind(effect);
+            this._bind(subMesh, effect, fillMode);
             this._draw(subMesh, fillMode, instancesCount);
             engine.unbindInstanceAttributes();
             return this;
@@ -21498,7 +21498,9 @@ var BABYLON;
             effectiveMaterial._preBind(effect);
             // Bind
             var fillMode = scene.forcePointsCloud ? BABYLON.Material.PointFillMode : (scene.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode);
-            this._bind(subMesh, effect, fillMode);
+            if (!hardwareInstancedRendering) {
+                this._bind(subMesh, effect, fillMode);
+            }
             var world = this.getWorldMatrix();
             if (effectiveMaterial.storeEffectOnSubMeshes) {
                 effectiveMaterial.bindForSubMesh(world, this, subMesh);
