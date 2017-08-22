@@ -127,13 +127,32 @@
         // Properties
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = Vector3.Zero();
-        protected _gl = this.getEngine()._gl;
+
+        private _occlusionBoundingBoxRenderer: OcclusionBoundingBoxRenderer;
+        private _gl = this.getEngine()._gl;
+        private _webGLVersion = this.getEngine().webGLVersion;
+        private _occlusionInternalRetryCounter = 0;
         public occlusionType = AbstractMesh.OCCLUSION_TYPE_NO_VALUE;
         public occlusionRetryCount = -1;
-        public isOccluded = false;
+        protected _isOccluded = false;
+        get isOccluded(): boolean {
+            return this._isOccluded;
+        }
+        set isOccluded(value: boolean) {
+            this._isOccluded = value;
+        }
+
         public occlusionQuery = this._gl.createQuery();
         public isOcclusionQueryInProgress = false;
-        public occlusionQueryAlgorithmType= AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
+
+        private _occlusionQueryAlgorithmType: number = this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE;
+        get occlusionQueryAlgorithmType(): number {
+            return this._occlusionQueryAlgorithmType === this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE ? AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE : AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE;
+        }
+        set occlusionQueryAlgorithmType(alogrithmType: number) {
+            this._occlusionQueryAlgorithmType = alogrithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+        }
+
         private _rotation = Vector3.Zero();
         private _rotationQuaternion: Quaternion;
         private _scaling = Vector3.One();
@@ -1815,6 +1834,10 @@
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
 
+            if (this._occlusionBoundingBoxRenderer) {
+                this._occlusionBoundingBoxRenderer.dispose();
+            }
+
             this._isDisposed = true;
 
             super.dispose();
@@ -2257,6 +2280,52 @@
 
             VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
             this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
+        }
+
+        protected checkOcclusionQuery() {
+            if (this._webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NO_VALUE) {
+                this._isOccluded = false;
+                return;
+            }
+
+            if (!this._occlusionBoundingBoxRenderer) {
+                var scene = this.getScene();
+                this._occlusionBoundingBoxRenderer = new OcclusionBoundingBoxRenderer(scene);
+            }
+
+            if (this.isOcclusionQueryInProgress) {
+                var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
+                if (isOcclusionQueryAvailable) {
+                    var occlusionQueryResult = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT) as number;
+
+                    this.isOcclusionQueryInProgress = false;
+                    this._occlusionInternalRetryCounter = 0;
+                    this._isOccluded = occlusionQueryResult === 1 ? false : true;
+                }
+                else {
+
+                    this._occlusionInternalRetryCounter++;
+
+                    if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
+                        // break;
+                        this.isOcclusionQueryInProgress = false;
+                        this._occlusionInternalRetryCounter = 0;
+
+                        // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
+                        // if strict continue the last state of the object.
+                        this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISITC ? false : this._isOccluded;
+                    }
+                    else {
+                        return;
+                    }
+
+                }
+            }
+
+            this._gl.beginQuery(this._occlusionQueryAlgorithmType, this.occlusionQuery);
+            this._occlusionBoundingBoxRenderer.render(this);
+            this._gl.endQuery(this._occlusionQueryAlgorithmType);
+            this.isOcclusionQueryInProgress = true;
         }
 
     }
