@@ -45240,7 +45240,7 @@ var BABYLON;
                 this.onClearObservable.notifyObservers(engine);
             }
             else {
-                engine.clear(scene.clearColor, true, true, true);
+                engine.clear(this.clearColor || scene.clearColor, true, true, true);
             }
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
@@ -67625,8 +67625,10 @@ var BABYLON;
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        _this._glowMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
-                        _this._glowMapGenerationEffect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        if (alphaTexture) {
+                            _this._glowMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
+                            _this._glowMapGenerationEffect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
                     }
                     // Glow emissive only
                     if (emissiveTexture) {
