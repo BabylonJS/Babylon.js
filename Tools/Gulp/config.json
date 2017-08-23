@@ -22,7 +22,7 @@
                 "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
                 "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
                 "mapTexture", "dynamicFloatArray",
-                "imageProcessing", "serialization", "probes", "layer", "textureTools"
+                "imageProcessing", "serialization", "probes", "layer", "textureTools", "cameraBehaviors"
         ],
         "minimal": ["standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
@@ -36,7 +36,7 @@
                 "debug", "textureTools", "hdr",
                 "loader",
                 "materialsLibrary/babylon.gridMaterial.js",
-                "loaders/babylon.glTFFileLoader.js"
+                "loaders/babylon.glTFFileLoader.js", "cameraBehaviors", "morphTargets"
         ],
         "distributed": ["minimalGLTFViewer"]
     },
@@ -96,7 +96,18 @@
                 "particles.vertex",
                 "particles.fragment"
             ]
-        },         
+        },       
+        "cameraBehaviors" : 
+        {
+            "files": [
+                "../../src/Behaviors/Cameras/babylon.framingBehavior.js",
+                "../../src/Behaviors/Cameras/babylon.bouncingBehavior.js",
+                "../../src/Behaviors/Cameras/babylon.autoRotationBehavior.js"
+            ],
+            "dependUpon" : [
+                "core"
+            ]
+        },                   
         "textureTools" : 
         {
             "files": [
@@ -894,7 +905,8 @@
                 "../../src/Cameras/VR/babylon.webVRCamera.js",
                 "../../src/Cameras/babylon.deviceOrientationCamera.js",
                 "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",            
-                "../../src/Cameras/babylon.stereoscopicCameras.js"                
+                "../../src/Cameras/babylon.stereoscopicCameras.js",
+                "../../src/Cameras/VR/babylon.vrExperienceHelper.js"                
             ],
             "dependUpon" : [
                 "core"
@@ -1422,7 +1434,9 @@
                     "../../gui/src/controls/colorPicker.ts",
                     "../../gui/src/controls/inputText.ts"
                 ],
-                "output": "babylon.gui.js"
+                "output": "babylon.gui.js",
+                "buildAsModule": "true",
+                "moduleDeclaration": "BABYLON.GUI"
             }
         ],
         "build": {
@@ -1470,7 +1484,6 @@
                     "../../inspector/src/tabs/MaterialTab.ts",
                     "../../inspector/src/tabs/MeshTab.ts",
                     "../../inspector/src/tabs/SceneTab.ts",
-                    "../../inspector/src/tabs/ShaderTab.ts",
                     "../../inspector/src/tabs/ConsoleTab.ts",
                     "../../inspector/src/tabs/StatsTab.ts",
                     "../../inspector/src/tabs/TabBar.ts",

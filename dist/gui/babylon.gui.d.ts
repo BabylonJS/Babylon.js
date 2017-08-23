@@ -304,8 +304,12 @@ declare module BABYLON.GUI {
     class StackPanel extends Container {
         name: string;
         private _isVertical;
+        private _manualWidth;
+        private _manualHeight;
         private _tempMeasureStore;
         isVertical: boolean;
+        manualWidth: boolean;
+        manualHeight: boolean;
         constructor(name?: string);
         protected _getTypeName(): string;
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;

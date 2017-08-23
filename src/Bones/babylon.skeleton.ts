@@ -232,7 +232,10 @@
                     }
                 }
 
-                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), targetMatrix, index * 16);
+                if (bone._index !== -1) {
+                    var mappedIndex = bone._index === undefined ? index : bone._index;
+                    bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), targetMatrix, mappedIndex * 16);
+                }
             }
 
             this._identity.copyToArray(targetMatrix, this.bones.length * 16);
@@ -448,5 +451,34 @@
 
         }
 
+        public sortBones(): void {
+            var bones = new Array<Bone>();
+            var visited = new Array<boolean>(this.bones.length);
+            for (var index = 0; index < this.bones.length; index++) {
+                this._sortBones(index, bones, visited);
+            }
+
+            this.bones = bones;
+        }
+
+        private _sortBones(index: number, bones: Bone[], visited: boolean[]): void {
+            if (visited[index]) {
+                return;
+            }
+
+            visited[index] = true;
+
+            var bone = this.bones[index];
+            if (bone._index === undefined) {
+                bone._index = index;
+            }
+
+            var parentBone = bone.getParent();
+            if (parentBone) {
+                this._sortBones(this.bones.indexOf(parentBone), bones, visited);
+            }
+
+            bones.push(bone);
+        }
     }
 }

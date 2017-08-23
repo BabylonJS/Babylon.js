@@ -144,6 +144,25 @@
             return animation;
         }
 
+        /**
+		 * Sets up an animation.
+		 * @param property the property to animate
+		 * @param animationType the animation type to apply
+		 * @param easingFunction the easing function used in the animation
+		 * @returns The created animation
+		 */
+		public static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: BABYLON.EasingFunction): BABYLON.Animation {
+			var animation: BABYLON.Animation = new BABYLON.Animation(property + "Animation",
+				property,
+				framePerSecond,
+				animationType,
+				BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+
+			animation.setEasingFunction(easingFunction);
+
+			return animation;
+		}
+
         public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
             framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
@@ -163,6 +182,49 @@
 
             return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         }
+
+        /**
+		 * Transition property of the Camera to the target Value.
+		 * @param property The property to transition
+		 * @param targetValue The target Value of the property
+         * @param host The object where the property to animate belongs
+         * @param scene Scene used to run the animation
+         * @param frameRate Framerate (in frame/s) to use
+		 * @param transition The transition type we want to use
+		 * @param duration The duration of the animation, in milliseconds
+		 * @param onAnimationEnd Call back trigger at the end of the animation.
+		 */
+		public static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number,	onAnimationEnd: () => void = null): Animatable {
+
+			if (duration <= 0) {
+				host[property] = targetValue;
+				if (onAnimationEnd) {
+                    onAnimationEnd();
+                }
+				return;
+			}
+
+			var endFrame: number = frameRate * (duration / 1000);
+
+			transition.setKeys([{
+				frame: 0,
+				value: host[property].clone ? host[property].clone() : host[property]
+			},
+			{
+				frame: endFrame,
+				value: targetValue
+			}]);
+
+			if (!host.animations) {
+				host.animations = [];
+			}
+
+			host.animations.push(transition);
+
+			var animation: BABYLON.Animatable = scene.beginAnimation(host, 0, endFrame, false);
+			animation.onAnimationEnd = onAnimationEnd;
+			return animation;
+		}
 
         constructor(public name: string, public targetProperty: string, public framePerSecond: number, public dataType: number, public loopMode?: number, public enableBlending?: boolean) {
             this.targetPropertyPath = targetProperty.split(".");
@@ -480,7 +542,6 @@
 
             if (this.targetPropertyPath.length > 1) {
                 var property = this._target[this.targetPropertyPath[0]];
-
 
                 for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
                     property = property[this.targetPropertyPath[index]];

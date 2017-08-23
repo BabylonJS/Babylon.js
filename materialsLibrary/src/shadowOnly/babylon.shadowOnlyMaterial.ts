@@ -23,6 +23,7 @@ module BABYLON {
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3();
         private _renderId: number;
+        private _activeLight: IShadowLight;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -39,6 +40,14 @@ module BABYLON {
         public getAlphaTestTexture(): BaseTexture {
             return null;
         }
+
+        public get activeLight(): IShadowLight {
+            return this._activeLight;
+        }
+
+        public set activeLight(light: IShadowLight) {
+            this._activeLight = light;
+        }        
 
         // Methods   
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
@@ -62,6 +71,25 @@ module BABYLON {
             }
 
             var engine = scene.getEngine();
+
+            // Ensure that active light is the first shadow light
+            if (this._activeLight) {
+                for (var light of mesh._lightSources) {
+                    if (light.shadowEnabled) {
+                        if (this._activeLight === light) {
+                            break; // We are good
+                        }
+
+                        var lightPosition = mesh._lightSources.indexOf(this._activeLight);
+
+                        if (lightPosition !== -1) {
+                            mesh._lightSources.splice(lightPosition, 1);
+                            mesh._lightSources.splice(0, 0, this._activeLight);
+                        }
+                        break;
+                    }
+                }
+            }
 
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
 

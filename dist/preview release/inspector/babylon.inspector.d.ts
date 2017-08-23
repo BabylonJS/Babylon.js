@@ -299,10 +299,7 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
-    interface IHighlight {
-        highlight: (b: boolean) => void;
-    }
-    abstract class Adapter implements IHighlight {
+    abstract class Adapter {
         protected _obj: any;
         private static _name;
         constructor(obj: any);
@@ -324,8 +321,6 @@ declare module INSPECTOR {
         readonly object: any;
         /** Returns the list of tools available for this adapter */
         abstract getTools(): Array<AbstractTreeTool>;
-        /** Should be overriden in subclasses */
-        highlight(b: boolean): void;
     }
 }
 
@@ -415,9 +410,6 @@ declare module INSPECTOR {
         getTools(): Array<AbstractTreeTool>;
         setVisible(b: boolean): void;
         isVisible(): boolean;
-        /** Returns some information about this mesh */
-        /** Overrides super.highlight */
-        highlight(b: boolean): void;
     }
 }
 
@@ -432,10 +424,6 @@ declare module INSPECTOR {
         getProperties(): Array<PropertyLine>;
         /** No tools for a material adapter */
         getTools(): Array<AbstractTreeTool>;
-        /** Overrides super.highlight.
-         * Highlighting a material outlines all meshes linked to this material
-         */
-        highlight(b: boolean): void;
     }
 }
 
@@ -458,8 +446,6 @@ declare module INSPECTOR {
         debug(b: boolean): void;
         /** Returns some information about this mesh */
         getInfo(): string;
-        /** Overrides super.highlight */
-        highlight(b: boolean): void;
         /** Draw X, Y and Z axis for the actual object if this adapter.
          * Should be called only one time as it will fill this._axis
          */
@@ -803,8 +789,6 @@ declare module INSPECTOR {
         abstract dispose(): any;
         /** Select an item in the tree */
         select(item: TreeItem): void;
-        /** Highlight the given node, and downplay all others */
-        highlightNode(item?: TreeItem): void;
         /**
          * Returns the total width in pixel of this tab, 0 by default
         */
@@ -835,8 +819,6 @@ declare module INSPECTOR {
         displayDetails(item: TreeItem): void;
         /** Select an item in the tree */
         select(item: TreeItem): void;
-        /** Highlight the given node, and downplay all others */
-        highlightNode(item?: TreeItem): void;
         /** Set the given item as active in the tree */
         activateNode(item: TreeItem): void;
         /** Returns the treeitem corersponding to the given obj, null if not found */
@@ -893,8 +875,6 @@ declare module INSPECTOR {
         select(item: TreeItem): void;
         /** Set the given item as active in the tree */
         activateNode(item: TreeItem): void;
-        /** Highlight the given node, and downplay all others */
-        highlightNode(item?: TreeItem): void;
     }
 }
 
@@ -938,24 +918,6 @@ declare module INSPECTOR {
          * the clicked element is set as active, all others elements are deactivated
          */
         private _generateRadioAction(arr);
-    }
-}
-
-declare module INSPECTOR {
-    class ShaderTab extends Tab {
-        private _inspector;
-        private _vertexPanel;
-        private _fragmentPanel;
-        constructor(tabbar: TabBar, insp: Inspector);
-        private _selectShader(event);
-        /** Overrides super.dispose */
-        dispose(): void;
-        /** Returns the position of the first { and the corresponding } */
-        private _getBracket(str);
-        /**
-         * Beautify the given string : correct indentation
-         */
-        private _beautify(glsl, level?);
     }
 }
 
@@ -1189,11 +1151,8 @@ declare module INSPECTOR {
         /**
          * Add an event listener on the item :
          * - one click display details
-         * - on mouse hover the item is highlighted
          */
         protected _addEvent(): void;
-        /** Highlight or downplay this node */
-        highlight(b: boolean): void;
         /** Returns true if the node is folded, false otherwise */
         private _isFolded();
         /** Set this item as active (background lighter) in the tree panel */

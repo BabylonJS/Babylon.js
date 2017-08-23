@@ -116,5 +116,18 @@
             return serializationObject;
         }
 
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
+
+            var index = scene.multiMaterials.indexOf(this);
+            if (index >= 0) {
+                scene.multiMaterials.splice(index, 1);
+            }
+
+            super.dispose(forceDisposeEffect, forceDisposeTextures);
+        }
     }
 } 

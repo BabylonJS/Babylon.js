@@ -25,6 +25,7 @@ declare module BABYLON.GUI {
         idealHeight: number;
         renderAtIdealSize: boolean;
         readonly layer: Layer;
+        readonly rootContainer: Container;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         markAsDirty(): void;
@@ -307,8 +308,13 @@ declare module BABYLON.GUI {
     class StackPanel extends Container {
         name: string;
         private _isVertical;
+        private _manualWidth;
+        private _manualHeight;
+        private _doNotTrackManualChanges;
         private _tempMeasureStore;
         isVertical: boolean;
+        width: string | number;
+        height: string | number;
         constructor(name?: string);
         protected _getTypeName(): string;
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -347,7 +353,6 @@ declare module BABYLON.GUI {
 }
 
 
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Line extends Control {
         name: string;
@@ -381,7 +386,6 @@ declare module BABYLON.GUI {
 }
 
 
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Slider extends Control {
         name: string;
@@ -412,7 +416,6 @@ declare module BABYLON.GUI {
 }
 
 
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Checkbox extends Control {
         name: string;
@@ -433,7 +436,6 @@ declare module BABYLON.GUI {
 }
 
 
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class RadioButton extends Control {
         name: string;
@@ -542,7 +544,6 @@ declare module BABYLON.GUI {
 }
 
 
-declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class ColorPicker extends Control {
         name: string;

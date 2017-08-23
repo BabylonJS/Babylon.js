@@ -701,10 +701,12 @@
                                 return false;
                             }
 
+                            defines.METALLICWORKFLOW = false;
                             MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
                             defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
                             defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
                         } else {
+                            defines.METALLICWORKFLOW = false;
                             defines.REFLECTIVITY = false;
                         }
 
@@ -1050,10 +1052,12 @@
             // Matrices
             this.bindOnlyWorldMatrix(world);
 
+            let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+
             // Bones
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
-            if (this._mustRebind(scene, effect, mesh.visibility)) {
+            if (mustRebind) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
 
                 this.bindViewProjection(effect);
@@ -1261,7 +1265,7 @@
                 // Colors
                 scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
 
-                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position;
+                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
                 effect.setFloat4("vEyePosition", 
                     eyePosition.x,
                     eyePosition.y,
@@ -1270,7 +1274,7 @@
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 
-            if (this._mustRebind(scene, effect) || !this.isFrozen) {
+            if (mustRebind || !this.isFrozen) {
                 // Lights
                 if (scene.lightsEnabled && !this._disableLighting) {
                     MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights, this._usePhysicalLightFalloff);

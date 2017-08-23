@@ -194,6 +194,66 @@ module BABYLON {
         protected _localDirection: Vector3;
         protected _transformedDirection: Vector3;
 
+        // Behaviors
+        private _bouncingBehavior: BouncingBehavior;
+        public get useBouncingBehavior(): boolean {
+            return this._bouncingBehavior != null;
+        }
+
+        public set useBouncingBehavior(value: boolean) {
+            if (value === this.useBouncingBehavior) {
+                return;
+            }
+
+            if (value) {
+                this._bouncingBehavior = new BouncingBehavior();
+                this.addBehavior(this._bouncingBehavior);
+            } else {
+                this.removeBehavior(this._bouncingBehavior);
+                this._bouncingBehavior = null;
+            }
+        }
+
+        private _framingBehavior: FramingBehavior;
+        public get useFramingBehavior(): boolean {
+            return this._framingBehavior != null;
+        }
+
+        public set useFramingBehavior(value: boolean) {
+            if (value === this.useFramingBehavior) {
+                return;
+            }
+
+            if (value) {
+                this._framingBehavior = new FramingBehavior();
+                this.addBehavior(this._framingBehavior);
+            } else {
+                this.removeBehavior(this._framingBehavior);
+                this._framingBehavior = null;
+            }
+        }        
+
+        private _autoRotationBehavior: AutoRotationBehavior;
+        public get useAutoRotationBehavior(): boolean {
+            return this._autoRotationBehavior != null;
+        }
+
+        public set useAutoRotationBehavior(value: boolean) {
+            if (value === this.useAutoRotationBehavior) {
+                return;
+            }
+
+            if (value) {
+                this._autoRotationBehavior = new AutoRotationBehavior();
+                this.addBehavior(this._autoRotationBehavior);
+            } else {
+                this.removeBehavior(this._autoRotationBehavior);
+                this._autoRotationBehavior = null;
+            }
+        }        
+
+        public onMeshTargetChangedObservable = new Observable<AbstractMesh>();
+        
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
         public checkCollisions = false;
@@ -324,9 +384,9 @@ module BABYLON {
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-                if (Math.abs(this.inertialAlphaOffset) < this.speed * Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < Epsilon)
                     this.inertialAlphaOffset = 0;
-                if (Math.abs(this.inertialBetaOffset) < this.speed * Epsilon)
+                if (Math.abs(this.inertialBetaOffset) < Epsilon)
                     this.inertialBetaOffset = 0;
                 if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon)
                     this.inertialRadiusOffset = 0;
@@ -407,6 +467,10 @@ module BABYLON {
             var radiusv3 = this.position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
 
+            if (this.radius === 0) {
+                this.radius = 0.0001; // Just to avoid division by zero
+            }
+
             // Alpha
             this.alpha = Math.acos(radiusv3.x / Math.sqrt(Math.pow(radiusv3.x, 2) + Math.pow(radiusv3.z, 2)));
 
@@ -439,14 +503,18 @@ module BABYLON {
                 }
                 this._targetHost = <AbstractMesh>target;
                 this._target = this._getTargetPosition();
+
+                this.onMeshTargetChangedObservable.notifyObservers(this._targetHost);
             } else {
                 var newTarget = <Vector3>target;
                 var currentTarget = this._getTargetPosition();
                 if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
                    return;
                 }
+                this._targetHost = null;
                 this._target = newTarget;
                 this._targetBoundingCenter = null;
+                this.onMeshTargetChangedObservable.notifyObservers(null);
             }
 
             this.rebuildAnglesAndRadius();

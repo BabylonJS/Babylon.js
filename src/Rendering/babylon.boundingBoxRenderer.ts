@@ -27,7 +27,7 @@
 
 
             var engine = this._scene.getEngine();
-            var boxdata = VertexData.CreateBox(1.0);
+            var boxdata = VertexData.CreateBox({size: 1.0});
             this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, boxdata.positions, VertexBuffer.PositionKind, false);
             this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
         }

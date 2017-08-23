@@ -182,24 +182,24 @@ namespace Max2Babylon
             babylonTexture.vAng = uvGen.GetVAng(0);
             babylonTexture.wAng = uvGen.GetWAng(0);
 
-            babylonTexture.wrapU = 0; // CLAMP
+            babylonTexture.wrapU = BabylonTexture.AddressMode.CLAMP_ADDRESSMODE; // CLAMP
             if ((uvGen.TextureTiling & 1) != 0) // WRAP
             {
-                babylonTexture.wrapU = 1;
+                babylonTexture.wrapU = BabylonTexture.AddressMode.WRAP_ADDRESSMODE;
             }
             else if ((uvGen.TextureTiling & 4) != 0) // MIRROR
             {
-                babylonTexture.wrapU = 2;
+                babylonTexture.wrapU = BabylonTexture.AddressMode.MIRROR_ADDRESSMODE;
             }
 
-            babylonTexture.wrapV = 0; // CLAMP
+            babylonTexture.wrapV = BabylonTexture.AddressMode.CLAMP_ADDRESSMODE; // CLAMP
             if ((uvGen.TextureTiling & 2) != 0) // WRAP
             {
-                babylonTexture.wrapV = 1;
+                babylonTexture.wrapV = BabylonTexture.AddressMode.WRAP_ADDRESSMODE;
             }
             else if ((uvGen.TextureTiling & 8) != 0) // MIRROR
             {
-                babylonTexture.wrapV = 2;
+                babylonTexture.wrapV = BabylonTexture.AddressMode.MIRROR_ADDRESSMODE;
             }
 
             babylonTexture.name = Path.GetFileName(texture.MapName);

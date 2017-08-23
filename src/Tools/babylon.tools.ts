@@ -378,12 +378,18 @@
             return url;
         }
 
+        public static PreprocessUrl = (url: string) => {
+            return url;
+        }
+
         public static LoadImage(url: any, onload, onerror, database): HTMLImageElement {
             if (url instanceof ArrayBuffer) {
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
 
             url = Tools.CleanUrl(url);
+
+            url = Tools.PreprocessUrl(url);
 
             var img = new Image();
 
@@ -424,7 +430,7 @@
                     noIndexedDB();
                 }
                 else {
-                    var textureName = url.substring(5).toLowerCase();
+                    var textureName = decodeURIComponent(url.substring(5).toLowerCase());
                     if (FilesInput.FilesToLoad[textureName]) {
                         try {
                             var blobURL;
@@ -454,6 +460,8 @@
         //ANY
         public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest) => void): void {
             url = Tools.CleanUrl(url);
+
+            url = Tools.PreprocessUrl(url);
 
             var noIndexedDB = () => {
                 var request = new XMLHttpRequest();
@@ -492,7 +500,7 @@
             };
 
             if (url.indexOf("file:") !== -1) {
-                var fileName = url.substring(5).toLowerCase();
+                var fileName = decodeURIComponent(url.substring(5).toLowerCase());
                 if (FilesInput.FilesToLoad[fileName]) {
                     Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
                 }
@@ -849,7 +857,7 @@
 
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
-            texture.renderList = scene.meshes;
+            texture.renderList = null;
             texture.samples = samples;
 
             texture.onAfterRenderObservable.add(() => {

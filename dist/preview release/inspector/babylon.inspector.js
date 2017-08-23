@@ -924,13 +924,10 @@ var INSPECTOR;
             enumerable: true,
             configurable: true
         });
-        /** Should be overriden in subclasses */
-        Adapter.prototype.highlight = function (b) { };
-        ;
+        // a unique name for this adapter, to retrieve its own key in the local storage
+        Adapter._name = BABYLON.Geometry.RandomId();
         return Adapter;
     }());
-    // a unique name for this adapter, to retrieve its own key in the local storage
-    Adapter._name = BABYLON.Geometry.RandomId();
     INSPECTOR.Adapter = Adapter;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -1368,26 +1365,16 @@ var INSPECTOR;
         LightAdapter.prototype.isVisible = function () {
             return this._obj.isEnabled();
         };
-        /** Returns some information about this mesh */
-        // public getInfo() : string {
-        //     return `${(this._obj as BABYLON.AbstractMesh).getTotalVertices()} vertices`;
-        // }
-        /** Overrides super.highlight */
-        LightAdapter.prototype.highlight = function (b) {
-            this.actualObject.renderOutline = b;
-            this.actualObject.outlineWidth = 0.25;
-            this.actualObject.outlineColor = BABYLON.Color3.Yellow();
-        };
+        LightAdapter._PROPERTIES = [
+            'position',
+            'diffuse',
+            'intensity',
+            'radius',
+            'range',
+            'specular'
+        ];
         return LightAdapter;
     }(INSPECTOR.Adapter));
-    LightAdapter._PROPERTIES = [
-        'position',
-        'diffuse',
-        'intensity',
-        'radius',
-        'range',
-        'specular'
-    ];
     INSPECTOR.LightAdapter = LightAdapter;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -1443,19 +1430,6 @@ var INSPECTOR;
         /** No tools for a material adapter */
         MaterialAdapter.prototype.getTools = function () {
             return [];
-        };
-        /** Overrides super.highlight.
-         * Highlighting a material outlines all meshes linked to this material
-         */
-        MaterialAdapter.prototype.highlight = function (b) {
-            var material = this.actualObject;
-            var meshes = material.getBindedMeshes();
-            for (var _i = 0, meshes_1 = meshes; _i < meshes_1.length; _i++) {
-                var mesh = meshes_1[_i];
-                mesh.renderOutline = b;
-                mesh.outlineWidth = 0.25;
-                mesh.outlineColor = BABYLON.Color3.Yellow();
-            }
         };
         return MaterialAdapter;
     }(INSPECTOR.Adapter));
@@ -1543,12 +1517,6 @@ var INSPECTOR;
         /** Returns some information about this mesh */
         MeshAdapter.prototype.getInfo = function () {
             return this._obj.getTotalVertices() + " vertices";
-        };
-        /** Overrides super.highlight */
-        MeshAdapter.prototype.highlight = function (b) {
-            this.actualObject.renderOutline = b;
-            this.actualObject.outlineWidth = 0.25;
-            this.actualObject.outlineColor = BABYLON.Color3.Yellow();
         };
         /** Draw X, Y and Z axis for the actual object if this adapter.
          * Should be called only one time as it will fill this._axis
@@ -2136,12 +2104,12 @@ var INSPECTOR;
                 }
             }
         };
+        // Array representing the simple type. All others are considered 'complex'
+        PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
+        // The number of pixel at each children step
+        PropertyLine._MARGIN_LEFT = 15;
         return PropertyLine;
     }());
-    // Array representing the simple type. All others are considered 'complex'
-    PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
-    // The number of pixel at each children step
-    PropertyLine._MARGIN_LEFT = 15;
     INSPECTOR.PropertyLine = PropertyLine;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -2668,10 +2636,10 @@ var INSPECTOR;
                 }
             }
         };
+        /** All properties are refreshed every 250ms */
+        Scheduler.REFRESH_TIME = 250;
         return Scheduler;
     }());
-    /** All properties are refreshed every 250ms */
-    Scheduler.REFRESH_TIME = 250;
     INSPECTOR.Scheduler = Scheduler;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -2733,10 +2701,6 @@ var INSPECTOR;
         /** Select an item in the tree */
         Tab.prototype.select = function (item) {
             // To define in subclasses if needed 
-        };
-        /** Highlight the given node, and downplay all others */
-        Tab.prototype.highlightNode = function (item) {
-            // To define in subclasses if needed
         };
         /**
          * Returns the total width in pixel of this tab, 0 by default
@@ -2832,24 +2796,10 @@ var INSPECTOR;
         };
         /** Select an item in the tree */
         PropertyTab.prototype.select = function (item) {
-            // Remove the node highlight
-            this.highlightNode();
             // Active the node
             this.activateNode(item);
             // Display its details
             this.displayDetails(item);
-        };
-        /** Highlight the given node, and downplay all others */
-        PropertyTab.prototype.highlightNode = function (item) {
-            if (this._treeItems) {
-                for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
-                    var node = _a[_i];
-                    node.highlight(false);
-                }
-            }
-            if (item) {
-                item.highlight(true);
-            }
         };
         /** Set the given item as active in the tree */
         PropertyTab.prototype.activateNode = function (item) {
@@ -3208,8 +3158,6 @@ var INSPECTOR;
         };
         /** Select an item in the tree */
         TextureTab.prototype.select = function (item) {
-            // Remove the node highlight
-            this.highlightNode();
             // Active the node
             this.activateNode(item);
             // Display its details
@@ -3224,18 +3172,6 @@ var INSPECTOR;
                 }
             }
             item.active(true);
-        };
-        /** Highlight the given node, and downplay all others */
-        TextureTab.prototype.highlightNode = function (item) {
-            if (this._treeItems) {
-                for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
-                    var node = _a[_i];
-                    node.highlight(false);
-                }
-            }
-            if (item) {
-                item.highlight(true);
-            }
         };
         return TextureTab;
     }(INSPECTOR.Tab));
@@ -3560,140 +3496,6 @@ var INSPECTOR;
         return SceneTab;
     }(INSPECTOR.Tab));
     INSPECTOR.SceneTab = SceneTab;
-})(INSPECTOR || (INSPECTOR = {}));
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var INSPECTOR;
-(function (INSPECTOR) {
-    var ShaderTab = (function (_super) {
-        __extends(ShaderTab, _super);
-        function ShaderTab(tabbar, insp) {
-            var _this = _super.call(this, tabbar, 'Shader') || this;
-            _this._inspector = insp;
-            // Build the shaders panel : a div that will contains the shaders tree and both shaders panels
-            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
-            var shaderPanel = INSPECTOR.Helpers.CreateDiv('shader-tree-panel');
-            _this._vertexPanel = INSPECTOR.Helpers.CreateDiv('shader-panel');
-            _this._fragmentPanel = INSPECTOR.Helpers.CreateDiv('shader-panel');
-            _this._panel.appendChild(shaderPanel);
-            _this._panel.appendChild(_this._vertexPanel);
-            _this._panel.appendChild(_this._fragmentPanel);
-            INSPECTOR.Helpers.LoadScript();
-            Split([_this._vertexPanel, _this._fragmentPanel], {
-                blockDrag: _this._inspector.popupMode,
-                sizes: [50, 50],
-                direction: 'vertical'
-            });
-            var comboBox = INSPECTOR.Helpers.CreateElement('select', '', shaderPanel);
-            comboBox.addEventListener('change', _this._selectShader.bind(_this));
-            var option = INSPECTOR.Helpers.CreateElement('option', '', comboBox);
-            option.textContent = 'Select a shader';
-            option.setAttribute('value', "");
-            option.setAttribute('disabled', 'true');
-            option.setAttribute('selected', 'true');
-            // Build shaders combobox
-            for (var _i = 0, _a = _this._inspector.scene.materials; _i < _a.length; _i++) {
-                var mat = _a[_i];
-                if (mat instanceof BABYLON.ShaderMaterial) {
-                    var option_1 = INSPECTOR.Helpers.CreateElement('option', '', comboBox);
-                    option_1.setAttribute('value', mat.id);
-                    option_1.textContent = mat.name + " - " + mat.id;
-                }
-            }
-            return _this;
-        }
-        ShaderTab.prototype._selectShader = function (event) {
-            var id = event.target.value;
-            var mat = this._inspector.scene.getMaterialByID(id);
-            // Clean shader panel
-            INSPECTOR.Helpers.CleanDiv(this._vertexPanel);
-            // add the title - vertex shader
-            var title = INSPECTOR.Helpers.CreateDiv('shader-panel-title', this._vertexPanel);
-            title.textContent = 'Vertex shader';
-            // add code
-            var code = INSPECTOR.Helpers.CreateElement('code', 'glsl', INSPECTOR.Helpers.CreateElement('pre', '', this._vertexPanel));
-            code.textContent = this._beautify(mat.getEffect().getVertexShaderSource());
-            INSPECTOR.Helpers.CleanDiv(this._fragmentPanel);
-            // add the title - fragment shader
-            title = INSPECTOR.Helpers.CreateDiv('shader-panel-title', this._fragmentPanel);
-            title.textContent = 'Frgament shader';
-            // add code
-            code = INSPECTOR.Helpers.CreateElement('code', 'glsl', INSPECTOR.Helpers.CreateElement('pre', '', this._fragmentPanel));
-            code.textContent = this._beautify(mat.getEffect().getFragmentShaderSource());
-            // Init the syntax highlighting
-            var styleInit = INSPECTOR.Helpers.CreateElement('script', '', INSPECTOR.Inspector.DOCUMENT.body);
-            styleInit.textContent = 'hljs.initHighlighting();';
-        };
-        /** Overrides super.dispose */
-        ShaderTab.prototype.dispose = function () {
-        };
-        /** Returns the position of the first { and the corresponding } */
-        ShaderTab.prototype._getBracket = function (str) {
-            var fb = str.indexOf('{');
-            var arr = str.substr(fb + 1).split('');
-            var counter = 1;
-            var currentPosInString = fb;
-            var lastBracketIndex = 0;
-            for (var _i = 0, arr_1 = arr; _i < arr_1.length; _i++) {
-                var char = arr_1[_i];
-                currentPosInString++;
-                if (char === '{') {
-                    counter++;
-                }
-                if (char === '}') {
-                    counter--;
-                }
-                if (counter == 0) {
-                    lastBracketIndex = currentPosInString;
-                    break;
-                }
-            }
-            return { firstBracket: fb, lastBracket: lastBracketIndex };
-        };
-        /**
-         * Beautify the given string : correct indentation
-         */
-        ShaderTab.prototype._beautify = function (glsl, level) {
-            if (level === void 0) { level = 0; }
-            // return condition : no brackets at all
-            var brackets = this._getBracket(glsl);
-            var firstBracket = brackets.firstBracket;
-            var lastBracket = brackets.lastBracket;
-            var spaces = "";
-            for (var i = 0; i < level; i++) {
-                spaces += "    "; // 4 spaces
-            }
-            // If no brackets, return the indented string
-            if (firstBracket == -1) {
-                glsl = spaces + glsl; // indent first line
-                glsl = glsl
-                    .replace(/;./g, function (x) { return '\n' + x.substr(1); }); // new line after ;  except the last one
-                glsl = glsl.replace(/=/g, " = "); // space around =
-                glsl = glsl.replace(/\n/g, "\n" + spaces); // indentation
-                return glsl;
-            }
-            else {
-                // if brackets, beautify the inside                                 
-                // let insideWithBrackets = glsl.substr(firstBracket, lastBracket-firstBracket+1);
-                var left = glsl.substr(0, firstBracket);
-                var right = glsl.substr(lastBracket + 1, glsl.length);
-                var inside = glsl.substr(firstBracket + 1, lastBracket - firstBracket - 1);
-                inside = this._beautify(inside, level + 1);
-                return this._beautify(left, level) + '{\n' + inside + '\n' + spaces + '}\n' + this._beautify(right, level);
-            }
-        };
-        return ShaderTab;
-    }(INSPECTOR.Tab));
-    INSPECTOR.ShaderTab = ShaderTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || (function () {
@@ -4147,7 +3949,6 @@ var INSPECTOR;
             _this._meshTab = new INSPECTOR.MeshTab(_this, _this._inspector);
             _this._tabs.push(new INSPECTOR.TextureTab(_this, _this._inspector));
             _this._tabs.push(_this._meshTab);
-            _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
             if (BABYLON.GUI) {
@@ -4846,7 +4647,6 @@ var INSPECTOR;
         /**
          * Add an event listener on the item :
          * - one click display details
-         * - on mouse hover the item is highlighted
          */
         TreeItem.prototype._addEvent = function () {
             var _this = this;
@@ -4861,27 +4661,6 @@ var INSPECTOR;
                 }
                 e.stopPropagation();
             });
-            // Highlight on mouse over
-            this._div.addEventListener('mouseover', function (e) {
-                _this._tab.highlightNode(_this);
-                e.stopPropagation();
-            });
-            // Remove highlight on mouse out
-            this._div.addEventListener('mouseout', function (e) {
-                _this._tab.highlightNode();
-            });
-        };
-        /** Highlight or downplay this node */
-        TreeItem.prototype.highlight = function (b) {
-            // Remove highlight for all children 
-            if (!b) {
-                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
-                    var child = _a[_i];
-                    child._adapter.highlight(b);
-                }
-            }
-            // Highlight this node
-            this._adapter.highlight(b);
         };
         /** Returns true if the node is folded, false otherwise */
         TreeItem.prototype._isFolded = function () {

@@ -43,18 +43,5 @@ module INSPECTOR {
         public getTools() : Array<AbstractTreeTool> {
             return [];
         }
-
-        /** Overrides super.highlight.
-         * Highlighting a material outlines all meshes linked to this material
-         */
-        public highlight(b:boolean) {
-            let material = this.actualObject as BABYLON.Material;
-            let meshes = material.getBindedMeshes();
-            for (let mesh of meshes) {
-                mesh.renderOutline = b;
-                mesh.outlineWidth = 0.25;
-                mesh.outlineColor = BABYLON.Color3.Yellow();
-            }
-        }
     }
 }

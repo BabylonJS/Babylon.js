@@ -79,6 +79,10 @@ module BABYLON.GUI {
         public get layer(): Layer {
             return this._layerToDispose;
         }   
+
+        public get rootContainer(): Container {
+            return this._rootContainer;
+        }
        
         constructor(name: string, width = 0, height = 0, scene: Scene, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
@@ -257,7 +261,8 @@ module BABYLON.GUI {
         }
 
         private _doPicking(x: number, y: number, type: number): void {
-            var engine = this.getScene().getEngine();
+            var scene = this.getScene();
+            var engine = scene.getEngine();
             var textureSize = this.getSize();
 
             if (this._isFullscreen) {
@@ -291,8 +296,14 @@ module BABYLON.GUI {
                     return;
                 }
 
+                let camera = scene.cameraToUseForPointers || scene.activeCamera;
+                let engine = scene.getEngine();
+                let viewport = camera.viewport;
+                let x = (scene.pointerX - viewport.x * engine.getRenderWidth()) / viewport.width;
+                let y = (scene.pointerY - viewport.y * engine.getRenderHeight()) / viewport.height;
+
                 this._shouldBlockPointer = false;
-                this._doPicking(scene.pointerX, scene.pointerY, pi.type);
+                this._doPicking(x, y, pi.type);
 
                 pi.skipOnPointerObservable = this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
             });
