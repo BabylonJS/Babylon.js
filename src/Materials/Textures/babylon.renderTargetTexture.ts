@@ -109,6 +109,7 @@
             this._onClearObserver = this.onClearObservable.add(callback);
         }
 
+        public clearColor: Color4;
         protected _size: number;
         public _generateMipMaps: boolean;
         protected _renderingManager: RenderingManager;
@@ -427,7 +428,7 @@
             if (this.onClearObservable.hasObservers()) {
                 this.onClearObservable.notifyObservers(engine);
             } else {
-                engine.clear(scene.clearColor, true, true, true);
+                engine.clear(this.clearColor || scene.clearColor, true, true, true);
             }
 
             if (!this._doNotChangeAspectRatio) {

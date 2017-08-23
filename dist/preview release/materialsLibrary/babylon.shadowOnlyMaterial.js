@@ -51,6 +51,16 @@ var BABYLON;
         ShadowOnlyMaterial.prototype.getAlphaTestTexture = function () {
             return null;
         };
+        Object.defineProperty(ShadowOnlyMaterial.prototype, "activeLight", {
+            get: function () {
+                return this._activeLight;
+            },
+            set: function (light) {
+                this._activeLight = light;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods   
         ShadowOnlyMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             if (this.isFrozen) {
@@ -69,6 +79,23 @@ var BABYLON;
                 }
             }
             var engine = scene.getEngine();
+            // Ensure that active light is the first shadow light
+            if (this._activeLight) {
+                for (var _i = 0, _a = mesh._lightSources; _i < _a.length; _i++) {
+                    var light = _a[_i];
+                    if (light.shadowEnabled) {
+                        if (this._activeLight === light) {
+                            break; // We are good
+                        }
+                        var lightPosition = mesh._lightSources.indexOf(this._activeLight);
+                        if (lightPosition !== -1) {
+                            mesh._lightSources.splice(lightPosition, 1);
+                            mesh._lightSources.splice(0, 0, this._activeLight);
+                        }
+                        break;
+                    }
+                }
+            }
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
