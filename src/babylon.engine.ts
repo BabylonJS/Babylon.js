@@ -591,6 +591,10 @@
         private _performanceMonitor = new PerformanceMonitor();
         private _fps = 60;
         private _deltaTime = 0;
+        /**
+         * Turn this value on if you want to pause FPS computation when in background
+         */
+        public disablePerformanceMonitorInBackground = false;
 
         public get performanceMonitor(): PerformanceMonitor {
             return this._performanceMonitor;
@@ -740,12 +744,16 @@
                 }
 
                 this._onBlur = () => {
-                    this._performanceMonitor.disable();
+                    if (this.disablePerformanceMonitorInBackground) {
+                        this._performanceMonitor.disable();
+                    }
                     this._windowIsBackground = true;
                 };
 
                 this._onFocus = () => {
-                    this._performanceMonitor.enable();
+                    if (this.disablePerformanceMonitorInBackground) {
+                        this._performanceMonitor.enable();
+                    }
                     this._windowIsBackground = false;
                 };
 
