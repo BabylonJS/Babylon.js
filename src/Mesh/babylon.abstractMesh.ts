@@ -128,8 +128,6 @@
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = Vector3.Zero();
 
-        private _occlusionBoundingBoxRenderer: OcclusionBoundingBoxRenderer;
-        private _gl = this.getEngine()._gl;
         private _webGLVersion = this.getEngine().webGLVersion;
         private _occlusionInternalRetryCounter = 0;
         public occlusionType = AbstractMesh.OCCLUSION_TYPE_NO_VALUE;
@@ -142,16 +140,10 @@
             this._isOccluded = value;
         }
 
-        public occlusionQuery = this._gl.createQuery();
+        public occlusionQuery = this.getEngine().createQuery();
         public isOcclusionQueryInProgress = false;
 
-        private _occlusionQueryAlgorithmType: number = this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE;
-        get occlusionQueryAlgorithmType(): number {
-            return this._occlusionQueryAlgorithmType === this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE ? AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE : AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE;
-        }
-        set occlusionQueryAlgorithmType(alogrithmType: number) {
-            this._occlusionQueryAlgorithmType = alogrithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
-        }
+        public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
 
         private _rotation = Vector3.Zero();
         private _rotationQuaternion: Quaternion;
@@ -1834,10 +1826,6 @@
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
 
-            if (this._occlusionBoundingBoxRenderer) {
-                this._occlusionBoundingBoxRenderer.dispose();
-            }
-
             this._isDisposed = true;
 
             super.dispose();
@@ -2288,15 +2276,13 @@
                 return;
             }
 
-            if (!this._occlusionBoundingBoxRenderer) {
-                var scene = this.getScene();
-                this._occlusionBoundingBoxRenderer = new OcclusionBoundingBoxRenderer(scene);
-            }
+            var engine = this.getEngine();
 
             if (this.isOcclusionQueryInProgress) {
-                var isOcclusionQueryAvailable = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
+                
+                var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this.occlusionQuery);
                 if (isOcclusionQueryAvailable) {
-                    var occlusionQueryResult = this._gl.getQueryParameter(this.occlusionQuery, this._gl.QUERY_RESULT) as number;
+                    var occlusionQueryResult = engine.getQueryResult(this.occlusionQuery);
 
                     this.isOcclusionQueryInProgress = false;
                     this._occlusionInternalRetryCounter = 0;
@@ -2322,9 +2308,12 @@
                 }
             }
 
-            this._gl.beginQuery(this._occlusionQueryAlgorithmType, this.occlusionQuery);
-            this._occlusionBoundingBoxRenderer.render(this);
-            this._gl.endQuery(this._occlusionQueryAlgorithmType);
+
+            var scene = this.getScene();
+            var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
+            engine.beginQuery(this.occlusionQueryAlgorithmType, this.occlusionQuery);
+            occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
+            engine.endQuery(this.occlusionQueryAlgorithmType);
             this.isOcclusionQueryInProgress = true;
         }
 

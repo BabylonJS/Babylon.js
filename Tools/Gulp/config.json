@@ -80,8 +80,7 @@
                 "../../src/Mesh/babylon.mesh.vertexData.js",
                 "../../src/Mesh/babylon.geometry.js",
                 "../../src/PostProcess/babylon.postProcessManager.js",
-                "../../src/Tools/babylon.performanceMonitor.js",
-                "../../src/Rendering/babylon.occlusionBoundingBoxRenderer.js"
+                "../../src/Tools/babylon.performanceMonitor.js"
             ]
         },         
         "particles" : 
@@ -95,9 +94,7 @@
             ],
             "shaders" : [
                 "particles.vertex",
-                "particles.fragment",
-                "color.vertex",
-                "color.fragment"
+                "particles.fragment"
             ]
         },       
         "cameraBehaviors" : 
