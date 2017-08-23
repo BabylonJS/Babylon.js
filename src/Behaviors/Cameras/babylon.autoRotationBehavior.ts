@@ -69,7 +69,7 @@ module BABYLON {
 		 * Gets a value indicating if the camera is currently rotating because of this behavior
 		 */
 		public get rotationInProgress(): boolean {
-			return this._cameraRotationSpeed > 0;
+			return Math.abs(this._cameraRotationSpeed) > 0;
 		}
         
         // Default behavior functions
