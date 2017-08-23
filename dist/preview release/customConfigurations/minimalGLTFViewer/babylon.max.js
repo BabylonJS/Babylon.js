@@ -10993,12 +10993,15 @@ var BABYLON;
             return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT);
         };
         Engine.prototype.beginQuery = function (algorithmType, query) {
-            var glAlgorithm = algorithmType === BABYLON.AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.beginQuery(glAlgorithm, query);
         };
         Engine.prototype.endQuery = function (algorithmType) {
-            var glAlgorithm = algorithmType === BABYLON.AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.endQuery(glAlgorithm);
+        };
+        Engine.prototype.getGlAlgorithmType = function (algorithmType) {
+            return algorithmType === BABYLON.AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
         };
         // Statics
         Engine.isSupported = function () {
