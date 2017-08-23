@@ -137,7 +137,7 @@
         private _sourceNormals: Float32Array;   // Will be used to save original normals when using software skinning
 
         // Will be used to save a source mesh reference, If any
-        private _source: BABYLON.Mesh = null; 
+        private _source: BABYLON.Mesh = null;
         public get source(): BABYLON.Mesh {
             return this._source;
         }
@@ -224,7 +224,7 @@
          */
         public getClassName(): string {
             return "Mesh";
-        }   
+        }
 
         /**
          * Returns a string.  
@@ -648,7 +648,7 @@
             if (this.subMeshes && this.subMeshes.length > 0) {
                 var totalIndices = this.getIndices().length;
                 let needToRecreate = false;
-    
+
                 if (force) {
                     needToRecreate = true;
                 } else {
@@ -1106,6 +1106,12 @@
          * Returns the Mesh.   
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+
+            this.checkOcclusionQuery();
+            if (this._isOccluded) {
+                return;
+            }
+
             var scene = this.getScene();
 
             // Managing instances
@@ -1145,7 +1151,7 @@
             if (enableAlphaMode) {
                 engine.setAlphaMode(effectiveMaterial.alphaMode);
             }
-            
+
             // Outline - step 1
             var savedDepthWrite = engine.getDepthWrite();
             if (this.renderOutline) {
@@ -1171,7 +1177,7 @@
             }
 
             var world = this.getWorldMatrix();
-            
+
             if (effectiveMaterial.storeEffectOnSubMeshes) {
                 effectiveMaterial.bindForSubMesh(world, this, subMesh);
             } else {
@@ -1272,8 +1278,7 @@
                     this._delayLoadingFunction(JSON.parse(data), this);
                 }
 
-                this.instances.forEach(instance =>
-                {
+                this.instances.forEach(instance => {
                     instance._syncSubMeshes();
                 });
 
@@ -2006,7 +2011,7 @@
             // Alpha
             serializationObject.alphaIndex = this.alphaIndex;
             serializationObject.hasVertexAlpha = this.hasVertexAlpha;
-            
+
             // Overlay
             serializationObject.overlayAlpha = this.overlayAlpha;
             serializationObject.overlayColor = this.overlayColor.asArray();
@@ -2020,7 +2025,7 @@
                 serializationObject.actions = this.actionManager.serialize(this.name);
             }
         }
-        
+
         public _syncGeometryWithMorphTargetManager() {
             if (!this.geometry) {
                 return;
@@ -2048,22 +2053,19 @@
                 }
             } else {
                 var index = 0;
-                
+
                 // Positions
-                while (this.geometry.isVerticesDataPresent(VertexBuffer.PositionKind + index))
-                {
+                while (this.geometry.isVerticesDataPresent(VertexBuffer.PositionKind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.PositionKind + index);
-                    
-                    if (this.geometry.isVerticesDataPresent(VertexBuffer.NormalKind + index))
-                    {
+
+                    if (this.geometry.isVerticesDataPresent(VertexBuffer.NormalKind + index)) {
                         this.geometry.removeVerticesData(VertexBuffer.NormalKind + index);
                     }
-                    if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index))
-                    {
+                    if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index)) {
                         this.geometry.removeVerticesData(VertexBuffer.TangentKind + index);
                     }
                     index++;
-                }    
+                }
             }
         }
 
@@ -2074,7 +2076,7 @@
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
-            var mesh : Mesh;
+            var mesh: Mesh;
 
             if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
                 mesh = GroundMesh.Parse(parsedMesh, scene);
@@ -2139,7 +2141,7 @@
             if (parsedMesh.isBlocker !== undefined) {
                 mesh.isBlocker = parsedMesh.isBlocker;
             }
-            
+
             mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
 
             // freezeWorldMatrix
@@ -2549,12 +2551,12 @@
                 sideOrientation: sideOrientation
             }
             return MeshBuilder.CreatePolygon(name, options, scene);
-		}
+        }
 
-       /**
-         * Creates an extruded polygon mesh, with depth in the Y direction. 
-         * Please consider using the same method from the MeshBuilder class instead. 
-		*/
+        /**
+          * Creates an extruded polygon mesh, with depth in the Y direction. 
+          * Please consider using the same method from the MeshBuilder class instead. 
+         */
         public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
                 shape: shape,
@@ -2564,7 +2566,7 @@
                 sideOrientation: sideOrientation
             }
             return MeshBuilder.ExtrudePolygon(name, options, scene);
-		}
+        }
 
         /**
          * Creates an extruded shape mesh.    
@@ -3092,12 +3094,12 @@
 
             // Subdivide
             if (subdivideWithSubMeshes) {
-                
+
                 //-- Suppresions du submesh global
                 meshSubclass.releaseSubMeshes();
                 index = 0;
                 var offset = 0;
-                
+
                 //-- aplique la subdivision en fonction du tableau d'indices
                 while (index < indiceArray.length) {
                     BABYLON.SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
