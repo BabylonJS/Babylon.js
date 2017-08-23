@@ -67149,8 +67149,10 @@ var BABYLON;
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 var alphaTexture = material.getAlphaTestTexture();
-                this._effect.setTexture("diffuseSampler", alphaTexture);
-                this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                if (alphaTexture) {
+                    this._effect.setTexture("diffuseSampler", alphaTexture);
+                    this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                }
             }
             engine.setZOffset(-this.zOffset);
             mesh._processRendering(subMesh, this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { _this._effect.setMatrix("world", world); });
@@ -69872,7 +69874,7 @@ var BABYLON;
 (function (BABYLON) {
     var FramingBehavior = (function () {
         function FramingBehavior() {
-            this._mode = FramingBehavior.IgnoreBoundsSizeMode;
+            this._mode = FramingBehavior.FitFrustumSidesMode;
             this._radiusScale = 1.0;
             this._positionY = 0;
             this._defaultElevation = 0.3;
@@ -70064,13 +70066,10 @@ var BABYLON;
          * Targets the given mesh and updates zoom level accordingly.
          * @param mesh  The mesh to target.
          * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param applyToLowerLimit Optional. Indicates if the calculated target radius should be applied to the
-         *		camera's lower radius limit too.
          * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          */
-        FramingBehavior.prototype.zoomOnMesh = function (mesh, radius, applyToLowerLimit, framingPositionY, focusOnOriginXZ) {
-            if (applyToLowerLimit === void 0) { applyToLowerLimit = true; }
+        FramingBehavior.prototype.zoomOnMesh = function (mesh, radius, framingPositionY, focusOnOriginXZ) {
             if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
             if (framingPositionY == null) {
                 framingPositionY = this._positionY;
@@ -70095,16 +70094,13 @@ var BABYLON;
                 var delta = 0.1;
                 if (this._mode === FramingBehavior.FitFrustumSidesMode) {
                     var position = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-                    this._attachedCamera.lowerRadiusLimit = position - delta;
+                    this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld + this._attachedCamera.minZ;
                     radius = position;
                 }
                 else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
                     radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
+                    this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
                 }
-            }
-            if (applyToLowerLimit) {
-                this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld;
-                ;
             }
             // transition to new radius
             if (!this._radiusTransition) {
