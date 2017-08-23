@@ -9,7 +9,7 @@ module BABYLON {
     class GlowBlurPostProcess extends PostProcess {
         constructor(name: string, public direction: Vector2, public kernel: number, options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
             super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
-           
+
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
                 effect.setVector2("direction", this.direction);
@@ -371,7 +371,7 @@ module BABYLON {
             }
             else {
                 this._horizontalBlurPostprocess = new BlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
-                null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
@@ -445,8 +445,10 @@ module BABYLON {
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        this._glowMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
-                        this._glowMapGenerationEffect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        if (alphaTexture) {
+                            this._glowMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
+                            this._glowMapGenerationEffect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
                     }
 
                     // Glow emissive only
@@ -613,7 +615,7 @@ module BABYLON {
             var previousStencilMask = engine.getStencilMask();
             var previousStencilOperationPass = engine.getStencilOperationPass();
             var previousStencilOperationFail = engine.getStencilOperationFail();
-            var previousStencilOperationDepthFail = engine.getStencilOperationDepthFail();            
+            var previousStencilOperationDepthFail = engine.getStencilOperationDepthFail();
             var previousAlphaMode = engine.getAlphaMode();
 
             // Texture
@@ -651,7 +653,7 @@ module BABYLON {
             engine.setStencilBuffer(previousStencilBuffer);
             engine.setStencilOperationPass(previousStencilOperationPass);
             engine.setStencilOperationFail(previousStencilOperationFail);
-            engine.setStencilOperationDepthFail(previousStencilOperationDepthFail);            
+            engine.setStencilOperationDepthFail(previousStencilOperationDepthFail);
 
             (<any>engine)._stencilState.reset();
 
