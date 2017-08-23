@@ -11820,7 +11820,7 @@ var BABYLON;
             _this.position = BABYLON.Vector3.Zero();
             _this._webGLVersion = _this.getEngine().webGLVersion;
             _this._occlusionInternalRetryCounter = 0;
-            _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NO_VALUE;
+            _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
             _this.occlusionRetryCount = -1;
             _this._isOccluded = false;
             _this.occlusionQuery = _this.getEngine().createQuery();
@@ -13859,7 +13859,7 @@ var BABYLON;
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
         };
         AbstractMesh.prototype.checkOcclusionQuery = function () {
-            if (this._webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NO_VALUE) {
+            if (this._webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
                 this._isOccluded = false;
                 return;
             }
@@ -13900,7 +13900,7 @@ var BABYLON;
         AbstractMesh._BILLBOARDMODE_Y = 2;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
-        AbstractMesh.OCCLUSION_TYPE_NO_VALUE = 0;
+        AbstractMesh.OCCLUSION_TYPE_NONE = 0;
         AbstractMesh.OCCLUSION_TYPE_OPTIMISITC = 1;
         AbstractMesh.OCCLUSION_TYPE_STRICT = 2;
         AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;

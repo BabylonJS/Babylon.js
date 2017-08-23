@@ -7,7 +7,7 @@
         private static _BILLBOARDMODE_Z = 4;
         private static _BILLBOARDMODE_ALL = 7;
 
-        public static OCCLUSION_TYPE_NO_VALUE = 0;
+        public static OCCLUSION_TYPE_NONE = 0;
         public static OCCLUSION_TYPE_OPTIMISITC = 1;
         public static OCCLUSION_TYPE_STRICT = 2;
         public static OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
@@ -130,7 +130,7 @@
 
         private _webGLVersion = this.getEngine().webGLVersion;
         private _occlusionInternalRetryCounter = 0;
-        public occlusionType = AbstractMesh.OCCLUSION_TYPE_NO_VALUE;
+        public occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
         public occlusionRetryCount = -1;
         protected _isOccluded = false;
         get isOccluded(): boolean {
@@ -2271,7 +2271,7 @@
         }
 
         protected checkOcclusionQuery() {
-            if (this._webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NO_VALUE) {
+            if (this._webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
                 this._isOccluded = false;
                 return;
             }
