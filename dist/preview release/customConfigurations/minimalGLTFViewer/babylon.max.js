@@ -7460,6 +7460,10 @@ var BABYLON;
             this._performanceMonitor = new BABYLON.PerformanceMonitor();
             this._fps = 60;
             this._deltaTime = 0;
+            /**
+             * Turn this value on if you want to pause FPS computation when in background
+             */
+            this.disablePerformanceMonitorInBackground = false;
             // States
             this._depthCullingState = new BABYLON.Internals._DepthCullingState();
             this._stencilState = new BABYLON.Internals._StencilState();
@@ -7552,11 +7556,15 @@ var BABYLON;
                     throw new Error("WebGL not supported");
                 }
                 this._onBlur = function () {
-                    _this._performanceMonitor.disable();
+                    if (_this.disablePerformanceMonitorInBackground) {
+                        _this._performanceMonitor.disable();
+                    }
                     _this._windowIsBackground = true;
                 };
                 this._onFocus = function () {
-                    _this._performanceMonitor.enable();
+                    if (_this.disablePerformanceMonitorInBackground) {
+                        _this._performanceMonitor.enable();
+                    }
                     _this._windowIsBackground = false;
                 };
                 this._onCanvasBlur = function () {
@@ -32847,7 +32855,7 @@ var BABYLON;
                 this.onClearObservable.notifyObservers(engine);
             }
             else {
-                engine.clear(scene.clearColor, true, true, true);
+                engine.clear(this.clearColor || scene.clearColor, true, true, true);
             }
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
