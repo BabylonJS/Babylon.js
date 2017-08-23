@@ -373,13 +373,13 @@ namespace Max2Babylon
                 List<float> uvs = new List<float>();
                 if (hasUV)
                 {
-                    uvs = globalVertices.SelectMany(v => new[] { v.UV.X, v.UV.Y }).ToList(); // No symetry required to perform 3dsMax => gltf conversion
+                    uvs = globalVertices.SelectMany(v => new[] { v.UV.X, v.UV.Y }).ToList();
                 }
 
                 List<float> uvs2 = new List<float>();
                 if (hasUV2)
                 {
-                    uvs2 = globalVertices.SelectMany(v => new[] { v.UV2.X, v.UV2.Y }).ToList(); // No symetry required to perform 3dsMax => gltf conversion
+                    uvs2 = globalVertices.SelectMany(v => new[] { v.UV2.X, v.UV2.Y }).ToList();
                 }
 
                 // Write data to binary file

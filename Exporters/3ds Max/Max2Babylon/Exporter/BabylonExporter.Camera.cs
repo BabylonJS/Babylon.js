@@ -57,7 +57,7 @@ namespace Max2Babylon
             babylonCamera.ellipsoid = cameraNode.MaxNode.GetVector3Property("babylonjs_ellipsoid");
 
             // Position
-            var wm = cameraNode.GetLocalTM(0);
+            var wm = cameraNode.GetObjectTM(0);
             if (cameraNode.NodeParent != null)
             {
                 var parentWorld = cameraNode.NodeParent.GetObjectTM(0);

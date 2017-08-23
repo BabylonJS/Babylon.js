@@ -5,8 +5,6 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        //readonly List<IIGameMaterial> referencedMaterials = new List<IIGameMaterial>();
-
         private void ExportMaterial(BabylonMaterial babylonMaterial, GLTF gltf)
         {
             var name = babylonMaterial.name;
@@ -117,6 +115,7 @@ namespace Max2Babylon
                 var gltfPbrMetallicRoughness = new GLTFPBRMetallicRoughness();
                 gltfMaterial.pbrMetallicRoughness = gltfPbrMetallicRoughness;
 
+                // TODO - Retreive diffuse or albedo?
                 // Base color
                 var babylonDiffuseColor = babylonStandardMaterial.diffuse;
                 gltfPbrMetallicRoughness.baseColorFactor = new float[4]
@@ -127,7 +126,7 @@ namespace Max2Babylon
                     babylonMaterial.alpha
                 };
                 gltfPbrMetallicRoughness.baseColorTexture = ExportTexture(babylonStandardMaterial.diffuseTexture, gltf);
-
+                 
                 // TODO - Metallic roughness
                 gltfPbrMetallicRoughness.metallicFactor = 0; // Non metal
                 // TODO - roughnessFactor
@@ -137,13 +136,15 @@ namespace Max2Babylon
 
         private void getAlphaMode(BabylonStandardMaterial babylonMaterial, out string alphaMode, out float? alphaCutoff)
         {
-            if (babylonMaterial.diffuseTexture.hasAlpha)
+            if (babylonMaterial.diffuseTexture != null && babylonMaterial.diffuseTexture.hasAlpha)
             {
+                // TODO - Babylon standard material is assumed to useAlphaFromDiffuseTexture. If not, the alpha mode is a mask.
                 alphaMode = GLTFMaterial.AlphaMode.BLEND.ToString();
             }
             else
             {
-                alphaMode = GLTFMaterial.AlphaMode.OPAQUE.ToString();
+                // glTF alpha mode default value is "OPAQUE"
+                alphaMode = null; // GLTFMaterial.AlphaMode.OPAQUE.ToString();
             }
             alphaCutoff = null;
         }
