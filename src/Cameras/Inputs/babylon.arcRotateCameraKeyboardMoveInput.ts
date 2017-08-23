@@ -5,6 +5,8 @@ module BABYLON {
         private _onKeyDown: (e: KeyboardEvent) => any;
         private _onKeyUp: (e: KeyboardEvent) => any;
         private _onLostFocus: (e: FocusEvent) => any;
+        private _onFocus: () => void;
+        private _onBlur: () => void;
         
         @serialize()
         public keysUp = [38];
@@ -65,8 +67,18 @@ module BABYLON {
                 this._keys = [];
             };
 
-            element.addEventListener("keydown", this._onKeyDown, false);
-            element.addEventListener("keyup", this._onKeyUp, false);
+            this._onFocus = () => {
+                element.addEventListener("keydown", this._onKeyDown, false);
+                element.addEventListener("keyup", this._onKeyUp, false);   
+            }
+
+            this._onBlur = () => {
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
+            }
+
+            element.addEventListener("focus", this._onFocus);
+            element.addEventListener("blur", this._onBlur);
 
             Tools.RegisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
@@ -74,9 +86,10 @@ module BABYLON {
         }
 
         public detachControl(element: HTMLElement) {
-            if (element) {
-                element.removeEventListener("keydown", this._onKeyDown);
-                element.removeEventListener("keyup", this._onKeyUp);
+            if (element && this._onBlur) {
+                this._onBlur();
+                element.removeEventListener("focus", this._onFocus);
+                element.removeEventListener("blur", this._onBlur);
             }
 
             Tools.UnregisterTopRootEvents([
@@ -87,6 +100,8 @@ module BABYLON {
             this._onKeyDown = null;
             this._onKeyUp = null;
             this._onLostFocus = null;
+            this._onBlur = null;
+            this._onFocus = null;
         }
 
         public checkInputs() {
