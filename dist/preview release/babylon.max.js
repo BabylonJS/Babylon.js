@@ -34885,6 +34885,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ArcRotateCamera.prototype, "bouncingBehavior", {
+            get: function () {
+                return this._bouncingBehavior;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ArcRotateCamera.prototype, "useBouncingBehavior", {
             get: function () {
                 return this._bouncingBehavior != null;
@@ -34905,6 +34912,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ArcRotateCamera.prototype, "framingBehavior", {
+            get: function () {
+                return this._framingBehavior;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ArcRotateCamera.prototype, "useFramingBehavior", {
             get: function () {
                 return this._framingBehavior != null;
@@ -34921,6 +34935,13 @@ var BABYLON;
                     this.removeBehavior(this._framingBehavior);
                     this._framingBehavior = null;
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArcRotateCamera.prototype, "autoRotationBehavior", {
+            get: function () {
+                return this._autoRotationBehavior;
             },
             enumerable: true,
             configurable: true
@@ -70499,7 +70520,7 @@ var BABYLON;
              * Gets a value indicating if the camera is currently rotating because of this behavior
              */
             get: function () {
-                return this._cameraRotationSpeed > 0;
+                return Math.abs(this._cameraRotationSpeed) > 0;
             },
             enumerable: true,
             configurable: true
