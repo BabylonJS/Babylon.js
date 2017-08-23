@@ -4404,13 +4404,17 @@
         }
 
         public beginQuery(algorithmType: number, query: WebGLQuery) {
-            var glAlgorithm = algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.beginQuery(glAlgorithm, query);
         }
 
         public endQuery(algorithmType: number) {
-            var glAlgorithm = algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.endQuery(glAlgorithm);
+        }
+
+        private getGlAlgorithmType(algorithmType: number): number {
+            return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
         }
 
         // Statics
