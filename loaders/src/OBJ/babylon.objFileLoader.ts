@@ -82,6 +82,10 @@ module BABYLON {
                     //color = [r,g,b]
                     //Set the color into the material
                     material.specularColor = BABYLON.Color3.FromArray(color);
+                } else if (key === "ke") {
+                    // Emissive color using RGB values
+                    color = value.split(delimiter_pattern, 3);
+                    material.emissiveColor = BABYLON.Color3.FromArray(color);
                 } else if (key === "ns") {
 
                     //value = "Integer"
@@ -164,6 +168,10 @@ module BABYLON {
          * @return The Texture
          */
         private static _getTexture(rootUrl: string, value: string, scene: Scene): Texture {
+            if (!value) {
+                return null;
+            }
+
             var url = rootUrl;
             // Load from input file.
             if (rootUrl === "file:") {
