@@ -4395,8 +4395,10 @@
             return this._gl.createQuery();
         }
 
-        public deleteQuery(query: WebGLQuery): void {
+        public deleteQuery(query: WebGLQuery): Engine {
             this.deleteQuery(query);
+
+            return this;
         }
 
         public isQueryResultAvailable(query: WebGLQuery): boolean {
@@ -4412,9 +4414,11 @@
             this._gl.beginQuery(glAlgorithm, query);
         }
 
-        public endQuery(algorithmType: number) {
+        public endQuery(algorithmType: number): Engine {
             var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.endQuery(glAlgorithm);
+
+            return this;
         }
 
         private getGlAlgorithmType(algorithmType: number): number {

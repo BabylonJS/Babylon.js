@@ -139,7 +139,7 @@
         }
 
         private _isOcclusionQueryInProgress = false;
-        public get isOcclusionQueryInProgress() {
+        public get isOcclusionQueryInProgress(): boolean {
             return this._isOcclusionQueryInProgress;
         }
 
