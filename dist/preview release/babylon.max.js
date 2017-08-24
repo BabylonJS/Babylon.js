@@ -70240,7 +70240,7 @@ var BABYLON;
             // Slope of the frustum left/right planes in view space, relative to the forward vector.
             // Provides the amount that one side (e.g. left) of the frustum gets wider for every unit
             // along the forward vector.
-            var frustumSlopeX = frustumSlopeY / aspectRatio;
+            var frustumSlopeX = frustumSlopeY * aspectRatio;
             return new BABYLON.Vector2(frustumSlopeX, frustumSlopeY);
         };
         /**
