@@ -4,7 +4,7 @@ module BABYLON {
             return "Framing";
         }
 
-        private _mode = FramingBehavior.IgnoreBoundsSizeMode;
+        private _mode = FramingBehavior.FitFrustumSidesMode;
         private _radiusScale = 1.0;
         private _positionY = 0;
         private _defaultElevation = 0.3;
@@ -201,12 +201,10 @@ module BABYLON {
 		 * Targets the given mesh and updates zoom level accordingly.
 		 * @param mesh  The mesh to target.
 		 * @param radius Optional. If a cached radius position already exists, overrides default.
-		 * @param applyToLowerLimit Optional. Indicates if the calculated target radius should be applied to the
-		 *		camera's lower radius limit too.
 		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
 		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
 		 */
-		public zoomOnMesh(mesh: AbstractMesh, radius?: number, applyToLowerLimit: boolean = true, framingPositionY?: number, focusOnOriginXZ: boolean = false): void {
+		public zoomOnMesh(mesh: AbstractMesh, radius?: number, framingPositionY?: number, focusOnOriginXZ: boolean = false): void {
 			if (framingPositionY == null) {
 				framingPositionY = this._positionY;
 			}
@@ -236,15 +234,12 @@ module BABYLON {
 				let delta = 0.1;
 				if (this._mode === FramingBehavior.FitFrustumSidesMode) {
 					let position = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-					this._attachedCamera.lowerRadiusLimit = position - delta;
+					this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld + this._attachedCamera.minZ;
 					radius = position;
 				} else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
 					radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
+					this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
 				}
-			}
-
-			if (applyToLowerLimit) {
-				this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld;;
 			}
 
 			// transition to new radius
