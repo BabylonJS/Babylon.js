@@ -76,6 +76,11 @@ var BABYLON;
                         //Set the color into the material
                         material.specularColor = BABYLON.Color3.FromArray(color);
                     }
+                    else if (key === "ke") {
+                        // Emissive color using RGB values
+                        color = value.split(delimiter_pattern, 3);
+                        material.emissiveColor = BABYLON.Color3.FromArray(color);
+                    }
                     else if (key === "ns") {
                         //value = "Integer"
                         material.specularPower = value;
@@ -173,6 +178,9 @@ var BABYLON;
          * @return The Texture
          */
         MTLFileLoader._getTexture = function (rootUrl, value, scene) {
+            if (!value) {
+                return null;
+            }
             var url = rootUrl;
             // Load from input file.
             if (rootUrl === "file:") {

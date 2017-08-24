@@ -5718,6 +5718,7 @@ var BABYLON;
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
             url = Tools.CleanUrl(url);
+            url = Tools.PreprocessUrl(url);
             var img = new Image();
             if (url.substr(0, 5) !== "data:") {
                 Tools.SetCorsBehavior(url, img);
@@ -5778,6 +5779,7 @@ var BABYLON;
         //ANY
         Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError) {
             url = Tools.CleanUrl(url);
+            url = Tools.PreprocessUrl(url);
             var noIndexedDB = function () {
                 var request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;
@@ -6487,6 +6489,9 @@ var BABYLON;
         Tools.UseFallbackTexture = true;
         // Used in case of a texture loading problem 
         Tools.fallbackTexture = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
+        Tools.PreprocessUrl = function (url) {
+            return url;
+        };
         // Logs
         Tools._NoneLogLevel = 0;
         Tools._MessageLogLevel = 1;
@@ -7455,6 +7460,10 @@ var BABYLON;
             this._performanceMonitor = new BABYLON.PerformanceMonitor();
             this._fps = 60;
             this._deltaTime = 0;
+            /**
+             * Turn this value on if you want to pause FPS computation when in background
+             */
+            this.disablePerformanceMonitorInBackground = false;
             // States
             this._depthCullingState = new BABYLON.Internals._DepthCullingState();
             this._stencilState = new BABYLON.Internals._StencilState();
@@ -7547,11 +7556,15 @@ var BABYLON;
                     throw new Error("WebGL not supported");
                 }
                 this._onBlur = function () {
-                    _this._performanceMonitor.disable();
+                    if (_this.disablePerformanceMonitorInBackground) {
+                        _this._performanceMonitor.disable();
+                    }
                     _this._windowIsBackground = true;
                 };
                 this._onFocus = function () {
-                    _this._performanceMonitor.enable();
+                    if (_this.disablePerformanceMonitorInBackground) {
+                        _this._performanceMonitor.enable();
+                    }
                     _this._windowIsBackground = false;
                 };
                 this._onCanvasBlur = function () {
@@ -10384,6 +10397,9 @@ var BABYLON;
         ;
         Engine.prototype._prepareWebGLTextureContinuation = function (texture, scene, noMipmap, isCompressed, samplingMode) {
             var gl = this._gl;
+            if (!gl) {
+                return;
+            }
             var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
@@ -10404,6 +10420,9 @@ var BABYLON;
             var potWidth = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(width, this.getCaps().maxTextureSize) : width;
             var potHeight = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(height, this.getCaps().maxTextureSize) : height;
             var gl = this._gl;
+            if (!gl) {
+                return;
+            }
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
             texture._baseWidth = width;
@@ -10964,6 +10983,26 @@ var BABYLON;
             return this._gl.RGBA;
         };
         ;
+        Engine.prototype.createQuery = function () {
+            return this._gl.createQuery();
+        };
+        Engine.prototype.isQueryResultAvailable = function (query) {
+            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE);
+        };
+        Engine.prototype.getQueryResult = function (query) {
+            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT);
+        };
+        Engine.prototype.beginQuery = function (algorithmType, query) {
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
+            this._gl.beginQuery(glAlgorithm, query);
+        };
+        Engine.prototype.endQuery = function (algorithmType) {
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
+            this._gl.endQuery(glAlgorithm);
+        };
+        Engine.prototype.getGlAlgorithmType = function (algorithmType) {
+            return algorithmType === BABYLON.AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+        };
         // Statics
         Engine.isSupported = function () {
             try {
@@ -11779,6 +11818,14 @@ var BABYLON;
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
             _this.position = BABYLON.Vector3.Zero();
+            _this._webGLVersion = _this.getEngine().webGLVersion;
+            _this._occlusionInternalRetryCounter = 0;
+            _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
+            _this.occlusionRetryCount = -1;
+            _this._isOccluded = false;
+            _this.occlusionQuery = _this.getEngine().createQuery();
+            _this.isOcclusionQueryInProgress = false;
+            _this.occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
             _this._rotation = BABYLON.Vector3.Zero();
             _this._scaling = BABYLON.Vector3.One();
             _this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
@@ -11955,6 +12002,16 @@ var BABYLON;
                     this.onCollisionPositionChangeObservable.remove(this._onCollisionPositionChangeObserver);
                 }
                 this._onCollisionPositionChangeObserver = this.onCollisionPositionChangeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "isOccluded", {
+            get: function () {
+                return this._isOccluded;
+            },
+            set: function (value) {
+                this._isOccluded = value;
             },
             enumerable: true,
             configurable: true
@@ -13801,12 +13858,53 @@ var BABYLON;
             BABYLON.VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
         };
+        AbstractMesh.prototype.checkOcclusionQuery = function () {
+            if (this._webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
+                this._isOccluded = false;
+                return;
+            }
+            var engine = this.getEngine();
+            if (this.isOcclusionQueryInProgress) {
+                var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this.occlusionQuery);
+                if (isOcclusionQueryAvailable) {
+                    var occlusionQueryResult = engine.getQueryResult(this.occlusionQuery);
+                    this.isOcclusionQueryInProgress = false;
+                    this._occlusionInternalRetryCounter = 0;
+                    this._isOccluded = occlusionQueryResult === 1 ? false : true;
+                }
+                else {
+                    this._occlusionInternalRetryCounter++;
+                    if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
+                        // break;
+                        this.isOcclusionQueryInProgress = false;
+                        this._occlusionInternalRetryCounter = 0;
+                        // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
+                        // if strict continue the last state of the object.
+                        this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISITC ? false : this._isOccluded;
+                    }
+                    else {
+                        return;
+                    }
+                }
+            }
+            var scene = this.getScene();
+            var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
+            engine.beginQuery(this.occlusionQueryAlgorithmType, this.occlusionQuery);
+            occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
+            engine.endQuery(this.occlusionQueryAlgorithmType);
+            this.isOcclusionQueryInProgress = true;
+        };
         // Statics
         AbstractMesh._BILLBOARDMODE_NONE = 0;
         AbstractMesh._BILLBOARDMODE_X = 1;
         AbstractMesh._BILLBOARDMODE_Y = 2;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
+        AbstractMesh.OCCLUSION_TYPE_NONE = 0;
+        AbstractMesh.OCCLUSION_TYPE_OPTIMISITC = 1;
+        AbstractMesh.OCCLUSION_TYPE_STRICT = 2;
+        AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
+        AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
         AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
         AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
@@ -21291,7 +21389,7 @@ var BABYLON;
                         engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
                     }
                     else {
-                        engine.draw(false, 0, instancesCount > 0 ? subMesh.linesIndexCount / 2 : subMesh.linesIndexCount, instancesCount);
+                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
                     }
                     break;
                 default:
@@ -21410,7 +21508,7 @@ var BABYLON;
             else {
                 instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
             }
-            this.geometry._bind(effect);
+            this._bind(subMesh, effect, fillMode);
             this._draw(subMesh, fillMode, instancesCount);
             engine.unbindInstanceAttributes();
             return this;
@@ -21450,6 +21548,10 @@ var BABYLON;
          * Returns the Mesh.
          */
         Mesh.prototype.render = function (subMesh, enableAlphaMode) {
+            this.checkOcclusionQuery();
+            if (this._isOccluded) {
+                return;
+            }
             var scene = this.getScene();
             // Managing instances
             var batch = this._getInstancesRenderList(subMesh._id);
@@ -21498,7 +21600,9 @@ var BABYLON;
             effectiveMaterial._preBind(effect);
             // Bind
             var fillMode = scene.forcePointsCloud ? BABYLON.Material.PointFillMode : (scene.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode);
-            this._bind(subMesh, effect, fillMode);
+            if (!hardwareInstancedRendering) {
+                this._bind(subMesh, effect, fillMode);
+            }
             var world = this.getWorldMatrix();
             if (effectiveMaterial.storeEffectOnSubMeshes) {
                 effectiveMaterial.bindForSubMesh(world, this, subMesh);
@@ -31541,11 +31645,13 @@ var BABYLON;
                             if (!this._reflectivityTexture.isReadyOrNotBlocking()) {
                                 return false;
                             }
+                            defines.METALLICWORKFLOW = false;
                             BABYLON.MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
                             defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
                             defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
                         }
                         else {
+                            defines.METALLICWORKFLOW = false;
                             defines.REFLECTIVITY = false;
                         }
                         if (this._microSurfaceTexture) {
@@ -45225,7 +45331,7 @@ var BABYLON;
                 this.onClearObservable.notifyObservers(engine);
             }
             else {
-                engine.clear(scene.clearColor, true, true, true);
+                engine.clear(this.clearColor || scene.clearColor, true, true, true);
             }
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
@@ -63106,6 +63212,33 @@ var BABYLON;
             engine.setDepthFunctionToLessOrEqual();
             engine.setDepthWrite(true);
         };
+        BoundingBoxRenderer.prototype.renderOcclusionBoundingBox = function (mesh) {
+            this._prepareRessources();
+            if (!this._colorShader.isReady()) {
+                return;
+            }
+            var engine = this._scene.getEngine();
+            engine.setDepthWrite(false);
+            engine.setColorWrite(false);
+            this._colorShader._preBind();
+            var boundingBox = mesh._boundingInfo.boundingBox;
+            var min = boundingBox.minimum;
+            var max = boundingBox.maximum;
+            var diff = max.subtract(min);
+            var median = min.add(diff.scale(0.5));
+            var worldMatrix = BABYLON.Matrix.Scaling(diff.x, diff.y, diff.z)
+                .multiply(BABYLON.Matrix.Translation(median.x, median.y, median.z))
+                .multiply(boundingBox.getWorldMatrix());
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
+            engine.setDepthFunctionToLess();
+            this._scene.resetCachedMaterial();
+            this._colorShader.bind(worldMatrix);
+            engine.draw(false, 0, 24);
+            this._colorShader.unbind();
+            engine.setDepthFunctionToLessOrEqual();
+            engine.setDepthWrite(true);
+            engine.setColorWrite(true);
+        };
         BoundingBoxRenderer.prototype.dispose = function () {
             if (!this._colorShader) {
                 return;
@@ -67016,8 +67149,10 @@ var BABYLON;
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 var alphaTexture = material.getAlphaTestTexture();
-                this._effect.setTexture("diffuseSampler", alphaTexture);
-                this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                if (alphaTexture) {
+                    this._effect.setTexture("diffuseSampler", alphaTexture);
+                    this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                }
             }
             engine.setZOffset(-this.zOffset);
             mesh._processRendering(subMesh, this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { _this._effect.setMatrix("world", world); });
@@ -67610,8 +67745,10 @@ var BABYLON;
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        _this._glowMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
-                        _this._glowMapGenerationEffect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        if (alphaTexture) {
+                            _this._glowMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
+                            _this._glowMapGenerationEffect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
                     }
                     // Glow emissive only
                     if (emissiveTexture) {
@@ -69737,7 +69874,7 @@ var BABYLON;
 (function (BABYLON) {
     var FramingBehavior = (function () {
         function FramingBehavior() {
-            this._mode = FramingBehavior.IgnoreBoundsSizeMode;
+            this._mode = FramingBehavior.FitFrustumSidesMode;
             this._radiusScale = 1.0;
             this._positionY = 0;
             this._defaultElevation = 0.3;
@@ -69929,13 +70066,10 @@ var BABYLON;
          * Targets the given mesh and updates zoom level accordingly.
          * @param mesh  The mesh to target.
          * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param applyToLowerLimit Optional. Indicates if the calculated target radius should be applied to the
-         *		camera's lower radius limit too.
          * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          */
-        FramingBehavior.prototype.zoomOnMesh = function (mesh, radius, applyToLowerLimit, framingPositionY, focusOnOriginXZ) {
-            if (applyToLowerLimit === void 0) { applyToLowerLimit = true; }
+        FramingBehavior.prototype.zoomOnMesh = function (mesh, radius, framingPositionY, focusOnOriginXZ) {
             if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
             if (framingPositionY == null) {
                 framingPositionY = this._positionY;
@@ -69960,16 +70094,13 @@ var BABYLON;
                 var delta = 0.1;
                 if (this._mode === FramingBehavior.FitFrustumSidesMode) {
                     var position = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-                    this._attachedCamera.lowerRadiusLimit = position - delta;
+                    this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld + this._attachedCamera.minZ;
                     radius = position;
                 }
                 else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
                     radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
+                    this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
                 }
-            }
-            if (applyToLowerLimit) {
-                this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld;
-                ;
             }
             // transition to new radius
             if (!this._radiusTransition) {

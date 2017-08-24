@@ -103,7 +103,7 @@
             mag: magFilter
         }
     }
-  
+
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
         onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: () => void = null) => {
 
@@ -591,6 +591,10 @@
         private _performanceMonitor = new PerformanceMonitor();
         private _fps = 60;
         private _deltaTime = 0;
+        /**
+         * Turn this value on if you want to pause FPS computation when in background
+         */
+        public disablePerformanceMonitorInBackground = false;
 
         public get performanceMonitor(): PerformanceMonitor {
             return this._performanceMonitor;
@@ -740,12 +744,16 @@
                 }
 
                 this._onBlur = () => {
-                    this._performanceMonitor.disable();
+                    if (this.disablePerformanceMonitorInBackground) {
+                        this._performanceMonitor.disable();
+                    }
                     this._windowIsBackground = true;
                 };
 
                 this._onFocus = () => {
-                    this._performanceMonitor.enable();
+                    if (this.disablePerformanceMonitorInBackground) {
+                        this._performanceMonitor.enable();
+                    }
                     this._windowIsBackground = false;
                 };
 
@@ -992,11 +1000,11 @@
         }
 
         public isDeterministicLockStep(): boolean {
-          return this._deterministicLockstep;
+            return this._deterministicLockstep;
         }
 
         public getLockstepMaxSteps(): number {
-          return this._lockstepMaxSteps;
+            return this._lockstepMaxSteps;
         }
 
         public getGlInfo() {
@@ -2627,7 +2635,7 @@
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);                        
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
                         this._rescaleTexture(source, texture, scene, internalFormat, () => {
                             this._releaseTexture(source);
@@ -2653,9 +2661,9 @@
 
         private _rescaleTexture(source: WebGLTexture, destination: WebGLTexture, scene: Scene, internalFormat: number, onComplete: () => void): void {
             let rtt = this.createRenderTargetTexture({
-                    width: destination._width,
-                    height: destination._height,
-                }, {
+                width: destination._width,
+                height: destination._height,
+            }, {
                     generateMipMaps: false,
                     type: Engine.TEXTURETYPE_UNSIGNED_INT,
                     samplingMode: Texture.BILINEAR_SAMPLINGMODE,
@@ -2667,7 +2675,7 @@
             if (!this._rescalePostProcess) {
                 this._rescalePostProcess = new BABYLON.PassPostProcess("rescale", 1, null, Texture.BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
             }
-			this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
+            this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
                 this._rescalePostProcess.onApply = function (effect) {
                     effect._bindTexture("textureSampler", source);
                 }
@@ -2679,7 +2687,7 @@
 
                 this.unBindFramebuffer(rtt);
                 this._releaseTexture(rtt);
-                
+
                 if (onComplete) {
                     onComplete();
                 }
@@ -3681,6 +3689,10 @@
 
         private _prepareWebGLTextureContinuation(texture: WebGLTexture, scene: Scene, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void {
             var gl = this._gl;
+            if (!gl) {
+                return;
+            }
+
             var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
 
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -3702,11 +3714,15 @@
         }
 
         private _prepareWebGLTexture(texture: WebGLTexture, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
-                                        processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): void {
+            processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): void {
             var potWidth = this.needPOTTextures ? Tools.GetExponentOfTwo(width, this.getCaps().maxTextureSize) : width;
             var potHeight = this.needPOTTextures ? Tools.GetExponentOfTwo(height, this.getCaps().maxTextureSize) : height;
 
             var gl = this._gl;
+            if (!gl) {
+                return;
+            }
+
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
@@ -3721,7 +3737,7 @@
             })) {
                 // Returning as texture needs extra async steps
                 return;
-            }         
+            }
 
             this._prepareWebGLTextureContinuation(texture, scene, noMipmap, isCompressed, samplingMode);
         }
@@ -4374,6 +4390,32 @@
 
             return this._gl.RGBA;
         };
+
+        public createQuery(): WebGLQuery {
+            return this._gl.createQuery();
+        }
+
+        public isQueryResultAvailable(query: WebGLQuery) {
+            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
+        }
+
+        public getQueryResult(query: WebGLQuery) {
+            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
+        }
+
+        public beginQuery(algorithmType: number, query: WebGLQuery) {
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
+            this._gl.beginQuery(glAlgorithm, query);
+        }
+
+        public endQuery(algorithmType: number) {
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
+            this._gl.endQuery(glAlgorithm);
+        }
+
+        private getGlAlgorithmType(algorithmType: number): number {
+            return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+        }
 
         // Statics
         public static isSupported(): boolean {
