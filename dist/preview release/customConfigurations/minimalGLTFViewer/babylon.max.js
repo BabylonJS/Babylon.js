@@ -31406,16 +31406,25 @@ var BABYLON;
             this._onLostFocus = function () {
                 _this._keys = [];
             };
-            element.addEventListener("keydown", this._onKeyDown, false);
-            element.addEventListener("keyup", this._onKeyUp, false);
+            this._onFocus = function () {
+                element.addEventListener("keydown", _this._onKeyDown, false);
+                element.addEventListener("keyup", _this._onKeyUp, false);
+            };
+            this._onBlur = function () {
+                element.removeEventListener("keydown", _this._onKeyDown);
+                element.removeEventListener("keyup", _this._onKeyUp);
+            };
+            element.addEventListener("focus", this._onFocus);
+            element.addEventListener("blur", this._onBlur);
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
         ArcRotateCameraKeyboardMoveInput.prototype.detachControl = function (element) {
-            if (element) {
-                element.removeEventListener("keydown", this._onKeyDown);
-                element.removeEventListener("keyup", this._onKeyUp);
+            if (element && this._onBlur) {
+                this._onBlur();
+                element.removeEventListener("focus", this._onFocus);
+                element.removeEventListener("blur", this._onBlur);
             }
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
@@ -31424,6 +31433,8 @@ var BABYLON;
             this._onKeyDown = null;
             this._onKeyUp = null;
             this._onLostFocus = null;
+            this._onBlur = null;
+            this._onFocus = null;
         };
         ArcRotateCameraKeyboardMoveInput.prototype.checkInputs = function () {
             if (this._onKeyDown) {
@@ -31966,6 +31977,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ArcRotateCamera.prototype, "bouncingBehavior", {
+            get: function () {
+                return this._bouncingBehavior;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ArcRotateCamera.prototype, "useBouncingBehavior", {
             get: function () {
                 return this._bouncingBehavior != null;
@@ -31986,6 +32004,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ArcRotateCamera.prototype, "framingBehavior", {
+            get: function () {
+                return this._framingBehavior;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ArcRotateCamera.prototype, "useFramingBehavior", {
             get: function () {
                 return this._framingBehavior != null;
@@ -32002,6 +32027,13 @@ var BABYLON;
                     this.removeBehavior(this._framingBehavior);
                     this._framingBehavior = null;
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArcRotateCamera.prototype, "autoRotationBehavior", {
+            get: function () {
+                return this._autoRotationBehavior;
             },
             enumerable: true,
             configurable: true
@@ -50162,7 +50194,7 @@ var BABYLON;
          *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
          */
         FramingBehavior.prototype._applyUserInteraction = function () {
-            if (this._userIsMoving()) {
+            if (this.isUserIsMoving) {
                 this._lastInteractionTime = BABYLON.Tools.Now;
                 this.stopAllAnimations();
                 this._clearAnimationLocks();
@@ -50181,15 +50213,21 @@ var BABYLON;
                 this._animatables.shift();
             }
         };
-        // Tools
-        FramingBehavior.prototype._userIsMoving = function () {
-            return this._attachedCamera.inertialAlphaOffset !== 0 ||
-                this._attachedCamera.inertialBetaOffset !== 0 ||
-                this._attachedCamera.inertialRadiusOffset !== 0 ||
-                this._attachedCamera.inertialPanningX !== 0 ||
-                this._attachedCamera.inertialPanningY !== 0 ||
-                this._isPointerDown;
-        };
+        Object.defineProperty(FramingBehavior.prototype, "isUserIsMoving", {
+            /**
+             * Gets a value indicating if the user is moving the camera
+             */
+            get: function () {
+                return this._attachedCamera.inertialAlphaOffset !== 0 ||
+                    this._attachedCamera.inertialBetaOffset !== 0 ||
+                    this._attachedCamera.inertialRadiusOffset !== 0 ||
+                    this._attachedCamera.inertialPanningX !== 0 ||
+                    this._attachedCamera.inertialPanningY !== 0 ||
+                    this._isPointerDown;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * The easing function used by animations
          */
@@ -50376,6 +50414,7 @@ var BABYLON;
             this._isPointerDown = false;
             this._lastFrameTime = null;
             this._lastInteractionTime = -Infinity;
+            this._cameraRotationSpeed = 0;
             this._lastFrameRadius = 0;
         }
         Object.defineProperty(AutoRotationBehavior.prototype, "name", {
@@ -50449,6 +50488,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AutoRotationBehavior.prototype, "rotationInProgress", {
+            /**
+             * Gets a value indicating if the camera is currently rotating because of this behavior
+             */
+            get: function () {
+                return Math.abs(this._cameraRotationSpeed) > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
         AutoRotationBehavior.prototype.attach = function (camera) {
             var _this = this;
             this._attachedCamera = camera;
@@ -50473,9 +50522,9 @@ var BABYLON;
                 _this._applyUserInteraction();
                 var timeToRotation = now - _this._lastInteractionTime - _this._idleRotationWaitTime;
                 var scale = Math.max(Math.min(timeToRotation / (_this._idleRotationSpinupTime), 1), 0);
-                var cameraRotationSpeed = _this._idleRotationSpeed * scale;
+                _this._cameraRotationSpeed = _this._idleRotationSpeed * scale;
                 // Step camera rotation by rotation speed
-                _this._attachedCamera.alpha -= cameraRotationSpeed * (dt / 1000);
+                _this._attachedCamera.alpha -= _this._cameraRotationSpeed * (dt / 1000);
             });
         };
         AutoRotationBehavior.prototype.detach = function (camera) {

@@ -199,7 +199,7 @@ var BABYLON;
                             continue;
                         }
                         var mesh = control._linkedMesh;
-                        if (mesh.isDisposed()) {
+                        if (!mesh || mesh.isDisposed()) {
                             BABYLON.Tools.SetImmediate(function () {
                                 control.linkWithMesh(null);
                             });
