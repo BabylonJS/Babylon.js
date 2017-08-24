@@ -69926,7 +69926,7 @@ var BABYLON;
         function FramingBehavior() {
             this._mode = FramingBehavior.FitFrustumSidesMode;
             this._radiusScale = 1.0;
-            this._positionY = 1;
+            this._positionScale = 0.5;
             this._defaultElevation = 0.3;
             this._elevationReturnTime = 1500;
             this._elevationReturnWaitTime = 1000;
@@ -69979,18 +69979,18 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(FramingBehavior.prototype, "positionY", {
+        Object.defineProperty(FramingBehavior.prototype, "positionScale", {
             /**
-             * Gets the Y offset of the target mesh from the camera's focus.
+             * Gets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
              */
             get: function () {
-                return this._positionY;
+                return this._positionScale;
             },
             /**
-             * Sets the Y offset of the target mesh from the camera's focus.
+             * Sets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
              */
-            set: function (positionY) {
-                this._positionY = positionY;
+            set: function (scale) {
+                this._positionScale = scale;
             },
             enumerable: true,
             configurable: true
@@ -70122,7 +70122,8 @@ var BABYLON;
         FramingBehavior.prototype.zoomOnMesh = function (mesh, focusOnOriginXZ) {
             if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
             mesh.computeWorldMatrix(true);
-            this.zoomOnBoundingInfo(mesh.getBoundingInfo(), focusOnOriginXZ);
+            var boundingBox = mesh.getBoundingInfo().boundingBox;
+            this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ);
         };
         /**
          * Targets the given mesh and updates zoom level accordingly.
@@ -70131,19 +70132,20 @@ var BABYLON;
          * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          */
-        FramingBehavior.prototype.zoomOnBoundingInfo = function (boundingInfo, focusOnOriginXZ) {
+        FramingBehavior.prototype.zoomOnBoundingInfo = function (minimumWorld, maximumWorld, focusOnOriginXZ) {
             if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
             var zoomTarget;
-            var boundingBox = boundingInfo.boundingBox;
             // Find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
-            var bottom = boundingBox.minimumWorld.y;
-            var top = boundingBox.maximumWorld.y;
-            var zoomTargetY = bottom + (top - bottom) * this._positionY;
+            var bottom = minimumWorld.y;
+            var top = maximumWorld.y;
+            var zoomTargetY = bottom + (top - bottom) * this._positionScale;
+            var radiusWorld = maximumWorld.subtract(minimumWorld).scale(0.5);
             if (focusOnOriginXZ) {
                 zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
             }
             else {
-                zoomTarget = new BABYLON.Vector3(boundingBox.centerWorld.x, zoomTargetY, boundingBox.centerWorld.z);
+                var centerWorld = minimumWorld.add(radiusWorld);
+                zoomTarget = new BABYLON.Vector3(centerWorld.x, zoomTargetY, centerWorld.z);
             }
             if (!this._vectorTransition) {
                 this._vectorTransition = BABYLON.Animation.CreateAnimation("target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
@@ -70155,12 +70157,12 @@ var BABYLON;
             var delta = 0.1;
             var radius = 0;
             if (this._mode === FramingBehavior.FitFrustumSidesMode) {
-                var position = this._calculateLowerRadiusFromModelBoundingSphere(boundingInfo);
-                this._attachedCamera.lowerRadiusLimit = boundingInfo.boundingSphere.radiusWorld + this._attachedCamera.minZ;
+                var position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
+                this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
                 radius = position;
             }
             else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
-                radius = this._calculateLowerRadiusFromModelBoundingSphere(boundingInfo);
+                radius = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
                 this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
             }
             // transition to new radius
@@ -70176,8 +70178,9 @@ var BABYLON;
          * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
          *		 to fully enclose the mesh in the viewing frustum.
          */
-        FramingBehavior.prototype._calculateLowerRadiusFromModelBoundingSphere = function (boundingInfo) {
-            var boxVectorGlobalDiagonal = boundingInfo.diagonalLength;
+        FramingBehavior.prototype._calculateLowerRadiusFromModelBoundingSphere = function (minimumWorld, maximumWorld) {
+            var size = maximumWorld.subtract(minimumWorld);
+            var boxVectorGlobalDiagonal = size.length();
             var frustumSlope = this._getFrustumSlope();
             // Formula for setting distance
             // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
