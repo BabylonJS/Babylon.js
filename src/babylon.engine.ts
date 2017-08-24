@@ -4395,11 +4395,15 @@
             return this._gl.createQuery();
         }
 
-        public isQueryResultAvailable(query: WebGLQuery) {
+        public deleteQuery(query: WebGLQuery): void {
+            this.deleteQuery(query);
+        }
+
+        public isQueryResultAvailable(query: WebGLQuery): boolean {
             return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
         }
 
-        public getQueryResult(query: WebGLQuery) {
+        public getQueryResult(query: WebGLQuery): number {
             return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
         }
 
