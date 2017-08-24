@@ -349,7 +349,7 @@ module BABYLON {
 		 *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
 		 */          
         private _applyUserInteraction(): void {
-			if (this._userIsMoving()) {
+			if (this.isUserIsMoving) {
                 this._lastInteractionTime = Tools.Now;
 				this.stopAllAnimations();				
 				this._clearAnimationLocks();
@@ -370,8 +370,10 @@ module BABYLON {
 			}
 		}        
 
-        // Tools
-        private _userIsMoving(): boolean {
+        /**
+		 * Gets a value indicating if the user is moving the camera
+		 */
+        public get isUserIsMoving(): boolean {
 			return this._attachedCamera.inertialAlphaOffset !== 0 ||
 				this._attachedCamera.inertialBetaOffset !== 0 ||
 				this._attachedCamera.inertialRadiusOffset !== 0 ||
