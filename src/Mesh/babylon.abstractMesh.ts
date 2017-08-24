@@ -134,8 +134,12 @@
         private _occlusionInternalRetryCounter = 0;
 
         protected _isOccluded = false;
-        get isOccluded(): boolean {
+        public get isOccluded(): boolean {
             return this._isOccluded;
+        }
+
+        public set isOccluded(value: boolean) {
+            this._isOccluded = value;
         }
 
         private _isOcclusionQueryInProgress = false;
