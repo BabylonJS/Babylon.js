@@ -50136,7 +50136,9 @@ var BABYLON;
             }
             else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
                 radius = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
-                this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
+                if (this._attachedCamera.lowerRadiusLimit === null) {
+                    this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
+                }
             }
             // transition to new radius
             if (!this._radiusTransition) {
