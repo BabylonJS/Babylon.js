@@ -137,9 +137,6 @@
         get isOccluded(): boolean {
             return this._isOccluded;
         }
-        set isOccluded(value: boolean) {
-            this._isOccluded = value;
-        }
 
         private _isOcclusionQueryInProgress = false;
         public get isOcclusionQueryInProgress() {
