@@ -10986,6 +10986,9 @@ var BABYLON;
         Engine.prototype.createQuery = function () {
             return this._gl.createQuery();
         };
+        Engine.prototype.deleteQuery = function (query) {
+            this.deleteQuery(query);
+        };
         Engine.prototype.isQueryResultAvailable = function (query) {
             return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE);
         };
@@ -11818,14 +11821,12 @@ var BABYLON;
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
             _this.position = BABYLON.Vector3.Zero();
-            _this._webGLVersion = _this.getEngine().webGLVersion;
-            _this._occlusionInternalRetryCounter = 0;
-            _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
-            _this.occlusionRetryCount = -1;
-            _this._isOccluded = false;
-            _this.occlusionQuery = _this.getEngine().createQuery();
             _this.isOcclusionQueryInProgress = false;
             _this.occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
+            _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
+            _this.occlusionRetryCount = -1;
+            _this._occlusionInternalRetryCounter = 0;
+            _this._isOccluded = false;
             _this._rotation = BABYLON.Vector3.Zero();
             _this._scaling = BABYLON.Vector3.One();
             _this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
@@ -13417,8 +13418,14 @@ var BABYLON;
                     sceneOctree.dynamicContent.splice(index, 1);
                 }
             }
+            // Query
+            var engine = this.getScene().getEngine();
+            if (this._occlusionQuery) {
+                engine.deleteQuery(this._occlusionQuery);
+                this._occlusionQuery = null;
+            }
             // Engine
-            this.getScene().getEngine().wipeCaches();
+            engine.wipeCaches();
             // Remove from scene
             this.getScene().removeMesh(this);
             if (!doNotRecurse) {
@@ -13859,15 +13866,15 @@ var BABYLON;
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
         };
         AbstractMesh.prototype.checkOcclusionQuery = function () {
-            if (this._webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
+            var engine = this.getEngine();
+            if (engine.webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
                 this._isOccluded = false;
                 return;
             }
-            var engine = this.getEngine();
             if (this.isOcclusionQueryInProgress) {
-                var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this.occlusionQuery);
+                var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
                 if (isOcclusionQueryAvailable) {
-                    var occlusionQueryResult = engine.getQueryResult(this.occlusionQuery);
+                    var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
                     this.isOcclusionQueryInProgress = false;
                     this._occlusionInternalRetryCounter = 0;
                     this._isOccluded = occlusionQueryResult === 1 ? false : true;
@@ -13875,7 +13882,6 @@ var BABYLON;
                 else {
                     this._occlusionInternalRetryCounter++;
                     if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
-                        // break;
                         this.isOcclusionQueryInProgress = false;
                         this._occlusionInternalRetryCounter = 0;
                         // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
@@ -13889,7 +13895,10 @@ var BABYLON;
             }
             var scene = this.getScene();
             var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
-            engine.beginQuery(this.occlusionQueryAlgorithmType, this.occlusionQuery);
+            if (!this._occlusionQuery) {
+                this._occlusionQuery = engine.createQuery();
+            }
+            engine.beginQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
             engine.endQuery(this.occlusionQueryAlgorithmType);
             this.isOcclusionQueryInProgress = true;

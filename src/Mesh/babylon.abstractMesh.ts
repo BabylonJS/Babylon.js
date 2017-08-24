@@ -128,22 +128,22 @@
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = Vector3.Zero();
 
-        private _webGLVersion = this.getEngine().webGLVersion;
-        private _occlusionInternalRetryCounter = 0;
+        public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
         public occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
         public occlusionRetryCount = -1;
+        private _occlusionInternalRetryCounter = 0;
+
         protected _isOccluded = false;
         get isOccluded(): boolean {
             return this._isOccluded;
         }
-        set isOccluded(value: boolean) {
-            this._isOccluded = value;
+
+        private _isOcclusionQueryInProgress = false;
+        public get isOcclusionQueryInProgress(): boolean {
+            return this._isOcclusionQueryInProgress;
         }
 
-        public occlusionQuery = this.getEngine().createQuery();
-        public isOcclusionQueryInProgress = false;
-
-        public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
+        private _occlusionQuery: WebGLQuery;
 
         private _rotation = Vector3.Zero();
         private _rotationQuaternion: Quaternion;
@@ -1788,8 +1788,15 @@
                 }
             }
 
+            // Query
+            let engine = this.getScene().getEngine();
+            if (this._occlusionQuery) {
+                engine.deleteQuery(this._occlusionQuery);
+                this._occlusionQuery = null;
+            }
+
             // Engine
-            this.getScene().getEngine().wipeCaches();
+            engine.wipeCaches();
 
             // Remove from scene
             this.getScene().removeMesh(this);
@@ -2271,20 +2278,20 @@
         }
 
         protected checkOcclusionQuery() {
-            if (this._webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
+            var engine = this.getEngine();
+
+            if (engine.webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
                 this._isOccluded = false;
                 return;
             }
 
-            var engine = this.getEngine();
-
             if (this.isOcclusionQueryInProgress) {
                 
-                var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this.occlusionQuery);
+                var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
                 if (isOcclusionQueryAvailable) {
-                    var occlusionQueryResult = engine.getQueryResult(this.occlusionQuery);
+                    var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
 
-                    this.isOcclusionQueryInProgress = false;
+                    this._isOcclusionQueryInProgress = false;
                     this._occlusionInternalRetryCounter = 0;
                     this._isOccluded = occlusionQueryResult === 1 ? false : true;
                 }
@@ -2293,8 +2300,7 @@
                     this._occlusionInternalRetryCounter++;
 
                     if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
-                        // break;
-                        this.isOcclusionQueryInProgress = false;
+                        this._isOcclusionQueryInProgress = false;
                         this._occlusionInternalRetryCounter = 0;
 
                         // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
@@ -2308,13 +2314,17 @@
                 }
             }
 
-
             var scene = this.getScene();
             var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
-            engine.beginQuery(this.occlusionQueryAlgorithmType, this.occlusionQuery);
+
+            if (!this._occlusionQuery) {
+                this._occlusionQuery = engine.createQuery();
+            }
+
+            engine.beginQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
             engine.endQuery(this.occlusionQueryAlgorithmType);
-            this.isOcclusionQueryInProgress = true;
+            this._isOcclusionQueryInProgress = true;
         }
 
     }
