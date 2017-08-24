@@ -10988,6 +10988,7 @@ var BABYLON;
         };
         Engine.prototype.deleteQuery = function (query) {
             this.deleteQuery(query);
+            return this;
         };
         Engine.prototype.isQueryResultAvailable = function (query) {
             return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE);
@@ -11002,6 +11003,7 @@ var BABYLON;
         Engine.prototype.endQuery = function (algorithmType) {
             var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.endQuery(glAlgorithm);
+            return this;
         };
         Engine.prototype.getGlAlgorithmType = function (algorithmType) {
             return algorithmType === BABYLON.AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
@@ -11821,12 +11823,12 @@ var BABYLON;
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
             _this.position = BABYLON.Vector3.Zero();
-            _this.isOcclusionQueryInProgress = false;
             _this.occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
             _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
             _this.occlusionRetryCount = -1;
             _this._occlusionInternalRetryCounter = 0;
             _this._isOccluded = false;
+            _this._isOcclusionQueryInProgress = false;
             _this._rotation = BABYLON.Vector3.Zero();
             _this._scaling = BABYLON.Vector3.One();
             _this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
@@ -12013,6 +12015,13 @@ var BABYLON;
             },
             set: function (value) {
                 this._isOccluded = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
+            get: function () {
+                return this._isOcclusionQueryInProgress;
             },
             enumerable: true,
             configurable: true
@@ -13875,14 +13884,14 @@ var BABYLON;
                 var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
                 if (isOcclusionQueryAvailable) {
                     var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
-                    this.isOcclusionQueryInProgress = false;
+                    this._isOcclusionQueryInProgress = false;
                     this._occlusionInternalRetryCounter = 0;
                     this._isOccluded = occlusionQueryResult === 1 ? false : true;
                 }
                 else {
                     this._occlusionInternalRetryCounter++;
                     if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
-                        this.isOcclusionQueryInProgress = false;
+                        this._isOcclusionQueryInProgress = false;
                         this._occlusionInternalRetryCounter = 0;
                         // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
                         // if strict continue the last state of the object.
@@ -13901,7 +13910,7 @@ var BABYLON;
             engine.beginQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
             engine.endQuery(this.occlusionQueryAlgorithmType);
-            this.isOcclusionQueryInProgress = true;
+            this._isOcclusionQueryInProgress = true;
         };
         // Statics
         AbstractMesh._BILLBOARDMODE_NONE = 0;
@@ -69917,7 +69926,7 @@ var BABYLON;
         function FramingBehavior() {
             this._mode = FramingBehavior.FitFrustumSidesMode;
             this._radiusScale = 1.0;
-            this._positionY = 0;
+            this._positionY = 1;
             this._defaultElevation = 0.3;
             this._elevationReturnTime = 1500;
             this._elevationReturnWaitTime = 1000;
@@ -70110,19 +70119,31 @@ var BABYLON;
          * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          */
-        FramingBehavior.prototype.zoomOnMesh = function (mesh, radius, framingPositionY, focusOnOriginXZ) {
+        FramingBehavior.prototype.zoomOnMesh = function (mesh, focusOnOriginXZ) {
             if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
-            if (framingPositionY == null) {
-                framingPositionY = this._positionY;
-            }
             mesh.computeWorldMatrix(true);
+            this.zoomOnBoundingInfo(mesh.getBoundingInfo(), focusOnOriginXZ);
+        };
+        /**
+         * Targets the given mesh and updates zoom level accordingly.
+         * @param mesh  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         */
+        FramingBehavior.prototype.zoomOnBoundingInfo = function (boundingInfo, focusOnOriginXZ) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
             var zoomTarget;
-            var center = mesh.getBoundingInfo().boundingSphere.centerWorld;
+            var boundingBox = boundingInfo.boundingBox;
+            // Find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
+            var bottom = boundingBox.minimumWorld.y;
+            var top = boundingBox.maximumWorld.y;
+            var zoomTargetY = bottom + (top - bottom) * this._positionY;
             if (focusOnOriginXZ) {
-                zoomTarget = new BABYLON.Vector3(0, center.y, 0);
+                zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
             }
             else {
-                zoomTarget = center.clone();
+                zoomTarget = new BABYLON.Vector3(boundingBox.centerWorld.x, zoomTargetY, boundingBox.centerWorld.z);
             }
             if (!this._vectorTransition) {
                 this._vectorTransition = BABYLON.Animation.CreateAnimation("target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
@@ -70130,18 +70151,17 @@ var BABYLON;
             this._betaIsAnimating = true;
             this._animatables.push(BABYLON.Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 60, this._vectorTransition, this._framingTime));
             // sets the radius and lower radius bounds
-            if (radius == null) {
-                // Small delta ensures camera is not always at lower zoom limit.
-                var delta = 0.1;
-                if (this._mode === FramingBehavior.FitFrustumSidesMode) {
-                    var position = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-                    this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld + this._attachedCamera.minZ;
-                    radius = position;
-                }
-                else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
-                    radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-                    this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
-                }
+            // Small delta ensures camera is not always at lower zoom limit.
+            var delta = 0.1;
+            var radius = 0;
+            if (this._mode === FramingBehavior.FitFrustumSidesMode) {
+                var position = this._calculateLowerRadiusFromModelBoundingSphere(boundingInfo);
+                this._attachedCamera.lowerRadiusLimit = boundingInfo.boundingSphere.radiusWorld + this._attachedCamera.minZ;
+                radius = position;
+            }
+            else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
+                radius = this._calculateLowerRadiusFromModelBoundingSphere(boundingInfo);
+                this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
             }
             // transition to new radius
             if (!this._radiusTransition) {
@@ -70156,8 +70176,8 @@ var BABYLON;
          * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
          *		 to fully enclose the mesh in the viewing frustum.
          */
-        FramingBehavior.prototype._calculateLowerRadiusFromModelBoundingSphere = function (mesh) {
-            var boxVectorGlobalDiagonal = mesh.getBoundingInfo().diagonalLength;
+        FramingBehavior.prototype._calculateLowerRadiusFromModelBoundingSphere = function (boundingInfo) {
+            var boxVectorGlobalDiagonal = boundingInfo.diagonalLength;
             var frustumSlope = this._getFrustumSlope();
             // Formula for setting distance
             // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)

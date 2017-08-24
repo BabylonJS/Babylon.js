@@ -6,7 +6,7 @@ module BABYLON {
 
         private _mode = FramingBehavior.FitFrustumSidesMode;
         private _radiusScale = 1.0;
-        private _positionY = 0;
+        private _positionY = 1;
         private _defaultElevation = 0.3;
         private _elevationReturnTime = 1500;
         private _elevationReturnWaitTime = 1000;
@@ -204,20 +204,32 @@ module BABYLON {
 		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
 		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
 		 */
-		public zoomOnMesh(mesh: AbstractMesh, radius?: number, framingPositionY?: number, focusOnOriginXZ: boolean = false): void {
-			if (framingPositionY == null) {
-				framingPositionY = this._positionY;
-			}
-
+		public zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ: boolean = false): void {
 			mesh.computeWorldMatrix(true);
-			
+
+			this.zoomOnBoundingInfo(mesh.getBoundingInfo(), focusOnOriginXZ);
+		}
+
+		/**
+		 * Targets the given mesh and updates zoom level accordingly.
+		 * @param mesh  The mesh to target.
+		 * @param radius Optional. If a cached radius position already exists, overrides default.
+		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+		 */
+		public zoomOnBoundingInfo(boundingInfo: BoundingInfo, focusOnOriginXZ: boolean = false): void {
 			let zoomTarget: BABYLON.Vector3;
-			let center = mesh.getBoundingInfo().boundingSphere.centerWorld;
+			let boundingBox = boundingInfo.boundingBox;
+
+			// Find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
+			let bottom = boundingBox.minimumWorld.y;
+			let top = boundingBox.maximumWorld.y;
+			let zoomTargetY = bottom + (top - bottom) * this._positionY;
 
 			if (focusOnOriginXZ) {	
-				zoomTarget = new BABYLON.Vector3(0, center.y, 0);
+				zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
 			} else {
-				zoomTarget = center.clone();
+				zoomTarget = new BABYLON.Vector3(boundingBox.centerWorld.x, zoomTargetY, boundingBox.centerWorld.z);
 			}
 
 			if (!this._vectorTransition) {
@@ -229,17 +241,16 @@ module BABYLON {
 									60, this._vectorTransition, this._framingTime));
 
 			// sets the radius and lower radius bounds
-			if (radius == null) {
-				// Small delta ensures camera is not always at lower zoom limit.
-				let delta = 0.1;
-				if (this._mode === FramingBehavior.FitFrustumSidesMode) {
-					let position = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-					this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld + this._attachedCamera.minZ;
-					radius = position;
-				} else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
-					radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-					this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
-				}
+			// Small delta ensures camera is not always at lower zoom limit.
+			let delta = 0.1;
+			let radius = 0;
+			if (this._mode === FramingBehavior.FitFrustumSidesMode) {
+				let position = this._calculateLowerRadiusFromModelBoundingSphere(boundingInfo);
+				this._attachedCamera.lowerRadiusLimit = boundingInfo.boundingSphere.radiusWorld + this._attachedCamera.minZ;
+				radius = position;
+			} else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
+				radius = this._calculateLowerRadiusFromModelBoundingSphere(boundingInfo);
+				this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
 			}
 
 			// transition to new radius
@@ -258,8 +269,8 @@ module BABYLON {
 		 * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
 		 *		 to fully enclose the mesh in the viewing frustum.
 		 */
-		protected _calculateLowerRadiusFromModelBoundingSphere(mesh: AbstractMesh): number {
-            let boxVectorGlobalDiagonal = mesh.getBoundingInfo().diagonalLength;
+		protected _calculateLowerRadiusFromModelBoundingSphere(boundingInfo: BoundingInfo): number {
+            let boxVectorGlobalDiagonal = boundingInfo.diagonalLength;
 			let frustumSlope: BABYLON.Vector2 = this._getFrustumSlope();
 
 			// Formula for setting distance
