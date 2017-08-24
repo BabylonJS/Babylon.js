@@ -83,7 +83,7 @@
             else {
                 newGamepad = new GenericPad(gamepad.id, gamepad.index, gamepad);
             }
-            this.babylonGamepads.push(newGamepad);
+            this.babylonGamepads[newGamepad.index] = newGamepad;
             return newGamepad;
         }
 

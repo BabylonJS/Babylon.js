@@ -128,18 +128,23 @@
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = Vector3.Zero();
 
-        public isOcclusionQueryInProgress = false;
         public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
         public occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
         public occlusionRetryCount = -1;
         private _occlusionInternalRetryCounter = 0;
 
         protected _isOccluded = false;
-        get isOccluded(): boolean {
+        public get isOccluded(): boolean {
             return this._isOccluded;
         }
-        set isOccluded(value: boolean) {
+
+        public set isOccluded(value: boolean) {
             this._isOccluded = value;
+        }
+
+        private _isOcclusionQueryInProgress = false;
+        public get isOcclusionQueryInProgress(): boolean {
+            return this._isOcclusionQueryInProgress;
         }
 
         private _occlusionQuery: WebGLQuery;
@@ -2290,7 +2295,7 @@
                 if (isOcclusionQueryAvailable) {
                     var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
 
-                    this.isOcclusionQueryInProgress = false;
+                    this._isOcclusionQueryInProgress = false;
                     this._occlusionInternalRetryCounter = 0;
                     this._isOccluded = occlusionQueryResult === 1 ? false : true;
                 }
@@ -2299,7 +2304,7 @@
                     this._occlusionInternalRetryCounter++;
 
                     if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
-                        this.isOcclusionQueryInProgress = false;
+                        this._isOcclusionQueryInProgress = false;
                         this._occlusionInternalRetryCounter = 0;
 
                         // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
@@ -2313,7 +2318,6 @@
                 }
             }
 
-
             var scene = this.getScene();
             var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
 
@@ -2324,7 +2328,7 @@
             engine.beginQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
             engine.endQuery(this.occlusionQueryAlgorithmType);
-            this.isOcclusionQueryInProgress = true;
+            this._isOcclusionQueryInProgress = true;
         }
 
     }
