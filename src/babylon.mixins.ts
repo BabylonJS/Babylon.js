@@ -46,6 +46,7 @@ interface WebGLRenderingContext {
 
     // Occlusion Query
     createQuery(): WebGLQuery;
+    deleteQuery(query: WebGLQuery);
     beginQuery(target: number, query: WebGLQuery);
     endQuery(target: number): void;
     getQueryParameter(query: WebGLQuery, pname: number): any;

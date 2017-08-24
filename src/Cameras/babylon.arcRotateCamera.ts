@@ -196,6 +196,11 @@ module BABYLON {
 
         // Behaviors
         private _bouncingBehavior: BouncingBehavior;
+
+        public get bouncingBehavior(): BouncingBehavior {
+            return this._bouncingBehavior;
+        }
+
         public get useBouncingBehavior(): boolean {
             return this._bouncingBehavior != null;
         }
@@ -215,6 +220,11 @@ module BABYLON {
         }
 
         private _framingBehavior: FramingBehavior;
+
+        public get framingBehavior(): FramingBehavior {
+            return this._framingBehavior;
+        }        
+
         public get useFramingBehavior(): boolean {
             return this._framingBehavior != null;
         }
@@ -234,6 +244,11 @@ module BABYLON {
         }        
 
         private _autoRotationBehavior: AutoRotationBehavior;
+
+        public get autoRotationBehavior(): AutoRotationBehavior {
+            return this._autoRotationBehavior;
+        }   
+
         public get useAutoRotationBehavior(): boolean {
             return this._autoRotationBehavior != null;
         }
