@@ -14623,7 +14623,7 @@ var BABYLON;
             _this.orthoBottom = null;
             _this.orthoTop = null;
             _this.fov = 0.8;
-            _this.minZ = 1.0;
+            _this.minZ = 0.1;
             _this.maxZ = 10000.0;
             _this.inertia = 0.9;
             _this.mode = Camera.PERSPECTIVE_CAMERA;
@@ -50335,7 +50335,7 @@ var BABYLON;
             else {
                 newGamepad = new GenericPad(gamepad.id, gamepad.index, gamepad);
             }
-            this.babylonGamepads.push(newGamepad);
+            this.babylonGamepads[newGamepad.index] = newGamepad;
             return newGamepad;
         };
         Gamepads.prototype._onGamepadDisconnected = function (gamepad) {
@@ -65351,9 +65351,12 @@ var BABYLON;
             if (this._cameraRigParams["specs"] === 1.0) {
                 var eyeParams = this._cameraRigParams["eyeParameters"];
                 // deprecated!!
-                BABYLON.Matrix.PerspectiveFovWebVRToRef(eyeParams.fieldOfView, 0.1, 1000, this._projectionMatrix, this.getScene().useRightHandedSystem);
+                BABYLON.Matrix.PerspectiveFovWebVRToRef(eyeParams.fieldOfView, this.minZ, this.maxZ, this._projectionMatrix, this.getScene().useRightHandedSystem);
             }
             else {
+                var parentCamera = this.parent;
+                parentCamera._vrDevice.depthNear = this.minZ;
+                parentCamera._vrDevice.depthFar = this.maxZ;
                 var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
                 BABYLON.Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
                 //babylon compatible matrix
