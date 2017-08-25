@@ -16528,6 +16528,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Scene.prototype, "gamepadManager", {
+            get: function () {
+                if (!this._gamepadManager) {
+                    this._gamepadManager = new BABYLON.GamepadManager();
+                }
+                return this._gamepadManager;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene.prototype, "unTranslatedPointer", {
             get: function () {
                 return new BABYLON.Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
@@ -18826,6 +18836,10 @@ var BABYLON;
             this.resetCachedMaterial();
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
+            }
+            if (this._gamepadManager) {
+                this._gamepadManager.dispose();
+                this._gamepadManager = null;
             }
             // Smart arrays
             if (this.activeCamera) {

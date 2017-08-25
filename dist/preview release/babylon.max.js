@@ -16528,6 +16528,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Scene.prototype, "gamepadManager", {
+            get: function () {
+                if (!this._gamepadManager) {
+                    this._gamepadManager = new BABYLON.GamepadManager();
+                }
+                return this._gamepadManager;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene.prototype, "unTranslatedPointer", {
             get: function () {
                 return new BABYLON.Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
@@ -18826,6 +18836,10 @@ var BABYLON;
             this.resetCachedMaterial();
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
+            }
+            if (this._gamepadManager) {
+                this._gamepadManager.dispose();
+                this._gamepadManager = null;
             }
             // Smart arrays
             if (this.activeCamera) {
@@ -50120,12 +50134,25 @@ var BABYLON;
         }
         FreeCameraGamepadInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+            var manager = this.camera.getScene().gamepadManager;
+            this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
+                if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
+                    // prioritize XBOX gamepads.
+                    if (!_this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
+                        _this.gamepad = gamepad;
+                    }
+                }
+            });
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add(function (gamepad) {
+                if (_this.gamepad === gamepad) {
+                    _this.gamepad = null;
+                }
+            });
+            this.gamepad = manager.getGamepadByType(BABYLON.Gamepad.XBOX);
         };
         FreeCameraGamepadInput.prototype.detachControl = function (element) {
-            if (this._gamepads) {
-                this._gamepads.dispose();
-            }
+            this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
+            this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;
         };
         FreeCameraGamepadInput.prototype.checkInputs = function () {
@@ -50160,15 +50187,6 @@ var BABYLON;
                 camera.cameraRotation.addInPlace(this._vector2);
             }
         };
-        FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
-            // Only the first gamepad found can control the camera
-            if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
-                // prioritize XBOX gamepads.
-                if (!this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
-                    this.gamepad = gamepad;
-                }
-            }
-        };
         FreeCameraGamepadInput.prototype.getClassName = function () {
             return "FreeCameraGamepadInput";
         };
@@ -50199,12 +50217,25 @@ var BABYLON;
         }
         ArcRotateCameraGamepadInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+            var manager = this.camera.getScene().gamepadManager;
+            this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
+                if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
+                    // prioritize XBOX gamepads.
+                    if (!_this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
+                        _this.gamepad = gamepad;
+                    }
+                }
+            });
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add(function (gamepad) {
+                if (_this.gamepad === gamepad) {
+                    _this.gamepad = null;
+                }
+            });
+            this.gamepad = manager.getGamepadByType(BABYLON.Gamepad.XBOX);
         };
         ArcRotateCameraGamepadInput.prototype.detachControl = function (element) {
-            if (this._gamepads) {
-                this._gamepads.dispose();
-            }
+            this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
+            this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;
         };
         ArcRotateCameraGamepadInput.prototype.checkInputs = function () {
@@ -50234,14 +50265,6 @@ var BABYLON;
                 }
             }
         };
-        ArcRotateCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
-            if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
-                // prioritize XBOX gamepads.
-                if (!this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
-                    this.gamepad = gamepad;
-                }
-            }
-        };
         ArcRotateCameraGamepadInput.prototype.getClassName = function () {
             return "ArcRotateCameraGamepadInput";
         };
@@ -50262,115 +50285,118 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.arcRotateCameraGamepadInput.js.map
 
-
 var BABYLON;
 (function (BABYLON) {
-    var Gamepads = (function () {
-        function Gamepads(ongamedpadconnected, ongamedpaddisconnected) {
+    var GamepadManager = (function () {
+        function GamepadManager() {
             var _this = this;
-            this.babylonGamepads = [];
-            this.oneGamepadConnected = false;
-            this.isMonitoring = false;
-            this.gamepadEventSupported = 'GamepadEvent' in window;
-            this.gamepadSupport = (navigator.getGamepads ||
+            this._babylonGamepads = [];
+            this._oneGamepadConnected = false;
+            this._isMonitoring = false;
+            this._gamepadEventSupported = 'GamepadEvent' in window;
+            this._gamepadSupport = (navigator.getGamepads ||
                 navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
-            this._callbackGamepadConnected = ongamedpadconnected;
-            this._callbackGamepadDisconnected = ongamedpaddisconnected;
-            if (this.gamepadSupport) {
+            this.onGamepadConnectedObservable = new BABYLON.Observable();
+            this.onGamepadDisconnectedObservable = new BABYLON.Observable();
+            this._onGamepadConnectedEvent = function (evt) {
+                var gamepad = evt.gamepad;
+                // Protection code for Chrome which has a very buggy gamepad implementation...
+                // And raises a connected event on disconnection for instance
+                if (gamepad.index in _this._babylonGamepads) {
+                    return;
+                }
+                var newGamepad = _this._addNewGamepad(gamepad);
+                _this.onGamepadConnectedObservable.notifyObservers(newGamepad);
+                _this._startMonitoringGamepads();
+            };
+            this._onGamepadDisconnectedEvent = function (evt) {
+                var gamepad = evt.gamepad;
+                // Remove the gamepad from the list of gamepads to monitor.
+                for (var i in _this._babylonGamepads) {
+                    if (_this._babylonGamepads[i].index === gamepad.index) {
+                        var gamepadToRemove = _this._babylonGamepads[i];
+                        _this._babylonGamepads[i] = null;
+                        _this.onGamepadDisconnectedObservable.notifyObservers(gamepadToRemove);
+                        break;
+                    }
+                }
+            };
+            if (this._gamepadSupport) {
                 //first add already-connected gamepads
                 this._updateGamepadObjects();
-                if (this.babylonGamepads.length) {
+                if (this._babylonGamepads.length) {
                     this._startMonitoringGamepads();
                 }
                 // Checking if the gamepad connected event is supported (like in Firefox)
-                if (this.gamepadEventSupported) {
-                    this._onGamepadConnectedEvent = function (evt) {
-                        _this._onGamepadConnected(evt.gamepad);
-                    };
-                    this._onGamepadDisonnectedEvent = function (evt) {
-                        _this._onGamepadDisconnected(evt.gamepad);
-                    };
+                if (this._gamepadEventSupported) {
                     window.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
-                    window.addEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
+                    window.addEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent, false);
                 }
                 else {
                     this._startMonitoringGamepads();
                 }
             }
         }
-        Gamepads.prototype.dispose = function () {
-            if (this._onGamepadConnectedEvent) {
-                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
-                window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
+        GamepadManager.prototype.getGamepadByType = function (type) {
+            if (type === void 0) { type = BABYLON.Gamepad.XBOX; }
+            for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
+                var gamepad = _a[_i];
+                if (gamepad && gamepad.type === type) {
+                    return gamepad;
+                }
+            }
+            return null;
+        };
+        GamepadManager.prototype.dispose = function () {
+            if (this._gamepadEventSupported) {
+                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent);
+                window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
                 this._onGamepadConnectedEvent = null;
-                this._onGamepadDisonnectedEvent = null;
+                this._onGamepadDisconnectedEvent = null;
             }
-            this.oneGamepadConnected = false;
+            this._oneGamepadConnected = false;
             this._stopMonitoringGamepads();
-            this.babylonGamepads = [];
+            this._babylonGamepads = [];
         };
-        Gamepads.prototype._onGamepadConnected = function (gamepad) {
-            // Protection code for Chrome which has a very buggy gamepad implementation...
-            // And raises a connected event on disconnection for instance
-            if (gamepad.index in this.babylonGamepads) {
-                return;
-            }
-            var newGamepad = this._addNewGamepad(gamepad);
-            if (this._callbackGamepadConnected)
-                this._callbackGamepadConnected(newGamepad);
-            this._startMonitoringGamepads();
-        };
-        Gamepads.prototype._addNewGamepad = function (gamepad) {
-            if (!this.oneGamepadConnected) {
-                this.oneGamepadConnected = true;
+        GamepadManager.prototype._addNewGamepad = function (gamepad) {
+            if (!this._oneGamepadConnected) {
+                this._oneGamepadConnected = true;
             }
             var newGamepad;
             var xboxOne = (gamepad.id.search("Xbox One") !== -1);
             if (xboxOne || gamepad.id.search("Xbox 360") !== -1 || gamepad.id.search("xinput") !== -1) {
-                newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
+                newGamepad = new BABYLON.Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
             }
             else if (gamepad.pose) {
                 newGamepad = BABYLON.PoseEnabledControllerHelper.InitiateController(gamepad);
             }
             else {
-                newGamepad = new GenericPad(gamepad.id, gamepad.index, gamepad);
+                newGamepad = new BABYLON.GenericPad(gamepad.id, gamepad.index, gamepad);
             }
-            this.babylonGamepads[newGamepad.index] = newGamepad;
+            this._babylonGamepads[newGamepad.index] = newGamepad;
             return newGamepad;
         };
-        Gamepads.prototype._onGamepadDisconnected = function (gamepad) {
-            // Remove the gamepad from the list of gamepads to monitor.
-            for (var i in this.babylonGamepads) {
-                if (this.babylonGamepads[i].index == gamepad.index) {
-                    this.babylonGamepads.splice(+i, 1);
-                    break;
-                }
-            }
-            // If no gamepads are left, stop the polling loop.
-            if (this.babylonGamepads.length == 0) {
-                this._stopMonitoringGamepads();
-                this.oneGamepadConnected = false;
-            }
-            if (this._callbackGamepadDisconnected)
-                this._callbackGamepadDisconnected(gamepad);
-        };
-        Gamepads.prototype._startMonitoringGamepads = function () {
-            if (!this.isMonitoring) {
-                this.isMonitoring = true;
+        GamepadManager.prototype._startMonitoringGamepads = function () {
+            if (!this._isMonitoring) {
+                this._isMonitoring = true;
                 this._checkGamepadsStatus();
             }
         };
-        Gamepads.prototype._stopMonitoringGamepads = function () {
-            this.isMonitoring = false;
+        GamepadManager.prototype._stopMonitoringGamepads = function () {
+            this._isMonitoring = false;
         };
-        Gamepads.prototype._checkGamepadsStatus = function () {
+        GamepadManager.prototype._checkGamepadsStatus = function () {
             var _this = this;
             // Hack to be compatible Chrome
             this._updateGamepadObjects();
-            for (var i in this.babylonGamepads) {
-                this.babylonGamepads[i].update();
+            for (var i in this._babylonGamepads) {
+                var gamepad = this._babylonGamepads[i];
+                if (!gamepad) {
+                    continue;
+                }
+                gamepad.update();
             }
-            if (this.isMonitoring) {
+            if (this._isMonitoring) {
                 if (window.requestAnimationFrame) {
                     window.requestAnimationFrame(function () { _this._checkGamepadsStatus(); });
                 }
@@ -50384,26 +50410,31 @@ var BABYLON;
         };
         // This function is called only on Chrome, which does not properly support
         // connection/disconnection events and forces you to recopy again the gamepad object
-        Gamepads.prototype._updateGamepadObjects = function () {
+        GamepadManager.prototype._updateGamepadObjects = function () {
             var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
             for (var i = 0; i < gamepads.length; i++) {
                 if (gamepads[i]) {
-                    if (!(gamepads[i].index in this.babylonGamepads)) {
+                    if (!this._babylonGamepads[gamepads[i].index]) {
                         var newGamepad = this._addNewGamepad(gamepads[i]);
-                        if (this._callbackGamepadConnected) {
-                            this._callbackGamepadConnected(newGamepad);
-                        }
+                        this.onGamepadConnectedObservable.notifyObservers(newGamepad);
                     }
                     else {
                         // Forced to copy again this object for Chrome for unknown reason
-                        this.babylonGamepads[i].browserGamepad = gamepads[i];
+                        this._babylonGamepads[i].browserGamepad = gamepads[i];
                     }
                 }
             }
         };
-        return Gamepads;
+        return GamepadManager;
     }());
-    BABYLON.Gamepads = Gamepads;
+    BABYLON.GamepadManager = GamepadManager;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.gamepadManager.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
     var StickValues = (function () {
         function StickValues(x, y) {
             this.x = x;
@@ -50912,7 +50943,10 @@ var BABYLON;
                 this._mesh.parent = this._poseControlledCamera;
             }
         };
-        PoseEnabledController.prototype.detachMesh = function () {
+        PoseEnabledController.prototype.dispose = function () {
+            if (this._mesh) {
+                this._mesh.dispose();
+            }
             this._mesh = undefined;
         };
         Object.defineProperty(PoseEnabledController.prototype, "mesh", {
@@ -65080,6 +65114,8 @@ var BABYLON;
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
             _this.nonVRControllers = [];
+            _this.onControllersAttachedObservable = new BABYLON.Observable();
+            _this.onNonVRControllersAttachedObservable = new BABYLON.Observable();
             _this.rigParenting = true; // should the rig cameras be used as parent instead of this camera.
             //legacy support - the compensation boolean was removed.
             if (arguments.length === 5) {
@@ -65122,8 +65158,6 @@ var BABYLON;
                     _this.getEngine().enableVR(_this._vrDevice);
                 }
             });
-            // try to attach the controllers, if found.
-            _this.initControllers();
             /**
              * The idea behind the following lines:
              * objects that have the camera as parent should actually have the rig cameras as a parent.
@@ -65157,27 +65191,6 @@ var BABYLON;
             });
             return _this;
         }
-        Object.defineProperty(WebVRFreeCamera.prototype, "onControllersAttached", {
-            set: function (callback) {
-                this._onControllersAttached = callback;
-                // after setting - if the controllers are already set, execute the callback.
-                if (this.controllers.length >= 2) {
-                    callback(this.controllers);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(WebVRFreeCamera.prototype, "onNonVRControllerAttached", {
-            set: function (callback) {
-                this._onNonVRControllerAttached = callback;
-                this.nonVRControllers.forEach(function (controller) {
-                    callback(controller);
-                });
-            },
-            enumerable: true,
-            configurable: true
-        });
         WebVRFreeCamera.prototype.getControllerByName = function (name) {
             for (var _i = 0, _a = this.controllers; _i < _a.length; _i++) {
                 var gp = _a[_i];
@@ -65267,8 +65280,12 @@ var BABYLON;
             if (this._vrEnabled) {
                 this.getEngine().enableVR(this._vrDevice);
             }
+            // try to attach the controllers, if found.
+            this.initControllers();
         };
         WebVRFreeCamera.prototype.detachControl = function (element) {
+            this.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
+            this.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
             this._attached = false;
@@ -65371,9 +65388,22 @@ var BABYLON;
         WebVRFreeCamera.prototype.initControllers = function () {
             var _this = this;
             this.controllers = [];
-            new BABYLON.Gamepads(function (gp) {
-                if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
-                    var webVrController = gp;
+            var manager = this.getScene().gamepadManager;
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add(function (gamepad) {
+                if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
+                    var webVrController = gamepad;
+                    var index = _this.controllers.indexOf(webVrController);
+                    if (index === -1) {
+                        // we are good
+                        return;
+                    }
+                    _this.controllers.splice(index, 1);
+                    webVrController.dispose();
+                }
+            });
+            this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
+                if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
+                    var webVrController = gamepad;
                     if (_this.webVROptions.controllerMeshes) {
                         webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
                             if (_this.webVROptions.defaultLightningOnControllers) {
@@ -65392,7 +65422,7 @@ var BABYLON;
                         //add to the controllers array
                         _this.controllers.push(webVrController);
                         //did we find enough controllers? Great! let the developer know.
-                        if (_this._onControllersAttached && _this.controllers.length >= 2) {
+                        if (_this.controllers.length >= 2) {
                             // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
                             // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
                             // So we're overriding setting left & right manually to be sure
@@ -65408,15 +65438,13 @@ var BABYLON;
                                     }
                                 }
                             }
-                            _this._onControllersAttached(_this.controllers);
+                            _this.onControllersAttachedObservable.notifyObservers(_this.controllers);
                         }
                     }
                 }
                 else {
-                    _this.nonVRControllers.push(gp);
-                    if (_this._onNonVRControllerAttached) {
-                        _this._onNonVRControllerAttached(gp);
-                    }
+                    _this.nonVRControllers.push(gamepad);
+                    _this.onNonVRControllersAttachedObservable.notifyObservers(gamepad);
                 }
             });
         };

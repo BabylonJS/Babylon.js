@@ -61,8 +61,8 @@ module BABYLON {
 
         public controllers: Array<WebVRController> = [];
         public nonVRControllers: Array<Gamepad> = [];
-        private _onControllersAttached: (controllers: Array<WebVRController>) => void;
-        private _onNonVRControllerAttached: (controller: Gamepad) => void;
+        public onControllersAttachedObservable = new Observable<Array<WebVRController>>();
+        public onNonVRControllersAttachedObservable = new Observable<Gamepad>();
 
         public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
@@ -122,9 +122,6 @@ module BABYLON {
                 }
             });                
 
-            // try to attach the controllers, if found.
-            this.initControllers();
-
             /**
              * The idea behind the following lines:
              * objects that have the camera as parent should actually have the rig cameras as a parent.
@@ -156,21 +153,6 @@ module BABYLON {
                         node.parent = this;
                     });
                 }
-            });
-        }
-
-        public set onControllersAttached(callback: (controllers: Array<WebVRController>) => void) {
-            this._onControllersAttached = callback;
-            // after setting - if the controllers are already set, execute the callback.
-            if (this.controllers.length >= 2) {
-                callback(this.controllers);
-            }
-        }
-
-        public set onNonVRControllerAttached(callback: (controller: Gamepad) => void) {
-            this._onNonVRControllerAttached = callback;
-            this.nonVRControllers.forEach((controller) => {
-                callback(controller)
             });
         }
 
@@ -264,11 +246,17 @@ module BABYLON {
             noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
             if (this._vrEnabled) {
-                this.getEngine().enableVR(this._vrDevice)
+                this.getEngine().enableVR(this._vrDevice);
             }
+
+            // try to attach the controllers, if found.
+            this.initControllers();
         }
 
         public detachControl(element: HTMLElement): void {
+            this.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);            
+            this.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
+            
             super.detachControl(element);
             this._vrEnabled = false;
             this._attached = false;
@@ -388,12 +376,33 @@ module BABYLON {
 
             return this._projectionMatrix;
         }
+        
+        private _onGamepadConnectedObserver : Observer<Gamepad>;
+        private _onGamepadDisconnectedObserver : Observer<Gamepad>;
 
         public initControllers() {
             this.controllers = [];
-            new BABYLON.Gamepads((gp) => {
-                if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
-                    let webVrController: WebVRController = <WebVRController>gp;
+
+            let manager = this.getScene().gamepadManager;
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad) => {
+                if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
+                    let webVrController: WebVRController = <WebVRController>gamepad;
+                    let index = this.controllers.indexOf(webVrController);
+
+                    if (index === -1) {
+                        // we are good
+                        return;
+                    }
+
+                    this.controllers.splice(index, 1);
+                    
+                    webVrController.dispose();
+                }
+            });
+
+            this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
+                if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
+                    let webVrController: WebVRController = <WebVRController>gamepad;
                     if (this.webVROptions.controllerMeshes) {
                         webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
                             if (this.webVROptions.defaultLightningOnControllers) {
@@ -414,13 +423,13 @@ module BABYLON {
                         this.controllers.push(webVrController);
 
                         //did we find enough controllers? Great! let the developer know.
-                        if (this._onControllersAttached && this.controllers.length >= 2) {
+                        if (this.controllers.length >= 2) {
                             // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
                             // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
                             // So we're overriding setting left & right manually to be sure
                             let firstViveWandDetected = false;
 
-                            for (let i=0; i<this.controllers.length; i++) {
+                            for (let i = 0; i < this.controllers.length; i++) {
                                 if (this.controllers[i].controllerType === PoseEnabledControllerType.VIVE) {
                                     if (!firstViveWandDetected) {
                                         firstViveWandDetected = true;
@@ -432,15 +441,13 @@ module BABYLON {
                                 }
                             }
 
-                            this._onControllersAttached(this.controllers);
+                            this.onControllersAttachedObservable.notifyObservers(this.controllers);
                         }
                     }
                 }
                 else {
-                    this.nonVRControllers.push(gp);
-                    if (this._onNonVRControllerAttached) {
-                        this._onNonVRControllerAttached(gp);
-                    }
+                    this.nonVRControllers.push(gamepad);
+                    this.onNonVRControllersAttachedObservable.notifyObservers(gamepad);
                 }
             });
         }
