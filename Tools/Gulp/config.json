@@ -80,7 +80,7 @@
                 "../../src/Mesh/babylon.mesh.vertexData.js",
                 "../../src/Mesh/babylon.geometry.js",
                 "../../src/PostProcess/babylon.postProcessManager.js",
-                "../../src/Tools/babylon.performanceMonitor.js"
+                "../../src/Tools/babylon.performanceMonitor.js" 
             ]
         },         
         "particles" : 
@@ -528,9 +528,8 @@
             "files": [
                 "../../src/Cameras/Inputs/babylon.freeCameraGamepadInput.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraGamepadInput.js",
-                "../../src/Tools/Gamepad/babylon.gamepadManager.js",
-                "../../src/Tools/Gamepad/babylon.gamepads.js",
-                "../../src/Tools/Gamepad/babylon.extendedGamepad.js"
+                "../../src/Tools/babylon.gamepads.js",
+                "../../src/Tools/babylon.extendedGamepad.js"
             ],
             "dependUpon" : [
                 "core"
