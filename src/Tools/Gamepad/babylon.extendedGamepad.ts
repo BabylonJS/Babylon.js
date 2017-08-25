@@ -128,7 +128,10 @@ module BABYLON {
             }
         }
 
-        public detachMesh() {
+        public dispose() {
+            if (this._mesh) {
+                this._mesh.dispose();
+            }
             this._mesh = undefined;
         }
 
@@ -205,7 +208,7 @@ module BABYLON {
 
         protected abstract handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges);
 
-        public abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void)
+        public abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void);
 
         private _setButtonValue(newState: ExtendedGamepadButton, currentState: ExtendedGamepadButton, buttonIndex: number) {
             if (!newState) {
