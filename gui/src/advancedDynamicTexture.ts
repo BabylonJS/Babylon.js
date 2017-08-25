@@ -209,7 +209,7 @@ module BABYLON.GUI {
 
                     var mesh = control._linkedMesh;
 
-                    if (mesh.isDisposed()) {
+                    if (!mesh || mesh.isDisposed()) {
                         Tools.SetImmediate(()=>{
                             control.linkWithMesh(null);
                         });

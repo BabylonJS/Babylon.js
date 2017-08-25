@@ -10983,6 +10983,31 @@ var BABYLON;
             return this._gl.RGBA;
         };
         ;
+        Engine.prototype.createQuery = function () {
+            return this._gl.createQuery();
+        };
+        Engine.prototype.deleteQuery = function (query) {
+            this.deleteQuery(query);
+            return this;
+        };
+        Engine.prototype.isQueryResultAvailable = function (query) {
+            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE);
+        };
+        Engine.prototype.getQueryResult = function (query) {
+            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT);
+        };
+        Engine.prototype.beginQuery = function (algorithmType, query) {
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
+            this._gl.beginQuery(glAlgorithm, query);
+        };
+        Engine.prototype.endQuery = function (algorithmType) {
+            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
+            this._gl.endQuery(glAlgorithm);
+            return this;
+        };
+        Engine.prototype.getGlAlgorithmType = function (algorithmType) {
+            return algorithmType === BABYLON.AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+        };
         // Statics
         Engine.isSupported = function () {
             try {
@@ -11798,6 +11823,37 @@ var BABYLON;
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
             _this.position = BABYLON.Vector3.Zero();
+            /**
+            * This property determines the type of occlusion query algorithm to run in WebGl, you can use:
+    
+            * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE which is mapped to GL_ANY_SAMPLES_PASSED.
+    
+            * or
+    
+            * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE (Default Value) which is mapped to GL_ANY_SAMPLES_PASSED_CONSERVATIVE which is a false positive algorithm that is faster than GL_ANY_SAMPLES_PASSED but less accurate.
+    
+            * for more info check WebGl documentations
+            */
+            _this.occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
+            /**
+             * This property is responsible for starting the occlusion query within the Mesh or not, this property is also used     to determine what should happen when the occlusionRetryCount is reached. It has supports 3 values:
+    
+            * OCCLUSION_TYPE_NONE (Default Value): this option means no occlusion query whith the Mesh.
+    
+            * OCCLUSION_TYPE_OPTIMISITC: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken show the mesh.
+    
+                * OCCLUSION_TYPE_STRICT: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken restore the last state of the mesh occlusion if the mesh was visible then show the mesh if was hidden then hide don't show.
+             */
+            _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
+            /**
+            * This number indicates the number of allowed retries before stop the occlusion query, this is useful if the        occlusion query is taking long time before to the query result is retireved, the query result indicates if the object is visible within the scene or not and based on that Babylon.Js engine decideds to show or hide the object.
+    
+            * The default value is -1 which means don't break the query and wait till the result.
+            */
+            _this.occlusionRetryCount = -1;
+            _this._occlusionInternalRetryCounter = 0;
+            _this._isOccluded = false;
+            _this._isOcclusionQueryInProgress = false;
             _this._rotation = BABYLON.Vector3.Zero();
             _this._scaling = BABYLON.Vector3.One();
             _this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
@@ -11974,6 +12030,29 @@ var BABYLON;
                     this.onCollisionPositionChangeObservable.remove(this._onCollisionPositionChangeObserver);
                 }
                 this._onCollisionPositionChangeObserver = this.onCollisionPositionChangeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "isOccluded", {
+            /**
+            * Property isOccluded : Gets or sets whether the mesh is occluded or not, it is used also to set the intial state of the mesh to be occluded or not.
+            */
+            get: function () {
+                return this._isOccluded;
+            },
+            set: function (value) {
+                this._isOccluded = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
+            /**
+            * Flag to check the progress status of the query
+            */
+            get: function () {
+                return this._isOcclusionQueryInProgress;
             },
             enumerable: true,
             configurable: true
@@ -13379,8 +13458,14 @@ var BABYLON;
                     sceneOctree.dynamicContent.splice(index, 1);
                 }
             }
+            // Query
+            var engine = this.getScene().getEngine();
+            if (this._occlusionQuery) {
+                engine.deleteQuery(this._occlusionQuery);
+                this._occlusionQuery = null;
+            }
             // Engine
-            this.getScene().getEngine().wipeCaches();
+            engine.wipeCaches();
             // Remove from scene
             this.getScene().removeMesh(this);
             if (!doNotRecurse) {
@@ -13820,12 +13905,55 @@ var BABYLON;
             BABYLON.VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
         };
+        AbstractMesh.prototype.checkOcclusionQuery = function () {
+            var engine = this.getEngine();
+            if (engine.webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
+                this._isOccluded = false;
+                return;
+            }
+            if (this.isOcclusionQueryInProgress) {
+                var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
+                if (isOcclusionQueryAvailable) {
+                    var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
+                    this._isOcclusionQueryInProgress = false;
+                    this._occlusionInternalRetryCounter = 0;
+                    this._isOccluded = occlusionQueryResult === 1 ? false : true;
+                }
+                else {
+                    this._occlusionInternalRetryCounter++;
+                    if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
+                        this._isOcclusionQueryInProgress = false;
+                        this._occlusionInternalRetryCounter = 0;
+                        // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
+                        // if strict continue the last state of the object.
+                        this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISITC ? false : this._isOccluded;
+                    }
+                    else {
+                        return;
+                    }
+                }
+            }
+            var scene = this.getScene();
+            var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
+            if (!this._occlusionQuery) {
+                this._occlusionQuery = engine.createQuery();
+            }
+            engine.beginQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
+            occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
+            engine.endQuery(this.occlusionQueryAlgorithmType);
+            this._isOcclusionQueryInProgress = true;
+        };
         // Statics
         AbstractMesh._BILLBOARDMODE_NONE = 0;
         AbstractMesh._BILLBOARDMODE_X = 1;
         AbstractMesh._BILLBOARDMODE_Y = 2;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
+        AbstractMesh.OCCLUSION_TYPE_NONE = 0;
+        AbstractMesh.OCCLUSION_TYPE_OPTIMISITC = 1;
+        AbstractMesh.OCCLUSION_TYPE_STRICT = 2;
+        AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
+        AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
         AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
         AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
@@ -14526,7 +14654,7 @@ var BABYLON;
             _this.orthoBottom = null;
             _this.orthoTop = null;
             _this.fov = 0.8;
-            _this.minZ = 1.0;
+            _this.minZ = 0.1;
             _this.maxZ = 10000.0;
             _this.inertia = 0.9;
             _this.mode = Camera.PERSPECTIVE_CAMERA;
@@ -16427,6 +16555,16 @@ var BABYLON;
                     this.onAfterCameraRenderObservable.remove(this._onAfterCameraRenderObserver);
                 }
                 this._onAfterCameraRenderObserver = this.onAfterCameraRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "gamepadManager", {
+            get: function () {
+                if (!this._gamepadManager) {
+                    this._gamepadManager = new BABYLON.GamepadManager();
+                }
+                return this._gamepadManager;
             },
             enumerable: true,
             configurable: true
@@ -18729,6 +18867,10 @@ var BABYLON;
             this.resetCachedMaterial();
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
+            }
+            if (this._gamepadManager) {
+                this._gamepadManager.dispose();
+                this._gamepadManager = null;
             }
             // Smart arrays
             if (this.activeCamera) {
@@ -21469,6 +21611,10 @@ var BABYLON;
          * Returns the Mesh.
          */
         Mesh.prototype.render = function (subMesh, enableAlphaMode) {
+            this.checkOcclusionQuery();
+            if (this._isOccluded) {
+                return;
+            }
             var scene = this.getScene();
             // Managing instances
             var batch = this._getInstancesRenderList(subMesh._id);
@@ -34231,16 +34377,25 @@ var BABYLON;
             this._onLostFocus = function () {
                 _this._keys = [];
             };
-            element.addEventListener("keydown", this._onKeyDown, false);
-            element.addEventListener("keyup", this._onKeyUp, false);
+            this._onFocus = function () {
+                element.addEventListener("keydown", _this._onKeyDown, false);
+                element.addEventListener("keyup", _this._onKeyUp, false);
+            };
+            this._onBlur = function () {
+                element.removeEventListener("keydown", _this._onKeyDown);
+                element.removeEventListener("keyup", _this._onKeyUp);
+            };
+            element.addEventListener("focus", this._onFocus);
+            element.addEventListener("blur", this._onBlur);
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
         ArcRotateCameraKeyboardMoveInput.prototype.detachControl = function (element) {
-            if (element) {
-                element.removeEventListener("keydown", this._onKeyDown);
-                element.removeEventListener("keyup", this._onKeyUp);
+            if (element && this._onBlur) {
+                this._onBlur();
+                element.removeEventListener("focus", this._onFocus);
+                element.removeEventListener("blur", this._onBlur);
             }
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
@@ -34249,6 +34404,8 @@ var BABYLON;
             this._onKeyDown = null;
             this._onKeyUp = null;
             this._onLostFocus = null;
+            this._onBlur = null;
+            this._onFocus = null;
         };
         ArcRotateCameraKeyboardMoveInput.prototype.checkInputs = function () {
             if (this._onKeyDown) {
@@ -34791,6 +34948,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ArcRotateCamera.prototype, "bouncingBehavior", {
+            get: function () {
+                return this._bouncingBehavior;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ArcRotateCamera.prototype, "useBouncingBehavior", {
             get: function () {
                 return this._bouncingBehavior != null;
@@ -34811,6 +34975,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ArcRotateCamera.prototype, "framingBehavior", {
+            get: function () {
+                return this._framingBehavior;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ArcRotateCamera.prototype, "useFramingBehavior", {
             get: function () {
                 return this._framingBehavior != null;
@@ -34827,6 +34998,13 @@ var BABYLON;
                     this.removeBehavior(this._framingBehavior);
                     this._framingBehavior = null;
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArcRotateCamera.prototype, "autoRotationBehavior", {
+            get: function () {
+                return this._autoRotationBehavior;
             },
             enumerable: true,
             configurable: true
@@ -49987,12 +50165,25 @@ var BABYLON;
         }
         FreeCameraGamepadInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+            var manager = this.camera.getScene().gamepadManager;
+            this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
+                if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
+                    // prioritize XBOX gamepads.
+                    if (!_this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
+                        _this.gamepad = gamepad;
+                    }
+                }
+            });
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add(function (gamepad) {
+                if (_this.gamepad === gamepad) {
+                    _this.gamepad = null;
+                }
+            });
+            this.gamepad = manager.getGamepadByType(BABYLON.Gamepad.XBOX);
         };
         FreeCameraGamepadInput.prototype.detachControl = function (element) {
-            if (this._gamepads) {
-                this._gamepads.dispose();
-            }
+            this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
+            this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;
         };
         FreeCameraGamepadInput.prototype.checkInputs = function () {
@@ -50027,15 +50218,6 @@ var BABYLON;
                 camera.cameraRotation.addInPlace(this._vector2);
             }
         };
-        FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
-            // Only the first gamepad found can control the camera
-            if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
-                // prioritize XBOX gamepads.
-                if (!this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
-                    this.gamepad = gamepad;
-                }
-            }
-        };
         FreeCameraGamepadInput.prototype.getClassName = function () {
             return "FreeCameraGamepadInput";
         };
@@ -50066,12 +50248,25 @@ var BABYLON;
         }
         ArcRotateCameraGamepadInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+            var manager = this.camera.getScene().gamepadManager;
+            this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
+                if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
+                    // prioritize XBOX gamepads.
+                    if (!_this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
+                        _this.gamepad = gamepad;
+                    }
+                }
+            });
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add(function (gamepad) {
+                if (_this.gamepad === gamepad) {
+                    _this.gamepad = null;
+                }
+            });
+            this.gamepad = manager.getGamepadByType(BABYLON.Gamepad.XBOX);
         };
         ArcRotateCameraGamepadInput.prototype.detachControl = function (element) {
-            if (this._gamepads) {
-                this._gamepads.dispose();
-            }
+            this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
+            this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;
         };
         ArcRotateCameraGamepadInput.prototype.checkInputs = function () {
@@ -50101,14 +50296,6 @@ var BABYLON;
                 }
             }
         };
-        ArcRotateCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
-            if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
-                // prioritize XBOX gamepads.
-                if (!this.gamepad || gamepad.type === BABYLON.Gamepad.XBOX) {
-                    this.gamepad = gamepad;
-                }
-            }
-        };
         ArcRotateCameraGamepadInput.prototype.getClassName = function () {
             return "ArcRotateCameraGamepadInput";
         };
@@ -50129,115 +50316,118 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.arcRotateCameraGamepadInput.js.map
 
-
 var BABYLON;
 (function (BABYLON) {
-    var Gamepads = (function () {
-        function Gamepads(ongamedpadconnected, ongamedpaddisconnected) {
+    var GamepadManager = (function () {
+        function GamepadManager() {
             var _this = this;
-            this.babylonGamepads = [];
-            this.oneGamepadConnected = false;
-            this.isMonitoring = false;
-            this.gamepadEventSupported = 'GamepadEvent' in window;
-            this.gamepadSupport = (navigator.getGamepads ||
+            this._babylonGamepads = [];
+            this._oneGamepadConnected = false;
+            this._isMonitoring = false;
+            this._gamepadEventSupported = 'GamepadEvent' in window;
+            this._gamepadSupport = (navigator.getGamepads ||
                 navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
-            this._callbackGamepadConnected = ongamedpadconnected;
-            this._callbackGamepadDisconnected = ongamedpaddisconnected;
-            if (this.gamepadSupport) {
+            this.onGamepadConnectedObservable = new BABYLON.Observable();
+            this.onGamepadDisconnectedObservable = new BABYLON.Observable();
+            this._onGamepadConnectedEvent = function (evt) {
+                var gamepad = evt.gamepad;
+                // Protection code for Chrome which has a very buggy gamepad implementation...
+                // And raises a connected event on disconnection for instance
+                if (gamepad.index in _this._babylonGamepads) {
+                    return;
+                }
+                var newGamepad = _this._addNewGamepad(gamepad);
+                _this.onGamepadConnectedObservable.notifyObservers(newGamepad);
+                _this._startMonitoringGamepads();
+            };
+            this._onGamepadDisconnectedEvent = function (evt) {
+                var gamepad = evt.gamepad;
+                // Remove the gamepad from the list of gamepads to monitor.
+                for (var i in _this._babylonGamepads) {
+                    if (_this._babylonGamepads[i].index === gamepad.index) {
+                        var gamepadToRemove = _this._babylonGamepads[i];
+                        _this._babylonGamepads[i] = null;
+                        _this.onGamepadDisconnectedObservable.notifyObservers(gamepadToRemove);
+                        break;
+                    }
+                }
+            };
+            if (this._gamepadSupport) {
                 //first add already-connected gamepads
                 this._updateGamepadObjects();
-                if (this.babylonGamepads.length) {
+                if (this._babylonGamepads.length) {
                     this._startMonitoringGamepads();
                 }
                 // Checking if the gamepad connected event is supported (like in Firefox)
-                if (this.gamepadEventSupported) {
-                    this._onGamepadConnectedEvent = function (evt) {
-                        _this._onGamepadConnected(evt.gamepad);
-                    };
-                    this._onGamepadDisonnectedEvent = function (evt) {
-                        _this._onGamepadDisconnected(evt.gamepad);
-                    };
+                if (this._gamepadEventSupported) {
                     window.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
-                    window.addEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
+                    window.addEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent, false);
                 }
                 else {
                     this._startMonitoringGamepads();
                 }
             }
         }
-        Gamepads.prototype.dispose = function () {
-            if (this._onGamepadConnectedEvent) {
-                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
-                window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
+        GamepadManager.prototype.getGamepadByType = function (type) {
+            if (type === void 0) { type = BABYLON.Gamepad.XBOX; }
+            for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
+                var gamepad = _a[_i];
+                if (gamepad && gamepad.type === type) {
+                    return gamepad;
+                }
+            }
+            return null;
+        };
+        GamepadManager.prototype.dispose = function () {
+            if (this._gamepadEventSupported) {
+                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent);
+                window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
                 this._onGamepadConnectedEvent = null;
-                this._onGamepadDisonnectedEvent = null;
+                this._onGamepadDisconnectedEvent = null;
             }
-            this.oneGamepadConnected = false;
+            this._oneGamepadConnected = false;
             this._stopMonitoringGamepads();
-            this.babylonGamepads = [];
+            this._babylonGamepads = [];
         };
-        Gamepads.prototype._onGamepadConnected = function (gamepad) {
-            // Protection code for Chrome which has a very buggy gamepad implementation...
-            // And raises a connected event on disconnection for instance
-            if (gamepad.index in this.babylonGamepads) {
-                return;
-            }
-            var newGamepad = this._addNewGamepad(gamepad);
-            if (this._callbackGamepadConnected)
-                this._callbackGamepadConnected(newGamepad);
-            this._startMonitoringGamepads();
-        };
-        Gamepads.prototype._addNewGamepad = function (gamepad) {
-            if (!this.oneGamepadConnected) {
-                this.oneGamepadConnected = true;
+        GamepadManager.prototype._addNewGamepad = function (gamepad) {
+            if (!this._oneGamepadConnected) {
+                this._oneGamepadConnected = true;
             }
             var newGamepad;
             var xboxOne = (gamepad.id.search("Xbox One") !== -1);
             if (xboxOne || gamepad.id.search("Xbox 360") !== -1 || gamepad.id.search("xinput") !== -1) {
-                newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
+                newGamepad = new BABYLON.Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
             }
             else if (gamepad.pose) {
                 newGamepad = BABYLON.PoseEnabledControllerHelper.InitiateController(gamepad);
             }
             else {
-                newGamepad = new GenericPad(gamepad.id, gamepad.index, gamepad);
+                newGamepad = new BABYLON.GenericPad(gamepad.id, gamepad.index, gamepad);
             }
-            this.babylonGamepads.push(newGamepad);
+            this._babylonGamepads[newGamepad.index] = newGamepad;
             return newGamepad;
         };
-        Gamepads.prototype._onGamepadDisconnected = function (gamepad) {
-            // Remove the gamepad from the list of gamepads to monitor.
-            for (var i in this.babylonGamepads) {
-                if (this.babylonGamepads[i].index == gamepad.index) {
-                    this.babylonGamepads.splice(+i, 1);
-                    break;
-                }
-            }
-            // If no gamepads are left, stop the polling loop.
-            if (this.babylonGamepads.length == 0) {
-                this._stopMonitoringGamepads();
-                this.oneGamepadConnected = false;
-            }
-            if (this._callbackGamepadDisconnected)
-                this._callbackGamepadDisconnected(gamepad);
-        };
-        Gamepads.prototype._startMonitoringGamepads = function () {
-            if (!this.isMonitoring) {
-                this.isMonitoring = true;
+        GamepadManager.prototype._startMonitoringGamepads = function () {
+            if (!this._isMonitoring) {
+                this._isMonitoring = true;
                 this._checkGamepadsStatus();
             }
         };
-        Gamepads.prototype._stopMonitoringGamepads = function () {
-            this.isMonitoring = false;
+        GamepadManager.prototype._stopMonitoringGamepads = function () {
+            this._isMonitoring = false;
         };
-        Gamepads.prototype._checkGamepadsStatus = function () {
+        GamepadManager.prototype._checkGamepadsStatus = function () {
             var _this = this;
             // Hack to be compatible Chrome
             this._updateGamepadObjects();
-            for (var i in this.babylonGamepads) {
-                this.babylonGamepads[i].update();
+            for (var i in this._babylonGamepads) {
+                var gamepad = this._babylonGamepads[i];
+                if (!gamepad) {
+                    continue;
+                }
+                gamepad.update();
             }
-            if (this.isMonitoring) {
+            if (this._isMonitoring) {
                 if (window.requestAnimationFrame) {
                     window.requestAnimationFrame(function () { _this._checkGamepadsStatus(); });
                 }
@@ -50251,26 +50441,31 @@ var BABYLON;
         };
         // This function is called only on Chrome, which does not properly support
         // connection/disconnection events and forces you to recopy again the gamepad object
-        Gamepads.prototype._updateGamepadObjects = function () {
+        GamepadManager.prototype._updateGamepadObjects = function () {
             var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
             for (var i = 0; i < gamepads.length; i++) {
                 if (gamepads[i]) {
-                    if (!(gamepads[i].index in this.babylonGamepads)) {
+                    if (!this._babylonGamepads[gamepads[i].index]) {
                         var newGamepad = this._addNewGamepad(gamepads[i]);
-                        if (this._callbackGamepadConnected) {
-                            this._callbackGamepadConnected(newGamepad);
-                        }
+                        this.onGamepadConnectedObservable.notifyObservers(newGamepad);
                     }
                     else {
                         // Forced to copy again this object for Chrome for unknown reason
-                        this.babylonGamepads[i].browserGamepad = gamepads[i];
+                        this._babylonGamepads[i].browserGamepad = gamepads[i];
                     }
                 }
             }
         };
-        return Gamepads;
+        return GamepadManager;
     }());
-    BABYLON.Gamepads = Gamepads;
+    BABYLON.GamepadManager = GamepadManager;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.gamepadManager.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
     var StickValues = (function () {
         function StickValues(x, y) {
             this.x = x;
@@ -50779,7 +50974,10 @@ var BABYLON;
                 this._mesh.parent = this._poseControlledCamera;
             }
         };
-        PoseEnabledController.prototype.detachMesh = function () {
+        PoseEnabledController.prototype.dispose = function () {
+            if (this._mesh) {
+                this._mesh.dispose();
+            }
             this._mesh = undefined;
         };
         Object.defineProperty(PoseEnabledController.prototype, "mesh", {
@@ -63129,6 +63327,33 @@ var BABYLON;
             engine.setDepthFunctionToLessOrEqual();
             engine.setDepthWrite(true);
         };
+        BoundingBoxRenderer.prototype.renderOcclusionBoundingBox = function (mesh) {
+            this._prepareRessources();
+            if (!this._colorShader.isReady()) {
+                return;
+            }
+            var engine = this._scene.getEngine();
+            engine.setDepthWrite(false);
+            engine.setColorWrite(false);
+            this._colorShader._preBind();
+            var boundingBox = mesh._boundingInfo.boundingBox;
+            var min = boundingBox.minimum;
+            var max = boundingBox.maximum;
+            var diff = max.subtract(min);
+            var median = min.add(diff.scale(0.5));
+            var worldMatrix = BABYLON.Matrix.Scaling(diff.x, diff.y, diff.z)
+                .multiply(BABYLON.Matrix.Translation(median.x, median.y, median.z))
+                .multiply(boundingBox.getWorldMatrix());
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
+            engine.setDepthFunctionToLess();
+            this._scene.resetCachedMaterial();
+            this._colorShader.bind(worldMatrix);
+            engine.draw(false, 0, 24);
+            this._colorShader.unbind();
+            engine.setDepthFunctionToLessOrEqual();
+            engine.setDepthWrite(true);
+            engine.setColorWrite(true);
+        };
         BoundingBoxRenderer.prototype.dispose = function () {
             if (!this._colorShader) {
                 return;
@@ -64920,6 +65145,8 @@ var BABYLON;
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
             _this.nonVRControllers = [];
+            _this.onControllersAttachedObservable = new BABYLON.Observable();
+            _this.onNonVRControllersAttachedObservable = new BABYLON.Observable();
             _this.rigParenting = true; // should the rig cameras be used as parent instead of this camera.
             //legacy support - the compensation boolean was removed.
             if (arguments.length === 5) {
@@ -64962,8 +65189,6 @@ var BABYLON;
                     _this.getEngine().enableVR(_this._vrDevice);
                 }
             });
-            // try to attach the controllers, if found.
-            _this.initControllers();
             /**
              * The idea behind the following lines:
              * objects that have the camera as parent should actually have the rig cameras as a parent.
@@ -64997,27 +65222,6 @@ var BABYLON;
             });
             return _this;
         }
-        Object.defineProperty(WebVRFreeCamera.prototype, "onControllersAttached", {
-            set: function (callback) {
-                this._onControllersAttached = callback;
-                // after setting - if the controllers are already set, execute the callback.
-                if (this.controllers.length >= 2) {
-                    callback(this.controllers);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(WebVRFreeCamera.prototype, "onNonVRControllerAttached", {
-            set: function (callback) {
-                this._onNonVRControllerAttached = callback;
-                this.nonVRControllers.forEach(function (controller) {
-                    callback(controller);
-                });
-            },
-            enumerable: true,
-            configurable: true
-        });
         WebVRFreeCamera.prototype.getControllerByName = function (name) {
             for (var _i = 0, _a = this.controllers; _i < _a.length; _i++) {
                 var gp = _a[_i];
@@ -65107,8 +65311,12 @@ var BABYLON;
             if (this._vrEnabled) {
                 this.getEngine().enableVR(this._vrDevice);
             }
+            // try to attach the controllers, if found.
+            this.initControllers();
         };
         WebVRFreeCamera.prototype.detachControl = function (element) {
+            this.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
+            this.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
             this._attached = false;
@@ -65191,9 +65399,12 @@ var BABYLON;
             if (this._cameraRigParams["specs"] === 1.0) {
                 var eyeParams = this._cameraRigParams["eyeParameters"];
                 // deprecated!!
-                BABYLON.Matrix.PerspectiveFovWebVRToRef(eyeParams.fieldOfView, 0.1, 1000, this._projectionMatrix, this.getScene().useRightHandedSystem);
+                BABYLON.Matrix.PerspectiveFovWebVRToRef(eyeParams.fieldOfView, this.minZ, this.maxZ, this._projectionMatrix, this.getScene().useRightHandedSystem);
             }
             else {
+                var parentCamera = this.parent;
+                parentCamera._vrDevice.depthNear = this.minZ;
+                parentCamera._vrDevice.depthFar = this.maxZ;
                 var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
                 BABYLON.Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
                 //babylon compatible matrix
@@ -65208,9 +65419,22 @@ var BABYLON;
         WebVRFreeCamera.prototype.initControllers = function () {
             var _this = this;
             this.controllers = [];
-            new BABYLON.Gamepads(function (gp) {
-                if (gp.type === BABYLON.Gamepad.POSE_ENABLED) {
-                    var webVrController = gp;
+            var manager = this.getScene().gamepadManager;
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add(function (gamepad) {
+                if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
+                    var webVrController = gamepad;
+                    var index = _this.controllers.indexOf(webVrController);
+                    if (index === -1) {
+                        // we are good
+                        return;
+                    }
+                    _this.controllers.splice(index, 1);
+                    webVrController.dispose();
+                }
+            });
+            this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
+                if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
+                    var webVrController = gamepad;
                     if (_this.webVROptions.controllerMeshes) {
                         webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
                             if (_this.webVROptions.defaultLightningOnControllers) {
@@ -65229,7 +65453,7 @@ var BABYLON;
                         //add to the controllers array
                         _this.controllers.push(webVrController);
                         //did we find enough controllers? Great! let the developer know.
-                        if (_this._onControllersAttached && _this.controllers.length >= 2) {
+                        if (_this.controllers.length >= 2) {
                             // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
                             // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
                             // So we're overriding setting left & right manually to be sure
@@ -65245,15 +65469,13 @@ var BABYLON;
                                     }
                                 }
                             }
-                            _this._onControllersAttached(_this.controllers);
+                            _this.onControllersAttachedObservable.notifyObservers(_this.controllers);
                         }
                     }
                 }
                 else {
-                    _this.nonVRControllers.push(gp);
-                    if (_this._onNonVRControllerAttached) {
-                        _this._onNonVRControllerAttached(gp);
-                    }
+                    _this.nonVRControllers.push(gamepad);
+                    _this.onNonVRControllersAttachedObservable.notifyObservers(gamepad);
                 }
             });
         };
@@ -67039,8 +67261,10 @@ var BABYLON;
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 var alphaTexture = material.getAlphaTestTexture();
-                this._effect.setTexture("diffuseSampler", alphaTexture);
-                this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                if (alphaTexture) {
+                    this._effect.setTexture("diffuseSampler", alphaTexture);
+                    this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                }
             }
             engine.setZOffset(-this.zOffset);
             mesh._processRendering(subMesh, this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { _this._effect.setMatrix("world", world); });
@@ -69762,9 +69986,9 @@ var BABYLON;
 (function (BABYLON) {
     var FramingBehavior = (function () {
         function FramingBehavior() {
-            this._mode = FramingBehavior.IgnoreBoundsSizeMode;
+            this._mode = FramingBehavior.FitFrustumSidesMode;
             this._radiusScale = 1.0;
-            this._positionY = 0;
+            this._positionScale = 0.5;
             this._defaultElevation = 0.3;
             this._elevationReturnTime = 1500;
             this._elevationReturnWaitTime = 1000;
@@ -69817,18 +70041,18 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(FramingBehavior.prototype, "positionY", {
+        Object.defineProperty(FramingBehavior.prototype, "positionScale", {
             /**
-             * Gets the Y offset of the target mesh from the camera's focus.
+             * Gets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
              */
             get: function () {
-                return this._positionY;
+                return this._positionScale;
             },
             /**
-             * Sets the Y offset of the target mesh from the camera's focus.
+             * Sets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
              */
-            set: function (positionY) {
-                this._positionY = positionY;
+            set: function (scale) {
+                this._positionScale = scale;
             },
             enumerable: true,
             configurable: true
@@ -69954,25 +70178,36 @@ var BABYLON;
          * Targets the given mesh and updates zoom level accordingly.
          * @param mesh  The mesh to target.
          * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param applyToLowerLimit Optional. Indicates if the calculated target radius should be applied to the
-         *		camera's lower radius limit too.
          * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          */
-        FramingBehavior.prototype.zoomOnMesh = function (mesh, radius, applyToLowerLimit, framingPositionY, focusOnOriginXZ) {
-            if (applyToLowerLimit === void 0) { applyToLowerLimit = true; }
+        FramingBehavior.prototype.zoomOnMesh = function (mesh, focusOnOriginXZ) {
             if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
-            if (framingPositionY == null) {
-                framingPositionY = this._positionY;
-            }
             mesh.computeWorldMatrix(true);
+            var boundingBox = mesh.getBoundingInfo().boundingBox;
+            this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ);
+        };
+        /**
+         * Targets the given mesh and updates zoom level accordingly.
+         * @param mesh  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         */
+        FramingBehavior.prototype.zoomOnBoundingInfo = function (minimumWorld, maximumWorld, focusOnOriginXZ) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
             var zoomTarget;
-            var center = mesh.getBoundingInfo().boundingSphere.centerWorld;
+            // Find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
+            var bottom = minimumWorld.y;
+            var top = maximumWorld.y;
+            var zoomTargetY = bottom + (top - bottom) * this._positionScale;
+            var radiusWorld = maximumWorld.subtract(minimumWorld).scale(0.5);
             if (focusOnOriginXZ) {
-                zoomTarget = new BABYLON.Vector3(0, center.y, 0);
+                zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
             }
             else {
-                zoomTarget = center.clone();
+                var centerWorld = minimumWorld.add(radiusWorld);
+                zoomTarget = new BABYLON.Vector3(centerWorld.x, zoomTargetY, centerWorld.z);
             }
             if (!this._vectorTransition) {
                 this._vectorTransition = BABYLON.Animation.CreateAnimation("target", BABYLON.Animation.ANIMATIONTYPE_VECTOR3, 60, FramingBehavior.EasingFunction);
@@ -69980,21 +70215,19 @@ var BABYLON;
             this._betaIsAnimating = true;
             this._animatables.push(BABYLON.Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 60, this._vectorTransition, this._framingTime));
             // sets the radius and lower radius bounds
-            if (radius == null) {
-                // Small delta ensures camera is not always at lower zoom limit.
-                var delta = 0.1;
-                if (this._mode === FramingBehavior.FitFrustumSidesMode) {
-                    var position = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-                    this._attachedCamera.lowerRadiusLimit = position - delta;
-                    radius = position;
-                }
-                else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
-                    radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-                }
+            // Small delta ensures camera is not always at lower zoom limit.
+            var delta = 0.1;
+            var radius = 0;
+            if (this._mode === FramingBehavior.FitFrustumSidesMode) {
+                var position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
+                this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
+                radius = position;
             }
-            if (applyToLowerLimit) {
-                this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld;
-                ;
+            else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
+                radius = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
+                if (this._attachedCamera.lowerRadiusLimit === null) {
+                    this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
+                }
             }
             // transition to new radius
             if (!this._radiusTransition) {
@@ -70009,8 +70242,9 @@ var BABYLON;
          * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
          *		 to fully enclose the mesh in the viewing frustum.
          */
-        FramingBehavior.prototype._calculateLowerRadiusFromModelBoundingSphere = function (mesh) {
-            var boxVectorGlobalDiagonal = mesh.getBoundingInfo().diagonalLength;
+        FramingBehavior.prototype._calculateLowerRadiusFromModelBoundingSphere = function (minimumWorld, maximumWorld) {
+            var size = maximumWorld.subtract(minimumWorld);
+            var boxVectorGlobalDiagonal = size.length();
             var frustumSlope = this._getFrustumSlope();
             // Formula for setting distance
             // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
@@ -70070,7 +70304,7 @@ var BABYLON;
             // Slope of the frustum left/right planes in view space, relative to the forward vector.
             // Provides the amount that one side (e.g. left) of the frustum gets wider for every unit
             // along the forward vector.
-            var frustumSlopeX = frustumSlopeY / aspectRatio;
+            var frustumSlopeX = frustumSlopeY * aspectRatio;
             return new BABYLON.Vector2(frustumSlopeX, frustumSlopeY);
         };
         /**
@@ -70083,7 +70317,7 @@ var BABYLON;
          *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
          */
         FramingBehavior.prototype._applyUserInteraction = function () {
-            if (this._userIsMoving()) {
+            if (this.isUserIsMoving) {
                 this._lastInteractionTime = BABYLON.Tools.Now;
                 this.stopAllAnimations();
                 this._clearAnimationLocks();
@@ -70102,15 +70336,21 @@ var BABYLON;
                 this._animatables.shift();
             }
         };
-        // Tools
-        FramingBehavior.prototype._userIsMoving = function () {
-            return this._attachedCamera.inertialAlphaOffset !== 0 ||
-                this._attachedCamera.inertialBetaOffset !== 0 ||
-                this._attachedCamera.inertialRadiusOffset !== 0 ||
-                this._attachedCamera.inertialPanningX !== 0 ||
-                this._attachedCamera.inertialPanningY !== 0 ||
-                this._isPointerDown;
-        };
+        Object.defineProperty(FramingBehavior.prototype, "isUserIsMoving", {
+            /**
+             * Gets a value indicating if the user is moving the camera
+             */
+            get: function () {
+                return this._attachedCamera.inertialAlphaOffset !== 0 ||
+                    this._attachedCamera.inertialBetaOffset !== 0 ||
+                    this._attachedCamera.inertialRadiusOffset !== 0 ||
+                    this._attachedCamera.inertialPanningX !== 0 ||
+                    this._attachedCamera.inertialPanningY !== 0 ||
+                    this._isPointerDown;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * The easing function used by animations
          */
@@ -70297,6 +70537,7 @@ var BABYLON;
             this._isPointerDown = false;
             this._lastFrameTime = null;
             this._lastInteractionTime = -Infinity;
+            this._cameraRotationSpeed = 0;
             this._lastFrameRadius = 0;
         }
         Object.defineProperty(AutoRotationBehavior.prototype, "name", {
@@ -70370,6 +70611,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AutoRotationBehavior.prototype, "rotationInProgress", {
+            /**
+             * Gets a value indicating if the camera is currently rotating because of this behavior
+             */
+            get: function () {
+                return Math.abs(this._cameraRotationSpeed) > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
         AutoRotationBehavior.prototype.attach = function (camera) {
             var _this = this;
             this._attachedCamera = camera;
@@ -70394,9 +70645,9 @@ var BABYLON;
                 _this._applyUserInteraction();
                 var timeToRotation = now - _this._lastInteractionTime - _this._idleRotationWaitTime;
                 var scale = Math.max(Math.min(timeToRotation / (_this._idleRotationSpinupTime), 1), 0);
-                var cameraRotationSpeed = _this._idleRotationSpeed * scale;
+                _this._cameraRotationSpeed = _this._idleRotationSpeed * scale;
                 // Step camera rotation by rotation speed
-                _this._attachedCamera.alpha -= cameraRotationSpeed * (dt / 1000);
+                _this._attachedCamera.alpha -= _this._cameraRotationSpeed * (dt / 1000);
             });
         };
         AutoRotationBehavior.prototype.detach = function (camera) {

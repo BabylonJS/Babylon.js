@@ -22,7 +22,9 @@ module BABYLON {
 
         public set camera(camera: FreeCamera) {
             this._camera = camera;
-            if (!this._camera.rotationQuaternion) this._camera.rotationQuaternion = new Quaternion();
+            if (this._camera != null && !this._camera.rotationQuaternion) {
+                this._camera.rotationQuaternion = new Quaternion();
+            }
         }
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {

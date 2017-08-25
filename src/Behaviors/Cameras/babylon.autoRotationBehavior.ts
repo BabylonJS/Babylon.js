@@ -64,6 +64,13 @@ module BABYLON {
 		public get idleRotationSpinupTime() {
 			return this._idleRotationSpinupTime;
 		}
+
+		/**
+		 * Gets a value indicating if the camera is currently rotating because of this behavior
+		 */
+		public get rotationInProgress(): boolean {
+			return Math.abs(this._cameraRotationSpeed) > 0;
+		}
         
         // Default behavior functions
         private _onPrePointerObservableObserver: Observer<PointerInfoPre>;
@@ -71,7 +78,8 @@ module BABYLON {
         private _attachedCamera: ArcRotateCamera;
         private _isPointerDown = false;
         private _lastFrameTime: number = null;
-        private _lastInteractionTime = -Infinity;
+		private _lastInteractionTime = -Infinity;
+		private _cameraRotationSpeed: number = 0;
 
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
@@ -101,10 +109,10 @@ module BABYLON {
     
                 let timeToRotation = now - this._lastInteractionTime - this._idleRotationWaitTime;
 				let scale = Math.max(Math.min(timeToRotation / (this._idleRotationSpinupTime), 1), 0);
-                let cameraRotationSpeed = this._idleRotationSpeed * scale;
+                this._cameraRotationSpeed = this._idleRotationSpeed * scale;
     
                 // Step camera rotation by rotation speed
-                this._attachedCamera.alpha -= cameraRotationSpeed * (dt / 1000);
+                this._attachedCamera.alpha -= this._cameraRotationSpeed * (dt / 1000);
             });
         }
              
