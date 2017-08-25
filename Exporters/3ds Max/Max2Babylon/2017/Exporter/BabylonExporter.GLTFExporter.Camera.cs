@@ -37,19 +37,21 @@ namespace Max2Babylon
 
             // Transform
             gltfNode.translation = babylonCamera.position;
-            // WARNING - Babylon camera rotation is assumed to be a Vector3, not a quaternion. But Babylon.FreeCamera for example has a rotationQuaternion field.
-            // WARNING - Babylon exporter does not currently export the actual rotation of any camera, leaving it to the default value (0,0,0)
-            // Convert rotation vector to quaternion
-            // TODO - Fix it
-            BabylonVector3 rotationVector3 = new BabylonVector3
+            if (babylonCamera.rotationQuaternion != null)
             {
-                X = babylonCamera.rotation[0],
-                Y = babylonCamera.rotation[1],
-                Z = babylonCamera.rotation[2]
-            };
-            gltfNode.rotation = rotationVector3.toQuaternion().ToArray();
-            RaiseMessage("GLTFExporter.Camera | rotationVector3=[" + rotationVector3.X + "; " + rotationVector3.Y + "; " + rotationVector3.Z + "]", 3);
-            RaiseMessage("GLTFExporter.Camera | gltfNode.rotation=[" + gltfNode.rotation[0] + "; " + gltfNode.rotation[1] + "; " + gltfNode.rotation[2] + "; " + gltfNode.rotation[3] + "]", 3);
+                gltfNode.rotation = babylonCamera.rotationQuaternion;
+            }
+            else
+            {
+                // Convert rotation vector to quaternion
+                BabylonVector3 rotationVector3 = new BabylonVector3
+                {
+                    X = babylonCamera.rotation[0],
+                    Y = babylonCamera.rotation[1],
+                    Z = babylonCamera.rotation[2]
+                };
+                gltfNode.rotation = rotationVector3.toQuaternionGltf().ToArray();
+            }
             // No scaling defined for babylon camera. Use identity instead.
             gltfNode.scale = new float[3] { 1, 1, 1 };
 

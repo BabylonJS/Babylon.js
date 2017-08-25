@@ -48,17 +48,13 @@ namespace Max2Babylon
             else
             {
                 // Convert rotation vector to quaternion
-                // TODO - Fix it
                 BabylonVector3 rotationVector3 = new BabylonVector3
                 {
                     X = babylonMesh.rotation[0],
                     Y = babylonMesh.rotation[1],
                     Z = babylonMesh.rotation[2]
                 };
-                gltfNode.rotation = rotationVector3.toQuaternion().ToArray();
-
-                RaiseMessage("GLTFExporter.Mesh | rotationVector3=[" + rotationVector3.X + "; " + rotationVector3.Y + "; " + rotationVector3.Z + "]", 3);
-                RaiseMessage("GLTFExporter.Mesh | gltfNode.rotation=[" + gltfNode.rotation[0] + "; " + gltfNode.rotation[1] + "; " + gltfNode.rotation[2] + "; " + gltfNode.rotation[3] + "]", 3);
+                gltfNode.rotation = rotationVector3.toQuaternionGltf().ToArray();
             }
             gltfNode.scale = babylonMesh.scaling;
 
