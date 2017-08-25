@@ -900,7 +900,7 @@
             Tmp.Matrix[2].decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
 
             this.position.addInPlace(Tmp.Vector3[1]);
-            this.rotationQuaternion.multiplyInPlace(Tmp.Quaternion[0]);
+            Tmp.Quaternion[0].multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
 
             return this;
         }
