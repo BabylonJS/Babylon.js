@@ -46,6 +46,7 @@ interface WebGLRenderingContext {
 
     // Occlusion Query
     createQuery(): WebGLQuery;
+    deleteQuery(query: WebGLQuery);
     beginQuery(target: number, query: WebGLQuery);
     endQuery(target: number): void;
     getQueryParameter(query: WebGLQuery, pname: number): any;
@@ -109,6 +110,13 @@ interface CanvasRenderingContext2D {
     oImageSmoothingEnabled: boolean;
     webkitImageSmoothingEnabled: boolean;
     msImageSmoothingEnabled: boolean;
+}
+
+interface Navigator {
+    getGamepads(func?: any): any;
+    webkitGetGamepads(func?: any): any
+    msGetGamepads(func?: any): any;
+    webkitGamepads(func?: any): any;
 }
 
 interface WebGLTexture {
