@@ -12668,7 +12668,7 @@ var BABYLON;
             BABYLON.Tmp.Matrix[2].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[2]);
             BABYLON.Tmp.Matrix[2].decompose(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[1]);
             this.position.addInPlace(BABYLON.Tmp.Vector3[1]);
-            this.rotationQuaternion.multiplyInPlace(BABYLON.Tmp.Quaternion[0]);
+            BABYLON.Tmp.Quaternion[0].multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             return this;
         };
         /**
@@ -14654,7 +14654,7 @@ var BABYLON;
             _this.orthoBottom = null;
             _this.orthoTop = null;
             _this.fov = 0.8;
-            _this.minZ = 0.1;
+            _this.minZ = 1;
             _this.maxZ = 10000.0;
             _this.inertia = 0.9;
             _this.mode = Camera.PERSPECTIVE_CAMERA;
@@ -50348,6 +50348,7 @@ var BABYLON;
                         var gamepadToRemove = _this._babylonGamepads[i];
                         _this._babylonGamepads[i] = null;
                         _this.onGamepadDisconnectedObservable.notifyObservers(gamepadToRemove);
+                        gamepadToRemove.dispose();
                         break;
                     }
                 }
@@ -50428,15 +50429,7 @@ var BABYLON;
                 gamepad.update();
             }
             if (this._isMonitoring) {
-                if (window.requestAnimationFrame) {
-                    window.requestAnimationFrame(function () { _this._checkGamepadsStatus(); });
-                }
-                else if (window.mozRequestAnimationFrame) {
-                    window.mozRequestAnimationFrame(function () { _this._checkGamepadsStatus(); });
-                }
-                else if (window.webkitRequestAnimationFrame) {
-                    window.webkitRequestAnimationFrame(function () { _this._checkGamepadsStatus(); });
-                }
+                BABYLON.Tools.QueueNewFrame(function () { _this._checkGamepadsStatus(); });
             }
         };
         // This function is called only on Chrome, which does not properly support
@@ -50535,6 +50528,8 @@ var BABYLON;
                 this.rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };
             }
         };
+        Gamepad.prototype.dispose = function () {
+        };
         Gamepad.GAMEPAD = 0;
         Gamepad.GENERIC = 1;
         Gamepad.XBOX = 2;
@@ -50576,6 +50571,13 @@ var BABYLON;
         return GenericPad;
     }(Gamepad));
     BABYLON.GenericPad = GenericPad;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.gamepad.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
     var Xbox360Button;
     (function (Xbox360Button) {
         Xbox360Button[Xbox360Button["A"] = 0] = "A";
@@ -50618,7 +50620,7 @@ var BABYLON;
             _this._dPadLeft = 0;
             _this._dPadRight = 0;
             _this._isXboxOnePad = false;
-            _this.type = Gamepad.XBOX;
+            _this.type = BABYLON.Gamepad.XBOX;
             _this._isXboxOnePad = xboxOne;
             return _this;
         }
@@ -50868,11 +50870,11 @@ var BABYLON;
             }
         };
         return Xbox360Pad;
-    }(Gamepad));
+    }(BABYLON.Gamepad));
     BABYLON.Xbox360Pad = Xbox360Pad;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.gamepads.js.map
+//# sourceMappingURL=babylon.xboxGamepad.js.map
 
 
 var BABYLON;
@@ -50890,13 +50892,13 @@ var BABYLON;
         PoseEnabledControllerHelper.InitiateController = function (vrGamepad) {
             // Oculus Touch
             if (vrGamepad.id.indexOf('Oculus Touch') !== -1) {
-                return new OculusTouchController(vrGamepad);
+                return new BABYLON.OculusTouchController(vrGamepad);
             }
             else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
-                return new ViveController(vrGamepad);
+                return new BABYLON.ViveController(vrGamepad);
             }
             else {
-                return new GenericController(vrGamepad);
+                return new BABYLON.GenericController(vrGamepad);
             }
         };
         return PoseEnabledControllerHelper;
@@ -50979,6 +50981,7 @@ var BABYLON;
                 this._mesh.dispose();
             }
             this._mesh = undefined;
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(PoseEnabledController.prototype, "mesh", {
             get: function () {
@@ -51002,11 +51005,17 @@ var BABYLON;
         return PoseEnabledController;
     }(BABYLON.Gamepad));
     BABYLON.PoseEnabledController = PoseEnabledController;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.poseEnabledController.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
     var WebVRController = (function (_super) {
         __extends(WebVRController, _super);
         function WebVRController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
-            //public onTriggerStateChangedObservable = new Observable<{ state: ExtendedGamepadButton, changes: GamepadButtonChanges }>();
             _this.onTriggerStateChangedObservable = new BABYLON.Observable();
             _this.onMainButtonStateChangedObservable = new BABYLON.Observable();
             _this.onSecondaryButtonStateChangedObservable = new BABYLON.Observable();
@@ -51073,15 +51082,22 @@ var BABYLON;
             return this._changes;
         };
         return WebVRController;
-    }(PoseEnabledController));
+    }(BABYLON.PoseEnabledController));
     BABYLON.WebVRController = WebVRController;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.webVRController.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
     var OculusTouchController = (function (_super) {
         __extends(OculusTouchController, _super);
         function OculusTouchController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
             _this.onSecondaryTriggerStateChangedObservable = new BABYLON.Observable();
             _this.onThumbRestChangedObservable = new BABYLON.Observable();
-            _this.controllerType = PoseEnabledControllerType.OCULUS;
+            _this.controllerType = BABYLON.PoseEnabledControllerType.OCULUS;
             return _this;
         }
         OculusTouchController.prototype.initControllerMesh = function (scene, meshLoaded) {
@@ -51211,13 +51227,20 @@ var BABYLON;
             }
         };
         return OculusTouchController;
-    }(WebVRController));
+    }(BABYLON.WebVRController));
     BABYLON.OculusTouchController = OculusTouchController;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.oculusTouchController.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
     var ViveController = (function (_super) {
         __extends(ViveController, _super);
         function ViveController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
-            _this.controllerType = PoseEnabledControllerType.VIVE;
+            _this.controllerType = BABYLON.PoseEnabledControllerType.VIVE;
             return _this;
         }
         ViveController.prototype.initControllerMesh = function (scene, meshLoaded) {
@@ -51298,8 +51321,15 @@ var BABYLON;
             }
         };
         return ViveController;
-    }(WebVRController));
+    }(BABYLON.WebVRController));
     BABYLON.ViveController = ViveController;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.viveController.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
     var GenericController = (function (_super) {
         __extends(GenericController, _super);
         function GenericController(vrGamepad) {
@@ -51320,11 +51350,11 @@ var BABYLON;
             console.dir(state);
         };
         return GenericController;
-    }(WebVRController));
+    }(BABYLON.WebVRController));
     BABYLON.GenericController = GenericController;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.extendedGamepad.js.map
+//# sourceMappingURL=babylon.genericController.js.map
 
 /// <reference path="babylon.targetCamera.ts" />
 
@@ -64956,8 +64986,9 @@ var BABYLON;
             },
             set: function (camera) {
                 this._camera = camera;
-                if (!this._camera.rotationQuaternion)
+                if (this._camera != null && !this._camera.rotationQuaternion) {
                     this._camera.rotationQuaternion = new BABYLON.Quaternion();
+                }
             },
             enumerable: true,
             configurable: true
@@ -65144,10 +65175,9 @@ var BABYLON;
             _this.devicePosition = BABYLON.Vector3.Zero();
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
-            _this.nonVRControllers = [];
             _this.onControllersAttachedObservable = new BABYLON.Observable();
-            _this.onNonVRControllersAttachedObservable = new BABYLON.Observable();
             _this.rigParenting = true; // should the rig cameras be used as parent instead of this camera.
+            _this.minZ = 0.1;
             //legacy support - the compensation boolean was removed.
             if (arguments.length === 5) {
                 _this.webVROptions = arguments[4];
@@ -65271,7 +65301,6 @@ var BABYLON;
                     //backwards comp
                     var pose = this._vrDevice.getPose();
                     this._frameData.pose = pose;
-                    // calculate view and projection matrix
                 }
                 this.updateFromDevice(this._frameData.pose);
             }
@@ -65403,8 +65432,8 @@ var BABYLON;
             }
             else {
                 var parentCamera = this.parent;
-                parentCamera._vrDevice.depthNear = this.minZ;
-                parentCamera._vrDevice.depthFar = this.maxZ;
+                parentCamera._vrDevice.depthNear = parentCamera.minZ;
+                parentCamera._vrDevice.depthFar = parentCamera.maxZ;
                 var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
                 BABYLON.Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
                 //babylon compatible matrix
@@ -65429,7 +65458,6 @@ var BABYLON;
                         return;
                     }
                     _this.controllers.splice(index, 1);
-                    webVrController.dispose();
                 }
             });
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
@@ -65472,10 +65500,6 @@ var BABYLON;
                             _this.onControllersAttachedObservable.notifyObservers(_this.controllers);
                         }
                     }
-                }
-                else {
-                    _this.nonVRControllers.push(gamepad);
-                    _this.onNonVRControllersAttachedObservable.notifyObservers(gamepad);
                 }
             });
         };

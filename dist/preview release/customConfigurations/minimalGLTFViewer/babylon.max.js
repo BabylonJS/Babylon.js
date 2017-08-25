@@ -12668,7 +12668,7 @@ var BABYLON;
             BABYLON.Tmp.Matrix[2].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[2]);
             BABYLON.Tmp.Matrix[2].decompose(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[1]);
             this.position.addInPlace(BABYLON.Tmp.Vector3[1]);
-            this.rotationQuaternion.multiplyInPlace(BABYLON.Tmp.Quaternion[0]);
+            BABYLON.Tmp.Quaternion[0].multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             return this;
         };
         /**
@@ -14654,7 +14654,7 @@ var BABYLON;
             _this.orthoBottom = null;
             _this.orthoTop = null;
             _this.fov = 0.8;
-            _this.minZ = 0.1;
+            _this.minZ = 1;
             _this.maxZ = 10000.0;
             _this.inertia = 0.9;
             _this.mode = Camera.PERSPECTIVE_CAMERA;
