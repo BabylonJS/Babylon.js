@@ -12,7 +12,7 @@ namespace Max2Babylon
     {
         private GLTFMesh ExportMesh(BabylonMesh babylonMesh, GLTF gltf, GLTFNode gltfParentNode, BabylonScene babylonScene)
         {
-            RaiseMessage("GLTFExporter.Mesh | Export mesh " + babylonMesh.name, 1);
+            RaiseMessage("GLTFExporter.Mesh | Export mesh named: " + babylonMesh.name, 1);
 
             // --------------------------
             // ---------- Node ----------

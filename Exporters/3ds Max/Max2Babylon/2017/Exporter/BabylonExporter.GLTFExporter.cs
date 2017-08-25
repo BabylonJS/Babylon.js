@@ -45,7 +45,7 @@ namespace Max2Babylon
             babylonNodes.AddRange(babylonScene.cameras);
 
             // Root nodes
-            RaiseMessage("GLTFExporter | Exporting root nodes");
+            RaiseMessage("GLTFExporter | Exporting nodes");
             List<BabylonNode> babylonRootNodes = babylonNodes.FindAll(node => node.parentId == null);
             var progressionStep = 80.0f / babylonRootNodes.Count;
             var progression = 10.0f;

@@ -13,7 +13,7 @@ namespace Max2Babylon
             // ---------- Node ----------
             // --------------------------
 
-            RaiseMessage("GLTFExporter.Light | Node", 1);
+            RaiseMessage("GLTFExporter.Light | Node", 2);
             // Node
             var gltfNode = new GLTFNode();
             gltfNode.name = babylonLight.name;
@@ -23,14 +23,14 @@ namespace Max2Babylon
             // Hierarchy
             if (gltfParentNode != null)
             {
-                RaiseMessage("GLTFExporter.Light | Add " + babylonLight.name + " as child to " + gltfParentNode.name, 2);
+                RaiseMessage("GLTFExporter.Light | Add " + babylonLight.name + " as child to " + gltfParentNode.name, 3);
                 gltfParentNode.ChildrenList.Add(gltfNode.index);
             }
             else
             {
                 // It's a root node
                 // Only root nodes are listed in a gltf scene
-                RaiseMessage("GLTFExporter.Light | Add " + babylonLight.name + " as root node to scene", 2);
+                RaiseMessage("GLTFExporter.Light | Add " + babylonLight.name + " as root node to scene", 3);
                 gltf.scenes[0].NodesList.Add(gltfNode.index);
             }
 

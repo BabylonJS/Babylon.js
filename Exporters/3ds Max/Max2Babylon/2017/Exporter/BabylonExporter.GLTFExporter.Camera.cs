@@ -8,13 +8,13 @@ namespace Max2Babylon
         // TODO - Test if ok with a gltf viewer working with custom camera (babylon loader/sandbox doesn't load them)
         private GLTFCamera ExportCamera(BabylonCamera babylonCamera, GLTF gltf, GLTFNode gltfParentNode)
         {
-            RaiseMessage("GLTFExporter.Camera | ExportCamera babylonCamera.name=" + babylonCamera.name, 1);
+            RaiseMessage("GLTFExporter.Camera | Export camera named: " + babylonCamera.name, 1);
 
             // --------------------------
             // ---------- Node ----------
             // --------------------------
 
-            RaiseMessage("GLTFExporter.Camera | Node", 1);
+            RaiseMessage("GLTFExporter.Camera | Node", 2);
             // Node
             var gltfNode = new GLTFNode();
             gltfNode.name = babylonCamera.name;
@@ -24,14 +24,14 @@ namespace Max2Babylon
             // Hierarchy
             if (gltfParentNode != null)
             {
-                RaiseMessage("GLTFExporter.Camera | Add " + babylonCamera.name + " as child to " + gltfParentNode.name, 2);
+                RaiseMessage("GLTFExporter.Camera | Add " + babylonCamera.name + " as child to " + gltfParentNode.name, 3);
                 gltfParentNode.ChildrenList.Add(gltfNode.index);
             }
             else
             {
                 // It's a root node
                 // Only root nodes are listed in a gltf scene
-                RaiseMessage("GLTFExporter.Camera | Add " + babylonCamera.name + " as root node to scene", 2);
+                RaiseMessage("GLTFExporter.Camera | Add " + babylonCamera.name + " as root node to scene", 3);
                 gltf.scenes[0].NodesList.Add(gltfNode.index);
             }
 
@@ -48,26 +48,26 @@ namespace Max2Babylon
                 Z = babylonCamera.rotation[2]
             };
             gltfNode.rotation = rotationVector3.toQuaternion().ToArray();
-            RaiseMessage("GLTFExporter.Camera | rotationVector3=[" + rotationVector3.X + "; " + rotationVector3.Y + "; " + rotationVector3.Z + "]", 2);
-            RaiseMessage("GLTFExporter.Camera | gltfNode.rotation=[" + gltfNode.rotation[0] + "; " + gltfNode.rotation[1] + "; " + gltfNode.rotation[2] + "; " + gltfNode.rotation[3] + "]", 2);
+            RaiseMessage("GLTFExporter.Camera | rotationVector3=[" + rotationVector3.X + "; " + rotationVector3.Y + "; " + rotationVector3.Z + "]", 3);
+            RaiseMessage("GLTFExporter.Camera | gltfNode.rotation=[" + gltfNode.rotation[0] + "; " + gltfNode.rotation[1] + "; " + gltfNode.rotation[2] + "; " + gltfNode.rotation[3] + "]", 3);
             // No scaling defined for babylon camera. Use identity instead.
             gltfNode.scale = new float[3] { 1, 1, 1 };
 
 
             // --- prints ---
 
-            RaiseMessage("GLTFExporter.Camera | babylonCamera data", 1);
-            RaiseMessage("GLTFExporter.Camera | babylonCamera.type=" + babylonCamera.type, 2);
-            RaiseMessage("GLTFExporter.Camera | babylonCamera.fov=" + babylonCamera.fov, 2);
-            RaiseMessage("GLTFExporter.Camera | babylonCamera.maxZ=" + babylonCamera.maxZ, 2);
-            RaiseMessage("GLTFExporter.Camera | babylonCamera.minZ=" + babylonCamera.minZ, 2);
+            RaiseMessage("GLTFExporter.Camera | babylonCamera data", 2);
+            RaiseMessage("GLTFExporter.Camera | babylonCamera.type=" + babylonCamera.type, 3);
+            RaiseMessage("GLTFExporter.Camera | babylonCamera.fov=" + babylonCamera.fov, 3);
+            RaiseMessage("GLTFExporter.Camera | babylonCamera.maxZ=" + babylonCamera.maxZ, 3);
+            RaiseMessage("GLTFExporter.Camera | babylonCamera.minZ=" + babylonCamera.minZ, 3);
 
 
             // --------------------------
             // ------- gltfCamera -------
             // --------------------------
 
-            RaiseMessage("GLTFExporter.Camera | create gltfCamera", 1);
+            RaiseMessage("GLTFExporter.Camera | create gltfCamera", 2);
 
             // Camera
             var gltfCamera = new GLTFCamera { name = babylonCamera.name };
