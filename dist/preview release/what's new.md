@@ -4,6 +4,7 @@
 - Added support for non-pow2 textures when in WebGL2 mode ([deltakosh](https://github.com/deltakosh))
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
 - Introduced behaviors. (Doc here)[http://doc.babylonjs.com/overviews/behaviors] ([deltakosh](https://github.com/deltakosh))
+- Added support for WebGL Occlusion queries. (Doc here)[http://doc.babylonjs.com/overviews/occlusionquery] ([Ibraheem Osama](https://github.com/IbraheemOsama))
 - New behaviors for ArcRotateCamera:
  - AutoRotation ([deltakosh](https://github.com/deltakosh))
  - Framing ([deltakosh](https://github.com/deltakosh))

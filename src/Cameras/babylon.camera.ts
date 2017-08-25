@@ -86,7 +86,7 @@
         public fov = 0.8;
 
         @serialize()
-        public minZ = 0.1;
+        public minZ = 1;
 
         @serialize()
         public maxZ = 10000.0;
