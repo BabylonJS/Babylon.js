@@ -11823,8 +11823,33 @@ var BABYLON;
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
             _this.position = BABYLON.Vector3.Zero();
+            /**
+            * This property determines the type of occlusion query algorithm to run in WebGl, you can use:
+    
+            * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE which is mapped to GL_ANY_SAMPLES_PASSED.
+    
+            * or
+    
+            * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE (Default Value) which is mapped to GL_ANY_SAMPLES_PASSED_CONSERVATIVE which is a false positive algorithm that is faster than GL_ANY_SAMPLES_PASSED but less accurate.
+    
+            * for more info check WebGl documentations
+            */
             _this.occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
+            /**
+             * This property is responsible for starting the occlusion query within the Mesh or not, this property is also used     to determine what should happen when the occlusionRetryCount is reached. It has supports 3 values:
+    
+            * OCCLUSION_TYPE_NONE (Default Value): this option means no occlusion query whith the Mesh.
+    
+            * OCCLUSION_TYPE_OPTIMISITC: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken show the mesh.
+    
+                * OCCLUSION_TYPE_STRICT: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken restore the last state of the mesh occlusion if the mesh was visible then show the mesh if was hidden then hide don't show.
+             */
             _this.occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
+            /**
+            * This number indicates the number of allowed retries before stop the occlusion query, this is useful if the        occlusion query is taking long time before to the query result is retireved, the query result indicates if the object is visible within the scene or not and based on that Babylon.Js engine decideds to show or hide the object.
+    
+            * The default value is -1 which means don't break the query and wait till the result.
+            */
             _this.occlusionRetryCount = -1;
             _this._occlusionInternalRetryCounter = 0;
             _this._isOccluded = false;
@@ -12010,6 +12035,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(AbstractMesh.prototype, "isOccluded", {
+            /**
+            * Property isOccluded : Gets or sets whether the mesh is occluded or not, it is used also to set the intial state of the mesh to be occluded or not.
+            */
             get: function () {
                 return this._isOccluded;
             },
@@ -12020,6 +12048,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
+            /**
+            * Flag to check the progress status of the query
+            */
             get: function () {
                 return this._isOcclusionQueryInProgress;
             },
