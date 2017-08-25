@@ -39,6 +39,8 @@
                         this._babylonGamepads[i] = null;
                         
                         this.onGamepadDisconnectedObservable.notifyObservers(gamepadToRemove);
+
+                        gamepadToRemove.dispose();
                         break;
                     }
                 }            
@@ -93,7 +95,6 @@
             if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
                 newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
             }
-            // (<string>gamepad.id).search("Open VR") !== -1 || (<string>gamepad.id).search("Oculus Touch") !== -1
             // if pose is supported, use the (WebVR) pose enabled controller
             else if (gamepad.pose) {
                 newGamepad = PoseEnabledControllerHelper.InitiateController(gamepad);
@@ -129,13 +130,7 @@
             }
 
             if (this._isMonitoring) {
-                if (window.requestAnimationFrame) {
-                    window.requestAnimationFrame(() => { this._checkGamepadsStatus(); });
-                } else if (window.mozRequestAnimationFrame) {
-                    window.mozRequestAnimationFrame(() => { this._checkGamepadsStatus(); });
-                } else if (window.webkitRequestAnimationFrame) {
-                    window.webkitRequestAnimationFrame(() => { this._checkGamepadsStatus(); });
-                }
+                Tools.QueueNewFrame(() => { this._checkGamepadsStatus(); });
             }
         }
 
