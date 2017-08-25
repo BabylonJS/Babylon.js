@@ -34,7 +34,7 @@ module BABYLON {
         positionScale?: number;
         displayName?: string; //if there are more than one VRDisplays.
         controllerMeshes?: boolean; // should the native controller meshes be initialized
-        defaultLightningOnControllers?: boolean; // creating a default HemiLight only on controllers
+        defaultLightingOnControllers?: boolean; // creating a default HemiLight only on controllers
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -83,8 +83,8 @@ module BABYLON {
             if (this.webVROptions.controllerMeshes == undefined) {
                 this.webVROptions.controllerMeshes = true;
             }
-            if (this.webVROptions.defaultLightningOnControllers == undefined) {
-                this.webVROptions.defaultLightningOnControllers = true;
+            if (this.webVROptions.defaultLightingOnControllers == undefined) {
+                this.webVROptions.defaultLightingOnControllers = true;
             }
 
             this.rotationQuaternion = new Quaternion();
@@ -402,7 +402,7 @@ module BABYLON {
                     let webVrController: WebVRController = <WebVRController>gamepad;
                     if (this.webVROptions.controllerMeshes) {
                         webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
-                            if (this.webVROptions.defaultLightningOnControllers) {
+                            if (this.webVROptions.defaultLightingOnControllers) {
                                 if (!this._lightOnControllers) {
                                     this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), this.getScene());
                                 }

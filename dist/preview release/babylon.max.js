@@ -65189,8 +65189,8 @@ var BABYLON;
             if (_this.webVROptions.controllerMeshes == undefined) {
                 _this.webVROptions.controllerMeshes = true;
             }
-            if (_this.webVROptions.defaultLightningOnControllers == undefined) {
-                _this.webVROptions.defaultLightningOnControllers = true;
+            if (_this.webVROptions.defaultLightingOnControllers == undefined) {
+                _this.webVROptions.defaultLightingOnControllers = true;
             }
             _this.rotationQuaternion = new BABYLON.Quaternion();
             _this.deviceRotationQuaternion = new BABYLON.Quaternion();
@@ -65465,7 +65465,7 @@ var BABYLON;
                     var webVrController = gamepad;
                     if (_this.webVROptions.controllerMeshes) {
                         webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
-                            if (_this.webVROptions.defaultLightningOnControllers) {
+                            if (_this.webVROptions.defaultLightingOnControllers) {
                                 if (!_this._lightOnControllers) {
                                     _this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), _this.getScene());
                                 }
