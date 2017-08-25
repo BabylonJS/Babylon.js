@@ -112,6 +112,13 @@ interface CanvasRenderingContext2D {
     msImageSmoothingEnabled: boolean;
 }
 
+interface Navigator {
+    getGamepads(func?: any): any;
+    webkitGetGamepads(func?: any): any
+    msGetGamepads(func?: any): any;
+    webkitGamepads(func?: any): any;
+}
+
 interface WebGLTexture {
     isReady: boolean;
     isCube: boolean;

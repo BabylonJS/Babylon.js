@@ -2,8 +2,9 @@ module BABYLON {
     export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
         camera: FreeCamera;
 
-        public gamepad: Gamepad;
-        private _gamepads: Gamepads<Gamepad>;
+        public gamepad: Gamepad;        
+        private _onGamepadConnectedObserver : Observer<Gamepad>;
+        private _onGamepadDisconnectedObserver : Observer<Gamepad>;
 
         @serialize()
         public gamepadAngularSensibility = 200;
@@ -18,13 +19,28 @@ module BABYLON {
         private _vector2: Vector2 = Vector2.Zero();
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
-            this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
+            let manager = this.camera.getScene().gamepadManager;
+            this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
+                if (gamepad.type !== Gamepad.POSE_ENABLED) {
+                    // prioritize XBOX gamepads.
+                    if (!this.gamepad || gamepad.type === Gamepad.XBOX) {
+                        this.gamepad = gamepad;
+                    }
+                }
+            });  
+
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad)=> {
+                if (this.gamepad === gamepad) {
+                    this.gamepad = null;
+                }
+            });
+            
+            this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
         }
 
         detachControl(element: HTMLElement) {
-            if (this._gamepads) {
-                this._gamepads.dispose();
-            }
+            this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
+            this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;
         }
 
@@ -61,16 +77,6 @@ module BABYLON {
                 camera.cameraDirection.addInPlace(this._deltaTransform);
                 this._vector2.copyFromFloats(RSValues.y, RSValues.x)
                 camera.cameraRotation.addInPlace(this._vector2);
-            }
-        }
-
-        private _onNewGameConnected(gamepad: Gamepad) {
-            // Only the first gamepad found can control the camera
-            if (gamepad.type !== Gamepad.POSE_ENABLED) {
-                // prioritize XBOX gamepads.
-                if (!this.gamepad || gamepad.type === Gamepad.XBOX) {
-                    this.gamepad = gamepad;
-                }
             }
         }
 
