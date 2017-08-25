@@ -11,6 +11,8 @@ namespace Max2Babylon
 {
     internal partial class BabylonExporter
     {
+        List<BabylonMaterial> babylonMaterialsToExport;
+
         public void ExportGltf(BabylonScene babylonScene, string outputFile, bool generateBinary)
         {
             RaiseMessage("GLTFExporter | Export outputFile=" + outputFile + " generateBinary=" + generateBinary);
@@ -36,19 +38,6 @@ namespace Max2Babylon
             GLTFScene[] scenes = { scene };
             gltf.scenes = scenes;
 
-            // Materials
-            // TODO - Materials are exported even when meshes are not
-            RaiseMessage("GLTFExporter | Exporting materials");
-            ReportProgressChanged(10);
-            var babylonMaterials = babylonScene.MaterialsList;
-            babylonMaterials.ForEach((babylonMaterial) =>
-            {
-                ExportMaterial(babylonMaterial, gltf);
-                CheckCancelled();
-            });
-            // TODO - Handle multimaterials
-            RaiseMessage(string.Format("GLTFExporter | Total: {0}", gltf.MaterialsList.Count /*+ glTF.MultiMaterialsList.Count*/), Color.Gray, 1);
-
             // Nodes
             List<BabylonNode> babylonNodes = new List<BabylonNode>();
             babylonNodes.AddRange(babylonScene.meshes);
@@ -59,8 +48,9 @@ namespace Max2Babylon
             RaiseMessage("GLTFExporter | Exporting root nodes");
             List<BabylonNode> babylonRootNodes = babylonNodes.FindAll(node => node.parentId == null);
             var progressionStep = 80.0f / babylonRootNodes.Count;
-            var progression = 20.0f;
+            var progression = 10.0f;
             ReportProgressChanged((int)progression);
+            babylonMaterialsToExport = new List<BabylonMaterial>();
             babylonRootNodes.ForEach(babylonNode =>
             {
                 exportNodeRec(babylonNode, gltf, babylonScene);
@@ -68,6 +58,15 @@ namespace Max2Babylon
                 ReportProgressChanged((int)progression);
                 CheckCancelled();
             });
+
+            // Materials
+            RaiseMessage("GLTFExporter | Exporting materials");
+            foreach (var babylonMaterial in babylonMaterialsToExport)
+            {
+                ExportMaterial(babylonMaterial, gltf);
+                CheckCancelled();
+            };
+            RaiseMessage(string.Format("GLTFExporter | Nb materials exported: {0}", gltf.MaterialsList.Count), Color.Gray, 1);
 
             // Output
             RaiseMessage("GLTFExporter | Saving to output file");
@@ -102,7 +101,7 @@ namespace Max2Babylon
             GLTFNode gltfNode = null; 
             if (babylonNode.GetType() == typeof(BabylonMesh))
             {
-                GLTFMesh gltfMesh = ExportMesh(babylonNode as BabylonMesh, gltf, gltfParentNode);
+                GLTFMesh gltfMesh = ExportMesh(babylonNode as BabylonMesh, gltf, gltfParentNode, babylonScene);
                 gltfNode = gltfMesh.gltfNode;
             }
             else if (babylonNode.GetType() == typeof(BabylonCamera))
