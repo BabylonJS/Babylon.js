@@ -104,7 +104,7 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis" 
             ]
-        },
+        },      
         {
             "name": "Launch Build Validation (Chrome)",
             "type": "chrome",

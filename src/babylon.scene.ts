@@ -422,6 +422,17 @@
         /** Deprecated. Use onPointerObservable instead */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
+        // Gamepads
+        private _gamepadManager: GamepadManager;
+
+        public get gamepadManager(): GamepadManager {
+            if (!this._gamepadManager) {
+                this._gamepadManager = new GamepadManager();
+            }
+
+            return this._gamepadManager;
+        }
+
         /**
          * This observable event is triggered when any mouse event registered during Scene.attach() is called BEFORE the 3D engine to process anything (mesh/sprite picking for instance).
          * You have the possibility to skip the 3D Engine process and the call to onPointerObservable by setting PointerInfoBase.skipOnPointerObservable to true
@@ -3347,6 +3358,11 @@
 
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
+            }
+
+            if (this._gamepadManager) {
+                this._gamepadManager.dispose();
+                this._gamepadManager = null;
             }
 
             // Smart arrays
