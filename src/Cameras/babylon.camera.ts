@@ -553,7 +553,9 @@
             this.onAfterCheckInputsObservable.clear();
 
             // Inputs
-            this.inputs.clear();
+            if (this.inputs) {
+                this.inputs.clear();
+            }
 
             // Animations
             this.getScene().stopAnimation(this);

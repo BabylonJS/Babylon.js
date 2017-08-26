@@ -23,3 +23,6 @@
 
 ## Bug fixes
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))
+
+## Breaking changes
+- `Gamepads` was removed in favor of `scene.gamepadManager`

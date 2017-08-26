@@ -587,6 +587,11 @@
         private _deterministicLockstep: boolean = false;
         private _lockstepMaxSteps: number = 4;
 
+        // Lost context
+        private _onContextLost: (evt: Event) => void;
+        private _onContextRestored: (evt: Event) => void;
+        private _contextWasLost = false;
+
         // FPS
         private _performanceMonitor = new PerformanceMonitor();
         private _fps = 60;
@@ -776,6 +781,22 @@
                 options.stencil = this._gl.getContextAttributes().stencil;
             }
 
+            // Context lost
+            this._onContextLost = (evt: Event) => {
+                evt.preventDefault();
+                this._contextWasLost = true;
+            };
+
+            this._onContextRestored = (evt: Event) => {
+                this._contextWasLost = false;
+
+                // Restart render loop
+                this._renderLoop();
+            };
+
+            canvas.addEventListener("webglcontextlost", this._onContextLost, false);
+            canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+            
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
             this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
@@ -1184,6 +1205,10 @@
         }
 
         public _renderLoop(): void {
+            if (this._contextWasLost) {
+                return;
+            }
+
             var shouldRender = true;
             if (!this.renderEvenInBackground && this._windowIsBackground) {
                 shouldRender = false;
@@ -4166,6 +4191,8 @@
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
             this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
+            this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+            this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);            
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);

@@ -7456,6 +7456,7 @@ var BABYLON;
             // Deterministic lockstepMaxSteps
             this._deterministicLockstep = false;
             this._lockstepMaxSteps = 4;
+            this._contextWasLost = false;
             // FPS
             this._performanceMonitor = new BABYLON.PerformanceMonitor();
             this._fps = 60;
@@ -7582,6 +7583,18 @@ var BABYLON;
                 }
                 options.stencil = this._gl.getContextAttributes().stencil;
             }
+            // Context lost
+            this._onContextLost = function (evt) {
+                evt.preventDefault();
+                _this._contextWasLost = true;
+            };
+            this._onContextRestored = function (evt) {
+                _this._contextWasLost = false;
+                // Restart render loop
+                _this._renderLoop();
+            };
+            canvas.addEventListener("webglcontextlost", this._onContextLost, false);
+            canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
             this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
@@ -8335,6 +8348,9 @@ var BABYLON;
             }
         };
         Engine.prototype._renderLoop = function () {
+            if (this._contextWasLost) {
+                return;
+            }
             var shouldRender = true;
             if (!this.renderEvenInBackground && this._windowIsBackground) {
                 shouldRender = false;
@@ -10788,6 +10804,8 @@ var BABYLON;
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
             this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
+            this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+            this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
@@ -11174,7 +11192,7 @@ var BABYLON;
             if (index === -1) {
                 return;
             }
-            this._behaviors[index].detach(this);
+            this._behaviors[index].detach();
             this._behaviors.splice(index, 1);
             return this;
         };
@@ -11409,8 +11427,9 @@ var BABYLON;
             // Behaviors
             for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
                 var behavior = _a[_i];
-                behavior.detach(this);
+                behavior.detach();
             }
+            this._behaviors = [];
         };
         Node.ParseAnimationRanges = function (node, parsedNode, scene) {
             if (parsedNode.ranges) {
@@ -15087,7 +15106,9 @@ var BABYLON;
             this.onProjectionMatrixChangedObservable.clear();
             this.onAfterCheckInputsObservable.clear();
             // Inputs
-            this.inputs.clear();
+            if (this.inputs) {
+                this.inputs.clear();
+            }
             // Animations
             this.getScene().stopAnimation(this);
             // Remove from scene
@@ -70192,11 +70213,12 @@ var BABYLON;
                 _this._maintainCameraAboveGround();
             });
         };
-        FramingBehavior.prototype.detach = function (camera) {
+        FramingBehavior.prototype.detach = function () {
             var scene = this._attachedCamera.getScene();
             scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
-            camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
-            camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+            this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+            this._attachedCamera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+            this._attachedCamera = null;
         };
         /**
          * Targets the given mesh and updates zoom level accordingly.
@@ -70481,11 +70503,12 @@ var BABYLON;
                 }
             });
         };
-        BouncingBehavior.prototype.detach = function (camera) {
-            camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+        BouncingBehavior.prototype.detach = function () {
+            this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
             if (this._onMeshTargetChangedObserver) {
-                camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+                this._attachedCamera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
             }
+            this._attachedCamera = null;
         };
         /**
          * Checks if the camera radius is at the specified limit. Takes into account animation locks.
@@ -70674,10 +70697,11 @@ var BABYLON;
                 _this._attachedCamera.alpha -= _this._cameraRotationSpeed * (dt / 1000);
             });
         };
-        AutoRotationBehavior.prototype.detach = function (camera) {
+        AutoRotationBehavior.prototype.detach = function () {
             var scene = this._attachedCamera.getScene();
             scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
-            camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+            this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+            this._attachedCamera = null;
         };
         /**
          * Returns true if user is scrolling.
