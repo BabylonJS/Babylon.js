@@ -3,6 +3,6 @@ module BABYLON {
         name: string;
 
         attach(node: T): void;
-        detach(node: T): void;
+        detach(): void;
     }
 }
