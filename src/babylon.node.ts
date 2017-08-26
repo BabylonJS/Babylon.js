@@ -129,7 +129,7 @@ module BABYLON {
                 return;
             } 
 
-            this._behaviors[index].detach(this);
+            this._behaviors[index].detach();
             this._behaviors.splice(index, 1);
 
             return this;
@@ -411,8 +411,10 @@ module BABYLON {
 
             // Behaviors
             for (var behavior of this._behaviors) {
-                behavior.detach(this);
+                behavior.detach();
             }
+
+            this._behaviors = [];
         }
         
         public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
