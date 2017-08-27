@@ -615,7 +615,7 @@
         private _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
-        private _loadedTexturesCache = new Array<InternalTexture>();
+        private _internalTexturesCache = new Array<InternalTexture>();
         private _maxTextureChannels = 16;
         private _activeTexture: number;
         private _activeTexturesCache = new Array<WebGLTexture>(this._maxTextureChannels);
@@ -800,12 +800,12 @@
                 // Rebuild effects
                 this._rebuildEffects();
 
+                // Rebuild textures
+                this._rebuildInternalTextures();
+
                 // Rebuild buffers
                 this._rebuildBuffers();
-
-                // Rebuild textures
-                this._rebuildTextures();
-
+                
                 // Cache
                 this.wipeCaches(true);
 
@@ -897,7 +897,10 @@
             this.enableOfflineSupport = (BABYLON.Database !== undefined);
         }
 
-        private _rebuildTextures(): void {
+        private _rebuildInternalTextures(): void {
+            for (var internalTexture of this._internalTexturesCache) {
+                internalTexture._rebuild();
+            }
         }
 
         private _rebuildEffects(): void {
@@ -915,6 +918,7 @@
             for (var scene of this.scenes) {
                 scene.resetCachedMaterial();
                 scene._rebuildGeometries();
+                scene._rebuildTextures();
             }
 
             // Uniforms
@@ -1127,7 +1131,7 @@
         }
 
         public getLoadedTexturesCache(): InternalTexture[] {
-            return this._loadedTexturesCache;
+            return this._internalTexturesCache;
         }
 
         public getCaps(): EngineCapabilities {
@@ -2607,9 +2611,8 @@
          *
          * @returns {WebGLTexture} for assignment back into BABYLON.Texture
          */
-        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: ArrayBuffer | HTMLImageElement = null, fallBack?: WebGLTexture, format?: number): InternalTexture {
-            let webGLtexture = fallBack ? fallBack : this._gl.createTexture();
-            let texture = new InternalTexture(this, webGLtexture);
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: ArrayBuffer | HTMLImageElement = null, fallBack?: InternalTexture, format?: number): InternalTexture {
+            let texture = fallBack ? fallBack : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
 
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
@@ -2632,11 +2635,12 @@
             texture.url = url;
             texture.generateMipMaps = !noMipmap;
             texture.samplingMode = samplingMode;
+            texture.invertY = invertY;
 
             if (onLoad) {
                 texture.onLoadedObservable.add(onLoad);
             }
-            if (!fallBack) this._loadedTexturesCache.push(texture);
+            if (!fallBack) this._internalTexturesCache.push(texture);
 
             var onerror = () => {
                 scene._removePendingData(texture);
@@ -2707,7 +2711,7 @@
                         }
 
                         // Using shaders to rescale because canvas.drawImage is lossy
-                        let source = new InternalTexture(this);
+                        let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
                         this._bindTextureDirectly(gl.TEXTURE_2D, source);
                         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
 
@@ -2820,7 +2824,7 @@
         }
 
         public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: string = null): InternalTexture {
-            var texture = new InternalTexture(this);
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW);
             texture.baseWidth = width;
             texture.baseHeight = height;
             texture.width = width;
@@ -2843,13 +2847,13 @@
 
             texture.samplingMode = samplingMode;
 
-            this._loadedTexturesCache.push(texture);
+            this._internalTexturesCache.push(texture);
 
             return texture;
         }
 
         public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
-            var texture = new InternalTexture(this)
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_DYNAMIC)
             texture.baseWidth = width;
             texture.baseHeight = height;
 
@@ -2867,7 +2871,7 @@
 
             this.updateTextureSamplingMode(samplingMode, texture);
 
-            this._loadedTexturesCache.push(texture);
+            this._internalTexturesCache.push(texture);
 
             return texture;
         }
@@ -2992,7 +2996,7 @@
             }
             var gl = this._gl;
 
-            var texture = new InternalTexture(this);
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
 
             var width = size.width || size;
@@ -3043,7 +3047,7 @@
 
             this.resetTextureCache();
 
-            this._loadedTexturesCache.push(texture);
+            this._internalTexturesCache.push(texture);
 
             return texture;
         }
@@ -3107,7 +3111,7 @@
                     Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
                 }
 
-                var texture = new InternalTexture(this);
+                var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
                 var attachment = gl["COLOR_ATTACHMENT" + i];
                 textures.push(texture);
                 attachments.push(attachment);
@@ -3145,12 +3149,12 @@
                 texture._generateDepthBuffer = generateDepthBuffer;
                 texture._generateStencilBuffer = generateStencilBuffer;
 
-                this._loadedTexturesCache.push(texture);
+                this._internalTexturesCache.push(texture);
             }
 
             if (generateDepthTexture) {
                 // Depth texture
-                var depthTexture = new InternalTexture(this);
+                var depthTexture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
 
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, depthTexture._webGLTexture);
@@ -3191,7 +3195,7 @@
                 depthTexture._generateStencilBuffer = generateStencilBuffer;
 
                 textures.push(depthTexture)
-                this._loadedTexturesCache.push(depthTexture);
+                this._internalTexturesCache.push(depthTexture);
             }
 
             gl.drawBuffers(attachments);
@@ -3297,7 +3301,7 @@
         public createRenderTargetCubeTexture(size: number, options?: any): InternalTexture {
             var gl = this._gl;
 
-            var texture = new InternalTexture(this);
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
 
             var generateMipMaps = true;
             var generateDepthBuffer = true;
@@ -3356,7 +3360,7 @@
 
             this.resetTextureCache();
 
-            this._loadedTexturesCache.push(texture);
+            this._internalTexturesCache.push(texture);
 
             return texture;
         }
@@ -3391,7 +3395,7 @@
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-                    var glTextureFromLod = new InternalTexture(this);
+                    var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_CUBELOD);
                     glTextureFromLod.isCube = true;
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod);
 
@@ -3437,7 +3441,7 @@
         public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: (data?: any) => void = null, onError: () => void = null, format?: number, forcedExtension = null): InternalTexture {
             var gl = this._gl;
 
-            var texture = new InternalTexture(this);
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
             texture.isCube = true;
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
@@ -3560,7 +3564,7 @@
                 }, files, onError);
             }
 
-            this._loadedTexturesCache.push(texture);
+            this._internalTexturesCache.push(texture);
 
             return texture;
         }
@@ -3610,7 +3614,7 @@
 
         public createRawCubeTexture(data: ArrayBufferView[], size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: string = null): InternalTexture {
             var gl = this._gl;
-            var texture = new InternalTexture(this);
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBERAW);
             texture.isCube = true;
             texture.generateMipMaps = generateMipMaps;
             texture.format = format;
@@ -3683,7 +3687,7 @@
             var texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode);
             scene._addPendingData(texture);
             texture.url = url;
-            this._loadedTexturesCache.push(texture);
+            this._internalTexturesCache.push(texture);
 
             var onerror = () => {
                 scene._removePendingData(texture);
@@ -3863,9 +3867,9 @@
             // Unbind channels
             this.unbindAllTextures();
 
-            var index = this._loadedTexturesCache.indexOf(texture);
+            var index = this._internalTexturesCache.indexOf(texture);
             if (index !== -1) {
-                this._loadedTexturesCache.splice(index, 1);
+                this._internalTexturesCache.splice(index, 1);
             }
 
             // Integrated fixed lod samplers.

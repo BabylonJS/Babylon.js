@@ -1,5 +1,17 @@
 module BABYLON {
     export class InternalTexture {
+
+        public static DATASOURCE_UNKNOWN = 0;
+        public static DATASOURCE_URL = 1;
+        public static DATASOURCE_TEMP = 2;
+        public static DATASOURCE_RAW = 3;
+        public static DATASOURCE_DYNAMIC = 4;
+        public static DATASOURCE_RENDERTARGET = 5;
+        public static DATASOURCE_MULTIRENDERTARGET = 6;
+        public static DATASOURCE_CUBE = 7;
+        public static DATASOURCE_CUBELOD = 8;
+        public static DATASOURCE_CUBERAW = 9;
+
         public isReady: boolean;
         public isCube: boolean;
         public url: string;
@@ -13,8 +25,10 @@ module BABYLON {
         public height: number;
         public baseWidth: number;
         public baseHeight: number;
+        public invertY: boolean;
 
         // Private
+        private _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
         public _size: number;
         public _workingCanvas: HTMLCanvasElement;
         public _workingContext: CanvasRenderingContext2D;
@@ -35,31 +49,36 @@ module BABYLON {
         public _lodTextureHigh: BABYLON.BaseTexture;
         public _lodTextureMid: BABYLON.BaseTexture;
         public _lodTextureLow: BABYLON.BaseTexture;
-        
+
         public _webGLTexture: WebGLTexture;
         public _references: number = 1;
         private _engine: Engine;
 
-        constructor(engine: Engine, texture?: WebGLTexture) {
-            this._engine = engine;
-
-            if (texture) {
-                this._webGLTexture = texture;               
-            } else {
-                this._webGLTexture = engine._createTexture();
-            }
+        public get dataSource(): number {
+            return this._dataSource;
         }
 
-        public incrementReferences() {
+        constructor(engine: Engine, dataSource: number) {
+            this._engine = engine;
+            this._dataSource = dataSource;
+            
+            this._webGLTexture = engine._createTexture();
+        }
+
+        public incrementReferences(): void {
             this._references++;
         }
 
-        public updateSize(width: number, height: number) {
+        public updateSize(width: number, height: number): void {
             this.width = width;
             this.height = height;
             this._size = width * height;
             this.baseWidth = width;
             this.baseHeight = height;
+        }
+
+        public _rebuild(): void {
+           // this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, scene, this.samplingMode, null, null, this._buffer, null, this._format);
         }
         
         public dispose(): void {
@@ -69,13 +88,6 @@ module BABYLON {
 
             this._references--;
             if (this._references === 0) {
-                var texturesCache = this._engine.getLoadedTexturesCache();
-                var index = texturesCache.indexOf(this);
-
-                if (index > -1) {
-                    texturesCache.splice(index, 1);
-                }
-
                 this._engine._releaseTexture(this);
                 this._webGLTexture = null;
             }
