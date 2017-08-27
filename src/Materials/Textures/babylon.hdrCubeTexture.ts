@@ -153,7 +153,7 @@ module BABYLON {
                 this._size = intArrayView[1]; // CubeMap max mip face size.
 
                 // Update Texture Information.
-                this.getScene().getEngine().updateTextureSize(this._texture, this._size, this._size);
+                this._texture.updateSize(this._size, this._size);
 
                 // Fill polynomial information.
                 var sphericalPolynomial = new SphericalPolynomial();

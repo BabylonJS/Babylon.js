@@ -3833,6 +3833,12 @@
         }
 
         // Misc.
+        public _rebuildGeometries(): void {
+            for (var geometry of this._geometries) {
+                geometry._rebuild();
+            }
+        }
+
         public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false) {
             // Dispose existing camera or light in replace mode.
             if (replace) {

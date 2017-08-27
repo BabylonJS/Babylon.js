@@ -10,7 +10,7 @@ module BABYLON {
     };
     export class MultiRenderTarget extends RenderTargetTexture {
 
-        private _webGLTextures: WebGLTexture[];
+        private _internalTextures: InternalTexture[];
         private _textures: Texture[];
         private _count: number;
 
@@ -75,21 +75,21 @@ module BABYLON {
                 textureCount: count
             };
 
-            this._webGLTextures = scene.getEngine().createMultipleRenderTarget(size, this._multiRenderTargetOptions);
+            this._internalTextures = scene.getEngine().createMultipleRenderTarget(size, this._multiRenderTargetOptions);
 
             this._createInternalTextures();
         }
 
         private _createInternalTextures(): void {
             this._textures = [];
-            for (var i = 0; i < this._webGLTextures.length; i++) {
+            for (var i = 0; i < this._internalTextures.length; i++) {
                 var texture = new BABYLON.Texture(null, this.getScene());
-                texture._texture = this._webGLTextures[i];
+                texture._texture = this._internalTextures[i];
                 this._textures.push(texture);
             }
 
             // Keeps references to frame buffer and stencil/depth buffer
-            this._texture = this._webGLTextures[0];
+            this._texture = this._internalTextures[0];
         }
 
         public get samples(): number {
@@ -101,14 +101,14 @@ module BABYLON {
                 return;
             }
             
-            for (var i = 0 ; i < this._webGLTextures.length; i++) {
-                this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._webGLTextures[i], value);
+            for (var i = 0 ; i < this._internalTextures.length; i++) {
+                this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._internalTextures[i], value);
             }
         }
 
         public resize(size: any) {
             this.releaseInternalTextures();
-            this._webGLTextures = this.getScene().getEngine().createMultipleRenderTarget(size, this._multiRenderTargetOptions);
+            this._internalTextures = this.getScene().getEngine().createMultipleRenderTarget(size, this._multiRenderTargetOptions);
             this._createInternalTextures();
         }
 
@@ -119,14 +119,14 @@ module BABYLON {
         }
 
         public releaseInternalTextures(): void {
-            if (!this._webGLTextures) {
+            if (!this._internalTextures) {
                 return;
             }
 
-            for (var i = this._webGLTextures.length - 1; i >= 0; i--) {
-                if (this._webGLTextures[i] !== undefined) {
-                    this.getScene().getEngine().releaseInternalTexture(this._webGLTextures[i]);
-                    this._webGLTextures.splice(i, 1);
+            for (var i = this._internalTextures.length - 1; i >= 0; i--) {
+                if (this._internalTextures[i] !== undefined) {
+                    this._internalTextures[i].dispose();
+                    this._internalTextures.splice(i, 1);
                 }
             }
         }
