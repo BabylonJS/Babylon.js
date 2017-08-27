@@ -577,5 +577,11 @@
 
             super.dispose();
         }
+
+        public _rebuild(): void {
+            if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
+                this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+            }
+        }
     }
 }

@@ -3839,6 +3839,12 @@
             }
         }
 
+        public _rebuildTextures(): void {
+            for (var texture of this.textures) {
+                texture._rebuild();
+            }
+        }
+
         public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false) {
             // Dispose existing camera or light in replace mode.
             if (replace) {

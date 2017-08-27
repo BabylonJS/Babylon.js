@@ -182,18 +182,6 @@
             return false;
         }
 
-        public _removeFromCache(url: string, noMipmap: boolean): void {
-            var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
-            for (var index = 0; index < texturesCache.length; index++) {
-                var texturesCacheEntry = texturesCache[index];
-
-                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
-                    texturesCache.splice(index, 1);
-                    return;
-                }
-            }
-        }
-
         public _getFromCache(url: string, noMipmap: boolean, sampling?: number): InternalTexture {
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
@@ -208,6 +196,10 @@
             }
 
             return null;
+        }
+
+        public _rebuild(): void {
+            
         }
 
         public delayLoad(): void {
