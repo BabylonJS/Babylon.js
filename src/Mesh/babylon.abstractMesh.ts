@@ -472,6 +472,16 @@
             return ret;
         }
 
+        public _rebuild(): void {
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                subMesh._rebuild();
+            }
+        }
+
         public _resyncLightSources(): void {
             this._lightSources.length = 0;
 

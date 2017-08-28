@@ -11,6 +11,7 @@ module BABYLON {
         public static DATASOURCE_CUBE = 7;
         public static DATASOURCE_CUBELOD = 8;
         public static DATASOURCE_CUBERAW = 9;
+        public static DATASOURCE_CUBEPREFILTERED = 10;
 
         public isReady: boolean;
         public isCube: boolean;
@@ -28,8 +29,10 @@ module BABYLON {
         public invertY: boolean;
 
         // Private
-        private _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
+        public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
+        public _buffer: ArrayBuffer | HTMLImageElement;
         public _size: number;
+        public _extension: string;
         public _workingCanvas: HTMLCanvasElement;
         public _workingContext: CanvasRenderingContext2D;
         public _framebuffer: WebGLFramebuffer;
@@ -39,10 +42,13 @@ module BABYLON {
         public _cachedCoordinatesMode: number;
         public _cachedWrapU: number;
         public _cachedWrapV: number;
+        public _cachedAnisotropicFilteringLevel: number;
         public _isDisabled: boolean;
         public _generateStencilBuffer: boolean;
         public _generateDepthBuffer: boolean;
         public _sphericalPolynomial: BABYLON.SphericalPolynomial;
+        public _lodGenerationScale: number;
+        public _lodGenerationOffset: number;
         // The following three fields helps sharing generated fixed LODs for texture filtering
         // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
         // They are at the level of the gl texture to benefit from the cache.
@@ -78,7 +84,50 @@ module BABYLON {
         }
 
         public _rebuild(): void {
-           // this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, scene, this.samplingMode, null, null, this._buffer, null, this._format);
+            var proxy: InternalTexture;
+            this.isReady = false;
+            this._cachedCoordinatesMode = null;
+            this._cachedWrapU = null;
+            this._cachedWrapV = null;
+            this._cachedAnisotropicFilteringLevel = null;
+
+            switch (this._dataSource) {
+                case InternalTexture.DATASOURCE_URL:
+                    proxy = this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, () => {
+                        this.isReady = true;
+                    }, null, this._buffer, null, this.format); 
+                    break;                   
+                case InternalTexture.DATASOURCE_CUBEPREFILTERED:
+                    proxy = this._engine.createPrefilteredCubeTexture(this.url, null, this._lodGenerationScale, this._lodGenerationOffset, () => {
+                        this.isReady = true;
+                    }, null, this.format, this._extension);
+                    break;
+            }
+            if (proxy) {
+                proxy._swapAndDie(this);
+            }
+        }
+
+        private _swapAndDie(target: InternalTexture): void {
+            target._webGLTexture = this._webGLTexture;
+
+            if (this._lodTextureHigh) {
+                target._lodTextureHigh = this._lodTextureHigh;
+            }
+
+            if (this._lodTextureMid) {
+                target._lodTextureMid = this._lodTextureMid;
+            }
+
+            if (this._lodTextureLow) {
+                target._lodTextureLow = this._lodTextureLow;
+            }
+
+            let cache = this._engine.getLoadedTexturesCache();
+            var index = cache.indexOf(this);
+            if (index !== -1) {
+                cache.splice(index, 1);
+            }
         }
         
         public dispose(): void {

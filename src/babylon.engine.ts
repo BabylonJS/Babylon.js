@@ -566,6 +566,9 @@
         private _onFocus: () => void;
         private _onFullscreenChange: () => void;
         private _onPointerLockChange: () => void;
+        
+        private _onVRDisplayPointerRestricted: () => void;
+        private _onVRDisplayPointerUnrestricted: () => void;
 
         private _hardwareScalingLevel: number;
         private _caps: EngineCapabilities;
@@ -618,7 +621,7 @@
         private _internalTexturesCache = new Array<InternalTexture>();
         private _maxTextureChannels = 16;
         private _activeTexture: number;
-        private _activeTexturesCache = new Array<WebGLTexture>(this._maxTextureChannels);
+        private _activeTexturesCache: { [key: string]: WebGLTexture } = {};
         private _currentEffect: Effect;
         private _currentProgram: WebGLProgram;
         private _compiledEffects = {};
@@ -870,6 +873,17 @@
                 document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+
+                this._onVRDisplayPointerRestricted = () => {
+                    canvas.requestPointerLock();
+                }
+
+                this._onVRDisplayPointerUnrestricted = () => {
+                    document.exitPointerLock();
+                }
+
+                window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
+                window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);  
             }
 
             if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
@@ -898,7 +912,9 @@
         }
 
         private _rebuildInternalTextures(): void {
-            for (var internalTexture of this._internalTexturesCache) {
+            let currentState = this._internalTexturesCache.slice(); // Do a copy because the rebuild will add proxies
+
+            for (var internalTexture of currentState) {
                 internalTexture._rebuild();
             }
         }
@@ -1047,7 +1063,6 @@
             this.setDepthBuffer(true);
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
-
         }
 
         public get webGLVersion(): number {
@@ -1071,8 +1086,8 @@
         }
 
         public resetTextureCache() {
-            for (var index = 0; index < this._maxTextureChannels; index++) {
-                this._activeTexturesCache[index] = null;
+            for (var key in this._activeTexturesCache) {
+                this._activeTexturesCache[key] = null;
             }
         }
 
@@ -2612,11 +2627,12 @@
          * @returns {WebGLTexture} for assignment back into BABYLON.Texture
          */
         public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: ArrayBuffer | HTMLImageElement = null, fallBack?: InternalTexture, format?: number): InternalTexture {
-            let texture = fallBack ? fallBack : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
-
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
+            var fromBlob = url.substr(0, 5) === "blob:";
             var isBase64 = fromData && url.indexOf("base64") !== -1;
+
+            let texture = fallBack ? fallBack : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
 
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
@@ -2631,11 +2647,14 @@
                 isKTX = true;
             }
 
-            scene._addPendingData(texture);
+            if (scene) {
+                scene._addPendingData(texture);
+            }
             texture.url = url;
             texture.generateMipMaps = !noMipmap;
             texture.samplingMode = samplingMode;
             texture.invertY = invertY;
+            texture._buffer = buffer;
 
             if (onLoad) {
                 texture.onLoadedObservable.add(onLoad);
@@ -2643,7 +2662,9 @@
             if (!fallBack) this._internalTexturesCache.push(texture);
 
             var onerror = () => {
-                scene._removePendingData(texture);
+                if (scene) {
+                    scene._removePendingData(texture);
+                }
 
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
@@ -2693,13 +2714,19 @@
                 if (!buffer) {
                     Tools.LoadFile(url, data => {
                         callback(data);
-                    }, null, scene.database, true, onerror);
+                    }, null, scene ? scene.database : null, true, onerror);
                 } else {
                     callback(buffer);
                 }
                 // image format processing
             } else {
                 var onload = (img) => {
+                    if (fromBlob) {
+                        // We need to store the image if we need to rebuild the texture
+                        // in case of a webgl context lost
+                        texture._buffer = img;
+                    }
+
                     this._prepareWebGLTexture(texture, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight, continuationCallback) => {
                         let gl = this._gl;
                         var isPot = (img.width === potWidth && img.height === potHeight);
@@ -2732,9 +2759,13 @@
                 };
 
                 if (!fromData || isBase64)
-                    Tools.LoadImage(url, onload, onerror, scene.database);
+                    if (buffer instanceof HTMLImageElement) {
+                        onload(buffer);
+                    } else {
+                        Tools.LoadImage(url, onload, onerror, scene ? scene.database: null);
+                    }
                 else if (buffer instanceof Array || typeof buffer === "string")
-                    Tools.LoadImage(buffer, onload, onerror, scene.database);
+                    Tools.LoadImage(buffer, onload, onerror, scene ? scene.database: null);
                 else
                     onload(buffer);
             }
@@ -3367,7 +3398,19 @@
 
         public createPrefilteredCubeTexture(rootUrl: string, scene: Scene, scale: number, offset: number, onLoad: () => void, onError: () => void = null, format?: number, forcedExtension = null): InternalTexture {
             var callback = (loadData) => {
-                if (this._caps.textureLOD || !loadData) {
+                if (!loadData) {
+                    if (onLoad) {
+                        onLoad();
+                    }
+                    return;
+                }
+
+                let texture = loadData.texture as InternalTexture;
+                texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
+                texture._lodGenerationScale = scale;
+                texture._lodGenerationOffset = offset;
+
+                if (this._caps.textureLOD) {
                     // Do not add extra process if texture lod is supported.
                     if (onLoad) {
                         onLoad();
@@ -3426,9 +3469,9 @@
                     textures.push(lodTexture);
                 }
 
-                (loadData.texture as InternalTexture)._lodTextureHigh = textures[2];
-                (loadData.texture as InternalTexture)._lodTextureMid = textures[1];
-                (loadData.texture as InternalTexture)._lodTextureLow = textures[0];
+                texture._lodTextureHigh = textures[2];
+                texture._lodTextureMid = textures[1];
+                texture._lodTextureLow = textures[0];
 
                 if (onLoad) {
                     onLoad();
@@ -3445,6 +3488,7 @@
             texture.isCube = true;
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
+            texture._extension = forcedExtension;
 
             var isKTX = false;
             var isDDS = false;
@@ -3554,6 +3598,7 @@
                     texture.width = width;
                     texture.height = height;
                     texture.isReady = true;
+                    texture.format = format;
 
                     texture.onLoadedObservable.notifyObservers(texture);
                     texture.onLoadedObservable.clear();
@@ -3769,7 +3814,9 @@
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
 
             this.resetTextureCache();
-            scene._removePendingData(texture);
+            if (scene) {
+                scene._removePendingData(texture);
+            }
 
             texture.onLoadedObservable.notifyObservers(texture);
             texture.onLoadedObservable.clear();
@@ -4062,9 +4109,9 @@
                 value = 1;
             }
 
-            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
+            if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {
                 this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
-                texture._cachedAnisotropicFilteringLevel = value;
+                internalTexture._cachedAnisotropicFilteringLevel = value;
             }
         }
 
@@ -4207,6 +4254,8 @@
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
+            window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
+            window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);              
             this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
             this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
             this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);            
