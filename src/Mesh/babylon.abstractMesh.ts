@@ -8,7 +8,7 @@
         private static _BILLBOARDMODE_ALL = 7;
 
         public static OCCLUSION_TYPE_NONE = 0;
-        public static OCCLUSION_TYPE_OPTIMISITC = 1;
+        public static OCCLUSION_TYPE_OPTIMISTIC = 1;
         public static OCCLUSION_TYPE_STRICT = 2;
         public static OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
         public static OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
@@ -145,7 +145,7 @@
 
         * OCCLUSION_TYPE_NONE (Default Value): this option means no occlusion query whith the Mesh.
 
-        * OCCLUSION_TYPE_OPTIMISITC: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken show the mesh.
+        * OCCLUSION_TYPE_OPTIMISTIC: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken show the mesh.
 
             * OCCLUSION_TYPE_STRICT: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken restore the last state of the mesh occlusion if the mesh was visible then show the mesh if was hidden then hide don't show.
          */
@@ -470,6 +470,16 @@
                 ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
             }
             return ret;
+        }
+
+        public _rebuild(): void {
+            if (!this.subMeshes) {
+                return;
+            }
+            
+            for (var subMesh of this.subMeshes) {
+                subMesh._rebuild();
+            }
         }
 
         public _resyncLightSources(): void {
@@ -2340,7 +2350,7 @@
 
                         // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
                         // if strict continue the last state of the object.
-                        this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISITC ? false : this._isOccluded;
+                        this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : this._isOccluded;
                     }
                     else {
                         return;

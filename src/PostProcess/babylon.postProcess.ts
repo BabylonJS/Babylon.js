@@ -27,7 +27,7 @@
         private _options: number | PostProcessOptions;
         private _reusable = false;
         private _textureType: number;
-        public _textures = new SmartArray<WebGLTexture>(2);
+        public _textures = new SmartArray<InternalTexture>(2);
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
         private _samplers: string[];
@@ -38,7 +38,7 @@
         protected _indexParameters: any;
         private _shareOutputWithPostProcess: PostProcess;
         private _texelSize = Vector2.Zero();
-        private _forcedOutputTexture: WebGLTexture;
+        private _forcedOutputTexture: InternalTexture;
        
         // Events
 
@@ -112,11 +112,11 @@
             this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
         }
 
-        public get outputTexture(): WebGLTexture {
+        public get outputTexture(): InternalTexture {
             return this._textures.data[this._currentRenderTextureInd];
         }   
 
-        public set outputTexture(value: WebGLTexture) {
+        public set outputTexture(value: InternalTexture) {
             this._forcedOutputTexture = value;
         }   
 
@@ -130,7 +130,7 @@
             }
 
             if (this._forcedOutputTexture) {
-                this._texelSize.copyFromFloats(1.0 / this._forcedOutputTexture._width, 1.0 / this._forcedOutputTexture._height);
+                this._texelSize.copyFromFloats(1.0 / this._forcedOutputTexture.width, 1.0 / this._forcedOutputTexture.height);
             }
 
             return this._texelSize;
@@ -207,7 +207,7 @@
             this.width = -1;
         }
 
-        public activate(camera: Camera, sourceTexture?: WebGLTexture, forceDepthStencil?: boolean): void {            
+        public activate(camera: Camera, sourceTexture?: InternalTexture, forceDepthStencil?: boolean): void {            
             if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
                 camera = camera || this._camera;
 
@@ -215,8 +215,8 @@
                 var engine = scene.getEngine();
                 var maxSize = engine.getCaps().maxTextureSize;
 
-                var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * <number>this._options) | 0;
-                var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * <number>this._options) | 0;
+                var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderingCanvas().width) * <number>this._options) | 0;
+                var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderingCanvas().height) * <number>this._options) | 0;
 
                 var desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
                 var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
@@ -268,15 +268,15 @@
                 });
             }
 
-            var target: WebGLTexture;
+            var target: InternalTexture;
                         
             if (this._shareOutputWithPostProcess) {
                 target = this._shareOutputWithPostProcess.outputTexture;
             } else if (this._forcedOutputTexture) {
                 target = this._forcedOutputTexture;
 
-                this.width = this._forcedOutputTexture._width;
-                this.height = this._forcedOutputTexture._height;
+                this.width = this._forcedOutputTexture.width;
+                this.height = this._forcedOutputTexture.height;
             } else {
                 target = this.outputTexture;
             }
@@ -312,7 +312,7 @@
             }
 
             if (this._forcedOutputTexture) {
-                var size = this._forcedOutputTexture._width / this._forcedOutputTexture._height;
+                var size = this._forcedOutputTexture.width / this._forcedOutputTexture.height;
             }
 
             return this.width / this.height;
@@ -336,7 +336,7 @@
             }            
 
             // Texture            
-            var source: WebGLTexture;                        
+            var source: InternalTexture;                        
             if (this._shareOutputWithPostProcess) {
                 source = this._shareOutputWithPostProcess.outputTexture;
             } else if (this._forcedOutputTexture) {

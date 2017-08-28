@@ -70,6 +70,23 @@
 
             var engine = this._scene.getEngine();
 
+            this._rebuild();
+
+            // Effects
+            this._effect = engine.createEffect("layer",
+                [VertexBuffer.PositionKind],
+                ["textureMatrix", "color", "scale", "offset"],
+                ["textureSampler"], "");
+
+            this._alphaTestEffect = engine.createEffect("layer",
+                [VertexBuffer.PositionKind],
+                ["textureMatrix", "color", "scale", "offset"],
+                ["textureSampler"], "#define ALPHATEST");
+        }
+
+        public _rebuild(): void {
+            var engine = this._scene.getEngine();
+
             // VBO
             var vertices = [];
             vertices.push(1, 1);
@@ -91,17 +108,6 @@
             indices.push(3);
 
             this._indexBuffer = engine.createIndexBuffer(indices);
-
-            // Effects
-            this._effect = engine.createEffect("layer",
-                [VertexBuffer.PositionKind],
-                ["textureMatrix", "color", "scale", "offset"],
-                ["textureSampler"], "");
-
-            this._alphaTestEffect = engine.createEffect("layer",
-                [VertexBuffer.PositionKind],
-                ["textureMatrix", "color", "scale", "offset"],
-                ["textureSampler"], "#define ALPHATEST");
         }
 
         public render(): void {
@@ -118,7 +124,6 @@
             // Render
             engine.enableEffect(currentEffect);
             engine.setState(false);
-
 
             // Texture
             currentEffect.setTexture("textureSampler", this.texture);

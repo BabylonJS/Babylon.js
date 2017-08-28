@@ -1637,8 +1637,6 @@
             this._cachedVisibility = null;
         }
 
-
-
         public registerBeforeRender(func: () => void): void {
             this.onBeforeRenderObservable.add(func);
         }
@@ -3833,6 +3831,28 @@
         }
 
         // Misc.
+        public _rebuildGeometries(): void {
+            for (var geometry of this._geometries) {
+                geometry._rebuild();
+            }
+
+            for (var mesh of this.meshes) {
+                mesh._rebuild();
+            }
+
+            for (var layer of this.layers) {
+                layer._rebuild();
+            }
+        }
+
+        public _rebuildTextures(): void {
+            for (var texture of this.textures) {
+                texture._rebuild();
+            }
+
+            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+
         public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false) {
             // Dispose existing camera or light in replace mode.
             if (replace) {
