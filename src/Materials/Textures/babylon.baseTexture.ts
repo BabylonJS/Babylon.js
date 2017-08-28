@@ -103,8 +103,6 @@
 
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
 
-        public _cachedAnisotropicFilteringLevel: number;
-
         private _scene: Scene;
         public _texture: InternalTexture;
         private _uid: string;

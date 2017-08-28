@@ -275,6 +275,12 @@
             return intersectInfo;
         }
 
+        public _rebuild(): void {
+            if (this._linesIndexBuffer) {
+                this._linesIndexBuffer = null;
+            }
+        }
+
         // Clone    
         /**
          * Creates a new Submesh from the passed Mesh.  
