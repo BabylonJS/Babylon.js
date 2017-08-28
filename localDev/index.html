@@ -70,11 +70,13 @@
 					// call the scene creation from the js.
 					var scene = createScene();
 
-					// Register a render loop to repeatedly render the scene
-					engine.runRenderLoop(function () {
-						scene.render();
-						divFps.innerHTML = engine.getFps().toFixed() + " fps";
-					});
+					if (scene) {
+						// Register a render loop to repeatedly render the scene
+						engine.runRenderLoop(function () {
+							scene.render();
+							divFps.innerHTML = engine.getFps().toFixed() + " fps";
+						});
+					}
 
 					// Resize
 					window.addEventListener("resize", function () {

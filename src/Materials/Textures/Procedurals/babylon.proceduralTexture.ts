@@ -113,7 +113,7 @@
 
                     if (this._fallbackTexture) {
                         this._texture = this._fallbackTexture._texture;
-                        this._texture.references++;
+                        this._texture.incrementReferences();
                     }
 
                     this._fallbackTextureUsed = true;

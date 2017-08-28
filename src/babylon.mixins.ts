@@ -112,43 +112,6 @@ interface CanvasRenderingContext2D {
     msImageSmoothingEnabled: boolean;
 }
 
-interface WebGLTexture {
-    isReady: boolean;
-    isCube: boolean;
-    url: string;
-    samplingMode: number;
-    references: number;
-    generateMipMaps: boolean;
-    samples: number;
-    type: number;
-    format: number;
-    onLoadedCallbacks: Array<Function>;
-    _size: number;
-    _baseWidth: number;
-    _baseHeight: number;
-    _width: number;
-    _height: number;
-    _workingCanvas: HTMLCanvasElement;
-    _workingContext: CanvasRenderingContext2D;
-    _framebuffer: WebGLFramebuffer;
-    _depthStencilBuffer: WebGLRenderbuffer;
-    _MSAAFramebuffer: WebGLFramebuffer;
-    _MSAARenderBuffer: WebGLRenderbuffer;
-    _cachedCoordinatesMode: number;
-    _cachedWrapU: number;
-    _cachedWrapV: number;
-    _isDisabled: boolean;
-    _generateStencilBuffer: boolean;
-    _generateDepthBuffer: boolean;
-    _sphericalPolynomial: BABYLON.SphericalPolynomial;
-    // The following three fields helps sharing generated fixed LODs for texture filtering
-    // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
-    // They are at the level of the gl texture to benefit from the cache.
-    _lodTextureHigh: BABYLON.BaseTexture;
-    _lodTextureMid: BABYLON.BaseTexture;
-    _lodTextureLow: BABYLON.BaseTexture;
-}
-
 interface WebGLBuffer {
     references: number;
     capacity: number;
