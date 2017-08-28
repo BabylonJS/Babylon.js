@@ -3839,6 +3839,10 @@
             for (var mesh of this.meshes) {
                 mesh._rebuild();
             }
+
+            for (var layer of this.layers) {
+                layer._rebuild();
+            }
         }
 
         public _rebuildTextures(): void {

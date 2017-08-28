@@ -113,7 +113,9 @@
             loadedImages[index] = img;
             loadedImages._internalCount++;
 
-            scene._removePendingData(img);
+            if (scene) {
+                scene._removePendingData(img);
+            }
 
             if (loadedImages._internalCount === 6) {
                 onfinish(loadedImages);
@@ -121,15 +123,19 @@
         };
 
         var onerror = () => {
-            scene._removePendingData(img);
+            if (scene) {
+                scene._removePendingData(img);
+            }
 
             if (onErrorCallBack) {
                 onErrorCallBack();
             }
         };
 
-        img = Tools.LoadImage(url, onload, onerror, scene.database);
-        scene._addPendingData(img);
+        img = Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
+        if (scene) {
+            scene._addPendingData(img);
+        }
     }
 
     var cascadeLoad = (rootUrl: string, scene,
@@ -3396,11 +3402,11 @@
             return texture;
         }
 
-        public createPrefilteredCubeTexture(rootUrl: string, scene: Scene, scale: number, offset: number, onLoad: () => void, onError: () => void = null, format?: number, forcedExtension = null): InternalTexture {
+        public createPrefilteredCubeTexture(rootUrl: string, scene: Scene, scale: number, offset: number, onLoad: (internalTexture: InternalTexture) => void, onError: () => void = null, format?: number, forcedExtension = null): InternalTexture {
             var callback = (loadData) => {
                 if (!loadData) {
                     if (onLoad) {
-                        onLoad();
+                        onLoad(null);
                     }
                     return;
                 }
@@ -3413,7 +3419,7 @@
                 if (this._caps.textureLOD) {
                     // Do not add extra process if texture lod is supported.
                     if (onLoad) {
-                        onLoad();
+                        onLoad(texture);
                     }
                     return;
                 }
@@ -3438,7 +3444,7 @@
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-                    var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_CUBELOD);
+                    var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
                     glTextureFromLod.isCube = true;
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod);
 
@@ -3474,7 +3480,7 @@
                 texture._lodTextureLow = textures[0];
 
                 if (onLoad) {
-                    onLoad();
+                    onLoad(texture);
                 }
             };
 
@@ -3489,6 +3495,7 @@
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
             texture._extension = forcedExtension;
+            texture._files = files;
 
             var isKTX = false;
             var isDDS = false;
