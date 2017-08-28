@@ -47,7 +47,7 @@
             return true;
         }
 
-        public directRender(postProcesses: PostProcess[], targetTexture?: InternalTexture): void {
+        public directRender(postProcesses: PostProcess[], targetTexture?: InternalTexture, forceFullscreenViewport = false): void {
             var engine = this._scene.getEngine();
 
             for (var index = 0; index < postProcesses.length; index++) {
@@ -55,7 +55,7 @@
                     postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
                 } else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture);
+                        engine.bindFramebuffer(targetTexture, 0, null, null, forceFullscreenViewport);
                     } else {
                         engine.restoreDefaultFramebuffer();
                     }
