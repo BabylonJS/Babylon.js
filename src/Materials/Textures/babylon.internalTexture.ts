@@ -9,9 +9,8 @@ module BABYLON {
         public static DATASOURCE_RENDERTARGET = 5;
         public static DATASOURCE_MULTIRENDERTARGET = 6;
         public static DATASOURCE_CUBE = 7;
-        public static DATASOURCE_CUBELOD = 8;
-        public static DATASOURCE_CUBERAW = 9;
-        public static DATASOURCE_CUBEPREFILTERED = 10;
+        public static DATASOURCE_CUBERAW = 8;
+        public static DATASOURCE_CUBEPREFILTERED = 9;
 
         public isReady: boolean;
         public isCube: boolean;
@@ -33,6 +32,7 @@ module BABYLON {
         public _buffer: ArrayBuffer | HTMLImageElement;
         public _size: number;
         public _extension: string;
+        public _files: string[];
         public _workingCanvas: HTMLCanvasElement;
         public _workingContext: CanvasRenderingContext2D;
         public _framebuffer: WebGLFramebuffer;
@@ -92,19 +92,37 @@ module BABYLON {
             this._cachedAnisotropicFilteringLevel = null;
 
             switch (this._dataSource) {
+                case InternalTexture.DATASOURCE_TEMP:
+                    return;
+
                 case InternalTexture.DATASOURCE_URL:
                     proxy = this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, () => {
                         this.isReady = true;
                     }, null, this._buffer, null, this.format); 
-                    break;                   
-                case InternalTexture.DATASOURCE_CUBEPREFILTERED:
-                    proxy = this._engine.createPrefilteredCubeTexture(this.url, null, this._lodGenerationScale, this._lodGenerationOffset, () => {
+                    proxy._swapAndDie(this);
+                    return;
+                
+                case InternalTexture.DATASOURCE_DYNAMIC:
+                    proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode); 
+                    proxy._swapAndDie(this);
+
+                    // The engine will make sure to update content so no need to flag it as isReady = true
+                return;
+
+                case InternalTexture.DATASOURCE_CUBE:
+                    proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, () => {
                         this.isReady = true;
                     }, null, this.format, this._extension);
-                    break;
-            }
-            if (proxy) {
-                proxy._swapAndDie(this);
+                    proxy._swapAndDie(this);
+                    return;
+
+                case InternalTexture.DATASOURCE_CUBEPREFILTERED:
+                    proxy = this._engine.createPrefilteredCubeTexture(this.url, null, this._lodGenerationScale, this._lodGenerationOffset, (proxy) => {
+                        proxy._swapAndDie(this);
+                        
+                        this.isReady = true;
+                    }, null, this.format, this._extension);
+                    return;
             }
         }
 
