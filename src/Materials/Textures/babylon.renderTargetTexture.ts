@@ -248,13 +248,6 @@
             return false;
         }
 
-        public isReady(): boolean {
-            if (!this.getScene().renderTargetsEnabled) {
-                return false;
-            }
-            return super.isReady();
-        }
-
         public getRenderSize(): number {
             return this._size;
         }

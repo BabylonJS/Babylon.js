@@ -45568,12 +45568,6 @@ var BABYLON;
             this._currentRefreshId++;
             return false;
         };
-        RenderTargetTexture.prototype.isReady = function () {
-            if (!this.getScene().renderTargetsEnabled) {
-                return false;
-            }
-            return _super.prototype.isReady.call(this);
-        };
         RenderTargetTexture.prototype.getRenderSize = function () {
             return this._size;
         };
