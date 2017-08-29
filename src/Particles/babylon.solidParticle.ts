@@ -18,6 +18,7 @@ module BABYLON {
         public _modelBoundingInfo: BoundingInfo;        // reference to the shape model BoundingInfo object
         public _boundingInfo: BoundingInfo;             // particle BoundingInfo
         public _sps: SolidParticleSystem;               // reference to the SPS what the particle belongs to
+        public _stillInvisible: boolean = false;         // still set as invisible in order to skip useless computations
 
         /**
          * Creates a Solid Particle object.
