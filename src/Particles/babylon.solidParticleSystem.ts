@@ -658,6 +658,15 @@
                 // call to custom user function to update the particle properties
                 this.updateParticle(this._particle);
                 
+                if (!this._particle.alive) {
+                    // increment indexes for the next particle
+                    pt = this._shape.length;
+                    index += pt * 3;
+                    colorIndex += pt * 4;
+                    uvIndex += pt * 2;
+                    continue;
+                }
+
                 if (this._particle.isVisible) {
 
                     // particle rotation matrix
