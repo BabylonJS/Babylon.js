@@ -239,6 +239,7 @@
         audioEngine?: boolean;
         deterministicLockstep?: boolean;
         lockstepMaxSteps?: number;
+        doNotHandleContextLost?: boolean;
     }
 
     /**
@@ -603,6 +604,7 @@
         private _onContextLost: (evt: Event) => void;
         private _onContextRestored: (evt: Event) => void;
         private _contextWasLost = false;
+        private _doNotHandleContextLost = false;
 
         // FPS
         private _performanceMonitor = new PerformanceMonitor();
@@ -732,6 +734,7 @@
 
                 this._deterministicLockstep = options.deterministicLockstep;
                 this._lockstepMaxSteps = options.lockstepMaxSteps;
+                this._doNotHandleContextLost = options.doNotHandleContextLost;
 
                 // GL
                 if (!options.disableWebGL2Support) {
@@ -794,38 +797,40 @@
             }
 
             // Context lost
-            this._onContextLost = (evt: Event) => {
-                evt.preventDefault();
-                this._contextWasLost = true;
-                Tools.Warn("WebGL context lost.")
-            };
+            if (!this._doNotHandleContextLost) {
+                this._onContextLost = (evt: Event) => {
+                    evt.preventDefault();
+                    this._contextWasLost = true;
+                    Tools.Warn("WebGL context lost.")
+                };
 
-            this._onContextRestored = (evt: Event) => {
-                this._contextWasLost = false;
+                this._onContextRestored = (evt: Event) => {
+                    this._contextWasLost = false;
 
-                // Rebuild gl context
-                this._initGLContext();
+                    // Rebuild gl context
+                    this._initGLContext();
 
-                // Rebuild effects
-                this._rebuildEffects();
+                    // Rebuild effects
+                    this._rebuildEffects();
 
-                // Rebuild textures
-                this._rebuildInternalTextures();
+                    // Rebuild textures
+                    this._rebuildInternalTextures();
 
-                // Rebuild buffers
-                this._rebuildBuffers();
-                
-                // Cache
-                this.wipeCaches(true);
+                    // Rebuild buffers
+                    this._rebuildBuffers();
+                    
+                    // Cache
+                    this.wipeCaches(true);
 
-                // Restart render loop
-                this._renderLoop();
+                    // Restart render loop
+                    this._renderLoop();
 
-                Tools.Warn("WebGL context successfully restored.")
-            };
+                    Tools.Warn("WebGL context successfully restored.")
+                };
 
-            canvas.addEventListener("webglcontextlost", this._onContextLost, false);
-            canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+                canvas.addEventListener("webglcontextlost", this._onContextLost, false);
+                canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+            }
             
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
@@ -2660,7 +2665,11 @@
             texture.generateMipMaps = !noMipmap;
             texture.samplingMode = samplingMode;
             texture.invertY = invertY;
-            texture._buffer = buffer;
+
+            if (!this._doNotHandleContextLost) {
+                // Keep a link to the buffer only if we plan to handle context lost
+                texture._buffer = buffer;
+            }
 
             if (onLoad) {
                 texture.onLoadedObservable.add(onLoad);
@@ -2727,7 +2736,7 @@
                 // image format processing
             } else {
                 var onload = (img) => {
-                    if (fromBlob) {
+                    if (fromBlob && !this._doNotHandleContextLost) {
                         // We need to store the image if we need to rebuild the texture
                         // in case of a webgl context lost
                         texture._buffer = img;
@@ -3494,8 +3503,11 @@
             texture.isCube = true;
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
-            texture._extension = forcedExtension;
-            texture._files = files;
+
+            if (!this._doNotHandleContextLost) {
+                texture._extension = forcedExtension;
+                texture._files = files;
+            }
 
             var isKTX = false;
             var isDDS = false;
@@ -4264,8 +4276,11 @@
             window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
             window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);              
             this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
-            this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
-            this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);            
+
+            if (!this._doNotHandleContextLost) {
+                this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+                this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);            
+            }
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
