@@ -130,14 +130,23 @@ module BABYLON {
             target._webGLTexture = this._webGLTexture;
 
             if (this._lodTextureHigh) {
+                if (target._lodTextureHigh) {
+                    target._lodTextureHigh.dispose();
+                }
                 target._lodTextureHigh = this._lodTextureHigh;
             }
 
             if (this._lodTextureMid) {
+                if (target._lodTextureMid) {
+                    target._lodTextureMid.dispose();
+                }                
                 target._lodTextureMid = this._lodTextureMid;
             }
 
             if (this._lodTextureLow) {
+                if (target._lodTextureLow) {
+                    target._lodTextureLow.dispose();
+                }                     
                 target._lodTextureLow = this._lodTextureLow;
             }
 
