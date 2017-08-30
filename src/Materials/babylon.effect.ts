@@ -8,6 +8,10 @@
         private _mesh: AbstractMesh;
         private _meshRank: number;
 
+        public unBindMesh() {
+            this._mesh = null;
+        }
+
         public addFallback(rank: number, define: string): void {
             if (!this._defines[rank]) {
                 if (rank < this._currentRank) {
@@ -539,6 +543,11 @@
                 }
                 this.onCompileObservable.notifyObservers(this);
                 this.onCompileObservable.clear();
+
+                // Unbind mesh reference in fallbacks
+                if (this._fallbacks) {
+                    this._fallbacks.unBindMesh();
+                }
             } catch (e) {
                 this._compilationError = e.message;
 
@@ -564,6 +573,11 @@
                     }
                     this.onErrorObservable.notifyObservers(this);
                     this.onErrorObservable.clear();
+
+                    // Unbind mesh reference in fallbacks
+                    if (this._fallbacks) {
+                        this._fallbacks.unBindMesh();
+                    }
                 }
             }            
         }
