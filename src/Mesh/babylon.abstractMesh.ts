@@ -473,6 +473,10 @@
         }
 
         public _rebuild(): void {
+            if (this._occlusionQuery) {
+                this._occlusionQuery = null;
+            }
+
             if (!this.subMeshes) {
                 return;
             }
@@ -1836,6 +1840,7 @@
             // Query
             let engine = this.getScene().getEngine();
             if (this._occlusionQuery) {
+                this._isOcclusionQueryInProgress = false;
                 engine.deleteQuery(this._occlusionQuery);
                 this._occlusionQuery = null;
             }

@@ -7372,19 +7372,25 @@ var BABYLON;
         var onload = function () {
             loadedImages[index] = img;
             loadedImages._internalCount++;
-            scene._removePendingData(img);
+            if (scene) {
+                scene._removePendingData(img);
+            }
             if (loadedImages._internalCount === 6) {
                 onfinish(loadedImages);
             }
         };
         var onerror = function () {
-            scene._removePendingData(img);
+            if (scene) {
+                scene._removePendingData(img);
+            }
             if (onErrorCallBack) {
                 onErrorCallBack();
             }
         };
-        img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
-        scene._addPendingData(img);
+        img = BABYLON.Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
+        if (scene) {
+            scene._addPendingData(img);
+        }
     };
     var cascadeLoad = function (rootUrl, scene, onfinish, files, onError) {
         if (onError === void 0) { onError = null; }
@@ -7405,6 +7411,15 @@ var BABYLON;
         return InstancingAttributeInfo;
     }());
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
+    /**
+     * Define options used to create a render target texture
+     */
+    var RenderTargetCreationOptions = (function () {
+        function RenderTargetCreationOptions() {
+        }
+        return RenderTargetCreationOptions;
+    }());
+    BABYLON.RenderTargetCreationOptions = RenderTargetCreationOptions;
     /**
      * Regroup several parameters relative to the browser in use
      */
@@ -7459,6 +7474,7 @@ var BABYLON;
             this._deterministicLockstep = false;
             this._lockstepMaxSteps = 4;
             this._contextWasLost = false;
+            this._doNotHandleContextLost = false;
             // FPS
             this._performanceMonitor = new BABYLON.PerformanceMonitor();
             this._fps = 60;
@@ -7475,7 +7491,7 @@ var BABYLON;
             // Cache
             this._internalTexturesCache = new Array();
             this._maxTextureChannels = 16;
-            this._activeTexturesCache = new Array(this._maxTextureChannels);
+            this._activeTexturesCache = {};
             this._compiledEffects = {};
             this._vertexAttribArraysEnabled = [];
             this._uintIndicesCurrentlySet = false;
@@ -7532,6 +7548,7 @@ var BABYLON;
                 }
                 this._deterministicLockstep = options.deterministicLockstep;
                 this._lockstepMaxSteps = options.lockstepMaxSteps;
+                this._doNotHandleContextLost = options.doNotHandleContextLost;
                 // GL
                 if (!options.disableWebGL2Support) {
                     try {
@@ -7586,29 +7603,29 @@ var BABYLON;
                 options.stencil = this._gl.getContextAttributes().stencil;
             }
             // Context lost
-            this._onContextLost = function (evt) {
-                evt.preventDefault();
-                _this._contextWasLost = true;
-                BABYLON.Tools.Warn("WebGL context lost.");
-            };
-            this._onContextRestored = function (evt) {
-                _this._contextWasLost = false;
-                // Rebuild gl context
-                _this._initGLContext();
-                // Rebuild effects
-                _this._rebuildEffects();
-                // Rebuild textures
-                _this._rebuildInternalTextures();
-                // Rebuild buffers
-                _this._rebuildBuffers();
-                // Cache
-                _this.wipeCaches(true);
-                // Restart render loop
-                _this._renderLoop();
-                BABYLON.Tools.Warn("WebGL context successfully restored.");
-            };
-            canvas.addEventListener("webglcontextlost", this._onContextLost, false);
-            canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+            if (!this._doNotHandleContextLost) {
+                this._onContextLost = function (evt) {
+                    evt.preventDefault();
+                    _this._contextWasLost = true;
+                    BABYLON.Tools.Warn("WebGL context lost.");
+                };
+                this._onContextRestored = function (evt) {
+                    // Rebuild gl context
+                    _this._initGLContext();
+                    // Rebuild effects
+                    _this._rebuildEffects();
+                    // Rebuild textures
+                    _this._rebuildInternalTextures();
+                    // Rebuild buffers
+                    _this._rebuildBuffers();
+                    // Cache
+                    _this.wipeCaches(true);
+                    BABYLON.Tools.Warn("WebGL context successfully restored.");
+                    _this._contextWasLost = false;
+                };
+                canvas.addEventListener("webglcontextlost", this._onContextLost, false);
+                canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+            }
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
             this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
@@ -7656,6 +7673,14 @@ var BABYLON;
                 document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+                this._onVRDisplayPointerRestricted = function () {
+                    canvas.requestPointerLock();
+                };
+                this._onVRDisplayPointerUnrestricted = function () {
+                    document.exitPointerLock();
+                };
+                window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
+                window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
             }
             if (options.audioEngine && BABYLON.AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new BABYLON.AudioEngine();
@@ -8070,8 +8095,9 @@ var BABYLON;
             configurable: true
         });
         Engine.prototype._rebuildInternalTextures = function () {
-            for (var _i = 0, _a = this._internalTexturesCache; _i < _a.length; _i++) {
-                var internalTexture = _a[_i];
+            var currentState = this._internalTexturesCache.slice(); // Do a copy because the rebuild will add proxies
+            for (var _i = 0, currentState_1 = currentState; _i < currentState_1.length; _i++) {
+                var internalTexture = currentState_1[_i];
                 internalTexture._rebuild();
             }
         };
@@ -8233,8 +8259,8 @@ var BABYLON;
             this._workingContext = this._workingCanvas.getContext("2d");
         };
         Engine.prototype.resetTextureCache = function () {
-            for (var index = 0; index < this._maxTextureChannels; index++) {
-                this._activeTexturesCache[index] = null;
+            for (var key in this._activeTexturesCache) {
+                this._activeTexturesCache[key] = null;
             }
         };
         Engine.prototype.isDeterministicLockStep = function () {
@@ -9521,10 +9547,11 @@ var BABYLON;
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
             if (buffer === void 0) { buffer = null; }
-            var texture = fallBack ? fallBack : new BABYLON.InternalTexture(this, BABYLON.InternalTexture.DATASOURCE_URL);
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
+            var fromBlob = url.substr(0, 5) === "blob:";
             var isBase64 = fromData && url.indexOf("base64") !== -1;
+            var texture = fallBack ? fallBack : new BABYLON.InternalTexture(this, BABYLON.InternalTexture.DATASOURCE_URL);
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
             var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
@@ -9536,18 +9563,26 @@ var BABYLON;
                 url = url.substring(0, lastDot) + this._textureFormatInUse;
                 isKTX = true;
             }
-            scene._addPendingData(texture);
+            if (scene) {
+                scene._addPendingData(texture);
+            }
             texture.url = url;
             texture.generateMipMaps = !noMipmap;
             texture.samplingMode = samplingMode;
             texture.invertY = invertY;
+            if (!this._doNotHandleContextLost) {
+                // Keep a link to the buffer only if we plan to handle context lost
+                texture._buffer = buffer;
+            }
             if (onLoad) {
                 texture.onLoadedObservable.add(onLoad);
             }
             if (!fallBack)
                 this._internalTexturesCache.push(texture);
             var onerror = function () {
-                scene._removePendingData(texture);
+                if (scene) {
+                    scene._removePendingData(texture);
+                }
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
                     _this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
@@ -9591,7 +9626,7 @@ var BABYLON;
                 if (!buffer) {
                     BABYLON.Tools.LoadFile(url, function (data) {
                         callback(data);
-                    }, null, scene.database, true, onerror);
+                    }, null, scene ? scene.database : null, true, onerror);
                 }
                 else {
                     callback(buffer);
@@ -9600,6 +9635,11 @@ var BABYLON;
             }
             else {
                 var onload = function (img) {
+                    if (fromBlob && !_this._doNotHandleContextLost) {
+                        // We need to store the image if we need to rebuild the texture
+                        // in case of a webgl context lost
+                        texture._buffer = img;
+                    }
                     _this._prepareWebGLTexture(texture, scene, img.width, img.height, invertY, noMipmap, false, function (potWidth, potHeight, continuationCallback) {
                         var gl = _this._gl;
                         var isPot = (img.width === potWidth && img.height === potHeight);
@@ -9625,9 +9665,14 @@ var BABYLON;
                     }, samplingMode);
                 };
                 if (!fromData || isBase64)
-                    BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+                    if (buffer instanceof HTMLImageElement) {
+                        onload(buffer);
+                    }
+                    else {
+                        BABYLON.Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
+                    }
                 else if (buffer instanceof Array || typeof buffer === "string")
-                    BABYLON.Tools.LoadImage(buffer, onload, onerror, scene.database);
+                    BABYLON.Tools.LoadImage(buffer, onload, onerror, scene ? scene.database : null);
                 else
                     onload(buffer);
             }
@@ -9688,6 +9733,12 @@ var BABYLON;
             var internalFormat = this._getInternalFormat(format);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            if (!this._doNotHandleContextLost) {
+                texture._bufferView = data;
+                texture.format = format;
+                texture.invertY = invertY;
+                texture._compression = compression;
+            }
             if (texture.width % 4 !== 0) {
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
             }
@@ -9711,6 +9762,14 @@ var BABYLON;
             texture.baseHeight = height;
             texture.width = width;
             texture.height = height;
+            texture.format = format;
+            texture.generateMipMaps = generateMipMaps;
+            texture.samplingMode = samplingMode;
+            texture.invertY = invertY;
+            texture._compression = compression;
+            if (!this._doNotHandleContextLost) {
+                texture._bufferView = data;
+            }
             this.updateRawTexture(texture, data, format, invertY, compression);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             // Filters
@@ -9721,7 +9780,6 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-            texture.samplingMode = samplingMode;
             this._internalTexturesCache.push(texture);
             return texture;
         };
@@ -9823,52 +9881,50 @@ var BABYLON;
             }
         };
         Engine.prototype.createRenderTargetTexture = function (size, options) {
-            // old version had a "generateMipMaps" arg instead of options.
-            // if options.generateMipMaps is undefined, consider that options itself if the generateMipmaps value
-            // in the same way, generateDepthBuffer is defaulted to true
-            var generateMipMaps = false;
-            var generateDepthBuffer = true;
-            var generateStencilBuffer = false;
-            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
-            var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
-            if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
-                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
-                type = options.type === undefined ? type : options.type;
-                if (options.samplingMode !== undefined) {
-                    samplingMode = options.samplingMode;
-                }
-                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-                    // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
-                }
-                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-                    // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
-                }
+            var fullOptions = new RenderTargetCreationOptions();
+            if (options !== undefined && typeof options === "object") {
+                fullOptions.generateMipMaps = options.generateMipMaps;
+                fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
+                fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
+                fullOptions.samplingMode = options.samplingMode === undefined ? BABYLON.Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            }
+            else {
+                fullOptions.generateMipMaps = options;
+                fullOptions.generateDepthBuffer = true;
+                fullOptions.generateStencilBuffer = false;
+                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                fullOptions.samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
+            }
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+            }
+            else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
             }
             var gl = this._gl;
             var texture = new BABYLON.InternalTexture(this, BABYLON.InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             var width = size.width || size;
             var height = size.height || size;
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
-            if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-                type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(fullOptions.type), width, height, 0, gl.RGBA, this._getWebGLTextureType(fullOptions.type), null);
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
-            if (generateMipMaps) {
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, width, height);
+            if (fullOptions.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             // Unbind
@@ -9882,11 +9938,11 @@ var BABYLON;
             texture.height = height;
             texture.isReady = true;
             texture.samples = 1;
-            texture.generateMipMaps = generateMipMaps;
-            texture.samplingMode = samplingMode;
-            texture.type = type;
-            texture._generateDepthBuffer = generateDepthBuffer;
-            texture._generateStencilBuffer = generateStencilBuffer;
+            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.samplingMode = fullOptions.samplingMode;
+            texture.type = fullOptions.type;
+            texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
             this.resetTextureCache();
             this._internalTexturesCache.push(texture);
             return texture;
@@ -10081,7 +10137,7 @@ var BABYLON;
             var generateStencilBuffer = false;
             var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
+                generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
                 if (options.samplingMode !== undefined) {
@@ -10127,10 +10183,20 @@ var BABYLON;
             if (onError === void 0) { onError = null; }
             if (forcedExtension === void 0) { forcedExtension = null; }
             var callback = function (loadData) {
-                if (_this._caps.textureLOD || !loadData) {
+                if (!loadData) {
+                    if (onLoad) {
+                        onLoad(null);
+                    }
+                    return;
+                }
+                var texture = loadData.texture;
+                texture._dataSource = BABYLON.InternalTexture.DATASOURCE_CUBEPREFILTERED;
+                texture._lodGenerationScale = scale;
+                texture._lodGenerationOffset = offset;
+                if (_this._caps.textureLOD) {
                     // Do not add extra process if texture lod is supported.
                     if (onLoad) {
-                        onLoad();
+                        onLoad(texture);
                     }
                     return;
                 }
@@ -10149,7 +10215,7 @@ var BABYLON;
                     var maxLODIndex = BABYLON.Scalar.Log2(width) * scale + offset; // roughness = 1
                     var lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     var mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
-                    var glTextureFromLod = new BABYLON.InternalTexture(_this, BABYLON.InternalTexture.DATASOURCE_CUBELOD);
+                    var glTextureFromLod = new BABYLON.InternalTexture(_this, BABYLON.InternalTexture.DATASOURCE_TEMP);
                     glTextureFromLod.isCube = true;
                     _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -10173,11 +10239,11 @@ var BABYLON;
                     glTextureFromLod.isReady = true;
                     textures.push(lodTexture);
                 }
-                loadData.texture._lodTextureHigh = textures[2];
-                loadData.texture._lodTextureMid = textures[1];
-                loadData.texture._lodTextureLow = textures[0];
+                texture._lodTextureHigh = textures[2];
+                texture._lodTextureMid = textures[1];
+                texture._lodTextureLow = textures[0];
                 if (onLoad) {
-                    onLoad();
+                    onLoad(texture);
                 }
             };
             return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension);
@@ -10192,6 +10258,10 @@ var BABYLON;
             texture.isCube = true;
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
+            if (!this._doNotHandleContextLost) {
+                texture._extension = forcedExtension;
+                texture._files = files;
+            }
             var isKTX = false;
             var isDDS = false;
             var lastDot = rootUrl.lastIndexOf('.');
@@ -10277,6 +10347,7 @@ var BABYLON;
                     texture.width = width;
                     texture.height = height;
                     texture.isReady = true;
+                    texture.format = format;
                     texture.onLoadedObservable.notifyObservers(texture);
                     texture.onLoadedObservable.clear();
                     if (onLoad) {
@@ -10452,7 +10523,9 @@ var BABYLON;
             }
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
             this.resetTextureCache();
-            scene._removePendingData(texture);
+            if (scene) {
+                scene._removePendingData(texture);
+            }
             texture.onLoadedObservable.notifyObservers(texture);
             texture.onLoadedObservable.clear();
         };
@@ -10693,9 +10766,9 @@ var BABYLON;
             if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
                 value = 1;
             }
-            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
+            if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {
                 this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
-                texture._cachedAnisotropicFilteringLevel = value;
+                internalTexture._cachedAnisotropicFilteringLevel = value;
             }
         };
         Engine.prototype.readPixels = function (x, y, width, height) {
@@ -10814,9 +10887,13 @@ var BABYLON;
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
+            window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
+            window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
             this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
-            this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
-            this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+            if (!this._doNotHandleContextLost) {
+                this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+                this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+            }
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
@@ -11016,7 +11093,7 @@ var BABYLON;
             return this._gl.createQuery();
         };
         Engine.prototype.deleteQuery = function (query) {
-            this.deleteQuery(query);
+            this._gl.deleteQuery(query);
             return this;
         };
         Engine.prototype.isQueryResultAvailable = function (query) {
@@ -11870,7 +11947,7 @@ var BABYLON;
     
             * OCCLUSION_TYPE_NONE (Default Value): this option means no occlusion query whith the Mesh.
     
-            * OCCLUSION_TYPE_OPTIMISITC: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken show the mesh.
+            * OCCLUSION_TYPE_OPTIMISTIC: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken show the mesh.
     
                 * OCCLUSION_TYPE_STRICT: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken restore the last state of the mesh occlusion if the mesh was visible then show the mesh if was hidden then hide don't show.
              */
@@ -12281,6 +12358,18 @@ var BABYLON;
                 ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
             }
             return ret;
+        };
+        AbstractMesh.prototype._rebuild = function () {
+            if (this._occlusionQuery) {
+                this._occlusionQuery = null;
+            }
+            if (!this.subMeshes) {
+                return;
+            }
+            for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
+                var subMesh = _a[_i];
+                subMesh._rebuild();
+            }
         };
         AbstractMesh.prototype._resyncLightSources = function () {
             this._lightSources.length = 0;
@@ -13491,6 +13580,7 @@ var BABYLON;
             // Query
             var engine = this.getScene().getEngine();
             if (this._occlusionQuery) {
+                this._isOcclusionQueryInProgress = false;
                 engine.deleteQuery(this._occlusionQuery);
                 this._occlusionQuery = null;
             }
@@ -13956,7 +14046,7 @@ var BABYLON;
                         this._occlusionInternalRetryCounter = 0;
                         // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
                         // if strict continue the last state of the object.
-                        this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISITC ? false : this._isOccluded;
+                        this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : this._isOccluded;
                     }
                     else {
                         return;
@@ -13980,7 +14070,7 @@ var BABYLON;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
         AbstractMesh.OCCLUSION_TYPE_NONE = 0;
-        AbstractMesh.OCCLUSION_TYPE_OPTIMISITC = 1;
+        AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC = 1;
         AbstractMesh.OCCLUSION_TYPE_STRICT = 2;
         AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
         AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
@@ -19296,12 +19386,21 @@ var BABYLON;
                 var geometry = _a[_i];
                 geometry._rebuild();
             }
+            for (var _b = 0, _c = this.meshes; _b < _c.length; _b++) {
+                var mesh = _c[_b];
+                mesh._rebuild();
+            }
+            for (var _d = 0, _e = this.layers; _d < _e.length; _d++) {
+                var layer = _e[_d];
+                layer._rebuild();
+            }
         };
         Scene.prototype._rebuildTextures = function () {
             for (var _i = 0, _a = this.textures; _i < _a.length; _i++) {
                 var texture = _a[_i];
                 texture._rebuild();
             }
+            this.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
         };
         Scene.prototype.createDefaultCameraOrLight = function (createArcRotateCamera, replace, attachCameraControls) {
             if (createArcRotateCamera === void 0) { createArcRotateCamera = false; }
@@ -19878,7 +19977,97 @@ var BABYLON;
             this.baseHeight = height;
         };
         InternalTexture.prototype._rebuild = function () {
-            // this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, scene, this.samplingMode, null, null, this._buffer, null, this._format);
+            var _this = this;
+            var proxy;
+            this.isReady = false;
+            this._cachedCoordinatesMode = null;
+            this._cachedWrapU = null;
+            this._cachedWrapV = null;
+            this._cachedAnisotropicFilteringLevel = null;
+            switch (this._dataSource) {
+                case InternalTexture.DATASOURCE_TEMP:
+                    return;
+                case InternalTexture.DATASOURCE_URL:
+                    proxy = this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, function () {
+                        _this.isReady = true;
+                    }, null, this._buffer, null, this.format);
+                    proxy._swapAndDie(this);
+                    return;
+                case InternalTexture.DATASOURCE_RAW:
+                    proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                    proxy._swapAndDie(this);
+                    this.isReady = true;
+                    return;
+                case InternalTexture.DATASOURCE_DYNAMIC:
+                    proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode);
+                    proxy._swapAndDie(this);
+                    // The engine will make sure to update content so no need to flag it as isReady = true
+                    return;
+                case InternalTexture.DATASOURCE_RENDERTARGET:
+                    var options = new BABYLON.RenderTargetCreationOptions();
+                    options.generateDepthBuffer = this._generateDepthBuffer;
+                    options.generateMipMaps = this.generateMipMaps;
+                    options.generateStencilBuffer = this._generateStencilBuffer;
+                    options.samplingMode = this.samplingMode;
+                    options.type = this.type;
+                    if (this.isCube) {
+                        proxy = this._engine.createRenderTargetCubeTexture(this.width, options);
+                    }
+                    else {
+                        var size = {
+                            width: this.width,
+                            height: this.height
+                        };
+                        proxy = this._engine.createRenderTargetTexture(size, options);
+                    }
+                    proxy._swapAndDie(this);
+                    this.isReady = true;
+                    return;
+                case InternalTexture.DATASOURCE_CUBE:
+                    proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, function () {
+                        _this.isReady = true;
+                    }, null, this.format, this._extension);
+                    proxy._swapAndDie(this);
+                    return;
+                case InternalTexture.DATASOURCE_CUBEPREFILTERED:
+                    proxy = this._engine.createPrefilteredCubeTexture(this.url, null, this._lodGenerationScale, this._lodGenerationOffset, function (proxy) {
+                        proxy._swapAndDie(_this);
+                        _this.isReady = true;
+                    }, null, this.format, this._extension);
+                    return;
+            }
+        };
+        InternalTexture.prototype._swapAndDie = function (target) {
+            target._webGLTexture = this._webGLTexture;
+            if (this._framebuffer) {
+                target._framebuffer = this._framebuffer;
+            }
+            if (this._depthStencilBuffer) {
+                target._depthStencilBuffer = this._depthStencilBuffer;
+            }
+            if (this._lodTextureHigh) {
+                if (target._lodTextureHigh) {
+                    target._lodTextureHigh.dispose();
+                }
+                target._lodTextureHigh = this._lodTextureHigh;
+            }
+            if (this._lodTextureMid) {
+                if (target._lodTextureMid) {
+                    target._lodTextureMid.dispose();
+                }
+                target._lodTextureMid = this._lodTextureMid;
+            }
+            if (this._lodTextureLow) {
+                if (target._lodTextureLow) {
+                    target._lodTextureLow.dispose();
+                }
+                target._lodTextureLow = this._lodTextureLow;
+            }
+            var cache = this._engine.getLoadedTexturesCache();
+            var index = cache.indexOf(this);
+            if (index !== -1) {
+                cache.splice(index, 1);
+            }
         };
         InternalTexture.prototype.dispose = function () {
             if (!this._webGLTexture) {
@@ -19898,8 +20087,8 @@ var BABYLON;
         InternalTexture.DATASOURCE_RENDERTARGET = 5;
         InternalTexture.DATASOURCE_MULTIRENDERTARGET = 6;
         InternalTexture.DATASOURCE_CUBE = 7;
-        InternalTexture.DATASOURCE_CUBELOD = 8;
-        InternalTexture.DATASOURCE_CUBERAW = 9;
+        InternalTexture.DATASOURCE_CUBERAW = 8;
+        InternalTexture.DATASOURCE_CUBEPREFILTERED = 9;
         return InternalTexture;
     }());
     BABYLON.InternalTexture = InternalTexture;
@@ -23721,6 +23910,11 @@ var BABYLON;
                 }
             }
             return intersectInfo;
+        };
+        SubMesh.prototype._rebuild = function () {
+            if (this._linesIndexBuffer) {
+                this._linesIndexBuffer = null;
+            }
         };
         // Clone    
         /**
@@ -33022,12 +33216,6 @@ var BABYLON;
             this._currentRefreshId++;
             return false;
         };
-        RenderTargetTexture.prototype.isReady = function () {
-            if (!this.getScene().renderTargetsEnabled) {
-                return false;
-            }
-            return _super.prototype.isReady.call(this);
-        };
         RenderTargetTexture.prototype.getRenderSize = function () {
             return this._size;
         };
@@ -40601,23 +40789,7 @@ var BABYLON;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._scene.layers.push(this);
             var engine = this._scene.getEngine();
-            // VBO
-            var vertices = [];
-            vertices.push(1, 1);
-            vertices.push(-1, 1);
-            vertices.push(-1, -1);
-            vertices.push(1, -1);
-            var vertexBuffer = new BABYLON.VertexBuffer(engine, vertices, BABYLON.VertexBuffer.PositionKind, false, false, 2);
-            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = vertexBuffer;
-            // Indices
-            var indices = [];
-            indices.push(0);
-            indices.push(1);
-            indices.push(2);
-            indices.push(0);
-            indices.push(2);
-            indices.push(3);
-            this._indexBuffer = engine.createIndexBuffer(indices);
+            this._rebuild();
             // Effects
             this._effect = engine.createEffect("layer", [BABYLON.VertexBuffer.PositionKind], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], "");
             this._alphaTestEffect = engine.createEffect("layer", [BABYLON.VertexBuffer.PositionKind], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], "#define ALPHATEST");
@@ -40652,6 +40824,26 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Layer.prototype._rebuild = function () {
+            var engine = this._scene.getEngine();
+            // VBO
+            var vertices = [];
+            vertices.push(1, 1);
+            vertices.push(-1, 1);
+            vertices.push(-1, -1);
+            vertices.push(1, -1);
+            var vertexBuffer = new BABYLON.VertexBuffer(engine, vertices, BABYLON.VertexBuffer.PositionKind, false, false, 2);
+            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = vertexBuffer;
+            // Indices
+            var indices = [];
+            indices.push(0);
+            indices.push(1);
+            indices.push(2);
+            indices.push(0);
+            indices.push(2);
+            indices.push(3);
+            this._indexBuffer = engine.createIndexBuffer(indices);
+        };
         Layer.prototype.render = function () {
             var currentEffect = this.alphaTest ? this._alphaTestEffect : this._effect;
             // Check

@@ -20,6 +20,7 @@
 - GUI: Added support for pointer move events on projected UI ([deltakosh](https://github.com/deltakosh))
 - Normals are generated automatically by StandardMaterial if meshes do not have normals ([deltakosh](https://github.com/deltakosh))
 - Added `mesh.onMaterialChangedObservable` to notify when a new material is set ([deltakosh](https://github.com/deltakosh))
+- Improved the SPS perfs for dead or invisible solid particles ([jerome](https://github.com/jbousquie))  
 
 ## Bug fixes
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))
