@@ -194,6 +194,17 @@
     }
 
     /**
+     * Define options used to create a render target texture
+     */
+    export class RenderTargetCreationOptions {
+        generateMipMaps?: boolean;
+        generateDepthBuffer?: boolean;
+        generateStencilBuffer?: boolean;
+        type?: number;
+        samplingMode?: number;
+    }
+
+    /**
      * Regroup several parameters relative to the browser in use
      */
     export class EngineCapabilities {
@@ -801,12 +812,10 @@
                 this._onContextLost = (evt: Event) => {
                     evt.preventDefault();
                     this._contextWasLost = true;
-                    Tools.Warn("WebGL context lost.")
+                    Tools.Warn("WebGL context lost.");
                 };
 
                 this._onContextRestored = (evt: Event) => {
-                    this._contextWasLost = false;
-
                     // Rebuild gl context
                     this._initGLContext();
 
@@ -822,10 +831,9 @@
                     // Cache
                     this.wipeCaches(true);
 
-                    // Restart render loop
-                    this._renderLoop();
-
-                    Tools.Warn("WebGL context successfully restored.")
+                    Tools.Warn("WebGL context successfully restored.");
+                
+                    this._contextWasLost = false;
                 };
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
@@ -2851,6 +2859,13 @@
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
+            if (!this._doNotHandleContextLost) {
+                texture._bufferView = data;
+                texture.format = format;
+                texture.invertY = invertY;
+                texture._compression = compression;
+            }
+
             if (texture.width % 4 !== 0) {
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
             }
@@ -2875,6 +2890,15 @@
             texture.baseHeight = height;
             texture.width = width;
             texture.height = height;
+            texture.format = format;
+            texture.generateMipMaps = generateMipMaps;
+            texture.samplingMode = samplingMode;
+            texture.invertY = invertY;
+            texture._compression = compression;
+            
+            if (!this._doNotHandleContextLost) {
+                texture._bufferView = data;
+            }
 
             this.updateRawTexture(texture, data, format, invertY, compression);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
@@ -2891,7 +2915,6 @@
 
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
 
-            texture.samplingMode = samplingMode;
 
             this._internalTexturesCache.push(texture);
 
@@ -3012,33 +3035,30 @@
             }
         }
 
-        public createRenderTargetTexture(size: any, options): InternalTexture {
-            // old version had a "generateMipMaps" arg instead of options.
-            // if options.generateMipMaps is undefined, consider that options itself if the generateMipmaps value
-            // in the same way, generateDepthBuffer is defaulted to true
-            var generateMipMaps = false;
-            var generateDepthBuffer = true;
-            var generateStencilBuffer = false;
+        public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
+            let fullOptions = new RenderTargetCreationOptions();
 
-            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
-            var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
-            if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
-                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
+            if (options !== undefined && typeof options === "object") {
+                fullOptions.generateMipMaps = options.generateMipMaps;
+                fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
+                fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type ;
+                fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            } else {
+                fullOptions.generateMipMaps = <boolean>options;
+                fullOptions.generateDepthBuffer = true;
+                fullOptions.generateStencilBuffer = false;
+                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            }
 
-                type = options.type === undefined ? type : options.type;
-                if (options.samplingMode !== undefined) {
-                    samplingMode = options.samplingMode;
-                }
-                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-                    // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
-                }
-                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-                    // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
-                }
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+            else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
             }
             var gl = this._gl;
 
@@ -3048,10 +3068,10 @@
             var width = size.width || size;
             var height = size.height || size;
 
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
 
-            if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-                type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
 
@@ -3060,16 +3080,16 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(fullOptions.type), width, height, 0, gl.RGBA, this._getWebGLTextureType(fullOptions.type), null);
 
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
 
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, width, height);
 
-            if (generateMipMaps) {
+            if (fullOptions.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
 
@@ -3085,11 +3105,11 @@
             texture.height = height;
             texture.isReady = true;
             texture.samples = 1;
-            texture.generateMipMaps = generateMipMaps;
-            texture.samplingMode = samplingMode;
-            texture.type = type;
-            texture._generateDepthBuffer = generateDepthBuffer;
-            texture._generateStencilBuffer = generateStencilBuffer;
+            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.samplingMode = fullOptions.samplingMode;
+            texture.type = fullOptions.type;
+            texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
             this.resetTextureCache();
 
@@ -3344,7 +3364,7 @@
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, data);
         }
 
-        public createRenderTargetCubeTexture(size: number, options?: any): InternalTexture {
+        public createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): InternalTexture {
             var gl = this._gl;
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
@@ -3355,7 +3375,7 @@
 
             var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
+                generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
 
@@ -4511,7 +4531,7 @@
         }
 
         public deleteQuery(query: WebGLQuery): Engine {
-            this.deleteQuery(query);
+            this._gl.deleteQuery(query);
 
             return this;
         }

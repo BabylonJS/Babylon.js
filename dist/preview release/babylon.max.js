@@ -7412,6 +7412,15 @@ var BABYLON;
     }());
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     /**
+     * Define options used to create a render target texture
+     */
+    var RenderTargetCreationOptions = (function () {
+        function RenderTargetCreationOptions() {
+        }
+        return RenderTargetCreationOptions;
+    }());
+    BABYLON.RenderTargetCreationOptions = RenderTargetCreationOptions;
+    /**
      * Regroup several parameters relative to the browser in use
      */
     var EngineCapabilities = (function () {
@@ -7601,7 +7610,6 @@ var BABYLON;
                     BABYLON.Tools.Warn("WebGL context lost.");
                 };
                 this._onContextRestored = function (evt) {
-                    _this._contextWasLost = false;
                     // Rebuild gl context
                     _this._initGLContext();
                     // Rebuild effects
@@ -7612,9 +7620,8 @@ var BABYLON;
                     _this._rebuildBuffers();
                     // Cache
                     _this.wipeCaches(true);
-                    // Restart render loop
-                    _this._renderLoop();
                     BABYLON.Tools.Warn("WebGL context successfully restored.");
+                    _this._contextWasLost = false;
                 };
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                 canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
@@ -9726,6 +9733,12 @@ var BABYLON;
             var internalFormat = this._getInternalFormat(format);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            if (!this._doNotHandleContextLost) {
+                texture._bufferView = data;
+                texture.format = format;
+                texture.invertY = invertY;
+                texture._compression = compression;
+            }
             if (texture.width % 4 !== 0) {
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
             }
@@ -9749,6 +9762,14 @@ var BABYLON;
             texture.baseHeight = height;
             texture.width = width;
             texture.height = height;
+            texture.format = format;
+            texture.generateMipMaps = generateMipMaps;
+            texture.samplingMode = samplingMode;
+            texture.invertY = invertY;
+            texture._compression = compression;
+            if (!this._doNotHandleContextLost) {
+                texture._bufferView = data;
+            }
             this.updateRawTexture(texture, data, format, invertY, compression);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             // Filters
@@ -9759,7 +9780,6 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-            texture.samplingMode = samplingMode;
             this._internalTexturesCache.push(texture);
             return texture;
         };
@@ -9861,52 +9881,50 @@ var BABYLON;
             }
         };
         Engine.prototype.createRenderTargetTexture = function (size, options) {
-            // old version had a "generateMipMaps" arg instead of options.
-            // if options.generateMipMaps is undefined, consider that options itself if the generateMipmaps value
-            // in the same way, generateDepthBuffer is defaulted to true
-            var generateMipMaps = false;
-            var generateDepthBuffer = true;
-            var generateStencilBuffer = false;
-            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
-            var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
-            if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
-                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
-                type = options.type === undefined ? type : options.type;
-                if (options.samplingMode !== undefined) {
-                    samplingMode = options.samplingMode;
-                }
-                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-                    // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
-                }
-                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-                    // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
-                }
+            var fullOptions = new RenderTargetCreationOptions();
+            if (options !== undefined && typeof options === "object") {
+                fullOptions.generateMipMaps = options.generateMipMaps;
+                fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
+                fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
+                fullOptions.samplingMode = options.samplingMode === undefined ? BABYLON.Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            }
+            else {
+                fullOptions.generateMipMaps = options;
+                fullOptions.generateDepthBuffer = true;
+                fullOptions.generateStencilBuffer = false;
+                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                fullOptions.samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
+            }
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+            }
+            else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+                fullOptions.samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
             }
             var gl = this._gl;
             var texture = new BABYLON.InternalTexture(this, BABYLON.InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             var width = size.width || size;
             var height = size.height || size;
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
-            if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-                type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(fullOptions.type), width, height, 0, gl.RGBA, this._getWebGLTextureType(fullOptions.type), null);
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height);
-            if (generateMipMaps) {
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, width, height);
+            if (fullOptions.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             // Unbind
@@ -9920,11 +9938,11 @@ var BABYLON;
             texture.height = height;
             texture.isReady = true;
             texture.samples = 1;
-            texture.generateMipMaps = generateMipMaps;
-            texture.samplingMode = samplingMode;
-            texture.type = type;
-            texture._generateDepthBuffer = generateDepthBuffer;
-            texture._generateStencilBuffer = generateStencilBuffer;
+            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.samplingMode = fullOptions.samplingMode;
+            texture.type = fullOptions.type;
+            texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
             this.resetTextureCache();
             this._internalTexturesCache.push(texture);
             return texture;
@@ -10119,7 +10137,7 @@ var BABYLON;
             var generateStencilBuffer = false;
             var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
+                generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
                 if (options.samplingMode !== undefined) {
@@ -11075,7 +11093,7 @@ var BABYLON;
             return this._gl.createQuery();
         };
         Engine.prototype.deleteQuery = function (query) {
-            this.deleteQuery(query);
+            this._gl.deleteQuery(query);
             return this;
         };
         Engine.prototype.isQueryResultAvailable = function (query) {
@@ -12342,6 +12360,9 @@ var BABYLON;
             return ret;
         };
         AbstractMesh.prototype._rebuild = function () {
+            if (this._occlusionQuery) {
+                this._occlusionQuery = null;
+            }
             if (!this.subMeshes) {
                 return;
             }
@@ -13559,6 +13580,7 @@ var BABYLON;
             // Query
             var engine = this.getScene().getEngine();
             if (this._occlusionQuery) {
+                this._isOcclusionQueryInProgress = false;
                 engine.deleteQuery(this._occlusionQuery);
                 this._occlusionQuery = null;
             }
@@ -19971,10 +19993,35 @@ var BABYLON;
                     }, null, this._buffer, null, this.format);
                     proxy._swapAndDie(this);
                     return;
+                case InternalTexture.DATASOURCE_RAW:
+                    proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                    proxy._swapAndDie(this);
+                    this.isReady = true;
+                    return;
                 case InternalTexture.DATASOURCE_DYNAMIC:
                     proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode);
                     proxy._swapAndDie(this);
                     // The engine will make sure to update content so no need to flag it as isReady = true
+                    return;
+                case InternalTexture.DATASOURCE_RENDERTARGET:
+                    var options = new BABYLON.RenderTargetCreationOptions();
+                    options.generateDepthBuffer = this._generateDepthBuffer;
+                    options.generateMipMaps = this.generateMipMaps;
+                    options.generateStencilBuffer = this._generateStencilBuffer;
+                    options.samplingMode = this.samplingMode;
+                    options.type = this.type;
+                    if (this.isCube) {
+                        proxy = this._engine.createRenderTargetCubeTexture(this.width, options);
+                    }
+                    else {
+                        var size = {
+                            width: this.width,
+                            height: this.height
+                        };
+                        proxy = this._engine.createRenderTargetTexture(size, options);
+                    }
+                    proxy._swapAndDie(this);
+                    this.isReady = true;
                     return;
                 case InternalTexture.DATASOURCE_CUBE:
                     proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, function () {
@@ -19992,6 +20039,12 @@ var BABYLON;
         };
         InternalTexture.prototype._swapAndDie = function (target) {
             target._webGLTexture = this._webGLTexture;
+            if (this._framebuffer) {
+                target._framebuffer = this._framebuffer;
+            }
+            if (this._depthStencilBuffer) {
+                target._depthStencilBuffer = this._depthStencilBuffer;
+            }
             if (this._lodTextureHigh) {
                 if (target._lodTextureHigh) {
                     target._lodTextureHigh.dispose();

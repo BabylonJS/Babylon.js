@@ -30,6 +30,7 @@ module BABYLON {
         // Private
         public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
         public _buffer: ArrayBuffer | HTMLImageElement;
+        public _bufferView: ArrayBufferView;
         public _size: number;
         public _extension: string;
         public _files: string[];
@@ -44,6 +45,7 @@ module BABYLON {
         public _cachedWrapV: number;
         public _cachedAnisotropicFilteringLevel: number;
         public _isDisabled: boolean;
+        public _compression: string;
         public _generateStencilBuffer: boolean;
         public _generateDepthBuffer: boolean;
         public _sphericalPolynomial: BABYLON.SphericalPolynomial;
@@ -101,6 +103,14 @@ module BABYLON {
                     }, null, this._buffer, null, this.format); 
                     proxy._swapAndDie(this);
                     return;
+
+                case InternalTexture.DATASOURCE_RAW:
+                    proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps, 
+                                                            this.invertY, this.samplingMode, this._compression); 
+                    proxy._swapAndDie(this);
+
+                    this.isReady = true;
+                return;                    
                 
                 case InternalTexture.DATASOURCE_DYNAMIC:
                     proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode); 
@@ -108,6 +118,29 @@ module BABYLON {
 
                     // The engine will make sure to update content so no need to flag it as isReady = true
                 return;
+
+                case InternalTexture.DATASOURCE_RENDERTARGET:
+                    let options = new RenderTargetCreationOptions();
+                    options.generateDepthBuffer = this._generateDepthBuffer;
+                    options.generateMipMaps = this.generateMipMaps;
+                    options.generateStencilBuffer = this._generateStencilBuffer;
+                    options.samplingMode = this.samplingMode;
+                    options.type = this.type;
+
+                    if (this.isCube) {
+                        proxy = this._engine.createRenderTargetCubeTexture(this.width, options); 
+                    } else {
+                        let size = {
+                            width: this.width,
+                            height: this.height
+                        }
+
+                        proxy = this._engine.createRenderTargetTexture(size, options); 
+                    }
+                    proxy._swapAndDie(this);
+
+                    this.isReady = true;
+                return;                
 
                 case InternalTexture.DATASOURCE_CUBE:
                     proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, () => {
@@ -128,6 +161,14 @@ module BABYLON {
 
         private _swapAndDie(target: InternalTexture): void {
             target._webGLTexture = this._webGLTexture;
+
+            if (this._framebuffer) {
+                target._framebuffer = this._framebuffer;
+            }
+
+            if (this._depthStencilBuffer) {
+                target._depthStencilBuffer = this._depthStencilBuffer;
+            }
 
             if (this._lodTextureHigh) {
                 if (target._lodTextureHigh) {
