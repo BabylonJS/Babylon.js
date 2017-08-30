@@ -23979,6 +23979,9 @@ var BABYLON;
             this._currentRank = 32;
             this._maxRank = -1;
         }
+        EffectFallbacks.prototype.unBindMesh = function () {
+            this._mesh = null;
+        };
         EffectFallbacks.prototype.addFallback = function (rank, define) {
             if (!this._defines[rank]) {
                 if (rank < this._currentRank) {
@@ -24415,6 +24418,10 @@ var BABYLON;
                 }
                 this.onCompileObservable.notifyObservers(this);
                 this.onCompileObservable.clear();
+                // Unbind mesh reference in fallbacks
+                if (this._fallbacks) {
+                    this._fallbacks.unBindMesh();
+                }
             }
             catch (e) {
                 this._compilationError = e.message;
@@ -24439,6 +24446,10 @@ var BABYLON;
                     }
                     this.onErrorObservable.notifyObservers(this);
                     this.onErrorObservable.clear();
+                    // Unbind mesh reference in fallbacks
+                    if (this._fallbacks) {
+                        this._fallbacks.unBindMesh();
+                    }
                 }
             }
         };
