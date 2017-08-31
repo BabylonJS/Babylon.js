@@ -529,6 +529,7 @@
         // To enable/disable IDB support and avoid XHR on .manifest
         public enableOfflineSupport = false;
         public scenes = new Array<Scene>();
+        public postProcesses = new Array<PostProcess>();
 
         // Observables
 
@@ -954,6 +955,10 @@
                 scene.resetCachedMaterial();
                 scene._rebuildGeometries();
                 scene._rebuildTextures();
+            }
+
+            for (var postprocess of this.postProcesses) {
+                postprocess._rebuild();
             }
 
             // Uniforms
@@ -4249,6 +4254,11 @@
             this.hideLoadingUI();
 
             this.stopRenderLoop();
+
+            // Release postProcesses
+            while (this.postProcesses.length) {
+                this.postProcesses[0].dispose();
+            }
 
             // Empty texture
             if (this._emptyTexture) {

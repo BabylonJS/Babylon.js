@@ -7452,6 +7452,7 @@ var BABYLON;
             // To enable/disable IDB support and avoid XHR on .manifest
             this.enableOfflineSupport = false;
             this.scenes = new Array();
+            this.postProcesses = new Array();
             // Observables
             /**
              * Observable event triggered each time the rendering canvas is resized
@@ -8116,9 +8117,13 @@ var BABYLON;
                 scene._rebuildGeometries();
                 scene._rebuildTextures();
             }
+            for (var _b = 0, _c = this.postProcesses; _b < _c.length; _b++) {
+                var postprocess = _c[_b];
+                postprocess._rebuild();
+            }
             // Uniforms
-            for (var _b = 0, _c = this._uniformBuffers; _b < _c.length; _b++) {
-                var uniformBuffer = _c[_b];
+            for (var _d = 0, _e = this._uniformBuffers; _d < _e.length; _d++) {
+                var uniformBuffer = _e[_d];
                 uniformBuffer._rebuild();
             }
         };
@@ -10853,6 +10858,10 @@ var BABYLON;
         Engine.prototype.dispose = function () {
             this.hideLoadingUI();
             this.stopRenderLoop();
+            // Release postProcesses
+            while (this.postProcesses.length) {
+                this.postProcesses[0].dispose();
+            }
             // Empty texture
             if (this._emptyTexture) {
                 this._releaseTexture(this._emptyTexture);
@@ -16471,6 +16480,7 @@ var BABYLON;
             /** Defines the gravity applied to this scene */
             this.gravity = new BABYLON.Vector3(0, -9.807, 0);
             // Postprocesses
+            this.postProcesses = new Array();
             this.postProcessesEnabled = true;
             // Customs render targets
             this.renderTargetsEnabled = true;
@@ -19065,6 +19075,10 @@ var BABYLON;
             while (this.spriteManagers.length) {
                 this.spriteManagers[0].dispose();
             }
+            // Release postProcesses
+            while (this.postProcesses.length) {
+                this.postProcesses[0].dispose();
+            }
             // Release layers
             while (this.layers.length) {
                 this.layers[0].dispose();
@@ -19390,8 +19404,12 @@ var BABYLON;
                 var mesh = _c[_b];
                 mesh._rebuild();
             }
-            for (var _d = 0, _e = this.layers; _d < _e.length; _d++) {
-                var layer = _e[_d];
+            for (var _d = 0, _e = this.postProcesses; _d < _e.length; _d++) {
+                var postprocess = _e[_d];
+                postprocess._rebuild();
+            }
+            for (var _f = 0, _g = this.layers; _f < _g.length; _f++) {
+                var layer = _g[_f];
                 layer._rebuild();
             }
         };
@@ -46564,9 +46582,11 @@ var BABYLON;
                 this._scene = camera.getScene();
                 camera.attachPostProcess(this);
                 this._engine = this._scene.getEngine();
+                this._scene.postProcesses.push(this);
             }
             else {
                 this._engine = engine;
+                this._engine.postProcesses.push(this);
             }
             this._options = options;
             this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
@@ -46820,9 +46840,23 @@ var BABYLON;
             }
             this._textures.dispose();
         };
+        PostProcess.prototype._rebuild = function () {
+        };
         PostProcess.prototype.dispose = function (camera) {
             camera = camera || this._camera;
             this._disposeTextures();
+            if (this._scene) {
+                var index_1 = this._scene.postProcesses.indexOf(this);
+                if (index_1 !== -1) {
+                    this._scene.postProcesses.splice(index_1, 1);
+                }
+            }
+            else {
+                var index_2 = this._engine.postProcesses.indexOf(this);
+                if (index_2 !== -1) {
+                    this._engine.postProcesses.splice(index_2, 1);
+                }
+            }
             if (!camera) {
                 return;
             }
