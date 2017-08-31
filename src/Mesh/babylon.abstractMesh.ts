@@ -1529,7 +1529,7 @@
             }
         }
 
-        public moveWithCollisions(velocity: Vector3): AbstractMesh {
+        public moveWithCollisions(direction: Vector3): AbstractMesh {
             var globalPosition = this.getAbsolutePosition();
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
@@ -1541,7 +1541,7 @@
 
             this._collider.radius = this.ellipsoid;
 
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, direction, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
             return this;
         }
 
