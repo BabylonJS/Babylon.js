@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExporterForm));
             this.butExport = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.txtFilename = new System.Windows.Forms.TextBox();
@@ -138,7 +137,7 @@
             // pictureBox2
             // 
             this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+            this.pictureBox2.Image = global::Max2Babylon.Properties.Resources.Logo_Exporter_v3;
             this.pictureBox2.Location = new System.Drawing.Point(511, 12);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(300, 130);
@@ -272,7 +271,7 @@
             this.chkGltf.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.chkGltf.Location = new System.Drawing.Point(30, 133);
             this.chkGltf.Name = "chkGltf";
-            this.chkGltf.Size = new System.Drawing.Size(135, 17);
+            this.chkGltf.Size = new System.Drawing.Size(107, 17);
             this.chkGltf.TabIndex = 17;
             this.chkGltf.Text = "Generate glTF file";
             this.chkGltf.UseVisualStyleBackColor = true;
