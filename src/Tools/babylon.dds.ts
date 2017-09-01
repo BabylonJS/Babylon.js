@@ -359,8 +359,7 @@
             return byteArray;
         }
 
-        public static UploadDDSLevels(engine: Engine, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1): void {
-            var gl = engine._gl;
+        public static UploadDDSLevels(engine: Engine, gl:WebGLRenderingContext, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1): void {
             var ext = engine.getCaps().s3tc;
 
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt),

@@ -68,6 +68,7 @@
                 "../../src/babylon.scene.js",
                 "../../src/Mesh/babylon.buffer.js",
                 "../../src/Mesh/babylon.vertexBuffer.js",
+                "../../src/Materials/Textures/babylon.internalTexture.js",
                 "../../src/Materials/Textures/babylon.baseTexture.js",
                 "../../src/Materials/Textures/babylon.texture.js",
                 "../../src/Mesh/babylon.mesh.js",
@@ -80,7 +81,7 @@
                 "../../src/Mesh/babylon.mesh.vertexData.js",
                 "../../src/Mesh/babylon.geometry.js",
                 "../../src/PostProcess/babylon.postProcessManager.js",
-                "../../src/Tools/babylon.performanceMonitor.js" 
+                "../../src/Tools/babylon.performanceMonitor.js"
             ]
         },         
         "particles" : 
@@ -528,8 +529,14 @@
             "files": [
                 "../../src/Cameras/Inputs/babylon.freeCameraGamepadInput.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraGamepadInput.js",
-                "../../src/Tools/babylon.gamepads.js",
-                "../../src/Tools/babylon.extendedGamepad.js"
+                "../../src/Gamepad/babylon.gamepadManager.js",
+                "../../src/Gamepad/babylon.gamepad.js",
+                "../../src/Gamepad/babylon.xboxGamepad.js",
+                "../../src/Gamepad/Controllers/babylon.poseEnabledController.js",
+                "../../src/Gamepad/Controllers/babylon.webVRController.js",
+                "../../src/Gamepad/Controllers/babylon.oculusTouchController.js",
+                "../../src/Gamepad/Controllers/babylon.viveController.js",
+                "../../src/Gamepad/Controllers/babylon.genericController.js"
             ],
             "dependUpon" : [
                 "core"

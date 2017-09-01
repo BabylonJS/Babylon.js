@@ -144,6 +144,8 @@ module BABYLON {
                 this.updateColor3 = this._updateColor3ForEffect;
                 this.updateColor4 = this._updateColor4ForEffect;
             } else {
+                this._engine._uniformBuffers.push(this);
+                
                 this.updateMatrix3x3 = this._updateMatrix3x3ForUniform;
                 this.updateMatrix2x2 = this._updateMatrix2x2ForUniform;
                 this.updateFloat = this._updateFloatForUniform;
@@ -371,14 +373,22 @@ module BABYLON {
             this._fillAlignment(4);
             this._bufferData = new Float32Array(this._data);
 
+            this._rebuild();
+
+            this._needSync = true;
+        }
+        
+        public _rebuild(): void {
+            if (this._noUBO) {
+                return;
+            }
+
             if (this._dynamic) {
                 this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData);
             } else {
                 this._buffer = this._engine.createUniformBuffer(this._bufferData);
             }
-
-            this._needSync = true;
-        } 
+        }
 
         /**
          * Updates the WebGL Uniform Buffer on the GPU.
@@ -603,6 +613,16 @@ module BABYLON {
          * Disposes the uniform buffer.
          */
         public dispose(): void {
+            if (this._noUBO) {
+                return;
+            }
+
+            let index = this._engine._uniformBuffers.indexOf(this);
+
+            if (index !== -1) {
+                this._engine._uniformBuffers.splice(index, 1);
+            }
+
             if (!this._buffer) {
                 return;
             }

@@ -657,8 +657,19 @@
 
                 // call to custom user function to update the particle properties
                 this.updateParticle(this._particle);
-                
+
+                // skip the computations for inactive or already invisible particles
+                if (!this._particle.alive || (this._particle._stillInvisible && !this._particle.isVisible)) {
+                    // increment indexes for the next particle
+                    pt = this._shape.length;
+                    index += pt * 3;
+                    colorIndex += pt * 4;
+                    uvIndex += pt * 2;
+                    continue;
+                }
+
                 if (this._particle.isVisible) {
+                    this._particle._stillInvisible = false; // un-mark permanent invisibility
 
                     // particle rotation matrix
                     if (this.billboard) {
@@ -754,15 +765,17 @@
                         }
                     } 
                 } 
-                // particle not visible : scaled to zero and positioned to the camera position
+                // particle just set invisible : scaled to zero and positioned at the origin
                 else {
+                    this._particle._stillInvisible = true;      // mark the particle as invisible
                     for (pt = 0; pt < this._shape.length; pt++) {
                         idx = index + pt * 3;
                         colidx = colorIndex + pt * 4;
                         uvidx = uvIndex + pt * 2;
-                        this._positions32[idx] = this._camera.globalPosition.x;
-                        this._positions32[idx + 1] = this._camera.globalPosition.y;
-                        this._positions32[idx + 2] = this._camera.globalPosition.z;
+
+                        this._positions32[idx] = 0.0;
+                        this._positions32[idx + 1] = 0.0;
+                        this._positions32[idx + 2] = 0.0; 
                         this._normals32[idx] = 0.0;
                         this._normals32[idx + 1] = 0.0;
                         this._normals32[idx + 2] = 0.0;

@@ -4,6 +4,7 @@
 - Added support for non-pow2 textures when in WebGL2 mode ([deltakosh](https://github.com/deltakosh))
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
 - Introduced behaviors. (Doc here)[http://doc.babylonjs.com/overviews/behaviors] ([deltakosh](https://github.com/deltakosh))
+- Added support for WebGL Occlusion queries. (Doc here)[http://doc.babylonjs.com/overviews/occlusionquery] ([Ibraheem Osama](https://github.com/IbraheemOsama))
 - New behaviors for ArcRotateCamera:
  - AutoRotation ([deltakosh](https://github.com/deltakosh))
  - Framing ([deltakosh](https://github.com/deltakosh))
@@ -19,6 +20,10 @@
 - GUI: Added support for pointer move events on projected UI ([deltakosh](https://github.com/deltakosh))
 - Normals are generated automatically by StandardMaterial if meshes do not have normals ([deltakosh](https://github.com/deltakosh))
 - Added `mesh.onMaterialChangedObservable` to notify when a new material is set ([deltakosh](https://github.com/deltakosh))
+- Improved the SPS perfs for dead or invisible solid particles ([jerome](https://github.com/jbousquie))  
 
 ## Bug fixes
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))
+
+## Breaking changes
+- `Gamepads` was removed in favor of `scene.gamepadManager`

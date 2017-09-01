@@ -44,6 +44,13 @@ interface WebGLRenderingContext {
     getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
     uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
 
+    // Occlusion Query
+    createQuery(): WebGLQuery;
+    deleteQuery(query: WebGLQuery);
+    beginQuery(target: number, query: WebGLQuery);
+    endQuery(target: number): void;
+    getQueryParameter(query: WebGLQuery, pname: number): any;
+
     MAX_SAMPLES: number;
     RGBA8: number;
     READ_FRAMEBUFFER: number;
@@ -55,7 +62,7 @@ interface WebGLRenderingContext {
     RGBA32F: number;
 
     DEPTH24_STENCIL8: number;
-    
+
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
@@ -65,6 +72,12 @@ interface WebGLRenderingContext {
     readonly COLOR_ATTACHMENT1: number;                             // 0x8CE2
     readonly COLOR_ATTACHMENT2: number;                             // 0x8CE3
     readonly COLOR_ATTACHMENT3: number;                             // 0x8CE4
+
+    // Occlusion Query
+    ANY_SAMPLES_PASSED_CONSERVATIVE: number;
+    ANY_SAMPLES_PASSED: number;
+    QUERY_RESULT_AVAILABLE: number;
+    QUERY_RESULT: number;
 }
 
 interface HTMLURL {
@@ -99,43 +112,6 @@ interface CanvasRenderingContext2D {
     msImageSmoothingEnabled: boolean;
 }
 
-interface WebGLTexture {
-    isReady: boolean;
-    isCube: boolean;
-    url: string;
-    samplingMode: number;
-    references: number;
-    generateMipMaps: boolean;
-    samples: number;
-    type: number;
-    format: number;
-    onLoadedCallbacks: Array<Function>;
-    _size: number;
-    _baseWidth: number;
-    _baseHeight: number;
-    _width: number;
-    _height: number;
-    _workingCanvas: HTMLCanvasElement;
-    _workingContext: CanvasRenderingContext2D;
-    _framebuffer: WebGLFramebuffer;
-    _depthStencilBuffer: WebGLRenderbuffer;
-    _MSAAFramebuffer: WebGLFramebuffer;
-    _MSAARenderBuffer: WebGLRenderbuffer;
-    _cachedCoordinatesMode: number;
-    _cachedWrapU: number;
-    _cachedWrapV: number;
-    _isDisabled: boolean;
-    _generateStencilBuffer: boolean;
-    _generateDepthBuffer: boolean;
-    _sphericalPolynomial: BABYLON.SphericalPolynomial;
-    // The following three fields helps sharing generated fixed LODs for texture filtering
-    // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
-    // They are at the level of the gl texture to benefit from the cache.
-    _lodTextureHigh: BABYLON.BaseTexture;
-    _lodTextureMid: BABYLON.BaseTexture;
-    _lodTextureLow: BABYLON.BaseTexture;
-}
-
 interface WebGLBuffer {
     references: number;
     capacity: number;
@@ -164,6 +140,11 @@ interface Navigator {
     webkitGetUserMedia: any;
     mozGetUserMedia: any;
     msGetUserMedia: any;
+
+    getGamepads(func?: any): any;
+    webkitGetGamepads(func?: any): any
+    msGetGamepads(func?: any): any;
+    webkitGamepads(func?: any): any;    
 }
 
 interface HTMLVideoElement {

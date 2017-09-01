@@ -181,12 +181,14 @@ module BABYLON {
             });
         }
              
-        public detach(camera: ArcRotateCamera): void {
+        public detach(): void {
             let scene = this._attachedCamera.getScene();
             
             scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
-			camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
-			camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+			this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			this._attachedCamera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+
+			this._attachedCamera = null;
         }
 
         // Framing control

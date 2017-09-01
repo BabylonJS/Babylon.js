@@ -90,11 +90,12 @@ module BABYLON {
             });
         }
         
-        public detach(camera: ArcRotateCamera): void {
-			camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+        public detach(): void {
+			this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
 			if (this._onMeshTargetChangedObserver) {
-				camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+				this._attachedCamera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
 			}
+			this._attachedCamera = null;
         }
 
         // Animations

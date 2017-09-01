@@ -683,6 +683,7 @@
         public gravity = new Vector3(0, -9.807, 0);
 
         // Postprocesses
+        public postProcesses = new Array<PostProcess>();
         public postProcessesEnabled = true;
         public postProcessManager: PostProcessManager;
         private _postProcessRenderPipelineManager: PostProcessRenderPipelineManager
@@ -1625,8 +1626,6 @@
             this._cachedEffect = null;
             this._cachedVisibility = null;
         }
-
-
 
         public registerBeforeRender(func: () => void): void {
             this.onBeforeRenderObservable.add(func);
@@ -3435,6 +3434,11 @@
                 this.spriteManagers[0].dispose();
             }
 
+            // Release postProcesses
+            while (this.postProcesses.length) {
+                this.postProcesses[0].dispose();
+            }
+
             // Release layers
             while (this.layers.length) {
                 this.layers[0].dispose();
@@ -3817,6 +3821,32 @@
         }
 
         // Misc.
+        public _rebuildGeometries(): void {
+            for (var geometry of this._geometries) {
+                geometry._rebuild();
+            }
+
+            for (var mesh of this.meshes) {
+                mesh._rebuild();
+            }
+
+            for (var postprocess of this.postProcesses) {
+                postprocess._rebuild();
+            }            
+
+            for (var layer of this.layers) {
+                layer._rebuild();
+            }
+        }
+
+        public _rebuildTextures(): void {
+            for (var texture of this.textures) {
+                texture._rebuild();
+            }
+
+            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+
         public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false) {
             // Dispose existing camera or light in replace mode.
             if (replace) {

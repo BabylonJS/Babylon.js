@@ -86,7 +86,7 @@
         public fov = 0.8;
 
         @serialize()
-        public minZ = 1.0;
+        public minZ = 1;
 
         @serialize()
         public maxZ = 10000.0;
@@ -553,7 +553,9 @@
             this.onAfterCheckInputsObservable.clear();
 
             // Inputs
-            this.inputs.clear();
+            if (this.inputs) {
+                this.inputs.clear();
+            }
 
             // Animations
             this.getScene().stopAnimation(this);
