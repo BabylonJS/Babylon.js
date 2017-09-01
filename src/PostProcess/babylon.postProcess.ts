@@ -142,9 +142,12 @@
                 this._scene = camera.getScene();
                 camera.attachPostProcess(this);
                 this._engine = this._scene.getEngine();
+
+                this._scene.postProcesses.push(this);
             }
             else {
                 this._engine = engine;
+                this._engine.postProcesses.push(this);
             }
 
             this._options = options;
@@ -366,10 +369,26 @@
             this._textures.dispose();
         }
 
+        public _rebuild(): void {
+            
+        }
+
         public dispose(camera?: Camera): void {
             camera = camera || this._camera;            
 
             this._disposeTextures();
+
+            if (this._scene) {
+                let index = this._scene.postProcesses.indexOf(this);
+                if (index !== -1) {
+                    this._scene.postProcesses.splice(index, 1);
+                }                
+            } else {
+                let index = this._engine.postProcesses.indexOf(this);
+                if (index !== -1) {
+                    this._engine.postProcesses.splice(index, 1);
+                }         
+            }
 
             if (!camera) {
                 return;

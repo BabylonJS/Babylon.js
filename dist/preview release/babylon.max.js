@@ -7452,6 +7452,7 @@ var BABYLON;
             // To enable/disable IDB support and avoid XHR on .manifest
             this.enableOfflineSupport = false;
             this.scenes = new Array();
+            this.postProcesses = new Array();
             // Observables
             /**
              * Observable event triggered each time the rendering canvas is resized
@@ -8116,9 +8117,13 @@ var BABYLON;
                 scene._rebuildGeometries();
                 scene._rebuildTextures();
             }
+            for (var _b = 0, _c = this.postProcesses; _b < _c.length; _b++) {
+                var postprocess = _c[_b];
+                postprocess._rebuild();
+            }
             // Uniforms
-            for (var _b = 0, _c = this._uniformBuffers; _b < _c.length; _b++) {
-                var uniformBuffer = _c[_b];
+            for (var _d = 0, _e = this._uniformBuffers; _d < _e.length; _d++) {
+                var uniformBuffer = _e[_d];
                 uniformBuffer._rebuild();
             }
         };
@@ -8644,14 +8649,11 @@ var BABYLON;
         Engine.prototype._getVRDisplays = function () {
             var _this = this;
             var getWebVRDevices = function (devices) {
-                var size = devices.length;
-                var i = 0;
                 _this._vrDisplays = devices.filter(function (device) {
-                    return devices[i] instanceof VRDisplay;
+                    return device instanceof VRDisplay;
                 });
                 return _this._vrDisplays;
             };
-            //using a key due to typescript
             if (navigator.getVRDisplays) {
                 this.vrDisplaysPromise = navigator.getVRDisplays().then(getWebVRDevices);
             }
@@ -10853,6 +10855,10 @@ var BABYLON;
         Engine.prototype.dispose = function () {
             this.hideLoadingUI();
             this.stopRenderLoop();
+            // Release postProcesses
+            while (this.postProcesses.length) {
+                this.postProcesses[0].dispose();
+            }
             // Empty texture
             if (this._emptyTexture) {
                 this._releaseTexture(this._emptyTexture);
@@ -13338,7 +13344,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        AbstractMesh.prototype.moveWithCollisions = function (velocity) {
+        AbstractMesh.prototype.moveWithCollisions = function (direction) {
             var globalPosition = this.getAbsolutePosition();
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
@@ -13346,7 +13352,7 @@ var BABYLON;
                 this._collider = new BABYLON.Collider();
             }
             this._collider.radius = this.ellipsoid;
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, direction, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
             return this;
         };
         // Submeshes octree
@@ -16471,6 +16477,7 @@ var BABYLON;
             /** Defines the gravity applied to this scene */
             this.gravity = new BABYLON.Vector3(0, -9.807, 0);
             // Postprocesses
+            this.postProcesses = new Array();
             this.postProcessesEnabled = true;
             // Customs render targets
             this.renderTargetsEnabled = true;
@@ -19065,6 +19072,10 @@ var BABYLON;
             while (this.spriteManagers.length) {
                 this.spriteManagers[0].dispose();
             }
+            // Release postProcesses
+            while (this.postProcesses.length) {
+                this.postProcesses[0].dispose();
+            }
             // Release layers
             while (this.layers.length) {
                 this.layers[0].dispose();
@@ -19390,8 +19401,12 @@ var BABYLON;
                 var mesh = _c[_b];
                 mesh._rebuild();
             }
-            for (var _d = 0, _e = this.layers; _d < _e.length; _d++) {
-                var layer = _e[_d];
+            for (var _d = 0, _e = this.postProcesses; _d < _e.length; _d++) {
+                var postprocess = _e[_d];
+                postprocess._rebuild();
+            }
+            for (var _f = 0, _g = this.layers; _f < _g.length; _f++) {
+                var layer = _g[_f];
                 layer._rebuild();
             }
         };
@@ -23979,6 +23994,9 @@ var BABYLON;
             this._currentRank = 32;
             this._maxRank = -1;
         }
+        EffectFallbacks.prototype.unBindMesh = function () {
+            this._mesh = null;
+        };
         EffectFallbacks.prototype.addFallback = function (rank, define) {
             if (!this._defines[rank]) {
                 if (rank < this._currentRank) {
@@ -24415,6 +24433,10 @@ var BABYLON;
                 }
                 this.onCompileObservable.notifyObservers(this);
                 this.onCompileObservable.clear();
+                // Unbind mesh reference in fallbacks
+                if (this._fallbacks) {
+                    this._fallbacks.unBindMesh();
+                }
             }
             catch (e) {
                 this._compilationError = e.message;
@@ -24439,6 +24461,10 @@ var BABYLON;
                     }
                     this.onErrorObservable.notifyObservers(this);
                     this.onErrorObservable.clear();
+                    // Unbind mesh reference in fallbacks
+                    if (this._fallbacks) {
+                        this._fallbacks.unBindMesh();
+                    }
                 }
             }
         };
@@ -34599,7 +34625,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        FreeCamera.prototype._collideWithWorld = function (velocity) {
+        FreeCamera.prototype._collideWithWorld = function (direction) {
             var globalPosition;
             if (this.parent) {
                 globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
@@ -34614,13 +34640,13 @@ var BABYLON;
             this._collider.radius = this.ellipsoid;
             this._collider.collisionMask = this._collisionMask;
             //no need for clone, as long as gravity is not on.
-            var actualVelocity = velocity;
-            //add gravity to the velocity to prevent the dual-collision checking
+            var actualDirection = direction;
+            //add gravity to the direction to prevent the dual-collision checking
             if (this.applyGravity) {
                 //this prevents mending with cameraDirection, a global variable of the free camera class.
-                actualVelocity = velocity.add(this.getScene().gravity);
+                actualDirection = direction.add(this.getScene().gravity);
             }
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualDirection, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
             if (!this._localDirection) {
@@ -46553,9 +46579,11 @@ var BABYLON;
                 this._scene = camera.getScene();
                 camera.attachPostProcess(this);
                 this._engine = this._scene.getEngine();
+                this._scene.postProcesses.push(this);
             }
             else {
                 this._engine = engine;
+                this._engine.postProcesses.push(this);
             }
             this._options = options;
             this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
@@ -46809,9 +46837,23 @@ var BABYLON;
             }
             this._textures.dispose();
         };
+        PostProcess.prototype._rebuild = function () {
+        };
         PostProcess.prototype.dispose = function (camera) {
             camera = camera || this._camera;
             this._disposeTextures();
+            if (this._scene) {
+                var index_1 = this._scene.postProcesses.indexOf(this);
+                if (index_1 !== -1) {
+                    this._scene.postProcesses.splice(index_1, 1);
+                }
+            }
+            else {
+                var index_2 = this._engine.postProcesses.indexOf(this);
+                if (index_2 !== -1) {
+                    this._engine.postProcesses.splice(index_2, 1);
+                }
+            }
             if (!camera) {
                 return;
             }
@@ -47068,6 +47110,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_POISSONSAMPLING) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
@@ -47102,6 +47147,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
@@ -47112,6 +47160,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
@@ -47122,6 +47173,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
@@ -47132,6 +47186,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
@@ -71019,7 +71076,7 @@ var BABYLON;
             });
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(function () {
                 var now = BABYLON.Tools.Now;
-                var dt = 16;
+                var dt = 0;
                 if (_this._lastFrameTime != null) {
                     dt = now - _this._lastFrameTime;
                 }

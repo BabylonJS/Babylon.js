@@ -98,7 +98,7 @@ module BABYLON {
 
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {      
                 let now = Tools.Now;
-                let dt = 16;
+                let dt = 0;
                 if (this._lastFrameTime != null) {
                     dt =  now - this._lastFrameTime;
                 }

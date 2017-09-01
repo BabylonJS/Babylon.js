@@ -154,6 +154,10 @@
         }
 
         public set usePoissonSampling(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_POISSONSAMPLING) {
+                return;
+            }    
+
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
         }
 
@@ -179,6 +183,9 @@
             return this.filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP;
         }
         public set useExponentialShadowMap(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP) {
+                return;
+            }
             this.filter = (value ? ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
@@ -186,6 +193,9 @@
             return this.filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP;
         }
         public set useBlurExponentialShadowMap(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP) {
+                return;
+            }            
             this.filter = (value ? ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
@@ -193,6 +203,9 @@
             return this.filter === ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP;
         }
         public set useCloseExponentialShadowMap(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP) {
+                return;
+            }                   
             this.filter = (value ? ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
@@ -200,6 +213,9 @@
             return this.filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
         }
         public set useBlurCloseExponentialShadowMap(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) {
+                return;
+            }                  
             this.filter = (value ? ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
