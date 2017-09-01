@@ -11,6 +11,8 @@ namespace Max2Babylon
 {
     internal partial class BabylonExporter
     {
+        List<BabylonMaterial> babylonMaterialsToExport;
+
         public void ExportGltf(BabylonScene babylonScene, string outputFile, bool generateBinary)
         {
             RaiseMessage("GLTFExporter | Export outputFile=" + outputFile + " generateBinary=" + generateBinary);
@@ -36,18 +38,6 @@ namespace Max2Babylon
             GLTFScene[] scenes = { scene };
             gltf.scenes = scenes;
 
-            // Materials
-            RaiseMessage("GLTFExporter | Exporting materials");
-            ReportProgressChanged(10);
-            var babylonMaterials = babylonScene.MaterialsList;
-            babylonMaterials.ForEach((babylonMaterial) =>
-            {
-                ExportMaterial(babylonMaterial, gltf);
-                CheckCancelled();
-            });
-            // TODO - Handle multimaterials
-            RaiseMessage(string.Format("GLTFExporter | Total: {0}", gltf.MaterialsList.Count /*+ glTF.MultiMaterialsList.Count*/), Color.Gray, 1);
-
             // Nodes
             List<BabylonNode> babylonNodes = new List<BabylonNode>();
             babylonNodes.AddRange(babylonScene.meshes);
@@ -55,11 +45,12 @@ namespace Max2Babylon
             babylonNodes.AddRange(babylonScene.cameras);
 
             // Root nodes
-            RaiseMessage("GLTFExporter | Exporting root nodes");
+            RaiseMessage("GLTFExporter | Exporting nodes");
             List<BabylonNode> babylonRootNodes = babylonNodes.FindAll(node => node.parentId == null);
             var progressionStep = 80.0f / babylonRootNodes.Count;
-            var progression = 20.0f;
+            var progression = 10.0f;
             ReportProgressChanged((int)progression);
+            babylonMaterialsToExport = new List<BabylonMaterial>();
             babylonRootNodes.ForEach(babylonNode =>
             {
                 exportNodeRec(babylonNode, gltf, babylonScene);
@@ -68,15 +59,26 @@ namespace Max2Babylon
                 CheckCancelled();
             });
 
+            // Materials
+            RaiseMessage("GLTFExporter | Exporting materials");
+            foreach (var babylonMaterial in babylonMaterialsToExport)
+            {
+                ExportMaterial(babylonMaterial, gltf);
+                CheckCancelled();
+            };
+            RaiseMessage(string.Format("GLTFExporter | Nb materials exported: {0}", gltf.MaterialsList.Count), Color.Gray, 1);
+
             // Output
             RaiseMessage("GLTFExporter | Saving to output file");
             // Cast lists to arrays
             gltf.Prepare();
-            var jsonSerializer = JsonSerializer.Create(new JsonSerializerSettings()); // Standard serializer, not the optimized one
+            var jsonSerializer = JsonSerializer.Create(new JsonSerializerSettings());
             var sb = new StringBuilder();
             var sw = new StringWriter(sb, CultureInfo.InvariantCulture);
 
-            using (var jsonWriter = new JsonTextWriter(sw))
+            // Do not use the optimized writer because it's not necessary to truncate values
+            // Use the bounded writer in case some values are infinity ()
+            using (var jsonWriter = new JsonTextWriterBounded(sw))
             {
                 jsonWriter.Formatting = Formatting.None;
                 jsonSerializer.Serialize(jsonWriter, gltf);
@@ -99,22 +101,26 @@ namespace Max2Babylon
             GLTFNode gltfNode = null; 
             if (babylonNode.GetType() == typeof(BabylonMesh))
             {
-                GLTFMesh gltfMesh = ExportMesh(babylonNode as BabylonMesh, gltf, gltfParentNode);
-                if (gltfMesh != null)
-                {
-                    gltfNode = gltfMesh.gltfNode;
-                }
+                GLTFMesh gltfMesh = ExportMesh(babylonNode as BabylonMesh, gltf, gltfParentNode, babylonScene);
+                gltfNode = gltfMesh.gltfNode;
             }
             else if (babylonNode.GetType() == typeof(BabylonCamera))
             {
-                // TODO - Export camera nodes
-                RaiseError($"TODO - Export camera node named {babylonNode.name}", 1);
+                GLTFCamera gltfCamera = ExportCamera(babylonNode as BabylonCamera, gltf, gltfParentNode);
+                gltfNode = gltfCamera.gltfNode;
             }
             else if (babylonNode.GetType() == typeof(BabylonLight))
             {
-                // TODO - Export light nodes as empty nodes (no lights in glTF 2.0 core)
-                RaiseError($"TODO - Export light node named {babylonNode.name}", 1);
-                RaiseWarning($"GLTFExporter.Node | Light named {babylonNode.name} has children but lights are not exported with glTF 2.0 core version. An empty node is used instead.", 1);
+                if (isNodeRelevantToExport(babylonNode, babylonScene))
+                {
+                    // Export light nodes as empty nodes (no lights in glTF 2.0 core)
+                    RaiseWarning($"GLTFExporter | Light named {babylonNode.name} has children but lights are not exported with glTF 2.0 core version. An empty node is used instead.", 1);
+                    gltfNode = ExportLight(babylonNode as BabylonLight, gltf, gltfParentNode);
+                }
+                else
+                {
+                    RaiseMessage($"GLTFExporter | Light named {babylonNode.name} is not relevant to export", 1);
+                }
             }
             else
             {
@@ -140,6 +146,34 @@ namespace Max2Babylon
             babylonNodes.AddRange(babylonScene.cameras);
 
             return babylonNodes.FindAll(node => node.parentId == babylonNode.id);
+        }
+
+        /// <summary>
+        /// Return true if node descendant hierarchy has any Mesh or Camera to export
+        /// </summary>
+        private bool isNodeRelevantToExport(BabylonNode babylonNode, BabylonScene babylonScene)
+        {
+            var type = babylonNode.GetType();
+            if (type == typeof(BabylonMesh) ||
+                type == typeof(BabylonCamera))
+            {
+                return true;
+            }
+
+            // Descandant recursivity
+            List<BabylonNode> babylonDescendants = getDescendants(babylonNode, babylonScene);
+            int indexDescendant = 0;
+            while (indexDescendant < babylonDescendants.Count) // while instead of for to stop as soon as a relevant node has been found
+            {
+                if (isNodeRelevantToExport(babylonDescendants[indexDescendant], babylonScene))
+                {
+                    return true;
+                }
+                indexDescendant++;
+            }
+
+            // No relevant node found in hierarchy
+            return false;
         }
     }
 }
