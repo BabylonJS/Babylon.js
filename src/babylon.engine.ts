@@ -957,10 +957,6 @@
                 scene._rebuildTextures();
             }
 
-            for (var postprocess of this.postProcesses) {
-                postprocess._rebuild();
-            }
-
             // Uniforms
             for (var uniformBuffer of this._uniformBuffers) {
                 uniformBuffer._rebuild();
@@ -1300,27 +1296,25 @@
         }
 
         public _renderLoop(): void {
-            if (this._contextWasLost) {
-                return;
-            }
-
-            var shouldRender = true;
-            if (!this.renderEvenInBackground && this._windowIsBackground) {
-                shouldRender = false;
-            }
-
-            if (shouldRender) {
-                // Start new frame
-                this.beginFrame();
-
-                for (var index = 0; index < this._activeRenderLoops.length; index++) {
-                    var renderFunction = this._activeRenderLoops[index];
-
-                    renderFunction();
+            if (!this._contextWasLost) {
+                var shouldRender = true;
+                if (!this.renderEvenInBackground && this._windowIsBackground) {
+                    shouldRender = false;
                 }
 
-                // Present
-                this.endFrame();
+                if (shouldRender) {
+                    // Start new frame
+                    this.beginFrame();
+
+                    for (var index = 0; index < this._activeRenderLoops.length; index++) {
+                        var renderFunction = this._activeRenderLoops[index];
+
+                        renderFunction();
+                    }
+
+                    // Present
+                    this.endFrame();
+                }  
             }
 
             if (this._activeRenderLoops.length > 0) {
@@ -3705,6 +3699,9 @@
             texture.generateMipMaps = generateMipMaps;
             texture.format = format;
             texture.type = type;
+            if (!this._doNotHandleContextLost) {
+                texture._bufferViewArray = data;
+            }
 
             var textureType = this._getWebGLTextureType(type);
             var internalFormat = this._getInternalFormat(format);
@@ -3728,7 +3725,7 @@
                 generateMipMaps = false;
             }
 
-            // Upload data if needed. The texture won t be ready until then.
+            // Upload data if needed. The texture won't be ready until then.
             if (data) {
                 this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
             }

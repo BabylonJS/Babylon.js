@@ -369,10 +369,6 @@
             this._textures.dispose();
         }
 
-        public _rebuild(): void {
-            
-        }
-
         public dispose(camera?: Camera): void {
             camera = camera || this._camera;            
 
