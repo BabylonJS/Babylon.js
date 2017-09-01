@@ -38,40 +38,23 @@ namespace BabylonExport.Entities
             return new BabylonVector3 { X = a.X * b, Y = a.Y * b, Z = a.Z * b };
         }
 
-        /**
-         * Returns a new Quaternion object, computed from the Vector3 coordinates.
-         */
-        public BabylonQuaternion toQuaternion()
+        public BabylonQuaternion toQuaternionGltf()
         {
-            var result = new BabylonQuaternion();
-
-            var cosxPlusz = Math.Cos((this.X + this.Z) * 0.5);
-            var sinxPlusz = Math.Sin((this.X + this.Z) * 0.5);
-            var coszMinusx = Math.Cos((this.Z - this.X) * 0.5);
-            var sinzMinusx = Math.Sin((this.Z - this.X) * 0.5);
-            var cosy = Math.Cos(this.Y * 0.5);
-            var siny = Math.Sin(this.Y * 0.5);
-
-            result.X = (float)(coszMinusx * siny);
-            result.Y = (float)(-sinzMinusx * siny);
-            result.Z = (float)(sinxPlusz * cosy);
-            result.W = (float)(cosxPlusz * cosy);
-            return result;
+            BabylonQuaternion babylonQuaternion = RotationYawPitchRollToRefBabylon(X, -Y, -Z);
+            // Doing following computation is ugly but works
+            // The goal is to switch from left to right handed coordinate system
+            // Swap X and Y
+            var tmp = babylonQuaternion.X;
+            babylonQuaternion.X = babylonQuaternion.Y;
+            babylonQuaternion.Y = tmp;
+            return babylonQuaternion;
         }
 
-        ///**
-        // * Returns a new Quaternion object, computed from the Vector3 coordinates.
-        // */
-        //public BabylonQuaternion toQuaternion()
-        //{
-        //    return RotationYawPitchRollToRef(Y,X,Z);
-        //}
-
-
         /**
+         * (Copy pasted from babylon)
          * Sets the passed quaternion "result" from the passed float Euler angles (y, x, z).  
          */
-        public BabylonQuaternion RotationYawPitchRollToRef(float yaw, float pitch, float roll)
+        private BabylonQuaternion RotationYawPitchRollToRefBabylon(float yaw, float pitch, float roll)
         {
             // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
             var halfRoll = roll * 0.5;
@@ -92,5 +75,5 @@ namespace BabylonExport.Entities
             result.W = (float)((cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll));
             return result;
         }
-}
+    }
 }
