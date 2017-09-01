@@ -567,6 +567,10 @@
             if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
                 this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
             }
+
+            if (this._postProcessManager) {
+                this._postProcessManager._rebuild();
+            }
         }
     }
 }
