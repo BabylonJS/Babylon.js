@@ -44,6 +44,9 @@
     <Compile Include="GLTFAccessor.cs" />
     <Compile Include="GLTFBufferView.cs" />
     <Compile Include="GLTFBuffer.cs" />
+    <Compile Include="GLTFCameraPerspective.cs" />
+    <Compile Include="GLTFCameraOrthographic.cs" />
+    <Compile Include="GLTFCamera.cs" />
     <Compile Include="GLTFSampler.cs" />
     <Compile Include="GLTFIndexedChildRootProperty.cs" />
     <Compile Include="GLTFImage.cs" />

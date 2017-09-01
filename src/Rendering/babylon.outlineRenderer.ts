@@ -38,16 +38,14 @@
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 var alphaTexture = material.getAlphaTestTexture();
-                if (alphaTexture) {
-                    this._effect.setTexture("diffuseSampler", alphaTexture);
-                    this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
-                }
+                this._effect.setTexture("diffuseSampler", alphaTexture);
+                this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
             }
 
             engine.setZOffset(-this.zOffset);
 
             mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => { this._effect.setMatrix("world", world) });
+                (isInstance, world) => { this._effect.setMatrix("world", world)});
 
             engine.setZOffset(0);
         }
