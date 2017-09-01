@@ -40,7 +40,7 @@ module BABYLON.GLTF2 {
             mode = mode === undefined ? ETextureWrapMode.REPEAT : mode;
 
             switch (mode) {
-                case ETextureWrapMode.CLAMP_TO_EDGE: Texture.CLAMP_ADDRESSMODE;
+                case ETextureWrapMode.CLAMP_TO_EDGE: return Texture.CLAMP_ADDRESSMODE;
                 case ETextureWrapMode.MIRRORED_REPEAT: return Texture.MIRROR_ADDRESSMODE;
                 case ETextureWrapMode.REPEAT: return Texture.WRAP_ADDRESSMODE;
                 default:
