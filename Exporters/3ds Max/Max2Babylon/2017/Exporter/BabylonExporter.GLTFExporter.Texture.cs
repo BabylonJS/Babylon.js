@@ -12,13 +12,13 @@ namespace Max2Babylon
                 return null;
             }
 
-            RaiseMessage("GLTFExporter.Texture | ExportTexture babylonTexture.name=" + babylonTexture.name, 1);
+            RaiseMessage("GLTFExporter.Texture | Export texture named: " + babylonTexture.name, 1);
 
             // --------------------------
             // -------- Sampler ---------
             // --------------------------
 
-            RaiseMessage("GLTFExporter.Texture | create sampler", 1);
+            RaiseMessage("GLTFExporter.Texture | create sampler", 2);
             GLTFSampler gltfSampler = new GLTFSampler();
             gltfSampler.index = gltf.SamplersList.Count;
             gltf.SamplersList.Add(gltfSampler);
@@ -39,7 +39,7 @@ namespace Max2Babylon
             // --------- Image ----------
             // --------------------------
 
-            RaiseMessage("GLTFExporter.Texture | create image", 1);
+            RaiseMessage("GLTFExporter.Texture | create image", 2);
             GLTFImage gltfImage = new GLTFImage
             {
                 uri = babylonTexture.name
@@ -53,7 +53,7 @@ namespace Max2Babylon
             // -------- Texture ---------
             // --------------------------
 
-            RaiseMessage("GLTFExporter.Texture | create texture", 1);
+            RaiseMessage("GLTFExporter.Texture | create texture", 2);
             var gltfTexture = new GLTFTexture
             {
                 name = babylonTexture.name,

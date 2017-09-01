@@ -10,13 +10,16 @@ namespace GLTFExport.Entities
         public GLTFAsset asset { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public int scene { get; set; }
+        public int? scene { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public GLTFScene[] scenes { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public GLTFNode[] nodes { get; set; }
+
+        [DataMember(EmitDefaultValue = false)]
+        public GLTFCamera[] cameras { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public GLTFMesh[] meshes { get; set; }
@@ -45,6 +48,7 @@ namespace GLTFExport.Entities
         public string OutputPath { get; private set; }
 
         public List<GLTFNode> NodesList { get; private set; }
+        public List<GLTFCamera> CamerasList { get; private set; }
         public List<GLTFBuffer> BuffersList { get; private set; }
         public List<GLTFBufferView> BufferViewsList { get; private set; }
         public List<GLTFAccessor> AccessorsList { get; private set; }
@@ -59,6 +63,7 @@ namespace GLTFExport.Entities
             OutputPath = outputPath;
 
             NodesList = new List<GLTFNode>();
+            CamerasList = new List<GLTFCamera>();
             BuffersList = new List<GLTFBuffer>();
             BufferViewsList = new List<GLTFBufferView>();
             AccessorsList = new List<GLTFAccessor>();
@@ -78,6 +83,10 @@ namespace GLTFExport.Entities
             {
                 nodes = NodesList.ToArray();
                 NodesList.ForEach(node => node.Prepare());
+            }
+            if (CamerasList.Count > 0)
+            {
+                cameras = CamerasList.ToArray();
             }
             if (BuffersList.Count > 0)
             {
