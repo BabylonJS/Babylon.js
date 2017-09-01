@@ -8649,14 +8649,11 @@ var BABYLON;
         Engine.prototype._getVRDisplays = function () {
             var _this = this;
             var getWebVRDevices = function (devices) {
-                var size = devices.length;
-                var i = 0;
                 _this._vrDisplays = devices.filter(function (device) {
-                    return devices[i] instanceof VRDisplay;
+                    return device instanceof VRDisplay;
                 });
                 return _this._vrDisplays;
             };
-            //using a key due to typescript
             if (navigator.getVRDisplays) {
                 this.vrDisplaysPromise = navigator.getVRDisplays().then(getWebVRDevices);
             }
@@ -47113,6 +47110,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_POISSONSAMPLING) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
@@ -47147,6 +47147,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
@@ -47157,6 +47160,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
@@ -47167,6 +47173,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
@@ -47177,6 +47186,9 @@ var BABYLON;
                 return this.filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
             },
             set: function (value) {
+                if (!value && this.filter !== ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) {
+                    return;
+                }
                 this.filter = (value ? ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
             },
             enumerable: true,
