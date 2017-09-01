@@ -585,7 +585,7 @@
         private _onFocus: () => void;
         private _onFullscreenChange: () => void;
         private _onPointerLockChange: () => void;
-        
+
         private _onVRDisplayPointerRestricted: () => void;
         private _onVRDisplayPointerUnrestricted: () => void;
 
@@ -828,26 +828,26 @@
 
                     // Rebuild buffers
                     this._rebuildBuffers();
-                    
+
                     // Cache
                     this.wipeCaches(true);
 
                     Tools.Warn("WebGL context successfully restored.");
-                
+
                     this._contextWasLost = false;
                 };
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                 canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
             }
-            
+
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
             this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
 
             this._isStencilEnable = options.stencil;
-            this._initGLContext();            
+            this._initGLContext();
 
             if (canvas) {
                 // Fullscreen
@@ -903,7 +903,7 @@
                 }
 
                 window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
-                window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);  
+                window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
             }
 
             if (options.audioEngine && AudioEngine && !Engine.audioEngine) {
@@ -967,7 +967,7 @@
             }
         }
 
-        private _initGLContext(): void {            
+        private _initGLContext(): void {
             // Caps
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
@@ -1581,17 +1581,14 @@
 
         private _getVRDisplays() {
             var getWebVRDevices = (devices: Array<any>) => {
-                var size = devices.length;
-                var i = 0;
 
                 this._vrDisplays = devices.filter(function (device) {
-                    return devices[i] instanceof VRDisplay;
+                    return device instanceof VRDisplay;
                 });
 
                 return this._vrDisplays;
             }
 
-            //using a key due to typescript
             if (navigator.getVRDisplays) {
                 this.vrDisplaysPromise = navigator.getVRDisplays().then(getWebVRDevices);
             }
@@ -2790,10 +2787,10 @@
                     if (buffer instanceof HTMLImageElement) {
                         onload(buffer);
                     } else {
-                        Tools.LoadImage(url, onload, onerror, scene ? scene.database: null);
+                        Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
                     }
                 else if (buffer instanceof Array || typeof buffer === "string")
-                    Tools.LoadImage(buffer, onload, onerror, scene ? scene.database: null);
+                    Tools.LoadImage(buffer, onload, onerror, scene ? scene.database : null);
                 else
                     onload(buffer);
             }
@@ -2900,7 +2897,7 @@
             texture.samplingMode = samplingMode;
             texture.invertY = invertY;
             texture._compression = compression;
-            
+
             if (!this._doNotHandleContextLost) {
                 texture._bufferView = data;
             }
@@ -3047,7 +3044,7 @@
                 fullOptions.generateMipMaps = options.generateMipMaps;
                 fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-                fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type ;
+                fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
                 fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
             } else {
                 fullOptions.generateMipMaps = <boolean>options;
@@ -4304,12 +4301,12 @@
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
             window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
-            window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);              
+            window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
             this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
 
             if (!this._doNotHandleContextLost) {
                 this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
-                this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);            
+                this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
             }
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
