@@ -996,7 +996,7 @@ module BABYLON.GLTF2 {
             if (material.normalTexture) {
                 babylonMaterial.bumpTexture = this.loadTexture(material.normalTexture);
                 babylonMaterial.invertNormalMapX = true;
-                babylonMaterial.invertNormalMapY = true;
+                babylonMaterial.invertNormalMapY = false;
                 if (material.normalTexture.scale !== undefined) {
                     babylonMaterial.bumpTexture.level = material.normalTexture.scale;
                 }

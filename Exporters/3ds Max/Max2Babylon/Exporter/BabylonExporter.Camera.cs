@@ -56,15 +56,28 @@ namespace Max2Babylon
             babylonCamera.applyGravity = cameraNode.MaxNode.GetBoolProperty("babylonjs_applygravity");
             babylonCamera.ellipsoid = cameraNode.MaxNode.GetVector3Property("babylonjs_ellipsoid");
 
-            // Position
-            var wm = cameraNode.GetLocalTM(0);
+            // Position / rotation
+            var localTM = cameraNode.GetObjectTM(0);
             if (cameraNode.NodeParent != null)
             {
                 var parentWorld = cameraNode.NodeParent.GetObjectTM(0);
-                wm.MultiplyBy(parentWorld.Inverse);
+                localTM.MultiplyBy(parentWorld.Inverse);
             }
-            var position = wm.Translation;
-            babylonCamera.position = new [] { position.X, position.Y, position.Z };
+
+            var position = localTM.Translation;
+            var rotation = localTM.Rotation;
+            var exportQuaternions = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportquaternions");
+
+            babylonCamera.position = new[] { position.X, position.Y, position.Z };
+
+            if (exportQuaternions)
+            {
+                babylonCamera.rotationQuaternion = new[] { rotation.X, rotation.Y, rotation.Z, -rotation.W };
+            }
+            else
+            {
+                babylonCamera.rotation = QuaternionToEulerAngles(rotation);
+            }
 
             // Target
             var target = gameCamera.CameraTarget;
@@ -74,7 +87,7 @@ namespace Max2Babylon
             }
             else
             {
-                var dir = wm.GetRow(3);
+                var dir = localTM.GetRow(3);
                 babylonCamera.target = new [] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
             }
 

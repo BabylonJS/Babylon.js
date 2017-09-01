@@ -15,7 +15,7 @@ module BABYLON.GUI {
         public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         private _lastMeasuredFont: string;
         protected _fontOffset: {ascent: number, height: number, descent: number};
-        private _color = "white";
+        private _color = "";
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
