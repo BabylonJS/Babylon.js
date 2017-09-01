@@ -10,7 +10,7 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private GLTFMesh ExportMesh(BabylonMesh babylonMesh, GLTF gltf, GLTFNode gltfParentNode, BabylonScene babylonScene)
+        private GLTFNode ExportMesh(BabylonMesh babylonMesh, GLTF gltf, GLTFNode gltfParentNode, BabylonScene babylonScene)
         {
             RaiseMessage("GLTFExporter.Mesh | Export mesh named: " + babylonMesh.name, 1);
 
@@ -41,6 +41,9 @@ namespace Max2Babylon
 
             // Transform
             gltfNode.translation = babylonMesh.position;
+            // TODO - Choose between this method and the extra root node
+            // Switch from left to right handed coordinate system
+            //gltfNode.translation[0] *= -1;
             if (babylonMesh.rotationQuaternion != null)
             {
                 gltfNode.rotation = babylonMesh.rotationQuaternion;
@@ -63,16 +66,20 @@ namespace Max2Babylon
             // --- Mesh from babylon ----
             // --------------------------
 
+            if (babylonMesh.positions == null)
+            {
+                RaiseMessage("GLTFExporter.Mesh | Mesh is a dummy", 2);
+                return gltfNode;
+            }
+
             RaiseMessage("GLTFExporter.Mesh | Mesh from babylon", 2);
             // Retreive general data from babylon mesh
             int nbVertices = babylonMesh.positions.Length / 3;
-            bool isMultimaterial = babylonMesh.subMeshes.Length > 1;
             bool hasUV = babylonMesh.uvs != null && babylonMesh.uvs.Length > 0;
             bool hasUV2 = babylonMesh.uvs2 != null && babylonMesh.uvs2.Length > 0;
             bool hasColor = babylonMesh.colors != null && babylonMesh.colors.Length > 0;
 
             RaiseMessage("GLTFExporter.Mesh | nbVertices=" + nbVertices, 3);
-            RaiseMessage("GLTFExporter.Mesh | isMultimaterial=" + isMultimaterial, 3);
             RaiseMessage("GLTFExporter.Mesh | hasUV=" + hasUV, 3);
             RaiseMessage("GLTFExporter.Mesh | hasUV2=" + hasUV2, 3);
             RaiseMessage("GLTFExporter.Mesh | hasColor=" + hasColor, 3);
@@ -83,6 +90,8 @@ namespace Max2Babylon
             {
                 GLTFGlobalVertex globalVertex = new GLTFGlobalVertex();
                 globalVertex.Position = createIPoint3(babylonMesh.positions, indexVertex);
+                // Switch from left to right handed coordinate system
+                //globalVertex.Position.X *= -1;
                 globalVertex.Normal = createIPoint3(babylonMesh.normals, indexVertex);
                 if (hasUV)
                 {
@@ -111,12 +120,12 @@ namespace Max2Babylon
             babylonIndices = babylonMesh.indices.ToList().ConvertAll(new Converter<int, ushort>(n => (ushort)n));
             // For triangle primitives in gltf, the front face has a counter-clockwise (CCW) winding order
             // Swap face side
-            for (int i = 0; i < babylonIndices.Count; i += 3)
-            {
-                var tmp = babylonIndices[i];
-                babylonIndices[i] = babylonIndices[i + 2];
-                babylonIndices[i + 2] = tmp;
-            }
+            //for (int i = 0; i < babylonIndices.Count; i += 3)
+            //{
+            //    var tmp = babylonIndices[i];
+            //    babylonIndices[i] = babylonIndices[i + 2];
+            //    babylonIndices[i + 2] = tmp;
+            //}
 
 
             // --------------------------
@@ -341,14 +350,16 @@ namespace Max2Babylon
                 {
                     // Retreive the babylon material
                     var babylonMaterialId = babylonMesh.materialId;
-                    if (isMultimaterial)
+                    var babylonMaterials = new List<BabylonMaterial>(babylonScene.materials);
+                    var babylonMaterial = babylonMaterials.Find(_babylonMaterial => _babylonMaterial.id == babylonMaterialId);
+                    if (babylonMaterial == null)
                     {
+                        // It's a multi material
                         var babylonMultiMaterials = new List<BabylonMultiMaterial>(babylonScene.multiMaterials);
                         var babylonMultiMaterial = babylonMultiMaterials.Find(_babylonMultiMaterial => _babylonMultiMaterial.id == babylonMesh.materialId);
                         babylonMaterialId = babylonMultiMaterial.materials[babylonSubMesh.materialIndex];
+                        babylonMaterial = babylonMaterials.Find(_babylonMaterial => _babylonMaterial.id == babylonMaterialId);
                     }
-                    var babylonMaterials = new List<BabylonMaterial>(babylonScene.materials);
-                    var babylonMaterial = babylonMaterials.Find(_babylonMaterial => _babylonMaterial.id == babylonMaterialId);
 
                     // Update primitive material index
                     var indexMaterial = babylonMaterialsToExport.FindIndex(_babylonMaterial => _babylonMaterial == babylonMaterial);
@@ -466,7 +477,7 @@ namespace Max2Babylon
                 });
             }
 
-            return gltfMesh;
+            return gltfNode;
         }
 
         private IPoint2 createIPoint2(float[] array, int index)

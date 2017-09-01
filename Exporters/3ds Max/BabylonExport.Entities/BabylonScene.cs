@@ -46,11 +46,11 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public float[] physicsGravity { get; set; }
-
-        [DataMember]
+        
+        [DataMember(EmitDefaultValue = false)]
         public BabylonCamera[] cameras { get; set; }
-
-        [DataMember]
+        
+        [DataMember(EmitDefaultValue = false)]
         public string activeCameraID { get; set; }
 
         [DataMember]
@@ -144,20 +144,6 @@ namespace BabylonExport.Entities
 
                 // Default camera init gives infinit values
                 // Indeed, float.MaxValue - float.MinValue always leads to infinity
-                // Is MaxVector and MinVector update missing?
-                MaxVector = new BabylonVector3
-                {
-                    X = 1,
-                    Y = 1,
-                    Z = 1
-                };
-                MinVector = new BabylonVector3
-                {
-                    X = -1,
-                    Y = -1,
-                    Z = -1
-                };
-
                 var distanceVector = MaxVector - MinVector;
                 var midPoint = MinVector + distanceVector / 2;
                 camera.target = midPoint.ToArray();
