@@ -37,6 +37,8 @@ namespace Max2Babylon
 
             // Transform
             gltfNode.translation = babylonCamera.position;
+            // Switch from left to right handed coordinate system
+            //gltfNode.translation[0] *= -1;
             if (babylonCamera.rotationQuaternion != null)
             {
                 gltfNode.rotation = babylonCamera.rotationQuaternion;

@@ -40,7 +40,7 @@ namespace BabylonExport.Entities
 
         public BabylonQuaternion toQuaternionGltf()
         {
-            BabylonQuaternion babylonQuaternion = RotationYawPitchRollToRefBabylon(X, Y, Z);
+            BabylonQuaternion babylonQuaternion = RotationYawPitchRollToRefBabylon(X, -Y, -Z);
             // Doing following computation is ugly but works
             // The goal is to switch from left to right handed coordinate system
             // Swap X and Y
