@@ -378,7 +378,9 @@ module BABYLON {
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
-
+            this.inertialPanningX = 0;
+            this.inertialPanningY = 0;
+        
             return true;
         }             
 
@@ -405,6 +407,8 @@ module BABYLON {
                 this.inertialAlphaOffset = 0;
                 this.inertialBetaOffset = 0;
                 this.inertialRadiusOffset = 0;
+                this.inertialPanningX = 0;
+                this.inertialPanningY = 0;
             };
         }
 

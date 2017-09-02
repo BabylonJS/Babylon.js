@@ -5291,7 +5291,7 @@ var BABYLON;
             if (mask === void 0) { mask = -1; }
             for (var _i = 0, _a = this._observers; _i < _a.length; _i++) {
                 var obs = _a[_i];
-                if (obs.mask & mask && obs.mask === mask) {
+                if (obs.mask & mask || obs.mask === mask) {
                     return true;
                 }
             }
@@ -34776,15 +34776,19 @@ var BABYLON;
             this.keysDown = [40];
             this.keysLeft = [37];
             this.keysRight = [39];
+            this.keysReset = [111];
+            this.panningSensibility = 50.0;
         }
         ArcRotateCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             element.tabIndex = 1;
             this._onKeyDown = function (evt) {
+                _this._ctrlPressed = evt.ctrlKey;
                 if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     _this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    _this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysReset.indexOf(evt.keyCode) !== -1) {
                     var index = _this._keys.indexOf(evt.keyCode);
                     if (index === -1) {
                         _this._keys.push(evt.keyCode);
@@ -34800,7 +34804,8 @@ var BABYLON;
                 if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     _this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    _this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysReset.indexOf(evt.keyCode) !== -1) {
                     var index = _this._keys.indexOf(evt.keyCode);
                     if (index >= 0) {
                         _this._keys.splice(index, 1);
@@ -34851,16 +34856,39 @@ var BABYLON;
                 for (var index = 0; index < this._keys.length; index++) {
                     var keyCode = this._keys[index];
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        camera.inertialAlphaOffset -= 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningX -= 1 / this.panningSensibility;
+                        }
+                        else {
+                            camera.inertialAlphaOffset -= 0.01;
+                        }
                     }
                     else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        camera.inertialBetaOffset -= 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningY += 1 / this.panningSensibility;
+                        }
+                        else {
+                            camera.inertialBetaOffset -= 0.01;
+                        }
                     }
                     else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        camera.inertialAlphaOffset += 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningX += 1 / this.panningSensibility;
+                        }
+                        else {
+                            camera.inertialAlphaOffset += 0.01;
+                        }
                     }
                     else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        camera.inertialBetaOffset += 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningY -= 1 / this.panningSensibility;
+                        }
+                        else {
+                            camera.inertialBetaOffset += 0.01;
+                        }
+                    }
+                    else if (this.keysReset.indexOf(keyCode) !== -1) {
+                        camera.restoreState();
                     }
                 }
             }
@@ -34883,6 +34911,12 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraKeyboardMoveInput.prototype, "keysRight", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraKeyboardMoveInput.prototype, "keysReset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraKeyboardMoveInput.prototype, "panningSensibility", void 0);
         return ArcRotateCameraKeyboardMoveInput;
     }());
     BABYLON.ArcRotateCameraKeyboardMoveInput = ArcRotateCameraKeyboardMoveInput;
@@ -34993,6 +35027,9 @@ var BABYLON;
                         element.focus();
                     }
                 }
+                else if (p.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
+                    _this.camera.restoreState();
+                }
                 else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
                     try {
                         evt.srcElement.releasePointerCapture(evt.pointerId);
@@ -35020,10 +35057,8 @@ var BABYLON;
                         if (_this.panningSensibility !== 0 &&
                             ((evt.ctrlKey && _this.camera._useCtrlForPanning) ||
                                 (!_this.camera._useCtrlForPanning && _this._isPanClick))) {
-                            _this.camera
-                                .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
-                            _this.camera
-                                .inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
+                            _this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
+                            _this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
                         }
                         else {
                             var offsetX = evt.clientX - cacheSoloPointer.x;
@@ -35058,7 +35093,7 @@ var BABYLON;
                     }
                 }
             };
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE | BABYLON.PointerEventTypes._POINTERDOUBLETAP);
             this._onContextMenu = function (evt) {
                 evt.preventDefault();
             };
@@ -35523,6 +35558,8 @@ var BABYLON;
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
+            this.inertialPanningX = 0;
+            this.inertialPanningY = 0;
             return true;
         };
         // Synchronized
@@ -35547,6 +35584,8 @@ var BABYLON;
                 _this.inertialAlphaOffset = 0;
                 _this.inertialBetaOffset = 0;
                 _this.inertialRadiusOffset = 0;
+                _this.inertialPanningX = 0;
+                _this.inertialPanningY = 0;
             };
         };
         ArcRotateCamera.prototype.detachControl = function (element) {
