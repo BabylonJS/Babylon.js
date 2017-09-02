@@ -613,6 +613,8 @@
         private _lockstepMaxSteps: number = 4;
 
         // Lost context
+        public onContextLostObservable = new Observable<Engine>();
+        public onContextRestoredObservable = new Observable<Engine>();
         private _onContextLost: (evt: Event) => void;
         private _onContextRestored: (evt: Event) => void;
         private _contextWasLost = false;
@@ -814,6 +816,8 @@
                     evt.preventDefault();
                     this._contextWasLost = true;
                     Tools.Warn("WebGL context lost.");
+
+                    this.onContextLostObservable.notifyObservers(this);
                 };
 
                 this._onContextRestored = (evt: Event) => {
@@ -833,6 +837,8 @@
                     this.wipeCaches(true);
 
                     Tools.Warn("WebGL context successfully restored.");
+
+                    this.onContextRestoredObservable.notifyObservers(this);
 
                     this._contextWasLost = false;
                 };

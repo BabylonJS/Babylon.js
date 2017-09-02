@@ -7474,6 +7474,9 @@ var BABYLON;
             // Deterministic lockstepMaxSteps
             this._deterministicLockstep = false;
             this._lockstepMaxSteps = 4;
+            // Lost context
+            this.onContextLostObservable = new BABYLON.Observable();
+            this.onContextRestoredObservable = new BABYLON.Observable();
             this._contextWasLost = false;
             this._doNotHandleContextLost = false;
             // FPS
@@ -7609,6 +7612,7 @@ var BABYLON;
                     evt.preventDefault();
                     _this._contextWasLost = true;
                     BABYLON.Tools.Warn("WebGL context lost.");
+                    _this.onContextLostObservable.notifyObservers(_this);
                 };
                 this._onContextRestored = function (evt) {
                     // Rebuild gl context
@@ -7622,6 +7626,7 @@ var BABYLON;
                     // Cache
                     _this.wipeCaches(true);
                     BABYLON.Tools.Warn("WebGL context successfully restored.");
+                    _this.onContextRestoredObservable.notifyObservers(_this);
                     _this._contextWasLost = false;
                 };
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
@@ -12371,6 +12376,9 @@ var BABYLON;
         AbstractMesh.prototype._rebuild = function () {
             if (this._occlusionQuery) {
                 this._occlusionQuery = null;
+            }
+            if (this._edgesRenderer) {
+                this._edgesRenderer._rebuild();
             }
             if (!this.subMeshes) {
                 return;
@@ -46567,6 +46575,9 @@ var BABYLON;
             this._setTextureReady = this.__setTextureReady.bind(this);
             this.video.addEventListener("playing", this._setTextureReady);
         };
+        VideoTexture.prototype._rebuild = function () {
+            this.update();
+        };
         VideoTexture.prototype.update = function () {
             var now = BABYLON.Tools.Now;
             if (now - this._lastUpdate < 15 || this.video.readyState !== this.video.HAVE_ENOUGH_DATA) {
@@ -50352,6 +50363,11 @@ var BABYLON;
             vertices.push(-1, -1);
             vertices.push(1, -1);
             _this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = new BABYLON.VertexBuffer(engine, vertices, BABYLON.VertexBuffer.PositionKind, false, false, 2);
+            _this._createIndexBuffer();
+            return _this;
+        }
+        ProceduralTexture.prototype._createIndexBuffer = function () {
+            var engine = this.getScene().getEngine();
             // Indices
             var indices = [];
             indices.push(0);
@@ -50360,9 +50376,15 @@ var BABYLON;
             indices.push(0);
             indices.push(2);
             indices.push(3);
-            _this._indexBuffer = engine.createIndexBuffer(indices);
-            return _this;
-        }
+            this._indexBuffer = engine.createIndexBuffer(indices);
+        };
+        ProceduralTexture.prototype._rebuild = function () {
+            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind]._rebuild();
+            this._createIndexBuffer();
+            if (this.refreshRate === BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
+                this.refreshRate = BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+            }
+        };
         ProceduralTexture.prototype.reset = function () {
             if (this._effect === undefined) {
                 return;
@@ -68003,6 +68025,19 @@ var BABYLON;
             });
             this._lineShader.disableDepthWrite = true;
             this._lineShader.backFaceCulling = false;
+        };
+        EdgesRenderer.prototype._rebuild = function () {
+            var buffer = this._buffers[BABYLON.VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer._rebuild();
+            }
+            buffer = this._buffers[BABYLON.VertexBuffer.NormalKind];
+            if (buffer) {
+                buffer._rebuild();
+            }
+            var scene = this._source.getScene();
+            var engine = scene.getEngine();
+            this._ib = engine.createIndexBuffer(this._linesIndices);
         };
         EdgesRenderer.prototype.dispose = function () {
             var buffer = this._buffers[BABYLON.VertexBuffer.PositionKind];

@@ -7474,6 +7474,9 @@ var BABYLON;
             // Deterministic lockstepMaxSteps
             this._deterministicLockstep = false;
             this._lockstepMaxSteps = 4;
+            // Lost context
+            this.onContextLostObservable = new BABYLON.Observable();
+            this.onContextRestoredObservable = new BABYLON.Observable();
             this._contextWasLost = false;
             this._doNotHandleContextLost = false;
             // FPS
@@ -7609,6 +7612,7 @@ var BABYLON;
                     evt.preventDefault();
                     _this._contextWasLost = true;
                     BABYLON.Tools.Warn("WebGL context lost.");
+                    _this.onContextLostObservable.notifyObservers(_this);
                 };
                 this._onContextRestored = function (evt) {
                     // Rebuild gl context
@@ -7622,6 +7626,7 @@ var BABYLON;
                     // Cache
                     _this.wipeCaches(true);
                     BABYLON.Tools.Warn("WebGL context successfully restored.");
+                    _this.onContextRestoredObservable.notifyObservers(_this);
                     _this._contextWasLost = false;
                 };
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
@@ -12371,6 +12376,9 @@ var BABYLON;
         AbstractMesh.prototype._rebuild = function () {
             if (this._occlusionQuery) {
                 this._occlusionQuery = null;
+            }
+            if (this._edgesRenderer) {
+                this._edgesRenderer._rebuild();
             }
             if (!this.subMeshes) {
                 return;
@@ -34154,6 +34162,9 @@ var BABYLON;
             }
             this._setTextureReady = this.__setTextureReady.bind(this);
             this.video.addEventListener("playing", this._setTextureReady);
+        };
+        VideoTexture.prototype._rebuild = function () {
+            this.update();
         };
         VideoTexture.prototype.update = function () {
             var now = BABYLON.Tools.Now;
