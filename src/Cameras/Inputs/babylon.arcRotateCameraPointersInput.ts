@@ -51,7 +51,6 @@ module BABYLON {
                         //Nothing to do with the error. Execution will continue.
                     }
 
-
                     // Manage panning with pan button click
                     this._isPanClick = evt.button === this.camera._panningMouseButton;
 
@@ -67,7 +66,11 @@ module BABYLON {
                         evt.preventDefault();
                         element.focus();
                     }
-                } else if (p.type === PointerEventTypes.POINTERUP) {
+                } 
+                else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
+                    this.camera.restoreState();
+                }
+                else if (p.type === PointerEventTypes.POINTERUP) {
                     try {
                         evt.srcElement.releasePointerCapture(evt.pointerId);
                     } catch (e) {
@@ -96,10 +99,8 @@ module BABYLON {
                         if (this.panningSensibility !== 0 &&
                             ((evt.ctrlKey && this.camera._useCtrlForPanning) ||
                                 (!this.camera._useCtrlForPanning && this._isPanClick))) {
-                            this.camera
-                                .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
-                            this.camera
-                                .inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
+                            this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
+                            this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
                         } else {
                             var offsetX = evt.clientX - cacheSoloPointer.x;
                             var offsetY = evt.clientY - cacheSoloPointer.y;
@@ -138,7 +139,7 @@ module BABYLON {
                 }
             }
 
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE | PointerEventTypes._POINTERDOUBLETAP);
 
             this._onContextMenu = evt => {
                 evt.preventDefault();
