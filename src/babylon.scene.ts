@@ -3474,6 +3474,10 @@
             // Post-processes
             this.postProcessManager.dispose();
 
+            if (this._postProcessRenderPipelineManager) {
+                this._postProcessRenderPipelineManager.dispose();
+            }
+
             // Physics
             if (this._physicsEngine) {
                 this.disablePhysicsEngine();
@@ -3857,6 +3861,18 @@
             for (var highlightLayer of this.highlightLayers) {
                 highlightLayer._rebuild();
             }
+
+            if (this._boundingBoxRenderer) {
+                this._boundingBoxRenderer._rebuild();
+            }
+
+            for (var system of this.particleSystems) {
+                system.rebuild();
+            }
+
+            if (this._postProcessRenderPipelineManager) {
+                this._postProcessRenderPipelineManager._rebuild();
+            }            
         }
 
         public _rebuildTextures(): void {
