@@ -154,6 +154,32 @@
             this.position = position;
         }
 
+        private _storedFov: number;
+        private _stateStored: boolean;
+
+        /**
+         * Store current camera state (fov, position, etc..)
+         */
+        public storeState(): Camera {
+            this._stateStored = true;
+            this._storedFov = this.fov;
+
+            return this;
+        }
+
+        /**
+         * Restored camera state. You must call storeState() first
+         */
+        public restoreState(): boolean {
+            if (!this._stateStored) {
+                return false;
+            }
+
+            this.fov = this._storedFov;
+
+            return true;
+        }
+
         public getClassName(): string {
             return "Camera";
         }

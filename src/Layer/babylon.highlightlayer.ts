@@ -285,16 +285,7 @@ module BABYLON {
             var vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
             this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
 
-            // Indices
-            var indices = [];
-            indices.push(0);
-            indices.push(1);
-            indices.push(2);
-            indices.push(0);
-            indices.push(2);
-            indices.push(3);
-
-            this._indexBuffer = engine.createIndexBuffer(indices);
+            this._createIndexBuffer();
 
             // Effect
             this._glowMapMergeEffect = engine.createEffect("glowMapMerge",
@@ -308,6 +299,28 @@ module BABYLON {
             // Create Textures and post processes
             this.createTextureAndPostProcesses();
         }
+       
+        private _createIndexBuffer(): void {
+            var engine = this._scene.getEngine();
+
+            // Indices
+            var indices = [];
+            indices.push(0);
+            indices.push(1);
+            indices.push(2);
+
+            indices.push(0);
+            indices.push(2);
+            indices.push(3);
+
+            this._indexBuffer = engine.createIndexBuffer(indices);
+        }
+
+        public _rebuild(): void {
+            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+
+            this._createIndexBuffer();
+        }        
 
         /**
          * Creates the render target textures and post processes used in the highlight layer.
