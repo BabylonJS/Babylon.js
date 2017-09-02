@@ -5291,7 +5291,7 @@ var BABYLON;
             if (mask === void 0) { mask = -1; }
             for (var _i = 0, _a = this._observers; _i < _a.length; _i++) {
                 var obs = _a[_i];
-                if (obs.mask & mask && obs.mask === mask) {
+                if (obs.mask & mask || obs.mask === mask) {
                     return true;
                 }
             }
@@ -7474,6 +7474,9 @@ var BABYLON;
             // Deterministic lockstepMaxSteps
             this._deterministicLockstep = false;
             this._lockstepMaxSteps = 4;
+            // Lost context
+            this.onContextLostObservable = new BABYLON.Observable();
+            this.onContextRestoredObservable = new BABYLON.Observable();
             this._contextWasLost = false;
             this._doNotHandleContextLost = false;
             // FPS
@@ -7609,6 +7612,7 @@ var BABYLON;
                     evt.preventDefault();
                     _this._contextWasLost = true;
                     BABYLON.Tools.Warn("WebGL context lost.");
+                    _this.onContextLostObservable.notifyObservers(_this);
                 };
                 this._onContextRestored = function (evt) {
                     // Rebuild gl context
@@ -7622,6 +7626,7 @@ var BABYLON;
                     // Cache
                     _this.wipeCaches(true);
                     BABYLON.Tools.Warn("WebGL context successfully restored.");
+                    _this.onContextRestoredObservable.notifyObservers(_this);
                     _this._contextWasLost = false;
                 };
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
@@ -12371,6 +12376,9 @@ var BABYLON;
         AbstractMesh.prototype._rebuild = function () {
             if (this._occlusionQuery) {
                 this._occlusionQuery = null;
+            }
+            if (this._edgesRenderer) {
+                this._edgesRenderer._rebuild();
             }
             if (!this.subMeshes) {
                 return;
@@ -34776,15 +34784,19 @@ var BABYLON;
             this.keysDown = [40];
             this.keysLeft = [37];
             this.keysRight = [39];
+            this.keysReset = [111];
+            this.panningSensibility = 50.0;
         }
         ArcRotateCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             element.tabIndex = 1;
             this._onKeyDown = function (evt) {
+                _this._ctrlPressed = evt.ctrlKey;
                 if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     _this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    _this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysReset.indexOf(evt.keyCode) !== -1) {
                     var index = _this._keys.indexOf(evt.keyCode);
                     if (index === -1) {
                         _this._keys.push(evt.keyCode);
@@ -34800,7 +34812,8 @@ var BABYLON;
                 if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     _this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    _this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysReset.indexOf(evt.keyCode) !== -1) {
                     var index = _this._keys.indexOf(evt.keyCode);
                     if (index >= 0) {
                         _this._keys.splice(index, 1);
@@ -34851,16 +34864,39 @@ var BABYLON;
                 for (var index = 0; index < this._keys.length; index++) {
                     var keyCode = this._keys[index];
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        camera.inertialAlphaOffset -= 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningX -= 1 / this.panningSensibility;
+                        }
+                        else {
+                            camera.inertialAlphaOffset -= 0.01;
+                        }
                     }
                     else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        camera.inertialBetaOffset -= 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningY += 1 / this.panningSensibility;
+                        }
+                        else {
+                            camera.inertialBetaOffset -= 0.01;
+                        }
                     }
                     else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        camera.inertialAlphaOffset += 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningX += 1 / this.panningSensibility;
+                        }
+                        else {
+                            camera.inertialAlphaOffset += 0.01;
+                        }
                     }
                     else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        camera.inertialBetaOffset += 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningY -= 1 / this.panningSensibility;
+                        }
+                        else {
+                            camera.inertialBetaOffset += 0.01;
+                        }
+                    }
+                    else if (this.keysReset.indexOf(keyCode) !== -1) {
+                        camera.restoreState();
                     }
                 }
             }
@@ -34883,6 +34919,12 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraKeyboardMoveInput.prototype, "keysRight", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraKeyboardMoveInput.prototype, "keysReset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraKeyboardMoveInput.prototype, "panningSensibility", void 0);
         return ArcRotateCameraKeyboardMoveInput;
     }());
     BABYLON.ArcRotateCameraKeyboardMoveInput = ArcRotateCameraKeyboardMoveInput;
@@ -34993,6 +35035,9 @@ var BABYLON;
                         element.focus();
                     }
                 }
+                else if (p.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
+                    _this.camera.restoreState();
+                }
                 else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
                     try {
                         evt.srcElement.releasePointerCapture(evt.pointerId);
@@ -35020,10 +35065,8 @@ var BABYLON;
                         if (_this.panningSensibility !== 0 &&
                             ((evt.ctrlKey && _this.camera._useCtrlForPanning) ||
                                 (!_this.camera._useCtrlForPanning && _this._isPanClick))) {
-                            _this.camera
-                                .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
-                            _this.camera
-                                .inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
+                            _this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
+                            _this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
                         }
                         else {
                             var offsetX = evt.clientX - cacheSoloPointer.x;
@@ -35058,7 +35101,7 @@ var BABYLON;
                     }
                 }
             };
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE | BABYLON.PointerEventTypes._POINTERDOUBLETAP);
             this._onContextMenu = function (evt) {
                 evt.preventDefault();
             };
@@ -35523,6 +35566,8 @@ var BABYLON;
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
+            this.inertialPanningX = 0;
+            this.inertialPanningY = 0;
             return true;
         };
         // Synchronized
@@ -35547,6 +35592,8 @@ var BABYLON;
                 _this.inertialAlphaOffset = 0;
                 _this.inertialBetaOffset = 0;
                 _this.inertialRadiusOffset = 0;
+                _this.inertialPanningX = 0;
+                _this.inertialPanningY = 0;
             };
         };
         ArcRotateCamera.prototype.detachControl = function (element) {
@@ -46528,6 +46575,9 @@ var BABYLON;
             this._setTextureReady = this.__setTextureReady.bind(this);
             this.video.addEventListener("playing", this._setTextureReady);
         };
+        VideoTexture.prototype._rebuild = function () {
+            this.update();
+        };
         VideoTexture.prototype.update = function () {
             var now = BABYLON.Tools.Now;
             if (now - this._lastUpdate < 15 || this.video.readyState !== this.video.HAVE_ENOUGH_DATA) {
@@ -50313,6 +50363,11 @@ var BABYLON;
             vertices.push(-1, -1);
             vertices.push(1, -1);
             _this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = new BABYLON.VertexBuffer(engine, vertices, BABYLON.VertexBuffer.PositionKind, false, false, 2);
+            _this._createIndexBuffer();
+            return _this;
+        }
+        ProceduralTexture.prototype._createIndexBuffer = function () {
+            var engine = this.getScene().getEngine();
             // Indices
             var indices = [];
             indices.push(0);
@@ -50321,9 +50376,15 @@ var BABYLON;
             indices.push(0);
             indices.push(2);
             indices.push(3);
-            _this._indexBuffer = engine.createIndexBuffer(indices);
-            return _this;
-        }
+            this._indexBuffer = engine.createIndexBuffer(indices);
+        };
+        ProceduralTexture.prototype._rebuild = function () {
+            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind]._rebuild();
+            this._createIndexBuffer();
+            if (this.refreshRate === BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
+                this.refreshRate = BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+            }
+        };
         ProceduralTexture.prototype.reset = function () {
             if (this._effect === undefined) {
                 return;
@@ -67964,6 +68025,19 @@ var BABYLON;
             });
             this._lineShader.disableDepthWrite = true;
             this._lineShader.backFaceCulling = false;
+        };
+        EdgesRenderer.prototype._rebuild = function () {
+            var buffer = this._buffers[BABYLON.VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer._rebuild();
+            }
+            buffer = this._buffers[BABYLON.VertexBuffer.NormalKind];
+            if (buffer) {
+                buffer._rebuild();
+            }
+            var scene = this._source.getScene();
+            var engine = scene.getEngine();
+            this._ib = engine.createIndexBuffer(this._linesIndices);
         };
         EdgesRenderer.prototype.dispose = function () {
             var buffer = this._buffers[BABYLON.VertexBuffer.PositionKind];

@@ -63,6 +63,12 @@
 
             this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
+            this._createIndexBuffer();
+        }
+
+        private _createIndexBuffer(): void {
+            var engine = this.getScene().getEngine();
+
             // Indices
             var indices = [];
             indices.push(0);
@@ -74,6 +80,15 @@
             indices.push(3);
 
             this._indexBuffer = engine.createIndexBuffer(indices);
+        }
+
+        public _rebuild(): void {
+            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+            this._createIndexBuffer();
+
+            if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
+                this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+            }            
         }
 
         public reset(): void {
