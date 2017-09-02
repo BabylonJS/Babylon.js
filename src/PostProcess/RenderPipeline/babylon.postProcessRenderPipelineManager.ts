@@ -84,12 +84,32 @@ module BABYLON {
 
         public update(): void {
             for (var renderPipelineName in this._renderPipelines) {
-                var pipeline = this._renderPipelines[renderPipelineName];
-                if (!pipeline.isSupported) {
+                if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
+                    var pipeline = this._renderPipelines[renderPipelineName];
+                    if (!pipeline.isSupported) {
+                        pipeline.dispose();
+                        delete this._renderPipelines[renderPipelineName];
+                    } else {
+                        pipeline._update();
+                    }
+                }
+            }
+        }
+
+        public _rebuild(): void {
+            for (var renderPipelineName in this._renderPipelines) {
+                if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
+                    var pipeline = this._renderPipelines[renderPipelineName];
+                    pipeline._rebuild();
+                }
+            }
+        }
+
+        public dispose(): void {
+            for (var renderPipelineName in this._renderPipelines) {
+                if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
+                    var pipeline = this._renderPipelines[renderPipelineName];
                     pipeline.dispose();
-                    delete this._renderPipelines[renderPipelineName];
-                } else {
-                    pipeline._update();
                 }
             }
         }

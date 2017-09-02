@@ -73,14 +73,30 @@ module BABYLON {
                 generateDepthTexture: generateDepthTexture,
                 types: types,
                 textureCount: count
-            };
-
-            this._internalTextures = scene.getEngine().createMultipleRenderTarget(size, this._multiRenderTargetOptions);
-
+            };            
+            
             this._createInternalTextures();
+            this._createTextures();
+        }
+
+        public _rebuild(): void {
+            this.releaseInternalTextures();
+            this._createInternalTextures();
+
+            for (var i = 0; i < this._internalTextures.length; i++) {
+                var texture = this._textures[i];
+                texture._texture = this._internalTextures[i];
+            }
+
+            // Keeps references to frame buffer and stencil/depth buffer
+            this._texture = this._internalTextures[0];
         }
 
         private _createInternalTextures(): void {
+            this._internalTextures = this.getScene().getEngine().createMultipleRenderTarget(this._size , this._multiRenderTargetOptions);
+        }
+
+        private _createTextures(): void {
             this._textures = [];
             for (var i = 0; i < this._internalTextures.length; i++) {
                 var texture = new BABYLON.Texture(null, this.getScene());

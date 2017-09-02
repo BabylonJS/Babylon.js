@@ -70,7 +70,17 @@
 
             var engine = this._scene.getEngine();
 
-            this._rebuild();
+            // VBO
+            var vertices = [];
+            vertices.push(1, 1);
+            vertices.push(-1, 1);
+            vertices.push(-1, -1);
+            vertices.push(1, -1);
+
+            var vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
+            this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
+
+            this._createIndexBuffer();
 
             // Effects
             this._effect = engine.createEffect("layer",
@@ -84,18 +94,8 @@
                 ["textureSampler"], "#define ALPHATEST");
         }
 
-        public _rebuild(): void {
+        private _createIndexBuffer(): void {
             var engine = this._scene.getEngine();
-
-            // VBO
-            var vertices = [];
-            vertices.push(1, 1);
-            vertices.push(-1, 1);
-            vertices.push(-1, -1);
-            vertices.push(1, -1);
-
-            var vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
-            this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
 
             // Indices
             var indices = [];
@@ -108,6 +108,12 @@
             indices.push(3);
 
             this._indexBuffer = engine.createIndexBuffer(indices);
+        }
+
+        public _rebuild(): void {
+            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+
+            this._createIndexBuffer();
         }
 
         public render(): void {

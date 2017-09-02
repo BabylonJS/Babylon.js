@@ -22,6 +22,10 @@
 
             this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._scene.getEngine(), vertices, VertexBuffer.PositionKind, false, false, 2);
 
+            this._buildIndexBuffer();
+        }
+
+        private _buildIndexBuffer(): void {
             // Indices
             var indices = [];
             indices.push(0);
@@ -34,7 +38,15 @@
 
             this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
         }
-
+        
+        public _rebuild(): void {
+            if (!this._vertexBuffers[VertexBuffer.PositionKind]) {
+                return;
+            }
+            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+            this._buildIndexBuffer();
+        }
+        
         // Methods
         public _prepareFrame(sourceTexture?: InternalTexture, postProcesses?: PostProcess[]): boolean {
             var postProcesses = postProcesses || this._scene.activeCamera._postProcesses;

@@ -57,6 +57,46 @@ module BABYLON {
             return this.lockedTarget.absolutePosition || this.lockedTarget;
         }
 
+        // State
+
+        /**
+         * Store current camera state (fov, position, etc..)
+         */
+        private _storedPosition: Vector3;
+        private _storedRotation: Vector3;
+        private _storedRotationQuaternion: Quaternion;
+
+        public storeState(): Camera {
+            this._storedPosition = this.position.clone();
+            this._storedRotation = this.rotation.clone();
+            if (this.rotationQuaternion) {
+                this._storedRotationQuaternion = this.rotationQuaternion.clone();
+            }
+
+            return super.storeState();
+        }
+
+        /**
+         * Restored camera state. You must call storeState() first
+         */
+        public restoreState(): boolean {
+            if (!super.restoreState()) {
+                return false;
+            }
+
+            this.position = this._storedPosition.clone();
+            this.rotation = this._storedRotation.clone();
+
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion = this._storedRotationQuaternion.clone();
+            }
+
+            this.cameraDirection.copyFromFloats(0, 0, 0);
+            this.cameraRotation.copyFromFloats(0, 0);
+
+            return true;
+        }           
+
         // Cache
         public _initCache() {
             super._initCache();

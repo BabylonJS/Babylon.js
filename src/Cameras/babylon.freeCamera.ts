@@ -89,7 +89,7 @@
             super(name, position, scene);
             this.inputs = new FreeCameraInputsManager(this);
             this.inputs.addKeyboard().addMouse();
-        }
+        }     
 
         // Controls
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {

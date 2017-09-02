@@ -31,6 +31,7 @@ module BABYLON {
         public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
         public _buffer: ArrayBuffer | HTMLImageElement;
         public _bufferView: ArrayBufferView;
+        public _bufferViewArray: ArrayBufferView[];
         public _size: number;
         public _extension: string;
         public _files: string[];
@@ -140,7 +141,7 @@ module BABYLON {
                     proxy._swapAndDie(this);
 
                     this.isReady = true;
-                return;                
+                return;                                      
 
                 case InternalTexture.DATASOURCE_CUBE:
                     proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, () => {
@@ -148,6 +149,13 @@ module BABYLON {
                     }, null, this.format, this._extension);
                     proxy._swapAndDie(this);
                     return;
+
+                case InternalTexture.DATASOURCE_CUBERAW:
+                    proxy = this._engine.createRawCubeTexture(this._bufferViewArray, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                    proxy._swapAndDie(this);
+
+                    this.isReady = true;
+                    return;                    
 
                 case InternalTexture.DATASOURCE_CUBEPREFILTERED:
                     proxy = this._engine.createPrefilteredCubeTexture(this.url, null, this._lodGenerationScale, this._lodGenerationOffset, (proxy) => {
