@@ -141,7 +141,7 @@ module BABYLON {
                     proxy._swapAndDie(this);
 
                     this.isReady = true;
-                return;                
+                return;                                      
 
                 case InternalTexture.DATASOURCE_CUBE:
                     proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, () => {

@@ -189,6 +189,11 @@
             };
         }
 
+        public _rebuild() {
+            this._firstUpdate = true;
+            super._rebuild();            
+        }
+
         private _createSSAOPostProcess(ratio: number): void {
             var numSamples = 16;
             var sampleSphere = [

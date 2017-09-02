@@ -46,6 +46,10 @@ module BABYLON {
 
         // private
 
+        public _rebuild() {
+            
+        }
+
         public _enableEffect(renderEffectName: string, cameras: Camera);
         public _enableEffect(renderEffectName: string, cameras: Camera[]);
         public _enableEffect(renderEffectName: string, cameras: any): void {

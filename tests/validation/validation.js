@@ -189,7 +189,7 @@ runTest(index) {
                     var code = JSON.parse(snippet.jsonPayload).code.toString();
                     code = code.replace(/\/textures\//g, pgRoot + "/textures/");
                     code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
-                    code = code.replace(/\/scenes\//g, "\"" + pgRoot + "/scenes/");
+                    code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
                     code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
 
                     currentScene = eval(code + "\r\ncreateScene(engine)");
