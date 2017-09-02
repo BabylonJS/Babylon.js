@@ -162,7 +162,7 @@
         **/
         public hasSpecificMask(mask: number = -1): boolean {
             for (var obs of this._observers) {
-                if (obs.mask & mask && obs.mask === mask) {
+                if (obs.mask & mask || obs.mask === mask) {
                     return true;
                 }
             }

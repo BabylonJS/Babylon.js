@@ -477,6 +477,10 @@
                 this._occlusionQuery = null;
             }
 
+            if (this._edgesRenderer) {
+                this._edgesRenderer._rebuild();
+            }
+
             if (!this.subMeshes) {
                 return;
             }
