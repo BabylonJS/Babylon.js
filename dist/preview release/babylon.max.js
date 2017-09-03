@@ -7463,6 +7463,7 @@ var BABYLON;
              */
             this.onCanvasBlurObservable = new BABYLON.Observable();
             // Uniform buffers list
+            this.disableUniformBuffers = false;
             this._uniformBuffers = new Array();
             this._windowIsBackground = false;
             this._webGLVersion = 1.0;
@@ -8031,6 +8032,13 @@ var BABYLON;
         Object.defineProperty(Engine, "Version", {
             get: function () {
                 return "3.1-alpha";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "supportsUniformBuffers", {
+            get: function () {
+                return this.webGLVersion > 1 && !this.disableUniformBuffers;
             },
             enumerable: true,
             configurable: true
@@ -24373,7 +24381,7 @@ var BABYLON;
                 // Uniform declaration
                 if (includeFile.indexOf("__decl__") !== -1) {
                     includeFile = includeFile.replace(/__decl__/, "");
-                    if (this._engine.webGLVersion != 1) {
+                    if (this._engine.supportsUniformBuffers) {
                         includeFile = includeFile.replace(/Vertex/, "Ubo");
                         includeFile = includeFile.replace(/Fragment/, "Ubo");
                     }
@@ -24402,7 +24410,7 @@ var BABYLON;
                                 maxIndex = this._indexParameters[indexSplits[1]];
                             }
                             for (var i = minIndex; i < maxIndex; i++) {
-                                if (this._engine.webGLVersion === 1) {
+                                if (!this._engine.supportsUniformBuffers) {
                                     // Ubo replacement
                                     sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, function (str, p1) {
                                         return p1 + "{X}";
@@ -24412,7 +24420,7 @@ var BABYLON;
                             }
                         }
                         else {
-                            if (this._engine.webGLVersion === 1) {
+                            if (!this._engine.supportsUniformBuffers) {
                                 // Ubo replacement
                                 includeContent = includeContent.replace(/light\{X\}.(\w*)/g, function (str, p1) {
                                     return p1 + "{X}";
@@ -25327,7 +25335,7 @@ var BABYLON;
                 this.sideOrientation = Material.CounterClockWiseSideOrientation;
             }
             this._uniformBuffer = new BABYLON.UniformBuffer(this._scene.getEngine());
-            this._useUBO = this.getScene().getEngine().webGLVersion > 1;
+            this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
             if (!doNotAdd) {
                 this._scene.materials.push(this);
             }
@@ -25873,7 +25881,7 @@ var BABYLON;
          */
         function UniformBuffer(engine, data, dynamic) {
             this._engine = engine;
-            this._noUBO = engine.webGLVersion === 1;
+            this._noUBO = !engine.supportsUniformBuffers;
             this._dynamic = dynamic;
             this._data = data || [];
             this._uniformLocations = {};
