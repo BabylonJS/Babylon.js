@@ -1021,12 +1021,30 @@ var BABYLON;
                 this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
                 return targetBuffer;
             };
+            GLTFLoader.prototype._buildUint8ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Uint8Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Uint8Array(buffer, byteOffset);
+                var targetBuffer = new Uint8Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
+                return targetBuffer;
+            };
             GLTFLoader.prototype._buildInt16ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
                 if (!byteStride) {
                     return new Int16Array(buffer, byteOffset, byteLength);
                 }
                 var sourceBuffer = new Int16Array(buffer, byteOffset);
                 var targetBuffer = new Int16Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._buildUint16ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Uint16Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Uint16Array(buffer, byteOffset);
+                var targetBuffer = new Uint16Array(byteLength);
                 this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
                 return targetBuffer;
             };
@@ -1073,12 +1091,16 @@ var BABYLON;
                     var bufferViewData;
                     switch (componentType) {
                         case GLTF2.EComponentType.BYTE:
-                        case GLTF2.EComponentType.UNSIGNED_BYTE:
                             bufferViewData = _this._buildInt8ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
-                        case GLTF2.EComponentType.UNSIGNED_SHORT:
+                        case GLTF2.EComponentType.UNSIGNED_BYTE:
+                            bufferViewData = _this._buildUint8ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
+                            break;
                         case GLTF2.EComponentType.SHORT:
                             bufferViewData = _this._buildInt16ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
+                            break;
+                        case GLTF2.EComponentType.UNSIGNED_SHORT:
+                            bufferViewData = _this._buildUint16ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         case GLTF2.EComponentType.UNSIGNED_INT:
                             bufferViewData = _this._buildUint32ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
