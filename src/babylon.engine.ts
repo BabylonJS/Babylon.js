@@ -1020,7 +1020,6 @@
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
-            this._caps.drawBuffersExtension = this._webGLVersion > 1 || this._gl.getExtension('WEBGL_draw_buffers');
 
             // Checks if some of the format renders first to allow the use of webgl inspector.
             this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
@@ -1037,6 +1036,25 @@
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
 
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
+
+            // Draw buffers
+            if (this._webGLVersion > 1) {
+                this._caps.drawBuffersExtension = true;
+            } else {
+                var drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
+
+                if (drawBuffersExtension !== null) {
+                    this._caps.drawBuffersExtension = true;
+                    this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL;
+                    this._gl.DRAW_FRAMEBUFFER = this._gl.FRAMEBUFFER;
+                    
+                    for (var i = 0; i < 16; i++) {
+                        this._gl["COLOR_ATTACHMENT" + i] = drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
+                    }
+                } else {
+                    this._caps.drawBuffersExtension = false;
+                }
+            }
 
             // Vertex array object
             if (this._webGLVersion > 1) {
@@ -3154,12 +3172,7 @@
 
             var width = size.width || size;
             var height = size.height || size;
-
-            if (this.webGLVersion < 2) {
-                width = Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
-                height = Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
-            }
-
+            
             var textures = [];
             var attachments = []
 
@@ -3185,13 +3198,7 @@
                 }
 
                 var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
-
-                var attachment: number;
-                if (this.webGLVersion < 2) {
-                    attachment = this._caps.drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
-                } else {
-                    attachment = gl["COLOR_ATTACHMENT" + i];
-                }
+                var attachment = gl["COLOR_ATTACHMENT" + i];
                 
                 textures.push(texture);
                 attachments.push(attachment);
@@ -3206,7 +3213,7 @@
 
                 gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
-                gl.framebufferTexture2D(this.webGLVersion < 2 ? gl.FRAMEBUFFER : gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._webGLTexture, 0);
+                gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._webGLTexture, 0);
 
                 if (generateMipMaps) {
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -3278,11 +3285,7 @@
                 this._internalTexturesCache.push(depthTexture);
             }
 
-            if (gl.drawBuffers) {
-                gl.drawBuffers(attachments);
-            } else {
-                this.getCaps().drawBuffersExtension.drawBuffersWEBGL(attachments);
-            }
+            gl.drawBuffers(attachments);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             this.bindUnboundFramebuffer(null);
 
@@ -4109,7 +4112,7 @@
 
                 if (internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
-
+                    
                     switch (texture.wrapU) {
                         case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
