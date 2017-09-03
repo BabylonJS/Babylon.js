@@ -1012,7 +1012,55 @@ var BABYLON;
                     });
                 }
             };
-            GLTFLoader.prototype._loadBufferViewAsync = function (bufferView, byteOffset, byteLength, componentType, onSuccess) {
+            GLTFLoader.prototype._buildInt8ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Int8Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Int8Array(buffer, byteOffset);
+                var targetBuffer = new Int8Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._buildInt16ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Int16Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Int16Array(buffer, byteOffset);
+                var targetBuffer = new Int16Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._buildUint32ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Uint32Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Uint32Array(buffer, byteOffset);
+                var targetBuffer = new Uint32Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 4, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._buildFloat32ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Float32Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Float32Array(buffer, byteOffset);
+                var targetBuffer = new Float32Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 4, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._extractInterleavedData = function (sourceBuffer, targetBuffer, bytePerComponent, stride, length) {
+                var tempIndex = 0;
+                var sourceIndex = 0;
+                var storageSize = bytePerComponent;
+                while (tempIndex < length) {
+                    for (var cursor = 0; cursor < storageSize; cursor++) {
+                        targetBuffer[tempIndex] = sourceBuffer[sourceIndex + cursor];
+                        tempIndex++;
+                    }
+                    sourceIndex += stride;
+                }
+            };
+            GLTFLoader.prototype._loadBufferViewAsync = function (bufferView, byteOffset, byteLength, bytePerComponent, componentType, onSuccess) {
                 var _this = this;
                 byteOffset += (bufferView.byteOffset || 0);
                 this._loadBufferAsync(bufferView.buffer, function (bufferData) {
@@ -1025,22 +1073,18 @@ var BABYLON;
                     var bufferViewData;
                     switch (componentType) {
                         case GLTF2.EComponentType.BYTE:
-                            bufferViewData = new Int8Array(buffer, byteOffset, byteLength);
-                            break;
                         case GLTF2.EComponentType.UNSIGNED_BYTE:
-                            bufferViewData = new Uint8Array(buffer, byteOffset, byteLength);
-                            break;
-                        case GLTF2.EComponentType.SHORT:
-                            bufferViewData = new Int16Array(buffer, byteOffset, byteLength);
+                            bufferViewData = _this._buildInt8ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         case GLTF2.EComponentType.UNSIGNED_SHORT:
-                            bufferViewData = new Uint16Array(buffer, byteOffset, byteLength);
+                        case GLTF2.EComponentType.SHORT:
+                            bufferViewData = _this._buildInt16ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         case GLTF2.EComponentType.UNSIGNED_INT:
-                            bufferViewData = new Uint32Array(buffer, byteOffset, byteLength);
+                            bufferViewData = _this._buildUint32ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         case GLTF2.EComponentType.FLOAT:
-                            bufferViewData = new Float32Array(buffer, byteOffset, byteLength);
+                            bufferViewData = _this._buildFloat32ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         default:
                             _this._onError("Invalid component type (" + componentType + ")");
@@ -1052,8 +1096,9 @@ var BABYLON;
             GLTFLoader.prototype._loadAccessorAsync = function (accessor, onSuccess) {
                 var bufferView = this._gltf.bufferViews[accessor.bufferView];
                 var byteOffset = accessor.byteOffset || 0;
-                var byteLength = accessor.count * this._getByteStrideFromType(accessor);
-                this._loadBufferViewAsync(bufferView, byteOffset, byteLength, accessor.componentType, onSuccess);
+                var bytePerComponent = this._getByteStrideFromType(accessor);
+                var byteLength = accessor.count * bytePerComponent;
+                this._loadBufferViewAsync(bufferView, byteOffset, byteLength, bytePerComponent, accessor.componentType, onSuccess);
             };
             GLTFLoader.prototype._getByteStrideFromType = function (accessor) {
                 switch (accessor.type) {
@@ -1265,7 +1310,7 @@ var BABYLON;
                 };
                 if (!source.uri) {
                     var bufferView = this._gltf.bufferViews[source.bufferView];
-                    this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, GLTF2.EComponentType.UNSIGNED_BYTE, setTextureData);
+                    this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, 1, GLTF2.EComponentType.UNSIGNED_BYTE, setTextureData);
                 }
                 else if (GLTF2.GLTFUtils.IsBase64(source.uri)) {
                     setTextureData(new Uint8Array(GLTF2.GLTFUtils.DecodeBase64(source.uri)));
