@@ -14,6 +14,8 @@ module BABYLON {
 
         private _enablePosition: boolean = false;
 
+        private _needsDrawBuffersExtension: boolean;
+
         public set renderList(meshes: Mesh[]) {
             this._multiRenderTarget.renderList = meshes;
         }
@@ -36,6 +38,10 @@ module BABYLON {
             this._scene = scene;
             this._ratio = ratio;
 
+            // Multiple color attachment support
+            var engine = scene.getEngine();
+            this._needsDrawBuffersExtension = engine.webGLVersion < 2 && engine.getCaps().drawBuffersExtension;
+
             // Render target
             this._createRenderTargets();
         }
@@ -53,6 +59,11 @@ module BABYLON {
 
             var mesh = subMesh.getMesh();
             var scene = mesh.getScene();
+
+            // Draw buffers extension
+            if (this._needsDrawBuffersExtension) {
+                defines.push("#define DRAW_BUFFERS_EXTENSION");
+            }
 
             // Alpha test
             if (material && material.needAlphaTesting()) {

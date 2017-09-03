@@ -1,7 +1,15 @@
+#ifndef DRAW_BUFFERS_EXTENSION
 #version 300 es
+#else
+#extension GL_EXT_draw_buffers : require
+#endif
 
 precision highp float;
 precision highp int;
+
+#ifdef DRAW_BUFFERS_EXTENSION
+#define in varying
+#endif
 
 in vec3 vNormalV;
 in vec4 vViewPos;
@@ -15,11 +23,17 @@ in vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
-layout(location = 0) out vec4 color0;
-layout(location = 1) out vec4 color1;
+#ifndef DRAW_BUFFERS_EXTENSION
+    layout(location = 0) out vec4 color0;
+    layout(location = 1) out vec4 color1;
 
-#ifdef POSITION
-layout(location = 2) out vec4 color2;
+    #ifdef POSITION
+    layout(location = 2) out vec4 color2;
+    #endif
+#else
+    #define color0 gl_FragData[0]
+    #define color1 gl_FragData[1]
+    #define color2 gl_FragData[2]
 #endif
 
 void main() {
