@@ -416,7 +416,7 @@
                 // Uniform declaration
                 if (includeFile.indexOf("__decl__") !== -1) {
                     includeFile = includeFile.replace(/__decl__/, "");
-                    if (this._engine.webGLVersion != 1) {
+                    if (this._engine.supportsUniformBuffers) {
                         includeFile = includeFile.replace(/Vertex/, "Ubo");
                         includeFile = includeFile.replace(/Fragment/, "Ubo");
                     }
@@ -452,7 +452,7 @@
                             }
 
                             for (var i = minIndex; i < maxIndex; i++) {
-                                if (this._engine.webGLVersion === 1) {
+                                if (!this._engine.supportsUniformBuffers) {
                                     // Ubo replacement
                                     sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
                                         return p1 + "{X}";
@@ -461,7 +461,7 @@
                                 includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
                             }
                         } else {
-                            if (this._engine.webGLVersion === 1) {
+                            if (!this._engine.supportsUniformBuffers) {
                                 // Ubo replacement
                                 includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
                                     return p1 + "{X}";
