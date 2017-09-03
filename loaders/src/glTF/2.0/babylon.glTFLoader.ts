@@ -813,6 +813,19 @@ module BABYLON.GLTF2 {
             return targetBuffer;              
         }
 
+        private _buildUint8ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Uint8Array {
+            if (!byteStride) {
+                return new Uint8Array(buffer, byteOffset, byteLength);
+            }
+
+            let sourceBuffer = new Uint8Array(buffer, byteOffset);
+            let targetBuffer = new Uint8Array(byteLength);
+
+            this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
+
+            return targetBuffer;              
+        }        
+
         private _buildInt16ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Int16Array {
             if (!byteStride) {
                 return new Int16Array(buffer, byteOffset, byteLength);
@@ -825,6 +838,19 @@ module BABYLON.GLTF2 {
 
             return targetBuffer;             
         }   
+
+        private _buildUint16ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Uint16Array {
+            if (!byteStride) {
+                return new Uint16Array(buffer, byteOffset, byteLength);
+            }
+
+            let sourceBuffer = new Uint16Array(buffer, byteOffset);
+            let targetBuffer = new Uint16Array(byteLength);
+
+            this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
+
+            return targetBuffer;             
+        }          
         
         private _buildUint32ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Uint32Array {
             if (!byteStride) {
@@ -881,12 +907,16 @@ module BABYLON.GLTF2 {
                 var bufferViewData;
                 switch (componentType) {
                     case EComponentType.BYTE:
-                    case EComponentType.UNSIGNED_BYTE:
                         bufferViewData = this._buildInt8ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                         break;
-                    case EComponentType.UNSIGNED_SHORT:
+                    case EComponentType.UNSIGNED_BYTE:
+                        bufferViewData = this._buildUint8ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
+                        break;
                     case EComponentType.SHORT:
                         bufferViewData = this._buildInt16ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
+                        break;
+                    case EComponentType.UNSIGNED_SHORT:
+                        bufferViewData = this._buildUint16ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                         break;
                     case EComponentType.UNSIGNED_INT:
                         bufferViewData = this._buildUint32ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
