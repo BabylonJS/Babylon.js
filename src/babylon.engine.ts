@@ -3155,6 +3155,11 @@
             var width = size.width || size;
             var height = size.height || size;
 
+            if (this.webGLVersion < 2) {
+                width = Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
+                height = Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
+            }
+
             var textures = [];
             var attachments = []
 
