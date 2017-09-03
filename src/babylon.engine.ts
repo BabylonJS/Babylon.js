@@ -556,7 +556,11 @@
         private _vrAnimationFrameHandler: number;
 
         // Uniform buffers list
+        public disableUniformBuffers = false;
         public _uniformBuffers = new Array<UniformBuffer>();
+        public get supportsUniformBuffers(): boolean {
+            return this.webGLVersion > 1 && !this.disableUniformBuffers;
+        }
 
         // Private Members
         private _gl: WebGLRenderingContext;

@@ -121,7 +121,7 @@ module BABYLON {
          */
         constructor(engine: Engine, data?: number[], dynamic?: boolean) {
             this._engine = engine;
-            this._noUBO = engine.webGLVersion === 1;
+            this._noUBO = !engine.supportsUniformBuffers;
             this._dynamic = dynamic;
 
             this._data = data || [];
