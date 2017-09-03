@@ -1,10 +1,17 @@
+#ifndef DRAW_BUFFERS_EXTENSION
 #version 300 es
+#endif
 
 precision highp float;
 precision highp int;
 
 #include<bones300Declaration>
 #include<instances300Declaration>
+
+#ifdef DRAW_BUFFERS_EXTENSION
+#define in attribute
+#define out varying
+#endif
 
 in vec3 position;
 in vec3 normal;

@@ -3180,7 +3180,14 @@
                 }
 
                 var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
-                var attachment = gl["COLOR_ATTACHMENT" + i];
+
+                var attachment: number;
+                if (this.webGLVersion < 2) {
+                    attachment = this._caps.drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
+                } else {
+                    attachment = gl["COLOR_ATTACHMENT" + i];
+                }
+                
                 textures.push(texture);
                 attachments.push(attachment);
 
@@ -3194,7 +3201,7 @@
 
                 gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
-                gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._webGLTexture, 0);
+                gl.framebufferTexture2D(this.webGLVersion < 2 ? gl.FRAMEBUFFER : gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._webGLTexture, 0);
 
                 if (generateMipMaps) {
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -3233,7 +3240,7 @@
                 gl.texImage2D(
                     gl.TEXTURE_2D,
                     0,
-                    gl.DEPTH_COMPONENT16,
+                    this.webGLVersion < 2 ? gl.DEPTH_COMPONENT : gl.DEPTH_COMPONENT16,
                     width,
                     height,
                     0,
@@ -3266,7 +3273,11 @@
                 this._internalTexturesCache.push(depthTexture);
             }
 
-            gl.drawBuffers(attachments);
+            if (gl.drawBuffers) {
+                gl.drawBuffers(attachments);
+            } else {
+                this.getCaps().drawBuffersExtension.drawBuffersWEBGL(attachments);
+            }
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             this.bindUnboundFramebuffer(null);
 
