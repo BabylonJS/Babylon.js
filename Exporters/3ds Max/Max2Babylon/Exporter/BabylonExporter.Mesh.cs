@@ -84,14 +84,14 @@ namespace Max2Babylon
             return parentId;
         }
 
-        private void RotationToEulerAngles(BabylonAbstractMesh babylonMesh, IQuat rotation)
+        private float[] QuaternionToEulerAngles(IQuat rotation)
         {
             float rotx = 0, roty = 0, rotz = 0;
             unsafe
             {
                 rotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
             }
-            babylonMesh.rotation = new[] { rotx, roty, rotz };
+            return new[] { rotx, roty, rotz };
         }
 
         private int bonesCount;
@@ -226,7 +226,7 @@ namespace Max2Babylon
             }
             else
             {
-                RotationToEulerAngles(babylonMesh, meshRotation);
+                babylonMesh.rotation = QuaternionToEulerAngles(meshRotation);
             }
 
             babylonMesh.scaling = new[] { meshScale.X, meshScale.Y, meshScale.Z };
@@ -487,7 +487,7 @@ namespace Max2Babylon
                     }
                     else
                     {
-                        RotationToEulerAngles(instance, instanceRotation);
+                        instance.rotation = QuaternionToEulerAngles(instanceRotation);
                     }
 
                     instance.scaling = new[] { instanceScale.X, instanceScale.Y, instanceScale.Z };

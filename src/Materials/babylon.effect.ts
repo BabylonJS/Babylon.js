@@ -8,6 +8,10 @@
         private _mesh: AbstractMesh;
         private _meshRank: number;
 
+        public unBindMesh() {
+            this._mesh = null;
+        }
+
         public addFallback(rank: number, define: string): void {
             if (!this._defines[rank]) {
                 if (rank < this._currentRank) {
@@ -108,9 +112,11 @@
         public _key: string;
         private _indexParameters: any;
         private _fallbacks: EffectFallbacks;
+        private _vertexSourceCode: string;
+        private _fragmentSourceCode: string;
 
         private _program: WebGLProgram;
-        private _valueCache: { [key: string]: any } = {};
+        private _valueCache: { [key: string]: any };
         private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
         constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], engine?: Engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
@@ -179,7 +185,14 @@
                         this._loadFragmentShader(fragmentSource, (fragmentCode) => {
                             this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
                                 this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
-                                    this._prepareEffect(migratedVertexCode, migratedFragmentCode, this._attributesNames, this.defines, this._fallbacks, baseName);
+                                    if (baseName) {
+                                        this._vertexSourceCode = "#define SHADER_NAME vertex:" + baseName + "\n" + migratedVertexCode;
+                                        this._fragmentSourceCode = "#define SHADER_NAME fragment:" + baseName + "\n" + migratedFragmentCode;
+                                    } else {
+                                        this._vertexSourceCode = migratedVertexCode;
+                                        this._fragmentSourceCode = migratedFragmentCode;
+                                    }
+                                    this._prepareEffect();
                                 });
                             });
                         });
@@ -403,7 +416,7 @@
                 // Uniform declaration
                 if (includeFile.indexOf("__decl__") !== -1) {
                     includeFile = includeFile.replace(/__decl__/, "");
-                    if (this._engine.webGLVersion != 1) {
+                    if (this._engine.supportsUniformBuffers) {
                         includeFile = includeFile.replace(/Vertex/, "Ubo");
                         includeFile = includeFile.replace(/Fragment/, "Ubo");
                     }
@@ -439,7 +452,7 @@
                             }
 
                             for (var i = minIndex; i < maxIndex; i++) {
-                                if (this._engine.webGLVersion === 1) {
+                                if (!this._engine.supportsUniformBuffers) {
                                     // Ubo replacement
                                     sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
                                         return p1 + "{X}";
@@ -448,7 +461,7 @@
                                 includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
                             }
                         } else {
-                            if (this._engine.webGLVersion === 1) {
+                            if (!this._engine.supportsUniformBuffers) {
                                 // Ubo replacement
                                 includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
                                     return p1 + "{X}";
@@ -492,15 +505,15 @@
             return source;
         }
 
-        private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks, baseName?: string): void {
+        public _prepareEffect() {
+            let attributesNames = this._attributesNames;
+            let defines = this.defines;
+            let fallbacks = this._fallbacks;
+            this._valueCache = {};
+
             try {
                 var engine = this._engine;
-                if (baseName) {
-                    vertexSourceCode = "#define SHADER_NAME vertex:" + baseName + "\n" + vertexSourceCode;
-                    fragmentSourceCode = "#define SHADER_NAME fragment:" + baseName + "\n" + fragmentSourceCode;
-                }
-
-                this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
+                this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
 
                 if (engine.webGLVersion > 1) {
                     for (var name in this._uniformBuffersNames) {
@@ -530,6 +543,11 @@
                 }
                 this.onCompileObservable.notifyObservers(this);
                 this.onCompileObservable.clear();
+
+                // Unbind mesh reference in fallbacks
+                if (this._fallbacks) {
+                    this._fallbacks.unBindMesh();
+                }
             } catch (e) {
                 this._compilationError = e.message;
 
@@ -541,28 +559,34 @@
                 BABYLON.Tools.Error("Attributes: " + attributesNames.map(function(attribute) {
                     return " " + attribute;
                 }));
-                this._dumpShadersSource(vertexSourceCode, fragmentSourceCode, defines);
+                this._dumpShadersSource(this._vertexSourceCode, this._fragmentSourceCode, defines);
                 Tools.Error("Error: " + this._compilationError);
 
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     Tools.Error("Trying next fallback.");
-                    defines = fallbacks.reduce(defines);
-                    this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
+                    this.defines = fallbacks.reduce(this.defines);
+                    this._prepareEffect();
                 } else { // Sorry we did everything we can
 
                     if (this.onError) {
                         this.onError(this, this._compilationError);
                     }
                     this.onErrorObservable.notifyObservers(this);
+                    this.onErrorObservable.clear();
+
+                    // Unbind mesh reference in fallbacks
+                    if (this._fallbacks) {
+                        this._fallbacks.unBindMesh();
+                    }
                 }
-            }
+            }            
         }
 
         public get isSupported(): boolean {
             return this._compilationError === "";
         }
 
-        public _bindTexture(channel: string, texture: WebGLTexture): void {
+        public _bindTexture(channel: string, texture: InternalTexture): void {
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         }
 

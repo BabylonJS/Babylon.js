@@ -34,7 +34,7 @@ module BABYLON {
         positionScale?: number;
         displayName?: string; //if there are more than one VRDisplays.
         controllerMeshes?: boolean; // should the native controller meshes be initialized
-        defaultLightningOnControllers?: boolean; // creating a default HemiLight only on controllers
+        defaultLightingOnControllers?: boolean; // creating a default HemiLight only on controllers
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -60,9 +60,7 @@ module BABYLON {
         public deviceScaleFactor: number = 1;
 
         public controllers: Array<WebVRController> = [];
-        public nonVRControllers: Array<Gamepad> = [];
         public onControllersAttachedObservable = new Observable<Array<WebVRController>>();
-        public onNonVRControllersAttachedObservable = new Observable<Gamepad>();
 
         public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
@@ -70,6 +68,8 @@ module BABYLON {
 
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
+
+            this.minZ = 0.1;
 
             //legacy support - the compensation boolean was removed.
             if (arguments.length === 5) {
@@ -83,8 +83,8 @@ module BABYLON {
             if (this.webVROptions.controllerMeshes == undefined) {
                 this.webVROptions.controllerMeshes = true;
             }
-            if (this.webVROptions.defaultLightningOnControllers == undefined) {
-                this.webVROptions.defaultLightningOnControllers = true;
+            if (this.webVROptions.defaultLightingOnControllers == undefined) {
+                this.webVROptions.defaultLightingOnControllers = true;
             }
 
             this.rotationQuaternion = new Quaternion();
@@ -201,7 +201,6 @@ module BABYLON {
                     //backwards comp
                     let pose = this._vrDevice.getPose();
                     this._frameData.pose = pose;
-                    // calculate view and projection matrix
                 }
 
                 this.updateFromDevice(this._frameData.pose);
@@ -360,8 +359,8 @@ module BABYLON {
 
                 let parentCamera = <WebVRFreeCamera> this.parent;
 
-                parentCamera._vrDevice.depthNear = this.minZ;
-                parentCamera._vrDevice.depthFar = this.maxZ;
+                parentCamera._vrDevice.depthNear = parentCamera.minZ;
+                parentCamera._vrDevice.depthFar = parentCamera.maxZ;
                 
                 var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
                 Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
@@ -395,8 +394,6 @@ module BABYLON {
                     }
 
                     this.controllers.splice(index, 1);
-                    
-                    webVrController.dispose();
                 }
             });
 
@@ -405,7 +402,7 @@ module BABYLON {
                     let webVrController: WebVRController = <WebVRController>gamepad;
                     if (this.webVROptions.controllerMeshes) {
                         webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
-                            if (this.webVROptions.defaultLightningOnControllers) {
+                            if (this.webVROptions.defaultLightingOnControllers) {
                                 if (!this._lightOnControllers) {
                                     this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), this.getScene());
                                 }
@@ -444,10 +441,6 @@ module BABYLON {
                             this.onControllersAttachedObservable.notifyObservers(this.controllers);
                         }
                     }
-                }
-                else {
-                    this.nonVRControllers.push(gamepad);
-                    this.onNonVRControllersAttachedObservable.notifyObservers(gamepad);
                 }
             });
         }

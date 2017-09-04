@@ -145,7 +145,7 @@ module BABYLON {
                     }
                 }
 
-                this.getScene().getEngine().updateTextureSize(texture, size * size, size);
+                texture.updateSize(size * size, size);
                 this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
             }
 

@@ -34,6 +34,10 @@
 
         }
 
+        public rebuild(): void {
+            
+        }
+
         public dispose(): void {
             var index = this._scene.particleSystems.indexOf(this);
             if (index > -1) {

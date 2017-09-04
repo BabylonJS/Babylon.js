@@ -694,6 +694,7 @@
         public gravity = new Vector3(0, -9.807, 0);
 
         // Postprocesses
+        public postProcesses = new Array<PostProcess>();
         public postProcessesEnabled = true;
         public postProcessManager: PostProcessManager;
         private _postProcessRenderPipelineManager: PostProcessRenderPipelineManager
@@ -1636,8 +1637,6 @@
             this._cachedEffect = null;
             this._cachedVisibility = null;
         }
-
-
 
         public registerBeforeRender(func: () => void): void {
             this.onBeforeRenderObservable.add(func);
@@ -3451,6 +3450,11 @@
                 this.spriteManagers[0].dispose();
             }
 
+            // Release postProcesses
+            while (this.postProcesses.length) {
+                this.postProcesses[0].dispose();
+            }
+
             // Release layers
             while (this.layers.length) {
                 this.layers[0].dispose();
@@ -3469,6 +3473,10 @@
 
             // Post-processes
             this.postProcessManager.dispose();
+
+            if (this._postProcessRenderPipelineManager) {
+                this._postProcessRenderPipelineManager.dispose();
+            }
 
             // Physics
             if (this._physicsEngine) {
@@ -3833,6 +3841,48 @@
         }
 
         // Misc.
+        public _rebuildGeometries(): void {
+            for (var geometry of this._geometries) {
+                geometry._rebuild();
+            }
+
+            for (var mesh of this.meshes) {
+                mesh._rebuild();
+            }
+
+            if (this.postProcessManager) {
+                this.postProcessManager._rebuild();
+            }         
+
+            for (var layer of this.layers) {
+                layer._rebuild();
+            }
+
+            for (var highlightLayer of this.highlightLayers) {
+                highlightLayer._rebuild();
+            }
+
+            if (this._boundingBoxRenderer) {
+                this._boundingBoxRenderer._rebuild();
+            }
+
+            for (var system of this.particleSystems) {
+                system.rebuild();
+            }
+
+            if (this._postProcessRenderPipelineManager) {
+                this._postProcessRenderPipelineManager._rebuild();
+            }            
+        }
+
+        public _rebuildTextures(): void {
+            for (var texture of this.textures) {
+                texture._rebuild();
+            }
+
+            this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+        }
+
         public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false) {
             // Dispose existing camera or light in replace mode.
             if (replace) {

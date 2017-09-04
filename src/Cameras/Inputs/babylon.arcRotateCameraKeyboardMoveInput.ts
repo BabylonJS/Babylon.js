@@ -20,15 +20,26 @@ module BABYLON {
         @serialize()
         public keysRight = [39];
 
+        @serialize()
+        public keysReset = [111];        
+
+        @serialize()
+        public panningSensibility: number = 50.0;        
+
+        private _ctrlPressed: boolean;
+
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             element.tabIndex = 1;
 
             this._onKeyDown = evt => {
 
+                this._ctrlPressed = evt.ctrlKey;
+
                 if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                    this.keysReset.indexOf(evt.keyCode) !== -1) {
                     var index = this._keys.indexOf(evt.keyCode);
 
                     if (index === -1) {
@@ -44,11 +55,12 @@ module BABYLON {
             };
 
             this._onKeyUp = evt => {
-
+                
                 if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                    this.keysReset.indexOf(evt.keyCode) !== -1) {
                     var index = this._keys.indexOf(evt.keyCode);
 
                     if (index >= 0) {
@@ -111,13 +123,31 @@ module BABYLON {
                 for (var index = 0; index < this._keys.length; index++) {
                     var keyCode = this._keys[index];
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        camera.inertialAlphaOffset -= 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningX -= 1 / this.panningSensibility;
+                        } else {
+                            camera.inertialAlphaOffset -= 0.01;
+                        }
                     } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        camera.inertialBetaOffset -= 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningY += 1 / this.panningSensibility;
+                        } else {
+                            camera.inertialBetaOffset -= 0.01;
+                        }
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        camera.inertialAlphaOffset += 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningX += 1 / this.panningSensibility;
+                        } else {                        
+                            camera.inertialAlphaOffset += 0.01;
+                        }
                     } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        camera.inertialBetaOffset += 0.01;
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningY -= 1 / this.panningSensibility;
+                        } else {
+                            camera.inertialBetaOffset += 0.01;
+                        }
+                    } else if (this.keysReset.indexOf(keyCode) !== -1) {
+                        camera.restoreState();
                     }
                 }
             }

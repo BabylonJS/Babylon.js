@@ -98,7 +98,7 @@ module BABYLON {
 
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {      
                 let now = Tools.Now;
-                let dt = 16;
+                let dt = 0;
                 if (this._lastFrameTime != null) {
                     dt =  now - this._lastFrameTime;
                 }
@@ -116,11 +116,12 @@ module BABYLON {
             });
         }
              
-        public detach(camera: ArcRotateCamera): void {
+        public detach(): void {
             let scene = this._attachedCamera.getScene();
             
             scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
-            camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			this._attachedCamera = null;
 		}
 
 		/**

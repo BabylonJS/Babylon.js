@@ -74,6 +74,11 @@
             this.video.addEventListener("playing", this._setTextureReady);
         }
 
+        
+        public _rebuild(): void {
+            this.update();
+        }
+
         public update(): boolean {
             var now = Tools.Now;
 

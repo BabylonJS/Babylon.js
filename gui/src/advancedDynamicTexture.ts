@@ -256,6 +256,7 @@ module BABYLON.GUI {
 
             // Render
             context.font = "18px Arial";
+            context.strokeStyle = "white";
             var measure = new Measure(0, 0, renderWidth, renderHeight);
             this._rootContainer._draw(measure, context);
         }
