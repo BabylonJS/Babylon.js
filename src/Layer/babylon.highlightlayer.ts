@@ -285,16 +285,7 @@ module BABYLON {
             var vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
             this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
 
-            // Indices
-            var indices = [];
-            indices.push(0);
-            indices.push(1);
-            indices.push(2);
-            indices.push(0);
-            indices.push(2);
-            indices.push(3);
-
-            this._indexBuffer = engine.createIndexBuffer(indices);
+            this._createIndexBuffer();
 
             // Effect
             this._glowMapMergeEffect = engine.createEffect("glowMapMerge",
@@ -308,6 +299,28 @@ module BABYLON {
             // Create Textures and post processes
             this.createTextureAndPostProcesses();
         }
+       
+        private _createIndexBuffer(): void {
+            var engine = this._scene.getEngine();
+
+            // Indices
+            var indices = [];
+            indices.push(0);
+            indices.push(1);
+            indices.push(2);
+
+            indices.push(0);
+            indices.push(2);
+            indices.push(3);
+
+            this._indexBuffer = engine.createIndexBuffer(indices);
+        }
+
+        public _rebuild(): void {
+            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+
+            this._createIndexBuffer();
+        }        
 
         /**
          * Creates the render target textures and post processes used in the highlight layer.
@@ -334,6 +347,7 @@ module BABYLON {
             this._mainTexture.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             this._mainTexture.renderParticles = false;
             this._mainTexture.renderList = null;
+            this._mainTexture.ignoreCameraViewport = true;
 
             this._blurTexture = new RenderTargetTexture("HighlightLayerBlurRTT",
                 {
@@ -349,6 +363,7 @@ module BABYLON {
             this._blurTexture.anisotropicFilteringLevel = 16;
             this._blurTexture.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
             this._blurTexture.renderParticles = false;
+            this._blurTexture.ignoreCameraViewport = true;
 
             this._downSamplePostprocess = new PassPostProcess("HighlightLayerPPP", this._options.blurTextureSizeRatio,
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
@@ -388,7 +403,7 @@ module BABYLON {
 
                 this._scene.postProcessManager.directRender(
                     [this._downSamplePostprocess, this._horizontalBlurPostprocess, this._verticalBlurPostprocess],
-                    this._blurTexture.getInternalTexture());
+                    this._blurTexture.getInternalTexture(), true);
 
                 this.onAfterBlurObservable.notifyObservers(this);
             });
@@ -774,8 +789,8 @@ module BABYLON {
                 this._mainTextureDesiredSize.height = this._options.mainTextureFixedSize;
             }
             else {
-                this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
-                this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
+                this._mainTextureDesiredSize.width = this._engine.getRenderWidth() * this._options.mainTextureRatio;
+                this._mainTextureDesiredSize.height = this._engine.getRenderHeight() * this._options.mainTextureRatio;
 
                 this._mainTextureDesiredSize.width = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize) : this._mainTextureDesiredSize.width;
                 this._mainTextureDesiredSize.height = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize) : this._mainTextureDesiredSize.height;

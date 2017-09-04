@@ -30,8 +30,10 @@ module BABYLON {
 
         public get isSupported(): boolean {
             for (var renderEffectName in this._renderEffects) {
-                if (!this._renderEffects[renderEffectName].isSupported) {
-                    return false;
+                if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+                    if (!this._renderEffects[renderEffectName].isSupported) {
+                        return false;
+                    }
                 }
             }
 
@@ -43,6 +45,10 @@ module BABYLON {
         }
 
         // private
+
+        public _rebuild() {
+            
+        }
 
         public _enableEffect(renderEffectName: string, cameras: Camera);
         public _enableEffect(renderEffectName: string, cameras: Camera[]);
@@ -92,7 +98,9 @@ module BABYLON {
             }
 
             for (var renderEffectName in this._renderEffects) {
-                this._renderEffects[renderEffectName]._attachCameras(_cam);
+                if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+                    this._renderEffects[renderEffectName]._attachCameras(_cam);
+                }
             }
         }
 
@@ -102,7 +110,9 @@ module BABYLON {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
             for (var renderEffectName in this._renderEffects) {
-                this._renderEffects[renderEffectName]._detachCameras(_cam);
+                if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+                    this._renderEffects[renderEffectName]._detachCameras(_cam);
+                }
             }
 
             for (var i = 0; i < _cam.length; i++) {
@@ -118,10 +128,12 @@ module BABYLON {
             var pass = null;
             var renderEffectName;
             for (renderEffectName in this._renderEffects) {
-                pass = this._renderEffects[renderEffectName].getPass(passName);
+                if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+                    pass = this._renderEffects[renderEffectName].getPass(passName);
 
-                if (pass != null) {
-                    break;
+                    if (pass != null) {
+                        break;
+                    }
                 }
             }
 
@@ -130,7 +142,9 @@ module BABYLON {
             }
 
             for (renderEffectName in this._renderEffects) {
-                this._renderEffects[renderEffectName]._disable(_cam);
+                if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+                    this._renderEffects[renderEffectName]._disable(_cam);
+                }
             }
 
             pass._name = PostProcessRenderPipeline.PASS_SAMPLER_NAME;
@@ -162,13 +176,17 @@ module BABYLON {
             }
 
             for (var renderEffectName in this._renderEffects) {
-                this._renderEffects[renderEffectName]._enable(_cam);
+                if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+                    this._renderEffects[renderEffectName]._enable(_cam);
+                }
             }
         }
 
         public _update(): void {
             for (var renderEffectName in this._renderEffects) {
-                this._renderEffects[renderEffectName]._update();
+                if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+                    this._renderEffects[renderEffectName]._update();
+                }
             }
 
             for (var i = 0; i < this._cameras.length; i++) {

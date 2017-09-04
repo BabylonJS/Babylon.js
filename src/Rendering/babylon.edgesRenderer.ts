@@ -49,6 +49,22 @@
             this._lineShader.backFaceCulling = false;
         }
 
+        public _rebuild(): void {
+            var buffer = this._buffers[VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer._rebuild();
+            }
+
+            buffer = this._buffers[VertexBuffer.NormalKind];
+            if (buffer) {
+                buffer._rebuild();
+            }
+
+            var scene = this._source.getScene();
+            var engine = scene.getEngine();
+            this._ib = engine.createIndexBuffer(this._linesIndices);
+        }
+
         public dispose(): void {
 
             var buffer = this._buffers[VertexBuffer.PositionKind];

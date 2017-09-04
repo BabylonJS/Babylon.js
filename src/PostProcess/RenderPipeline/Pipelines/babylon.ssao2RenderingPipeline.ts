@@ -250,6 +250,12 @@
                 }
             };
         }
+        
+        public _rebuild() {
+            this._firstUpdate = true;
+
+            super._rebuild();
+        }
 
         private _generateHemisphere(): number[] {
             var numSamples = this.samples;

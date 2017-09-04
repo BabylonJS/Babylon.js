@@ -68,6 +68,7 @@
                 "../../src/babylon.scene.js",
                 "../../src/Mesh/babylon.buffer.js",
                 "../../src/Mesh/babylon.vertexBuffer.js",
+                "../../src/Materials/Textures/babylon.internalTexture.js",
                 "../../src/Materials/Textures/babylon.baseTexture.js",
                 "../../src/Materials/Textures/babylon.texture.js",
                 "../../src/Mesh/babylon.mesh.js",
@@ -528,9 +529,14 @@
             "files": [
                 "../../src/Cameras/Inputs/babylon.freeCameraGamepadInput.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraGamepadInput.js",
-                "../../src/Tools/Gamepad/babylon.gamepadManager.js",
-                "../../src/Tools/Gamepad/babylon.gamepads.js",
-                "../../src/Tools/Gamepad/babylon.extendedGamepad.js"
+                "../../src/Gamepad/babylon.gamepadManager.js",
+                "../../src/Gamepad/babylon.gamepad.js",
+                "../../src/Gamepad/babylon.xboxGamepad.js",
+                "../../src/Gamepad/Controllers/babylon.poseEnabledController.js",
+                "../../src/Gamepad/Controllers/babylon.webVRController.js",
+                "../../src/Gamepad/Controllers/babylon.oculusTouchController.js",
+                "../../src/Gamepad/Controllers/babylon.viveController.js",
+                "../../src/Gamepad/Controllers/babylon.genericController.js"
             ],
             "dependUpon" : [
                 "core"

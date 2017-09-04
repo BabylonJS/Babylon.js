@@ -119,5 +119,9 @@ module BABYLON {
 
             return newTexture;
         }
+
+        public _rebuild(): void {
+            this.update();
+        }
     }
 } 

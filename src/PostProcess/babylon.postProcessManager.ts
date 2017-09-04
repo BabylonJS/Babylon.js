@@ -22,6 +22,10 @@
 
             this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._scene.getEngine(), vertices, VertexBuffer.PositionKind, false, false, 2);
 
+            this._buildIndexBuffer();
+        }
+
+        private _buildIndexBuffer(): void {
             // Indices
             var indices = [];
             indices.push(0);
@@ -34,9 +38,17 @@
 
             this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
         }
-
+        
+        public _rebuild(): void {
+            if (!this._vertexBuffers[VertexBuffer.PositionKind]) {
+                return;
+            }
+            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+            this._buildIndexBuffer();
+        }
+        
         // Methods
-        public _prepareFrame(sourceTexture?: WebGLTexture, postProcesses?: PostProcess[]): boolean {
+        public _prepareFrame(sourceTexture?: InternalTexture, postProcesses?: PostProcess[]): boolean {
             var postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
 
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
@@ -47,7 +59,7 @@
             return true;
         }
 
-        public directRender(postProcesses: PostProcess[], targetTexture?: WebGLTexture): void {
+        public directRender(postProcesses: PostProcess[], targetTexture?: InternalTexture, forceFullscreenViewport = false): void {
             var engine = this._scene.getEngine();
 
             for (var index = 0; index < postProcesses.length; index++) {
@@ -55,7 +67,7 @@
                     postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
                 } else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture);
+                        engine.bindFramebuffer(targetTexture, 0, null, null, forceFullscreenViewport);
                     } else {
                         engine.restoreDefaultFramebuffer();
                     }
@@ -83,7 +95,7 @@
             engine.setDepthWrite(true);
         }
 
-        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: WebGLTexture, faceIndex?: number, postProcesses?: PostProcess[]): void {
+        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: PostProcess[]): void {
             postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return;

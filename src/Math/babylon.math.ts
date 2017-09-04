@@ -4387,7 +4387,7 @@
         }
 
         public toGlobal(renderWidthOrEngine: number | Engine, renderHeight: number): Viewport {
-            if ((<Engine>renderWidthOrEngine)._gl) {
+            if ((<Engine>renderWidthOrEngine).getRenderWidth) {
                 var engine = (<Engine>renderWidthOrEngine);
                 return this.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             }

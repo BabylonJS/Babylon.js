@@ -343,6 +343,47 @@ module BABYLON {
             return this._target;
         }
 
+       // State
+
+        /**
+         * Store current camera state (fov, position, etc..)
+         */
+        private _storedAlpha: number;
+        private _storedBeta: number;
+        private _storedRadius: number;
+        private _storedTarget: Vector3;     
+
+        public storeState(): Camera {
+            this._storedAlpha = this.alpha;
+            this._storedBeta = this.beta;
+            this._storedRadius = this.radius;
+            this._storedTarget = this._getTargetPosition().clone();
+
+            return super.storeState();
+        }
+
+        /**
+         * Restored camera state. You must call storeState() first
+         */
+        public restoreState(): boolean {
+            if (!super.restoreState()) {
+                return false;
+            }
+
+            this.alpha = this._storedAlpha;
+            this.beta = this._storedBeta;
+            this.radius = this._storedRadius;
+            this.setTarget(this._storedTarget);
+
+            this.inertialAlphaOffset = 0;
+            this.inertialBetaOffset = 0;
+            this.inertialRadiusOffset = 0;
+            this.inertialPanningX = 0;
+            this.inertialPanningY = 0;
+        
+            return true;
+        }             
+
         // Synchronized
         public _isSynchronizedViewMatrix(): boolean {
             if (!super._isSynchronizedViewMatrix())
@@ -366,6 +407,8 @@ module BABYLON {
                 this.inertialAlphaOffset = 0;
                 this.inertialBetaOffset = 0;
                 this.inertialRadiusOffset = 0;
+                this.inertialPanningX = 0;
+                this.inertialPanningY = 0;
             };
         }
 

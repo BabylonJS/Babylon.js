@@ -7,6 +7,7 @@
     <script src="https://babylonjs.azurewebsites.net/Oimo.js"></script>
 	<script src="../assets/refs/dat.gui.min.js"></script>
 	<script src="../tools/DevLoader/BabylonLoader.js"></script>
+	<script src="src/webgl-debug.js"></script>
 
 	<style>
 		html, body {
@@ -42,6 +43,7 @@
 	
 	<script>
 		var canvas = document.getElementById("renderCanvas");
+		// canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
 		var divFps = document.getElementById("fps");
 
 		// Global to simulate PG.
@@ -68,11 +70,13 @@
 					// call the scene creation from the js.
 					var scene = createScene();
 
-					// Register a render loop to repeatedly render the scene
-					engine.runRenderLoop(function () {
-						scene.render();
-						divFps.innerHTML = engine.getFps().toFixed() + " fps";
-					});
+					if (scene) {
+						// Register a render loop to repeatedly render the scene
+						engine.runRenderLoop(function () {
+							scene.render();
+							divFps.innerHTML = engine.getFps().toFixed() + " fps";
+						});
+					}
 
 					// Resize
 					window.addEventListener("resize", function () {
