@@ -32429,6 +32429,8 @@ var BABYLON;
             if (mustRebind) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 this.bindViewProjection(effect);
+                var reflectionTexture = this._getReflectionTexture();
+                var refractionTexture = this._getRefractionTexture();
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
                     // Texture uniforms
                     if (scene.texturesEnabled) {
@@ -32444,7 +32446,6 @@ var BABYLON;
                             this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                             BABYLON.MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
                         }
-                        var reflectionTexture = this._getReflectionTexture();
                         if (reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
@@ -32494,7 +32495,6 @@ var BABYLON;
                                 this._uniformBuffer.updateFloat4("vNormalReoderParams", this._invertNormalMapX ? 1.0 : 0, this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? 1.0 : 0, this._invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
-                        var refractionTexture = this._getRefractionTexture();
                         if (refractionTexture && BABYLON.StandardMaterial.RefractionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
                             var depth = 1.0;
