@@ -1,6 +1,12 @@
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    export interface IFocusableControl {
+        onFocus(): void;
+        onBlur(): void;
+        processKeyboard(evt: KeyboardEvent): void;
+    }
+
     export class AdvancedDynamicTexture extends DynamicTexture {
         private _isDirty = false;
         private _renderObserver: Observer<Camera>;
