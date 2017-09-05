@@ -5,11 +5,13 @@ module BABYLON.GUI {
         private _isDirty = false;
         private _renderObserver: Observer<Camera>;
         private _resizeObserver: Observer<Engine>;
+        private _preKeyboardObserver: Observer<KeyboardInfoPre>;
         private _pointerMoveObserver: Observer<PointerInfoPre>;
         private _pointerObserver: Observer<PointerInfo>;
         private _canvasPointerOutObserver: Observer<Engine>;
         private _background: string;
         public _rootContainer = new Container("root");
+        public _lastPickedControl: Control;
         public _lastControlOver: Control;
         public _lastControlDown: Control;
         public _capturingControl: Control;
@@ -21,6 +23,7 @@ module BABYLON.GUI {
         private _idealWidth = 0;
         private _idealHeight = 0;
         private _renderAtIdealSize = false;
+        private _focusedControl: IFocusableControl;
 
         public get background(): string {
             return this._background;
@@ -83,11 +86,40 @@ module BABYLON.GUI {
         public get rootContainer(): Container {
             return this._rootContainer;
         }
+
+        public get focusedControl(): IFocusableControl {
+            return this._focusedControl;
+        }
+
+        public set focusedControl(control: IFocusableControl) {
+            if (this._focusedControl === control) {
+                return;
+            }
+
+            if (!this._focusedControl) {
+                control.onFocus();
+            } else {
+                this._focusedControl.onBlur();
+            }
+
+            this._focusedControl = control;
+        }
        
         constructor(name: string, width = 0, height = 0, scene: Scene, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
 
             this._renderObserver = this.getScene().onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
+            this._preKeyboardObserver = this.getScene().onPreKeyboardObservable.add(info => {
+                if (!this._focusedControl) {
+                    return;
+                }
+
+                if (info.type === KeyboardEventTypes.KEYDOWN) {
+                    this._focusedControl.processKeyboard(info.event);
+                }
+
+                info.skipOnPointerObservable = true;
+            });
 
             this._rootContainer._link(null, this);
 
@@ -284,6 +316,13 @@ module BABYLON.GUI {
                     }
                     
                     this._lastControlOver = null;
+                }
+            }
+
+            // Focus management
+            if (this._focusedControl) {
+                if (this._focusedControl !== (<any>this._lastPickedControl)) {
+                    this.focusedControl = null;
                 }
             }
         }
