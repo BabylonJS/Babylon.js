@@ -146,8 +146,8 @@ var BABYLON;
                 if (this._pointerObserver) {
                     this.getScene().onPointerObservable.remove(this._pointerObserver);
                 }
-                if (this._canvasBlurObserver) {
-                    this.getScene().getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+                if (this._canvasPointerOutObserver) {
+                    this.getScene().getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
                 }
                 if (this._layerToDispose) {
                     this._layerToDispose.texture = null;
@@ -281,7 +281,7 @@ var BABYLON;
                     _this._doPicking(x, y, pi.type);
                     pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
                 });
-                this._attachToOnBlur(scene);
+                this._attachToOnPointerOut(scene);
             };
             AdvancedDynamicTexture.prototype.attachToMesh = function (mesh, supportPointerMove) {
                 var _this = this;
@@ -312,11 +312,11 @@ var BABYLON;
                     }
                 });
                 mesh.enablePointerMoveEvents = supportPointerMove;
-                this._attachToOnBlur(scene);
+                this._attachToOnPointerOut(scene);
             };
-            AdvancedDynamicTexture.prototype._attachToOnBlur = function (scene) {
+            AdvancedDynamicTexture.prototype._attachToOnPointerOut = function (scene) {
                 var _this = this;
-                this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function () {
+                this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(function () {
                     if (_this._lastControlOver) {
                         _this._lastControlOver._onPointerOut();
                     }

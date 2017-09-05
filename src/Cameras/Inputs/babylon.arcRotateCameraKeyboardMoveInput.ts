@@ -2,11 +2,6 @@ module BABYLON {
     export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         private _keys = [];
-        private _onKeyDown: (e: KeyboardEvent) => any;
-        private _onKeyUp: (e: KeyboardEvent) => any;
-        private _onLostFocus: (e: FocusEvent) => any;
-        private _onFocus: () => void;
-        private _onBlur: () => void;
         
         @serialize()
         public keysUp = [38];
@@ -27,97 +22,81 @@ module BABYLON {
         public panningSensibility: number = 50.0;        
 
         private _ctrlPressed: boolean;
+        private _onCanvasBlurObserver: Observer<Engine>;
+        private _onKeyboardObserver: Observer<KeyboardInfo>;
+        private _engine: Engine;
+        private _scene: Scene;
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
-            element.tabIndex = 1;
+            if (this._onCanvasBlurObserver) {
+                return;
+            }
+            
+            this._scene = this.camera.getScene();
+            this._engine = this._scene.getEngine();
 
-            this._onKeyDown = evt => {
-
-                this._ctrlPressed = evt.ctrlKey;
-
-                if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                    this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                    this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                    this.keysReset.indexOf(evt.keyCode) !== -1) {
-                    var index = this._keys.indexOf(evt.keyCode);
-
-                    if (index === -1) {
-                        this._keys.push(evt.keyCode);
-                    }
-
-                    if (evt.preventDefault) {
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                }
-            };
-
-            this._onKeyUp = evt => {
-                
-                if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                    this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                    this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                    this.keysReset.indexOf(evt.keyCode) !== -1) {
-                    var index = this._keys.indexOf(evt.keyCode);
-
-                    if (index >= 0) {
-                        this._keys.splice(index, 1);
-                    }
-
-                    if (evt.preventDefault) {
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                }
-            };
-
-            this._onLostFocus = () => {
+            this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(()=>{
                 this._keys = [];
-            };
+            });
 
-            this._onFocus = () => {
-                element.addEventListener("keydown", this._onKeyDown, false);
-                element.addEventListener("keyup", this._onKeyUp, false);   
-            }
+            this._onKeyboardObserver = this._scene.onKeyboardObservable.add(info => {
+                let evt = info.event;
 
-            this._onBlur = () => {
-                element.removeEventListener("keydown", this._onKeyDown);
-                element.removeEventListener("keyup", this._onKeyUp);
-            }
+                if (info.type === KeyboardEventTypes.KEYDOWN) {
+                    this._ctrlPressed = evt.ctrlKey;
+                    
+                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysReset.indexOf(evt.keyCode) !== -1) {
+                        var index = this._keys.indexOf(evt.keyCode);
 
-            element.addEventListener("focus", this._onFocus);
-            element.addEventListener("blur", this._onBlur);
+                        if (index === -1) {
+                            this._keys.push(evt.keyCode);
+                        }
 
-            Tools.RegisterTopRootEvents([
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+                        if (evt.preventDefault) {
+                            if (!noPreventDefault) {
+                                evt.preventDefault();
+                            }
+                        }
+                    }
+                } else {
+                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysReset.indexOf(evt.keyCode) !== -1) {
+                        var index = this._keys.indexOf(evt.keyCode);
+    
+                        if (index >= 0) {
+                            this._keys.splice(index, 1);
+                        }
+    
+                        if (evt.preventDefault) {
+                            if (!noPreventDefault) {
+                                evt.preventDefault();
+                            }
+                        }
+                    }
+                }
+            });    
         }
 
         public detachControl(element: HTMLElement) {
-            if (element && this._onBlur) {
-                this._onBlur();
-                element.removeEventListener("focus", this._onFocus);
-                element.removeEventListener("blur", this._onBlur);
+            if (this._scene) {
+                this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
+                this._engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+                this._onKeyboardObserver = null;
+                this._onCanvasBlurObserver = null;
             }
 
-            Tools.UnregisterTopRootEvents([
-                { name: "blur", handler: this._onLostFocus }
-            ]);
-            
             this._keys = [];
-            this._onKeyDown = null;
-            this._onKeyUp = null;
-            this._onLostFocus = null;
-            this._onBlur = null;
-            this._onFocus = null;
         }
 
         public checkInputs() {
-            if (this._onKeyDown){
+            if (this._onKeyboardObserver){
                 var camera = this.camera;
 
                 for (var index = 0; index < this._keys.length; index++) {
