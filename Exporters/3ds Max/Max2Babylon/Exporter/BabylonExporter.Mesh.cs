@@ -12,17 +12,46 @@ namespace Max2Babylon
         private int bonesCount;
 
         readonly Dictionary<IIGameSkin, List<int>> skinSortedBones = new Dictionary<IIGameSkin, List<int>>();
-
-        private void ExportMesh(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
+        
+        private bool IsMeshExportable(IIGameNode meshNode)
         {
             if (meshNode.MaxNode.GetBoolProperty("babylonjs_noexport"))
             {
-                return;
+                return false;
             }
 
             if (!ExportHiddenObjects && meshNode.MaxNode.IsHidden(NodeHideFlags.None, false))
             {
-                return;
+                return false;
+            }
+
+            return true;
+        }
+
+        private BabylonNode ExportDummy(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
+        {
+            RaiseMessage(meshNode.Name, 1);
+
+            var gameMesh = meshNode.IGameObject.AsGameMesh();
+            bool initialized = gameMesh.InitializeData; // needed, the property is in fact a method initializing the exporter that has wrongly been auto 
+                                                        // translated into a property because it has no parameters
+
+            var babylonMesh = new BabylonMesh { name = meshNode.Name, id = meshNode.MaxNode.GetGuid().ToString() };
+            babylonMesh.isDummy = true;
+
+            // Position / rotation / scaling / hierarchy
+            exportNode(babylonMesh, meshNode, scene, babylonScene);
+
+            babylonScene.MeshesList.Add(babylonMesh);
+
+            return babylonMesh;
+        }
+
+        private BabylonNode ExportMesh(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
+        {
+            if (IsMeshExportable(meshNode) == false)
+            {
+                return null;
             }
 
             RaiseMessage(meshNode.Name, 1);
@@ -47,7 +76,12 @@ namespace Max2Babylon
 #endif
                     var tab = tabs[indexer];
 
-                    babylonMasterMesh = babylonScene.MeshesList.Find(_babylonMesh => _babylonMesh.id == tab.GetGuid().ToString());
+                    babylonMasterMesh = babylonScene.MeshesList.Find(_babylonMesh => {
+                               // Same id
+                        return _babylonMesh.id == tab.GetGuid().ToString() &&
+                               // Mesh is not a dummy
+                               _babylonMesh.isDummy == false;
+                    });
                 }
 
                 if (babylonMasterMesh != null)
@@ -70,7 +104,7 @@ namespace Max2Babylon
                     // Animations
                     exportAnimation(babylonInstanceMesh, meshNode);
 
-                    return;
+                    return babylonInstanceMesh;
                 }
             }
             
@@ -376,6 +410,8 @@ namespace Max2Babylon
             }
 
             babylonScene.MeshesList.Add(babylonMesh);
+
+            return babylonMesh;
         }
 
         private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face, List<int> boneIds)
@@ -471,29 +507,6 @@ namespace Max2Babylon
             }
             return boneIds;
 
-        }
-
-        private string GetParentID(IIGameNode parentNode, BabylonScene babylonScene, IIGameScene scene)
-        {
-            var parentType = parentNode.IGameObject.IGameType;
-            var parentId = parentNode.MaxNode.GetGuid().ToString();
-            switch (parentType)
-            {
-                case Autodesk.Max.IGameObject.ObjectTypes.Light:
-                case Autodesk.Max.IGameObject.ObjectTypes.Mesh:
-                case Autodesk.Max.IGameObject.ObjectTypes.Camera:
-                    break;
-
-
-                default:
-                    // Create a dummy (empty mesh) when the type of parent node is not exportable (spline, xref...)
-                    if (babylonScene.MeshesList.All(m => m.id != parentId))
-                    {
-                        ExportMesh(scene, parentNode, babylonScene);
-                    }
-                    break;
-            }
-            return parentId;
         }
 
         private float[] QuaternionToEulerAngles(IQuat rotation)
@@ -684,7 +697,7 @@ namespace Max2Babylon
             // Hierarchy
             if (maxGameNode.NodeParent != null)
             {
-                babylonAbstractMesh.parentId = GetParentID(maxGameNode.NodeParent, babylonScene, maxGameScene);
+                babylonAbstractMesh.parentId = maxGameNode.NodeParent.MaxNode.GetGuid().ToString();
             }
         }
 
@@ -761,8 +774,6 @@ namespace Max2Babylon
                     var parentWorld = meshNode.NodeParent.GetObjectTM(key);
                     worldMatrix.MultiplyBy(parentWorld.Inverse);
                 }
-
-
                 var rot = worldMatrix.Rotation;
                 return new[] { rot.X, rot.Y, rot.Z, -rot.W };
             });
@@ -776,7 +787,6 @@ namespace Max2Babylon
                     worldMatrix.MultiplyBy(parentWorld.Inverse);
                 }
                 var scale = worldMatrix.Scaling;
-
                 return new[] { scale.X, scale.Y, scale.Z };
             });
         }
