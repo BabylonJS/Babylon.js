@@ -30397,7 +30397,6 @@ var BABYLON;
             this._blendingFactor = 0;
             // The set of event that will be linked to this animation
             this._events = new Array();
-            this.allowMatricesInterpolation = false;
             this.blendingSpeed = 0.01;
             this._ranges = {};
             this.targetPropertyPath = targetProperty.split(".");
@@ -30738,7 +30737,7 @@ var BABYLON;
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    if (this.allowMatricesInterpolation) {
+                                    if (Animation.AllowMatricesInterpolation) {
                                         return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                     }
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
@@ -31106,6 +31105,7 @@ var BABYLON;
                 }
             }
         };
+        Animation.AllowMatricesInterpolation = false;
         // Statics
         Animation._ANIMATIONTYPE_FLOAT = 0;
         Animation._ANIMATIONTYPE_VECTOR3 = 1;
