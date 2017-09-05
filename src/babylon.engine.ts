@@ -2844,12 +2844,18 @@
             if (!this._rescalePostProcess) {
                 this._rescalePostProcess = new BABYLON.PassPostProcess("rescale", 1, null, Texture.BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
             }
+
             this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
                 this._rescalePostProcess.onApply = function (effect) {
                     effect._bindTexture("textureSampler", source);
                 }
 
-                scene.postProcessManager.directRender([this._rescalePostProcess], rtt);
+                let hostingScene = scene;
+
+                if (!hostingScene) {
+                    hostingScene = this.scenes[this.scenes.length - 1];
+                }
+                hostingScene.postProcessManager.directRender([this._rescalePostProcess], rtt);
 
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, destination);
                 this._gl.copyTexImage2D(this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);

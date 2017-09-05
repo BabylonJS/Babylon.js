@@ -1,7 +1,3 @@
-
-
-//# sourceMappingURL=focusableControl.js.map
-
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -3377,6 +3373,8 @@ var BABYLON;
         GUI.Button = Button;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=button.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {

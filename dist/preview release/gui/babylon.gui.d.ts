@@ -1,13 +1,10 @@
+
 declare module BABYLON.GUI {
     interface IFocusableControl {
         onFocus(): void;
         onBlur(): void;
         processKeyboard(evt: KeyboardEvent): void;
     }
-}
-
-
-declare module BABYLON.GUI {
     class AdvancedDynamicTexture extends DynamicTexture {
         private _isDirty;
         private _renderObserver;
