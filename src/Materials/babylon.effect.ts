@@ -401,6 +401,7 @@
                 result = result.replace(/textureCube\(/g, "texture(");
                 result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
                 result = result.replace(/gl_FragColor/g, "glFragColor");
+                result = result.replace(/gl_FragData/g, "glFragData");
                 result = result.replace(/void\s+?main\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
             }
             

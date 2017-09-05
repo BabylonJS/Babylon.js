@@ -104,7 +104,9 @@ module BABYLON {
                 this._effect = this._scene.getEngine().createEffect("geometry",
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix", "view"],
-                    ["diffuseSampler"], join);
+                    ["diffuseSampler"], join,
+                    null, null, null,
+                    { buffersCount: this._enablePosition ? 3 : 2 });
             }
 
             return this._effect.isReady();

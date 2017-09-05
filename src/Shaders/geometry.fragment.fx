@@ -15,17 +15,10 @@ varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
-#if __VERSION__ >= 200
-    layout(location = 0) out vec4 color0;
-    layout(location = 1) out vec4 color1;
-
-    #ifdef POSITION
-    layout(location = 2) out vec4 color2;
-    #endif
+#ifdef POSITION
+#include<mrtFragmentDeclaration>[3]
 #else
-    #define color0 gl_FragData[0]
-    #define color1 gl_FragData[1]
-    #define color2 gl_FragData[2]
+#include<mrtFragmentDeclaration>[2]
 #endif
 
 void main() {
@@ -34,11 +27,12 @@ void main() {
 		discard;
 #endif
 
-    color0 = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
-    color1 = vec4(normalize(vNormalV), 1.0);
+    gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+    //color0 = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+    gl_FragData[1] = vec4(normalize(vNormalV), 1.0);
     //color2 = vec4(vPositionV, 1.0);
 
     #ifdef POSITION
-    color2 = vec4(vPosition, 1.0);
+    gl_FragData[2] = vec4(vPosition, 1.0);
     #endif
 }
