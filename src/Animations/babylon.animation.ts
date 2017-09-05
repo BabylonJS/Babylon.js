@@ -89,6 +89,8 @@
     }
 
     export class Animation {
+        public static AllowMatricesInterpolation = false;
+
         private _keys: Array<{frame:number, value: any, inTangent?: any, outTangent?: any}>;
         private _offsetsCache = {};
         private _highLimitsCache = {};
@@ -103,7 +105,6 @@
         public targetPropertyPath: string[];
         public currentFrame: number;
 
-        public allowMatricesInterpolation = false;
 
         public blendingSpeed = 0.01;
         private _originalBlendValue: any;
@@ -520,7 +521,7 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    if (this.allowMatricesInterpolation) {
+                                    if (Animation.AllowMatricesInterpolation) {
                                         return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                     }
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
