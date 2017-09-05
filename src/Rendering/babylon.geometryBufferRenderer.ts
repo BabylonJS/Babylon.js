@@ -14,8 +14,6 @@ module BABYLON {
 
         private _enablePosition: boolean = false;
 
-        private _needsDrawBuffersExtension: boolean;
-
         public set renderList(meshes: Mesh[]) {
             this._multiRenderTarget.renderList = meshes;
         }
