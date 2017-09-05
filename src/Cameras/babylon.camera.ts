@@ -127,6 +127,7 @@
         public onViewMatrixChangedObservable = new Observable<Camera>();
         public onProjectionMatrixChangedObservable = new Observable<Camera>();
         public onAfterCheckInputsObservable = new Observable<Camera>();
+        public onRestoreStateObservable = new Observable<Camera>();
 
         // Cache
         private _computedViewMatrix = Matrix.Identity();
@@ -168,9 +169,9 @@
         }
 
         /**
-         * Restored camera state. You must call storeState() first
+         * Restores the camera state values if it has been stored. You must call storeState() first
          */
-        public restoreState(): boolean {
+        protected _restoreStateValues(): boolean {
             if (!this._stateStored) {
                 return false;
             }
@@ -178,6 +179,18 @@
             this.fov = this._storedFov;
 
             return true;
+        }
+
+        /**
+         * Restored camera state. You must call storeState() first
+         */
+        public restoreState(): boolean {
+            if (this._restoreStateValues()) {
+                this.onRestoreStateObservable.notifyObservers(this);
+                return true;
+            }
+
+            return false;
         }
 
         public getClassName(): string {
@@ -577,6 +590,7 @@
             this.onViewMatrixChangedObservable.clear();
             this.onProjectionMatrixChangedObservable.clear();
             this.onAfterCheckInputsObservable.clear();
+            this.onRestoreStateObservable.clear();
 
             // Inputs
             if (this.inputs) {
