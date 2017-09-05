@@ -9880,7 +9880,11 @@ var BABYLON;
                 _this._rescalePostProcess.onApply = function (effect) {
                     effect._bindTexture("textureSampler", source);
                 };
-                scene.postProcessManager.directRender([_this._rescalePostProcess], rtt);
+                var hostingScene = scene;
+                if (!hostingScene) {
+                    hostingScene = _this.scenes[_this.scenes.length - 1];
+                }
+                hostingScene.postProcessManager.directRender([_this._rescalePostProcess], rtt);
                 _this._bindTextureDirectly(_this._gl.TEXTURE_2D, destination);
                 _this._gl.copyTexImage2D(_this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
                 _this.unBindFramebuffer(rtt);
