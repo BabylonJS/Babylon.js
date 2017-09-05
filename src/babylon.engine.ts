@@ -1075,11 +1075,11 @@
 
                 if (drawBuffersExtension !== null) {
                     this._caps.drawBuffersExtension = true;
-                    this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL;
+                    this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL.bind(drawBuffersExtension);
                     this._gl.DRAW_FRAMEBUFFER = this._gl.FRAMEBUFFER;
                     
                     for (var i = 0; i < 16; i++) {
-                        this._gl["COLOR_ATTACHMENT" + i] = drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
+                        this._gl["COLOR_ATTACHMENT" + i + "_WEBGL"] = drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
                     }
                 } else {
                     this._caps.drawBuffersExtension = false;
@@ -3234,7 +3234,7 @@
                 }
 
                 var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
-                var attachment = gl["COLOR_ATTACHMENT" + i];
+                var attachment = gl[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
                 
                 textures.push(texture);
                 attachments.push(attachment);
