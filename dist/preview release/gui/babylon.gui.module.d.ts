@@ -1,14 +1,24 @@
+declare module BABYLON.GUI {
+    interface IFocusableControl {
+        onFocus(): void;
+        onBlur(): void;
+        processKeyboard(evt: KeyboardEvent): void;
+    }
+}
+
 /// <reference path="../../dist/preview release/babylon.d.ts" />
 declare module BABYLON.GUI {
     class AdvancedDynamicTexture extends DynamicTexture {
         private _isDirty;
         private _renderObserver;
         private _resizeObserver;
+        private _preKeyboardObserver;
         private _pointerMoveObserver;
         private _pointerObserver;
         private _canvasPointerOutObserver;
         private _background;
         _rootContainer: Container;
+        _lastPickedControl: Control;
         _lastControlOver: Control;
         _lastControlDown: Control;
         _capturingControl: Control;
@@ -20,12 +30,14 @@ declare module BABYLON.GUI {
         private _idealWidth;
         private _idealHeight;
         private _renderAtIdealSize;
+        private _focusedControl;
         background: string;
         idealWidth: number;
         idealHeight: number;
         renderAtIdealSize: boolean;
         readonly layer: Layer;
         readonly rootContainer: Container;
+        focusedControl: IFocusableControl;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         markAsDirty(): void;
@@ -584,23 +596,35 @@ declare module BABYLON.GUI {
 
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
 declare module BABYLON.GUI {
-    class InputText extends Control {
+    class InputText extends Control implements IFocusableControl {
         name: string;
         private _text;
         private _background;
+        private _focusedBackground;
         private _thickness;
         private _margin;
         private _autoStretchWidth;
         private _maxWidth;
+        private _isFocused;
+        private _blinkTimeout;
+        private _blinkIsEven;
+        private _cursorOffset;
+        private _scrollLeft;
         maxWidth: string | number;
         margin: string;
         autoStretchWidth: boolean;
         thickness: number;
+        focusedBackground: string;
         background: string;
         text: string;
         constructor(name?: string, text?: string);
+        onBlur(): void;
+        onFocus(): void;
         protected _getTypeName(): string;
+        processKeyboard(evt: KeyboardEvent): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _onPointerDown(coordinates: Vector2): boolean;
+        protected _onPointerUp(coordinates: Vector2): void;
     }
 }
 

@@ -812,7 +812,6 @@
                         this._performanceMonitor.disable();
                     }
                     this._windowIsBackground = true;
-                    this.onCanvasBlurObservable.notifyObservers(this);
                 };
 
                 this._onFocus = () => {
@@ -820,7 +819,6 @@
                         this._performanceMonitor.enable();
                     }
                     this._windowIsBackground = false;
-                    this.onCanvasFocusObservable.notifyObservers(this);
                 };
 
                 this._onCanvasPointerOut = () => {
