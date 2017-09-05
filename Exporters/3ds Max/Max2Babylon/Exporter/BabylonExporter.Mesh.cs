@@ -75,6 +75,7 @@ namespace Max2Babylon
 
 
                 default:
+                    // Create a dummy (empty mesh) when the type of parent node is not exportable (spline, xref...)
                     if (babylonScene.MeshesList.All(m => m.id != parentId))
                     {
                         ExportMesh(scene, parentNode, babylonScene);
@@ -97,10 +98,6 @@ namespace Max2Babylon
         private int bonesCount;
         private void ExportMesh(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
         {
-            if (meshNode.MaxNode.IsInstance())
-            {
-                return;
-            }
 
             if (meshNode.MaxNode.GetBoolProperty("babylonjs_noexport"))
             {
@@ -112,16 +109,60 @@ namespace Max2Babylon
                 return;
             }
 
+            RaiseMessage(meshNode.Name, 1);
+
+            // Instances
+            var tabs = Loader.Global.NodeTab.Create();
+            Loader.Global.IInstanceMgr.InstanceMgr.GetInstances(meshNode.MaxNode, tabs);
+            if (tabs.Count > 1)
+            {
+                // For a mesh with instances, we distinguish between master and instance meshes:
+                //      - a master mesh stores all the info of the mesh (transform, hierarchy, animations + vertices, indices, materials, bones...)
+                //      - an instance mesh only stores the info of the node (transform, hierarchy, animations)
+
+                // Check if this mesh has already been exported
+                BabylonMesh babylonMasterMesh = null;
+                for (var index = 0; index < tabs.Count; index++)
+                {
+#if MAX2017
+                    var indexer = index;
+#else
+                    var indexer = new IntPtr(index);
+#endif
+                    var tab = tabs[indexer];
+
+                    babylonMasterMesh = babylonScene.MeshesList.Find(_babylonMesh => _babylonMesh.id == tab.GetGuid().ToString());
+                }
+
+                if (babylonMasterMesh != null)
+                {
+                    // Mesh already exported
+                    // Export this node as instance
+
+                    meshNode.MaxNode.MarkAsInstance();
+                    
+                    var babylonInstanceMesh = new BabylonAbstractMesh { name = meshNode.Name, id = meshNode.MaxNode.GetGuid().ToString() };
+
+                    // Add instance to master mesh
+                    List<BabylonAbstractMesh> list = babylonMasterMesh.instances != null ? babylonMasterMesh.instances.ToList() : new List<BabylonAbstractMesh>();
+                    list.Add(babylonInstanceMesh);
+                    babylonMasterMesh.instances = list.ToArray();
+
+                    // Export transform / hierarchy / animations
+                    exportNode(babylonInstanceMesh, meshNode, scene, babylonScene);
+                    
+                    // Animations
+                    exportAnimation(babylonInstanceMesh, meshNode);
+
+                    return;
+                }
+            }
+            
             var gameMesh = meshNode.IGameObject.AsGameMesh();
             bool initialized = gameMesh.InitializeData; //needed, the property is in fact a method initializing the exporter that has wrongly been auto 
             // translated into a property because it has no parameters
 
             var babylonMesh = new BabylonMesh { name = meshNode.Name, id = meshNode.MaxNode.GetGuid().ToString() };
-
-            if (meshNode.NodeParent != null)
-            {
-                babylonMesh.parentId = GetParentID(meshNode.NodeParent, babylonScene, scene);
-            }
 
             // Sounds
             var soundName = meshNode.MaxNode.GetStringProperty("babylonjs_sound_filename", "");
@@ -205,34 +246,10 @@ namespace Max2Babylon
                 skinSortedBones[skin] = boneIds;
             }
 
-            // Position / rotation / scaling
-            var localTM = meshNode.GetObjectTM(0);
-            if (meshNode.NodeParent != null)
-            {
-                var parentWorld = meshNode.NodeParent.GetObjectTM(0);
-                localTM.MultiplyBy(parentWorld.Inverse);
-            }
-
-            var meshTrans = localTM.Translation;
-            var meshRotation = localTM.Rotation;
-            var meshScale = localTM.Scaling;
-            var exportQuaternions = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportquaternions");
-
-            babylonMesh.position = new[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
-
-            if (exportQuaternions)
-            {
-                babylonMesh.rotationQuaternion = new[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
-            }
-            else
-            {
-                babylonMesh.rotation = QuaternionToEulerAngles(meshRotation);
-            }
-
-            babylonMesh.scaling = new[] { meshScale.X, meshScale.Y, meshScale.Z };
+            // Position / rotation / scaling / hierarchy
+            exportNode(babylonMesh, meshNode, scene, babylonScene);
 
             // Mesh
-            RaiseMessage(meshNode.Name, 1);
 
             if (unskinnedMesh.IGameType == Autodesk.Max.IGameObject.ObjectTypes.Mesh && unskinnedMesh.MaxMesh != null)
             {
@@ -440,91 +457,8 @@ namespace Max2Babylon
 
             }
 
-            // Instances
-            var tabs = Loader.Global.NodeTab.Create();
-
-            Loader.Global.IInstanceMgr.InstanceMgr.GetInstances(meshNode.MaxNode, tabs);
-            var instances = new List<BabylonAbstractMesh>();
-
-            for (var index = 0; index < tabs.Count; index++)
-            {
-#if MAX2017
-                var indexer = index;
-#else
-                var indexer = new IntPtr(index);
-#endif
-                var tab = tabs[indexer];
-
-#if !MAX2017
-                Marshal.FreeHGlobal(indexer);
-#endif
-
-                if (meshNode.MaxNode.GetGuid() == tab.GetGuid())
-                {
-                    continue;
-                }
-                var instanceGameNode = scene.GetIGameNode(tab);
-                if (instanceGameNode == null)
-                {
-                    continue;
-                }
-                tab.MarkAsInstance();
-
-                var instance = new BabylonAbstractMesh { name = tab.Name };
-                {
-                    var instanceLocalTM = instanceGameNode.GetObjectTM(0);
-
-                    var instanceTrans = instanceLocalTM.Translation;
-                    var instanceRotation = instanceLocalTM.Rotation;
-                    var instanceScale = instanceLocalTM.Scaling;
-
-                    instance.id = instanceGameNode.MaxNode.GetGuid().ToString();
-                    instance.position = new[] { instanceTrans.X, instanceTrans.Y, instanceTrans.Z };
-
-                    if (exportQuaternions)
-                    {
-                        instance.rotationQuaternion = new[] { instanceRotation.X, instanceRotation.Y, instanceRotation.Z, -instanceRotation.W };
-                    }
-                    else
-                    {
-                        instance.rotation = QuaternionToEulerAngles(instanceRotation);
-                    }
-
-                    instance.scaling = new[] { instanceScale.X, instanceScale.Y, instanceScale.Z };
-
-                    if (instanceGameNode.NodeParent != null)
-                    {
-                        instance.parentId = GetParentID(instanceGameNode.NodeParent, babylonScene, scene);
-                    }
-                }
-                var instanceAnimations = new List<BabylonAnimation>();
-                GenerateCoordinatesAnimations(meshNode, instanceAnimations);
-                instance.animations = instanceAnimations.ToArray();
-
-                instances.Add(instance);
-            }
-
-            babylonMesh.instances = instances.ToArray();
-
             // Animations
-            var animations = new List<BabylonAnimation>();
-
-            GenerateCoordinatesAnimations(meshNode, animations);
-
-            if (!ExportFloatController(meshNode.MaxNode.VisController, "visibility", animations))
-            {
-                ExportFloatAnimation("visibility", animations, key => new[] { meshNode.MaxNode.GetVisibility(key, Tools.Forever) });
-            }
-
-            babylonMesh.animations = animations.ToArray();
-
-            if (meshNode.MaxNode.GetBoolProperty("babylonjs_autoanimate", 1))
-            {
-                babylonMesh.autoAnimate = true;
-                babylonMesh.autoAnimateFrom = (int)meshNode.MaxNode.GetFloatProperty("babylonjs_autoanimate_from");
-                babylonMesh.autoAnimateTo = (int)meshNode.MaxNode.GetFloatProperty("babylonjs_autoanimate_to", 100);
-                babylonMesh.autoAnimateLoop = meshNode.MaxNode.GetBoolProperty("babylonjs_autoanimateloop", 1);
-            }
+            exportAnimation(babylonMesh, meshNode);
 
             babylonScene.MeshesList.Add(babylonMesh);
         }
@@ -573,61 +507,46 @@ namespace Max2Babylon
             CheckCancelled();
         }
 
-        public static void GenerateCoordinatesAnimations(IIGameNode meshNode, List<BabylonAnimation> animations)
+        public void GenerateCoordinatesAnimations(IIGameNode meshNode, List<BabylonAnimation> animations)
         {
-            if (meshNode.IGameControl.IsAnimated(IGameControlType.Pos) ||
-                meshNode.IGameControl.IsAnimated(IGameControlType.PosX) ||
-                meshNode.IGameControl.IsAnimated(IGameControlType.PosY) ||
-                meshNode.IGameControl.IsAnimated(IGameControlType.PosZ))
+            ExportVector3Animation("position", animations, key =>
             {
-                ExportVector3Animation("position", animations, key =>
+                var worldMatrix = meshNode.GetObjectTM(key);
+                if (meshNode.NodeParent != null)
                 {
-                    var worldMatrix = meshNode.GetObjectTM(key);
-                    if (meshNode.NodeParent != null)
-                    {
-                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
-                        worldMatrix.MultiplyBy(parentWorld.Inverse);
-                    }
-                    var trans = worldMatrix.Translation;
-                    return new[] { trans.X, trans.Y, trans.Z };
-                });
-            }
+                    var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                    worldMatrix.MultiplyBy(parentWorld.Inverse);
+                }
+                var trans = worldMatrix.Translation;
+                return new[] { trans.X, trans.Y, trans.Z };
+            });
 
-            if (meshNode.IGameControl.IsAnimated(IGameControlType.Rot) ||
-                meshNode.IGameControl.IsAnimated(IGameControlType.EulerX) ||
-                meshNode.IGameControl.IsAnimated(IGameControlType.EulerY) ||
-                meshNode.IGameControl.IsAnimated(IGameControlType.EulerZ))
+            ExportQuaternionAnimation("rotationQuaternion", animations, key =>
             {
-                ExportQuaternionAnimation("rotationQuaternion", animations, key =>
+                var worldMatrix = meshNode.GetObjectTM(key);
+                if (meshNode.NodeParent != null)
                 {
-                    var worldMatrix = meshNode.GetObjectTM(key);
-                    if (meshNode.NodeParent != null)
-                    {
-                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
-                        worldMatrix.MultiplyBy(parentWorld.Inverse);
-                    }
+                    var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                    worldMatrix.MultiplyBy(parentWorld.Inverse);
+                }
 
 
-                    var rot = worldMatrix.Rotation;
-                    return new[] { rot.X, rot.Y, rot.Z, -rot.W };
-                });
-            }
+                var rot = worldMatrix.Rotation;
+                return new[] { rot.X, rot.Y, rot.Z, -rot.W };
+            });
 
-            if (meshNode.IGameControl.IsAnimated(IGameControlType.Scale))
+            ExportVector3Animation("scaling", animations, key =>
             {
-                ExportVector3Animation("scaling", animations, key =>
+                var worldMatrix = meshNode.GetObjectTM(key);
+                if (meshNode.NodeParent != null)
                 {
-                    var worldMatrix = meshNode.GetObjectTM(key);
-                    if (meshNode.NodeParent != null)
-                    {
-                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
-                        worldMatrix.MultiplyBy(parentWorld.Inverse);
-                    }
-                    var scale = worldMatrix.Scaling;
+                    var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                    worldMatrix.MultiplyBy(parentWorld.Inverse);
+                }
+                var scale = worldMatrix.Scaling;
 
-                    return new[] { scale.X, scale.Y, scale.Z };
-                });
-            }
+                return new[] { scale.X, scale.Y, scale.Z };
+            });
         }
 
 
@@ -799,6 +718,70 @@ namespace Max2Babylon
             vertices.Add(vertex);
 
             return vertices.Count - 1;
+        }
+
+
+        private void exportNode(BabylonAbstractMesh babylonAbstractMesh, IIGameNode maxGameNode, IIGameScene maxGameScene, BabylonScene babylonScene)
+        {
+            // Position / rotation / scaling
+            exportTransform(babylonAbstractMesh, maxGameNode);
+            
+            // Hierarchy
+            if (maxGameNode.NodeParent != null)
+            {
+                babylonAbstractMesh.parentId = GetParentID(maxGameNode.NodeParent, babylonScene, maxGameScene);
+            }
+        }
+
+        private void exportTransform(BabylonAbstractMesh babylonAbstractMesh, IIGameNode maxGameNode)
+        {
+            // Position / rotation / scaling
+            var localTM = maxGameNode.GetObjectTM(0);
+            if (maxGameNode.NodeParent != null)
+            {
+                var parentWorld = maxGameNode.NodeParent.GetObjectTM(0);
+                localTM.MultiplyBy(parentWorld.Inverse);
+            }
+
+            var meshTrans = localTM.Translation;
+            var meshRotation = localTM.Rotation;
+            var meshScale = localTM.Scaling;
+            var exportQuaternions = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportquaternions");
+            
+            babylonAbstractMesh.position = new[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
+
+            if (exportQuaternions)
+            {
+                babylonAbstractMesh.rotationQuaternion = new[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
+            }
+            else
+            {
+                babylonAbstractMesh.rotation = QuaternionToEulerAngles(meshRotation);
+            }
+
+            babylonAbstractMesh.scaling = new[] { meshScale.X, meshScale.Y, meshScale.Z };
+        }
+
+        private void exportAnimation(BabylonNode babylonNode, IIGameNode maxGameNode)
+        {
+            var animations = new List<BabylonAnimation>();
+
+            GenerateCoordinatesAnimations(maxGameNode, animations);
+
+            if (!ExportFloatController(maxGameNode.MaxNode.VisController, "visibility", animations))
+            {
+                ExportFloatAnimation("visibility", animations, key => new[] { maxGameNode.MaxNode.GetVisibility(key, Tools.Forever) });
+            }
+
+            babylonNode.animations = animations.ToArray();
+
+            if (maxGameNode.MaxNode.GetBoolProperty("babylonjs_autoanimate", 1))
+            {
+                babylonNode.autoAnimate = true;
+                babylonNode.autoAnimateFrom = (int)maxGameNode.MaxNode.GetFloatProperty("babylonjs_autoanimate_from");
+                babylonNode.autoAnimateTo = (int)maxGameNode.MaxNode.GetFloatProperty("babylonjs_autoanimate_to", 100);
+                babylonNode.autoAnimateLoop = maxGameNode.MaxNode.GetBoolProperty("babylonjs_autoanimateloop", 1);
+            }
         }
     }
 }
