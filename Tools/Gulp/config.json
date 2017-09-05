@@ -1424,6 +1424,7 @@
         "libraries": [
             {
                 "files": [
+                    "../../gui/src/interfaces/focusableControl.ts",
                     "../../gui/src/advancedDynamicTexture.ts",
                     "../../gui/src/measure.ts",
                     "../../gui/src/math2D.ts",
