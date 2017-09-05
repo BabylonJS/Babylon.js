@@ -563,7 +563,6 @@
         private _vrDisplayEnabled;
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
-        private _vrAnimationFrameHandler: number;
 
         // Uniform buffers list
         public disableUniformBuffers = false;
@@ -695,6 +694,8 @@
 
         private _emptyTexture: InternalTexture;
         private _emptyCubeTexture: InternalTexture;
+
+        private _frameHandler: number;
 
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
@@ -829,6 +830,43 @@
                 window.addEventListener("focus", this._onFocus);
 
                 canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+
+                // Context lost
+                if (!this._doNotHandleContextLost) {
+                    this._onContextLost = (evt: Event) => {
+                        evt.preventDefault();
+                        this._contextWasLost = true;
+                        Tools.Warn("WebGL context lost.");
+
+                        this.onContextLostObservable.notifyObservers(this);
+                    };
+
+                    this._onContextRestored = (evt: Event) => {
+                        // Rebuild gl context
+                        this._initGLContext();
+
+                        // Rebuild effects
+                        this._rebuildEffects();
+
+                        // Rebuild textures
+                        this._rebuildInternalTextures();
+
+                        // Rebuild buffers
+                        this._rebuildBuffers();
+
+                        // Cache
+                        this.wipeCaches(true);
+
+                        Tools.Warn("WebGL context successfully restored.");
+
+                        this.onContextRestoredObservable.notifyObservers(this);
+
+                        this._contextWasLost = false;
+                    };
+
+                    canvas.addEventListener("webglcontextlost", this._onContextLost, false);
+                    canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+                }                
             } else {
                 this._gl = <WebGLRenderingContext>canvasOrContext;
                 this._renderingCanvas = this._gl.canvas
@@ -838,43 +876,6 @@
                 }
 
                 options.stencil = this._gl.getContextAttributes().stencil;
-            }
-
-            // Context lost
-            if (!this._doNotHandleContextLost) {
-                this._onContextLost = (evt: Event) => {
-                    evt.preventDefault();
-                    this._contextWasLost = true;
-                    Tools.Warn("WebGL context lost.");
-
-                    this.onContextLostObservable.notifyObservers(this);
-                };
-
-                this._onContextRestored = (evt: Event) => {
-                    // Rebuild gl context
-                    this._initGLContext();
-
-                    // Rebuild effects
-                    this._rebuildEffects();
-
-                    // Rebuild textures
-                    this._rebuildInternalTextures();
-
-                    // Rebuild buffers
-                    this._rebuildBuffers();
-
-                    // Cache
-                    this.wipeCaches(true);
-
-                    Tools.Warn("WebGL context successfully restored.");
-
-                    this.onContextRestoredObservable.notifyObservers(this);
-
-                    this._contextWasLost = false;
-                };
-
-                canvas.addEventListener("webglcontextlost", this._onContextLost, false);
-                canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
             }
 
             // Viewport
@@ -1373,7 +1374,7 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
+                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
             } else {
                 this._renderingQueueLaunched = false;
             }
@@ -1397,7 +1398,7 @@
             if (!this._renderingQueueLaunched) {
                 this._renderingQueueLaunched = true;
                 this._bindedRenderFunction = this._renderLoop.bind(this);
-                Tools.QueueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
             }
         }
 
@@ -1620,7 +1621,6 @@
                 this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
             } else {
                 //When the specs are implemented, need to uncomment this.
-                //this._vrDisplayEnabled.cancelAnimationFrame(this._vrAnimationFrameHandler);
                 this.setHardwareScalingLevel(this._oldHardwareScaleFactor);
                 this.setSize(this._oldSize.width, this._oldSize.height);
                 this._vrDisplayEnabled = undefined;
