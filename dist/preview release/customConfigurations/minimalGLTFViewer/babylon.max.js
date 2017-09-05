@@ -7772,6 +7772,32 @@ var BABYLON;
                 window.addEventListener("blur", this._onBlur);
                 window.addEventListener("focus", this._onFocus);
                 canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+                // Context lost
+                if (!this._doNotHandleContextLost) {
+                    this._onContextLost = function (evt) {
+                        evt.preventDefault();
+                        _this._contextWasLost = true;
+                        BABYLON.Tools.Warn("WebGL context lost.");
+                        _this.onContextLostObservable.notifyObservers(_this);
+                    };
+                    this._onContextRestored = function (evt) {
+                        // Rebuild gl context
+                        _this._initGLContext();
+                        // Rebuild effects
+                        _this._rebuildEffects();
+                        // Rebuild textures
+                        _this._rebuildInternalTextures();
+                        // Rebuild buffers
+                        _this._rebuildBuffers();
+                        // Cache
+                        _this.wipeCaches(true);
+                        BABYLON.Tools.Warn("WebGL context successfully restored.");
+                        _this.onContextRestoredObservable.notifyObservers(_this);
+                        _this._contextWasLost = false;
+                    };
+                    canvas.addEventListener("webglcontextlost", this._onContextLost, false);
+                    canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+                }
             }
             else {
                 this._gl = canvasOrContext;
@@ -7780,32 +7806,6 @@ var BABYLON;
                     this._webGLVersion = 2.0;
                 }
                 options.stencil = this._gl.getContextAttributes().stencil;
-            }
-            // Context lost
-            if (!this._doNotHandleContextLost) {
-                this._onContextLost = function (evt) {
-                    evt.preventDefault();
-                    _this._contextWasLost = true;
-                    BABYLON.Tools.Warn("WebGL context lost.");
-                    _this.onContextLostObservable.notifyObservers(_this);
-                };
-                this._onContextRestored = function (evt) {
-                    // Rebuild gl context
-                    _this._initGLContext();
-                    // Rebuild effects
-                    _this._rebuildEffects();
-                    // Rebuild textures
-                    _this._rebuildInternalTextures();
-                    // Rebuild buffers
-                    _this._rebuildBuffers();
-                    // Cache
-                    _this.wipeCaches(true);
-                    BABYLON.Tools.Warn("WebGL context successfully restored.");
-                    _this.onContextRestoredObservable.notifyObservers(_this);
-                    _this._contextWasLost = false;
-                };
-                canvas.addEventListener("webglcontextlost", this._onContextLost, false);
-                canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
             }
             // Viewport
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
@@ -8353,7 +8353,6 @@ var BABYLON;
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
-            this._caps.drawBuffersExtension = this._webGLVersion > 1 || this._gl.getExtension('WEBGL_draw_buffers');
             // Checks if some of the format renders first to allow the use of webgl inspector.
             this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
             this._caps.textureFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float');
@@ -8366,6 +8365,24 @@ var BABYLON;
             }
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
+            // Draw buffers
+            if (this._webGLVersion > 1) {
+                this._caps.drawBuffersExtension = true;
+            }
+            else {
+                var drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
+                if (drawBuffersExtension !== null) {
+                    this._caps.drawBuffersExtension = true;
+                    this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL;
+                    this._gl.DRAW_FRAMEBUFFER = this._gl.FRAMEBUFFER;
+                    for (var i = 0; i < 16; i++) {
+                        this._gl["COLOR_ATTACHMENT" + i] = drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
+                    }
+                }
+                else {
+                    this._caps.drawBuffersExtension = false;
+                }
+            }
             // Vertex array object
             if (this._webGLVersion > 1) {
                 this._caps.vertexArrayObject = true;
@@ -10223,7 +10240,7 @@ var BABYLON;
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
+                gl.texImage2D(gl.TEXTURE_2D, 0, this.webGLVersion < 2 ? gl.DEPTH_COMPONENT : gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture._webGLTexture, 0);
                 depthTexture._framebuffer = framebuffer;
                 depthTexture.baseWidth = width;
