@@ -30,6 +30,15 @@ var BABYLON;
                 _this._idealHeight = 0;
                 _this._renderAtIdealSize = false;
                 _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
+                _this._preKeyboardObserver = _this.getScene().onPreKeyboardObservable.add(function (info) {
+                    if (!_this._focusedControl) {
+                        return;
+                    }
+                    if (info.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+                        _this._focusedControl.processKeyboard(info.event);
+                    }
+                    info.skipOnPointerObservable = true;
+                });
                 _this._rootContainer._link(null, _this);
                 _this.hasAlpha = true;
                 if (!width || !height) {
@@ -111,6 +120,25 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "focusedControl", {
+                get: function () {
+                    return this._focusedControl;
+                },
+                set: function (control) {
+                    if (this._focusedControl === control) {
+                        return;
+                    }
+                    if (!this._focusedControl) {
+                        control.onFocus();
+                    }
+                    else {
+                        this._focusedControl.onBlur();
+                    }
+                    this._focusedControl = control;
+                },
+                enumerable: true,
+                configurable: true
+            });
             AdvancedDynamicTexture.prototype.executeOnAllControls = function (func, container) {
                 if (!container) {
                     container = this._rootContainer;
@@ -146,8 +174,8 @@ var BABYLON;
                 if (this._pointerObserver) {
                     this.getScene().onPointerObservable.remove(this._pointerObserver);
                 }
-                if (this._canvasBlurObserver) {
-                    this.getScene().getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+                if (this._canvasPointerOutObserver) {
+                    this.getScene().getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
                 }
                 if (this._layerToDispose) {
                     this._layerToDispose.texture = null;
@@ -262,6 +290,12 @@ var BABYLON;
                         this._lastControlOver = null;
                     }
                 }
+                // Focus management
+                if (this._focusedControl) {
+                    if (this._focusedControl !== this._lastPickedControl) {
+                        this.focusedControl = null;
+                    }
+                }
             };
             AdvancedDynamicTexture.prototype.attach = function () {
                 var _this = this;
@@ -281,7 +315,7 @@ var BABYLON;
                     _this._doPicking(x, y, pi.type);
                     pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
                 });
-                this._attachToOnBlur(scene);
+                this._attachToOnPointerOut(scene);
             };
             AdvancedDynamicTexture.prototype.attachToMesh = function (mesh, supportPointerMove) {
                 var _this = this;
@@ -312,11 +346,11 @@ var BABYLON;
                     }
                 });
                 mesh.enablePointerMoveEvents = supportPointerMove;
-                this._attachToOnBlur(scene);
+                this._attachToOnPointerOut(scene);
             };
-            AdvancedDynamicTexture.prototype._attachToOnBlur = function (scene) {
+            AdvancedDynamicTexture.prototype._attachToOnPointerOut = function (scene) {
                 var _this = this;
-                this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function () {
+                this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(function () {
                     if (_this._lastControlOver) {
                         _this._lastControlOver._onPointerOut();
                     }
@@ -1429,6 +1463,7 @@ var BABYLON;
                 if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
                     this._onPointerDown(this._dummyVector2);
                     this._host._lastControlDown = this;
+                    this._host._lastPickedControl = this;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERUP) {
@@ -3719,10 +3754,14 @@ var BABYLON;
                 _this.name = name;
                 _this._text = "";
                 _this._background = "black";
+                _this._focusedBackground = "black";
                 _this._thickness = 1;
                 _this._margin = new GUI.ValueAndUnit(10, GUI.ValueAndUnit.UNITMODE_PIXEL);
                 _this._autoStretchWidth = true;
                 _this._maxWidth = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
+                _this._isFocused = false;
+                _this._blinkIsEven = false;
+                _this._cursorOffset = 0;
                 _this.text = text;
                 return _this;
             }
@@ -3784,6 +3823,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "focusedBackground", {
+                get: function () {
+                    return this._focusedBackground;
+                },
+                set: function (value) {
+                    if (this._focusedBackground === value) {
+                        return;
+                    }
+                    this._focusedBackground = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(InputText.prototype, "background", {
                 get: function () {
                     return this._background;
@@ -3812,29 +3865,162 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            InputText.prototype.onBlur = function () {
+                this._isFocused = false;
+                this._scrollLeft = null;
+                this._cursorOffset = 0;
+                clearTimeout(this._blinkTimeout);
+                this._markAsDirty();
+            };
+            InputText.prototype.onFocus = function () {
+                this._scrollLeft = null;
+                this._isFocused = true;
+                this._blinkIsEven = false;
+                this._cursorOffset = 0;
+                this._markAsDirty();
+            };
             InputText.prototype._getTypeName = function () {
                 return "InputText";
             };
+            InputText.prototype.processKeyboard = function (evt) {
+                // Specific cases
+                switch (evt.keyCode) {
+                    case 8:// BACKSPACE
+                        if (this._text && this._text.length > 0) {
+                            if (this._cursorOffset === 0) {
+                                this.text = this._text.substr(0, this._text.length - 1);
+                            }
+                            else {
+                                var deletePosition = this._text.length - this._cursorOffset;
+                                if (deletePosition > 0) {
+                                    this.text = this._text.slice(0, deletePosition - 1) + this._text.slice(deletePosition);
+                                }
+                            }
+                        }
+                        return;
+                    case 46:// DELETE
+                        if (this._text && this._text.length > 0) {
+                            var deletePosition = this._text.length - this._cursorOffset;
+                            this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
+                            this._cursorOffset--;
+                        }
+                        return;
+                    case 13:// RETURN
+                        this._host.focusedControl = null;
+                        return;
+                    case 35:// END
+                        this._cursorOffset = 0;
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                    case 36:// HOME
+                        this._cursorOffset = this._text.length;
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                    case 37:// LEFT
+                        this._cursorOffset++;
+                        if (this._cursorOffset > this._text.length) {
+                            this._cursorOffset = this._text.length;
+                        }
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                    case 39:// RIGHT
+                        this._cursorOffset--;
+                        if (this._cursorOffset < 0) {
+                            this._cursorOffset = 0;
+                        }
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                }
+                // Printable characters
+                if ((evt.keyCode === 32) ||
+                    (evt.keyCode > 47 && evt.keyCode < 58) ||
+                    (evt.keyCode > 64 && evt.keyCode < 91) ||
+                    (evt.keyCode > 185 && evt.keyCode < 193) ||
+                    (evt.keyCode > 218 && evt.keyCode < 223) ||
+                    (evt.keyCode > 95 && evt.keyCode < 112)) {
+                    if (this._cursorOffset === 0) {
+                        this.text += evt.key;
+                    }
+                    else {
+                        var insertPosition = this._text.length - this._cursorOffset;
+                        this.text = this._text.slice(0, insertPosition) + evt.key + this._text.slice(insertPosition);
+                    }
+                }
+            };
             InputText.prototype._draw = function (parentMeasure, context) {
+                var _this = this;
                 context.save();
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     // Background
-                    if (this._background) {
+                    if (this._isFocused) {
+                        if (this._focusedBackground) {
+                            context.fillStyle = this._focusedBackground;
+                            context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                        }
+                    }
+                    else if (this._background) {
                         context.fillStyle = this._background;
                         context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     }
+                    if (!this._fontOffset) {
+                        this._fontOffset = GUI.Control._GetFontOffset(context.font);
+                    }
                     // Text
-                    if (this._text) {
-                        if (this.color) {
-                            context.fillStyle = this.color;
-                        }
-                        var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
-                        context.fillText(this._text, this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width), this._currentMeasure.top + rootY);
-                        if (this._autoStretchWidth) {
-                            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), context.measureText(this._text).width + this._margin.getValueInPixel(this._host, parentMeasure.width) * 2) + "px";
+                    var clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
+                    if (this.color) {
+                        context.fillStyle = this.color;
+                    }
+                    var textWidth = context.measureText(this._text).width;
+                    var marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
+                    if (this._autoStretchWidth) {
+                        this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), textWidth + marginWidth) + "px";
+                    }
+                    var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
+                    var availableWidth = this._width.getValueInPixel(this._host, parentMeasure.width) - marginWidth;
+                    context.save();
+                    context.beginPath();
+                    context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
+                    context.clip();
+                    if (this._isFocused && textWidth > availableWidth) {
+                        var textLeft = clipTextLeft - textWidth + availableWidth;
+                        if (!this._scrollLeft) {
+                            this._scrollLeft = textLeft;
                         }
                     }
+                    else {
+                        this._scrollLeft = clipTextLeft;
+                    }
+                    context.fillText(this._text, this._scrollLeft, this._currentMeasure.top + rootY);
+                    // Cursor
+                    if (this._isFocused) {
+                        if (!this._blinkIsEven) {
+                            var cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
+                            var cursorOffsetWidth = context.measureText(cursorOffsetText).width;
+                            var cursorLeft = this._scrollLeft + textWidth - cursorOffsetWidth;
+                            if (cursorLeft < clipTextLeft) {
+                                this._scrollLeft += (clipTextLeft - cursorLeft);
+                                cursorLeft = clipTextLeft;
+                                this._markAsDirty();
+                            }
+                            else if (cursorLeft > clipTextLeft + availableWidth) {
+                                this._scrollLeft += (clipTextLeft + availableWidth - cursorLeft);
+                                cursorLeft = clipTextLeft + availableWidth;
+                                this._markAsDirty();
+                            }
+                            context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
+                        }
+                        clearTimeout(this._blinkTimeout);
+                        this._blinkTimeout = setTimeout(function () {
+                            _this._blinkIsEven = !_this._blinkIsEven;
+                            _this._markAsDirty();
+                        }, 500);
+                    }
+                    context.restore();
                     // Border
                     if (this._thickness) {
                         if (this.color) {
@@ -3845,6 +4031,16 @@ var BABYLON;
                     }
                 }
                 context.restore();
+            };
+            InputText.prototype._onPointerDown = function (coordinates) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+                    return false;
+                }
+                this._host.focusedControl = this;
+                return true;
+            };
+            InputText.prototype._onPointerUp = function (coordinates) {
+                _super.prototype._onPointerUp.call(this, coordinates);
             };
             return InputText;
         }(GUI.Control));

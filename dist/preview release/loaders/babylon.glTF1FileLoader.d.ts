@@ -155,6 +155,7 @@ declare module BABYLON.GLTF1 {
         buffer: string;
         byteOffset: number;
         byteLength: number;
+        byteStride: number;
         target?: number;
     }
     interface IGLTFBuffer extends IGLTFChildRootProperty {

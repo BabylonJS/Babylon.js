@@ -45,6 +45,8 @@
         "core" :
         {
             "files":[
+                "../../src/Events/babylon.keyboardEvents.js",
+                "../../src/Events/babylon.pointerEvents.js",
                 "../../src/Math/babylon.math.js",
                 "../../src/Math/babylon.math.scalar.js",
                 "../../src/babylon.mixins.js",

@@ -14,7 +14,164 @@ var __extends = (this && this.__extends) || (function () {
                 d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         })();
-        var BABYLON;
+        
+var BABYLON;
+(function (BABYLON) {
+    var KeyboardEventTypes = (function () {
+        function KeyboardEventTypes() {
+        }
+        Object.defineProperty(KeyboardEventTypes, "KEYDOWN", {
+            get: function () {
+                return KeyboardEventTypes._KEYDOWN;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(KeyboardEventTypes, "KEYUP", {
+            get: function () {
+                return KeyboardEventTypes._KEYUP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        KeyboardEventTypes._KEYDOWN = 0x01;
+        KeyboardEventTypes._KEYUP = 0x02;
+        return KeyboardEventTypes;
+    }());
+    BABYLON.KeyboardEventTypes = KeyboardEventTypes;
+    var KeyboardInfo = (function () {
+        function KeyboardInfo(type, event) {
+            this.type = type;
+            this.event = event;
+        }
+        return KeyboardInfo;
+    }());
+    BABYLON.KeyboardInfo = KeyboardInfo;
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    var KeyboardInfoPre = (function (_super) {
+        __extends(KeyboardInfoPre, _super);
+        function KeyboardInfoPre(type, event) {
+            var _this = _super.call(this, type, event) || this;
+            _this.skipOnPointerObservable = false;
+            return _this;
+        }
+        return KeyboardInfoPre;
+    }(KeyboardInfo));
+    BABYLON.KeyboardInfoPre = KeyboardInfoPre;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.keyboardEvents.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    var PointerEventTypes = (function () {
+        function PointerEventTypes() {
+        }
+        Object.defineProperty(PointerEventTypes, "POINTERDOWN", {
+            get: function () {
+                return PointerEventTypes._POINTERDOWN;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERUP", {
+            get: function () {
+                return PointerEventTypes._POINTERUP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERMOVE", {
+            get: function () {
+                return PointerEventTypes._POINTERMOVE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERWHEEL", {
+            get: function () {
+                return PointerEventTypes._POINTERWHEEL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERPICK", {
+            get: function () {
+                return PointerEventTypes._POINTERPICK;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERTAP", {
+            get: function () {
+                return PointerEventTypes._POINTERTAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERDOUBLETAP", {
+            get: function () {
+                return PointerEventTypes._POINTERDOUBLETAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        PointerEventTypes._POINTERDOWN = 0x01;
+        PointerEventTypes._POINTERUP = 0x02;
+        PointerEventTypes._POINTERMOVE = 0x04;
+        PointerEventTypes._POINTERWHEEL = 0x08;
+        PointerEventTypes._POINTERPICK = 0x10;
+        PointerEventTypes._POINTERTAP = 0x20;
+        PointerEventTypes._POINTERDOUBLETAP = 0x40;
+        return PointerEventTypes;
+    }());
+    BABYLON.PointerEventTypes = PointerEventTypes;
+    var PointerInfoBase = (function () {
+        function PointerInfoBase(type, event) {
+            this.type = type;
+            this.event = event;
+        }
+        return PointerInfoBase;
+    }());
+    BABYLON.PointerInfoBase = PointerInfoBase;
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    var PointerInfoPre = (function (_super) {
+        __extends(PointerInfoPre, _super);
+        function PointerInfoPre(type, event, localX, localY) {
+            var _this = _super.call(this, type, event) || this;
+            _this.skipOnPointerObservable = false;
+            _this.localPosition = new BABYLON.Vector2(localX, localY);
+            return _this;
+        }
+        return PointerInfoPre;
+    }(PointerInfoBase));
+    BABYLON.PointerInfoPre = PointerInfoPre;
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    var PointerInfo = (function (_super) {
+        __extends(PointerInfo, _super);
+        function PointerInfo(type, event, pickInfo) {
+            var _this = _super.call(this, type, event) || this;
+            _this.pickInfo = pickInfo;
+            return _this;
+        }
+        return PointerInfo;
+    }(PointerInfoBase));
+    BABYLON.PointerInfo = PointerInfo;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.pointerEvents.js.map
+
+var BABYLON;
 (function (BABYLON) {
     BABYLON.ToGammaSpace = 1 / 2.2;
     BABYLON.ToLinearSpace = 2.2;
@@ -7459,10 +7616,19 @@ var BABYLON;
              */
             this.onResizeObservable = new BABYLON.Observable();
             /**
-             * Observable event triggered each time the canvas lost focus
+             * Observable event triggered each time the canvas loses focus
              */
             this.onCanvasBlurObservable = new BABYLON.Observable();
+            /**
+             * Observable event triggered each time the canvas gains focus
+             */
+            this.onCanvasFocusObservable = new BABYLON.Observable();
+            /**
+             * Observable event triggered each time the canvas receives pointerout event
+             */
+            this.onCanvasPointerOutObservable = new BABYLON.Observable();
             // Uniform buffers list
+            this.disableUniformBuffers = false;
             this._uniformBuffers = new Array();
             this._windowIsBackground = false;
             this._webGLVersion = 1.0;
@@ -7579,6 +7745,14 @@ var BABYLON;
                 if (!this._gl) {
                     throw new Error("WebGL not supported");
                 }
+                this._onCanvasFocus = function () {
+                    _this.onCanvasFocusObservable.notifyObservers(_this);
+                };
+                this._onCanvasBlur = function () {
+                    _this.onCanvasBlurObservable.notifyObservers(_this);
+                };
+                canvas.addEventListener("focus", this._onCanvasFocus);
+                canvas.addEventListener("blur", this._onCanvasBlur);
                 this._onBlur = function () {
                     if (_this.disablePerformanceMonitorInBackground) {
                         _this._performanceMonitor.disable();
@@ -7591,12 +7765,12 @@ var BABYLON;
                     }
                     _this._windowIsBackground = false;
                 };
-                this._onCanvasBlur = function () {
-                    _this.onCanvasBlurObservable.notifyObservers(_this);
+                this._onCanvasPointerOut = function () {
+                    _this.onCanvasPointerOutObservable.notifyObservers(_this);
                 };
                 window.addEventListener("blur", this._onBlur);
                 window.addEventListener("focus", this._onFocus);
-                canvas.addEventListener("pointerout", this._onCanvasBlur);
+                canvas.addEventListener("pointerout", this._onCanvasPointerOut);
             }
             else {
                 this._gl = canvasOrContext;
@@ -8031,6 +8205,13 @@ var BABYLON;
         Object.defineProperty(Engine, "Version", {
             get: function () {
                 return "3.1-alpha";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "supportsUniformBuffers", {
+            get: function () {
+                return this.webGLVersion > 1 && !this.disableUniformBuffers;
             },
             enumerable: true,
             configurable: true
@@ -9699,7 +9880,11 @@ var BABYLON;
                 _this._rescalePostProcess.onApply = function (effect) {
                     effect._bindTexture("textureSampler", source);
                 };
-                scene.postProcessManager.directRender([_this._rescalePostProcess], rtt);
+                var hostingScene = scene;
+                if (!hostingScene) {
+                    hostingScene = _this.scenes[_this.scenes.length - 1];
+                }
+                hostingScene.postProcessManager.directRender([_this._rescalePostProcess], rtt);
                 _this._bindTextureDirectly(_this._gl.TEXTURE_2D, destination);
                 _this._gl.copyTexImage2D(_this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
                 _this.unBindFramebuffer(rtt);
@@ -10903,6 +11088,8 @@ var BABYLON;
             window.removeEventListener("focus", this._onFocus);
             window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
             window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
+            this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
             this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
             if (!this._doNotHandleContextLost) {
                 this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
@@ -10928,6 +11115,8 @@ var BABYLON;
             this._currentProgram = null;
             this.onResizeObservable.clear();
             this.onCanvasBlurObservable.clear();
+            this.onCanvasFocusObservable.clear();
+            this.onCanvasPointerOutObservable.clear();
             BABYLON.Effect.ResetCache();
         };
         // Loading screen
@@ -13355,7 +13544,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        AbstractMesh.prototype.moveWithCollisions = function (direction) {
+        AbstractMesh.prototype.moveWithCollisions = function (displacement) {
             var globalPosition = this.getAbsolutePosition();
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
@@ -13363,7 +13552,7 @@ var BABYLON;
                 this._collider = new BABYLON.Collider();
             }
             this._collider.radius = this.ellipsoid;
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, direction, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
             return this;
         };
         // Submeshes octree
@@ -16117,7 +16306,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.renderingGroup.js.map
 
-
 var BABYLON;
 (function (BABYLON) {
     var ClickInfo = (function () {
@@ -16169,105 +16357,6 @@ var BABYLON;
         });
         return ClickInfo;
     }());
-    var PointerEventTypes = (function () {
-        function PointerEventTypes() {
-        }
-        Object.defineProperty(PointerEventTypes, "POINTERDOWN", {
-            get: function () {
-                return PointerEventTypes._POINTERDOWN;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(PointerEventTypes, "POINTERUP", {
-            get: function () {
-                return PointerEventTypes._POINTERUP;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(PointerEventTypes, "POINTERMOVE", {
-            get: function () {
-                return PointerEventTypes._POINTERMOVE;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(PointerEventTypes, "POINTERWHEEL", {
-            get: function () {
-                return PointerEventTypes._POINTERWHEEL;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(PointerEventTypes, "POINTERPICK", {
-            get: function () {
-                return PointerEventTypes._POINTERPICK;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(PointerEventTypes, "POINTERTAP", {
-            get: function () {
-                return PointerEventTypes._POINTERTAP;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(PointerEventTypes, "POINTERDOUBLETAP", {
-            get: function () {
-                return PointerEventTypes._POINTERDOUBLETAP;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        PointerEventTypes._POINTERDOWN = 0x01;
-        PointerEventTypes._POINTERUP = 0x02;
-        PointerEventTypes._POINTERMOVE = 0x04;
-        PointerEventTypes._POINTERWHEEL = 0x08;
-        PointerEventTypes._POINTERPICK = 0x10;
-        PointerEventTypes._POINTERTAP = 0x20;
-        PointerEventTypes._POINTERDOUBLETAP = 0x40;
-        return PointerEventTypes;
-    }());
-    BABYLON.PointerEventTypes = PointerEventTypes;
-    var PointerInfoBase = (function () {
-        function PointerInfoBase(type, event) {
-            this.type = type;
-            this.event = event;
-        }
-        return PointerInfoBase;
-    }());
-    BABYLON.PointerInfoBase = PointerInfoBase;
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    var PointerInfoPre = (function (_super) {
-        __extends(PointerInfoPre, _super);
-        function PointerInfoPre(type, event, localX, localY) {
-            var _this = _super.call(this, type, event) || this;
-            _this.skipOnPointerObservable = false;
-            _this.localPosition = new BABYLON.Vector2(localX, localY);
-            return _this;
-        }
-        return PointerInfoPre;
-    }(PointerInfoBase));
-    BABYLON.PointerInfoPre = PointerInfoPre;
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    var PointerInfo = (function (_super) {
-        __extends(PointerInfo, _super);
-        function PointerInfo(type, event, pickInfo) {
-            var _this = _super.call(this, type, event) || this;
-            _this.pickInfo = pickInfo;
-            return _this;
-        }
-        return PointerInfo;
-    }(PointerInfoBase));
-    BABYLON.PointerInfo = PointerInfo;
     /**
      * This class is used by the onRenderingGroupObservable
      */
@@ -16411,8 +16500,8 @@ var BABYLON;
             // Animations
             this.animations = [];
             /**
-             * This observable event is triggered when any mouse event registered during Scene.attach() is called BEFORE the 3D engine to process anything (mesh/sprite picking for instance).
-             * You have the possibility to skip the 3D Engine process and the call to onPointerObservable by setting PointerInfoBase.skipOnPointerObservable to true
+             * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
+             * You have the possibility to skip the process and the call to onPointerObservable by setting PointerInfoPre.skipOnPointerObservable to true
              */
             this.onPrePointerObservable = new BABYLON.Observable();
             /**
@@ -16435,6 +16524,16 @@ var BABYLON;
             this._timeAccumulator = 0;
             this._currentStepId = 0;
             this._currentInternalStep = 0;
+            // Keyboard
+            /**
+             * This observable event is triggered when any keyboard event si raised and registered during Scene.attachControl()
+             * You have the possibility to skip the process and the call to onKeyboardObservable by setting KeyboardInfoPre.skipOnPointerObservable to true
+             */
+            this.onPreKeyboardObservable = new BABYLON.Observable();
+            /**
+             * Observable event triggered each time an keyboard event is received from the hosting window
+             */
+            this.onKeyboardObservable = new BABYLON.Observable();
             // Coordinate system
             /**
             * use right-handed coordinate system on this scene.
@@ -17129,9 +17228,9 @@ var BABYLON;
                 var clickInfo = new ClickInfo();
                 _this._currentPickResult = null;
                 var act;
-                var checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
-                    || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
-                    || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                var checkPicking = obs1.hasSpecificMask(BABYLON.PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(BABYLON.PointerEventTypes.POINTERPICK)
+                    || obs1.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP)
+                    || obs1.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP);
                 if (!checkPicking && BABYLON.ActionManager && BABYLON.ActionManager.HasPickTriggers) {
                     act = _this._initActionManager(act, clickInfo);
                     if (act)
@@ -17144,8 +17243,8 @@ var BABYLON;
                     if (!clickInfo.hasSwiped) {
                         var checkSingleClickImmediately = !Scene.ExclusiveDoubleClickMode;
                         if (!checkSingleClickImmediately) {
-                            checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
-                                !obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                            checkSingleClickImmediately = !obs1.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP) &&
+                                !obs2.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP);
                             if (checkSingleClickImmediately && !BABYLON.ActionManager.HasSpecificTrigger(BABYLON.ActionManager.OnDoublePickTrigger)) {
                                 act = _this._initActionManager(act, clickInfo);
                                 if (act)
@@ -17165,8 +17264,8 @@ var BABYLON;
                             _this._previousDelayedSimpleClickTimeout = _this._delayedSimpleClickTimeout;
                             _this._delayedSimpleClickTimeout = window.setTimeout(_this._delayedSimpleClick.bind(_this, btn, clickInfo, cb), Scene.DoubleClickDelay);
                         }
-                        var checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) ||
-                            obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
+                        var checkDoubleClick = obs1.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP) ||
+                            obs2.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP);
                         if (!checkDoubleClick && BABYLON.ActionManager.HasSpecificTrigger(BABYLON.ActionManager.OnDoublePickTrigger)) {
                             act = _this._initActionManager(act, clickInfo);
                             if (act)
@@ -17230,8 +17329,8 @@ var BABYLON;
                 _this._updatePointerPosition(evt);
                 // PreObservable support
                 if (_this.onPrePointerObservable.hasObservers()) {
-                    var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
-                    var pi = new PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
+                    var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? BABYLON.PointerEventTypes.POINTERWHEEL : BABYLON.PointerEventTypes.POINTERMOVE;
+                    var pi = new BABYLON.PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
                     _this.onPrePointerObservable.notifyObservers(pi, type);
                     if (pi.skipOnPointerObservable) {
                         return;
@@ -17284,8 +17383,8 @@ var BABYLON;
                     _this.onPointerMove(evt, pickResult);
                 }
                 if (_this.onPointerObservable.hasObservers()) {
-                    var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
-                    var pi = new PointerInfo(type, evt, pickResult);
+                    var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? BABYLON.PointerEventTypes.POINTERWHEEL : BABYLON.PointerEventTypes.POINTERMOVE;
+                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
                     _this.onPointerObservable.notifyObservers(pi, type);
                 }
             };
@@ -17296,8 +17395,8 @@ var BABYLON;
                 _this._updatePointerPosition(evt);
                 // PreObservable support
                 if (_this.onPrePointerObservable.hasObservers()) {
-                    var type = PointerEventTypes.POINTERDOWN;
-                    var pi = new PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
+                    var type = BABYLON.PointerEventTypes.POINTERDOWN;
+                    var pi = new BABYLON.PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
                     _this.onPrePointerObservable.notifyObservers(pi, type);
                     if (pi.skipOnPointerObservable) {
                         return;
@@ -17356,8 +17455,8 @@ var BABYLON;
                     _this.onPointerDown(evt, pickResult);
                 }
                 if (_this.onPointerObservable.hasObservers()) {
-                    var type = PointerEventTypes.POINTERDOWN;
-                    var pi = new PointerInfo(type, evt, pickResult);
+                    var type = BABYLON.PointerEventTypes.POINTERDOWN;
+                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
                     _this.onPointerObservable.notifyObservers(pi, type);
                 }
                 // Sprites
@@ -17395,17 +17494,17 @@ var BABYLON;
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
                             if (!clickInfo.hasSwiped) {
-                                if (clickInfo.singleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
-                                    var type = PointerEventTypes.POINTERTAP;
-                                    var pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                                if (clickInfo.singleClick && this.onPrePointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP)) {
+                                    var type = BABYLON.PointerEventTypes.POINTERTAP;
+                                    var pi = new BABYLON.PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
                                     this.onPrePointerObservable.notifyObservers(pi, type);
                                     if (pi.skipOnPointerObservable) {
                                         return;
                                     }
                                 }
-                                if (clickInfo.doubleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
-                                    var type = PointerEventTypes.POINTERDOUBLETAP;
-                                    var pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                                if (clickInfo.doubleClick && this.onPrePointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP)) {
+                                    var type = BABYLON.PointerEventTypes.POINTERDOUBLETAP;
+                                    var pi = new BABYLON.PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
                                     this.onPrePointerObservable.notifyObservers(pi, type);
                                     if (pi.skipOnPointerObservable) {
                                         return;
@@ -17414,8 +17513,8 @@ var BABYLON;
                             }
                         }
                         else {
-                            var type = PointerEventTypes.POINTERUP;
-                            var pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                            var type = BABYLON.PointerEventTypes.POINTERUP;
+                            var pi = new BABYLON.PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
                             this.onPrePointerObservable.notifyObservers(pi, type);
                             if (pi.skipOnPointerObservable) {
                                 return;
@@ -17444,8 +17543,8 @@ var BABYLON;
                                 this.onPointerPick(evt, pickResult);
                             }
                             if (clickInfo.singleClick && !clickInfo.ignore && this.onPointerObservable.hasObservers()) {
-                                var type = PointerEventTypes.POINTERPICK;
-                                var pi = new PointerInfo(type, evt, pickResult);
+                                var type = BABYLON.PointerEventTypes.POINTERPICK;
+                                var pi = new BABYLON.PointerInfo(type, evt, pickResult);
                                 this.onPointerObservable.notifyObservers(pi, type);
                             }
                         }
@@ -17473,21 +17572,21 @@ var BABYLON;
                     if (this.onPointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
                             if (!clickInfo.hasSwiped) {
-                                if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
-                                    var type = PointerEventTypes.POINTERTAP;
-                                    var pi = new PointerInfo(type, evt, pickResult);
+                                if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP)) {
+                                    var type = BABYLON.PointerEventTypes.POINTERTAP;
+                                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
                                     this.onPointerObservable.notifyObservers(pi, type);
                                 }
-                                if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
-                                    var type = PointerEventTypes.POINTERDOUBLETAP;
-                                    var pi = new PointerInfo(type, evt, pickResult);
+                                if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP)) {
+                                    var type = BABYLON.PointerEventTypes.POINTERDOUBLETAP;
+                                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
                                     this.onPointerObservable.notifyObservers(pi, type);
                                 }
                             }
                         }
                         else {
-                            var type = PointerEventTypes.POINTERUP;
-                            var pi = new PointerInfo(type, evt, pickResult);
+                            var type = BABYLON.PointerEventTypes.POINTERUP;
+                            var pi = new BABYLON.PointerInfo(type, evt, pickResult);
                             this.onPointerObservable.notifyObservers(pi, type);
                         }
                     }
@@ -17512,15 +17611,48 @@ var BABYLON;
                 }).bind(_this));
             };
             this._onKeyDown = function (evt) {
+                var type = BABYLON.KeyboardEventTypes.KEYDOWN;
+                if (_this.onPreKeyboardObservable.hasObservers()) {
+                    var pi = new BABYLON.KeyboardInfoPre(type, evt);
+                    _this.onPreKeyboardObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
+                if (_this.onKeyboardObservable.hasObservers()) {
+                    var pi = new BABYLON.KeyboardInfo(type, evt);
+                    _this.onKeyboardObservable.notifyObservers(pi, type);
+                }
                 if (_this.actionManager) {
                     _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, BABYLON.ActionEvent.CreateNewFromScene(_this, evt));
                 }
             };
             this._onKeyUp = function (evt) {
+                var type = BABYLON.KeyboardEventTypes.KEYUP;
+                if (_this.onPreKeyboardObservable.hasObservers()) {
+                    var pi = new BABYLON.KeyboardInfoPre(type, evt);
+                    _this.onPreKeyboardObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
+                if (_this.onKeyboardObservable.hasObservers()) {
+                    var pi = new BABYLON.KeyboardInfo(type, evt);
+                    _this.onKeyboardObservable.notifyObservers(pi, type);
+                }
                 if (_this.actionManager) {
                     _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyUpTrigger, BABYLON.ActionEvent.CreateNewFromScene(_this, evt));
                 }
             };
+            var engine = this.getEngine();
+            this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(function () {
+                canvas.addEventListener("keydown", _this._onKeyDown, false);
+                canvas.addEventListener("keyup", _this._onKeyUp, false);
+            });
+            this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(function () {
+                canvas.removeEventListener("keydown", _this._onKeyDown);
+                canvas.removeEventListener("keyup", _this._onKeyUp);
+            });
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
             var canvas = this._engine.getRenderingCanvas();
             if (attachMove) {
@@ -17536,20 +17668,27 @@ var BABYLON;
                 canvas.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             }
             canvas.tabIndex = 1;
-            canvas.addEventListener("keydown", this._onKeyDown, false);
-            canvas.addEventListener("keyup", this._onKeyUp, false);
         };
         Scene.prototype.detachControl = function () {
+            var engine = this.getEngine();
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
-            var canvas = this._engine.getRenderingCanvas();
+            var canvas = engine.getRenderingCanvas();
             canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
             canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
             canvas.removeEventListener(eventPrefix + "up", this._onPointerUp);
+            engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+            engine.onCanvasFocusObservable.remove(this._onCanvasFocusObserver);
             // Wheel
             canvas.removeEventListener('mousewheel', this._onPointerMove);
             canvas.removeEventListener('DOMMouseScroll', this._onPointerMove);
+            // Keyboard
             canvas.removeEventListener("keydown", this._onKeyDown);
             canvas.removeEventListener("keyup", this._onKeyUp);
+            // Observables
+            this.onKeyboardObservable.clear();
+            this.onPreKeyboardObservable.clear();
+            this.onPointerObservable.clear();
+            this.onPrePointerObservable.clear();
         };
         // Ready
         Scene.prototype.isReady = function () {
@@ -24373,7 +24512,7 @@ var BABYLON;
                 // Uniform declaration
                 if (includeFile.indexOf("__decl__") !== -1) {
                     includeFile = includeFile.replace(/__decl__/, "");
-                    if (this._engine.webGLVersion != 1) {
+                    if (this._engine.supportsUniformBuffers) {
                         includeFile = includeFile.replace(/Vertex/, "Ubo");
                         includeFile = includeFile.replace(/Fragment/, "Ubo");
                     }
@@ -24402,7 +24541,7 @@ var BABYLON;
                                 maxIndex = this._indexParameters[indexSplits[1]];
                             }
                             for (var i = minIndex; i < maxIndex; i++) {
-                                if (this._engine.webGLVersion === 1) {
+                                if (!this._engine.supportsUniformBuffers) {
                                     // Ubo replacement
                                     sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, function (str, p1) {
                                         return p1 + "{X}";
@@ -24412,7 +24551,7 @@ var BABYLON;
                             }
                         }
                         else {
-                            if (this._engine.webGLVersion === 1) {
+                            if (!this._engine.supportsUniformBuffers) {
                                 // Ubo replacement
                                 includeContent = includeContent.replace(/light\{X\}.(\w*)/g, function (str, p1) {
                                     return p1 + "{X}";
@@ -25327,7 +25466,7 @@ var BABYLON;
                 this.sideOrientation = Material.CounterClockWiseSideOrientation;
             }
             this._uniformBuffer = new BABYLON.UniformBuffer(this._scene.getEngine());
-            this._useUBO = this.getScene().getEngine().webGLVersion > 1;
+            this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
             if (!doNotAdd) {
                 this._scene.materials.push(this);
             }
@@ -25873,7 +26012,7 @@ var BABYLON;
          */
         function UniformBuffer(engine, data, dynamic) {
             this._engine = engine;
-            this._noUBO = engine.webGLVersion === 1;
+            this._noUBO = !engine.supportsUniformBuffers;
             this._dynamic = dynamic;
             this._data = data || [];
             this._uniformLocations = {};
@@ -30262,7 +30401,6 @@ var BABYLON;
             this._blendingFactor = 0;
             // The set of event that will be linked to this animation
             this._events = new Array();
-            this.allowMatricesInterpolation = false;
             this.blendingSpeed = 0.01;
             this._ranges = {};
             this.targetPropertyPath = targetProperty.split(".");
@@ -30603,7 +30741,7 @@ var BABYLON;
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    if (this.allowMatricesInterpolation) {
+                                    if (Animation.AllowMatricesInterpolation) {
                                         return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                     }
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
@@ -30971,6 +31109,7 @@ var BABYLON;
                 }
             }
         };
+        Animation.AllowMatricesInterpolation = false;
         // Statics
         Animation._ANIMATIONTYPE_FLOAT = 0;
         Animation._ANIMATIONTYPE_VECTOR3 = 1;
@@ -31881,77 +32020,64 @@ var BABYLON;
         }
         ArcRotateCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            element.tabIndex = 1;
-            this._onKeyDown = function (evt) {
-                _this._ctrlPressed = evt.ctrlKey;
-                if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysReset.indexOf(evt.keyCode) !== -1) {
-                    var index = _this._keys.indexOf(evt.keyCode);
-                    if (index === -1) {
-                        _this._keys.push(evt.keyCode);
-                    }
-                    if (evt.preventDefault) {
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                }
-            };
-            this._onKeyUp = function (evt) {
-                if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                    _this.keysReset.indexOf(evt.keyCode) !== -1) {
-                    var index = _this._keys.indexOf(evt.keyCode);
-                    if (index >= 0) {
-                        _this._keys.splice(index, 1);
-                    }
-                    if (evt.preventDefault) {
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                }
-            };
-            this._onLostFocus = function () {
+            if (this._onCanvasBlurObserver) {
+                return;
+            }
+            this._scene = this.camera.getScene();
+            this._engine = this._scene.getEngine();
+            this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(function () {
                 _this._keys = [];
-            };
-            this._onFocus = function () {
-                element.addEventListener("keydown", _this._onKeyDown, false);
-                element.addEventListener("keyup", _this._onKeyUp, false);
-            };
-            this._onBlur = function () {
-                element.removeEventListener("keydown", _this._onKeyDown);
-                element.removeEventListener("keyup", _this._onKeyUp);
-            };
-            element.addEventListener("focus", this._onFocus);
-            element.addEventListener("blur", this._onBlur);
-            BABYLON.Tools.RegisterTopRootEvents([
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            });
+            this._onKeyboardObserver = this._scene.onKeyboardObservable.add(function (info) {
+                var evt = info.event;
+                if (info.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+                    _this._ctrlPressed = evt.ctrlKey;
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysReset.indexOf(evt.keyCode) !== -1) {
+                        var index = _this._keys.indexOf(evt.keyCode);
+                        if (index === -1) {
+                            _this._keys.push(evt.keyCode);
+                        }
+                        if (evt.preventDefault) {
+                            if (!noPreventDefault) {
+                                evt.preventDefault();
+                            }
+                        }
+                    }
+                }
+                else {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysReset.indexOf(evt.keyCode) !== -1) {
+                        var index = _this._keys.indexOf(evt.keyCode);
+                        if (index >= 0) {
+                            _this._keys.splice(index, 1);
+                        }
+                        if (evt.preventDefault) {
+                            if (!noPreventDefault) {
+                                evt.preventDefault();
+                            }
+                        }
+                    }
+                }
+            });
         };
         ArcRotateCameraKeyboardMoveInput.prototype.detachControl = function (element) {
-            if (element && this._onBlur) {
-                this._onBlur();
-                element.removeEventListener("focus", this._onFocus);
-                element.removeEventListener("blur", this._onBlur);
+            if (this._scene) {
+                this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
+                this._engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+                this._onKeyboardObserver = null;
+                this._onCanvasBlurObserver = null;
             }
-            BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "blur", handler: this._onLostFocus }
-            ]);
             this._keys = [];
-            this._onKeyDown = null;
-            this._onKeyUp = null;
-            this._onLostFocus = null;
-            this._onBlur = null;
-            this._onFocus = null;
         };
         ArcRotateCameraKeyboardMoveInput.prototype.checkInputs = function () {
-            if (this._onKeyDown) {
+            if (this._onKeyboardObserver) {
                 var camera = this.camera;
                 for (var index = 0; index < this._keys.length; index++) {
                     var keyCode = this._keys[index];
@@ -37883,6 +38009,8 @@ var BABYLON;
             if (mustRebind) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 this.bindViewProjection(effect);
+                var reflectionTexture = this._getReflectionTexture();
+                var refractionTexture = this._getRefractionTexture();
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
                     // Texture uniforms
                     if (scene.texturesEnabled) {
@@ -37898,7 +38026,6 @@ var BABYLON;
                             this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                             BABYLON.MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
                         }
-                        var reflectionTexture = this._getReflectionTexture();
                         if (reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
@@ -37948,7 +38075,6 @@ var BABYLON;
                                 this._uniformBuffer.updateFloat4("vNormalReoderParams", this._invertNormalMapX ? 1.0 : 0, this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? 1.0 : 0, this._invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
-                        var refractionTexture = this._getRefractionTexture();
                         if (refractionTexture && BABYLON.StandardMaterial.RefractionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
                             var depth = 1.0;
@@ -54881,7 +55007,73 @@ var BABYLON;
                     });
                 }
             };
-            GLTFLoader.prototype._loadBufferViewAsync = function (bufferView, byteOffset, byteLength, componentType, onSuccess) {
+            GLTFLoader.prototype._buildInt8ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Int8Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Int8Array(buffer, byteOffset);
+                var targetBuffer = new Int8Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._buildUint8ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Uint8Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Uint8Array(buffer, byteOffset);
+                var targetBuffer = new Uint8Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._buildInt16ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Int16Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Int16Array(buffer, byteOffset);
+                var targetBuffer = new Int16Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._buildUint16ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Uint16Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Uint16Array(buffer, byteOffset);
+                var targetBuffer = new Uint16Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._buildUint32ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Uint32Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Uint32Array(buffer, byteOffset);
+                var targetBuffer = new Uint32Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 4, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._buildFloat32ArrayBuffer = function (buffer, byteOffset, byteLength, byteStride, bytePerComponent) {
+                if (!byteStride) {
+                    return new Float32Array(buffer, byteOffset, byteLength);
+                }
+                var sourceBuffer = new Float32Array(buffer, byteOffset);
+                var targetBuffer = new Float32Array(byteLength);
+                this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 4, targetBuffer.length);
+                return targetBuffer;
+            };
+            GLTFLoader.prototype._extractInterleavedData = function (sourceBuffer, targetBuffer, bytePerComponent, stride, length) {
+                var tempIndex = 0;
+                var sourceIndex = 0;
+                var storageSize = bytePerComponent;
+                while (tempIndex < length) {
+                    for (var cursor = 0; cursor < storageSize; cursor++) {
+                        targetBuffer[tempIndex] = sourceBuffer[sourceIndex + cursor];
+                        tempIndex++;
+                    }
+                    sourceIndex += stride;
+                }
+            };
+            GLTFLoader.prototype._loadBufferViewAsync = function (bufferView, byteOffset, byteLength, bytePerComponent, componentType, onSuccess) {
                 var _this = this;
                 byteOffset += (bufferView.byteOffset || 0);
                 this._loadBufferAsync(bufferView.buffer, function (bufferData) {
@@ -54894,22 +55086,22 @@ var BABYLON;
                     var bufferViewData;
                     switch (componentType) {
                         case GLTF2.EComponentType.BYTE:
-                            bufferViewData = new Int8Array(buffer, byteOffset, byteLength);
+                            bufferViewData = _this._buildInt8ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         case GLTF2.EComponentType.UNSIGNED_BYTE:
-                            bufferViewData = new Uint8Array(buffer, byteOffset, byteLength);
+                            bufferViewData = _this._buildUint8ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         case GLTF2.EComponentType.SHORT:
-                            bufferViewData = new Int16Array(buffer, byteOffset, byteLength);
+                            bufferViewData = _this._buildInt16ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         case GLTF2.EComponentType.UNSIGNED_SHORT:
-                            bufferViewData = new Uint16Array(buffer, byteOffset, byteLength);
+                            bufferViewData = _this._buildUint16ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         case GLTF2.EComponentType.UNSIGNED_INT:
-                            bufferViewData = new Uint32Array(buffer, byteOffset, byteLength);
+                            bufferViewData = _this._buildUint32ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         case GLTF2.EComponentType.FLOAT:
-                            bufferViewData = new Float32Array(buffer, byteOffset, byteLength);
+                            bufferViewData = _this._buildFloat32ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                             break;
                         default:
                             _this._onError("Invalid component type (" + componentType + ")");
@@ -54921,8 +55113,9 @@ var BABYLON;
             GLTFLoader.prototype._loadAccessorAsync = function (accessor, onSuccess) {
                 var bufferView = this._gltf.bufferViews[accessor.bufferView];
                 var byteOffset = accessor.byteOffset || 0;
-                var byteLength = accessor.count * this._getByteStrideFromType(accessor);
-                this._loadBufferViewAsync(bufferView, byteOffset, byteLength, accessor.componentType, onSuccess);
+                var bytePerComponent = this._getByteStrideFromType(accessor);
+                var byteLength = accessor.count * bytePerComponent;
+                this._loadBufferViewAsync(bufferView, byteOffset, byteLength, bytePerComponent, accessor.componentType, onSuccess);
             };
             GLTFLoader.prototype._getByteStrideFromType = function (accessor) {
                 switch (accessor.type) {
@@ -55134,7 +55327,7 @@ var BABYLON;
                 };
                 if (!source.uri) {
                     var bufferView = this._gltf.bufferViews[source.bufferView];
-                    this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, GLTF2.EComponentType.UNSIGNED_BYTE, setTextureData);
+                    this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, 1, GLTF2.EComponentType.UNSIGNED_BYTE, setTextureData);
                 }
                 else if (GLTF2.GLTFUtils.IsBase64(source.uri)) {
                     setTextureData(new Uint8Array(GLTF2.GLTFUtils.DecodeBase64(source.uri)));

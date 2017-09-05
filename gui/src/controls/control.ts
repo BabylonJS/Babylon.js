@@ -834,6 +834,7 @@ module BABYLON.GUI {
             if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
                 this._onPointerDown(this._dummyVector2);
                 this._host._lastControlDown = this;
+                this._host._lastPickedControl = this;
                 return true;
             }
 
