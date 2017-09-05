@@ -406,9 +406,17 @@ module BABYLON {
                                 if (!this._lightOnControllers) {
                                     this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), this.getScene());
                                 }
-                                loadedMesh.getChildren().forEach((mesh) => {
-                                    this._lightOnControllers.includedOnlyMeshes.push(<AbstractMesh>mesh);
-                                });
+                                let activateLightOnSubMeshes = function(mesh: AbstractMesh, light: HemisphericLight) {
+                                    let children = mesh.getChildren();
+                                    if (children.length !== 0) {
+                                        children.forEach((mesh) => {
+                                            light.includedOnlyMeshes.push(<AbstractMesh>mesh);
+                                            activateLightOnSubMeshes(<AbstractMesh>mesh, light);
+                                        });
+                                    }
+                                }
+                                this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
+                                activateLightOnSubMeshes(loadedMesh, this._lightOnControllers);
                             }
                         });
                     }
