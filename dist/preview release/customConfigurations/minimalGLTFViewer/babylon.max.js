@@ -7758,14 +7758,12 @@ var BABYLON;
                         _this._performanceMonitor.disable();
                     }
                     _this._windowIsBackground = true;
-                    _this.onCanvasBlurObservable.notifyObservers(_this);
                 };
                 this._onFocus = function () {
                     if (_this.disablePerformanceMonitorInBackground) {
                         _this._performanceMonitor.enable();
                     }
                     _this._windowIsBackground = false;
-                    _this.onCanvasFocusObservable.notifyObservers(_this);
                 };
                 this._onCanvasPointerOut = function () {
                     _this.onCanvasPointerOutObservable.notifyObservers(_this);
@@ -13542,7 +13540,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        AbstractMesh.prototype.moveWithCollisions = function (direction) {
+        AbstractMesh.prototype.moveWithCollisions = function (displacement) {
             var globalPosition = this.getAbsolutePosition();
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
@@ -13550,7 +13548,7 @@ var BABYLON;
                 this._collider = new BABYLON.Collider();
             }
             this._collider.radius = this.ellipsoid;
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, direction, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
             return this;
         };
         // Submeshes octree

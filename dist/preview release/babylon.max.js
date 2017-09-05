@@ -7758,14 +7758,12 @@ var BABYLON;
                         _this._performanceMonitor.disable();
                     }
                     _this._windowIsBackground = true;
-                    _this.onCanvasBlurObservable.notifyObservers(_this);
                 };
                 this._onFocus = function () {
                     if (_this.disablePerformanceMonitorInBackground) {
                         _this._performanceMonitor.enable();
                     }
                     _this._windowIsBackground = false;
-                    _this.onCanvasFocusObservable.notifyObservers(_this);
                 };
                 this._onCanvasPointerOut = function () {
                     _this.onCanvasPointerOutObservable.notifyObservers(_this);
@@ -13542,7 +13540,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        AbstractMesh.prototype.moveWithCollisions = function (direction) {
+        AbstractMesh.prototype.moveWithCollisions = function (displacement) {
             var globalPosition = this.getAbsolutePosition();
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
@@ -13550,7 +13548,7 @@ var BABYLON;
                 this._collider = new BABYLON.Collider();
             }
             this._collider.radius = this.ellipsoid;
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, direction, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
             return this;
         };
         // Submeshes octree
@@ -34846,7 +34844,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        FreeCamera.prototype._collideWithWorld = function (direction) {
+        FreeCamera.prototype._collideWithWorld = function (displacement) {
             var globalPosition;
             if (this.parent) {
                 globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
@@ -34861,13 +34859,13 @@ var BABYLON;
             this._collider.radius = this.ellipsoid;
             this._collider.collisionMask = this._collisionMask;
             //no need for clone, as long as gravity is not on.
-            var actualDirection = direction;
+            var actualDisplacement = displacement;
             //add gravity to the direction to prevent the dual-collision checking
             if (this.applyGravity) {
                 //this prevents mending with cameraDirection, a global variable of the free camera class.
-                actualDirection = direction.add(this.getScene().gravity);
+                actualDisplacement = displacement.add(this.getScene().gravity);
             }
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualDirection, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
             if (!this._localDirection) {
@@ -40460,13 +40458,13 @@ var BABYLON;
             this._toRemoveGeometryArray = [];
             this._toRemoveMeshesArray = [];
         }
-        CollisionCoordinatorWorker.prototype.getNewPosition = function (position, velocity, collider, maximumRetry, excludedMesh, onNewPosition, collisionIndex) {
+        CollisionCoordinatorWorker.prototype.getNewPosition = function (position, displacement, collider, maximumRetry, excludedMesh, onNewPosition, collisionIndex) {
             if (!this._init)
                 return;
             if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000])
                 return;
             position.divideToRef(collider.radius, this._scaledPosition);
-            velocity.divideToRef(collider.radius, this._scaledVelocity);
+            displacement.divideToRef(collider.radius, this._scaledVelocity);
             this._collisionsCallbackArray[collisionIndex] = onNewPosition;
             var payload = {
                 collider: {
@@ -40571,9 +40569,9 @@ var BABYLON;
             this._scaledVelocity = BABYLON.Vector3.Zero();
             this._finalPosition = BABYLON.Vector3.Zero();
         }
-        CollisionCoordinatorLegacy.prototype.getNewPosition = function (position, velocity, collider, maximumRetry, excludedMesh, onNewPosition, collisionIndex) {
+        CollisionCoordinatorLegacy.prototype.getNewPosition = function (position, displacement, collider, maximumRetry, excludedMesh, onNewPosition, collisionIndex) {
             position.divideToRef(collider.radius, this._scaledPosition);
-            velocity.divideToRef(collider.radius, this._scaledVelocity);
+            displacement.divideToRef(collider.radius, this._scaledVelocity);
             collider.collidedMesh = null;
             collider.retry = 0;
             collider.initialVelocity = this._scaledVelocity;
