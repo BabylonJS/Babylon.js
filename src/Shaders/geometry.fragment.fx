@@ -1,29 +1,21 @@
-#ifndef DRAW_BUFFERS_EXTENSION
-#version 300 es
-#else
 #extension GL_EXT_draw_buffers : require
-#endif
 
 precision highp float;
 precision highp int;
 
-#ifdef DRAW_BUFFERS_EXTENSION
-#define in varying
-#endif
-
-in vec3 vNormalV;
-in vec4 vViewPos;
+varying vec3 vNormalV;
+varying vec4 vViewPos;
 
 #ifdef POSITION
-in vec3 vPosition;
+varying vec3 vPosition;
 #endif
 
 #ifdef ALPHATEST
-in vec2 vUV;
+varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
-#ifndef DRAW_BUFFERS_EXTENSION
+#if __VERSION__ >= 200
     layout(location = 0) out vec4 color0;
     layout(location = 1) out vec4 color1;
 
@@ -38,7 +30,7 @@ uniform sampler2D diffuseSampler;
 
 void main() {
 #ifdef ALPHATEST
-	if (texture(diffuseSampler, vUV).a < 0.4)
+	if (texture2D(diffuseSampler, vUV).a < 0.4)
 		discard;
 #endif
 
