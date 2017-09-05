@@ -7,7 +7,7 @@ module BABYLON.GUI {
         private _resizeObserver: Observer<Engine>;
         private _pointerMoveObserver: Observer<PointerInfoPre>;
         private _pointerObserver: Observer<PointerInfo>;
-        private _canvasBlurObserver: Observer<Engine>;
+        private _canvasPointerOutObserver: Observer<Engine>;
         private _background: string;
         public _rootContainer = new Container("root");
         public _lastControlOver: Control;
@@ -145,8 +145,8 @@ module BABYLON.GUI {
                 this.getScene().onPointerObservable.remove(this._pointerObserver);
             }
 
-            if (this._canvasBlurObserver) {
-                this.getScene().getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+            if (this._canvasPointerOutObserver) {
+                this.getScene().getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
             }
 
             if (this._layerToDispose) {
@@ -309,7 +309,7 @@ module BABYLON.GUI {
                 pi.skipOnPointerObservable = this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
             });
 
-            this._attachToOnBlur(scene);
+            this._attachToOnPointerOut(scene);
         }
 
         public attachToMesh(mesh: AbstractMesh, supportPointerMove = true): void {
@@ -339,11 +339,11 @@ module BABYLON.GUI {
             });
 
             mesh.enablePointerMoveEvents = supportPointerMove;
-            this._attachToOnBlur(scene);
+            this._attachToOnPointerOut(scene);
         }
 
-        private _attachToOnBlur(scene: Scene): void {
-            this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
+        private _attachToOnPointerOut(scene: Scene): void {
+            this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(() => {
                 if (this._lastControlOver) {
                     this._lastControlOver._onPointerOut();
                 }            

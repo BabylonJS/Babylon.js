@@ -539,9 +539,19 @@
         public onResizeObservable = new Observable<Engine>();
 
         /**
-         * Observable event triggered each time the canvas lost focus
+         * Observable event triggered each time the canvas loses focus
          */
         public onCanvasBlurObservable = new Observable<Engine>();
+
+        /**
+         * Observable event triggered each time the canvas gains focus
+         */
+        public onCanvasFocusObservable = new Observable<Engine>();        
+
+        /**
+         * Observable event triggered each time the canvas receives pointerout event
+         */
+        public onCanvasPointerOutObservable = new Observable<Engine>();
 
         //WebVR
 
@@ -584,9 +594,14 @@
 
         public static audioEngine: AudioEngine;
 
-        private _onCanvasBlur: () => void;
-        private _onBlur: () => void;
+        
+        // Focus
         private _onFocus: () => void;
+        private _onBlur: () => void;       
+        private _onCanvasPointerOut: () => void;
+        private _onCanvasBlur: () => void;
+        private _onCanvasFocus: () => void;
+        
         private _onFullscreenChange: () => void;
         private _onPointerLockChange: () => void;
 
@@ -780,12 +795,24 @@
                 if (!this._gl) {
                     throw new Error("WebGL not supported");
                 }
-
+    
+                this._onCanvasFocus = () => {
+                    this.onCanvasFocusObservable.notifyObservers(this);
+                }
+    
+                this._onCanvasBlur = () => {
+                    this.onCanvasBlurObservable.notifyObservers(this);
+                }
+    
+                canvas.addEventListener("focus", this._onCanvasFocus);
+                canvas.addEventListener("blur", this._onCanvasBlur);
+    
                 this._onBlur = () => {
                     if (this.disablePerformanceMonitorInBackground) {
                         this._performanceMonitor.disable();
                     }
                     this._windowIsBackground = true;
+                    this.onCanvasBlurObservable.notifyObservers(this);
                 };
 
                 this._onFocus = () => {
@@ -793,16 +820,17 @@
                         this._performanceMonitor.enable();
                     }
                     this._windowIsBackground = false;
+                    this.onCanvasFocusObservable.notifyObservers(this);
                 };
 
-                this._onCanvasBlur = () => {
-                    this.onCanvasBlurObservable.notifyObservers(this);
+                this._onCanvasPointerOut = () => {
+                    this.onCanvasPointerOutObservable.notifyObservers(this);
                 };
 
                 window.addEventListener("blur", this._onBlur);
                 window.addEventListener("focus", this._onFocus);
 
-                canvas.addEventListener("pointerout", this._onCanvasBlur);
+                canvas.addEventListener("pointerout", this._onCanvasPointerOut);
             } else {
                 this._gl = <WebGLRenderingContext>canvasOrContext;
                 this._renderingCanvas = this._gl.canvas
@@ -4315,6 +4343,8 @@
             window.removeEventListener("focus", this._onFocus);
             window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
             window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
+            this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);            
             this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
 
             if (!this._doNotHandleContextLost) {
@@ -4345,6 +4375,8 @@
 
             this.onResizeObservable.clear();
             this.onCanvasBlurObservable.clear();
+            this.onCanvasFocusObservable.clear();
+            this.onCanvasPointerOutObservable.clear();
 
             BABYLON.Effect.ResetCache();
         }
