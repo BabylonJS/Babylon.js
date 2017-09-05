@@ -563,7 +563,6 @@
         private _vrDisplayEnabled;
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
-        private _vrAnimationFrameHandler: number;
 
         // Uniform buffers list
         public disableUniformBuffers = false;
@@ -695,6 +694,8 @@
 
         private _emptyTexture: InternalTexture;
         private _emptyCubeTexture: InternalTexture;
+
+        private _frameHandler: number;
 
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
@@ -1355,7 +1356,7 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
+                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
             } else {
                 this._renderingQueueLaunched = false;
             }
@@ -1379,7 +1380,7 @@
             if (!this._renderingQueueLaunched) {
                 this._renderingQueueLaunched = true;
                 this._bindedRenderFunction = this._renderLoop.bind(this);
-                Tools.QueueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
             }
         }
 
@@ -1602,7 +1603,6 @@
                 this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
             } else {
                 //When the specs are implemented, need to uncomment this.
-                //this._vrDisplayEnabled.cancelAnimationFrame(this._vrAnimationFrameHandler);
                 this.setHardwareScalingLevel(this._oldHardwareScaleFactor);
                 this.setSize(this._oldSize.width, this._oldSize.height);
                 this._vrDisplayEnabled = undefined;
