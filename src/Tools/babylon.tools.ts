@@ -315,22 +315,24 @@
          * @param func - the function to be called
          * @param requester - the object that will request the next frame. Falls back to window.
          */
-        public static QueueNewFrame(func, requester: any = window): void {
-            //if WebVR is enabled AND presenting, requestAnimationFrame is triggered when enabled.
-            /*if(requester.isPresenting) {
-                return;
-            } else*/ if (requester.requestAnimationFrame)
-                requester.requestAnimationFrame(func);
-            else if (requester.msRequestAnimationFrame)
-                requester.msRequestAnimationFrame(func);
-            else if (requester.webkitRequestAnimationFrame)
-                requester.webkitRequestAnimationFrame(func);
-            else if (requester.mozRequestAnimationFrame)
-                requester.mozRequestAnimationFrame(func);
-            else if (requester.oRequestAnimationFrame)
-                requester.oRequestAnimationFrame(func);
+        public static QueueNewFrame(func, requester: any = window): number {
+            if (requester.requestAnimationFrame) {
+                return requester.requestAnimationFrame(func);
+            }
+            else if (requester.msRequestAnimationFrame) {
+                return requester.msRequestAnimationFrame(func);
+            }
+            else if (requester.webkitRequestAnimationFrame) {
+                return requester.webkitRequestAnimationFrame(func);
+            }
+            else if (requester.mozRequestAnimationFrame) {
+                return requester.mozRequestAnimationFrame(func);
+            }
+            else if (requester.oRequestAnimationFrame) {
+                return requester.oRequestAnimationFrame(func);
+            }
             else {
-                window.setTimeout(func, 16);
+                return window.setTimeout(func, 16);
             }
         }
 
