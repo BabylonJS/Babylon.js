@@ -110,6 +110,8 @@ namespace BabylonExport.Entities
         [DataMember]
         public string tags { get; set; }
 
+        public bool isDummy = false;
+
         public BabylonMesh()
         {
             isEnabled = true;

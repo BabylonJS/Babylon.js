@@ -7,12 +7,23 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private void ExportCamera(IIGameScene scene,  IIGameNode cameraNode, BabylonScene babylonScene)
+        private bool IsCameraExportable(IIGameNode cameraNode)
         {
             if (cameraNode.MaxNode.GetBoolProperty("babylonjs_noexport"))
             {
-                return;
+                return false;
             }
+
+            return true;
+        }
+
+        private BabylonCamera ExportCamera(IIGameScene scene,  IIGameNode cameraNode, BabylonScene babylonScene)
+        {
+            if (IsCameraExportable(cameraNode) == false)
+            {
+                return null;
+            }
+
             var gameCamera = cameraNode.IGameObject.AsGameCamera();
             var maxCamera = gameCamera.MaxObject as ICameraObject;
             var initialized = gameCamera.InitializeData;
@@ -23,7 +34,7 @@ namespace Max2Babylon
             babylonCamera.id = cameraNode.MaxNode.GetGuid().ToString();
             if (cameraNode.NodeParent != null)
             {
-                babylonCamera.parentId = GetParentID(cameraNode.NodeParent, babylonScene, scene);
+                babylonCamera.parentId = cameraNode.NodeParent.MaxNode.GetGuid().ToString();
             }
 
             babylonCamera.fov = Tools.ConvertFov(maxCamera.GetFOV(0, Tools.Forever));
@@ -135,6 +146,8 @@ namespace Max2Babylon
             }
 
             babylonScene.CamerasList.Add(babylonCamera);
+
+            return babylonCamera;
         }
     }
 }
