@@ -12,6 +12,7 @@ module BABYLON {
         
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
         public SPECULARTERM = false;

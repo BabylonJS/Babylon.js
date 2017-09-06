@@ -137,6 +137,8 @@ void main(void) {
 		discard;
 #endif
 
+#include<depthPrePass>
+
 	baseColor.rgb *= vTextureInfos.y;
 	
 	vec4 diffuse1Color = texture2D(diffuse1Sampler, vTextureUV * diffuse1Infos);
