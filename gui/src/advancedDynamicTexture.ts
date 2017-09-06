@@ -193,6 +193,8 @@ module BABYLON.GUI {
                 this._layerToDispose = null;
             }
 
+            this._rootContainer.dispose();
+
             super.dispose();
         }
 
