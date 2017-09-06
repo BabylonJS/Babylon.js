@@ -20,6 +20,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonActions actions { get; set; }
 
+        // Identifier shared between a mesh and its instances
+        public int idGroupInstance;
+
         public BabylonAbstractMesh()
         {
             position = new[] { 0f, 0f, 0f };

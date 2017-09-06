@@ -67,7 +67,9 @@ namespace Max2Babylon
 
                 // Check if this mesh has already been exported
                 BabylonMesh babylonMasterMesh = null;
-                for (var index = 0; index < tabs.Count; index++)
+                var index = 0;
+                while (babylonMasterMesh == null &&
+                       index < tabs.Count)
                 {
 #if MAX2017
                     var indexer = index;
@@ -82,6 +84,8 @@ namespace Max2Babylon
                                // Mesh is not a dummy
                                _babylonMesh.isDummy == false;
                     });
+
+                    index++;
                 }
 
                 if (babylonMasterMesh != null)
