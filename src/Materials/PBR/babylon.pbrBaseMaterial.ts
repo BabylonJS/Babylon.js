@@ -20,6 +20,7 @@
         public OPACITYDIRECTUV = 0;
         public OPACITYRGB = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public ALPHABLEND = false;
         public ALPHAFROMALBEDO = false;
         public ALPHATESTVALUE = 0.5;

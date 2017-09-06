@@ -288,6 +288,8 @@ void main(void) {
 	#endif
 #endif
 
+#include<depthPrePass>
+
 #ifdef VERTEXCOLOR
 	surfaceAlbedo *= vColor.rgb;
 #endif
