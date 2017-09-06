@@ -81,6 +81,14 @@ module INSPECTOR {
         private _validateInputHandler: EventListener;
         /** Handler used to validate the input by pressing 'esc' */
         private _escapeInputHandler: EventListener;
+        /** Handler used to get mouse position */
+        private _onMouseDownHandler: EventListener;
+        private _onMouseDragHandler: EventListener;
+        private _onMouseUpHandler: EventListener;
+        /** Save previous Y mouse position */
+        private _prevY: number;
+        /**Save value while slider in on */
+        private _preValue: number;
 
         constructor(prop: Property, parent?: PropertyLine, level: number = 0) {
             this._property = prop;
@@ -136,6 +144,9 @@ module INSPECTOR {
             this._displayInputHandler = this._displayInput.bind(this);
             this._validateInputHandler = this._validateInput.bind(this);
             this._escapeInputHandler = this._escapeInput.bind(this);
+            this._onMouseDownHandler = this._onMouseDown.bind(this);
+            this._onMouseDragHandler = this._onMouseDrag.bind(this);
+            this._onMouseUpHandler = this._onMouseUp.bind(this);
         }
 
         /** 
@@ -144,25 +155,25 @@ module INSPECTOR {
          */
         private _validateInput(e: KeyboardEvent) {
             if (e.keyCode == 13) {
-                // Enter : validate the new value
-                let newValue:any = this._input.value;
-
-                this.updateObject();
-
-                if(typeof this._property.value === 'number'){
-                    this._property.value = parseFloat(newValue);
-                }else{
-                    this._property.value = newValue;
-                }
-                // Remove input
-                this.update();
-                // resume scheduler
-                Scheduler.getInstance().pause = false;
-
+                this.validateInput(this._input.value);
             } else if (e.keyCode == 27) {
                 // Esc : remove input
                 this.update();
             }
+        }
+
+        public validateInput(value: any): void {            
+            this.updateObject();
+
+            if(typeof this._property.value === 'number'){
+                this._property.value = parseFloat(value);
+            }else{
+                this._property.value = value;
+            }
+            // Remove input
+            this.update();
+            // resume scheduler
+            Scheduler.getInstance().pause = false;
         }
 
         /** 
@@ -197,6 +208,9 @@ module INSPECTOR {
             this._input.value = valueTxt;
             this._valueDiv.appendChild(this._input);
 
+            if(typeof this.value === 'number') {
+                this._input.addEventListener('mousedown', this._onMouseDownHandler);
+            }
             // Pause the scheduler
             Scheduler.getInstance().pause = true;
         }
@@ -236,7 +250,8 @@ module INSPECTOR {
 
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
-                this._elements.push(new ColorElement(this.value));
+                this._elements.push(new ColorPickerElement(this.value, this));
+                //this._elements.push(new ColorElement(this.value));
             }
             // Texture
             if (this.type == 'Texture') {
@@ -372,6 +387,35 @@ module INSPECTOR {
                 }
             }
         }
-    }
 
+        /**
+         * Refresh mouse position on y axis
+         * @param e 
+         */
+        private _onMouseDrag(e: MouseEvent): void {      
+            const diff = this._prevY - e.clientY;
+            this.validateInput(this._preValue + diff);
+        }
+
+        /**
+         * Save new value from slider
+         * @param e 
+         */
+        private _onMouseUp(e: MouseEvent): void {
+            window.removeEventListener('mousemove', this._onMouseDragHandler);
+            window.removeEventListener('mouseup', this._onMouseUpHandler);
+            this._prevY = e.clientY;
+        }
+      
+        /**
+         * Start record mouse position
+         * @param e 
+         */
+        private _onMouseDown(e: MouseEvent): void {
+            this._prevY = e.clientY;
+            this._preValue = this.value;
+            window.addEventListener('mousemove', this._onMouseDragHandler);
+            window.addEventListener('mouseup', this._onMouseUpHandler);
+        }
+    }
 }
