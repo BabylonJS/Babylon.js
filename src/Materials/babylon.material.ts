@@ -285,6 +285,9 @@
         public alphaMode = Engine.ALPHA_COMBINE;
 
         @serialize()
+        public needDepthPrePass = false;
+
+        @serialize()
         public disableDepthWrite = false;
 
         @serialize("fogEnabled")
