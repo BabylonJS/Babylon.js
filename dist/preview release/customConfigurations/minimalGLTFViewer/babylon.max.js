@@ -7781,19 +7781,22 @@ var BABYLON;
                         _this.onContextLostObservable.notifyObservers(_this);
                     };
                     this._onContextRestored = function (evt) {
-                        // Rebuild gl context
-                        _this._initGLContext();
-                        // Rebuild effects
-                        _this._rebuildEffects();
-                        // Rebuild textures
-                        _this._rebuildInternalTextures();
-                        // Rebuild buffers
-                        _this._rebuildBuffers();
-                        // Cache
-                        _this.wipeCaches(true);
-                        BABYLON.Tools.Warn("WebGL context successfully restored.");
-                        _this.onContextRestoredObservable.notifyObservers(_this);
-                        _this._contextWasLost = false;
+                        // Adding a timeout to avoid race condition at browser level
+                        setTimeout(function () {
+                            // Rebuild gl context
+                            _this._initGLContext();
+                            // Rebuild effects
+                            _this._rebuildEffects();
+                            // Rebuild textures
+                            _this._rebuildInternalTextures();
+                            // Rebuild buffers
+                            _this._rebuildBuffers();
+                            // Cache
+                            _this.wipeCaches(true);
+                            BABYLON.Tools.Warn("WebGL context successfully restored.");
+                            _this.onContextRestoredObservable.notifyObservers(_this);
+                            _this._contextWasLost = false;
+                        }, 0);
                     };
                     canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                     canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
