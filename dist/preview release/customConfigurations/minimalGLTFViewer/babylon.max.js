@@ -16048,6 +16048,7 @@ var BABYLON;
             this._opaqueSubMeshes = new BABYLON.SmartArray(256);
             this._transparentSubMeshes = new BABYLON.SmartArray(256);
             this._alphaTestSubMeshes = new BABYLON.SmartArray(256);
+            this._depthOnlySubMeshes = new BABYLON.SmartArray(256);
             this._particleSystems = new BABYLON.SmartArray(256);
             this._spriteManagers = new BABYLON.SmartArray(256);
             this._edgesRenderers = new BABYLON.SmartArray(16);
@@ -16114,10 +16115,18 @@ var BABYLON;
          */
         RenderingGroup.prototype.render = function (customRenderFunction, renderSprites, renderParticles, activeMeshes) {
             if (customRenderFunction) {
-                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
+                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, this._depthOnlySubMeshes);
                 return;
             }
             var engine = this._scene.getEngine();
+            // Depth only
+            if (this._depthOnlySubMeshes.length !== 0) {
+                engine.setAlphaTesting(true);
+                engine.setColorWrite(false);
+                this._renderAlphaTest(this._depthOnlySubMeshes);
+                engine.setAlphaTesting(false);
+                engine.setColorWrite(true);
+            }
             // Opaque
             if (this._opaqueSubMeshes.length !== 0) {
                 this._renderOpaque(this._opaqueSubMeshes);
@@ -16270,6 +16279,7 @@ var BABYLON;
             this._opaqueSubMeshes.reset();
             this._transparentSubMeshes.reset();
             this._alphaTestSubMeshes.reset();
+            this._depthOnlySubMeshes.reset();
             this._particleSystems.reset();
             this._spriteManagers.reset();
             this._edgesRenderers.reset();
@@ -16278,6 +16288,7 @@ var BABYLON;
             this._opaqueSubMeshes.dispose();
             this._transparentSubMeshes.dispose();
             this._alphaTestSubMeshes.dispose();
+            this._depthOnlySubMeshes.dispose();
             this._particleSystems.dispose();
             this._spriteManagers.dispose();
             this._edgesRenderers.dispose();
@@ -16289,6 +16300,9 @@ var BABYLON;
         RenderingGroup.prototype.dispatch = function (subMesh) {
             var material = subMesh.getMaterial();
             var mesh = subMesh.getMesh();
+            if (material.needDepthPrePass) {
+                this._depthOnlySubMeshes.push(subMesh);
+            }
             if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) {
                 this._transparentSubMeshes.push(subMesh);
             }
@@ -25496,6 +25510,7 @@ var BABYLON;
             */
             this.onUnBindObservable = new BABYLON.Observable();
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
+            this.needDepthPrePass = false;
             this.disableDepthWrite = false;
             this._fogEnabled = true;
             this.pointSize = 1.0;
@@ -26015,6 +26030,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], Material.prototype, "alphaMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "needDepthPrePass", void 0);
         __decorate([
             BABYLON.serialize()
         ], Material.prototype, "disableDepthWrite", void 0);
@@ -47681,8 +47699,16 @@ var BABYLON;
                 this._blurPostProcesses = [this._boxBlurPostprocess];
             }
         };
-        ShadowGenerator.prototype._renderForShadowMap = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes) {
+        ShadowGenerator.prototype._renderForShadowMap = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes) {
             var index;
+            var engine = this._scene.getEngine();
+            if (depthOnlySubMeshes.length) {
+                engine.setColorWrite(false);
+                for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                    this._renderSubMeshForShadowMap(depthOnlySubMeshes.data[index]);
+                }
+                engine.setColorWrite(true);
+            }
             for (index = 0; index < opaqueSubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(opaqueSubMeshes.data[index]);
             }
@@ -52864,8 +52890,15 @@ var BABYLON;
                     mesh._processRendering(subMesh, _this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._effect.setMatrix("world", world); });
                 }
             };
-            this._depthMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes) {
+            this._depthMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes) {
                 var index;
+                if (depthOnlySubMeshes.length) {
+                    engine.setColorWrite(false);
+                    for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                        renderSubMesh(depthOnlySubMeshes.data[index]);
+                    }
+                    engine.setColorWrite(true);
+                }
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
@@ -55004,8 +55037,15 @@ var BABYLON;
                     mesh._processRendering(subMesh, _this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._effect.setMatrix("world", world); });
                 }
             };
-            this._multiRenderTarget.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes) {
+            this._multiRenderTarget.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes) {
                 var index;
+                if (depthOnlySubMeshes.length) {
+                    engine.setColorWrite(false);
+                    for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                        renderSubMesh(depthOnlySubMeshes.data[index]);
+                    }
+                    engine.setColorWrite(true);
+                }
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
@@ -55389,9 +55429,16 @@ var BABYLON;
             this._volumetricLightScatteringRTT.onAfterRenderObservable.add(function () {
                 scene.clearColor = savedSceneClearColor;
             });
-            this._volumetricLightScatteringRTT.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes) {
+            this._volumetricLightScatteringRTT.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes) {
                 var engine = scene.getEngine();
                 var index;
+                if (depthOnlySubMeshes.length) {
+                    engine.setColorWrite(false);
+                    for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                        renderSubMesh(depthOnlySubMeshes.data[index]);
+                    }
+                    engine.setColorWrite(true);
+                }
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
@@ -68777,9 +68824,17 @@ var BABYLON;
                     _this._mainTexture.resetRefreshCounter();
                 }
             };
-            this._mainTexture.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes) {
+            this._mainTexture.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes) {
                 _this.onBeforeRenderMainTextureObservable.notifyObservers(_this);
                 var index;
+                var engine = _this._scene.getEngine();
+                if (depthOnlySubMeshes.length) {
+                    engine.setColorWrite(false);
+                    for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                        renderSubMesh(depthOnlySubMeshes.data[index]);
+                    }
+                    engine.setColorWrite(true);
+                }
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
