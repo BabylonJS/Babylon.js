@@ -79,8 +79,8 @@ module BABYLON {
         /**
          * Restored camera state. You must call storeState() first
          */
-        public restoreState(): boolean {
-            if (!super.restoreState()) {
+        public _restoreStateValues(): boolean {
+            if (!super._restoreStateValues()) {
                 return false;
             }
 

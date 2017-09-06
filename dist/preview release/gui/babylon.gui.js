@@ -1681,6 +1681,7 @@ var BABYLON;
                     return this;
                 }
                 control._link(this, this._host);
+                control._markAllAsDirty();
                 this._reOrderControl(control);
                 this._markAsDirty();
                 return this;
