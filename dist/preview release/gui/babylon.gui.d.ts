@@ -258,6 +258,7 @@ declare module BABYLON.GUI {
         forcePointerUp(): void;
         _processObservables(type: number, x: number, y: number): boolean;
         private _prepareFont();
+        dispose(): void;
         private static _HORIZONTAL_ALIGNMENT_LEFT;
         private static _HORIZONTAL_ALIGNMENT_RIGHT;
         private static _HORIZONTAL_ALIGNMENT_CENTER;
@@ -309,6 +310,7 @@ declare module BABYLON.GUI {
         _processPicking(x: number, y: number, type: number): boolean;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        dispose(): void;
     }
 }
 
@@ -607,6 +609,9 @@ declare module BABYLON.GUI {
         private _blinkIsEven;
         private _cursorOffset;
         private _scrollLeft;
+        onTextChangedObservable: Observable<InputText>;
+        onFocusObservable: Observable<InputText>;
+        onBlurObservable: Observable<InputText>;
         maxWidth: string | number;
         margin: string;
         autoStretchWidth: boolean;
@@ -622,5 +627,6 @@ declare module BABYLON.GUI {
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerUp(coordinates: Vector2): void;
+        dispose(): void;
     }
 }
