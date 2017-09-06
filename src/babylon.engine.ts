@@ -842,26 +842,29 @@
                     };
 
                     this._onContextRestored = (evt: Event) => {
-                        // Rebuild gl context
-                        this._initGLContext();
+                        // Adding a timeout to avoid race condition at browser level
+                        setTimeout(()=> {
+                            // Rebuild gl context
+                            this._initGLContext();
 
-                        // Rebuild effects
-                        this._rebuildEffects();
+                            // Rebuild effects
+                            this._rebuildEffects();
 
-                        // Rebuild textures
-                        this._rebuildInternalTextures();
+                            // Rebuild textures
+                            this._rebuildInternalTextures();
 
-                        // Rebuild buffers
-                        this._rebuildBuffers();
+                            // Rebuild buffers
+                            this._rebuildBuffers();
 
-                        // Cache
-                        this.wipeCaches(true);
+                            // Cache
+                            this.wipeCaches(true);
 
-                        Tools.Warn("WebGL context successfully restored.");
+                            Tools.Warn("WebGL context successfully restored.");
 
-                        this.onContextRestoredObservable.notifyObservers(this);
+                            this.onContextRestoredObservable.notifyObservers(this);
 
-                        this._contextWasLost = false;
+                            this._contextWasLost = false;
+                        }, 0);
                     };
 
                     canvas.addEventListener("webglcontextlost", this._onContextLost, false);
