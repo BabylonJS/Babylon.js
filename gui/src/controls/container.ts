@@ -178,5 +178,13 @@ module BABYLON.GUI {
 
             this._measureForChildren.copyFrom(this._currentMeasure);
         }
+
+        public dispose() {
+            super.dispose();
+
+            for (var control of this._children) {
+                control.dispose();
+            }
+        }
     }    
 }

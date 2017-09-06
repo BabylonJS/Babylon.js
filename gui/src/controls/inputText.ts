@@ -15,6 +15,10 @@ module BABYLON.GUI {
         private _cursorOffset = 0;        
         private _scrollLeft: number;
 
+        public onTextChangedObservable = new Observable<InputText>();
+        public onFocusObservable = new Observable<InputText>();
+        public onBlurObservable = new Observable<InputText>();
+
         public get maxWidth(): string | number {
             return this._maxWidth.toString(this._host);
         }
@@ -105,6 +109,8 @@ module BABYLON.GUI {
             }
             this._text = value;
             this._markAsDirty();
+
+            this.onTextChangedObservable.notifyObservers(this);
         }
 
         constructor(public name?: string, text: string = "") {
@@ -119,6 +125,8 @@ module BABYLON.GUI {
             this._cursorOffset = 0;
             clearTimeout(this._blinkTimeout);
             this._markAsDirty();
+
+            this.onBlurObservable.notifyObservers(this);
         }
 
         public onFocus(): void {
@@ -127,6 +135,8 @@ module BABYLON.GUI {
             this._blinkIsEven = false;
             this._cursorOffset = 0;
             this._markAsDirty();
+
+            this.onFocusObservable.notifyObservers(this);
         }
 
         protected _getTypeName(): string {
@@ -312,5 +322,13 @@ module BABYLON.GUI {
         protected _onPointerUp(coordinates: Vector2): void {
             super._onPointerUp(coordinates);
         }  
+
+        public dispose() {
+            super.dispose();
+
+            this.onBlurObservable.clear();
+            this.onFocusObservable.clear();
+            this.onTextChangedObservable.clear();
+        }
     }
 }
