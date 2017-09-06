@@ -238,6 +238,7 @@ declare module BABYLON {
         private _pointerLockRequested;
         private _alphaTest;
         private _isStencilEnable;
+        private _colorWrite;
         private _loadingScreen;
         _drawCalls: PerfCounter;
         private _glVersion;
@@ -508,6 +509,7 @@ declare module BABYLON {
         getDepthWrite(): boolean;
         setDepthWrite(enable: boolean): void;
         setColorWrite(enable: boolean): void;
+        getColorWrite(): boolean;
         setAlphaConstants(r: number, g: number, b: number, a: number): void;
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
         getAlphaMode(): number;
@@ -2976,14 +2978,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface Behavior<T extends Node> {
-        name: string;
-        attach(node: T): void;
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
     class Bone extends Node {
         name: string;
         private static _tmpVecs;
@@ -3984,6 +3978,14 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface Behavior<T extends Node> {
+        name: string;
+        attach(node: T): void;
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
     class Collider {
         radius: Vector3;
         retry: number;
@@ -4344,6 +4346,69 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: any, localY: any);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: PickingInfo;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: PickingInfo);
+    }
+}
+
 declare module BABYLON.Debug {
     class AxesViewer {
         private _xline;
@@ -4469,69 +4534,6 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength(bones, meshMat);
         update(): void;
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: any, localY: any);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: PickingInfo;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: PickingInfo);
     }
 }
 
@@ -4675,266 +4677,6 @@ declare module BABYLON {
         dPadLeft: number;
         dPadRight: number;
         update(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Highlight layer options. This helps customizing the behaviour
-     * of the highlight layer.
-     */
-    interface IHighlightLayerOptions {
-        /**
-         * Multiplication factor apply to the canvas size to compute the render target size
-         * used to generated the glowing objects (the smaller the faster).
-         */
-        mainTextureRatio?: number;
-        /**
-         * Enforces a fixed size texture to ensure resize independant blur.
-         */
-        mainTextureFixedSize?: number;
-        /**
-         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
-         * of the picture to blur (the smaller the faster).
-         */
-        blurTextureSizeRatio?: number;
-        /**
-         * How big in texel of the blur texture is the vertical blur.
-         */
-        blurVerticalSize?: number;
-        /**
-         * How big in texel of the blur texture is the horizontal blur.
-         */
-        blurHorizontalSize?: number;
-        /**
-         * Alpha blending mode used to apply the blur. Default is combine.
-         */
-        alphaBlendingMode?: number;
-        /**
-         * The camera attached to the layer.
-         */
-        camera?: Camera;
-    }
-    /**
-     * The highlight layer Helps adding a glow effect around a mesh.
-     *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
-     * glowy meshes to your scene.
-     *
-     * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
-     */
-    class HighlightLayer {
-        name: string;
-        /**
-         * The neutral color used during the preparation of the glow effect.
-         * This is black by default as the blend operation is a blend operation.
-         */
-        static neutralColor: Color4;
-        /**
-         * Stencil value used for glowing meshes.
-         */
-        static glowingMeshStencilReference: number;
-        /**
-         * Stencil value used for the other meshes in the scene.
-         */
-        static normalMeshStencilReference: number;
-        private _scene;
-        private _engine;
-        private _options;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _downSamplePostprocess;
-        private _horizontalBlurPostprocess;
-        private _verticalBlurPostprocess;
-        private _cachedDefines;
-        private _glowMapGenerationEffect;
-        private _glowMapMergeEffect;
-        private _blurTexture;
-        private _mainTexture;
-        private _mainTextureDesiredSize;
-        private _meshes;
-        private _maxSize;
-        private _shouldRender;
-        private _instanceGlowingMeshStencilReference;
-        private _excludedMeshes;
-        /**
-         * Specifies whether or not the inner glow is ACTIVE in the layer.
-         */
-        innerGlow: boolean;
-        /**
-         * Specifies whether or not the outer glow is ACTIVE in the layer.
-         */
-        outerGlow: boolean;
-        /**
-         * Specifies wether the highlight layer is enabled or not.
-         */
-        isEnabled: boolean;
-        /**
-         * Gets the horizontal size of the blur.
-         */
-        /**
-         * Specifies the horizontal size of the blur.
-         */
-        blurHorizontalSize: number;
-        /**
-         * Gets the vertical size of the blur.
-         */
-        /**
-         * Specifies the vertical size of the blur.
-         */
-        blurVerticalSize: number;
-        /**
-         * Gets the camera attached to the layer.
-         */
-        readonly camera: Camera;
-        /**
-         * An event triggered when the highlight layer has been disposed.
-         * @type {BABYLON.Observable}
-         */
-        onDisposeObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer is about rendering the main texture with the glowy parts.
-         * @type {BABYLON.Observable}
-         */
-        onBeforeRenderMainTextureObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer is being blurred.
-         * @type {BABYLON.Observable}
-         */
-        onBeforeBlurObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer has been blurred.
-         * @type {BABYLON.Observable}
-         */
-        onAfterBlurObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the glowing blurred texture is being merged in the scene.
-         * @type {BABYLON.Observable}
-         */
-        onBeforeComposeObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the glowing blurred texture has been merged in the scene.
-         * @type {BABYLON.Observable}
-         */
-        onAfterComposeObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer changes its size.
-         * @type {BABYLON.Observable}
-         */
-        onSizeChangedObservable: Observable<HighlightLayer>;
-        /**
-         * Instantiates a new highlight Layer and references it to the scene..
-         * @param name The name of the layer
-         * @param scene The scene to use the layer in
-         * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
-         */
-        constructor(name: string, scene: Scene, options?: IHighlightLayerOptions);
-        private _createIndexBuffer();
-        _rebuild(): void;
-        /**
-         * Creates the render target textures and post processes used in the highlight layer.
-         */
-        private createTextureAndPostProcesses();
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @param emissiveTexture the associated emissive texture used to generate the glow
-         * @return true if ready otherwise, false
-         */
-        private isReady(subMesh, useInstances, emissiveTexture);
-        /**
-         * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
-         */
-        render(): void;
-        /**
-         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
-         * @param mesh The mesh to exclude from the highlight layer
-         */
-        addExcludedMesh(mesh: Mesh): void;
-        /**
-          * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
-          * @param mesh The mesh to highlight
-          */
-        removeExcludedMesh(mesh: Mesh): void;
-        /**
-         * Add a mesh in the highlight layer in order to make it glow with the chosen color.
-         * @param mesh The mesh to highlight
-         * @param color The color of the highlight
-         * @param glowEmissiveOnly Extract the glow from the emissive texture
-         */
-        addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly?: boolean): void;
-        /**
-         * Remove a mesh from the highlight layer in order to make it stop glowing.
-         * @param mesh The mesh to highlight
-         */
-        removeMesh(mesh: Mesh): void;
-        /**
-         * Returns true if the layer contains information to display, otherwise false.
-         */
-        shouldRender(): boolean;
-        /**
-         * Sets the main texture desired size which is the closest power of two
-         * of the engine canvas size.
-         */
-        private setMainTextureSize();
-        /**
-         * Force the stencil to the normal expected value for none glowing parts
-         */
-        private defaultStencilReference(mesh);
-        /**
-         * Dispose only the render target textures and post process.
-         */
-        private disposeTextureAndPostProcesses();
-        /**
-         * Dispose the highlight layer and free resources.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class Layer {
-        name: string;
-        texture: Texture;
-        isBackground: boolean;
-        color: Color4;
-        scale: Vector2;
-        offset: Vector2;
-        alphaBlendingMode: number;
-        alphaTest: boolean;
-        layerMask: number;
-        private _scene;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _alphaTestEffect;
-        /**
-        * An event triggered when the layer is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<Layer>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        /**
-        * An event triggered before rendering the scene
-        * @type {BABYLON.Observable}
-        */
-        onBeforeRenderObservable: Observable<Layer>;
-        private _onBeforeRenderObserver;
-        onBeforeRender: () => void;
-        /**
-        * An event triggered after rendering the scene
-        * @type {BABYLON.Observable}
-        */
-        onAfterRenderObservable: Observable<Layer>;
-        private _onAfterRenderObserver;
-        onAfterRender: () => void;
-        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
-        private _createIndexBuffer();
-        _rebuild(): void;
-        render(): void;
-        dispose(): void;
     }
 }
 
@@ -5612,6 +5354,266 @@ declare module BABYLON {
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
         static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Highlight layer options. This helps customizing the behaviour
+     * of the highlight layer.
+     */
+    interface IHighlightLayerOptions {
+        /**
+         * Multiplication factor apply to the canvas size to compute the render target size
+         * used to generated the glowing objects (the smaller the faster).
+         */
+        mainTextureRatio?: number;
+        /**
+         * Enforces a fixed size texture to ensure resize independant blur.
+         */
+        mainTextureFixedSize?: number;
+        /**
+         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
+         * of the picture to blur (the smaller the faster).
+         */
+        blurTextureSizeRatio?: number;
+        /**
+         * How big in texel of the blur texture is the vertical blur.
+         */
+        blurVerticalSize?: number;
+        /**
+         * How big in texel of the blur texture is the horizontal blur.
+         */
+        blurHorizontalSize?: number;
+        /**
+         * Alpha blending mode used to apply the blur. Default is combine.
+         */
+        alphaBlendingMode?: number;
+        /**
+         * The camera attached to the layer.
+         */
+        camera?: Camera;
+    }
+    /**
+     * The highlight layer Helps adding a glow effect around a mesh.
+     *
+     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * glowy meshes to your scene.
+     *
+     * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
+     */
+    class HighlightLayer {
+        name: string;
+        /**
+         * The neutral color used during the preparation of the glow effect.
+         * This is black by default as the blend operation is a blend operation.
+         */
+        static neutralColor: Color4;
+        /**
+         * Stencil value used for glowing meshes.
+         */
+        static glowingMeshStencilReference: number;
+        /**
+         * Stencil value used for the other meshes in the scene.
+         */
+        static normalMeshStencilReference: number;
+        private _scene;
+        private _engine;
+        private _options;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _downSamplePostprocess;
+        private _horizontalBlurPostprocess;
+        private _verticalBlurPostprocess;
+        private _cachedDefines;
+        private _glowMapGenerationEffect;
+        private _glowMapMergeEffect;
+        private _blurTexture;
+        private _mainTexture;
+        private _mainTextureDesiredSize;
+        private _meshes;
+        private _maxSize;
+        private _shouldRender;
+        private _instanceGlowingMeshStencilReference;
+        private _excludedMeshes;
+        /**
+         * Specifies whether or not the inner glow is ACTIVE in the layer.
+         */
+        innerGlow: boolean;
+        /**
+         * Specifies whether or not the outer glow is ACTIVE in the layer.
+         */
+        outerGlow: boolean;
+        /**
+         * Specifies wether the highlight layer is enabled or not.
+         */
+        isEnabled: boolean;
+        /**
+         * Gets the horizontal size of the blur.
+         */
+        /**
+         * Specifies the horizontal size of the blur.
+         */
+        blurHorizontalSize: number;
+        /**
+         * Gets the vertical size of the blur.
+         */
+        /**
+         * Specifies the vertical size of the blur.
+         */
+        blurVerticalSize: number;
+        /**
+         * Gets the camera attached to the layer.
+         */
+        readonly camera: Camera;
+        /**
+         * An event triggered when the highlight layer has been disposed.
+         * @type {BABYLON.Observable}
+         */
+        onDisposeObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer is about rendering the main texture with the glowy parts.
+         * @type {BABYLON.Observable}
+         */
+        onBeforeRenderMainTextureObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer is being blurred.
+         * @type {BABYLON.Observable}
+         */
+        onBeforeBlurObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer has been blurred.
+         * @type {BABYLON.Observable}
+         */
+        onAfterBlurObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the glowing blurred texture is being merged in the scene.
+         * @type {BABYLON.Observable}
+         */
+        onBeforeComposeObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the glowing blurred texture has been merged in the scene.
+         * @type {BABYLON.Observable}
+         */
+        onAfterComposeObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer changes its size.
+         * @type {BABYLON.Observable}
+         */
+        onSizeChangedObservable: Observable<HighlightLayer>;
+        /**
+         * Instantiates a new highlight Layer and references it to the scene..
+         * @param name The name of the layer
+         * @param scene The scene to use the layer in
+         * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
+         */
+        constructor(name: string, scene: Scene, options?: IHighlightLayerOptions);
+        private _createIndexBuffer();
+        _rebuild(): void;
+        /**
+         * Creates the render target textures and post processes used in the highlight layer.
+         */
+        private createTextureAndPostProcesses();
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        private isReady(subMesh, useInstances, emissiveTexture);
+        /**
+         * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
+         */
+        render(): void;
+        /**
+         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
+         * @param mesh The mesh to exclude from the highlight layer
+         */
+        addExcludedMesh(mesh: Mesh): void;
+        /**
+          * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
+          * @param mesh The mesh to highlight
+          */
+        removeExcludedMesh(mesh: Mesh): void;
+        /**
+         * Add a mesh in the highlight layer in order to make it glow with the chosen color.
+         * @param mesh The mesh to highlight
+         * @param color The color of the highlight
+         * @param glowEmissiveOnly Extract the glow from the emissive texture
+         */
+        addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly?: boolean): void;
+        /**
+         * Remove a mesh from the highlight layer in order to make it stop glowing.
+         * @param mesh The mesh to highlight
+         */
+        removeMesh(mesh: Mesh): void;
+        /**
+         * Returns true if the layer contains information to display, otherwise false.
+         */
+        shouldRender(): boolean;
+        /**
+         * Sets the main texture desired size which is the closest power of two
+         * of the engine canvas size.
+         */
+        private setMainTextureSize();
+        /**
+         * Force the stencil to the normal expected value for none glowing parts
+         */
+        private defaultStencilReference(mesh);
+        /**
+         * Dispose only the render target textures and post process.
+         */
+        private disposeTextureAndPostProcesses();
+        /**
+         * Dispose the highlight layer and free resources.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class Layer {
+        name: string;
+        texture: Texture;
+        isBackground: boolean;
+        color: Color4;
+        scale: Vector2;
+        offset: Vector2;
+        alphaBlendingMode: number;
+        alphaTest: boolean;
+        layerMask: number;
+        private _scene;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _alphaTestEffect;
+        /**
+        * An event triggered when the layer is disposed.
+        * @type {BABYLON.Observable}
+        */
+        onDisposeObservable: Observable<Layer>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        /**
+        * An event triggered before rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        onBeforeRenderObservable: Observable<Layer>;
+        private _onBeforeRenderObserver;
+        onBeforeRender: () => void;
+        /**
+        * An event triggered after rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        onAfterRenderObservable: Observable<Layer>;
+        private _onAfterRenderObserver;
+        onAfterRender: () => void;
+        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
+        private _createIndexBuffer();
+        _rebuild(): void;
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -6472,6 +6474,7 @@ declare module BABYLON {
         SPECULAROVERALPHA: boolean;
         CLIPPLANE: boolean;
         ALPHATEST: boolean;
+        DEPTHPREPASS: boolean;
         ALPHAFROMDIFFUSE: boolean;
         POINTSIZE: boolean;
         FOG: boolean;
@@ -12562,6 +12565,70 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Float32Array | number[]): void;
+        getPositions(): Float32Array;
+        setNormals(data: Float32Array | number[]): void;
+        getNormals(): Float32Array;
+        setTangents(data: Float32Array | number[]): void;
+        getTangents(): Float32Array;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        constructor(scene?: Scene);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        private _onInfluenceChanged(needUpdate);
+        private _syncActiveTargets(needUpdate);
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+    }
+}
+
+declare module BABYLON {
     class GPUParticleSystem implements IDisposable, IParticleSystem {
         name: string;
         id: string;
@@ -13059,70 +13126,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Float32Array | number[]): void;
-        getPositions(): Float32Array;
-        setNormals(data: Float32Array | number[]): void;
-        getNormals(): Float32Array;
-        setTangents(data: Float32Array | number[]): void;
-        getTangents(): Float32Array;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        constructor(scene?: Scene);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        private _onInfluenceChanged(needUpdate);
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
     interface PhysicsImpostorJoint {
         mainImpostor: PhysicsImpostor;
         connectedImpostor: PhysicsImpostor;
@@ -13522,6 +13525,36 @@ declare module BABYLON {
         length: number;
         stiffness: number;
         damping: number;
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
     }
 }
 
@@ -14047,36 +14080,6 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
     }
 }
 
@@ -15751,292 +15754,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
-        readonly name: string;
-        private _zoomStopsAnimation;
-        private _idleRotationSpeed;
-        private _idleRotationWaitTime;
-        private _idleRotationSpinupTime;
-        /**
-        * Gets the flag that indicates if user zooming should stop animation.
-        */
-        /**
-        * Sets the flag that indicates if user zooming should stop animation.
-        */
-        zoomStopsAnimation: boolean;
-        /**
-        * Gets the default speed at which the camera rotates around the model.
-        */
-        /**
-        * Sets the default speed at which the camera rotates around the model.
-        */
-        idleRotationSpeed: number;
-        /**
-        * Gets the time (milliseconds) to wait after user interaction before the camera starts rotating.
-        */
-        /**
-        * Sets the time (in milliseconds) to wait after user interaction before the camera starts rotating.
-        */
-        idleRotationWaitTime: number;
-        /**
-        * Gets the time (milliseconds) to take to spin up to the full idle rotation speed.
-        */
-        /**
-        * Sets the time (milliseconds) to take to spin up to the full idle rotation speed.
-        */
-        idleRotationSpinupTime: number;
-        /**
-         * Gets a value indicating if the camera is currently rotating because of this behavior
-         */
-        readonly rotationInProgress: boolean;
-        private _onPrePointerObservableObserver;
-        private _onAfterCheckInputsObserver;
-        private _attachedCamera;
-        private _isPointerDown;
-        private _lastFrameTime;
-        private _lastInteractionTime;
-        private _cameraRotationSpeed;
-        attach(camera: ArcRotateCamera): void;
-        detach(): void;
-        /**
-         * Returns true if user is scrolling.
-         * @return true if user is scrolling.
-         */
-        private _userIsZooming();
-        private _lastFrameRadius;
-        private _shouldAnimationStopForInteraction();
-        /**
-         *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
-         */
-        private _applyUserInteraction();
-        private _userIsMoving();
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius
-     */
-    class BouncingBehavior implements Behavior<ArcRotateCamera> {
-        readonly name: string;
-        /**
-         * The easing function used by animations
-         */
-        static EasingFunction: BackEase;
-        /**
-         * The easing mode used by animations
-         */
-        static EasingMode: number;
-        /**
-         * The duration of the animation, in milliseconds
-         */
-        transitionDuration: number;
-        /**
-         * Length of the distance animated by the transition when lower radius is reached
-         */
-        lowerRadiusTransitionRange: number;
-        /**
-         * Length of the distance animated by the transition when upper radius is reached
-         */
-        upperRadiusTransitionRange: number;
-        private _autoTransitionRange;
-        /**
-         * Gets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
-         */
-        /**
-         * Sets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
-         * Transition ranges will be set to 5% of the bounding box diagonal in world space
-         */
-        autoTransitionRange: boolean;
-        private _attachedCamera;
-        private _onAfterCheckInputsObserver;
-        private _onMeshTargetChangedObserver;
-        attach(camera: ArcRotateCamera): void;
-        detach(): void;
-        private _radiusIsAnimating;
-        private _radiusBounceTransition;
-        private _animatables;
-        private _cachedWheelPrecision;
-        /**
-         * Checks if the camera radius is at the specified limit. Takes into account animation locks.
-         * @param radiusLimit The limit to check against.
-         * @return Bool to indicate if at limit.
-         */
-        private _isRadiusAtLimit(radiusLimit);
-        /**
-         * Applies an animation to the radius of the camera, extending by the radiusDelta.
-         * @param radiusDelta The delta by which to animate to. Can be negative.
-         */
-        private _applyBoundRadiusAnimation(radiusDelta);
-        /**
-         * Removes all animation locks. Allows new animations to be added to any of the camera properties.
-         */
-        protected _clearAnimationLocks(): void;
-        /**
-         * Stops and removes all animations that have been applied to the camera
-         */
-        stopAllAnimations(): void;
-    }
-}
-
-declare module BABYLON {
-    class FramingBehavior implements Behavior<ArcRotateCamera> {
-        readonly name: string;
-        private _mode;
-        private _radiusScale;
-        private _positionScale;
-        private _defaultElevation;
-        private _elevationReturnTime;
-        private _elevationReturnWaitTime;
-        private _zoomStopsAnimation;
-        private _framingTime;
-        /**
-         * The easing function used by animations
-         */
-        static EasingFunction: ExponentialEase;
-        /**
-         * The easing mode used by animations
-         */
-        static EasingMode: number;
-        /**
-         * Gets current mode used by the behavior.
-         */
-        /**
-         * Sets the current mode used by the behavior
-         */
-        mode: number;
-        /**
-         * Gets the scale applied to the radius
-         */
-        /**
-         * Sets the scale applied to the radius (1 by default)
-         */
-        radiusScale: number;
-        /**
-         * Gets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
-         */
-        /**
-         * Sets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
-         */
-        positionScale: number;
-        /**
-        * Gets the angle above/below the horizontal plane to return to when the return to default elevation idle
-        * behaviour is triggered, in radians.
-        */
-        /**
-        * Sets the angle above/below the horizontal plane to return to when the return to default elevation idle
-        * behaviour is triggered, in radians.
-        */
-        defaultElevation: number;
-        /**
-         * Gets the time (in milliseconds) taken to return to the default beta position.
-         * Negative value indicates camera should not return to default.
-         */
-        /**
-         * Sets the time (in milliseconds) taken to return to the default beta position.
-         * Negative value indicates camera should not return to default.
-         */
-        elevationReturnTime: number;
-        /**
-         * Gets the delay (in milliseconds) taken before the camera returns to the default beta position.
-         */
-        /**
-         * Sets the delay (in milliseconds) taken before the camera returns to the default beta position.
-         */
-        elevationReturnWaitTime: number;
-        /**
-        * Gets the flag that indicates if user zooming should stop animation.
-        */
-        /**
-        * Sets the flag that indicates if user zooming should stop animation.
-        */
-        zoomStopsAnimation: boolean;
-        /**
-         * Gets the transition time when framing the mesh, in milliseconds
-        */
-        /**
-         * Sets the transition time when framing the mesh, in milliseconds
-        */
-        framingTime: number;
-        private _onPrePointerObservableObserver;
-        private _onAfterCheckInputsObserver;
-        private _onMeshTargetChangedObserver;
-        private _attachedCamera;
-        private _isPointerDown;
-        private _lastFrameTime;
-        private _lastInteractionTime;
-        attach(camera: ArcRotateCamera): void;
-        detach(): void;
-        private _animatables;
-        private _betaIsAnimating;
-        private _betaTransition;
-        private _radiusTransition;
-        private _vectorTransition;
-        private _lastFrameRadius;
-        /**
-         * Targets the given mesh and updates zoom level accordingly.
-         * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
-         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
-         * @param onAnimationEnd Callback triggered at the end of the framing animation
-         */
-        zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ?: boolean, onAnimationEnd?: () => void): void;
-        /**
-         * Targets the given mesh and updates zoom level accordingly.
-         * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
-         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
-         * @param onAnimationEnd Callback triggered at the end of the framing animation
-         */
-        zoomOnBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, focusOnOriginXZ?: boolean, onAnimationEnd?: () => void): void;
-        /**
-         * Calculates the lowest radius for the camera based on the bounding box of the mesh.
-         * @param mesh The mesh on which to base the calculation. mesh boundingInfo used to estimate necessary
-         *			  frustum width.
-         * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
-         *		 to fully enclose the mesh in the viewing frustum.
-         */
-        protected _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3): number;
-        /**
-         * Keeps the camera above the ground plane. If the user pulls the camera below the ground plane, the camera
-         * is automatically returned to its default position (expected to be above ground plane).
-         */
-        private _maintainCameraAboveGround();
-        /**
-         * Returns the frustum slope based on the canvas ratio and camera FOV
-         * @returns The frustum slope represented as a Vector2 with X and Y slopes
-         */
-        private _getFrustumSlope();
-        /**
-         * Removes all animation locks. Allows new animations to be added to any of the arcCamera properties.
-         */
-        private _clearAnimationLocks();
-        /**
-         *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
-         */
-        private _applyUserInteraction();
-        /**
-         * Stops and removes all animations that have been applied to the camera
-         */
-        stopAllAnimations(): void;
-        /**
-         * Gets a value indicating if the user is moving the camera
-         */
-        readonly isUserIsMoving: boolean;
-        /**
-         * The camera can move all the way towards the mesh.
-         */
-        static IgnoreBoundsSizeMode: number;
-        /**
-         * The camera is not allowed to zoom closer to the mesh than the point at which the adjusted bounding sphere touches the frustum sides
-         */
-        static FitFrustumSidesMode: number;
-    }
-}
-
-declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Gamepad;
@@ -16396,6 +16113,292 @@ declare module BABYLON {
         private _onGamepadConnectedObserver;
         private _onGamepadDisconnectedObserver;
         initControllers(): void;
+    }
+}
+
+declare module BABYLON {
+    class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
+        readonly name: string;
+        private _zoomStopsAnimation;
+        private _idleRotationSpeed;
+        private _idleRotationWaitTime;
+        private _idleRotationSpinupTime;
+        /**
+        * Gets the flag that indicates if user zooming should stop animation.
+        */
+        /**
+        * Sets the flag that indicates if user zooming should stop animation.
+        */
+        zoomStopsAnimation: boolean;
+        /**
+        * Gets the default speed at which the camera rotates around the model.
+        */
+        /**
+        * Sets the default speed at which the camera rotates around the model.
+        */
+        idleRotationSpeed: number;
+        /**
+        * Gets the time (milliseconds) to wait after user interaction before the camera starts rotating.
+        */
+        /**
+        * Sets the time (in milliseconds) to wait after user interaction before the camera starts rotating.
+        */
+        idleRotationWaitTime: number;
+        /**
+        * Gets the time (milliseconds) to take to spin up to the full idle rotation speed.
+        */
+        /**
+        * Sets the time (milliseconds) to take to spin up to the full idle rotation speed.
+        */
+        idleRotationSpinupTime: number;
+        /**
+         * Gets a value indicating if the camera is currently rotating because of this behavior
+         */
+        readonly rotationInProgress: boolean;
+        private _onPrePointerObservableObserver;
+        private _onAfterCheckInputsObserver;
+        private _attachedCamera;
+        private _isPointerDown;
+        private _lastFrameTime;
+        private _lastInteractionTime;
+        private _cameraRotationSpeed;
+        attach(camera: ArcRotateCamera): void;
+        detach(): void;
+        /**
+         * Returns true if user is scrolling.
+         * @return true if user is scrolling.
+         */
+        private _userIsZooming();
+        private _lastFrameRadius;
+        private _shouldAnimationStopForInteraction();
+        /**
+         *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
+         */
+        private _applyUserInteraction();
+        private _userIsMoving();
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius
+     */
+    class BouncingBehavior implements Behavior<ArcRotateCamera> {
+        readonly name: string;
+        /**
+         * The easing function used by animations
+         */
+        static EasingFunction: BackEase;
+        /**
+         * The easing mode used by animations
+         */
+        static EasingMode: number;
+        /**
+         * The duration of the animation, in milliseconds
+         */
+        transitionDuration: number;
+        /**
+         * Length of the distance animated by the transition when lower radius is reached
+         */
+        lowerRadiusTransitionRange: number;
+        /**
+         * Length of the distance animated by the transition when upper radius is reached
+         */
+        upperRadiusTransitionRange: number;
+        private _autoTransitionRange;
+        /**
+         * Gets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
+         */
+        /**
+         * Sets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
+         * Transition ranges will be set to 5% of the bounding box diagonal in world space
+         */
+        autoTransitionRange: boolean;
+        private _attachedCamera;
+        private _onAfterCheckInputsObserver;
+        private _onMeshTargetChangedObserver;
+        attach(camera: ArcRotateCamera): void;
+        detach(): void;
+        private _radiusIsAnimating;
+        private _radiusBounceTransition;
+        private _animatables;
+        private _cachedWheelPrecision;
+        /**
+         * Checks if the camera radius is at the specified limit. Takes into account animation locks.
+         * @param radiusLimit The limit to check against.
+         * @return Bool to indicate if at limit.
+         */
+        private _isRadiusAtLimit(radiusLimit);
+        /**
+         * Applies an animation to the radius of the camera, extending by the radiusDelta.
+         * @param radiusDelta The delta by which to animate to. Can be negative.
+         */
+        private _applyBoundRadiusAnimation(radiusDelta);
+        /**
+         * Removes all animation locks. Allows new animations to be added to any of the camera properties.
+         */
+        protected _clearAnimationLocks(): void;
+        /**
+         * Stops and removes all animations that have been applied to the camera
+         */
+        stopAllAnimations(): void;
+    }
+}
+
+declare module BABYLON {
+    class FramingBehavior implements Behavior<ArcRotateCamera> {
+        readonly name: string;
+        private _mode;
+        private _radiusScale;
+        private _positionScale;
+        private _defaultElevation;
+        private _elevationReturnTime;
+        private _elevationReturnWaitTime;
+        private _zoomStopsAnimation;
+        private _framingTime;
+        /**
+         * The easing function used by animations
+         */
+        static EasingFunction: ExponentialEase;
+        /**
+         * The easing mode used by animations
+         */
+        static EasingMode: number;
+        /**
+         * Gets current mode used by the behavior.
+         */
+        /**
+         * Sets the current mode used by the behavior
+         */
+        mode: number;
+        /**
+         * Gets the scale applied to the radius
+         */
+        /**
+         * Sets the scale applied to the radius (1 by default)
+         */
+        radiusScale: number;
+        /**
+         * Gets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
+         */
+        /**
+         * Sets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
+         */
+        positionScale: number;
+        /**
+        * Gets the angle above/below the horizontal plane to return to when the return to default elevation idle
+        * behaviour is triggered, in radians.
+        */
+        /**
+        * Sets the angle above/below the horizontal plane to return to when the return to default elevation idle
+        * behaviour is triggered, in radians.
+        */
+        defaultElevation: number;
+        /**
+         * Gets the time (in milliseconds) taken to return to the default beta position.
+         * Negative value indicates camera should not return to default.
+         */
+        /**
+         * Sets the time (in milliseconds) taken to return to the default beta position.
+         * Negative value indicates camera should not return to default.
+         */
+        elevationReturnTime: number;
+        /**
+         * Gets the delay (in milliseconds) taken before the camera returns to the default beta position.
+         */
+        /**
+         * Sets the delay (in milliseconds) taken before the camera returns to the default beta position.
+         */
+        elevationReturnWaitTime: number;
+        /**
+        * Gets the flag that indicates if user zooming should stop animation.
+        */
+        /**
+        * Sets the flag that indicates if user zooming should stop animation.
+        */
+        zoomStopsAnimation: boolean;
+        /**
+         * Gets the transition time when framing the mesh, in milliseconds
+        */
+        /**
+         * Sets the transition time when framing the mesh, in milliseconds
+        */
+        framingTime: number;
+        private _onPrePointerObservableObserver;
+        private _onAfterCheckInputsObserver;
+        private _onMeshTargetChangedObserver;
+        private _attachedCamera;
+        private _isPointerDown;
+        private _lastFrameTime;
+        private _lastInteractionTime;
+        attach(camera: ArcRotateCamera): void;
+        detach(): void;
+        private _animatables;
+        private _betaIsAnimating;
+        private _betaTransition;
+        private _radiusTransition;
+        private _vectorTransition;
+        private _lastFrameRadius;
+        /**
+         * Targets the given mesh and updates zoom level accordingly.
+         * @param mesh  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ?: boolean, onAnimationEnd?: () => void): void;
+        /**
+         * Targets the given mesh and updates zoom level accordingly.
+         * @param mesh  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        zoomOnBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, focusOnOriginXZ?: boolean, onAnimationEnd?: () => void): void;
+        /**
+         * Calculates the lowest radius for the camera based on the bounding box of the mesh.
+         * @param mesh The mesh on which to base the calculation. mesh boundingInfo used to estimate necessary
+         *			  frustum width.
+         * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
+         *		 to fully enclose the mesh in the viewing frustum.
+         */
+        protected _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3): number;
+        /**
+         * Keeps the camera above the ground plane. If the user pulls the camera below the ground plane, the camera
+         * is automatically returned to its default position (expected to be above ground plane).
+         */
+        private _maintainCameraAboveGround();
+        /**
+         * Returns the frustum slope based on the canvas ratio and camera FOV
+         * @returns The frustum slope represented as a Vector2 with X and Y slopes
+         */
+        private _getFrustumSlope();
+        /**
+         * Removes all animation locks. Allows new animations to be added to any of the arcCamera properties.
+         */
+        private _clearAnimationLocks();
+        /**
+         *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
+         */
+        private _applyUserInteraction();
+        /**
+         * Stops and removes all animations that have been applied to the camera
+         */
+        stopAllAnimations(): void;
+        /**
+         * Gets a value indicating if the user is moving the camera
+         */
+        readonly isUserIsMoving: boolean;
+        /**
+         * The camera can move all the way towards the mesh.
+         */
+        static IgnoreBoundsSizeMode: number;
+        /**
+         * The camera is not allowed to zoom closer to the mesh than the point at which the adjusted bounding sphere touches the frustum sides
+         */
+        static FitFrustumSidesMode: number;
     }
 }
 
