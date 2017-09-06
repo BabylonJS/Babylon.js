@@ -509,16 +509,6 @@ namespace Max2Babylon
 
         }
 
-        private float[] QuaternionToEulerAngles(IQuat rotation)
-        {
-            float rotx = 0, roty = 0, rotz = 0;
-            unsafe
-            {
-                rotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
-            }
-            return new[] { rotx, roty, rotz };
-        }
-
         int CreateGlobalVertex(IIGameMesh mesh, IFaceEx face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, IIGameSkin skin, List<int> boneIds)
         {
             var vertexIndex = (int)face.Vert[facePart];
@@ -714,17 +704,17 @@ namespace Max2Babylon
             var meshTrans = localTM.Translation;
             var meshRotation = localTM.Rotation;
             var meshScale = localTM.Scaling;
-            var exportQuaternions = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportquaternions");
             
             babylonAbstractMesh.position = new[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
 
-            if (exportQuaternions)
+            var rotationQuaternion = new BabylonQuaternion { X = meshRotation.X, Y = meshRotation.Y, Z = meshRotation.Z, W = -meshRotation.W };
+            if (ExportQuaternionsInsteadOfEulers)
             {
-                babylonAbstractMesh.rotationQuaternion = new[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
+                babylonAbstractMesh.rotationQuaternion = rotationQuaternion.ToArray();
             }
             else
             {
-                babylonAbstractMesh.rotation = QuaternionToEulerAngles(meshRotation);
+                babylonAbstractMesh.rotation = rotationQuaternion.toEulerAngles().ToArray();
             }
 
             babylonAbstractMesh.scaling = new[] { meshScale.X, meshScale.Y, meshScale.Z };

@@ -77,17 +77,17 @@ namespace Max2Babylon
 
             var position = localTM.Translation;
             var rotation = localTM.Rotation;
-            var exportQuaternions = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportquaternions");
 
             babylonCamera.position = new[] { position.X, position.Y, position.Z };
 
-            if (exportQuaternions)
+            var rotationQuaternion = new BabylonQuaternion { X = rotation.X, Y = rotation.Y, Z = rotation.Z, W = -rotation.W };
+            if (ExportQuaternionsInsteadOfEulers)
             {
-                babylonCamera.rotationQuaternion = new[] { rotation.X, rotation.Y, rotation.Z, -rotation.W };
+                babylonCamera.rotationQuaternion = rotationQuaternion.ToArray();
             }
             else
             {
-                babylonCamera.rotation = QuaternionToEulerAngles(rotation);
+                babylonCamera.rotation = rotationQuaternion.toEulerAngles().ToArray();
             }
 
             // Target
