@@ -26,7 +26,7 @@
             engine.enableEffect(this._effect);
 
             // Logarithmic depth
-            if(material instanceof StandardMaterial && material.useLogarithmicDepth)
+            if((<any> material).useLogarithmicDepth)
             {
                 this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
             }
@@ -81,7 +81,7 @@
                     }
                 }
                 //Logarithmic depth
-                if(material instanceof StandardMaterial && material.useLogarithmicDepth)
+                if((<any> material).useLogarithmicDepth)
                 {
                     defines.push("#define LOGARITHMICDEPTH");
                 }
