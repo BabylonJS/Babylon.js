@@ -183,7 +183,7 @@
          */
         private static renderSorted(subMeshes: SmartArray<SubMesh>, sortCompareFn: (a: SubMesh, b: SubMesh) => number, cameraPosition: Vector3, transparent: boolean): void {
             let subIndex = 0;
-            let subMesh;
+            let subMesh: SubMesh;
             for (; subIndex < subMeshes.length; subIndex++) {
                 subMesh = subMeshes.data[subIndex];
                 subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
@@ -195,6 +195,21 @@
 
             for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                 subMesh = sortedArray[subIndex];
+
+                if (transparent) {
+                    let material = subMesh.getMaterial();
+
+                    if (material.needDepthPrePass) {
+                        let engine = material.getScene().getEngine();
+                        engine.setColorWrite(false);
+                        engine.setAlphaTesting(true);
+                        engine.setAlphaMode(Engine.ALPHA_DISABLE);
+                        subMesh.render(false);
+                        engine.setAlphaTesting(false);
+                        engine.setColorWrite(true);
+                    }
+                }
+
                 subMesh.render(transparent);
             }
         }
@@ -302,15 +317,19 @@
             var material = subMesh.getMaterial();
             var mesh = subMesh.getMesh();
 
-            if (material.needDepthPrePass) {
-                this._depthOnlySubMeshes.push(subMesh);
-            }
-
             if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) { // Transparent
                 this._transparentSubMeshes.push(subMesh);
             } else if (material.needAlphaTesting()) { // Alpha test
+                if (material.needDepthPrePass) {
+                    this._depthOnlySubMeshes.push(subMesh);
+                }
+                
                 this._alphaTestSubMeshes.push(subMesh);
             } else {
+                if (material.needDepthPrePass) {
+                    this._depthOnlySubMeshes.push(subMesh);
+                }
+                
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
 

@@ -16204,6 +16204,18 @@ var BABYLON;
             sortedArray.sort(sortCompareFn);
             for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                 subMesh = sortedArray[subIndex];
+                if (transparent) {
+                    var material = subMesh.getMaterial();
+                    if (material.needDepthPrePass) {
+                        var engine = material.getScene().getEngine();
+                        engine.setColorWrite(false);
+                        engine.setAlphaTesting(true);
+                        engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+                        subMesh.render(false);
+                        engine.setAlphaTesting(false);
+                        engine.setColorWrite(true);
+                    }
+                }
                 subMesh.render(transparent);
             }
         };
@@ -16300,16 +16312,19 @@ var BABYLON;
         RenderingGroup.prototype.dispatch = function (subMesh) {
             var material = subMesh.getMaterial();
             var mesh = subMesh.getMesh();
-            if (material.needDepthPrePass) {
-                this._depthOnlySubMeshes.push(subMesh);
-            }
             if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) {
                 this._transparentSubMeshes.push(subMesh);
             }
             else if (material.needAlphaTesting()) {
+                if (material.needDepthPrePass) {
+                    this._depthOnlySubMeshes.push(subMesh);
+                }
                 this._alphaTestSubMeshes.push(subMesh);
             }
             else {
+                if (material.needDepthPrePass) {
+                    this._depthOnlySubMeshes.push(subMesh);
+                }
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
             if (mesh._edgesRenderer) {
