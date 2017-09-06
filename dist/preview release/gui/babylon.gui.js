@@ -182,6 +182,7 @@ var BABYLON;
                     this._layerToDispose.dispose();
                     this._layerToDispose = null;
                 }
+                this._rootContainer.dispose();
                 _super.prototype.dispose.call(this);
             };
             AdvancedDynamicTexture.prototype._onResize = function () {
@@ -1482,6 +1483,14 @@ var BABYLON;
                 this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
                 this._fontOffset = Control._GetFontOffset(this._font);
             };
+            Control.prototype.dispose = function () {
+                this.onDirtyObservable.clear();
+                this.onPointerDownObservable.clear();
+                this.onPointerEnterObservable.clear();
+                this.onPointerMoveObservable.clear();
+                this.onPointerOutObservable.clear();
+                this.onPointerUpObservable.clear();
+            };
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
                 get: function () {
                     return Control._HORIZONTAL_ALIGNMENT_LEFT;
@@ -1770,6 +1779,13 @@ var BABYLON;
             Container.prototype._additionalProcessing = function (parentMeasure, context) {
                 _super.prototype._additionalProcessing.call(this, parentMeasure, context);
                 this._measureForChildren.copyFrom(this._currentMeasure);
+            };
+            Container.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var control = _a[_i];
+                    control.dispose();
+                }
             };
             return Container;
         }(GUI.Control));
@@ -3763,6 +3779,9 @@ var BABYLON;
                 _this._isFocused = false;
                 _this._blinkIsEven = false;
                 _this._cursorOffset = 0;
+                _this.onTextChangedObservable = new BABYLON.Observable();
+                _this.onFocusObservable = new BABYLON.Observable();
+                _this.onBlurObservable = new BABYLON.Observable();
                 _this.text = text;
                 return _this;
             }
@@ -3862,6 +3881,7 @@ var BABYLON;
                     }
                     this._text = value;
                     this._markAsDirty();
+                    this.onTextChangedObservable.notifyObservers(this);
                 },
                 enumerable: true,
                 configurable: true
@@ -3872,6 +3892,7 @@ var BABYLON;
                 this._cursorOffset = 0;
                 clearTimeout(this._blinkTimeout);
                 this._markAsDirty();
+                this.onBlurObservable.notifyObservers(this);
             };
             InputText.prototype.onFocus = function () {
                 this._scrollLeft = null;
@@ -3879,6 +3900,7 @@ var BABYLON;
                 this._blinkIsEven = false;
                 this._cursorOffset = 0;
                 this._markAsDirty();
+                this.onFocusObservable.notifyObservers(this);
             };
             InputText.prototype._getTypeName = function () {
                 return "InputText";
@@ -4042,6 +4064,12 @@ var BABYLON;
             };
             InputText.prototype._onPointerUp = function (coordinates) {
                 _super.prototype._onPointerUp.call(this, coordinates);
+            };
+            InputText.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                this.onBlurObservable.clear();
+                this.onFocusObservable.clear();
+                this.onTextChangedObservable.clear();
             };
             return InputText;
         }(GUI.Control));

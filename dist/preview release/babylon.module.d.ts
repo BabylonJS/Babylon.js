@@ -71,7 +71,8 @@ declare module BABYLON {
         textureHalfFloatLinearFiltering: boolean;
         textureHalfFloatRender: boolean;
         textureLOD: boolean;
-        drawBuffersExtension: any;
+        drawBuffersExtension: boolean;
+        depthTextureExtension: boolean;
         colorBufferFloat: boolean;
     }
     interface EngineOptions extends WebGLContextAttributes {

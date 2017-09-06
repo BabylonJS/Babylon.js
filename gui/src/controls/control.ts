@@ -859,6 +859,15 @@ module BABYLON.GUI {
             this._fontOffset = Control._GetFontOffset(this._font);
         }
 
+        public dispose() {
+            this.onDirtyObservable.clear();
+            this.onPointerDownObservable.clear();
+            this.onPointerEnterObservable.clear();
+            this.onPointerMoveObservable.clear();
+            this.onPointerOutObservable.clear();
+            this.onPointerUpObservable.clear();
+        }
+
         // Statics
         private static _HORIZONTAL_ALIGNMENT_LEFT = 0;
         private static _HORIZONTAL_ALIGNMENT_RIGHT = 1;
