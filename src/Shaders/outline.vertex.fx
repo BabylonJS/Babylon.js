@@ -21,6 +21,7 @@ attribute vec2 uv;
 attribute vec2 uv2;
 #endif
 #endif
+#include<logDepthDeclaration>
 
 void main(void)
 {
@@ -39,4 +40,5 @@ void main(void)
 	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
 #endif
 #endif
+#include<logDepthVertex>
 }
