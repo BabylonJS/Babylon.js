@@ -563,7 +563,6 @@
         private _vrDisplayEnabled;
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
-        private _vrAnimationFrameHandler: number;
 
         // Uniform buffers list
         public disableUniformBuffers = false;
@@ -695,6 +694,8 @@
 
         private _emptyTexture: InternalTexture;
         private _emptyCubeTexture: InternalTexture;
+
+        private _frameHandler: number;
 
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
@@ -829,6 +830,43 @@
                 window.addEventListener("focus", this._onFocus);
 
                 canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+
+                // Context lost
+                if (!this._doNotHandleContextLost) {
+                    this._onContextLost = (evt: Event) => {
+                        evt.preventDefault();
+                        this._contextWasLost = true;
+                        Tools.Warn("WebGL context lost.");
+
+                        this.onContextLostObservable.notifyObservers(this);
+                    };
+
+                    this._onContextRestored = (evt: Event) => {
+                        // Rebuild gl context
+                        this._initGLContext();
+
+                        // Rebuild effects
+                        this._rebuildEffects();
+
+                        // Rebuild textures
+                        this._rebuildInternalTextures();
+
+                        // Rebuild buffers
+                        this._rebuildBuffers();
+
+                        // Cache
+                        this.wipeCaches(true);
+
+                        Tools.Warn("WebGL context successfully restored.");
+
+                        this.onContextRestoredObservable.notifyObservers(this);
+
+                        this._contextWasLost = false;
+                    };
+
+                    canvas.addEventListener("webglcontextlost", this._onContextLost, false);
+                    canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+                }                
             } else {
                 this._gl = <WebGLRenderingContext>canvasOrContext;
                 this._renderingCanvas = this._gl.canvas
@@ -838,43 +876,6 @@
                 }
 
                 options.stencil = this._gl.getContextAttributes().stencil;
-            }
-
-            // Context lost
-            if (!this._doNotHandleContextLost) {
-                this._onContextLost = (evt: Event) => {
-                    evt.preventDefault();
-                    this._contextWasLost = true;
-                    Tools.Warn("WebGL context lost.");
-
-                    this.onContextLostObservable.notifyObservers(this);
-                };
-
-                this._onContextRestored = (evt: Event) => {
-                    // Rebuild gl context
-                    this._initGLContext();
-
-                    // Rebuild effects
-                    this._rebuildEffects();
-
-                    // Rebuild textures
-                    this._rebuildInternalTextures();
-
-                    // Rebuild buffers
-                    this._rebuildBuffers();
-
-                    // Cache
-                    this.wipeCaches(true);
-
-                    Tools.Warn("WebGL context successfully restored.");
-
-                    this.onContextRestoredObservable.notifyObservers(this);
-
-                    this._contextWasLost = false;
-                };
-
-                canvas.addEventListener("webglcontextlost", this._onContextLost, false);
-                canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
             }
 
             // Viewport
@@ -1050,7 +1051,6 @@
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
-            this._caps.drawBuffersExtension = this._webGLVersion > 1 || this._gl.getExtension('WEBGL_draw_buffers');
 
             // Checks if some of the format renders first to allow the use of webgl inspector.
             this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
@@ -1067,6 +1067,25 @@
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
 
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
+
+            // Draw buffers
+            if (this._webGLVersion > 1) {
+                this._caps.drawBuffersExtension = true;
+            } else {
+                var drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
+
+                if (drawBuffersExtension !== null) {
+                    this._caps.drawBuffersExtension = true;
+                    this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL;
+                    this._gl.DRAW_FRAMEBUFFER = this._gl.FRAMEBUFFER;
+                    
+                    for (var i = 0; i < 16; i++) {
+                        this._gl["COLOR_ATTACHMENT" + i] = drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
+                    }
+                } else {
+                    this._caps.drawBuffersExtension = false;
+                }
+            }
 
             // Vertex array object
             if (this._webGLVersion > 1) {
@@ -1355,7 +1374,7 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
+                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
             } else {
                 this._renderingQueueLaunched = false;
             }
@@ -1379,7 +1398,7 @@
             if (!this._renderingQueueLaunched) {
                 this._renderingQueueLaunched = true;
                 this._bindedRenderFunction = this._renderLoop.bind(this);
-                Tools.QueueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
             }
         }
 
@@ -1602,7 +1621,6 @@
                 this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
             } else {
                 //When the specs are implemented, need to uncomment this.
-                //this._vrDisplayEnabled.cancelAnimationFrame(this._vrAnimationFrameHandler);
                 this.setHardwareScalingLevel(this._oldHardwareScaleFactor);
                 this.setSize(this._oldSize.width, this._oldSize.height);
                 this._vrDisplayEnabled = undefined;
@@ -3190,7 +3208,7 @@
 
             var width = size.width || size;
             var height = size.height || size;
-
+            
             var textures = [];
             var attachments = []
 
@@ -3217,6 +3235,7 @@
 
                 var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
                 var attachment = gl["COLOR_ATTACHMENT" + i];
+                
                 textures.push(texture);
                 attachments.push(attachment);
 
@@ -3269,7 +3288,7 @@
                 gl.texImage2D(
                     gl.TEXTURE_2D,
                     0,
-                    gl.DEPTH_COMPONENT16,
+                    this.webGLVersion < 2 ? gl.DEPTH_COMPONENT : gl.DEPTH_COMPONENT16,
                     width,
                     height,
                     0,
@@ -4129,7 +4148,7 @@
 
                 if (internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
-
+                    
                     switch (texture.wrapU) {
                         case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);

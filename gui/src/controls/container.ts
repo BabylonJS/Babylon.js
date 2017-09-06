@@ -63,6 +63,8 @@ module BABYLON.GUI {
             }
             control._link(this, this._host);
 
+            control._markAllAsDirty();
+
             this._reOrderControl(control);
 
             this._markAsDirty();
