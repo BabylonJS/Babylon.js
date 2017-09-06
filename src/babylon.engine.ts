@@ -239,7 +239,8 @@
         public textureHalfFloatLinearFiltering: boolean;
         public textureHalfFloatRender: boolean;
         public textureLOD: boolean;
-        public drawBuffersExtension;
+        public drawBuffersExtension: boolean;
+        public depthTextureExtension: boolean;
         public colorBufferFloat: boolean;
     }
 
@@ -1079,14 +1080,25 @@
 
                 if (drawBuffersExtension !== null) {
                     this._caps.drawBuffersExtension = true;
-                    this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL;
+                    this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL.bind(drawBuffersExtension);
                     this._gl.DRAW_FRAMEBUFFER = this._gl.FRAMEBUFFER;
                     
                     for (var i = 0; i < 16; i++) {
-                        this._gl["COLOR_ATTACHMENT" + i] = drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
+                        this._gl["COLOR_ATTACHMENT" + i + "_WEBGL"] = drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
                     }
                 } else {
                     this._caps.drawBuffersExtension = false;
+                }
+            }
+
+            // Depth Texture
+            if (this._webGLVersion > 1) {
+                this._caps.depthTextureExtension = true;
+            } else {
+                var depthTextureExtension = this._gl.getExtension('WEBGL_depth_texture');
+
+                if (depthTextureExtension != null) {
+                    this._caps.depthTextureExtension = true;
                 }
             }
 
@@ -3237,7 +3249,7 @@
                 }
 
                 var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
-                var attachment = gl["COLOR_ATTACHMENT" + i];
+                var attachment = gl[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
                 
                 textures.push(texture);
                 attachments.push(attachment);
@@ -3278,7 +3290,7 @@
                 this._internalTexturesCache.push(texture);
             }
 
-            if (generateDepthTexture) {
+            if (generateDepthTexture && this._caps.depthTextureExtension) {
                 // Depth texture
                 var depthTexture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
 
