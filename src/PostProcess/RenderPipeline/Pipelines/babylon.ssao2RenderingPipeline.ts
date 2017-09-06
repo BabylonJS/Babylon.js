@@ -120,7 +120,7 @@
         */
         public static get IsSupported(): boolean {
             var engine = Engine.LastCreatedEngine;
-            return engine.webGLVersion > 1;
+            return engine.getCaps().drawBuffersExtension;
         }
 
         private _scene: Scene;

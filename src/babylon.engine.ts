@@ -239,7 +239,8 @@
         public textureHalfFloatLinearFiltering: boolean;
         public textureHalfFloatRender: boolean;
         public textureLOD: boolean;
-        public drawBuffersExtension;
+        public drawBuffersExtension: boolean;
+        public depthTextureExtension: boolean;
         public colorBufferFloat: boolean;
     }
 
@@ -1084,6 +1085,17 @@
                     }
                 } else {
                     this._caps.drawBuffersExtension = false;
+                }
+            }
+
+            // Depth Texture
+            if (this._webGLVersion > 1) {
+                this._caps.depthTextureExtension = true;
+            } else {
+                var depthTextureExtension = this._gl.getExtension('WEBGL_depth_texture');
+
+                if (depthTextureExtension != null) {
+                    this._caps.depthTextureExtension = true;
                 }
             }
 
@@ -3275,7 +3287,7 @@
                 this._internalTexturesCache.push(texture);
             }
 
-            if (generateDepthTexture) {
+            if (generateDepthTexture && this._caps.depthTextureExtension) {
                 // Depth texture
                 var depthTexture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
 
