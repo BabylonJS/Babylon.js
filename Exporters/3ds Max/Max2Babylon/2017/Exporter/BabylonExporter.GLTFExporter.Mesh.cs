@@ -10,57 +10,9 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private GLTFNode ExportMesh(BabylonMesh babylonMesh, GLTF gltf, GLTFNode gltfParentNode, BabylonScene babylonScene)
+        private GLTFMesh ExportMesh(BabylonMesh babylonMesh, GLTF gltf, BabylonScene babylonScene)
         {
             RaiseMessage("GLTFExporter.Mesh | Export mesh named: " + babylonMesh.name, 1);
-
-            // --------------------------
-            // ---------- Node ----------
-            // --------------------------
-
-            RaiseMessage("GLTFExporter.Mesh | Node", 2);
-            // Node
-            var gltfNode = new GLTFNode();
-            gltfNode.name = babylonMesh.name;
-            gltfNode.index = gltf.NodesList.Count;
-            gltf.NodesList.Add(gltfNode);
-
-            // Hierarchy
-            if (gltfParentNode != null)
-            {
-                RaiseMessage("GLTFExporter.Mesh | Add " + babylonMesh.name + " as child to " + gltfParentNode.name, 3);
-                gltfParentNode.ChildrenList.Add(gltfNode.index);
-            }
-            else
-            {
-                // It's a root node
-                // Only root nodes are listed in a gltf scene
-                RaiseMessage("GLTFExporter.Mesh | Add " + babylonMesh.name + " as root node to scene", 3);
-                gltf.scenes[0].NodesList.Add(gltfNode.index);
-            }
-
-            // Transform
-            gltfNode.translation = babylonMesh.position;
-            // TODO - Choose between this method and the extra root node
-            // Switch from left to right handed coordinate system
-            //gltfNode.translation[0] *= -1;
-            if (babylonMesh.rotationQuaternion != null)
-            {
-                gltfNode.rotation = babylonMesh.rotationQuaternion;
-            }
-            else
-            {
-                // Convert rotation vector to quaternion
-                BabylonVector3 rotationVector3 = new BabylonVector3
-                {
-                    X = babylonMesh.rotation[0],
-                    Y = babylonMesh.rotation[1],
-                    Z = babylonMesh.rotation[2]
-                };
-                gltfNode.rotation = rotationVector3.toQuaternionGltf().ToArray();
-            }
-            gltfNode.scale = babylonMesh.scaling;
-
 
             // --------------------------
             // --- Mesh from babylon ----
@@ -69,7 +21,7 @@ namespace Max2Babylon
             if (babylonMesh.positions == null)
             {
                 RaiseMessage("GLTFExporter.Mesh | Mesh is a dummy", 2);
-                return gltfNode;
+                return null;
             }
 
             RaiseMessage("GLTFExporter.Mesh | Mesh from babylon", 2);
@@ -137,8 +89,7 @@ namespace Max2Babylon
             var gltfMesh = new GLTFMesh { name = babylonMesh.name };
             gltfMesh.index = gltf.MeshesList.Count;
             gltf.MeshesList.Add(gltfMesh);
-            gltfNode.mesh = gltfMesh.index;
-            gltfMesh.gltfNode = gltfNode;
+            gltfMesh.idGroupInstance = babylonMesh.idGroupInstance;
 
             // Buffer
             var buffer = new GLTFBuffer
@@ -477,7 +428,7 @@ namespace Max2Babylon
                 });
             }
 
-            return gltfNode;
+            return gltfMesh;
         }
 
         private IPoint2 createIPoint2(float[] array, int index)
