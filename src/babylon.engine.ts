@@ -613,6 +613,7 @@
         private _pointerLockRequested: boolean;
         private _alphaTest: boolean;
         private _isStencilEnable: boolean;
+        private _colorWrite = true;
 
         private _loadingScreen: ILoadingScreen;
 
@@ -2553,6 +2554,11 @@
 
         public setColorWrite(enable: boolean): void {
             this._gl.colorMask(enable, enable, enable, enable);
+            this._colorWrite = enable;
+        }
+
+        public getColorWrite(): boolean {
+            return this._colorWrite;
         }
 
         public setAlphaConstants(r: number, g: number, b: number, a: number) {

@@ -21,6 +21,7 @@ module BABYLON {
         public SPECULAROVERALPHA = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public ALPHAFROMDIFFUSE = false;
         public POINTSIZE = false;
         public FOG = false;
