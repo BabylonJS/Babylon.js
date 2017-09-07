@@ -2,7 +2,7 @@
 
 module BABYLON.GUI {
 
-    export class KeyOptions {
+    export class KeyPropertySet {
         width?: string;
         height?: string;
         paddingLeft?: string;
@@ -31,18 +31,18 @@ module BABYLON.GUI {
             return "VirtualKeyboard";
         }
 
-        private _createKey(key: string, options?: KeyOptions) {
+        private _createKey(key: string, propertySet?: KeyPropertySet) {
             var button = Button.CreateSimpleButton(key, key);
             
            
-            button.width = options && options.width ? options.width : this.defaultButtonWidth;
-            button.height = options && options.height ? options.height : this.defaultButtonHeight;
-            button.color = options && options.color ? options.color : this.defaultButtonColor;
-            button.background = options && options.background ? options.background : this.defaultButtonBackground;
-            button.paddingLeft = options && options.paddingLeft ? options.paddingLeft : this.defaultButtonPaddingLeft;
-            button.paddingRight = options && options.paddingRight ? options.paddingRight : this.defaultButtonPaddingRight;
-            button.paddingTop = options && options.paddingTop ? options.paddingTop : this.defaultButtonPaddingTop;
-            button.paddingBottom = options && options.paddingBottom ? options.paddingBottom : this.defaultButtonPaddingBottom;
+            button.width = propertySet && propertySet.width ? propertySet.width : this.defaultButtonWidth;
+            button.height = propertySet && propertySet.height ? propertySet.height : this.defaultButtonHeight;
+            button.color = propertySet && propertySet.color ? propertySet.color : this.defaultButtonColor;
+            button.background = propertySet && propertySet.background ? propertySet.background : this.defaultButtonBackground;
+            button.paddingLeft = propertySet && propertySet.paddingLeft ? propertySet.paddingLeft : this.defaultButtonPaddingLeft;
+            button.paddingRight = propertySet && propertySet.paddingRight ? propertySet.paddingRight : this.defaultButtonPaddingRight;
+            button.paddingTop = propertySet && propertySet.paddingTop ? propertySet.paddingTop : this.defaultButtonPaddingTop;
+            button.paddingBottom = propertySet && propertySet.paddingBottom ? propertySet.paddingBottom : this.defaultButtonPaddingBottom;
         
             button.thickness = 0;
             button.isFocusInvisible = true;
@@ -54,18 +54,19 @@ module BABYLON.GUI {
             return button;
         }
 
-        public addKeysRow(keys: Array<string>, options?: Array<KeyOptions>): void {
+        public addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void {
             let panel = new StackPanel();
             panel.isVertical = false;
+            panel.isFocusInvisible = true;
         
             for(var i = 0; i < keys.length; i++) {
-                let keyOptions = null;
+                let properties = null;
 
-                if (options && options.length === keys.length) {
-                    keyOptions = options[i];
+                if (propertySets && propertySets.length === keys.length) {
+                    properties = propertySets[i];
                 }
 
-                panel.addControl(this._createKey(keys[i], keyOptions));
+                panel.addControl(this._createKey(keys[i], properties));
             }
         
             this.addControl(panel);
