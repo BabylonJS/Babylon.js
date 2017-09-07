@@ -47,6 +47,7 @@ module BABYLON.GUI {
 
         public isHitTestVisible = true;
         public isPointerBlocker = false;
+        public isFocusInvisible = false;
 
         protected _linkOffsetX = new ValueAndUnit(0);
         protected _linkOffsetY = new ValueAndUnit(0);

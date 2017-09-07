@@ -15,6 +15,8 @@ module BABYLON.GUI {
         private _cursorOffset = 0;        
         private _scrollLeft: number;
 
+        public promptMessage = "Please enter text:";
+
         public onTextChangedObservable = new Observable<InputText>();
         public onFocusObservable = new Observable<InputText>();
         public onBlurObservable = new Observable<InputText>();
@@ -137,15 +139,21 @@ module BABYLON.GUI {
             this._markAsDirty();
 
             this.onFocusObservable.notifyObservers(this);
+
+            if (navigator.userAgent.indexOf("Mobile") !== -1) {
+                this.text = prompt(this.promptMessage);
+                this._host.focusedControl = null;
+                return;
+            }
         }
 
         protected _getTypeName(): string {
             return "InputText";
         }
 
-        public processKeyboard(evt: KeyboardEvent): void {
+        public processKey(keyCode: number, key?: string) {
             // Specific cases
-            switch (evt.keyCode) {
+            switch (keyCode) {
                 case 8: // BACKSPACE
                     if (this._text && this._text.length > 0) {
                         if (this._cursorOffset === 0) {
@@ -198,20 +206,25 @@ module BABYLON.GUI {
 
             // Printable characters
             if (
-                (evt.keyCode === 32) ||                         // Space
-                (evt.keyCode > 47 && evt.keyCode < 58) ||       // Numbers
-                (evt.keyCode > 64 && evt.keyCode < 91) ||       // Letters
-                (evt.keyCode > 185 && evt.keyCode < 193) ||     // Special characters
-                (evt.keyCode > 218  && evt.keyCode < 223) ||    // Special characters
-                (evt.keyCode > 95 && evt.keyCode < 112)) {      // Numpad
+                (keyCode === -1) ||                     // Direct access
+                (keyCode === 32) ||                     // Space
+                (keyCode > 47 && keyCode < 58) ||       // Numbers
+                (keyCode > 64 && keyCode < 91) ||       // Letters
+                (keyCode > 185 && keyCode < 193) ||     // Special characters
+                (keyCode > 218  && keyCode < 223) ||    // Special characters
+                (keyCode > 95 && keyCode < 112)) {      // Numpad
                     if (this._cursorOffset === 0) {
-                        this.text += evt.key;
+                        this.text += key;
                     } else {
                         let insertPosition = this._text.length - this._cursorOffset;
 
-                        this.text = this._text.slice(0, insertPosition) + evt.key + this._text.slice(insertPosition);
+                        this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
                     }
                 }
+        }
+
+        public processKeyboard(evt: KeyboardEvent): void {
+            this.processKey(evt.keyCode, evt.key);
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {

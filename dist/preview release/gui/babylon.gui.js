@@ -294,6 +294,9 @@ var BABYLON;
                 // Focus management
                 if (this._focusedControl) {
                     if (this._focusedControl !== this._lastPickedControl) {
+                        if (this._lastPickedControl.isFocusInvisible) {
+                            return;
+                        }
                         this.focusedControl = null;
                     }
                 }
@@ -727,6 +730,7 @@ var BABYLON;
                 this._doNotRender = false;
                 this.isHitTestVisible = true;
                 this.isPointerBlocker = false;
+                this.isFocusInvisible = false;
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
                 this._linkOffsetY = new GUI.ValueAndUnit(0);
                 /**
@@ -3779,6 +3783,7 @@ var BABYLON;
                 _this._isFocused = false;
                 _this._blinkIsEven = false;
                 _this._cursorOffset = 0;
+                _this.promptMessage = "Please enter text:";
                 _this.onTextChangedObservable = new BABYLON.Observable();
                 _this.onFocusObservable = new BABYLON.Observable();
                 _this.onBlurObservable = new BABYLON.Observable();
@@ -3901,13 +3906,18 @@ var BABYLON;
                 this._cursorOffset = 0;
                 this._markAsDirty();
                 this.onFocusObservable.notifyObservers(this);
+                if (navigator.userAgent.indexOf("Mobile") !== -1) {
+                    this.text = prompt(this.promptMessage);
+                    this._host.focusedControl = null;
+                    return;
+                }
             };
             InputText.prototype._getTypeName = function () {
                 return "InputText";
             };
-            InputText.prototype.processKeyboard = function (evt) {
+            InputText.prototype.processKey = function (keyCode, key) {
                 // Specific cases
-                switch (evt.keyCode) {
+                switch (keyCode) {
                     case 8:// BACKSPACE
                         if (this._text && this._text.length > 0) {
                             if (this._cursorOffset === 0) {
@@ -3959,20 +3969,24 @@ var BABYLON;
                         return;
                 }
                 // Printable characters
-                if ((evt.keyCode === 32) ||
-                    (evt.keyCode > 47 && evt.keyCode < 58) ||
-                    (evt.keyCode > 64 && evt.keyCode < 91) ||
-                    (evt.keyCode > 185 && evt.keyCode < 193) ||
-                    (evt.keyCode > 218 && evt.keyCode < 223) ||
-                    (evt.keyCode > 95 && evt.keyCode < 112)) {
+                if ((keyCode === -1) ||
+                    (keyCode === 32) ||
+                    (keyCode > 47 && keyCode < 58) ||
+                    (keyCode > 64 && keyCode < 91) ||
+                    (keyCode > 185 && keyCode < 193) ||
+                    (keyCode > 218 && keyCode < 223) ||
+                    (keyCode > 95 && keyCode < 112)) {
                     if (this._cursorOffset === 0) {
-                        this.text += evt.key;
+                        this.text += key;
                     }
                     else {
                         var insertPosition = this._text.length - this._cursorOffset;
-                        this.text = this._text.slice(0, insertPosition) + evt.key + this._text.slice(insertPosition);
+                        this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
                     }
                 }
+            };
+            InputText.prototype.processKeyboard = function (evt) {
+                this.processKey(evt.keyCode, evt.key);
             };
             InputText.prototype._draw = function (parentMeasure, context) {
                 var _this = this;
@@ -4074,5 +4088,129 @@ var BABYLON;
             return InputText;
         }(GUI.Control));
         GUI.InputText = InputText;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var KeyOptions = (function () {
+            function KeyOptions() {
+            }
+            return KeyOptions;
+        }());
+        GUI.KeyOptions = KeyOptions;
+        var VirtualKeyboard = (function (_super) {
+            __extends(VirtualKeyboard, _super);
+            function VirtualKeyboard() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this.onKeyPressObservable = new BABYLON.Observable();
+                _this.defaultButtonWidth = "40px";
+                _this.defaultButtonHeight = "40px";
+                _this.defaultButtonPaddingLeft = "2px";
+                _this.defaultButtonPaddingRight = "2px";
+                _this.defaultButtonPaddingTop = "2px";
+                _this.defaultButtonPaddingBottom = "2px";
+                _this.defaultButtonColor = "#DDD";
+                _this.defaultButtonBackground = "#070707";
+                return _this;
+            }
+            VirtualKeyboard.prototype._getTypeName = function () {
+                return "VirtualKeyboard";
+            };
+            VirtualKeyboard.prototype._createKey = function (key, options) {
+                var _this = this;
+                var button = GUI.Button.CreateSimpleButton(key, key);
+                button.width = options && options.width ? options.width : this.defaultButtonWidth;
+                button.height = options && options.height ? options.height : this.defaultButtonHeight;
+                button.color = options && options.color ? options.color : this.defaultButtonColor;
+                button.background = options && options.background ? options.background : this.defaultButtonBackground;
+                button.paddingLeft = options && options.paddingLeft ? options.paddingLeft : this.defaultButtonPaddingLeft;
+                button.paddingRight = options && options.paddingRight ? options.paddingRight : this.defaultButtonPaddingRight;
+                button.paddingTop = options && options.paddingTop ? options.paddingTop : this.defaultButtonPaddingTop;
+                button.paddingBottom = options && options.paddingBottom ? options.paddingBottom : this.defaultButtonPaddingBottom;
+                button.thickness = 0;
+                button.isFocusInvisible = true;
+                button.onPointerUpObservable.add(function () {
+                    _this.onKeyPressObservable.notifyObservers(key);
+                });
+                return button;
+            };
+            VirtualKeyboard.prototype.addKeysRow = function (keys, options) {
+                var panel = new GUI.StackPanel();
+                panel.isVertical = false;
+                for (var i = 0; i < keys.length; i++) {
+                    var keyOptions = null;
+                    if (options && options.length === keys.length) {
+                        keyOptions = options[i];
+                    }
+                    panel.addControl(this._createKey(keys[i], keyOptions));
+                }
+                this.addControl(panel);
+            };
+            Object.defineProperty(VirtualKeyboard.prototype, "connectedInputText", {
+                get: function () {
+                    return this._connectedInputText;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            VirtualKeyboard.prototype.connect = function (input) {
+                var _this = this;
+                this.isVisible = false;
+                this._connectedInputText = input;
+                // Events hooking
+                this._onFocusObserver = input.onFocusObservable.add(function () {
+                    _this.isVisible = true;
+                });
+                this._onBlurObserver = input.onBlurObservable.add(function () {
+                    _this.isVisible = false;
+                });
+                this._onKeyPressObserver = this.onKeyPressObservable.add(function (key) {
+                    switch (key) {
+                        case "\u2190":
+                            _this._connectedInputText.processKey(8);
+                            return;
+                        case "\u21B5":
+                            _this._connectedInputText.processKey(13);
+                            return;
+                    }
+                    _this._connectedInputText.processKey(-1, key);
+                });
+            };
+            VirtualKeyboard.prototype.disconnect = function () {
+                if (!this._connectedInputText) {
+                    return;
+                }
+                this._connectedInputText.onFocusObservable.remove(this._onFocusObserver);
+                this._connectedInputText.onBlurObservable.remove(this._onBlurObserver);
+                this.onKeyPressObservable.remove(this._onKeyPressObserver);
+                this._connectedInputText = null;
+            };
+            // Statics
+            VirtualKeyboard.CreateDefaultLayout = function () {
+                var returnValue = new VirtualKeyboard();
+                returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
+                returnValue.addKeysRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]);
+                returnValue.addKeysRow(["a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\u21B5"]);
+                returnValue.addKeysRow(["z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
+                returnValue.addKeysRow([" "], [{ width: "200px" }]);
+                return returnValue;
+            };
+            return VirtualKeyboard;
+        }(GUI.StackPanel));
+        GUI.VirtualKeyboard = VirtualKeyboard;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));

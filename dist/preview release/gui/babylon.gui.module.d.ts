@@ -168,6 +168,7 @@ declare module BABYLON.GUI {
         private _doNotRender;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
+        isFocusInvisible: boolean;
         protected _linkOffsetX: ValueAndUnit;
         protected _linkOffsetY: ValueAndUnit;
         readonly typeName: string;
@@ -609,6 +610,7 @@ declare module BABYLON.GUI {
         private _blinkIsEven;
         private _cursorOffset;
         private _scrollLeft;
+        promptMessage: string;
         onTextChangedObservable: Observable<InputText>;
         onFocusObservable: Observable<InputText>;
         onBlurObservable: Observable<InputText>;
@@ -623,11 +625,48 @@ declare module BABYLON.GUI {
         onBlur(): void;
         onFocus(): void;
         protected _getTypeName(): string;
+        processKey(keyCode: number, key?: string): void;
         processKeyboard(evt: KeyboardEvent): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerUp(coordinates: Vector2): void;
         dispose(): void;
+    }
+}
+
+/// <reference path="../../../dist/preview release/babylon.d.ts" />
+declare module BABYLON.GUI {
+    class KeyOptions {
+        width?: string;
+        height?: string;
+        paddingLeft?: string;
+        paddingRight?: string;
+        paddingTop?: string;
+        paddingBottom?: string;
+        color?: string;
+        background?: string;
+    }
+    class VirtualKeyboard extends StackPanel {
+        onKeyPressObservable: Observable<string>;
+        defaultButtonWidth: string;
+        defaultButtonHeight: string;
+        defaultButtonPaddingLeft: string;
+        defaultButtonPaddingRight: string;
+        defaultButtonPaddingTop: string;
+        defaultButtonPaddingBottom: string;
+        defaultButtonColor: string;
+        defaultButtonBackground: string;
+        protected _getTypeName(): string;
+        private _createKey(key, options?);
+        addKeysRow(keys: Array<string>, options?: Array<KeyOptions>): void;
+        private _connectedInputText;
+        private _onFocusObserver;
+        private _onBlurObserver;
+        private _onKeyPressObserver;
+        readonly connectedInputText: InputText;
+        connect(input: InputText): void;
+        disconnect(): void;
+        static CreateDefaultLayout(): VirtualKeyboard;
     }
 }
 
