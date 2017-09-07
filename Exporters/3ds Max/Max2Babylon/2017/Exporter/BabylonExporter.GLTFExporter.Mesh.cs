@@ -346,6 +346,15 @@ namespace Max2Babylon
                 // Update byte length and count of accessors, bufferViews and buffers
                 // Scalar
                 AddElementsToAccessor(accessorIndices, _indices.Count);
+                // Ensure the byteoffset is a multiple of 4
+                // Indices accessor element size if 2
+                // So the count needs to be even
+                if (gltfIndices.Count % 2 != 0)
+                {
+                    gltfIndices.Add(0);
+                    bufferViewScalar.byteLength += 2;
+                    buffer.byteLength += 2;
+                }
                 // Vector3
                 AddElementsToAccessor(accessorPositions, globalVerticesSubMesh.Count);
                 AddElementsToAccessor(accessorNormals, globalVerticesSubMesh.Count);
