@@ -4151,6 +4151,7 @@ var BABYLON;
             VirtualKeyboard.prototype.addKeysRow = function (keys, options) {
                 var panel = new GUI.StackPanel();
                 panel.isVertical = false;
+                panel.isFocusInvisible = true;
                 for (var i = 0; i < keys.length; i++) {
                     var keyOptions = null;
                     if (options && options.length === keys.length) {
