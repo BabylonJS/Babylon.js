@@ -2,10 +2,12 @@
 attribute vec3 position;
 attribute vec4 color;
 attribute vec4 options;
+attribute vec4 cellInfo;
 
 // Uniforms
 uniform mat4 view;
 uniform mat4 projection;
+uniform vec2 textureInfos;
 
 // Output
 varying vec2 vUV;
@@ -23,6 +25,7 @@ void main(void) {
 	float size = options.y;
 	float angle = options.x;
 	vec2 offset = options.zw;
+	vec2 uvScale = textureInfos.xy;
 
 	cornerPos = vec3(offset.x - 0.5, offset.y  - 0.5, 0.) * size;
 
@@ -37,7 +40,12 @@ void main(void) {
 	gl_Position = projection * vec4(viewPos, 1.0);   
 	
 	vColor = color;
-	vUV = offset;
+
+
+	vec2 uvOffset = vec2(abs(offset.x), 1.0 - abs(offset.y));
+
+	vUV = (uvOffset + cellInfo.zw) * uvScale;
+	//vUV = offset;
 
 	// Clip plane
 #ifdef CLIPPLANE

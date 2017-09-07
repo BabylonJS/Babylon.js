@@ -12,13 +12,13 @@
     export interface IParticleSystem {
         id: string;
         name: string;
-        emitter: AbstractMesh | Vector3;        
+        emitter: AbstractMesh | Vector3;
         renderingGroupId: number;
         layerMask: number;
-        isStarted(): boolean;  
-        animate(): void;   
-        render();  
-        dispose(): void; 
+        isStarted(): boolean;
+        animate(): void;
+        render();
+        dispose(): void;
         clone(name: string, newEmitter: any): IParticleSystem;
         serialize(): any;
 
@@ -59,7 +59,7 @@
 
         public customShader: any = null;
         public preventAutoStart: boolean = false;
-        
+
         /**
         * An event triggered when the system is disposed.
         * @type {BABYLON.Observable}
@@ -132,16 +132,18 @@
             this._createIndexBuffer();
 
             // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
-            this._vertexData = new Float32Array(capacity * 11 * 4);
-            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, 11);
+            this._vertexData = new Float32Array(capacity * 15 * 4);
+            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, 15);
 
             var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
             var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
             var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
+            var cellInfo = this._vertexBuffer.createVertexBuffer("cellInfo", 11, 4);
 
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
+            this._vertexBuffers["cellInfo"] = cellInfo;
 
             // Default behaviors
             this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
@@ -192,7 +194,7 @@
         private _createIndexBuffer() {
             var indices = [];
             var index = 0;
-            for (var count = 0; count < this._capacity ; count++) {
+            for (var count = 0; count < this._capacity; count++) {
                 indices.push(index);
                 indices.push(index + 1);
                 indices.push(index + 2);
@@ -237,7 +239,11 @@
         }
 
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
-            var offset = index * 11;
+
+            var baseSize = this.particleTexture.getBaseSize();
+
+            var rowSize = baseSize.width / 64;
+            var offset = index * 15;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
             this._vertexData[offset + 2] = particle.position.z;
@@ -249,6 +255,12 @@
             this._vertexData[offset + 8] = particle.size;
             this._vertexData[offset + 9] = offsetX;
             this._vertexData[offset + 10] = offsetY;
+
+            this._vertexData[offset + 11] = 0;
+            this._vertexData[offset + 12] = 0;
+            var newOffset = (2 / rowSize) >> 0;
+            this._vertexData[offset + 13] = 2 - newOffset * rowSize;
+            this._vertexData[offset + 14] = newOffset;
         }
 
         private _update(newParticles: number): void {
@@ -319,8 +331,8 @@
 
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",
-                    [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options"],
-                    ["invView", "view", "projection", "vClipPlane", "textureMask"],
+                    [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellInfo"],
+                    ["invView", "view", "projection","textureInfos", "vClipPlane", "textureMask"],
                     ["diffuseSampler"], join);
             }
 
@@ -425,6 +437,10 @@
             effect.setTexture("diffuseSampler", this.particleTexture);
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
+
+            var baseSize = this.particleTexture.getBaseSize();
+            effect.setFloat2("textureInfos", 64 / baseSize.width, 64 / baseSize.height);
+
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
             if (this._scene.clipPlane) {
@@ -525,7 +541,7 @@
             } else {
                 var emitterPosition = (<Vector3>this.emitter);
                 serializationObject.emitter = emitterPosition.asArray();
-            }       
+            }
 
             serializationObject.capacity = this.getCapacity();
 
