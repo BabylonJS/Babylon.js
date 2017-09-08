@@ -36,75 +36,6 @@
         }
     }
 
-    export class PointerEventTypes {
-        static _POINTERDOWN = 0x01;
-        static _POINTERUP = 0x02;
-        static _POINTERMOVE = 0x04;
-        static _POINTERWHEEL = 0x08;
-        static _POINTERPICK = 0x10;
-        static _POINTERTAP = 0x20;
-        static _POINTERDOUBLETAP = 0x40;
-
-        public static get POINTERDOWN(): number {
-            return PointerEventTypes._POINTERDOWN;
-        }
-
-        public static get POINTERUP(): number {
-            return PointerEventTypes._POINTERUP;
-        }
-
-        public static get POINTERMOVE(): number {
-            return PointerEventTypes._POINTERMOVE;
-        }
-
-        public static get POINTERWHEEL(): number {
-            return PointerEventTypes._POINTERWHEEL;
-        }
-
-        public static get POINTERPICK(): number {
-            return PointerEventTypes._POINTERPICK;
-        }
-
-        public static get POINTERTAP(): number {
-            return PointerEventTypes._POINTERTAP;
-        }
-
-        public static get POINTERDOUBLETAP(): number {
-            return PointerEventTypes._POINTERDOUBLETAP;
-        }
-    }
-
-    export class PointerInfoBase {
-        constructor(public type: number, public event: PointerEvent | MouseWheelEvent) {
-        }
-
-    }
-
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    export class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX, localY) {
-            super(type, event);
-            this.skipOnPointerObservable = false;
-            this.localPosition = new Vector2(localX, localY);
-        }
-
-        public localPosition: Vector2;
-        public skipOnPointerObservable: boolean;
-    }
-
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    export class PointerInfo extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, public pickInfo: PickingInfo) {
-            super(type, event);
-        }
-    }
-
     /**
      * This class is used by the onRenderingGroupObservable
      */
@@ -434,8 +365,8 @@
         }
 
         /**
-         * This observable event is triggered when any mouse event registered during Scene.attach() is called BEFORE the 3D engine to process anything (mesh/sprite picking for instance).
-         * You have the possibility to skip the 3D Engine process and the call to onPointerObservable by setting PointerInfoBase.skipOnPointerObservable to true
+         * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
+         * You have the possibility to skip the process and the call to onPointerObservable by setting PointerInfoPre.skipOnPointerObservable to true
          */
         public onPrePointerObservable = new Observable<PointerInfoPre>();
 
@@ -491,8 +422,21 @@
         public _mirroredCameraPosition: Vector3;
 
         // Keyboard
+
+        /**
+         * This observable event is triggered when any keyboard event si raised and registered during Scene.attachControl()
+         * You have the possibility to skip the process and the call to onKeyboardObservable by setting KeyboardInfoPre.skipOnPointerObservable to true
+         */
+        public onPreKeyboardObservable = new Observable<KeyboardInfoPre>();
+        
+        /**
+         * Observable event triggered each time an keyboard event is received from the hosting window
+         */
+        public onKeyboardObservable = new Observable<KeyboardInfo>();
         private _onKeyDown: (evt: Event) => void;
         private _onKeyUp: (evt: Event) => void;
+        private _onCanvasFocusObserver: Observer<Engine>;
+        private _onCanvasBlurObserver: Observer<Engine>;
 
         // Coordinate system
         /**
@@ -1537,18 +1481,56 @@
                 }).bind(this));
             };
 
-            this._onKeyDown = (evt: Event) => {
+            this._onKeyDown = (evt: KeyboardEvent) => {
+                let type = KeyboardEventTypes.KEYDOWN;
+                if (this.onPreKeyboardObservable.hasObservers()) {
+                    let pi = new KeyboardInfoPre(type, evt);
+                    this.onPreKeyboardObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
+
+                if (this.onKeyboardObservable.hasObservers()) {
+                    let pi = new KeyboardInfo(type, evt);
+                    this.onKeyboardObservable.notifyObservers(pi, type);
+                }
+
                 if (this.actionManager) {
                     this.actionManager.processTrigger(ActionManager.OnKeyDownTrigger, ActionEvent.CreateNewFromScene(this, evt));
                 }
             };
 
-            this._onKeyUp = (evt: Event) => {
+            this._onKeyUp = (evt: KeyboardEvent) => {
+                let type = KeyboardEventTypes.KEYUP;
+                if (this.onPreKeyboardObservable.hasObservers()) {
+                    let pi = new KeyboardInfoPre(type, evt);
+                    this.onPreKeyboardObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
+
+                if (this.onKeyboardObservable.hasObservers()) {
+                    let pi = new KeyboardInfo(type, evt);
+                    this.onKeyboardObservable.notifyObservers(pi, type);
+                }
+
                 if (this.actionManager) {
                     this.actionManager.processTrigger(ActionManager.OnKeyUpTrigger, ActionEvent.CreateNewFromScene(this, evt));
                 }
             };
 
+            let engine = this.getEngine();
+            this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(()=>{
+                canvas.addEventListener("keydown", this._onKeyDown, false);
+                canvas.addEventListener("keyup", this._onKeyUp, false);   
+            });
+
+            this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(()=>{                
+                canvas.removeEventListener("keydown", this._onKeyDown);
+                canvas.removeEventListener("keyup", this._onKeyUp);
+            });
 
             var eventPrefix = Tools.GetPointerPrefix();
             var canvas = this._engine.getRenderingCanvas();
@@ -1568,25 +1550,33 @@
             }
 
             canvas.tabIndex = 1;
-
-            canvas.addEventListener("keydown", this._onKeyDown, false);
-            canvas.addEventListener("keyup", this._onKeyUp, false);
         }
 
         public detachControl() {
+            let engine = this.getEngine();
             var eventPrefix = Tools.GetPointerPrefix();
-            var canvas = this._engine.getRenderingCanvas();
+            var canvas = engine.getRenderingCanvas();
 
             canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
             canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
             canvas.removeEventListener(eventPrefix + "up", this._onPointerUp);
 
+            engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+            engine.onCanvasFocusObservable.remove(this._onCanvasFocusObserver);
+
             // Wheel
             canvas.removeEventListener('mousewheel', this._onPointerMove);
             canvas.removeEventListener('DOMMouseScroll', this._onPointerMove);
 
+            // Keyboard
             canvas.removeEventListener("keydown", this._onKeyDown);
             canvas.removeEventListener("keyup", this._onKeyUp);
+
+            // Observables
+            this.onKeyboardObservable.clear();
+            this.onPreKeyboardObservable.clear();
+            this.onPointerObservable.clear();
+            this.onPrePointerObservable.clear();     
         }
 
         // Ready

@@ -2,8 +2,10 @@ module BABYLON {
     export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
         camera: FreeCamera;
         private _keys = [];
-        private _onKeyDown: (e: KeyboardEvent) => any;
-        private _onKeyUp: (e: KeyboardEvent) => any;
+        private _onCanvasBlurObserver: Observer<Engine>;
+        private _onKeyboardObserver: Observer<KeyboardInfo>;
+        private _engine: Engine;
+        private _scene: Scene;        
 
         @serialize()
         public keysUp = [38];
@@ -18,10 +20,21 @@ module BABYLON {
         public keysRight = [39];
 
         attachControl(element : HTMLElement, noPreventDefault?: boolean) {
-            if (!this._onKeyDown) {
-                element.tabIndex = 1;
+            if (this._onCanvasBlurObserver) {
+                return;
+            }
 
-                this._onKeyDown = evt => {
+            this._scene = this.camera.getScene();
+            this._engine = this._scene.getEngine();
+
+            this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(()=>{
+                this._keys = [];
+            });
+
+            this._onKeyboardObserver = this._scene.onKeyboardObservable.add(info => {
+                let evt = info.event;
+
+                if (info.type === KeyboardEventTypes.KEYDOWN) {
                     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -35,9 +48,7 @@ module BABYLON {
                             evt.preventDefault();
                         }
                     }
-                };
-
-                this._onKeyUp = evt => {
+                } else {
                     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -51,33 +62,22 @@ module BABYLON {
                             evt.preventDefault();
                         }
                     }
-                };
-
-                element.addEventListener("keydown", this._onKeyDown, false);
-                element.addEventListener("keyup", this._onKeyUp, false);
-
-                Tools.RegisterTopRootEvents([
-                    { name: "blur", handler: this._onLostFocus }
-                ]);
-            }
+                }
+            });     
         }
 
         detachControl(element : HTMLElement) {
-            if (this._onKeyDown) {
-                element.removeEventListener("keydown", this._onKeyDown);
-                element.removeEventListener("keyup", this._onKeyUp);
-
-                Tools.UnregisterTopRootEvents([
-                    { name: "blur", handler: this._onLostFocus }
-                ]);
-                this._keys = [];
-                this._onKeyDown = null;
-                this._onKeyUp = null;
+            if (this._scene) {
+                this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
+                this._engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+                this._onKeyboardObserver = null;
+                this._onCanvasBlurObserver = null;
             }
+            this._keys = [];
         }
         
         public checkInputs() {
-            if (this._onKeyDown){
+            if (this._onKeyboardObserver){
                 var camera = this.camera;
                 // Keyboard
                 for (var index = 0; index < this._keys.length; index++) {

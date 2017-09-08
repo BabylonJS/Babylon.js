@@ -205,12 +205,13 @@ module BABYLON {
 		 * @param radius Optional. If a cached radius position already exists, overrides default.
 		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
 		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+		 * @param onAnimationEnd Callback triggered at the end of the framing animation
 		 */
-		public zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ: boolean = false): void {
+		public zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ: boolean = false, onAnimationEnd: () => void = null): void {
 			mesh.computeWorldMatrix(true);
 
 			let boundingBox = mesh.getBoundingInfo().boundingBox;
-			this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ);
+			this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ, onAnimationEnd);
 		}
 
 		/**
@@ -219,8 +220,9 @@ module BABYLON {
 		 * @param radius Optional. If a cached radius position already exists, overrides default.
 		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
 		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+		 * @param onAnimationEnd Callback triggered at the end of the framing animation
 		 */
-		public zoomOnBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, focusOnOriginXZ: boolean = false): void {
+		public zoomOnBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, focusOnOriginXZ: boolean = false, onAnimationEnd: () => void = null): void {
 			let zoomTarget: BABYLON.Vector3;
 
 			// Find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
@@ -265,8 +267,8 @@ module BABYLON {
 			}
 
 			this._animatables.push(Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
-									60, this._radiusTransition, this._framingTime));															
-		}	
+				60, this._radiusTransition, this._framingTime, onAnimationEnd));
+		}
 		
 		/**
 		 * Calculates the lowest radius for the camera based on the bounding box of the mesh.
