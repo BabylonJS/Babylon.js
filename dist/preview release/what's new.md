@@ -6,7 +6,7 @@
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
 - Introduced behaviors. [Doc here](http://doc.babylonjs.com/overviews/behaviors) ([deltakosh](https://github.com/deltakosh))
 - Added support for WebGL Occlusion queries. [Doc here](http://doc.babylonjs.com/overviews/occlusionquery) ([Ibraheem Osama](https://github.com/IbraheemOsama))
-- New behaviors for ArcRotateCamera:
+- New behaviors for ArcRotateCamera [Doc here](http://doc.babylonjs.com/overviews/behaviors): 
   - AutoRotation ([deltakosh](https://github.com/deltakosh))
   - Framing ([deltakosh](https://github.com/deltakosh))
   - Bouncing ([deltakosh](https://github.com/deltakosh))
