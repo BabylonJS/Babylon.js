@@ -35244,6 +35244,7 @@ var BABYLON;
             this.angularSensibilityY = 1000.0;
             this.pinchPrecision = 6.0;
             this.panningSensibility = 50.0;
+            this.multiTouchPanning = true;
             this._isPanClick = false;
             this.pinchInwards = true;
         }
@@ -35252,7 +35253,9 @@ var BABYLON;
             var engine = this.camera.getEngine();
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
             var pointA, pointB;
+            var previousPinchSquaredDistance = 0;
             var previousPinchDistance = 0;
+            var previousMultiTouchPanPosition = { x: 0, y: 0, isPaning: false };
             this._pointerInput = function (p, s) {
                 var evt = p.event;
                 if (p.type !== BABYLON.PointerEventTypes.POINTERMOVE && _this.buttons.indexOf(evt.button) === -1) {
@@ -35291,7 +35294,9 @@ var BABYLON;
                         //Nothing to do with the error.
                     }
                     cacheSoloPointer = null;
+                    previousPinchSquaredDistance = 0;
                     previousPinchDistance = 0;
+                    previousMultiTouchPanPosition.isPaning = false;
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
@@ -35308,8 +35313,7 @@ var BABYLON;
                     // One button down
                     if (pointA && pointB === undefined) {
                         if (_this.panningSensibility !== 0 &&
-                            ((evt.ctrlKey && _this.camera._useCtrlForPanning) ||
-                                (!_this.camera._useCtrlForPanning && _this._isPanClick))) {
+                            ((evt.ctrlKey && _this.camera._useCtrlForPanning) || _this._isPanClick)) {
                             _this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
                             _this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
                         }
@@ -35331,18 +35335,38 @@ var BABYLON;
                         var distX = pointA.x - pointB.x;
                         var distY = pointA.y - pointB.y;
                         var pinchSquaredDistance = (distX * distX) + (distY * distY);
-                        if (previousPinchDistance === 0) {
-                            previousPinchDistance = pinchSquaredDistance;
+                        var pinchDistance = Math.sqrt(pinchSquaredDistance);
+                        if (previousPinchSquaredDistance === 0) {
+                            previousPinchSquaredDistance = pinchSquaredDistance;
+                            previousPinchDistance = pinchDistance;
                             return;
                         }
-                        if (pinchSquaredDistance !== previousPinchDistance) {
+                        if (Math.abs(pinchDistance - previousPinchDistance) > _this.camera.pinchToPanMaxDistance) {
                             _this.camera
-                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) /
+                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (_this.pinchPrecision *
                                     ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
                                     direction);
-                            previousPinchDistance = pinchSquaredDistance;
+                            previousMultiTouchPanPosition.isPaning = false;
                         }
+                        else {
+                            if (cacheSoloPointer.pointerId === ed.pointerId && _this.panningSensibility !== 0 && _this.multiTouchPanning) {
+                                if (!previousMultiTouchPanPosition.isPaning) {
+                                    previousMultiTouchPanPosition.isPaning = true;
+                                    previousMultiTouchPanPosition.x = ed.x;
+                                    previousMultiTouchPanPosition.y = ed.y;
+                                    return;
+                                }
+                                _this.camera.inertialPanningX += -(ed.x - previousMultiTouchPanPosition.x) / _this.panningSensibility;
+                                _this.camera.inertialPanningY += (ed.y - previousMultiTouchPanPosition.y) / _this.panningSensibility;
+                            }
+                        }
+                        if (cacheSoloPointer.pointerId === evt.pointerId) {
+                            previousMultiTouchPanPosition.x = ed.x;
+                            previousMultiTouchPanPosition.y = ed.y;
+                        }
+                        previousPinchSquaredDistance = pinchSquaredDistance;
+                        previousPinchDistance = pinchDistance;
                     }
                 }
             };
@@ -35356,7 +35380,9 @@ var BABYLON;
             this._onLostFocus = function () {
                 //this._keys = [];
                 pointA = pointB = undefined;
+                previousPinchSquaredDistance = 0;
                 previousPinchDistance = 0;
+                previousMultiTouchPanPosition.isPaning = false;
                 cacheSoloPointer = null;
             };
             this._onMouseMove = function (evt) {
@@ -35439,6 +35465,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "panningSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "multiTouchPanning", void 0);
         return ArcRotateCameraPointersInput;
     }());
     BABYLON.ArcRotateCameraPointersInput = ArcRotateCameraPointersInput;
@@ -35472,6 +35501,9 @@ var BABYLON;
             _this.upperRadiusLimit = null;
             _this.inertialPanningX = 0;
             _this.inertialPanningY = 0;
+            _this.pinchToPanMaxDistance = 2;
+            _this.panningDistanceLimit = null;
+            _this.panningOriginTarget = BABYLON.Vector3.Zero();
             _this.panningInertia = 0.9;
             //-- end properties for backward compatibility for inputs
             _this.zoomOnFactor = 1;
@@ -35888,7 +35920,16 @@ var BABYLON;
                     this._transformedDirection.y = 0;
                 }
                 if (!this._targetHost) {
-                    this._target.addInPlace(this._transformedDirection);
+                    if (this.panningDistanceLimit) {
+                        this._transformedDirection.addInPlace(this._target);
+                        var distanceSquared = BABYLON.Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
+                        if (distanceSquared <= (this.panningDistanceLimit * this.panningDistanceLimit)) {
+                            this._target.copyFrom(this._transformedDirection);
+                        }
+                    }
+                    else {
+                        this._target.addInPlace(this._transformedDirection);
+                    }
                 }
                 this.inertialPanningX *= this.panningInertia;
                 this.inertialPanningY *= this.panningInertia;
@@ -36146,6 +36187,15 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "inertialPanningY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "pinchToPanMaxDistance", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "panningDistanceLimit", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], ArcRotateCamera.prototype, "panningOriginTarget", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "panningInertia", void 0);
