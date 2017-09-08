@@ -70,6 +70,7 @@
     <Compile Include="BabylonNode.cs" />
     <Compile Include="BabylonPBRMaterial.cs" />
     <Compile Include="BabylonShaderMaterial.cs" />
+    <Compile Include="BabylonColor3.cs" />
     <Compile Include="BabylonStandardMaterial.cs" />
     <Compile Include="BabylonAbstractMesh.cs" />
     <Compile Include="BabylonMesh.cs" />
