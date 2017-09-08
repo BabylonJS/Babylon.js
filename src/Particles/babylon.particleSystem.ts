@@ -60,6 +60,14 @@
         public customShader: any = null;
         public preventAutoStart: boolean = false;
 
+        public cellWidth: number;
+        public cellHeight: number;
+        public cellIndex: number;
+        public invertU:number;
+        public invertV:number;
+        private _epsilon: number;
+
+
         /**
         * An event triggered when the system is disposed.
         * @type {BABYLON.Observable}
@@ -119,7 +127,7 @@
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
 
-        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect) {
+        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, cellSize?: any, epsilon: number = 0.01) {
             this.id = name;
             this._capacity = capacity;
 
@@ -189,6 +197,15 @@
                     }
                 }
             }
+
+            this._epsilon = epsilon;
+            if (cellSize.width && cellSize.height) {
+                this.cellWidth = cellSize.width;
+                this.cellHeight = cellSize.height;
+            } else if (cellSize !== undefined) {
+                this.cellWidth = cellSize;
+                this.cellHeight = cellSize;
+            }
         }
 
         private _createIndexBuffer() {
@@ -238,11 +255,7 @@
             this._stopped = true;
         }
 
-        public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
-
-            var baseSize = this.particleTexture.getBaseSize();
-
-            var rowSize = baseSize.width / 64;
+        public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number, rowSize: number): void {
             var offset = index * 15;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
@@ -256,11 +269,23 @@
             this._vertexData[offset + 9] = offsetX;
             this._vertexData[offset + 10] = offsetY;
 
-            this._vertexData[offset + 11] = 0;
-            this._vertexData[offset + 12] = 0;
-            var newOffset = (2 / rowSize) >> 0;
-            this._vertexData[offset + 13] = 2 - newOffset * rowSize;
-            this._vertexData[offset + 14] = newOffset;
+            if (offsetX === 0)
+                offsetX = this._epsilon;
+            else if (offsetX === 1)
+                offsetX = 1 - this._epsilon;
+
+            if (offsetY === 0)
+                offsetY = this._epsilon;
+            else if (offsetY === 1)
+                offsetY = 1 - this._epsilon;
+
+            this._vertexData[offset + 11] = this.invertU ? 1 : 0;
+            this._vertexData[offset + 12] = this.invertV ? 1 : 0;
+            var rowOffset = (this.cellIndex / rowSize) >> 0;
+            // which column
+            this._vertexData[offset + 13] = this.cellIndex - rowOffset * rowSize;
+            // which row (1 or 2 or three)
+            this._vertexData[offset + 14] = rowOffset;
         }
 
         private _update(newParticles: number): void {
@@ -332,7 +357,7 @@
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",
                     [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellInfo"],
-                    ["invView", "view", "projection","textureInfos", "vClipPlane", "textureMask"],
+                    ["invView", "view", "projection", "textureInfos", "vClipPlane", "textureMask"],
                     ["diffuseSampler"], join);
             }
 
@@ -400,15 +425,18 @@
                 }
             }
 
+            var baseSize = this.particleTexture.getBaseSize();
+            var rowSize = baseSize.width / this.cellWidth;
+
             // Update VBO
             var offset = 0;
             for (var index = 0; index < this.particles.length; index++) {
                 var particle = this.particles[index];
 
-                this._appendParticleVertex(offset++, particle, 0, 0);
-                this._appendParticleVertex(offset++, particle, 1, 0);
-                this._appendParticleVertex(offset++, particle, 1, 1);
-                this._appendParticleVertex(offset++, particle, 0, 1);
+                this._appendParticleVertex(offset++, particle, 0, 0, rowSize);
+                this._appendParticleVertex(offset++, particle, 1, 0, rowSize);
+                this._appendParticleVertex(offset++, particle, 1, 1, rowSize);
+                this._appendParticleVertex(offset++, particle, 0, 1, rowSize);
             }
 
             this._vertexBuffer.update(this._vertexData);
@@ -439,7 +467,7 @@
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
             var baseSize = this.particleTexture.getBaseSize();
-            effect.setFloat2("textureInfos", 64 / baseSize.width, 64 / baseSize.height);
+            effect.setFloat2("textureInfos", this.cellWidth / baseSize.width, this.cellHeight / baseSize.height);
 
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
