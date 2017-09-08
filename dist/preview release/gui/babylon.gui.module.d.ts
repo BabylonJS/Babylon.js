@@ -636,7 +636,7 @@ declare module BABYLON.GUI {
 
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
 declare module BABYLON.GUI {
-    class KeyOptions {
+    class KeyPropertySet {
         width?: string;
         height?: string;
         paddingLeft?: string;
@@ -657,8 +657,8 @@ declare module BABYLON.GUI {
         defaultButtonColor: string;
         defaultButtonBackground: string;
         protected _getTypeName(): string;
-        private _createKey(key, options?);
-        addKeysRow(keys: Array<string>, options?: Array<KeyOptions>): void;
+        private _createKey(key, propertySet?);
+        addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void;
         private _connectedInputText;
         private _onFocusObserver;
         private _onBlurObserver;

@@ -10,7 +10,6 @@
         private _scaleFactor: Vector2;
         private _lensCenter: Vector2;
 
-        //ANY
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics) {
             super(name, "vrDistortionCorrection", [
                 'LensCenter',
@@ -23,6 +22,7 @@
             this._distortionFactors = vrMetrics.distortionK;
             this._postProcessScaleFactor = vrMetrics.postProcessScaleFactor;
             this._lensCenterOffset = vrMetrics.lensCenterOffset;
+            this.adaptScaleToCurrentViewport = true;
 
             this.onSizeChangedObservable.add(() => {
                 this.aspectRatio = this.width * .5 / this.height;
