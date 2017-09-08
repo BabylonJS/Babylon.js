@@ -38,16 +38,9 @@ namespace BabylonExport.Entities
             return new BabylonVector3 { X = a.X * b, Y = a.Y * b, Z = a.Z * b };
         }
 
-        public BabylonQuaternion toQuaternionGltf()
+        public BabylonQuaternion toQuaternion()
         {
-            BabylonQuaternion babylonQuaternion = RotationYawPitchRollToRefBabylon(X, -Y, -Z);
-            // Doing following computation is ugly but works
-            // The goal is to switch from left to right handed coordinate system
-            // Swap X and Y
-            var tmp = babylonQuaternion.X;
-            babylonQuaternion.X = babylonQuaternion.Y;
-            babylonQuaternion.Y = tmp;
-            return babylonQuaternion;
+            return RotationYawPitchRollToRefBabylon(Y, X, Z);
         }
 
         /**
@@ -74,6 +67,11 @@ namespace BabylonExport.Entities
             result.Z = (float)((cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll));
             result.W = (float)((cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll));
             return result;
+        }
+
+        public override string ToString()
+        {
+            return "{ X=" + X + ", Y=" + Y + ", Z=" + Z + " }";
         }
     }
 }

@@ -47,7 +47,7 @@ namespace Max2Babylon
                     Y = babylonAbstractMesh.rotation[1],
                     Z = babylonAbstractMesh.rotation[2]
                 };
-                gltfNode.rotation = rotationVector3.toQuaternionGltf().ToArray();
+                gltfNode.rotation = rotationVector3.toQuaternion().ToArray();
             }
             gltfNode.scale = babylonAbstractMesh.scaling;
 
