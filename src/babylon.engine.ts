@@ -711,6 +711,10 @@
             return this._textureFormatInUse;
         }
 
+        public get currentViewport(): Viewport {
+            return this._cachedViewport;
+        }
+
         // Empty texture
         public get emptyTexture(): InternalTexture {
             if (!this._emptyTexture) {

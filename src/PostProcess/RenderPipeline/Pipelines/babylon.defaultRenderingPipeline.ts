@@ -223,8 +223,10 @@
                 this.imageProcessing = new BABYLON.ImageProcessingPostProcess("imageProcessing",  1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 if (this._hdr) {
                     this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
+                } else {
+                    this._scene.imageProcessingConfiguration.applyByPostProcess = false;
                 }
-            }
+            } 
 
 			if (this.fxaaEnabled) {
                 this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
