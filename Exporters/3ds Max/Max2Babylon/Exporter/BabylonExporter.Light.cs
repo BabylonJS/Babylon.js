@@ -25,11 +25,21 @@ namespace Max2Babylon
             babylonScene.LightsList.Add(babylonLight);
         }
 
-        private void ExportLight(IIGameScene scene, IIGameNode lightNode, BabylonScene babylonScene)
+        private bool IsLightExportable(IIGameNode lightNode)
         {
             if (lightNode.MaxNode.GetBoolProperty("babylonjs_noexport"))
             {
-                return;
+                return false;
+            }
+
+            return true;
+        }
+
+        private BabylonLight ExportLight(IIGameScene scene, IIGameNode lightNode, BabylonScene babylonScene)
+        {
+            if (IsLightExportable(lightNode) == false)
+            {
+                return null;
             }
 
             var gameLight = lightNode.IGameObject.AsGameLight();
@@ -41,7 +51,7 @@ namespace Max2Babylon
             babylonLight.id = lightNode.MaxNode.GetGuid().ToString();
             if (lightNode.NodeParent != null)
             {
-                babylonLight.parentId = GetParentID(lightNode.NodeParent, babylonScene, scene);
+                babylonLight.parentId = lightNode.NodeParent.MaxNode.GetGuid().ToString();
             }
 
             // Type
@@ -222,6 +232,8 @@ namespace Max2Babylon
             }
 
             babylonScene.LightsList.Add(babylonLight);
+            
+            return babylonLight;
         }
     }
 }

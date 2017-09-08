@@ -77,6 +77,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public int maxSimultaneousLights { get; set; }
 
+        [DataMember]
+        public bool useGlossinessFromSpecularMapAlpha { get; set; }
+
         public BabylonStandardMaterial() : base()
         {
             SetCustomType("BABYLON.StandardMaterial");
@@ -89,6 +92,7 @@ namespace BabylonExport.Entities
             useSpecularOverAlpha = true;
             useEmissiveAsIllumination = false;
             linkEmissiveWithDiffuse = false;
+            useGlossinessFromSpecularMapAlpha = false;
         }
 
         public void SetCustomType(string type)
