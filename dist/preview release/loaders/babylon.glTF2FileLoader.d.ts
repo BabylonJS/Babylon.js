@@ -258,7 +258,8 @@ declare module BABYLON.GLTF2 {
     interface IGLTFTexture extends IGLTFChildRootProperty {
         sampler?: number;
         source: number;
-        babylonTextures?: Texture[];
+        url?: string;
+        dataReadyObservable?: Observable<IGLTFTexture>;
     }
     interface IGLTFTextureInfo {
         index: number;
@@ -273,7 +274,6 @@ declare module BABYLON.GLTF2 {
         cameras?: IGLTFCamera[];
         extensionsUsed?: string[];
         extensionsRequired?: string[];
-        glExtensionsUsed?: string[];
         images?: IGLTFImage[];
         materials?: IGLTFMaterial[];
         meshes?: IGLTFMesh[];
@@ -299,7 +299,6 @@ declare module BABYLON.GLTF2 {
         private _errorCallback;
         private _renderReady;
         private _disposed;
-        private _objectURLs;
         private _blockPendingTracking;
         private _nonBlockingData;
         private _renderReadyObservable;

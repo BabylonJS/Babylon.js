@@ -16494,7 +16494,6 @@ var BABYLON;
             this.defaultCursor = "";
             // Metadata
             this.metadata = null;
-            // Events
             /**
             * An event triggered when the scene is disposed.
             * @type {BABYLON.Observable}
@@ -17277,6 +17276,181 @@ var BABYLON;
         };
         // Pointers handling
         /**
+         * Use this method to simulate a pointer move on a mesh
+         * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
+         */
+        Scene.prototype.simulatePointerMove = function (pickResult) {
+            var evt = new PointerEvent("pointermove");
+            return this._processPointerMove(pickResult, evt);
+        };
+        Scene.prototype._processPointerMove = function (pickResult, evt) {
+            var canvas = this._engine.getRenderingCanvas();
+            if (pickResult && pickResult.hit && pickResult.pickedMesh) {
+                this.setPointerOverSprite(null);
+                this.setPointerOverMesh(pickResult.pickedMesh);
+                if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
+                    if (this._pointerOverMesh.actionManager.hoverCursor) {
+                        canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
+                    }
+                    else {
+                        canvas.style.cursor = this.hoverCursor;
+                    }
+                }
+                else {
+                    canvas.style.cursor = this.defaultCursor;
+                }
+            }
+            else {
+                this.setPointerOverMesh(null);
+                // Sprites
+                pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers);
+                if (pickResult && pickResult.hit && pickResult.pickedSprite) {
+                    this.setPointerOverSprite(pickResult.pickedSprite);
+                    if (this._pointerOverSprite.actionManager && this._pointerOverSprite.actionManager.hoverCursor) {
+                        canvas.style.cursor = this._pointerOverSprite.actionManager.hoverCursor;
+                    }
+                    else {
+                        canvas.style.cursor = this.hoverCursor;
+                    }
+                }
+                else {
+                    this.setPointerOverSprite(null);
+                    // Restore pointer
+                    canvas.style.cursor = this.defaultCursor;
+                }
+            }
+            if (this.onPointerMove) {
+                this.onPointerMove(evt, pickResult);
+            }
+            if (this.onPointerObservable.hasObservers()) {
+                var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? BABYLON.PointerEventTypes.POINTERWHEEL : BABYLON.PointerEventTypes.POINTERMOVE;
+                var pi = new BABYLON.PointerInfo(type, evt, pickResult);
+                this.onPointerObservable.notifyObservers(pi, type);
+            }
+            return this;
+        };
+        /**
+         * Use this method to simulate a pointer down on a mesh
+         * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
+         */
+        Scene.prototype.simulatePointerDown = function (pickResult) {
+            var evt = new PointerEvent("pointerdown");
+            return this._processPointerDown(pickResult, evt);
+        };
+        Scene.prototype._processPointerDown = function (pickResult, evt) {
+            if (pickResult && pickResult.hit && pickResult.pickedMesh) {
+                this._pickedDownMesh = pickResult.pickedMesh;
+                var actionManager = pickResult.pickedMesh.actionManager;
+                if (actionManager) {
+                    if (actionManager.hasPickTriggers) {
+                        actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        switch (evt.button) {
+                            case 0:
+                                actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                break;
+                            case 1:
+                                actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                break;
+                            case 2:
+                                actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                break;
+                        }
+                    }
+                    if (actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)) {
+                        window.setTimeout((function () {
+                            var _this = this;
+                            var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger) && mesh == _this._pickedDownMesh; }, false, this.cameraToUseForPointers);
+                            if (pickResult && pickResult.hit && pickResult.pickedMesh) {
+                                if (this._isButtonPressed &&
+                                    ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
+                                    (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
+                                        Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
+                                    this._startingPointerTime = 0;
+                                    actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                }
+                            }
+                        }).bind(this), Scene.LongPressDelay);
+                    }
+                }
+            }
+            if (this.onPointerDown) {
+                this.onPointerDown(evt, pickResult);
+            }
+            if (this.onPointerObservable.hasObservers()) {
+                var type = BABYLON.PointerEventTypes.POINTERDOWN;
+                var pi = new BABYLON.PointerInfo(type, evt, pickResult);
+                this.onPointerObservable.notifyObservers(pi, type);
+            }
+            return this;
+        };
+        /**
+         * Use this method to simulate a pointer up on a mesh
+         * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
+         */
+        Scene.prototype.simulatePointerUp = function (pickResult) {
+            var evt = new PointerEvent("pointerup");
+            var clickInfo = new ClickInfo();
+            clickInfo.singleClick = true;
+            return this._processPointerUp(pickResult, evt, clickInfo);
+        };
+        Scene.prototype._processPointerUp = function (pickResult, evt, clickInfo) {
+            if (pickResult && pickResult && pickResult.pickedMesh) {
+                this._pickedUpMesh = pickResult.pickedMesh;
+                if (this._pickedDownMesh === this._pickedUpMesh) {
+                    if (this.onPointerPick) {
+                        this.onPointerPick(evt, pickResult);
+                    }
+                    if (clickInfo.singleClick && !clickInfo.ignore && this.onPointerObservable.hasObservers()) {
+                        var type = BABYLON.PointerEventTypes.POINTERPICK;
+                        var pi = new BABYLON.PointerInfo(type, evt, pickResult);
+                        this.onPointerObservable.notifyObservers(pi, type);
+                    }
+                }
+                if (pickResult.pickedMesh.actionManager) {
+                    if (clickInfo.ignore) {
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    }
+                    if (!clickInfo.hasSwiped && !clickInfo.ignore && clickInfo.singleClick) {
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    }
+                    if (clickInfo.doubleClick && !clickInfo.ignore && pickResult.pickedMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnDoublePickTrigger)) {
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnDoublePickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    }
+                }
+            }
+            if (this._pickedDownMesh &&
+                this._pickedDownMesh.actionManager &&
+                this._pickedDownMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickOutTrigger) &&
+                this._pickedDownMesh !== this._pickedUpMesh) {
+                this._pickedDownMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNew(this._pickedDownMesh, evt));
+            }
+            if (this.onPointerUp) {
+                this.onPointerUp(evt, pickResult);
+            }
+            if (this.onPointerObservable.hasObservers()) {
+                if (!clickInfo.ignore) {
+                    if (!clickInfo.hasSwiped) {
+                        if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP)) {
+                            var type = BABYLON.PointerEventTypes.POINTERTAP;
+                            var pi = new BABYLON.PointerInfo(type, evt, pickResult);
+                            this.onPointerObservable.notifyObservers(pi, type);
+                        }
+                        if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP)) {
+                            var type = BABYLON.PointerEventTypes.POINTERDOUBLETAP;
+                            var pi = new BABYLON.PointerInfo(type, evt, pickResult);
+                            this.onPointerObservable.notifyObservers(pi, type);
+                        }
+                    }
+                }
+                else {
+                    var type = BABYLON.PointerEventTypes.POINTERUP;
+                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
+                    this.onPointerObservable.notifyObservers(pi, type);
+                }
+            }
+            return this;
+        };
+        /**
         * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
         * @param attachUp defines if you want to attach events to pointerup
         * @param attachDown defines if you want to attach events to pointerdown
@@ -17406,7 +17580,7 @@ var BABYLON;
                 clickInfo.ignore = true;
                 cb(clickInfo, _this._currentPickResult);
             };
-            var spritePredicate = function (sprite) {
+            this._spritePredicate = function (sprite) {
                 return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
             this._onPointerMove = function (evt) {
@@ -17423,54 +17597,12 @@ var BABYLON;
                 if (!_this.cameraToUseForPointers && !_this.activeCamera) {
                     return;
                 }
-                var canvas = _this._engine.getRenderingCanvas();
                 if (!_this.pointerMovePredicate) {
                     _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || _this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)); };
                 }
                 // Meshes
                 var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerMovePredicate, false, _this.cameraToUseForPointers);
-                if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                    _this.setPointerOverSprite(null);
-                    _this.setPointerOverMesh(pickResult.pickedMesh);
-                    if (_this._pointerOverMesh.actionManager && _this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        if (_this._pointerOverMesh.actionManager.hoverCursor) {
-                            canvas.style.cursor = _this._pointerOverMesh.actionManager.hoverCursor;
-                        }
-                        else {
-                            canvas.style.cursor = _this.hoverCursor;
-                        }
-                    }
-                    else {
-                        canvas.style.cursor = _this.defaultCursor;
-                    }
-                }
-                else {
-                    _this.setPointerOverMesh(null);
-                    // Sprites
-                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
-                    if (pickResult && pickResult.hit && pickResult.pickedSprite) {
-                        _this.setPointerOverSprite(pickResult.pickedSprite);
-                        if (_this._pointerOverSprite.actionManager && _this._pointerOverSprite.actionManager.hoverCursor) {
-                            canvas.style.cursor = _this._pointerOverSprite.actionManager.hoverCursor;
-                        }
-                        else {
-                            canvas.style.cursor = _this.hoverCursor;
-                        }
-                    }
-                    else {
-                        _this.setPointerOverSprite(null);
-                        // Restore pointer
-                        canvas.style.cursor = _this.defaultCursor;
-                    }
-                }
-                if (_this.onPointerMove) {
-                    _this.onPointerMove(evt, pickResult);
-                }
-                if (_this.onPointerObservable.hasObservers()) {
-                    var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? BABYLON.PointerEventTypes.POINTERWHEEL : BABYLON.PointerEventTypes.POINTERMOVE;
-                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
-                    _this.onPointerObservable.notifyObservers(pi, type);
-                }
+                _this._processPointerMove(pickResult, evt);
             };
             this._onPointerDown = function (evt) {
                 _this._isButtonPressed = true;
@@ -17500,53 +17632,11 @@ var BABYLON;
                 // Meshes
                 _this._pickedDownMesh = null;
                 var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerDownPredicate, false, _this.cameraToUseForPointers);
-                if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                    _this._pickedDownMesh = pickResult.pickedMesh;
-                    var actionManager = pickResult.pickedMesh.actionManager;
-                    if (actionManager) {
-                        if (actionManager.hasPickTriggers) {
-                            actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                            switch (evt.button) {
-                                case 0:
-                                    actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                    break;
-                                case 1:
-                                    actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                    break;
-                                case 2:
-                                    actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                    break;
-                            }
-                        }
-                        if (actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)) {
-                            window.setTimeout((function () {
-                                var _this = this;
-                                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger) && mesh == _this._pickedDownMesh; }, false, this.cameraToUseForPointers);
-                                if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                                    if (this._isButtonPressed &&
-                                        ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
-                                        (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
-                                            Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
-                                        this._startingPointerTime = 0;
-                                        actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                    }
-                                }
-                            }).bind(_this), Scene.LongPressDelay);
-                        }
-                    }
-                }
-                if (_this.onPointerDown) {
-                    _this.onPointerDown(evt, pickResult);
-                }
-                if (_this.onPointerObservable.hasObservers()) {
-                    var type = BABYLON.PointerEventTypes.POINTERDOWN;
-                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
-                    _this.onPointerObservable.notifyObservers(pi, type);
-                }
+                _this._processPointerDown(pickResult, evt);
                 // Sprites
                 _this._pickedDownSprite = null;
                 if (_this.spriteManagers.length > 0) {
-                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this._spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
                             _this._pickedDownSprite = pickResult.pickedSprite;
@@ -17620,63 +17710,9 @@ var BABYLON;
                     if (!pickResult) {
                         pickResult = this._currentPickResult;
                     }
-                    if (pickResult && pickResult && pickResult.pickedMesh) {
-                        this._pickedUpMesh = pickResult.pickedMesh;
-                        if (this._pickedDownMesh === this._pickedUpMesh) {
-                            if (this.onPointerPick) {
-                                this.onPointerPick(evt, pickResult);
-                            }
-                            if (clickInfo.singleClick && !clickInfo.ignore && this.onPointerObservable.hasObservers()) {
-                                var type = BABYLON.PointerEventTypes.POINTERPICK;
-                                var pi = new BABYLON.PointerInfo(type, evt, pickResult);
-                                this.onPointerObservable.notifyObservers(pi, type);
-                            }
-                        }
-                        if (pickResult.pickedMesh.actionManager) {
-                            if (clickInfo.ignore) {
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                            }
-                            if (!clickInfo.hasSwiped && !clickInfo.ignore && clickInfo.singleClick) {
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                            }
-                            if (clickInfo.doubleClick && !clickInfo.ignore && pickResult.pickedMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnDoublePickTrigger)) {
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnDoublePickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                            }
-                        }
-                    }
-                    if (this._pickedDownMesh &&
-                        this._pickedDownMesh.actionManager &&
-                        this._pickedDownMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickOutTrigger) &&
-                        this._pickedDownMesh !== this._pickedUpMesh) {
-                        this._pickedDownMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNew(this._pickedDownMesh, evt));
-                    }
-                    if (this.onPointerUp) {
-                        this.onPointerUp(evt, pickResult);
-                    }
-                    if (this.onPointerObservable.hasObservers()) {
-                        if (!clickInfo.ignore) {
-                            if (!clickInfo.hasSwiped) {
-                                if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP)) {
-                                    var type = BABYLON.PointerEventTypes.POINTERTAP;
-                                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
-                                    this.onPointerObservable.notifyObservers(pi, type);
-                                }
-                                if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP)) {
-                                    var type = BABYLON.PointerEventTypes.POINTERDOUBLETAP;
-                                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
-                                    this.onPointerObservable.notifyObservers(pi, type);
-                                }
-                            }
-                        }
-                        else {
-                            var type = BABYLON.PointerEventTypes.POINTERUP;
-                            var pi = new BABYLON.PointerInfo(type, evt, pickResult);
-                            this.onPointerObservable.notifyObservers(pi, type);
-                        }
-                    }
                     // Sprites
                     if (this.spriteManagers.length > 0) {
-                        pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
+                        pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers);
                         if (pickResult.hit && pickResult.pickedSprite) {
                             if (pickResult.pickedSprite.actionManager) {
                                 pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
