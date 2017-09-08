@@ -30,6 +30,15 @@ var BABYLON;
                 _this._idealHeight = 0;
                 _this._renderAtIdealSize = false;
                 _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
+                _this._preKeyboardObserver = _this.getScene().onPreKeyboardObservable.add(function (info) {
+                    if (!_this._focusedControl) {
+                        return;
+                    }
+                    if (info.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+                        _this._focusedControl.processKeyboard(info.event);
+                    }
+                    info.skipOnPointerObservable = true;
+                });
                 _this._rootContainer._link(null, _this);
                 _this.hasAlpha = true;
                 if (!width || !height) {
@@ -111,6 +120,25 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "focusedControl", {
+                get: function () {
+                    return this._focusedControl;
+                },
+                set: function (control) {
+                    if (this._focusedControl === control) {
+                        return;
+                    }
+                    if (!this._focusedControl) {
+                        control.onFocus();
+                    }
+                    else {
+                        this._focusedControl.onBlur();
+                    }
+                    this._focusedControl = control;
+                },
+                enumerable: true,
+                configurable: true
+            });
             AdvancedDynamicTexture.prototype.executeOnAllControls = function (func, container) {
                 if (!container) {
                     container = this._rootContainer;
@@ -146,14 +174,15 @@ var BABYLON;
                 if (this._pointerObserver) {
                     this.getScene().onPointerObservable.remove(this._pointerObserver);
                 }
-                if (this._canvasBlurObserver) {
-                    this.getScene().getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+                if (this._canvasPointerOutObserver) {
+                    this.getScene().getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
                 }
                 if (this._layerToDispose) {
                     this._layerToDispose.texture = null;
                     this._layerToDispose.dispose();
                     this._layerToDispose = null;
                 }
+                this._rootContainer.dispose();
                 _super.prototype.dispose.call(this);
             };
             AdvancedDynamicTexture.prototype._onResize = function () {
@@ -262,6 +291,15 @@ var BABYLON;
                         this._lastControlOver = null;
                     }
                 }
+                // Focus management
+                if (this._focusedControl) {
+                    if (this._focusedControl !== this._lastPickedControl) {
+                        if (this._lastPickedControl.isFocusInvisible) {
+                            return;
+                        }
+                        this.focusedControl = null;
+                    }
+                }
             };
             AdvancedDynamicTexture.prototype.attach = function () {
                 var _this = this;
@@ -281,7 +319,7 @@ var BABYLON;
                     _this._doPicking(x, y, pi.type);
                     pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
                 });
-                this._attachToOnBlur(scene);
+                this._attachToOnPointerOut(scene);
             };
             AdvancedDynamicTexture.prototype.attachToMesh = function (mesh, supportPointerMove) {
                 var _this = this;
@@ -312,11 +350,11 @@ var BABYLON;
                     }
                 });
                 mesh.enablePointerMoveEvents = supportPointerMove;
-                this._attachToOnBlur(scene);
+                this._attachToOnPointerOut(scene);
             };
-            AdvancedDynamicTexture.prototype._attachToOnBlur = function (scene) {
+            AdvancedDynamicTexture.prototype._attachToOnPointerOut = function (scene) {
                 var _this = this;
-                this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function () {
+                this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(function () {
                     if (_this._lastControlOver) {
                         _this._lastControlOver._onPointerOut();
                     }
@@ -692,6 +730,7 @@ var BABYLON;
                 this._doNotRender = false;
                 this.isHitTestVisible = true;
                 this.isPointerBlocker = false;
+                this.isFocusInvisible = false;
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
                 this._linkOffsetY = new GUI.ValueAndUnit(0);
                 /**
@@ -1429,6 +1468,7 @@ var BABYLON;
                 if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
                     this._onPointerDown(this._dummyVector2);
                     this._host._lastControlDown = this;
+                    this._host._lastPickedControl = this;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERUP) {
@@ -1446,6 +1486,14 @@ var BABYLON;
                 }
                 this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
                 this._fontOffset = Control._GetFontOffset(this._font);
+            };
+            Control.prototype.dispose = function () {
+                this.onDirtyObservable.clear();
+                this.onPointerDownObservable.clear();
+                this.onPointerEnterObservable.clear();
+                this.onPointerMoveObservable.clear();
+                this.onPointerOutObservable.clear();
+                this.onPointerUpObservable.clear();
             };
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
                 get: function () {
@@ -1646,6 +1694,7 @@ var BABYLON;
                     return this;
                 }
                 control._link(this, this._host);
+                control._markAllAsDirty();
                 this._reOrderControl(control);
                 this._markAsDirty();
                 return this;
@@ -1734,6 +1783,13 @@ var BABYLON;
             Container.prototype._additionalProcessing = function (parentMeasure, context) {
                 _super.prototype._additionalProcessing.call(this, parentMeasure, context);
                 this._measureForChildren.copyFrom(this._currentMeasure);
+            };
+            Container.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var control = _a[_i];
+                    control.dispose();
+                }
             };
             return Container;
         }(GUI.Control));
@@ -3719,10 +3775,18 @@ var BABYLON;
                 _this.name = name;
                 _this._text = "";
                 _this._background = "black";
+                _this._focusedBackground = "black";
                 _this._thickness = 1;
                 _this._margin = new GUI.ValueAndUnit(10, GUI.ValueAndUnit.UNITMODE_PIXEL);
                 _this._autoStretchWidth = true;
                 _this._maxWidth = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
+                _this._isFocused = false;
+                _this._blinkIsEven = false;
+                _this._cursorOffset = 0;
+                _this.promptMessage = "Please enter text:";
+                _this.onTextChangedObservable = new BABYLON.Observable();
+                _this.onFocusObservable = new BABYLON.Observable();
+                _this.onBlurObservable = new BABYLON.Observable();
                 _this.text = text;
                 return _this;
             }
@@ -3784,6 +3848,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "focusedBackground", {
+                get: function () {
+                    return this._focusedBackground;
+                },
+                set: function (value) {
+                    if (this._focusedBackground === value) {
+                        return;
+                    }
+                    this._focusedBackground = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(InputText.prototype, "background", {
                 get: function () {
                     return this._background;
@@ -3808,33 +3886,178 @@ var BABYLON;
                     }
                     this._text = value;
                     this._markAsDirty();
+                    this.onTextChangedObservable.notifyObservers(this);
                 },
                 enumerable: true,
                 configurable: true
             });
+            InputText.prototype.onBlur = function () {
+                this._isFocused = false;
+                this._scrollLeft = null;
+                this._cursorOffset = 0;
+                clearTimeout(this._blinkTimeout);
+                this._markAsDirty();
+                this.onBlurObservable.notifyObservers(this);
+            };
+            InputText.prototype.onFocus = function () {
+                this._scrollLeft = null;
+                this._isFocused = true;
+                this._blinkIsEven = false;
+                this._cursorOffset = 0;
+                this._markAsDirty();
+                this.onFocusObservable.notifyObservers(this);
+                if (navigator.userAgent.indexOf("Mobile") !== -1) {
+                    this.text = prompt(this.promptMessage);
+                    this._host.focusedControl = null;
+                    return;
+                }
+            };
             InputText.prototype._getTypeName = function () {
                 return "InputText";
             };
+            InputText.prototype.processKey = function (keyCode, key) {
+                // Specific cases
+                switch (keyCode) {
+                    case 8:// BACKSPACE
+                        if (this._text && this._text.length > 0) {
+                            if (this._cursorOffset === 0) {
+                                this.text = this._text.substr(0, this._text.length - 1);
+                            }
+                            else {
+                                var deletePosition = this._text.length - this._cursorOffset;
+                                if (deletePosition > 0) {
+                                    this.text = this._text.slice(0, deletePosition - 1) + this._text.slice(deletePosition);
+                                }
+                            }
+                        }
+                        return;
+                    case 46:// DELETE
+                        if (this._text && this._text.length > 0) {
+                            var deletePosition = this._text.length - this._cursorOffset;
+                            this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
+                            this._cursorOffset--;
+                        }
+                        return;
+                    case 13:// RETURN
+                        this._host.focusedControl = null;
+                        return;
+                    case 35:// END
+                        this._cursorOffset = 0;
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                    case 36:// HOME
+                        this._cursorOffset = this._text.length;
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                    case 37:// LEFT
+                        this._cursorOffset++;
+                        if (this._cursorOffset > this._text.length) {
+                            this._cursorOffset = this._text.length;
+                        }
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                    case 39:// RIGHT
+                        this._cursorOffset--;
+                        if (this._cursorOffset < 0) {
+                            this._cursorOffset = 0;
+                        }
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                }
+                // Printable characters
+                if ((keyCode === -1) ||
+                    (keyCode === 32) ||
+                    (keyCode > 47 && keyCode < 58) ||
+                    (keyCode > 64 && keyCode < 91) ||
+                    (keyCode > 185 && keyCode < 193) ||
+                    (keyCode > 218 && keyCode < 223) ||
+                    (keyCode > 95 && keyCode < 112)) {
+                    if (this._cursorOffset === 0) {
+                        this.text += key;
+                    }
+                    else {
+                        var insertPosition = this._text.length - this._cursorOffset;
+                        this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                    }
+                }
+            };
+            InputText.prototype.processKeyboard = function (evt) {
+                this.processKey(evt.keyCode, evt.key);
+            };
             InputText.prototype._draw = function (parentMeasure, context) {
+                var _this = this;
                 context.save();
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     // Background
-                    if (this._background) {
+                    if (this._isFocused) {
+                        if (this._focusedBackground) {
+                            context.fillStyle = this._focusedBackground;
+                            context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                        }
+                    }
+                    else if (this._background) {
                         context.fillStyle = this._background;
                         context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     }
+                    if (!this._fontOffset) {
+                        this._fontOffset = GUI.Control._GetFontOffset(context.font);
+                    }
                     // Text
-                    if (this._text) {
-                        if (this.color) {
-                            context.fillStyle = this.color;
-                        }
-                        var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
-                        context.fillText(this._text, this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width), this._currentMeasure.top + rootY);
-                        if (this._autoStretchWidth) {
-                            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), context.measureText(this._text).width + this._margin.getValueInPixel(this._host, parentMeasure.width) * 2) + "px";
+                    var clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
+                    if (this.color) {
+                        context.fillStyle = this.color;
+                    }
+                    var textWidth = context.measureText(this._text).width;
+                    var marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
+                    if (this._autoStretchWidth) {
+                        this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), textWidth + marginWidth) + "px";
+                    }
+                    var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
+                    var availableWidth = this._width.getValueInPixel(this._host, parentMeasure.width) - marginWidth;
+                    context.save();
+                    context.beginPath();
+                    context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
+                    context.clip();
+                    if (this._isFocused && textWidth > availableWidth) {
+                        var textLeft = clipTextLeft - textWidth + availableWidth;
+                        if (!this._scrollLeft) {
+                            this._scrollLeft = textLeft;
                         }
                     }
+                    else {
+                        this._scrollLeft = clipTextLeft;
+                    }
+                    context.fillText(this._text, this._scrollLeft, this._currentMeasure.top + rootY);
+                    // Cursor
+                    if (this._isFocused) {
+                        if (!this._blinkIsEven) {
+                            var cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
+                            var cursorOffsetWidth = context.measureText(cursorOffsetText).width;
+                            var cursorLeft = this._scrollLeft + textWidth - cursorOffsetWidth;
+                            if (cursorLeft < clipTextLeft) {
+                                this._scrollLeft += (clipTextLeft - cursorLeft);
+                                cursorLeft = clipTextLeft;
+                                this._markAsDirty();
+                            }
+                            else if (cursorLeft > clipTextLeft + availableWidth) {
+                                this._scrollLeft += (clipTextLeft + availableWidth - cursorLeft);
+                                cursorLeft = clipTextLeft + availableWidth;
+                                this._markAsDirty();
+                            }
+                            context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
+                        }
+                        clearTimeout(this._blinkTimeout);
+                        this._blinkTimeout = setTimeout(function () {
+                            _this._blinkIsEven = !_this._blinkIsEven;
+                            _this._markAsDirty();
+                        }, 500);
+                    }
+                    context.restore();
                     // Border
                     if (this._thickness) {
                         if (this.color) {
@@ -3846,8 +4069,149 @@ var BABYLON;
                 }
                 context.restore();
             };
+            InputText.prototype._onPointerDown = function (coordinates) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+                    return false;
+                }
+                this._host.focusedControl = this;
+                return true;
+            };
+            InputText.prototype._onPointerUp = function (coordinates) {
+                _super.prototype._onPointerUp.call(this, coordinates);
+            };
+            InputText.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                this.onBlurObservable.clear();
+                this.onFocusObservable.clear();
+                this.onTextChangedObservable.clear();
+            };
             return InputText;
         }(GUI.Control));
         GUI.InputText = InputText;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var KeyPropertySet = (function () {
+            function KeyPropertySet() {
+            }
+            return KeyPropertySet;
+        }());
+        GUI.KeyPropertySet = KeyPropertySet;
+        var VirtualKeyboard = (function (_super) {
+            __extends(VirtualKeyboard, _super);
+            function VirtualKeyboard() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this.onKeyPressObservable = new BABYLON.Observable();
+                _this.defaultButtonWidth = "40px";
+                _this.defaultButtonHeight = "40px";
+                _this.defaultButtonPaddingLeft = "2px";
+                _this.defaultButtonPaddingRight = "2px";
+                _this.defaultButtonPaddingTop = "2px";
+                _this.defaultButtonPaddingBottom = "2px";
+                _this.defaultButtonColor = "#DDD";
+                _this.defaultButtonBackground = "#070707";
+                return _this;
+            }
+            VirtualKeyboard.prototype._getTypeName = function () {
+                return "VirtualKeyboard";
+            };
+            VirtualKeyboard.prototype._createKey = function (key, propertySet) {
+                var _this = this;
+                var button = GUI.Button.CreateSimpleButton(key, key);
+                button.width = propertySet && propertySet.width ? propertySet.width : this.defaultButtonWidth;
+                button.height = propertySet && propertySet.height ? propertySet.height : this.defaultButtonHeight;
+                button.color = propertySet && propertySet.color ? propertySet.color : this.defaultButtonColor;
+                button.background = propertySet && propertySet.background ? propertySet.background : this.defaultButtonBackground;
+                button.paddingLeft = propertySet && propertySet.paddingLeft ? propertySet.paddingLeft : this.defaultButtonPaddingLeft;
+                button.paddingRight = propertySet && propertySet.paddingRight ? propertySet.paddingRight : this.defaultButtonPaddingRight;
+                button.paddingTop = propertySet && propertySet.paddingTop ? propertySet.paddingTop : this.defaultButtonPaddingTop;
+                button.paddingBottom = propertySet && propertySet.paddingBottom ? propertySet.paddingBottom : this.defaultButtonPaddingBottom;
+                button.thickness = 0;
+                button.isFocusInvisible = true;
+                button.onPointerUpObservable.add(function () {
+                    _this.onKeyPressObservable.notifyObservers(key);
+                });
+                return button;
+            };
+            VirtualKeyboard.prototype.addKeysRow = function (keys, propertySets) {
+                var panel = new GUI.StackPanel();
+                panel.isVertical = false;
+                panel.isFocusInvisible = true;
+                for (var i = 0; i < keys.length; i++) {
+                    var properties = null;
+                    if (propertySets && propertySets.length === keys.length) {
+                        properties = propertySets[i];
+                    }
+                    panel.addControl(this._createKey(keys[i], properties));
+                }
+                this.addControl(panel);
+            };
+            Object.defineProperty(VirtualKeyboard.prototype, "connectedInputText", {
+                get: function () {
+                    return this._connectedInputText;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            VirtualKeyboard.prototype.connect = function (input) {
+                var _this = this;
+                this.isVisible = false;
+                this._connectedInputText = input;
+                // Events hooking
+                this._onFocusObserver = input.onFocusObservable.add(function () {
+                    _this.isVisible = true;
+                });
+                this._onBlurObserver = input.onBlurObservable.add(function () {
+                    _this.isVisible = false;
+                });
+                this._onKeyPressObserver = this.onKeyPressObservable.add(function (key) {
+                    switch (key) {
+                        case "\u2190":
+                            _this._connectedInputText.processKey(8);
+                            return;
+                        case "\u21B5":
+                            _this._connectedInputText.processKey(13);
+                            return;
+                    }
+                    _this._connectedInputText.processKey(-1, key);
+                });
+            };
+            VirtualKeyboard.prototype.disconnect = function () {
+                if (!this._connectedInputText) {
+                    return;
+                }
+                this._connectedInputText.onFocusObservable.remove(this._onFocusObserver);
+                this._connectedInputText.onBlurObservable.remove(this._onBlurObserver);
+                this.onKeyPressObservable.remove(this._onKeyPressObserver);
+                this._connectedInputText = null;
+            };
+            // Statics
+            VirtualKeyboard.CreateDefaultLayout = function () {
+                var returnValue = new VirtualKeyboard();
+                returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
+                returnValue.addKeysRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]);
+                returnValue.addKeysRow(["a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\u21B5"]);
+                returnValue.addKeysRow(["z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
+                returnValue.addKeysRow([" "], [{ width: "200px" }]);
+                return returnValue;
+            };
+            return VirtualKeyboard;
+        }(GUI.StackPanel));
+        GUI.VirtualKeyboard = VirtualKeyboard;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));

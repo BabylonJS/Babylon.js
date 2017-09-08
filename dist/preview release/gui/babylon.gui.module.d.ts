@@ -1,14 +1,21 @@
 /// <reference path="../../dist/preview release/babylon.d.ts" />
 declare module BABYLON.GUI {
+    interface IFocusableControl {
+        onFocus(): void;
+        onBlur(): void;
+        processKeyboard(evt: KeyboardEvent): void;
+    }
     class AdvancedDynamicTexture extends DynamicTexture {
         private _isDirty;
         private _renderObserver;
         private _resizeObserver;
+        private _preKeyboardObserver;
         private _pointerMoveObserver;
         private _pointerObserver;
-        private _canvasBlurObserver;
+        private _canvasPointerOutObserver;
         private _background;
         _rootContainer: Container;
+        _lastPickedControl: Control;
         _lastControlOver: Control;
         _lastControlDown: Control;
         _capturingControl: Control;
@@ -20,12 +27,14 @@ declare module BABYLON.GUI {
         private _idealWidth;
         private _idealHeight;
         private _renderAtIdealSize;
+        private _focusedControl;
         background: string;
         idealWidth: number;
         idealHeight: number;
         renderAtIdealSize: boolean;
         readonly layer: Layer;
         readonly rootContainer: Container;
+        focusedControl: IFocusableControl;
         constructor(name: string, width: number, height: number, scene: Scene, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         markAsDirty(): void;
@@ -39,7 +48,7 @@ declare module BABYLON.GUI {
         private _doPicking(x, y, type);
         attach(): void;
         attachToMesh(mesh: AbstractMesh, supportPointerMove?: boolean): void;
-        private _attachToOnBlur(scene);
+        private _attachToOnPointerOut(scene);
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean): AdvancedDynamicTexture;
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Scene): AdvancedDynamicTexture;
     }
@@ -159,6 +168,7 @@ declare module BABYLON.GUI {
         private _doNotRender;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
+        isFocusInvisible: boolean;
         protected _linkOffsetX: ValueAndUnit;
         protected _linkOffsetY: ValueAndUnit;
         readonly typeName: string;
@@ -249,6 +259,7 @@ declare module BABYLON.GUI {
         forcePointerUp(): void;
         _processObservables(type: number, x: number, y: number): boolean;
         private _prepareFont();
+        dispose(): void;
         private static _HORIZONTAL_ALIGNMENT_LEFT;
         private static _HORIZONTAL_ALIGNMENT_RIGHT;
         private static _HORIZONTAL_ALIGNMENT_CENTER;
@@ -300,6 +311,7 @@ declare module BABYLON.GUI {
         _processPicking(x: number, y: number, type: number): boolean;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        dispose(): void;
     }
 }
 
@@ -584,23 +596,77 @@ declare module BABYLON.GUI {
 
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
 declare module BABYLON.GUI {
-    class InputText extends Control {
+    class InputText extends Control implements IFocusableControl {
         name: string;
         private _text;
         private _background;
+        private _focusedBackground;
         private _thickness;
         private _margin;
         private _autoStretchWidth;
         private _maxWidth;
+        private _isFocused;
+        private _blinkTimeout;
+        private _blinkIsEven;
+        private _cursorOffset;
+        private _scrollLeft;
+        promptMessage: string;
+        onTextChangedObservable: Observable<InputText>;
+        onFocusObservable: Observable<InputText>;
+        onBlurObservable: Observable<InputText>;
         maxWidth: string | number;
         margin: string;
         autoStretchWidth: boolean;
         thickness: number;
+        focusedBackground: string;
         background: string;
         text: string;
         constructor(name?: string, text?: string);
+        onBlur(): void;
+        onFocus(): void;
         protected _getTypeName(): string;
+        processKey(keyCode: number, key?: string): void;
+        processKeyboard(evt: KeyboardEvent): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _onPointerDown(coordinates: Vector2): boolean;
+        protected _onPointerUp(coordinates: Vector2): void;
+        dispose(): void;
+    }
+}
+
+/// <reference path="../../../dist/preview release/babylon.d.ts" />
+declare module BABYLON.GUI {
+    class KeyPropertySet {
+        width?: string;
+        height?: string;
+        paddingLeft?: string;
+        paddingRight?: string;
+        paddingTop?: string;
+        paddingBottom?: string;
+        color?: string;
+        background?: string;
+    }
+    class VirtualKeyboard extends StackPanel {
+        onKeyPressObservable: Observable<string>;
+        defaultButtonWidth: string;
+        defaultButtonHeight: string;
+        defaultButtonPaddingLeft: string;
+        defaultButtonPaddingRight: string;
+        defaultButtonPaddingTop: string;
+        defaultButtonPaddingBottom: string;
+        defaultButtonColor: string;
+        defaultButtonBackground: string;
+        protected _getTypeName(): string;
+        private _createKey(key, propertySet?);
+        addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void;
+        private _connectedInputText;
+        private _onFocusObserver;
+        private _onBlurObserver;
+        private _onKeyPressObserver;
+        readonly connectedInputText: InputText;
+        connect(input: InputText): void;
+        disconnect(): void;
+        static CreateDefaultLayout(): VirtualKeyboard;
     }
 }
 

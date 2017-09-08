@@ -444,8 +444,18 @@
             }
         }
 
-        private _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void {
+        private _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
             var index: number;
+            let engine = this._scene.getEngine();
+
+            if (depthOnlySubMeshes.length) {
+                engine.setColorWrite(false);            
+                for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                    this._renderSubMeshForShadowMap(depthOnlySubMeshes.data[index]);
+                }
+                engine.setColorWrite(true);
+            }
+            
             for (index = 0; index < opaqueSubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(opaqueSubMeshes.data[index]);
             }

@@ -12,7 +12,6 @@ module BABYLON.GLTF2 {
         private _errorCallback: (message: string) => void;
         private _renderReady: boolean = false;
         private _disposed: boolean = false;
-        private _objectURLs: string[] = new Array<string>();
         private _blockPendingTracking: boolean = false;
         private _nonBlockingData: Array<any>;
 
@@ -68,8 +67,13 @@ module BABYLON.GLTF2 {
             this._disposed = true;
 
             // Revoke object urls created during load
-            this._objectURLs.forEach(url => URL.revokeObjectURL(url));
-            this._objectURLs.length = 0;
+            if (this._gltf.textures) {
+                this._gltf.textures.forEach(texture => {
+                    if (texture.url) {
+                        URL.revokeObjectURL(texture.url);
+                    }
+                });
+            }
 
             this._gltf = undefined;
             this._babylonScene = undefined;
@@ -158,7 +162,7 @@ module BABYLON.GLTF2 {
 
             var binaryBuffer: IGLTFBuffer;
             var buffers = this._gltf.buffers;
-            if (buffers.length > 0 && buffers[0].uri === undefined) {
+            if (buffers && buffers[0].uri === undefined) {
                 binaryBuffer = buffers[0];
             }
 
@@ -182,10 +186,12 @@ module BABYLON.GLTF2 {
             rootMesh.rotation.y = Math.PI;
 
             var nodes = this._gltf.nodes;
-            for (var i = 0; i < nodes.length; i++) {
-                var mesh = nodes[i].babylonMesh;
-                if (mesh && !mesh.parent) {
-                    mesh.parent = rootMesh;
+            if (nodes) {
+                for (var i = 0; i < nodes.length; i++) {
+                    var mesh = nodes[i].babylonMesh;
+                    if (mesh && !mesh.parent) {
+                        mesh.parent = rootMesh;
+                    }
                 }
             }
         }
@@ -1131,6 +1137,8 @@ module BABYLON.GLTF2 {
                     Tools.Warn("Invalid alpha mode '" + material.alphaMode + "'");
                     break;
             }
+
+            babylonMaterial.alphaCutOff = material.alphaCutoff === undefined ? 0.5 : material.alphaCutoff;
         }
 
         public loadTexture(textureInfo: IGLTFTextureInfo): Texture {
@@ -1141,31 +1149,13 @@ module BABYLON.GLTF2 {
                 return null;
             }
 
-            // check the cache first
-            var babylonTexture: Texture;
-            if (texture.babylonTextures) {
-                babylonTexture = texture.babylonTextures[texCoord];
-                if (!babylonTexture) {
-                    for (var i = 0; i < texture.babylonTextures.length; i++) {
-                        babylonTexture = texture.babylonTextures[i];
-                        if (babylonTexture) {
-                            babylonTexture = babylonTexture.clone();
-                            babylonTexture.coordinatesIndex = texCoord;
-                            break;
-                        }
-                    }
-                }
-
-                return babylonTexture;
-            }
-
             var source = this._gltf.images[texture.source];
             var sampler = (texture.sampler === undefined ? <IGLTFSampler>{} : this._gltf.samplers[texture.sampler]);
             var noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
             var samplingMode = GLTFUtils.GetTextureSamplingMode(sampler.magFilter, sampler.minFilter);
 
             this.addPendingData(texture);
-            babylonTexture = new Texture(null, this._babylonScene, noMipMaps, false, samplingMode, () => {
+            var babylonTexture = new Texture(null, this._babylonScene, noMipMaps, false, samplingMode, () => {
                 if (!this._disposed) {
                     this.removePendingData(texture);
                 }
@@ -1176,37 +1166,47 @@ module BABYLON.GLTF2 {
                 }
             });
 
-            var setTextureData = data => {
-                var url = URL.createObjectURL(new Blob([data], { type: source.mimeType }));
-                this._objectURLs.push(url);
-                babylonTexture.updateURL(url);
-            };
-
-            if (!source.uri) {
-                var bufferView = this._gltf.bufferViews[source.bufferView];
-                this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, 1, EComponentType.UNSIGNED_BYTE, setTextureData);
+            if (texture.url) {
+                babylonTexture.updateURL(texture.url);
             }
-            else if (GLTFUtils.IsBase64(source.uri)) {
-                setTextureData(new Uint8Array(GLTFUtils.DecodeBase64(source.uri)));
+            else if (texture.dataReadyObservable) {
+                texture.dataReadyObservable.add(texture => {
+                    babylonTexture.updateURL(texture.url);
+                });
             }
             else {
-                Tools.LoadFile(this._rootUrl + source.uri, setTextureData, event => {
-                    if (!this._disposed) {
-                        this._onProgress(event);
-                    }
-                }, this._babylonScene.database, true, request => {
-                    this._onError("Failed to load file '" + source.uri + "': " + request.status + " " + request.statusText);
+                texture.dataReadyObservable = new Observable<IGLTFTexture>();
+                texture.dataReadyObservable.add(texture => {
+                    babylonTexture.updateURL(texture.url);
                 });
+
+                var setTextureData = data => {
+                    texture.url = URL.createObjectURL(new Blob([data], { type: source.mimeType }));
+                    texture.dataReadyObservable.notifyObservers(texture);
+                };
+
+                if (!source.uri) {
+                    var bufferView = this._gltf.bufferViews[source.bufferView];
+                    this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, 1, EComponentType.UNSIGNED_BYTE, setTextureData);
+                }
+                else if (GLTFUtils.IsBase64(source.uri)) {
+                    setTextureData(new Uint8Array(GLTFUtils.DecodeBase64(source.uri)));
+                }
+                else {
+                    Tools.LoadFile(this._rootUrl + source.uri, setTextureData, event => {
+                        if (!this._disposed) {
+                            this._onProgress(event);
+                        }
+                    }, this._babylonScene.database, true, request => {
+                        this._onError("Failed to load file '" + source.uri + "': " + request.status + " " + request.statusText);
+                    });
+                }
             }
 
             babylonTexture.coordinatesIndex = texCoord;
             babylonTexture.wrapU = GLTFUtils.GetTextureWrapMode(sampler.wrapS);
             babylonTexture.wrapV = GLTFUtils.GetTextureWrapMode(sampler.wrapT);
             babylonTexture.name = texture.name || "texture" + textureInfo.index;
-
-            // Cache the texture
-            texture.babylonTextures = texture.babylonTextures || [];
-            texture.babylonTextures[texCoord] = babylonTexture;
 
             if (this._parent.onTextureLoaded) {
                 this._parent.onTextureLoaded(babylonTexture);

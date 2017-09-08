@@ -102,7 +102,9 @@ module BABYLON {
                 this._effect = this._scene.getEngine().createEffect("geometry",
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix", "view"],
-                    ["diffuseSampler"], join);
+                    ["diffuseSampler"], join,
+                    null, null, null,
+                    { buffersCount: this._enablePosition ? 3 : 2 });
             }
 
             return this._effect.isReady();
@@ -180,8 +182,16 @@ module BABYLON {
                 }
             };
 
-            this._multiRenderTarget.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>): void => {
+            this._multiRenderTarget.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
                 var index;
+
+                if (depthOnlySubMeshes.length) {
+                    engine.setColorWrite(false);            
+                    for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                        renderSubMesh(depthOnlySubMeshes.data[index]);
+                    }
+                    engine.setColorWrite(true);
+                }                  
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
