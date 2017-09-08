@@ -52,7 +52,7 @@ namespace Max2Babylon
                     Y = babylonCamera.rotation[1],
                     Z = babylonCamera.rotation[2]
                 };
-                gltfNode.rotation = rotationVector3.toQuaternionGltf().ToArray();
+                gltfNode.rotation = rotationVector3.toQuaternion().ToArray();
             }
             // No scaling defined for babylon camera. Use identity instead.
             gltfNode.scale = new float[3] { 1, 1, 1 };
