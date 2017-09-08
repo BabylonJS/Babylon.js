@@ -39324,7 +39324,6 @@ var BABYLON;
             this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
             this._vertexData[arrayOffset + 9] = sprite.invertV ? 1 : 0;
             var offset = (sprite.cellIndex / rowSize) >> 0;
-            console.log(sprite.cellIndex, rowSize, offset, sprite.cellIndex - offset * rowSize);
             this._vertexData[arrayOffset + 10] = sprite.cellIndex - offset * rowSize;
             this._vertexData[arrayOffset + 11] = offset;
             // Color
@@ -39419,6 +39418,13 @@ var BABYLON;
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
             // Draw order
+            engine.setDepthFunctionToLessOrEqual();
+            effect.setBool("alphaTest", true);
+            engine.setColorWrite(false);
+            engine.draw(true, 0, max * 6);
+            engine.setColorWrite(true);
+            effect.setBool("alphaTest", false);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
             engine.draw(true, 0, max * 6);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
         };
@@ -40553,8 +40559,13 @@ var BABYLON;
         var random = Math.random();
         return ((random * (max - min)) + min);
     };
+    // export interface IAnimationSheet{
+    //     cellWidth: number;
+    //     cellHeight: number;
+    // }
     var ParticleSystem = (function () {
-        function ParticleSystem(name, capacity, scene, customEffect) {
+        function ParticleSystem(name, capacity, scene, customEffect, cellSize, epsilon) {
+            if (epsilon === void 0) { epsilon = 0.01; }
             var _this = this;
             this.name = name;
             // Members
@@ -40658,6 +40669,15 @@ var BABYLON;
                     }
                 }
             };
+            this._epsilon = epsilon;
+            if (cellSize.width && cellSize.height) {
+                this.cellWidth = cellSize.width;
+                this.cellHeight = cellSize.height;
+            }
+            else if (cellSize !== undefined) {
+                this.cellWidth = cellSize;
+                this.cellHeight = cellSize;
+            }
         }
         Object.defineProperty(ParticleSystem.prototype, "onDispose", {
             set: function (callback) {
@@ -40707,9 +40727,7 @@ var BABYLON;
         ParticleSystem.prototype.stop = function () {
             this._stopped = true;
         };
-        ParticleSystem.prototype._appendParticleVertex = function (index, particle, offsetX, offsetY) {
-            var baseSize = this.particleTexture.getBaseSize();
-            var rowSize = baseSize.width / 64;
+        ParticleSystem.prototype._appendParticleVertex = function (index, particle, offsetX, offsetY, rowSize) {
             var offset = index * 15;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
@@ -40722,12 +40740,21 @@ var BABYLON;
             this._vertexData[offset + 8] = particle.size;
             this._vertexData[offset + 9] = offsetX;
             this._vertexData[offset + 10] = offsetY;
-            this._vertexData[offset + 11] = 0;
-            this._vertexData[offset + 12] = 0;
-            var newOffset = (2 / rowSize) >> 0;
-            this._vertexData[offset + 13] = 2 - newOffset * rowSize;
-            this._vertexData[offset + 14] = newOffset;
-            console.log(rowSize, newOffset, 2 - newOffset * rowSize);
+            if (offsetX === 0)
+                offsetX = this._epsilon;
+            else if (offsetX === 1)
+                offsetX = 1 - this._epsilon;
+            if (offsetY === 0)
+                offsetY = this._epsilon;
+            else if (offsetY === 1)
+                offsetY = 1 - this._epsilon;
+            this._vertexData[offset + 11] = this.invertU ? 1 : 0;
+            this._vertexData[offset + 12] = this.invertV ? 1 : 0;
+            var rowOffset = (this.cellIndex / rowSize) >> 0;
+            // which column
+            this._vertexData[offset + 13] = this.cellIndex - rowOffset * rowSize;
+            // which row (1 or 2 or three)
+            this._vertexData[offset + 14] = rowOffset;
         };
         ParticleSystem.prototype._update = function (newParticles) {
             // Update current
@@ -40834,14 +40861,16 @@ var BABYLON;
                     }
                 }
             }
+            var baseSize = this.particleTexture.getBaseSize();
+            var rowSize = baseSize.width / this.cellWidth;
             // Update VBO
             var offset = 0;
             for (var index = 0; index < this.particles.length; index++) {
                 var particle = this.particles[index];
-                this._appendParticleVertex(offset++, particle, 0, 0);
-                this._appendParticleVertex(offset++, particle, 1, 0);
-                this._appendParticleVertex(offset++, particle, 1, 1);
-                this._appendParticleVertex(offset++, particle, 0, 1);
+                this._appendParticleVertex(offset++, particle, 0, 0, rowSize);
+                this._appendParticleVertex(offset++, particle, 1, 0, rowSize);
+                this._appendParticleVertex(offset++, particle, 1, 1, rowSize);
+                this._appendParticleVertex(offset++, particle, 0, 1, rowSize);
             }
             this._vertexBuffer.update(this._vertexData);
         };
@@ -40863,7 +40892,7 @@ var BABYLON;
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
             var baseSize = this.particleTexture.getBaseSize();
-            effect.setFloat2("textureInfos", 64 / baseSize.width, 64 / baseSize.height);
+            effect.setFloat2("textureInfos", this.cellWidth / baseSize.width, this.cellHeight / baseSize.height);
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
             if (this._scene.clipPlane) {
                 var clipPlane = this._scene.clipPlane;
