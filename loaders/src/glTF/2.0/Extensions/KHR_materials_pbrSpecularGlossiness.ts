@@ -40,7 +40,6 @@ module BABYLON.GLTF2.Extensions {
 
             if (properties.diffuseTexture) {
                 babylonMaterial.albedoTexture = loader.loadTexture(properties.diffuseTexture);
-                loader.loadMaterialAlphaProperties(material);
             }
 
             if (properties.specularGlossinessTexture) {
