@@ -46,6 +46,11 @@
                 changed = true;
             }
 
+            if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
+                defines["DEPTHPREPASS"] = !defines["DEPTHPREPASS"];
+                changed = true;
+            }            
+
             if (defines["INSTANCES"] !== useInstances) {
                 defines["INSTANCES"] = useInstances;
                 changed = true;

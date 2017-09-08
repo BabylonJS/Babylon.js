@@ -57,6 +57,15 @@ module BABYLON {
         public inertialPanningY: number = 0;
 
         @serialize()
+        public pinchToPanMaxDistance: number = 2;
+
+        @serialize()
+        public panningDistanceLimit: number = null;
+
+        @serializeAsVector3()
+        public panningOriginTarget: Vector3 = Vector3.Zero();
+
+        @serialize()
         public panningInertia = 0.9;
 
         //-- begin properties for backward compatibility for inputs
@@ -365,8 +374,8 @@ module BABYLON {
         /**
          * Restored camera state. You must call storeState() first
          */
-        public restoreState(): boolean {
-            if (!super.restoreState()) {
+        public _restoreStateValues(): boolean {
+            if (!super._restoreStateValues()) {
                 return false;
             }
 
@@ -382,7 +391,7 @@ module BABYLON {
             this.inertialPanningY = 0;
         
             return true;
-        }             
+        }
 
         // Synchronized
         public _isSynchronizedViewMatrix(): boolean {
@@ -467,7 +476,16 @@ module BABYLON {
                 }
 
                 if (!this._targetHost) {
-                    this._target.addInPlace(this._transformedDirection);
+                    if (this.panningDistanceLimit) {
+                        this._transformedDirection.addInPlace(this._target);
+                        var distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
+                        if (distanceSquared <= (this.panningDistanceLimit * this.panningDistanceLimit)) {
+                            this._target.copyFrom(this._transformedDirection);
+                        }
+                    }
+                    else {
+                        this._target.addInPlace(this._transformedDirection);
+                    }
                 }
 
                 this.inertialPanningX *= this.panningInertia;

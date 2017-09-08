@@ -168,6 +168,7 @@ declare module BABYLON.GUI {
         private _doNotRender;
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
+        isFocusInvisible: boolean;
         protected _linkOffsetX: ValueAndUnit;
         protected _linkOffsetY: ValueAndUnit;
         readonly typeName: string;
@@ -258,6 +259,7 @@ declare module BABYLON.GUI {
         forcePointerUp(): void;
         _processObservables(type: number, x: number, y: number): boolean;
         private _prepareFont();
+        dispose(): void;
         private static _HORIZONTAL_ALIGNMENT_LEFT;
         private static _HORIZONTAL_ALIGNMENT_RIGHT;
         private static _HORIZONTAL_ALIGNMENT_CENTER;
@@ -309,6 +311,7 @@ declare module BABYLON.GUI {
         _processPicking(x: number, y: number, type: number): boolean;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        dispose(): void;
     }
 }
 
@@ -607,6 +610,10 @@ declare module BABYLON.GUI {
         private _blinkIsEven;
         private _cursorOffset;
         private _scrollLeft;
+        promptMessage: string;
+        onTextChangedObservable: Observable<InputText>;
+        onFocusObservable: Observable<InputText>;
+        onBlurObservable: Observable<InputText>;
         maxWidth: string | number;
         margin: string;
         autoStretchWidth: boolean;
@@ -618,9 +625,47 @@ declare module BABYLON.GUI {
         onBlur(): void;
         onFocus(): void;
         protected _getTypeName(): string;
+        processKey(keyCode: number, key?: string): void;
         processKeyboard(evt: KeyboardEvent): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _onPointerDown(coordinates: Vector2): boolean;
         protected _onPointerUp(coordinates: Vector2): void;
+        dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    class KeyPropertySet {
+        width?: string;
+        height?: string;
+        paddingLeft?: string;
+        paddingRight?: string;
+        paddingTop?: string;
+        paddingBottom?: string;
+        color?: string;
+        background?: string;
+    }
+    class VirtualKeyboard extends StackPanel {
+        onKeyPressObservable: Observable<string>;
+        defaultButtonWidth: string;
+        defaultButtonHeight: string;
+        defaultButtonPaddingLeft: string;
+        defaultButtonPaddingRight: string;
+        defaultButtonPaddingTop: string;
+        defaultButtonPaddingBottom: string;
+        defaultButtonColor: string;
+        defaultButtonBackground: string;
+        protected _getTypeName(): string;
+        private _createKey(key, propertySet?);
+        addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void;
+        private _connectedInputText;
+        private _onFocusObserver;
+        private _onBlurObserver;
+        private _onKeyPressObserver;
+        readonly connectedInputText: InputText;
+        connect(input: InputText): void;
+        disconnect(): void;
+        static CreateDefaultLayout(): VirtualKeyboard;
     }
 }

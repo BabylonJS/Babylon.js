@@ -29,6 +29,22 @@ module BABYLON {
             return this._textures[this._textures.length - 1];
         }
 
+        public set wrapU (wrap: number) {
+            if (this._textures) {
+                for (var i = 0; i < this._textures.length; i++) {
+                    this._textures[i].wrapU = wrap;
+                }
+            }
+        }
+
+        public set wrapV (wrap: number) {
+            if (this._textures) {
+                for (var i = 0; i < this._textures.length; i++) {
+                    this._textures[i].wrapV = wrap;
+                }
+            }
+        }
+
         constructor(name: string, size: any, count: number, scene: Scene, options?: any) {
             options = options || {};
 

@@ -40,7 +40,7 @@ uniform mat4 projection;
 void main()
 {
 	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
-	float depth = abs(texture(textureSampler, vUV).r);
+	float depth = abs(texture2D(textureSampler, vUV).r);
 	vec3 normal = texture2D(normalSampler, vUV).rgb; 
 	float occlusion = 0.0;
 	float correctedRadius = min(radius, minZAspect * depth / near);
@@ -76,7 +76,7 @@ void main()
 	   }
 	  
 		// get sample linearDepth:
-	   float sampleDepth = abs(texture(textureSampler, offset.xy).r);
+	   float sampleDepth = abs(texture2D(textureSampler, offset.xy).r);
 		// range check & accumulate:
 	   float rangeCheck = abs(depth - sampleDepth) < correctedRadius ? 1.0 : 0.0;
 	   difference = samplePosition.z - sampleDepth;

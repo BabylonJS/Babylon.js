@@ -486,10 +486,20 @@ module BABYLON {
                 }
             };
 
-            this._mainTexture.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
+            this._mainTexture.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
                 this.onBeforeRenderMainTextureObservable.notifyObservers(this);
 
                 var index: number;
+
+                let engine = this._scene.getEngine();
+                
+                if (depthOnlySubMeshes.length) {
+                    engine.setColorWrite(false);            
+                    for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                        renderSubMesh(depthOnlySubMeshes.data[index]);
+                    }
+                    engine.setColorWrite(true);
+                }                
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
