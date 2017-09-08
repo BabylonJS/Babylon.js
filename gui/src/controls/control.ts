@@ -47,6 +47,7 @@ module BABYLON.GUI {
 
         public isHitTestVisible = true;
         public isPointerBlocker = false;
+        public isFocusInvisible = false;
 
         protected _linkOffsetX = new ValueAndUnit(0);
         protected _linkOffsetY = new ValueAndUnit(0);
@@ -857,6 +858,15 @@ module BABYLON.GUI {
             this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
         
             this._fontOffset = Control._GetFontOffset(this._font);
+        }
+
+        public dispose() {
+            this.onDirtyObservable.clear();
+            this.onPointerDownObservable.clear();
+            this.onPointerEnterObservable.clear();
+            this.onPointerMoveObservable.clear();
+            this.onPointerOutObservable.clear();
+            this.onPointerUpObservable.clear();
         }
 
         // Statics

@@ -63,6 +63,8 @@ module BABYLON.GUI {
             }
             control._link(this, this._host);
 
+            control._markAllAsDirty();
+
             this._reOrderControl(control);
 
             this._markAsDirty();
@@ -175,6 +177,14 @@ module BABYLON.GUI {
             super._additionalProcessing(parentMeasure, context);
 
             this._measureForChildren.copyFrom(this._currentMeasure);
+        }
+
+        public dispose() {
+            super.dispose();
+
+            for (var control of this._children) {
+                control.dispose();
+            }
         }
     }    
 }

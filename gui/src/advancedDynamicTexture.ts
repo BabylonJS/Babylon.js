@@ -193,6 +193,8 @@ module BABYLON.GUI {
                 this._layerToDispose = null;
             }
 
+            this._rootContainer.dispose();
+
             super.dispose();
         }
 
@@ -328,6 +330,10 @@ module BABYLON.GUI {
             // Focus management
             if (this._focusedControl) {
                 if (this._focusedControl !== (<any>this._lastPickedControl)) {
+                    if (this._lastPickedControl.isFocusInvisible) {
+                        return;
+                    }
+
                     this.focusedControl = null;
                 }
             }

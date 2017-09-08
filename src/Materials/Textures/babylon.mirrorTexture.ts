@@ -61,6 +61,8 @@ module BABYLON {
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
+            this.ignoreCameraViewport = true;
+
             this.onBeforeRenderObservable.add(() => {
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
                 this._savedViewMatrix = scene.getViewMatrix();
