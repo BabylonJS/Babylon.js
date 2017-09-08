@@ -4106,12 +4106,12 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var KeyOptions = (function () {
-            function KeyOptions() {
+        var KeyPropertySet = (function () {
+            function KeyPropertySet() {
             }
-            return KeyOptions;
+            return KeyPropertySet;
         }());
-        GUI.KeyOptions = KeyOptions;
+        GUI.KeyPropertySet = KeyPropertySet;
         var VirtualKeyboard = (function (_super) {
             __extends(VirtualKeyboard, _super);
             function VirtualKeyboard() {
@@ -4130,17 +4130,17 @@ var BABYLON;
             VirtualKeyboard.prototype._getTypeName = function () {
                 return "VirtualKeyboard";
             };
-            VirtualKeyboard.prototype._createKey = function (key, options) {
+            VirtualKeyboard.prototype._createKey = function (key, propertySet) {
                 var _this = this;
                 var button = GUI.Button.CreateSimpleButton(key, key);
-                button.width = options && options.width ? options.width : this.defaultButtonWidth;
-                button.height = options && options.height ? options.height : this.defaultButtonHeight;
-                button.color = options && options.color ? options.color : this.defaultButtonColor;
-                button.background = options && options.background ? options.background : this.defaultButtonBackground;
-                button.paddingLeft = options && options.paddingLeft ? options.paddingLeft : this.defaultButtonPaddingLeft;
-                button.paddingRight = options && options.paddingRight ? options.paddingRight : this.defaultButtonPaddingRight;
-                button.paddingTop = options && options.paddingTop ? options.paddingTop : this.defaultButtonPaddingTop;
-                button.paddingBottom = options && options.paddingBottom ? options.paddingBottom : this.defaultButtonPaddingBottom;
+                button.width = propertySet && propertySet.width ? propertySet.width : this.defaultButtonWidth;
+                button.height = propertySet && propertySet.height ? propertySet.height : this.defaultButtonHeight;
+                button.color = propertySet && propertySet.color ? propertySet.color : this.defaultButtonColor;
+                button.background = propertySet && propertySet.background ? propertySet.background : this.defaultButtonBackground;
+                button.paddingLeft = propertySet && propertySet.paddingLeft ? propertySet.paddingLeft : this.defaultButtonPaddingLeft;
+                button.paddingRight = propertySet && propertySet.paddingRight ? propertySet.paddingRight : this.defaultButtonPaddingRight;
+                button.paddingTop = propertySet && propertySet.paddingTop ? propertySet.paddingTop : this.defaultButtonPaddingTop;
+                button.paddingBottom = propertySet && propertySet.paddingBottom ? propertySet.paddingBottom : this.defaultButtonPaddingBottom;
                 button.thickness = 0;
                 button.isFocusInvisible = true;
                 button.onPointerUpObservable.add(function () {
@@ -4148,16 +4148,16 @@ var BABYLON;
                 });
                 return button;
             };
-            VirtualKeyboard.prototype.addKeysRow = function (keys, options) {
+            VirtualKeyboard.prototype.addKeysRow = function (keys, propertySets) {
                 var panel = new GUI.StackPanel();
                 panel.isVertical = false;
                 panel.isFocusInvisible = true;
                 for (var i = 0; i < keys.length; i++) {
-                    var keyOptions = null;
-                    if (options && options.length === keys.length) {
-                        keyOptions = options[i];
+                    var properties = null;
+                    if (propertySets && propertySets.length === keys.length) {
+                        properties = propertySets[i];
                     }
-                    panel.addControl(this._createKey(keys[i], keyOptions));
+                    panel.addControl(this._createKey(keys[i], properties));
                 }
                 this.addControl(panel);
             };

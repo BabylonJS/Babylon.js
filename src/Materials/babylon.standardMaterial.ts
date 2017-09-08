@@ -429,6 +429,25 @@ module BABYLON {
             this._imageProcessingConfiguration.colorGradingTexture = value;
         }
 
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        public get cameraColorCurves(): ColorCurves {
+            return this._imageProcessingConfiguration.colorCurves;
+        }
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        public set cameraColorCurves(value: ColorCurves) {
+            this._imageProcessingConfiguration.colorCurves = value;
+        }        
+
         public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
 
         protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
