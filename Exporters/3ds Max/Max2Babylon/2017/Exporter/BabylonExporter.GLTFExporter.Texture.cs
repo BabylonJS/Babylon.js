@@ -1,18 +1,47 @@
 ﻿using BabylonExport.Entities;
 using GLTFExport.Entities;
+using System.Drawing;
+using System.IO;
 
 namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private GLTFTextureInfo ExportTexture(BabylonTexture babylonTexture, GLTF gltf)
+        /// <summary>
+        /// Export the texture using the parameters of babylonTexture except its name.
+        /// Write the bitmap file
+        /// </summary>
+        /// <param name="babylonTexture"></param>
+        /// <param name="bitmap"></param>
+        /// <param name="name"></param>
+        /// <param name="gltf"></param>
+        /// <returns></returns>
+        private GLTFTextureInfo ExportBitmapTexture(BabylonTexture babylonTexture, Bitmap bitmap, string name, GLTF gltf)
+        {
+            // Copy image to output
+            if (CopyTexturesToOutput)
+            {
+                var absolutePath = Path.Combine(gltf.OutputPath, name);
+                RaiseMessage($"GLTFExporter.Texture | write image '{name}' to '{absolutePath}'", 1);
+                bitmap.Save(absolutePath);
+            }
+
+            return ExportTexture(babylonTexture, gltf, name);
+        }
+
+        private GLTFTextureInfo ExportTexture(BabylonTexture babylonTexture, GLTF gltf, string name = null)
         {
             if (babylonTexture == null)
             {
                 return null;
             }
 
-            RaiseMessage("GLTFExporter.Texture | Export texture named: " + babylonTexture.name, 1);
+            if (name == null)
+            {
+                name = babylonTexture.name;
+            }
+
+            RaiseMessage("GLTFExporter.Texture | Export texture named: " + name, 1);
 
             // --------------------------
             // -------- Sampler ---------
@@ -42,7 +71,7 @@ namespace Max2Babylon
             RaiseMessage("GLTFExporter.Texture | create image", 2);
             GLTFImage gltfImage = new GLTFImage
             {
-                uri = babylonTexture.name
+                uri = name
             };
 
             gltfImage.index = gltf.ImagesList.Count;
@@ -56,7 +85,7 @@ namespace Max2Babylon
             RaiseMessage("GLTFExporter.Texture | create texture", 2);
             var gltfTexture = new GLTFTexture
             {
-                name = babylonTexture.name,
+                name = name,
                 sampler = gltfSampler.index,
                 source = gltfImage.index
             };
@@ -74,29 +103,6 @@ namespace Max2Babylon
 
 
             // TODO - Animations
-
-            //// Copy image to output
-            //var absolutePath = texture.Map.FullFilePath;
-            //try
-            //{
-            //    if (File.Exists(absolutePath))
-            //    {
-            //        if (CopyTexturesToOutput)
-            //        {
-            //            RaiseMessage("GLTFExporter.Texture | copy image src path = "+ absolutePath + " and dest path = "+ Path.Combine(gltf.OutputPath, gltfTexture.name));
-            //            File.Copy(absolutePath, Path.Combine(gltf.OutputPath, gltfTexture.name), true);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        RaiseWarning(string.Format("Texture {0} not found.", gltfTexture.name), 2);
-            //    }
-
-            //}
-            //catch
-            //{
-            //    // silently fails
-            //}
 
             return gltfTextureInfo;
         }

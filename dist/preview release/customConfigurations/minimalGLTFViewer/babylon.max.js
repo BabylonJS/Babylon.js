@@ -17710,6 +17710,7 @@ var BABYLON;
                     if (!pickResult) {
                         pickResult = this._currentPickResult;
                     }
+                    this._processPointerUp(pickResult, evt, clickInfo);
                     // Sprites
                     if (this.spriteManagers.length > 0) {
                         pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers);
