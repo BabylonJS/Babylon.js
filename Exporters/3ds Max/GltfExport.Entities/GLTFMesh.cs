@@ -11,6 +11,7 @@ namespace GLTFExport.Entities
         [DataMember(EmitDefaultValue = false)]
         public float[] weights { get; set; }
 
-        public GLTFNode gltfNode;
+        // Identifier shared between a babylon mesh and its instances
+        public int idGroupInstance;
     }
 }

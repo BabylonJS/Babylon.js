@@ -194,6 +194,7 @@
     <Compile Include="Exporter\BabylonExporter.GLTFExporter.Light.cs" />
     <Compile Include="Exporter\BabylonExporter.GLTFExporter.Material.cs" />
     <Compile Include="Exporter\BabylonExporter.GLTFExporter.Camera.cs" />
+    <Compile Include="Exporter\BabylonExporter.GLTFExporter.AbstractMesh.cs" />
     <Compile Include="Exporter\BabylonExporter.GLTFExporter.Texture.cs" />
     <Compile Include="Exporter\BabylonExporter.GLTFExporter.Mesh.cs" />
     <Compile Include="Exporter\BabylonExporter.GLTFExporter.cs" />

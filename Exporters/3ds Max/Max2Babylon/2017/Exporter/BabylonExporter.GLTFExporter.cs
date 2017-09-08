@@ -13,14 +13,22 @@ namespace Max2Babylon
     internal partial class BabylonExporter
     {
         List<BabylonMaterial> babylonMaterialsToExport;
-        GLTFNode gltfRootNode;
+
+        private List<BabylonNode> babylonNodes;
 
         public void ExportGltf(BabylonScene babylonScene, string outputFile, bool generateBinary)
         {
             RaiseMessage("GLTFExporter | Export outputFile=" + outputFile + " generateBinary=" + generateBinary);
             RaiseMessage("GLTFExporter | Exportation started", Color.Blue);
 
-            ReportProgressChanged(0);
+            float progressionStep;
+            var progression = 0.0f;
+            ReportProgressChanged((int)progression);
+
+            // Initialization
+            initBabylonNodes(babylonScene);
+            babylonMaterialsToExport = new List<BabylonMaterial>();
+
             var gltf = new GLTF(Path.GetDirectoryName(outputFile));
 
             // Asset
@@ -40,16 +48,23 @@ namespace Max2Babylon
             GLTFScene[] scenes = { scene };
             gltf.scenes = scenes;
 
-            // Nodes
-            List<BabylonNode> babylonNodes = getNodes(babylonScene);
+            // Meshes
+            RaiseMessage("GLTFExporter | Exporting meshes");
+            progression = 10.0f;
+            ReportProgressChanged((int)progression);
+            progressionStep = 40.0f / babylonScene.meshes.Length;
+            foreach (var babylonMesh in babylonScene.meshes)
+            {
+                ExportMesh(babylonMesh, gltf, babylonScene);
+                progression += progressionStep;
+                ReportProgressChanged((int)progression);
+                CheckCancelled();
+            }
 
             // Root nodes
             RaiseMessage("GLTFExporter | Exporting nodes");
             List<BabylonNode> babylonRootNodes = babylonNodes.FindAll(node => node.parentId == null);
-            var progressionStep = 80.0f / babylonRootNodes.Count;
-            var progression = 10.0f;
-            ReportProgressChanged((int)progression);
-            babylonMaterialsToExport = new List<BabylonMaterial>();
+            progressionStep = 40.0f / babylonRootNodes.Count;
             babylonRootNodes.ForEach(babylonNode =>
             {
                 exportNodeRec(babylonNode, gltf, babylonScene);
@@ -60,15 +75,17 @@ namespace Max2Babylon
 
             // TODO - Choose between this method and the reverse of X axis
             // Switch from left to right handed coordinate system
+            RaiseMessage("GLTFExporter | Exporting root node");
             var tmpNodesList = new List<int>(scene.NodesList);
             var rootNode = new BabylonMesh
             {
                 name = "root",
                 rotation = new float[] { 0, (float)Math.PI, 0 },
-                scaling = new float[] { 1, 1, -1 }
+                scaling = new float[] { 1, 1, -1 },
+                idGroupInstance = -1
             };
             scene.NodesList.Clear();
-            gltfRootNode = ExportMesh(rootNode as BabylonMesh, gltf, null, babylonScene);
+            GLTFNode gltfRootNode = ExportAbstractMesh(rootNode, gltf, null);
             gltfRootNode.ChildrenList.AddRange(tmpNodesList);
 
             // Materials
@@ -108,19 +125,56 @@ namespace Max2Babylon
             ReportProgressChanged(100);
         }
 
+        private List<BabylonNode> initBabylonNodes(BabylonScene babylonScene)
+        {
+            babylonNodes = new List<BabylonNode>();
+            if (babylonScene.meshes != null)
+            {
+                int idGroupInstance = 0;
+                foreach (var babylonMesh in babylonScene.meshes)
+                {
+                    var babylonAbstractMeshes = new List<BabylonAbstractMesh>();
+                    babylonAbstractMeshes.Add(babylonMesh);
+                    if (babylonMesh.instances != null)
+                    {
+                        babylonAbstractMeshes.AddRange(babylonMesh.instances);
+                    }
+
+                    // Add mesh and instances to node list
+                    babylonNodes.AddRange(babylonAbstractMeshes);
+
+                    // Tag mesh and instances with an identifier
+                    babylonAbstractMeshes.ForEach(babylonAbstractMesh => babylonAbstractMesh.idGroupInstance = idGroupInstance);
+
+                    idGroupInstance++;
+                }
+            }
+            if (babylonScene.lights != null)
+            {
+                babylonNodes.AddRange(babylonScene.lights);
+            }
+            if (babylonScene.cameras != null)
+            {
+                babylonNodes.AddRange(babylonScene.cameras);
+            }
+            return babylonNodes;
+        }
+
         private void exportNodeRec(BabylonNode babylonNode, GLTF gltf, BabylonScene babylonScene, GLTFNode gltfParentNode = null)
         {
-            GLTFNode gltfNode = null; 
-            if (babylonNode.GetType() == typeof(BabylonMesh))
+            GLTFNode gltfNode = null;
+            var type = babylonNode.GetType();
+            if (type == typeof(BabylonAbstractMesh) ||
+                type.IsSubclassOf(typeof(BabylonAbstractMesh)))
             {
-                gltfNode = ExportMesh(babylonNode as BabylonMesh, gltf, gltfParentNode, babylonScene);
+                gltfNode = ExportAbstractMesh(babylonNode as BabylonAbstractMesh, gltf, gltfParentNode);
             }
-            else if (babylonNode.GetType() == typeof(BabylonCamera))
+            else if (type == typeof(BabylonCamera))
             {
                 GLTFCamera gltfCamera = ExportCamera(babylonNode as BabylonCamera, gltf, gltfParentNode);
                 gltfNode = gltfCamera.gltfNode;
             }
-            else if (babylonNode.GetType() == typeof(BabylonLight))
+            else if (type == typeof(BabylonLight))
             {
                 if (isNodeRelevantToExport(babylonNode, babylonScene))
                 {
@@ -140,7 +194,7 @@ namespace Max2Babylon
 
             CheckCancelled();
 
-            // If parent is exported successfully...
+            // If node is exported successfully...
             if (gltfNode != null)
             {
                 // ...export its children
@@ -149,27 +203,8 @@ namespace Max2Babylon
             }
         }
 
-        private List<BabylonNode> getNodes(BabylonScene babylonScene)
-        {
-            List<BabylonNode> babylonNodes = new List<BabylonNode>();
-            if (babylonScene.meshes != null)
-            {
-                babylonNodes.AddRange(babylonScene.meshes);
-            }
-            if (babylonScene.lights != null)
-            {
-                babylonNodes.AddRange(babylonScene.lights);
-            }
-            if (babylonScene.cameras != null)
-            {
-                babylonNodes.AddRange(babylonScene.cameras);
-            }
-            return babylonNodes;
-        }
-
         private List<BabylonNode> getDescendants(BabylonNode babylonNode, BabylonScene babylonScene)
         {
-            List<BabylonNode> babylonNodes = getNodes(babylonScene);
             return babylonNodes.FindAll(node => node.parentId == babylonNode.id);
         }
 
@@ -179,7 +214,8 @@ namespace Max2Babylon
         private bool isNodeRelevantToExport(BabylonNode babylonNode, BabylonScene babylonScene)
         {
             var type = babylonNode.GetType();
-            if (type == typeof(BabylonMesh) ||
+            if (type == typeof(BabylonAbstractMesh) ||
+                type.IsSubclassOf(typeof(BabylonAbstractMesh)) ||
                 type == typeof(BabylonCamera))
             {
                 return true;
