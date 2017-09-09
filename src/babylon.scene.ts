@@ -706,6 +706,7 @@
         private _totalVertices = new PerfCounter();
         public _activeIndices = new PerfCounter();
         public _activeParticles = new PerfCounter();
+        private _interFrameDuration = new PerfCounter();
         private _lastFrameDuration = new PerfCounter();
         private _evaluateActiveMeshesDuration = new PerfCounter();
         private _renderTargetsDuration = new PerfCounter();
@@ -943,6 +944,14 @@
         }
 
         // Stats
+        public getInterFramePerfCounter(): number {
+            return this._interFrameDuration.current;
+        }
+
+        public get interFramePerfCounter(): PerfCounter {
+            return this._interFrameDuration;
+        }
+
         public getLastFrameDuration(): number {
             return this._lastFrameDuration.current;
         }
@@ -2597,8 +2606,30 @@
         public _isInIntermediateRendering(): boolean {
             return this._intermediateRendering
         }
+        
+        private _activeMeshesFrozen = false;
+
+        /**
+         * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
+         */
+        public freezeActiveMeshes(): Scene {
+            this._evaluateActiveMeshes();
+            this._activeMeshesFrozen = true;
+            return this;
+        }
+        
+        /**
+         * Use this function to restart evaluating active meshes on every frame
+         */
+        public unfreezeActiveMeshes() {
+            this._activeMeshesFrozen = false;
+            return this;
+        }
 
         private _evaluateActiveMeshes(): void {
+            if (this._activeMeshesFrozen && this._activeMeshes.length) {
+                return;
+            }
             this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
             this._renderingManager.reset();
@@ -2984,6 +3015,7 @@
                 return;
             }
 
+            this._interFrameDuration.endMonitoring();
             this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
@@ -3046,9 +3078,6 @@
                 this._currentStepId++;
 
                 if((internalSteps > 1) && (this._currentInternalStep != internalSteps - 1)) {
-                    // Q: can this be optimized by putting some code in the afterStep callback?
-                    // I had to put this code here, otherwise mesh attached to bones of another mesh skeleton,
-                    // would return incorrect positions for internal stepIds (non-rendered steps)
                     this._evaluateActiveMeshes();
                 }
               }
@@ -3202,6 +3231,7 @@
             }
 
             Tools.EndPerformanceCounter("Scene rendering");
+            this._interFrameDuration.beginMonitoring();           
             this._lastFrameDuration.endMonitoring();
             this._totalMeshesCounter.addCount(this.meshes.length, true);
             this._totalLightsCounter.addCount(this.lights.length, true);
