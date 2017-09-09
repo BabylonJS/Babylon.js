@@ -40906,7 +40906,7 @@ var BABYLON;
                     else {
                         this.cellIndex = this._toIndex;
                         if (this.disposeWhenFinishedAnimating) {
-                            this.dispose();
+                            this.ReadyForRecycling();
                         }
                     }
                 }
@@ -40936,7 +40936,7 @@ var BABYLON;
             other._time = this._time;
             other.disposeWhenFinishedAnimating = this.disposeWhenFinishedAnimating;
         };
-        Particle.prototype.dispose = function () {
+        Particle.prototype.ReadyForRecycling = function () {
             this.age = this.lifeTime;
         };
         return Particle;
