@@ -368,7 +368,7 @@
                     particle.cellIndex = this._fromIndex;
                 } else {
                     if (this.cellSize) {
-                        particle = new Particle(this, this.cellWidth, this.cellHeight, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time,this.disposeParticlesWhenFinishedAnimating);
+                        particle = new Particle(this, this.cellWidth, this.cellHeight, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time, this.disposeParticlesWhenFinishedAnimating);
                     }
                     else {
                         particle = new Particle(this);
@@ -506,31 +506,48 @@
                 var rowSize = baseSize.width / this.cellWidth;
                 var engine = this._scene.getEngine();
                 deltaTime = engine.getDeltaTime();
+
+                if (this._animationStarted) {
+                    this.appendParticleVertexes = this.appenedAllParticleVertexesWithSheetAndAnimationStarted;
+                }
+                else {
+                    this.appendParticleVertexes = this.appenedAllParticleVertexesWithSheet;
+                }
+            }
+            else {
+                this.appendParticleVertexes = this.appenedParticleVertexesNoSheet;
             }
 
             // Update VBO
             var offset = 0;
-            if (this.cellSize) {
-                for (var index = 0; index < this.particles.length; index++) {
-                    var particle = this.particles[index];
-                    this._appendParticleVertexWithAnimation(offset++, particle, 0, 0, rowSize);
-                    this._appendParticleVertexWithAnimation(offset++, particle, 1, 0, rowSize);
-                    this._appendParticleVertexWithAnimation(offset++, particle, 1, 1, rowSize);
-                    this._appendParticleVertexWithAnimation(offset++, particle, 0, 1, rowSize);
-                    particle._animate(deltaTime);
-                }
-            }
-            else {
-                for (var index = 0; index < this.particles.length; index++) {
-                    var particle = this.particles[index];
-                    this._appendParticleVertex(offset++, particle, 0, 0);
-                    this._appendParticleVertex(offset++, particle, 1, 0);
-                    this._appendParticleVertex(offset++, particle, 1, 1);
-                    this._appendParticleVertex(offset++, particle, 0, 1);
-                }
+            for (var index = 0; index < this.particles.length; index++) {
+                var particle = this.particles[index];
+                this.appendParticleVertexes(offset, particle, rowSize, deltaTime);
+                offset += 4;
             }
 
             this._vertexBuffer.update(this._vertexData);
+        }
+
+        public appendParticleVertexes: (offset: number, particle: Particle, rowSize: number, deltaTime: number) => void = null;
+
+        private appenedAllParticleVertexesWithSheet(offset: number, particle: Particle, rowSize: number, deltaTime: number) {
+            this._appendParticleVertexWithAnimation(offset++, particle, 0, 0, rowSize);
+            this._appendParticleVertexWithAnimation(offset++, particle, 1, 0, rowSize);
+            this._appendParticleVertexWithAnimation(offset++, particle, 1, 1, rowSize);
+            this._appendParticleVertexWithAnimation(offset++, particle, 0, 1, rowSize);
+        }
+
+        private appenedAllParticleVertexesWithSheetAndAnimationStarted(offset: number, particle: Particle, rowSize: number, deltaTime: number) {
+            this.appenedAllParticleVertexesWithSheet(offset, particle, rowSize, deltaTime);
+            particle._animate(deltaTime);
+        }
+
+        private appenedParticleVertexesNoSheet(offset: number, particle: Particle, rowSize: number, deltaTime: number) {
+            this._appendParticleVertex(offset++, particle, 0, 0);
+            this._appendParticleVertex(offset++, particle, 1, 0);
+            this._appendParticleVertex(offset++, particle, 1, 1);
+            this._appendParticleVertex(offset++, particle, 0, 1);
         }
 
         public rebuild(): void {

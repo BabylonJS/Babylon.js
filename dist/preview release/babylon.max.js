@@ -41020,6 +41020,7 @@ var BABYLON;
             this._sheetDirection = 1;
             this._time = 0;
             this._vertixBufferSize = 11;
+            this.appendParticleVertexes = null;
             this.id = name;
             this._capacity = capacity;
             this._epsilon = epsilon;
@@ -41325,29 +41326,40 @@ var BABYLON;
                 var rowSize = baseSize.width / this.cellWidth;
                 var engine = this._scene.getEngine();
                 deltaTime = engine.getDeltaTime();
-            }
-            // Update VBO
-            var offset = 0;
-            if (this.cellSize) {
-                for (var index = 0; index < this.particles.length; index++) {
-                    var particle = this.particles[index];
-                    this._appendParticleVertexWithAnimation(offset++, particle, 0, 0, rowSize);
-                    this._appendParticleVertexWithAnimation(offset++, particle, 1, 0, rowSize);
-                    this._appendParticleVertexWithAnimation(offset++, particle, 1, 1, rowSize);
-                    this._appendParticleVertexWithAnimation(offset++, particle, 0, 1, rowSize);
-                    particle._animate(deltaTime);
+                if (this._animationStarted) {
+                    this.appendParticleVertexes = this.appenedAllParticleVertexesWithSheetAndAnimationStarted;
+                }
+                else {
+                    this.appendParticleVertexes = this.appenedAllParticleVertexesWithSheet;
                 }
             }
             else {
-                for (var index = 0; index < this.particles.length; index++) {
-                    var particle = this.particles[index];
-                    this._appendParticleVertex(offset++, particle, 0, 0);
-                    this._appendParticleVertex(offset++, particle, 1, 0);
-                    this._appendParticleVertex(offset++, particle, 1, 1);
-                    this._appendParticleVertex(offset++, particle, 0, 1);
-                }
+                this.appendParticleVertexes = this.appenedParticleVertexesNoSheet;
+            }
+            // Update VBO
+            var offset = 0;
+            for (var index = 0; index < this.particles.length; index++) {
+                var particle = this.particles[index];
+                this.appendParticleVertexes(offset, particle, rowSize, deltaTime);
+                offset += 4;
             }
             this._vertexBuffer.update(this._vertexData);
+        };
+        ParticleSystem.prototype.appenedAllParticleVertexesWithSheet = function (offset, particle, rowSize, deltaTime) {
+            this._appendParticleVertexWithAnimation(offset++, particle, 0, 0, rowSize);
+            this._appendParticleVertexWithAnimation(offset++, particle, 1, 0, rowSize);
+            this._appendParticleVertexWithAnimation(offset++, particle, 1, 1, rowSize);
+            this._appendParticleVertexWithAnimation(offset++, particle, 0, 1, rowSize);
+        };
+        ParticleSystem.prototype.appenedAllParticleVertexesWithSheetAndAnimationStarted = function (offset, particle, rowSize, deltaTime) {
+            this.appenedAllParticleVertexesWithSheet(offset, particle, rowSize, deltaTime);
+            particle._animate(deltaTime);
+        };
+        ParticleSystem.prototype.appenedParticleVertexesNoSheet = function (offset, particle, rowSize, deltaTime) {
+            this._appendParticleVertex(offset++, particle, 0, 0);
+            this._appendParticleVertex(offset++, particle, 1, 0);
+            this._appendParticleVertex(offset++, particle, 1, 1);
+            this._appendParticleVertex(offset++, particle, 0, 1);
         };
         ParticleSystem.prototype.rebuild = function () {
             this._createIndexBuffer();
