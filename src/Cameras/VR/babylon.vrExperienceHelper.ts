@@ -18,6 +18,8 @@ module BABYLON {
                 if ((<FreeCamera>scene.activeCamera).rotation) {
                     newCamera.rotation = (<FreeCamera>scene.activeCamera).rotation.clone();
                 }
+                newCamera.minZ = this._scene.activeCamera.minZ;
+                newCamera.maxZ = this._scene.activeCamera.maxZ;
                 this._scene.activeCamera = newCamera;
             }
             this._position = this._scene.activeCamera.position;
