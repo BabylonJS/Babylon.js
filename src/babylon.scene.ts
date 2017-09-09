@@ -2606,8 +2606,30 @@
         public _isInIntermediateRendering(): boolean {
             return this._intermediateRendering
         }
+        
+        private _activeMeshesFrozen = false;
+
+        /**
+         * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
+         */
+        public freezeActiveMeshes(): Scene {
+            this._evaluateActiveMeshes();
+            this._activeMeshesFrozen = true;
+            return this;
+        }
+        
+        /**
+         * Use this function to restart evaluating active meshes on every frame
+         */
+        public unfreezeActiveMeshes() {
+            this._activeMeshesFrozen = false;
+            return this;
+        }
 
         private _evaluateActiveMeshes(): void {
+            if (this._activeMeshesFrozen && this._activeMeshes.length) {
+                return;
+            }
             this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
             this._renderingManager.reset();
@@ -3056,9 +3078,6 @@
                 this._currentStepId++;
 
                 if((internalSteps > 1) && (this._currentInternalStep != internalSteps - 1)) {
-                    // Q: can this be optimized by putting some code in the afterStep callback?
-                    // I had to put this code here, otherwise mesh attached to bones of another mesh skeleton,
-                    // would return incorrect positions for internal stepIds (non-rendered steps)
                     this._evaluateActiveMeshes();
                 }
               }
