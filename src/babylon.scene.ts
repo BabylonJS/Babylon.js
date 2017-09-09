@@ -731,6 +731,8 @@
 
         private _viewUpdateFlag = -1;
         private _projectionUpdateFlag = -1;
+        private _alternateViewUpdateFlag = -1;
+        private _alternateProjectionUpdateFlag = -1;
 
         public _toBeDisposed = new SmartArray<IDisposable>(256);
         private _pendingData = [];//ANY
@@ -749,6 +751,7 @@
 
         private _transformMatrix = Matrix.Zero();
         private _sceneUbo: UniformBuffer;
+        private _alternateSceneUbo: UniformBuffer;
 
         private _pickWithRayInverseMatrix: Matrix;
 
@@ -757,6 +760,15 @@
 
         private _viewMatrix: Matrix;
         private _projectionMatrix: Matrix;
+        private _alternateViewMatrix: Matrix;
+        private _alternateProjectionMatrix: Matrix;
+        private _alternateTransformMatrix: Matrix;
+        private _useAlternateCameraConfiguration = false;
+        private _alternateRendering = false;
+
+        public get _isAlternateRenderingEnabled(): boolean {
+            return this._alternateRendering;
+        }
 
         private _frustumPlanes: Plane[];
         public get frustumPlanes(): Plane[] {
@@ -1026,6 +1038,12 @@
             this._sceneUbo = new UniformBuffer(this._engine, null, true);
             this._sceneUbo.addUniform("viewProjection", 16);
             this._sceneUbo.addUniform("view", 16);
+        }
+
+        private _createAlternateUbo(): void {
+            this._alternateSceneUbo = new UniformBuffer(this._engine, null, true);
+            this._alternateSceneUbo.addUniform("viewProjection", 16);
+            this._alternateSceneUbo.addUniform("view", 16);
         }
 
         // Pointers handling
@@ -1855,16 +1873,20 @@
         }
 
         // Matrix
-        public getViewMatrix(): Matrix {
-            return this._viewMatrix;
+        public _switchToAlternateCameraConfiguration(active: boolean): void {
+            this._useAlternateCameraConfiguration = active;
+        }
+
+        public getViewMatrix(): Matrix {            
+            return this._useAlternateCameraConfiguration ? this._alternateViewMatrix : this._viewMatrix;
         }
 
         public getProjectionMatrix(): Matrix {
-            return this._projectionMatrix;
+            return this._useAlternateCameraConfiguration ? this._alternateProjectionMatrix : this._projectionMatrix;
         }
 
         public getTransformMatrix(): Matrix {
-            return this._transformMatrix;
+            return this._useAlternateCameraConfiguration ? this._alternateTransformMatrix : this._transformMatrix;
         }
 
         public setTransformMatrix(view: Matrix, projection: Matrix): void {
@@ -1893,8 +1915,35 @@
             }
         }
 
+        public _setAlternateTransformMatrix(view: Matrix, projection: Matrix): void {
+            if (this._alternateViewUpdateFlag === view.updateFlag && this._alternateProjectionUpdateFlag === projection.updateFlag) {
+                return;
+            }
+
+            this._alternateViewUpdateFlag = view.updateFlag;
+            this._alternateProjectionUpdateFlag = projection.updateFlag;
+            this._alternateViewMatrix = view;
+            this._alternateProjectionMatrix = projection;
+
+            if (!this._alternateTransformMatrix) {
+                this._alternateTransformMatrix = Matrix.Zero();
+            }
+
+            this._alternateViewMatrix.multiplyToRef(this._alternateProjectionMatrix, this._alternateTransformMatrix);
+
+            if (!this._alternateSceneUbo) {
+                this._createAlternateUbo();
+            }
+            
+            if (this._alternateSceneUbo.useUbo) {
+                this._alternateSceneUbo.updateMatrix("viewProjection", this._alternateTransformMatrix);
+                this._alternateSceneUbo.updateMatrix("view", this._alternateViewMatrix);
+                this._alternateSceneUbo.update();
+            }
+        }
+
         public getSceneUniformBuffer(): UniformBuffer {
-            return this._sceneUbo;
+            return this._useAlternateCameraConfiguration ? this._alternateSceneUbo : this._sceneUbo;
         }
 
         // Methods
@@ -2762,7 +2811,15 @@
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
         }
 
+        public updateAlternateTransformMatrix(alternateCamera: Camera): void {
+            this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
+        }
+
         private _renderForCamera(camera: Camera): void {
+            if (camera && camera._skipRendering) {
+                return;
+            }
+
             var engine = this._engine;
             var startTime = Tools.Now;
 
@@ -2780,6 +2837,11 @@
             this.resetCachedMaterial();
             this._renderId++;
             this.updateTransformMatrix();
+
+            if (camera._alternateCamera) {
+                this.updateAlternateTransformMatrix(camera._alternateCamera);
+                this._alternateRendering = true;
+            }
 
             this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
 
@@ -2947,6 +3009,8 @@
 
             // Reset some special arrays
             this._renderTargets.reset();
+
+            this._alternateRendering = false;
 
             this.onAfterCameraRenderObservable.notifyObservers(this.activeCamera);
 
@@ -3543,6 +3607,10 @@
 
             // Release UBO
             this._sceneUbo.dispose();
+
+            if (this._alternateSceneUbo) {
+                this._alternateSceneUbo.dispose();
+            }
 
             // Post-processes
             this.postProcessManager.dispose();
