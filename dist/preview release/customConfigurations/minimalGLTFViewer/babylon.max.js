@@ -16696,6 +16696,7 @@ var BABYLON;
             this._totalVertices = new BABYLON.PerfCounter();
             this._activeIndices = new BABYLON.PerfCounter();
             this._activeParticles = new BABYLON.PerfCounter();
+            this._interFrameDuration = new BABYLON.PerfCounter();
             this._lastFrameDuration = new BABYLON.PerfCounter();
             this._evaluateActiveMeshesDuration = new BABYLON.PerfCounter();
             this._renderTargetsDuration = new BABYLON.PerfCounter();
@@ -16722,6 +16723,7 @@ var BABYLON;
             this._transformMatrix = BABYLON.Matrix.Zero();
             this.requireLightSorting = false;
             this._uniqueIdCounter = 0;
+            this._activeMeshesFrozen = false;
             this._engine = engine || BABYLON.Engine.LastCreatedEngine;
             this._engine.scenes.push(this);
             this._uid = null;
@@ -17178,6 +17180,16 @@ var BABYLON;
             configurable: true
         });
         // Stats
+        Scene.prototype.getInterFramePerfCounter = function () {
+            return this._interFrameDuration.current;
+        };
+        Object.defineProperty(Scene.prototype, "interFramePerfCounter", {
+            get: function () {
+                return this._interFrameDuration;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getLastFrameDuration = function () {
             return this._lastFrameDuration.current;
         };
@@ -18603,7 +18615,25 @@ var BABYLON;
         Scene.prototype._isInIntermediateRendering = function () {
             return this._intermediateRendering;
         };
+        /**
+         * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
+         */
+        Scene.prototype.freezeActiveMeshes = function () {
+            this._evaluateActiveMeshes();
+            this._activeMeshesFrozen = true;
+            return this;
+        };
+        /**
+         * Use this function to restart evaluating active meshes on every frame
+         */
+        Scene.prototype.unfreezeActiveMeshes = function () {
+            this._activeMeshesFrozen = false;
+            return this;
+        };
         Scene.prototype._evaluateActiveMeshes = function () {
+            if (this._activeMeshesFrozen && this._activeMeshes.length) {
+                return;
+            }
             this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
             this._renderingManager.reset();
@@ -18912,6 +18942,7 @@ var BABYLON;
             if (this.isDisposed) {
                 return;
             }
+            this._interFrameDuration.endMonitoring();
             this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
@@ -18960,9 +18991,6 @@ var BABYLON;
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
                     if ((internalSteps > 1) && (this._currentInternalStep != internalSteps - 1)) {
-                        // Q: can this be optimized by putting some code in the afterStep callback?
-                        // I had to put this code here, otherwise mesh attached to bones of another mesh skeleton,
-                        // would return incorrect positions for internal stepIds (non-rendered steps)
                         this._evaluateActiveMeshes();
                     }
                 }
@@ -19089,6 +19117,7 @@ var BABYLON;
                 this.dumpNextRenderTargets = false;
             }
             BABYLON.Tools.EndPerformanceCounter("Scene rendering");
+            this._interFrameDuration.beginMonitoring();
             this._lastFrameDuration.endMonitoring();
             this._totalMeshesCounter.addCount(this.meshes.length, true);
             this._totalLightsCounter.addCount(this.lights.length, true);

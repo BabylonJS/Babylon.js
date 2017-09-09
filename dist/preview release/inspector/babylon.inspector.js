@@ -3780,6 +3780,12 @@ var INSPECTOR;
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._scene.getLastFrameDuration()); }
                 });
+                elemLabel = _this._createStatLabel("Inter-frame", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getInterFramePerfCounter()); }
+                });
                 elemLabel = _this._createStatLabel("Potential FPS", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
