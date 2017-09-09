@@ -8644,14 +8644,6 @@ var BABYLON;
             }
         };
         Engine.prototype._renderLoop = function () {
-            if (this._activeRenderLoops.length > 0) {
-                // Register new frame
-                this._frameHandler = BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
-            }
-            else {
-                this._renderingQueueLaunched = false;
-            }
-            // Effective render
             if (!this._contextWasLost) {
                 var shouldRender = true;
                 if (!this.renderEvenInBackground && this._windowIsBackground) {
@@ -8667,6 +8659,13 @@ var BABYLON;
                     // Present
                     this.endFrame();
                 }
+            }
+            if (this._activeRenderLoops.length > 0) {
+                // Register new frame
+                this._frameHandler = BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
+            }
+            else {
+                this._renderingQueueLaunched = false;
             }
         };
         /**
@@ -15017,6 +15016,7 @@ var BABYLON;
             _this.cameraRigMode = Camera.RIG_MODE_NONE;
             _this._rigCameras = new Array();
             _this._webvrViewMatrix = BABYLON.Matrix.Identity();
+            _this._skipRendering = false;
             _this.customRenderTargets = new Array();
             // Observables
             _this.onViewMatrixChangedObservable = new BABYLON.Observable();
@@ -15597,12 +15597,15 @@ var BABYLON;
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[1].parent = this;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
+                        if (Camera.UseImprovedWebVRRendering) {
+                            this._rigCameras[1]._skipRendering = true;
+                            this._rigCameras[0]._alternateCamera = this._rigCameras[1];
+                        }
                     }
                     break;
             }
             this._cascadePostProcessesToRigCams();
-            this.
-                update();
+            this.update();
         };
         Camera.prototype._getVRProjectionMatrix = function () {
             BABYLON.Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
@@ -15790,6 +15793,7 @@ var BABYLON;
         Camera._RIG_MODE_VR = 20;
         Camera._RIG_MODE_WEBVR = 21;
         Camera.ForceAttachControlToAlwaysPreventDefault = false;
+        Camera.UseImprovedWebVRRendering = false;
         __decorate([
             BABYLON.serializeAsVector3()
         ], Camera.prototype, "position", void 0);
@@ -16712,6 +16716,8 @@ var BABYLON;
             this._intermediateRendering = false;
             this._viewUpdateFlag = -1;
             this._projectionUpdateFlag = -1;
+            this._alternateViewUpdateFlag = -1;
+            this._alternateProjectionUpdateFlag = -1;
             this._toBeDisposed = new BABYLON.SmartArray(256);
             this._pendingData = []; //ANY
             this._activeMeshes = new BABYLON.SmartArray(256);
@@ -16722,6 +16728,8 @@ var BABYLON;
             this._softwareSkinnedMeshes = new BABYLON.SmartArray(32);
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
+            this._useAlternateCameraConfiguration = false;
+            this._alternateRendering = false;
             this.requireLightSorting = false;
             this._uniqueIdCounter = 0;
             this._activeMeshesFrozen = false;
@@ -17038,6 +17046,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Scene.prototype, "_isAlternateRenderingEnabled", {
+            get: function () {
+                return this._alternateRendering;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene.prototype, "frustumPlanes", {
             get: function () {
                 return this._frustumPlanes;
@@ -17267,6 +17282,11 @@ var BABYLON;
             this._sceneUbo = new BABYLON.UniformBuffer(this._engine, null, true);
             this._sceneUbo.addUniform("viewProjection", 16);
             this._sceneUbo.addUniform("view", 16);
+        };
+        Scene.prototype._createAlternateUbo = function () {
+            this._alternateSceneUbo = new BABYLON.UniformBuffer(this._engine, null, true);
+            this._alternateSceneUbo.addUniform("viewProjection", 16);
+            this._alternateSceneUbo.addUniform("view", 16);
         };
         // Pointers handling
         /**
@@ -17984,14 +18004,17 @@ var BABYLON;
             }
         };
         // Matrix
+        Scene.prototype._switchToAlternateCameraConfiguration = function (active) {
+            this._useAlternateCameraConfiguration = active;
+        };
         Scene.prototype.getViewMatrix = function () {
-            return this._viewMatrix;
+            return this._useAlternateCameraConfiguration ? this._alternateViewMatrix : this._viewMatrix;
         };
         Scene.prototype.getProjectionMatrix = function () {
-            return this._projectionMatrix;
+            return this._useAlternateCameraConfiguration ? this._alternateProjectionMatrix : this._projectionMatrix;
         };
         Scene.prototype.getTransformMatrix = function () {
-            return this._transformMatrix;
+            return this._useAlternateCameraConfiguration ? this._alternateTransformMatrix : this._transformMatrix;
         };
         Scene.prototype.setTransformMatrix = function (view, projection) {
             if (this._viewUpdateFlag === view.updateFlag && this._projectionUpdateFlag === projection.updateFlag) {
@@ -18015,8 +18038,29 @@ var BABYLON;
                 this._sceneUbo.update();
             }
         };
+        Scene.prototype._setAlternateTransformMatrix = function (view, projection) {
+            if (this._alternateViewUpdateFlag === view.updateFlag && this._alternateProjectionUpdateFlag === projection.updateFlag) {
+                return;
+            }
+            this._alternateViewUpdateFlag = view.updateFlag;
+            this._alternateProjectionUpdateFlag = projection.updateFlag;
+            this._alternateViewMatrix = view;
+            this._alternateProjectionMatrix = projection;
+            if (!this._alternateTransformMatrix) {
+                this._alternateTransformMatrix = BABYLON.Matrix.Zero();
+            }
+            this._alternateViewMatrix.multiplyToRef(this._alternateProjectionMatrix, this._alternateTransformMatrix);
+            if (!this._alternateSceneUbo) {
+                this._createAlternateUbo();
+            }
+            if (this._alternateSceneUbo.useUbo) {
+                this._alternateSceneUbo.updateMatrix("viewProjection", this._alternateTransformMatrix);
+                this._alternateSceneUbo.updateMatrix("view", this._alternateViewMatrix);
+                this._alternateSceneUbo.update();
+            }
+        };
         Scene.prototype.getSceneUniformBuffer = function () {
-            return this._sceneUbo;
+            return this._useAlternateCameraConfiguration ? this._alternateSceneUbo : this._sceneUbo;
         };
         // Methods
         Scene.prototype.getUniqueId = function () {
@@ -18742,7 +18786,13 @@ var BABYLON;
         Scene.prototype.updateTransformMatrix = function (force) {
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
         };
+        Scene.prototype.updateAlternateTransformMatrix = function (alternateCamera) {
+            this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
+        };
         Scene.prototype._renderForCamera = function (camera) {
+            if (camera && camera._skipRendering) {
+                return;
+            }
             var engine = this._engine;
             var startTime = BABYLON.Tools.Now;
             this.activeCamera = camera;
@@ -18755,6 +18805,10 @@ var BABYLON;
             this.resetCachedMaterial();
             this._renderId++;
             this.updateTransformMatrix();
+            if (camera._alternateCamera) {
+                this.updateAlternateTransformMatrix(camera._alternateCamera);
+                this._alternateRendering = true;
+            }
             this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
             // Meshes
             this._evaluateActiveMeshesDuration.beginMonitoring();
@@ -18888,6 +18942,7 @@ var BABYLON;
             this.activeCamera._updateFromScene();
             // Reset some special arrays
             this._renderTargets.reset();
+            this._alternateRendering = false;
             this.onAfterCameraRenderObservable.notifyObservers(this.activeCamera);
             BABYLON.Tools.EndPerformanceCounter("Rendering camera " + this.activeCamera.name);
         };
@@ -19389,6 +19444,9 @@ var BABYLON;
             }
             // Release UBO
             this._sceneUbo.dispose();
+            if (this._alternateSceneUbo) {
+                this._alternateSceneUbo.dispose();
+            }
             // Post-processes
             this.postProcessManager.dispose();
             if (this._postProcessRenderPipelineManager) {
@@ -22066,12 +22124,14 @@ var BABYLON;
             this._geometry._bind(effect, indexToBind);
             return this;
         };
-        Mesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
+        Mesh.prototype._draw = function (subMesh, fillMode, instancesCount, alternate) {
+            if (alternate === void 0) { alternate = false; }
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return this;
             }
             this.onBeforeDrawObservable.notifyObservers(this);
-            var engine = this.getScene().getEngine();
+            var scene = this.getScene();
+            var engine = scene.getEngine();
             // Draw order
             switch (fillMode) {
                 case BABYLON.Material.PointFillMode:
@@ -22092,6 +22152,16 @@ var BABYLON;
                     else {
                         engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
                     }
+            }
+            if (scene._isAlternateRenderingEnabled && !alternate) {
+                var effect = subMesh.effect || this._effectiveMaterial.getEffect();
+                scene._switchToAlternateCameraConfiguration(true);
+                this._effectiveMaterial.bindView(effect);
+                this._effectiveMaterial.bindViewProjection(effect);
+                engine.setViewport(scene.activeCamera._alternateCamera.viewport);
+                this._draw(subMesh, fillMode, instancesCount, true);
+                scene._switchToAlternateCameraConfiguration(false);
+                engine.setViewport(scene.activeCamera.viewport);
             }
             return this;
         };
@@ -22260,21 +22330,21 @@ var BABYLON;
             var engine = scene.getEngine();
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
             // Material
-            var effectiveMaterial = subMesh.getMaterial();
-            if (!effectiveMaterial) {
+            this._effectiveMaterial = subMesh.getMaterial();
+            if (!this._effectiveMaterial) {
                 return this;
             }
-            if (effectiveMaterial.storeEffectOnSubMeshes) {
-                if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
+                if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                     return this;
                 }
             }
-            else if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+            else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
             // Alpha mode
             if (enableAlphaMode) {
-                engine.setAlphaMode(effectiveMaterial.alphaMode);
+                engine.setAlphaMode(this._effectiveMaterial.alphaMode);
             }
             // Outline - step 1
             var savedDepthWrite = engine.getDepthWrite();
@@ -22284,29 +22354,29 @@ var BABYLON;
                 engine.setDepthWrite(savedDepthWrite);
             }
             var effect;
-            if (effectiveMaterial.storeEffectOnSubMeshes) {
+            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 effect = subMesh.effect;
             }
             else {
-                effect = effectiveMaterial.getEffect();
+                effect = this._effectiveMaterial.getEffect();
             }
-            effectiveMaterial._preBind(effect);
+            this._effectiveMaterial._preBind(effect);
             // Bind
-            var fillMode = scene.forcePointsCloud ? BABYLON.Material.PointFillMode : (scene.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode);
+            var fillMode = scene.forcePointsCloud ? BABYLON.Material.PointFillMode : (scene.forceWireframe ? BABYLON.Material.WireFrameFillMode : this._effectiveMaterial.fillMode);
             if (!hardwareInstancedRendering) {
                 this._bind(subMesh, effect, fillMode);
             }
             var world = this.getWorldMatrix();
-            if (effectiveMaterial.storeEffectOnSubMeshes) {
-                effectiveMaterial.bindForSubMesh(world, this, subMesh);
+            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
+                this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
             }
             else {
-                effectiveMaterial.bind(world, this);
+                this._effectiveMaterial.bind(world, this);
             }
             // Draw
-            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
+            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
             // Unbind
-            effectiveMaterial.unbind();
+            this._effectiveMaterial.unbind();
             // Outline - step 2
             if (this.renderOutline && savedDepthWrite) {
                 engine.setDepthWrite(true);
