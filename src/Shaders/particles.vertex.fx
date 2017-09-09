@@ -25,8 +25,7 @@ void main(void) {
 	float size = options.y;
 	float angle = options.x;
 	vec2 offset = options.zw;
-	vec2 uvScale = textureInfos.xy;
-
+	
 	cornerPos = vec3(offset.x - 0.5, offset.y  - 0.5, 0.) * size;
 
 	// Rotate
@@ -41,8 +40,13 @@ void main(void) {
 	
 	vColor = color;
 
-	vec2 uvOffset = vec2(abs(offset.x), 1.0 - abs(offset.y));
+	#ifdef ANIMATESHEET
+	vec2 uvScale = textureInfos.xy;
+	vec2 uvOffset = vec2(abs(offset.x - cellInfo.x), 1.0 - abs(offset.y- cellInfo.y));
 	vUV = (uvOffset + cellInfo.zw) * uvScale;
+	#else
+	vUV = offset;
+	#endif
 
 	// Clip plane
 #ifdef CLIPPLANE
