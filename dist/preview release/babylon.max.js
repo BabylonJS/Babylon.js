@@ -8644,6 +8644,14 @@ var BABYLON;
             }
         };
         Engine.prototype._renderLoop = function () {
+            if (this._activeRenderLoops.length > 0) {
+                // Register new frame
+                this._frameHandler = BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
+            }
+            else {
+                this._renderingQueueLaunched = false;
+            }
+            // Effective render
             if (!this._contextWasLost) {
                 var shouldRender = true;
                 if (!this.renderEvenInBackground && this._windowIsBackground) {
@@ -8659,13 +8667,6 @@ var BABYLON;
                     // Present
                     this.endFrame();
                 }
-            }
-            if (this._activeRenderLoops.length > 0) {
-                // Register new frame
-                this._frameHandler = BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
-            }
-            else {
-                this._renderingQueueLaunched = false;
             }
         };
         /**
