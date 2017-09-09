@@ -128,7 +128,6 @@
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
 
-
         // sheet animation
         private _animationStarted = false;
         private _loopAnimation = false;
@@ -140,7 +139,7 @@
         private _time = 0;
         // end of sheet animation
 
-        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, cellSize?: any, epsilon: number = 0.01) {
+        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, private cellSize?: any, epsilon: number = 0.01) {
             this.id = name;
             this._capacity = capacity;
 
@@ -212,12 +211,14 @@
             }
 
             this._epsilon = epsilon;
-            if (cellSize.width && cellSize.height) {
-                this.cellWidth = cellSize.width;
-                this.cellHeight = cellSize.height;
-            } else if (cellSize !== undefined) {
-                this.cellWidth = cellSize;
-                this.cellHeight = cellSize;
+            if (cellSize) {
+                if (cellSize.width && cellSize.height) {
+                    this.cellWidth = cellSize.width;
+                    this.cellHeight = cellSize.height;
+                } else {
+                    this.cellWidth = cellSize;
+                    this.cellHeight = cellSize;
+                }
             }
         }
 
@@ -395,6 +396,10 @@
                 defines.push("#define CLIPPLANE");
             }
 
+            if (this.cellSize) {
+                defines.push("#define ANIMATESHEET");
+            }
+
             // Effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
@@ -472,12 +477,18 @@
             }
 
             // Animation sheet
-            var baseSize = this.particleTexture.getBaseSize();
-            var rowSize = baseSize.width / this.cellWidth;
-            var rowOffset = (this.cellIndex / rowSize) >> 0;
-            var columnOffset = this.cellIndex - rowOffset * rowSize;
-            var intertU = this.invertU ? 1 : 0;
-            var interV = this.invertV ? 1 : 0;
+            var rowOffset = 0;
+            var columnOffset = 0;
+            var intertU = 0;
+            var interV = 0;
+            if (this.cellSize) {
+                var baseSize = this.particleTexture.getBaseSize();
+                var rowSize = baseSize.width / this.cellWidth;
+                var rowOffset = (this.cellIndex / rowSize) >> 0;
+                var columnOffset = this.cellIndex - rowOffset * rowSize;
+                var intertU = this.invertU ? 1 : 0;
+                var interV = this.invertV ? 1 : 0;
+            }
 
             // Update VBO
             var offset = 0;
