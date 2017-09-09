@@ -706,6 +706,7 @@
         private _totalVertices = new PerfCounter();
         public _activeIndices = new PerfCounter();
         public _activeParticles = new PerfCounter();
+        private _interFrameDuration = new PerfCounter();
         private _lastFrameDuration = new PerfCounter();
         private _evaluateActiveMeshesDuration = new PerfCounter();
         private _renderTargetsDuration = new PerfCounter();
@@ -943,6 +944,14 @@
         }
 
         // Stats
+        public getInterFramePerfCounter(): number {
+            return this._interFrameDuration.current;
+        }
+
+        public get interFramePerfCounter(): PerfCounter {
+            return this._interFrameDuration;
+        }
+
         public getLastFrameDuration(): number {
             return this._lastFrameDuration.current;
         }
@@ -2984,6 +2993,7 @@
                 return;
             }
 
+            this._interFrameDuration.endMonitoring();
             this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
@@ -3202,6 +3212,7 @@
             }
 
             Tools.EndPerformanceCounter("Scene rendering");
+            this._interFrameDuration.beginMonitoring();           
             this._lastFrameDuration.endMonitoring();
             this._totalMeshesCounter.addCount(this.meshes.length, true);
             this._totalLightsCounter.addCount(this.lights.length, true);

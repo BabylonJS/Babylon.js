@@ -16696,6 +16696,7 @@ var BABYLON;
             this._totalVertices = new BABYLON.PerfCounter();
             this._activeIndices = new BABYLON.PerfCounter();
             this._activeParticles = new BABYLON.PerfCounter();
+            this._interFrameDuration = new BABYLON.PerfCounter();
             this._lastFrameDuration = new BABYLON.PerfCounter();
             this._evaluateActiveMeshesDuration = new BABYLON.PerfCounter();
             this._renderTargetsDuration = new BABYLON.PerfCounter();
@@ -17178,6 +17179,16 @@ var BABYLON;
             configurable: true
         });
         // Stats
+        Scene.prototype.getInterFramePerfCounter = function () {
+            return this._interFrameDuration.current;
+        };
+        Object.defineProperty(Scene.prototype, "interFramePerfCounter", {
+            get: function () {
+                return this._interFrameDuration;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getLastFrameDuration = function () {
             return this._lastFrameDuration.current;
         };
@@ -18912,6 +18923,7 @@ var BABYLON;
             if (this.isDisposed) {
                 return;
             }
+            this._interFrameDuration.endMonitoring();
             this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
@@ -19089,6 +19101,7 @@ var BABYLON;
                 this.dumpNextRenderTargets = false;
             }
             BABYLON.Tools.EndPerformanceCounter("Scene rendering");
+            this._interFrameDuration.beginMonitoring();
             this._lastFrameDuration.endMonitoring();
             this._totalMeshesCounter.addCount(this.meshes.length, true);
             this._totalLightsCounter.addCount(this.lights.length, true);
