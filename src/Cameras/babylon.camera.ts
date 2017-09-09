@@ -63,6 +63,8 @@
 
         public static ForceAttachControlToAlwaysPreventDefault = false;
 
+        public static UseImprovedWebVRRendering = false;
+
         // Members
         @serializeAsVector3()
         public position: Vector3;
@@ -120,6 +122,8 @@
         public _rigCameras = new Array<Camera>();
         public _rigPostProcess: PostProcess;
         protected _webvrViewMatrix = Matrix.Identity();
+        public _skipRendering = false;
+        public _alternateCamera: Camera;
 
         public customRenderTargets = new Array<RenderTargetTexture>();    
         
@@ -703,7 +707,6 @@
                     this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
                     this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
 
-
                     if (metrics.compensateDistortion) {
                         this._rigCameras[0]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics);
                         this._rigCameras[1]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics);
@@ -736,14 +739,18 @@
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[1].parent = this;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
+
+                        if (Camera.UseImprovedWebVRRendering) {
+                            this._rigCameras[1]._skipRendering = true;
+                            this._rigCameras[0]._alternateCamera = this._rigCameras[1];
+                        }
                     }
                     break;
 
             }
 
             this._cascadePostProcessesToRigCams();
-            this.
-                update();
+            this.update();
         }
 
         private _getVRProjectionMatrix(): Matrix {

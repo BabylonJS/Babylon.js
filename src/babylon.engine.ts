@@ -1371,14 +1371,6 @@
         }
 
         public _renderLoop(): void {
-            if (this._activeRenderLoops.length > 0) {
-                // Register new frame
-                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
-            } else {
-                this._renderingQueueLaunched = false;
-            }
-
-            // Effective render
             if (!this._contextWasLost) {
                 var shouldRender = true;
                 if (!this.renderEvenInBackground && this._windowIsBackground) {
@@ -1398,6 +1390,13 @@
                     // Present
                     this.endFrame();
                 }  
+            }
+
+            if (this._activeRenderLoops.length > 0) {
+                // Register new frame
+                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
+            } else {
+                this._renderingQueueLaunched = false;
             }
         }
 
