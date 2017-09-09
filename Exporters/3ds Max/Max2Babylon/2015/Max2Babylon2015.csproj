@@ -96,6 +96,27 @@
     <Compile Include="..\Exporter\BabylonExporter.cs">
       <Link>Exporter\BabylonExporter.cs</Link>
     </Compile>
+    <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.AbstractMesh.cs">
+      <Link>Exporter\BabylonExporter.GLTFExporter.AbstractMesh.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.Camera.cs">
+      <Link>Exporter\BabylonExporter.GLTFExporter.Camera.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.cs">
+      <Link>Exporter\BabylonExporter.GLTFExporter.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.Light.cs">
+      <Link>Exporter\BabylonExporter.GLTFExporter.Light.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.Material.cs">
+      <Link>Exporter\BabylonExporter.GLTFExporter.Material.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.Mesh.cs">
+      <Link>Exporter\BabylonExporter.GLTFExporter.Mesh.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.Texture.cs">
+      <Link>Exporter\BabylonExporter.GLTFExporter.Texture.cs</Link>
+    </Compile>
     <Compile Include="..\Exporter\BabylonExporter.Light.cs">
       <Link>Exporter\BabylonExporter.Light.cs</Link>
     </Compile>
@@ -116,6 +137,9 @@
     </Compile>
     <Compile Include="..\Exporter\GlobalVertex.cs">
       <Link>Exporter\GlobalVertex.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\GLTFGlobalVertex.cs">
+      <Link>Exporter\GLTFGlobalVertex.cs</Link>
     </Compile>
     <Compile Include="..\Forms\ActionsBuilderForm.cs">
       <Link>Forms\ActionsBuilderForm.cs</Link>
@@ -175,6 +199,9 @@
     </Compile>
     <Compile Include="..\GlobalUtility.cs">
       <Link>GlobalUtility.cs</Link>
+    </Compile>
+    <Compile Include="..\JsonTextWriterBounded.cs">
+      <Link>JsonTextWriterBounded.cs</Link>
     </Compile>
     <Compile Include="..\JsonTextWriterOptimized.cs">
       <Link>JsonTextWriterOptimized.cs</Link>
@@ -243,6 +270,10 @@
     <ProjectReference Include="..\..\BabylonFileConverter\BabylonFileConverter.csproj">
       <Project>{a6b76356-1d1c-4c82-8199-a6406da85a95}</Project>
       <Name>BabylonFileConverter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GltfExport.Entities\GLTFExport.Entities.csproj">
+      <Project>{65686998-09ac-4a14-b23f-7fce6ba994cf}</Project>
+      <Name>GLTFExport.Entities</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
