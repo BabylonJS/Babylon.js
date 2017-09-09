@@ -135,11 +135,24 @@
         private _delay = 0;
         private _sheetDirection = 1;
         private _time = 0;
+        private _vertixBufferSize = 11;
         // end of sheet animation
 
         constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, private cellSize?: any, epsilon: number = 0.01) {
             this.id = name;
             this._capacity = capacity;
+
+            this._epsilon = epsilon;
+            if (cellSize) {
+                this._vertixBufferSize = 15;
+                if (cellSize.width && cellSize.height) {
+                    this.cellWidth = cellSize.width;
+                    this.cellHeight = cellSize.height;
+                } else {
+                    this.cellWidth = cellSize;
+                    this.cellHeight = cellSize;
+                }
+            }
 
             this._scene = scene || Engine.LastCreatedScene;
 
@@ -150,18 +163,21 @@
             this._createIndexBuffer();
 
             // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
-            this._vertexData = new Float32Array(capacity * 15 * 4);
-            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, 15);
+            this._vertexData = new Float32Array(capacity * this._vertixBufferSize * 4);
+            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, this._vertixBufferSize);
 
             var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
             var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
             var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
-            var cellInfo = this._vertexBuffer.createVertexBuffer("cellInfo", 11, 4);
+
+            if (this.cellSize) {
+                var cellInfo = this._vertexBuffer.createVertexBuffer("cellInfo", 11, 4);
+                this._vertexBuffers["cellInfo"] = cellInfo;
+            }
 
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
-            this._vertexBuffers["cellInfo"] = cellInfo;
 
             // Default behaviors
             this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
@@ -205,17 +221,6 @@
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
                     }
-                }
-            }
-
-            this._epsilon = epsilon;
-            if (cellSize) {
-                if (cellSize.width && cellSize.height) {
-                    this.cellWidth = cellSize.width;
-                    this.cellHeight = cellSize.height;
-                } else {
-                    this.cellWidth = cellSize;
-                    this.cellHeight = cellSize;
                 }
             }
         }
@@ -284,7 +289,22 @@
         }
         // animation sheet
 
-        public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number, rowSize: number): void {
+        public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
+            var offset = index * this._vertixBufferSize;
+            this._vertexData[offset] = particle.position.x;
+            this._vertexData[offset + 1] = particle.position.y;
+            this._vertexData[offset + 2] = particle.position.z;
+            this._vertexData[offset + 3] = particle.color.r;
+            this._vertexData[offset + 4] = particle.color.g;
+            this._vertexData[offset + 5] = particle.color.b;
+            this._vertexData[offset + 6] = particle.color.a;
+            this._vertexData[offset + 7] = particle.angle;
+            this._vertexData[offset + 8] = particle.size;
+            this._vertexData[offset + 9] = offsetX;
+            this._vertexData[offset + 10] = offsetY;
+        }
+
+        public _appendParticleVertexWithAnimation(index: number, particle: Particle, offsetX: number, offsetY: number, rowSize: number): void {
 
             if (offsetX === 0)
                 offsetX = this._epsilon;
@@ -301,7 +321,7 @@
             var intertU = particle.invertU ? 1 : 0;
             var interV = particle.invertV ? 1 : 0;
 
-            var offset = index * 15;
+            var offset = index * this._vertixBufferSize;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
             this._vertexData[offset + 2] = particle.position.z;
@@ -394,10 +414,22 @@
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
+                var attributesNamesOrOptions: any;
+                var effectCreationOption: any;
+
+                if (this.cellSize) {
+                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellInfo"];
+                    effectCreationOption = ["invView", "view", "projection", "textureInfos", "vClipPlane", "textureMask"];
+                }
+                else {
+                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options"];
+                    effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"]
+                }
+
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",
-                    [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellInfo"],
-                    ["invView", "view", "projection", "textureInfos", "vClipPlane", "textureMask"],
+                    attributesNamesOrOptions,
+                    effectCreationOption,
                     ["diffuseSampler"], join);
             }
 
@@ -476,16 +508,23 @@
 
             // Update VBO
             var offset = 0;
-            for (var index = 0; index < this.particles.length; index++) {
-                var particle = this.particles[index];
-
-                this._appendParticleVertex(offset++, particle, 0, 0, rowSize);
-                this._appendParticleVertex(offset++, particle, 1, 0, rowSize);
-                this._appendParticleVertex(offset++, particle, 1, 1, rowSize);
-                this._appendParticleVertex(offset++, particle, 0, 1, rowSize);
-
-                if (this.cellSize) {
+            if (this.cellSize) {
+                for (var index = 0; index < this.particles.length; index++) {
+                    var particle = this.particles[index];
+                    this._appendParticleVertexWithAnimation(offset++, particle, 0, 0, rowSize);
+                    this._appendParticleVertexWithAnimation(offset++, particle, 1, 0, rowSize);
+                    this._appendParticleVertexWithAnimation(offset++, particle, 1, 1, rowSize);
+                    this._appendParticleVertexWithAnimation(offset++, particle, 0, 1, rowSize);
                     particle._animate(deltaTime);
+                }
+            }
+            else {
+                for (var index = 0; index < this.particles.length; index++) {
+                    var particle = this.particles[index];
+                    this._appendParticleVertex(offset++, particle, 0, 0);
+                    this._appendParticleVertex(offset++, particle, 1, 0);
+                    this._appendParticleVertex(offset++, particle, 1, 1);
+                    this._appendParticleVertex(offset++, particle, 0, 1);
                 }
             }
 
@@ -516,8 +555,10 @@
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-            var baseSize = this.particleTexture.getBaseSize();
-            effect.setFloat2("textureInfos", this.cellWidth / baseSize.width, this.cellHeight / baseSize.height);
+            if (this.cellSize) {
+                var baseSize = this.particleTexture.getBaseSize();
+                effect.setFloat2("textureInfos", this.cellWidth / baseSize.width, this.cellHeight / baseSize.height);
+            }
 
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
