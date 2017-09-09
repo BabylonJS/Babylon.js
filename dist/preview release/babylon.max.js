@@ -13955,30 +13955,11 @@ var BABYLON;
                 child.position.z = position.z;
             }
             else {
-                var rotation = BABYLON.Tmp.Quaternion[0];
                 var position = BABYLON.Tmp.Vector3[0];
-                var scale = BABYLON.Tmp.Vector3[1];
                 var m1 = BABYLON.Tmp.Matrix[0];
-                var m2 = BABYLON.Tmp.Matrix[1];
-                parent.getWorldMatrix().decompose(scale, rotation, position);
-                rotation.toRotationMatrix(m1);
-                m2.setTranslation(position);
-                m2.multiplyToRef(m1, m1);
-                var invParentMatrix = BABYLON.Matrix.Invert(m1);
-                var m = child.getWorldMatrix().multiply(invParentMatrix);
-                m.decompose(scale, rotation, position);
-                if (child.rotationQuaternion) {
-                    child.rotationQuaternion.copyFrom(rotation);
-                }
-                else {
-                    rotation.toEulerAnglesToRef(child.rotation);
-                }
-                invParentMatrix = BABYLON.Matrix.Invert(parent.getWorldMatrix());
-                var m = child.getWorldMatrix().multiply(invParentMatrix);
-                m.decompose(scale, rotation, position);
-                child.position.x = position.x;
-                child.position.y = position.y;
-                child.position.z = position.z;
+                parent.getWorldMatrix().invertToRef(m1);
+                BABYLON.Vector3.TransformCoordinatesToRef(child.position, m1, position);
+                child.position.copyFrom(position);
             }
             child.parent = parent;
             return this;
@@ -30157,7 +30138,8 @@ var BABYLON;
             engine.setDepthBuffer(true);
             engine.setDepthWrite(true);
         };
-        PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture, faceIndex, postProcesses) {
+        PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture, faceIndex, postProcesses, forceFullscreenViewport) {
+            if (forceFullscreenViewport === void 0) { forceFullscreenViewport = false; }
             postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
@@ -30169,7 +30151,7 @@ var BABYLON;
                 }
                 else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture, faceIndex);
+                        engine.bindFramebuffer(targetTexture, faceIndex, null, null, forceFullscreenViewport);
                     }
                     else {
                         engine.restoreDefaultFramebuffer();
@@ -39837,11 +39819,12 @@ var BABYLON;
             if (this._time > this._delay) {
                 this._time = this._time % this._delay;
                 this.cellIndex += this._direction;
-                if (this.cellIndex === this._toIndex) {
+                if (this.cellIndex > this._toIndex) {
                     if (this._loopAnimation) {
                         this.cellIndex = this._fromIndex;
                     }
                     else {
+                        this.cellIndex = this._toIndex;
                         this._animationStarted = false;
                         if (this._onAnimationEnd) {
                             this._onAnimationEnd();
@@ -46287,7 +46270,7 @@ var BABYLON;
             // Render
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
             if (this._postProcessManager) {
-                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses);
+                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses, this.ignoreCameraViewport);
             }
             else if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);
@@ -47788,6 +47771,7 @@ var BABYLON;
             this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(BABYLON.Texture.BILINEAR_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
+            this._shadowMap.ignoreCameraViewport = true;
             // Record Face Index before render.
             this._shadowMap.onBeforeRenderObservable.add(function (faceIndex) {
                 _this._currentFaceIndex = faceIndex;
@@ -47802,7 +47786,7 @@ var BABYLON;
                 if (!_this._blurPostProcesses) {
                     _this._initializeBlurRTTAndPostProcesses();
                 }
-                _this._scene.postProcessManager.directRender(_this._blurPostProcesses, _this.getShadowMapForRendering().getInternalTexture());
+                _this._scene.postProcessManager.directRender(_this._blurPostProcesses, _this.getShadowMapForRendering().getInternalTexture(), true);
             });
             // Clear according to the chosen filter.
             this._shadowMap.onClearObservable.add(function (engine) {
@@ -66802,6 +66786,8 @@ var BABYLON;
                 if (scene.activeCamera.rotation) {
                     newCamera.rotation = scene.activeCamera.rotation.clone();
                 }
+                newCamera.minZ = this._scene.activeCamera.minZ;
+                newCamera.maxZ = this._scene.activeCamera.maxZ;
                 this._scene.activeCamera = newCamera;
             }
             this._position = this._scene.activeCamera.position;
