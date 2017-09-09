@@ -40844,14 +40844,8 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var IParticleAnimation = (function () {
-        function IParticleAnimation() {
-        }
-        return IParticleAnimation;
-    }());
-    BABYLON.IParticleAnimation = IParticleAnimation;
     var Particle = (function () {
-        function Particle(cellWidth, cellHeight, cellIndex, invertU, invertV, _loopAnimation, _fromIndex, _toIndex, _delay, _sheetDirection, _time) {
+        function Particle(particleSystem, cellWidth, cellHeight, cellIndex, invertU, invertV, _loopAnimation, _fromIndex, _toIndex, _delay, _sheetDirection, _time, disposeWhenFinishedAnimating) {
             if (cellWidth === void 0) { cellWidth = 0; }
             if (cellHeight === void 0) { cellHeight = 0; }
             if (cellIndex === void 0) { cellIndex = 0; }
@@ -40863,6 +40857,8 @@ var BABYLON;
             if (_delay === void 0) { _delay = 0; }
             if (_sheetDirection === void 0) { _sheetDirection = 1; }
             if (_time === void 0) { _time = 0; }
+            if (disposeWhenFinishedAnimating === void 0) { disposeWhenFinishedAnimating = false; }
+            this.particleSystem = particleSystem;
             this.cellWidth = cellWidth;
             this.cellHeight = cellHeight;
             this.cellIndex = cellIndex;
@@ -40874,6 +40870,7 @@ var BABYLON;
             this._delay = _delay;
             this._sheetDirection = _sheetDirection;
             this._time = _time;
+            this.disposeWhenFinishedAnimating = disposeWhenFinishedAnimating;
             this.position = BABYLON.Vector3.Zero();
             this.direction = BABYLON.Vector3.Zero();
             this.color = new BABYLON.Color4(0, 0, 0, 0);
@@ -40895,7 +40892,9 @@ var BABYLON;
                     }
                     else {
                         this.cellIndex = this._toIndex;
-                        // stop and remove from scene
+                        if (this.disposeWhenFinishedAnimating) {
+                            this.dispose();
+                        }
                     }
                 }
             }
@@ -40910,6 +40909,22 @@ var BABYLON;
             other.size = this.size;
             other.angle = this.angle;
             other.angularSpeed = this.angularSpeed;
+            other.particleSystem = this.particleSystem;
+            other.cellWidth = this.cellWidth;
+            other.cellHeight = this.cellHeight;
+            other.cellIndex = this.cellIndex;
+            other.invertU = this.invertU;
+            other.invertV = this.invertV;
+            other._loopAnimation = this._loopAnimation;
+            other._fromIndex = this._fromIndex;
+            other._toIndex = this._toIndex;
+            other._delay = this._delay;
+            other._sheetDirection = this._sheetDirection;
+            other._time = this._time;
+            other.disposeWhenFinishedAnimating = this.disposeWhenFinishedAnimating;
+        };
+        Particle.prototype.dispose = function () {
+            this.age = this.lifeTime;
         };
         return Particle;
     }());
@@ -40954,6 +40969,7 @@ var BABYLON;
             this.layerMask = 0x0FFFFFFF;
             this.customShader = null;
             this.preventAutoStart = false;
+            this.disposeParticlesWhenFinishedAnimating = false;
             /**
             * An event triggered when the system is disposed.
             * @type {BABYLON.Observable}
@@ -41188,13 +41204,14 @@ var BABYLON;
                 if (this._stockParticles.length !== 0) {
                     particle = this._stockParticles.pop();
                     particle.age = 0;
+                    particle.cellIndex = this._fromIndex;
                 }
                 else {
                     if (this.cellSize) {
-                        particle = new BABYLON.Particle(this.cellWidth, this.cellHeight, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time);
+                        particle = new BABYLON.Particle(this, this.cellWidth, this.cellHeight, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time, this.disposeParticlesWhenFinishedAnimating);
                     }
                     else {
-                        particle = new BABYLON.Particle();
+                        particle = new BABYLON.Particle(this);
                     }
                 }
                 this.particles.push(particle);
