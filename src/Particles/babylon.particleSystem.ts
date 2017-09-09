@@ -136,7 +136,7 @@
         private _delay = 0;
         private _sheetDirection = 1;
         private _time = 0;
-        private _vertixBufferSize = 11;
+        private _vertexBufferSize = 11;
         // end of sheet animation
 
         constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, private cellSize?: any, epsilon: number = 0.01) {
@@ -145,7 +145,7 @@
 
             this._epsilon = epsilon;
             if (cellSize) {
-                this._vertixBufferSize = 15;
+                this._vertexBufferSize = 15;
                 if (cellSize.width && cellSize.height) {
                     this.cellWidth = cellSize.width;
                     this.cellHeight = cellSize.height;
@@ -164,8 +164,8 @@
             this._createIndexBuffer();
 
             // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
-            this._vertexData = new Float32Array(capacity * this._vertixBufferSize * 4);
-            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, this._vertixBufferSize);
+            this._vertexData = new Float32Array(capacity * this._vertexBufferSize * 4);
+            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, this._vertexBufferSize);
 
             var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
             var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
@@ -198,6 +198,7 @@
             }
 
             this.updateFunction = (particles: Particle[]): void => {
+                var deltaTime = this._scene.getEngine().getDeltaTime();
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
                     particle.age += this._scaledUpdateSpeed;
@@ -221,6 +222,10 @@
 
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
+
+                        if (this.cellSize && this._animationStarted) {
+                            particle.updateCellIndex(deltaTime);
+                        }
                     }
                 }
             }
@@ -291,7 +296,7 @@
         // animation sheet
 
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
-            var offset = index * this._vertixBufferSize;
+            var offset = index * this._vertexBufferSize;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
             this._vertexData[offset + 2] = particle.position.z;
@@ -322,7 +327,7 @@
             var intertU = particle.invertU ? 1 : 0;
             var interV = particle.invertV ? 1 : 0;
 
-            var offset = index * this._vertixBufferSize;
+            var offset = index * this._vertexBufferSize;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
             this._vertexData[offset + 2] = particle.position.z;
@@ -356,6 +361,7 @@
                 var emitterPosition = (<Vector3>this.emitter);
                 worldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
             }
+
             var particle: Particle;
             for (var index = 0; index < newParticles; index++) {
                 if (this.particles.length === this._capacity) {
@@ -368,12 +374,13 @@
                     particle.cellIndex = this._fromIndex;
                 } else {
                     if (this.cellSize) {
-                        particle = new Particle(this, this.cellWidth, this.cellHeight, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time, this.disposeParticlesWhenFinishedAnimating);
+                        particle = new Particle(this, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time, this.disposeParticlesWhenFinishedAnimating);
                     }
                     else {
                         particle = new Particle(this);
                     }
                 }
+
                 this.particles.push(particle);
 
                 var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
@@ -500,19 +507,12 @@
             }
 
             // Animation sheet
-            var deltaTime = 0;
+            var rowSize = 0;
             if (this.cellSize) {
                 var baseSize = this.particleTexture.getBaseSize();
-                var rowSize = baseSize.width / this.cellWidth;
-                var engine = this._scene.getEngine();
-                deltaTime = engine.getDeltaTime();
+                rowSize = baseSize.width / this.cellWidth;
+                this.appendParticleVertexes = this.appenedParticleVertexesWithSheet;
 
-                if (this._animationStarted) {
-                    this.appendParticleVertexes = this.appenedAllParticleVertexesWithSheetAndAnimationStarted;
-                }
-                else {
-                    this.appendParticleVertexes = this.appenedAllParticleVertexesWithSheet;
-                }
             }
             else {
                 this.appendParticleVertexes = this.appenedParticleVertexesNoSheet;
@@ -522,28 +522,23 @@
             var offset = 0;
             for (var index = 0; index < this.particles.length; index++) {
                 var particle = this.particles[index];
-                this.appendParticleVertexes(offset, particle, rowSize, deltaTime);
+                this.appendParticleVertexes(offset, particle, rowSize);
                 offset += 4;
             }
 
             this._vertexBuffer.update(this._vertexData);
         }
 
-        public appendParticleVertexes: (offset: number, particle: Particle, rowSize: number, deltaTime: number) => void = null;
+        public appendParticleVertexes: (offset: number, particle: Particle, rowSize: number) => void = null;
 
-        private appenedAllParticleVertexesWithSheet(offset: number, particle: Particle, rowSize: number, deltaTime: number) {
+        private appenedParticleVertexesWithSheet(offset: number, particle: Particle, rowSize: number) {
             this._appendParticleVertexWithAnimation(offset++, particle, 0, 0, rowSize);
             this._appendParticleVertexWithAnimation(offset++, particle, 1, 0, rowSize);
             this._appendParticleVertexWithAnimation(offset++, particle, 1, 1, rowSize);
             this._appendParticleVertexWithAnimation(offset++, particle, 0, 1, rowSize);
         }
 
-        private appenedAllParticleVertexesWithSheetAndAnimationStarted(offset: number, particle: Particle, rowSize: number, deltaTime: number) {
-            this.appenedAllParticleVertexesWithSheet(offset, particle, rowSize, deltaTime);
-            particle._animate(deltaTime);
-        }
-
-        private appenedParticleVertexesNoSheet(offset: number, particle: Particle, rowSize: number, deltaTime: number) {
+        private appenedParticleVertexesNoSheet(offset: number, particle: Particle, rowSize: number) {
             this._appendParticleVertex(offset++, particle, 0, 0);
             this._appendParticleVertex(offset++, particle, 1, 0);
             this._appendParticleVertex(offset++, particle, 1, 1);

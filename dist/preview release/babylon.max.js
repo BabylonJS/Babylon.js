@@ -40858,9 +40858,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var Particle = (function () {
-        function Particle(particleSystem, cellWidth, cellHeight, cellIndex, invertU, invertV, _loopAnimation, _fromIndex, _toIndex, _delay, _sheetDirection, _time, disposeWhenFinishedAnimating) {
-            if (cellWidth === void 0) { cellWidth = 0; }
-            if (cellHeight === void 0) { cellHeight = 0; }
+        function Particle(particleSystem, cellIndex, invertU, invertV, _loopAnimation, _fromIndex, _toIndex, _delay, _sheetDirection, _time, disposeWhenFinishedAnimating) {
             if (cellIndex === void 0) { cellIndex = 0; }
             if (invertU === void 0) { invertU = 0; }
             if (invertV === void 0) { invertV = 0; }
@@ -40872,8 +40870,6 @@ var BABYLON;
             if (_time === void 0) { _time = 0; }
             if (disposeWhenFinishedAnimating === void 0) { disposeWhenFinishedAnimating = false; }
             this.particleSystem = particleSystem;
-            this.cellWidth = cellWidth;
-            this.cellHeight = cellHeight;
             this.cellIndex = cellIndex;
             this.invertU = invertU;
             this.invertV = invertV;
@@ -40894,7 +40890,7 @@ var BABYLON;
             this.angle = 0;
             this.angularSpeed = 0;
         }
-        Particle.prototype._animate = function (deltaTime) {
+        Particle.prototype.updateCellIndex = function (deltaTime) {
             this._time += deltaTime;
             if (this._time > this._delay) {
                 this._time = this._time % this._delay;
@@ -40906,7 +40902,7 @@ var BABYLON;
                     else {
                         this.cellIndex = this._toIndex;
                         if (this.disposeWhenFinishedAnimating) {
-                            this.ReadyForRecycling();
+                            this.readyForRecycling();
                         }
                     }
                 }
@@ -40923,8 +40919,6 @@ var BABYLON;
             other.angle = this.angle;
             other.angularSpeed = this.angularSpeed;
             other.particleSystem = this.particleSystem;
-            other.cellWidth = this.cellWidth;
-            other.cellHeight = this.cellHeight;
             other.cellIndex = this.cellIndex;
             other.invertU = this.invertU;
             other.invertV = this.invertV;
@@ -40936,7 +40930,7 @@ var BABYLON;
             other._time = this._time;
             other.disposeWhenFinishedAnimating = this.disposeWhenFinishedAnimating;
         };
-        Particle.prototype.ReadyForRecycling = function () {
+        Particle.prototype.readyForRecycling = function () {
             this.age = this.lifeTime;
         };
         return Particle;
@@ -41020,13 +41014,13 @@ var BABYLON;
             this._delay = 0;
             this._sheetDirection = 1;
             this._time = 0;
-            this._vertixBufferSize = 11;
+            this._vertexBufferSize = 11;
             this.appendParticleVertexes = null;
             this.id = name;
             this._capacity = capacity;
             this._epsilon = epsilon;
             if (cellSize) {
-                this._vertixBufferSize = 15;
+                this._vertexBufferSize = 15;
                 if (cellSize.width && cellSize.height) {
                     this.cellWidth = cellSize.width;
                     this.cellHeight = cellSize.height;
@@ -41041,8 +41035,8 @@ var BABYLON;
             scene.particleSystems.push(this);
             this._createIndexBuffer();
             // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
-            this._vertexData = new Float32Array(capacity * this._vertixBufferSize * 4);
-            this._vertexBuffer = new BABYLON.Buffer(scene.getEngine(), this._vertexData, true, this._vertixBufferSize);
+            this._vertexData = new Float32Array(capacity * this._vertexBufferSize * 4);
+            this._vertexBuffer = new BABYLON.Buffer(scene.getEngine(), this._vertexData, true, this._vertexBufferSize);
             var positions = this._vertexBuffer.createVertexBuffer(BABYLON.VertexBuffer.PositionKind, 0, 3);
             var colors = this._vertexBuffer.createVertexBuffer(BABYLON.VertexBuffer.ColorKind, 3, 4);
             var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
@@ -41067,6 +41061,7 @@ var BABYLON;
                 BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
             };
             this.updateFunction = function (particles) {
+                var deltaTime = _this._scene.getEngine().getDeltaTime();
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
                     particle.age += _this._scaledUpdateSpeed;
@@ -41085,6 +41080,9 @@ var BABYLON;
                         particle.position.addInPlace(_this._scaledDirection);
                         _this.gravity.scaleToRef(_this._scaledUpdateSpeed, _this._scaledGravity);
                         particle.direction.addInPlace(_this._scaledGravity);
+                        if (_this.cellSize && _this._animationStarted) {
+                            particle.updateCellIndex(deltaTime);
+                        }
                     }
                 }
             };
@@ -41153,7 +41151,7 @@ var BABYLON;
         };
         // animation sheet
         ParticleSystem.prototype._appendParticleVertex = function (index, particle, offsetX, offsetY) {
-            var offset = index * this._vertixBufferSize;
+            var offset = index * this._vertexBufferSize;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
             this._vertexData[offset + 2] = particle.position.z;
@@ -41179,7 +41177,7 @@ var BABYLON;
             var columnOffset = particle.cellIndex - rowOffset * rowSize;
             var intertU = particle.invertU ? 1 : 0;
             var interV = particle.invertV ? 1 : 0;
-            var offset = index * this._vertixBufferSize;
+            var offset = index * this._vertexBufferSize;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
             this._vertexData[offset + 2] = particle.position.z;
@@ -41222,7 +41220,7 @@ var BABYLON;
                 }
                 else {
                     if (this.cellSize) {
-                        particle = new BABYLON.Particle(this, this.cellWidth, this.cellHeight, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time, this.disposeParticlesWhenFinishedAnimating);
+                        particle = new BABYLON.Particle(this, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time, this.disposeParticlesWhenFinishedAnimating);
                     }
                     else {
                         particle = new BABYLON.Particle(this);
@@ -41321,18 +41319,11 @@ var BABYLON;
                 }
             }
             // Animation sheet
-            var deltaTime = 0;
+            var rowSize = 0;
             if (this.cellSize) {
                 var baseSize = this.particleTexture.getBaseSize();
-                var rowSize = baseSize.width / this.cellWidth;
-                var engine = this._scene.getEngine();
-                deltaTime = engine.getDeltaTime();
-                if (this._animationStarted) {
-                    this.appendParticleVertexes = this.appenedAllParticleVertexesWithSheetAndAnimationStarted;
-                }
-                else {
-                    this.appendParticleVertexes = this.appenedAllParticleVertexesWithSheet;
-                }
+                rowSize = baseSize.width / this.cellWidth;
+                this.appendParticleVertexes = this.appenedParticleVertexesWithSheet;
             }
             else {
                 this.appendParticleVertexes = this.appenedParticleVertexesNoSheet;
@@ -41341,22 +41332,18 @@ var BABYLON;
             var offset = 0;
             for (var index = 0; index < this.particles.length; index++) {
                 var particle = this.particles[index];
-                this.appendParticleVertexes(offset, particle, rowSize, deltaTime);
+                this.appendParticleVertexes(offset, particle, rowSize);
                 offset += 4;
             }
             this._vertexBuffer.update(this._vertexData);
         };
-        ParticleSystem.prototype.appenedAllParticleVertexesWithSheet = function (offset, particle, rowSize, deltaTime) {
+        ParticleSystem.prototype.appenedParticleVertexesWithSheet = function (offset, particle, rowSize) {
             this._appendParticleVertexWithAnimation(offset++, particle, 0, 0, rowSize);
             this._appendParticleVertexWithAnimation(offset++, particle, 1, 0, rowSize);
             this._appendParticleVertexWithAnimation(offset++, particle, 1, 1, rowSize);
             this._appendParticleVertexWithAnimation(offset++, particle, 0, 1, rowSize);
         };
-        ParticleSystem.prototype.appenedAllParticleVertexesWithSheetAndAnimationStarted = function (offset, particle, rowSize, deltaTime) {
-            this.appenedAllParticleVertexesWithSheet(offset, particle, rowSize, deltaTime);
-            particle._animate(deltaTime);
-        };
-        ParticleSystem.prototype.appenedParticleVertexesNoSheet = function (offset, particle, rowSize, deltaTime) {
+        ParticleSystem.prototype.appenedParticleVertexesNoSheet = function (offset, particle, rowSize) {
             this._appendParticleVertex(offset++, particle, 0, 0);
             this._appendParticleVertex(offset++, particle, 1, 0);
             this._appendParticleVertex(offset++, particle, 1, 1);
