@@ -157,6 +157,12 @@ module INSPECTOR {
                     elem:elemValue, 
                     updateFct:() => { return BABYLON.Tools.Format(this._scene.getLastFrameDuration())}
                 });
+                elemLabel = this._createStatLabel("Inter-frame", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getInterFramePerfCounter())}
+                });                
                 elemLabel = this._createStatLabel("Potential FPS", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 

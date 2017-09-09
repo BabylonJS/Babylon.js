@@ -13955,30 +13955,11 @@ var BABYLON;
                 child.position.z = position.z;
             }
             else {
-                var rotation = BABYLON.Tmp.Quaternion[0];
                 var position = BABYLON.Tmp.Vector3[0];
-                var scale = BABYLON.Tmp.Vector3[1];
                 var m1 = BABYLON.Tmp.Matrix[0];
-                var m2 = BABYLON.Tmp.Matrix[1];
-                parent.getWorldMatrix().decompose(scale, rotation, position);
-                rotation.toRotationMatrix(m1);
-                m2.setTranslation(position);
-                m2.multiplyToRef(m1, m1);
-                var invParentMatrix = BABYLON.Matrix.Invert(m1);
-                var m = child.getWorldMatrix().multiply(invParentMatrix);
-                m.decompose(scale, rotation, position);
-                if (child.rotationQuaternion) {
-                    child.rotationQuaternion.copyFrom(rotation);
-                }
-                else {
-                    rotation.toEulerAnglesToRef(child.rotation);
-                }
-                invParentMatrix = BABYLON.Matrix.Invert(parent.getWorldMatrix());
-                var m = child.getWorldMatrix().multiply(invParentMatrix);
-                m.decompose(scale, rotation, position);
-                child.position.x = position.x;
-                child.position.y = position.y;
-                child.position.z = position.z;
+                parent.getWorldMatrix().invertToRef(m1);
+                BABYLON.Vector3.TransformCoordinatesToRef(child.position, m1, position);
+                child.position.copyFrom(position);
             }
             child.parent = parent;
             return this;
@@ -16715,6 +16696,7 @@ var BABYLON;
             this._totalVertices = new BABYLON.PerfCounter();
             this._activeIndices = new BABYLON.PerfCounter();
             this._activeParticles = new BABYLON.PerfCounter();
+            this._interFrameDuration = new BABYLON.PerfCounter();
             this._lastFrameDuration = new BABYLON.PerfCounter();
             this._evaluateActiveMeshesDuration = new BABYLON.PerfCounter();
             this._renderTargetsDuration = new BABYLON.PerfCounter();
@@ -16741,6 +16723,7 @@ var BABYLON;
             this._transformMatrix = BABYLON.Matrix.Zero();
             this.requireLightSorting = false;
             this._uniqueIdCounter = 0;
+            this._activeMeshesFrozen = false;
             this._engine = engine || BABYLON.Engine.LastCreatedEngine;
             this._engine.scenes.push(this);
             this._uid = null;
@@ -17197,6 +17180,16 @@ var BABYLON;
             configurable: true
         });
         // Stats
+        Scene.prototype.getInterFramePerfCounter = function () {
+            return this._interFrameDuration.current;
+        };
+        Object.defineProperty(Scene.prototype, "interFramePerfCounter", {
+            get: function () {
+                return this._interFrameDuration;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getLastFrameDuration = function () {
             return this._lastFrameDuration.current;
         };
@@ -18622,7 +18615,25 @@ var BABYLON;
         Scene.prototype._isInIntermediateRendering = function () {
             return this._intermediateRendering;
         };
+        /**
+         * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
+         */
+        Scene.prototype.freezeActiveMeshes = function () {
+            this._evaluateActiveMeshes();
+            this._activeMeshesFrozen = true;
+            return this;
+        };
+        /**
+         * Use this function to restart evaluating active meshes on every frame
+         */
+        Scene.prototype.unfreezeActiveMeshes = function () {
+            this._activeMeshesFrozen = false;
+            return this;
+        };
         Scene.prototype._evaluateActiveMeshes = function () {
+            if (this._activeMeshesFrozen && this._activeMeshes.length) {
+                return;
+            }
             this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
             this._renderingManager.reset();
@@ -18931,6 +18942,7 @@ var BABYLON;
             if (this.isDisposed) {
                 return;
             }
+            this._interFrameDuration.endMonitoring();
             this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
@@ -18979,9 +18991,6 @@ var BABYLON;
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
                     if ((internalSteps > 1) && (this._currentInternalStep != internalSteps - 1)) {
-                        // Q: can this be optimized by putting some code in the afterStep callback?
-                        // I had to put this code here, otherwise mesh attached to bones of another mesh skeleton,
-                        // would return incorrect positions for internal stepIds (non-rendered steps)
                         this._evaluateActiveMeshes();
                     }
                 }
@@ -19108,6 +19117,7 @@ var BABYLON;
                 this.dumpNextRenderTargets = false;
             }
             BABYLON.Tools.EndPerformanceCounter("Scene rendering");
+            this._interFrameDuration.beginMonitoring();
             this._lastFrameDuration.endMonitoring();
             this._totalMeshesCounter.addCount(this.meshes.length, true);
             this._totalLightsCounter.addCount(this.lights.length, true);
@@ -30157,7 +30167,8 @@ var BABYLON;
             engine.setDepthBuffer(true);
             engine.setDepthWrite(true);
         };
-        PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture, faceIndex, postProcesses) {
+        PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture, faceIndex, postProcesses, forceFullscreenViewport) {
+            if (forceFullscreenViewport === void 0) { forceFullscreenViewport = false; }
             postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
@@ -30169,7 +30180,7 @@ var BABYLON;
                 }
                 else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture, faceIndex);
+                        engine.bindFramebuffer(targetTexture, faceIndex, null, null, forceFullscreenViewport);
                     }
                     else {
                         engine.restoreDefaultFramebuffer();
@@ -39837,11 +39848,12 @@ var BABYLON;
             if (this._time > this._delay) {
                 this._time = this._time % this._delay;
                 this.cellIndex += this._direction;
-                if (this.cellIndex === this._toIndex) {
+                if (this.cellIndex > this._toIndex) {
                     if (this._loopAnimation) {
                         this.cellIndex = this._fromIndex;
                     }
                     else {
+                        this.cellIndex = this._toIndex;
                         this._animationStarted = false;
                         if (this._onAnimationEnd) {
                             this._onAnimationEnd();
@@ -46287,7 +46299,7 @@ var BABYLON;
             // Render
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
             if (this._postProcessManager) {
-                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses);
+                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses, this.ignoreCameraViewport);
             }
             else if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);
@@ -47788,6 +47800,7 @@ var BABYLON;
             this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(BABYLON.Texture.BILINEAR_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
+            this._shadowMap.ignoreCameraViewport = true;
             // Record Face Index before render.
             this._shadowMap.onBeforeRenderObservable.add(function (faceIndex) {
                 _this._currentFaceIndex = faceIndex;
@@ -47802,7 +47815,7 @@ var BABYLON;
                 if (!_this._blurPostProcesses) {
                     _this._initializeBlurRTTAndPostProcesses();
                 }
-                _this._scene.postProcessManager.directRender(_this._blurPostProcesses, _this.getShadowMapForRendering().getInternalTexture());
+                _this._scene.postProcessManager.directRender(_this._blurPostProcesses, _this.getShadowMapForRendering().getInternalTexture(), true);
             });
             // Clear according to the chosen filter.
             this._shadowMap.onClearObservable.add(function (engine) {
@@ -66802,6 +66815,8 @@ var BABYLON;
                 if (scene.activeCamera.rotation) {
                     newCamera.rotation = scene.activeCamera.rotation.clone();
                 }
+                newCamera.minZ = this._scene.activeCamera.minZ;
+                newCamera.maxZ = this._scene.activeCamera.maxZ;
                 this._scene.activeCamera = newCamera;
             }
             this._position = this._scene.activeCamera.position;
