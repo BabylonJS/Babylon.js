@@ -11,10 +11,10 @@
         public angle = 0;
         public angularSpeed = 0;
 
-        constructor(private particleSystem: ParticleSystem, public cellWidth: number = 0, public cellHeight: number = 0, public cellIndex: number = 0, public invertU: number = 0, public invertV: number = 0, private _loopAnimation = false, private _fromIndex = 0, private _toIndex = 0, private _delay = 0, private _sheetDirection = 1, private _time = 0, private disposeWhenFinishedAnimating = false) {
+        constructor(private particleSystem: ParticleSystem, public cellIndex: number = 0, public invertU: number = 0, public invertV: number = 0, private _loopAnimation = false, private _fromIndex = 0, private _toIndex = 0, private _delay = 0, private _sheetDirection = 1, private _time = 0, private disposeWhenFinishedAnimating = false) {
         }
 
-        public _animate(deltaTime: number): void {
+        public updateCellIndex(deltaTime: number): void {
             this._time += deltaTime;
             if (this._time > this._delay) {
                 this._time = this._time % this._delay;
@@ -26,7 +26,7 @@
                     else {
                         this.cellIndex = this._toIndex;
                         if (this.disposeWhenFinishedAnimating) {
-                            this.ReadyForRecycling();
+                            this.readyForRecycling();
                         }
                     }
                 }
@@ -44,8 +44,6 @@
             other.angle = this.angle;
             other.angularSpeed = this.angularSpeed;
             other.particleSystem = this.particleSystem;
-            other.cellWidth = this.cellWidth;
-            other.cellHeight = this.cellHeight;
             other.cellIndex = this.cellIndex;
             other.invertU = this.invertU;
             other.invertV = this.invertV;
@@ -58,7 +56,7 @@
             other.disposeWhenFinishedAnimating = this.disposeWhenFinishedAnimating;
         }
 
-        public ReadyForRecycling() {
+        public readyForRecycling() {
             this.age = this.lifeTime;
         }
     }
