@@ -63,8 +63,9 @@
         public cellWidth: number;
         public cellHeight: number;
         public cellIndex: number;
-        public invertU:number;
-        public invertV:number;
+        public invertU: number;
+        public invertV: number;
+        public disposeWhenFinishedAnimating: boolean;
         private _epsilon: number;
 
 
@@ -126,6 +127,18 @@
         private _stopped = false;
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
+
+
+        // sheet animation
+        private _animationStarted = false;
+        private _loopAnimation = false;
+        private _fromIndex = 0;
+        private _toIndex = 0;
+        private _delay = 0;
+        private _sheetDirection = 1;
+        private _frameCount = 0;
+        private _time = 0;
+        // end of sheet animation
 
         constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, cellSize?: any, epsilon: number = 0.01) {
             this.id = name;
@@ -255,7 +268,54 @@
             this._stopped = true;
         }
 
-        public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number, rowSize: number): void {
+        // animation sheet
+        public playAnimation(from: number, to: number, loop: boolean, delay: number): void {
+            this._fromIndex = from;
+            this._toIndex = to;
+            this._loopAnimation = loop;
+            this._delay = delay;
+            this._animationStarted = true;
+            this._sheetDirection = from < to ? 1 : -1;
+            this.cellIndex = from;
+            this._time = 0;
+        }
+
+        public stopAnimation(): void {
+            this._animationStarted = false;
+        }
+
+        public _animateSheet(deltaTime: number): void {
+            if (!this._animationStarted)
+                return;
+
+            this._time += deltaTime;
+            if (this._time > this._delay) {
+                this._time = this._time % this._delay;
+                this.cellIndex += this._sheetDirection;
+                if (this.cellIndex === this._toIndex + 1) {
+                    if (this._loopAnimation) {
+                        this.cellIndex = this._fromIndex;
+                    } else {
+                        this._animationStarted = false;
+                        this.stop();
+                    }
+                }
+            }
+        }
+        // animation sheet
+
+        public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number, intertU: number, interV: number, columnOffset: number, rowOffset: number): void {
+
+            if (offsetX === 0)
+                offsetX = this._epsilon;
+            else if (offsetX === 1)
+                offsetX = 1 - this._epsilon;
+
+            if (offsetY === 0)
+                offsetY = this._epsilon;
+            else if (offsetY === 1)
+                offsetY = 1 - this._epsilon;
+
             var offset = index * 15;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
@@ -268,23 +328,9 @@
             this._vertexData[offset + 8] = particle.size;
             this._vertexData[offset + 9] = offsetX;
             this._vertexData[offset + 10] = offsetY;
-
-            if (offsetX === 0)
-                offsetX = this._epsilon;
-            else if (offsetX === 1)
-                offsetX = 1 - this._epsilon;
-
-            if (offsetY === 0)
-                offsetY = this._epsilon;
-            else if (offsetY === 1)
-                offsetY = 1 - this._epsilon;
-
-            this._vertexData[offset + 11] = this.invertU ? 1 : 0;
-            this._vertexData[offset + 12] = this.invertV ? 1 : 0;
-            var rowOffset = (this.cellIndex / rowSize) >> 0;
-            // which column
-            this._vertexData[offset + 13] = this.cellIndex - rowOffset * rowSize;
-            // which row (1 or 2 or three)
+            this._vertexData[offset + 11] = intertU;
+            this._vertexData[offset + 12] = interV;
+            this._vertexData[offset + 13] = columnOffset;
             this._vertexData[offset + 14] = rowOffset;
         }
 
@@ -425,21 +471,30 @@
                 }
             }
 
+            // Animation sheet
             var baseSize = this.particleTexture.getBaseSize();
             var rowSize = baseSize.width / this.cellWidth;
+            var rowOffset = (this.cellIndex / rowSize) >> 0;
+            var columnOffset = this.cellIndex - rowOffset * rowSize;
+            var intertU = this.invertU ? 1 : 0;
+            var interV = this.invertV ? 1 : 0;
 
             // Update VBO
             var offset = 0;
             for (var index = 0; index < this.particles.length; index++) {
                 var particle = this.particles[index];
 
-                this._appendParticleVertex(offset++, particle, 0, 0, rowSize);
-                this._appendParticleVertex(offset++, particle, 1, 0, rowSize);
-                this._appendParticleVertex(offset++, particle, 1, 1, rowSize);
-                this._appendParticleVertex(offset++, particle, 0, 1, rowSize);
+                this._appendParticleVertex(offset++, particle, 0, 0, intertU, interV, columnOffset, rowOffset);
+                this._appendParticleVertex(offset++, particle, 1, 0, intertU, interV, columnOffset, rowOffset);
+                this._appendParticleVertex(offset++, particle, 1, 1, intertU, interV, columnOffset, rowOffset);
+                this._appendParticleVertex(offset++, particle, 0, 1, intertU, interV, columnOffset, rowOffset);
             }
 
             this._vertexBuffer.update(this._vertexData);
+
+            var engine = this._scene.getEngine();
+            var deltaTime = engine.getDeltaTime();
+            this._animateSheet(deltaTime);
         }
 
         public rebuild(): void {
