@@ -26,7 +26,7 @@
                     else {
                         this.cellIndex = this._toIndex;
                         if (this.disposeWhenFinishedAnimating) {
-                            this.dispose();
+                            this.ReadyForRecycling();
                         }
                     }
                 }
@@ -58,7 +58,7 @@
             other.disposeWhenFinishedAnimating = this.disposeWhenFinishedAnimating;
         }
 
-        public dispose() {
+        public ReadyForRecycling() {
             this.age = this.lifeTime;
         }
     }
