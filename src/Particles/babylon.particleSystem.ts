@@ -65,6 +65,7 @@
         public cellIndex: number;
         public invertU: number;
         public invertV: number;
+        public disposeParticlesWhenFinishedAnimating = false;
         private _epsilon: number;
 
 
@@ -364,12 +365,13 @@
                 if (this._stockParticles.length !== 0) {
                     particle = this._stockParticles.pop();
                     particle.age = 0;
+                    particle.cellIndex = this._fromIndex;
                 } else {
                     if (this.cellSize) {
-                        particle = new Particle(this.cellWidth, this.cellHeight, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time);
+                        particle = new Particle(this, this.cellWidth, this.cellHeight, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time,this.disposeParticlesWhenFinishedAnimating);
                     }
                     else {
-                        particle = new Particle();
+                        particle = new Particle(this);
                     }
                 }
                 this.particles.push(particle);

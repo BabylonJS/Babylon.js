@@ -1,9 +1,5 @@
 ﻿module BABYLON {
 
-    export class IParticleAnimation {
-
-    }
-
     export class Particle {
         public position = Vector3.Zero();
         public direction = Vector3.Zero();
@@ -15,7 +11,7 @@
         public angle = 0;
         public angularSpeed = 0;
 
-        constructor(public cellWidth: number = 0, public cellHeight: number = 0, public cellIndex: number = 0, public invertU: number = 0, public invertV: number = 0, private _loopAnimation = false, private _fromIndex = 0, private _toIndex = 0, private _delay = 0, private _sheetDirection = 1, private _time = 0) {
+        constructor(private particleSystem: ParticleSystem, public cellWidth: number = 0, public cellHeight: number = 0, public cellIndex: number = 0, public invertU: number = 0, public invertV: number = 0, private _loopAnimation = false, private _fromIndex = 0, private _toIndex = 0, private _delay = 0, private _sheetDirection = 1, private _time = 0, private disposeWhenFinishedAnimating = false) {
         }
 
         public _animate(deltaTime: number): void {
@@ -29,7 +25,9 @@
                     }
                     else {
                         this.cellIndex = this._toIndex;
-                        // stop and remove from scene
+                        if (this.disposeWhenFinishedAnimating) {
+                            this.dispose();
+                        }
                     }
                 }
             }
@@ -45,6 +43,23 @@
             other.size = this.size;
             other.angle = this.angle;
             other.angularSpeed = this.angularSpeed;
+            other.particleSystem = this.particleSystem;
+            other.cellWidth = this.cellWidth;
+            other.cellHeight = this.cellHeight;
+            other.cellIndex = this.cellIndex;
+            other.invertU = this.invertU;
+            other.invertV = this.invertV;
+            other._loopAnimation = this._loopAnimation;
+            other._fromIndex = this._fromIndex;
+            other._toIndex = this._toIndex;
+            other._delay = this._delay;
+            other._sheetDirection = this._sheetDirection;
+            other._time = this._time;
+            other.disposeWhenFinishedAnimating = this.disposeWhenFinishedAnimating;
+        }
+
+        public dispose() {
+            this.age = this.lifeTime;
         }
     }
 } 
