@@ -40968,7 +40968,6 @@ var BABYLON;
                 this._currentFrameCounter = 0;
                 this.cellIndex++;
                 if (this.cellIndex > this._toIndex) {
-                    console.log("end");
                     this.cellIndex = this._toIndex;
                 }
             }
