@@ -285,6 +285,9 @@
         public alphaMode = Engine.ALPHA_COMBINE;
 
         @serialize()
+        public needDepthPrePass = false;
+
+        @serialize()
         public disableDepthWrite = false;
 
         @serialize("fogEnabled")
@@ -360,7 +363,7 @@
             }
 
             this._uniformBuffer = new UniformBuffer(this._scene.getEngine());
-            this._useUBO = this.getScene().getEngine().webGLVersion > 1;
+            this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
             if (!doNotAdd) {
                 this._scene.materials.push(this);

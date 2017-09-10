@@ -24,6 +24,13 @@
             var material = subMesh.getMaterial();
 
             engine.enableEffect(this._effect);
+
+            // Logarithmic depth
+            if((<any> material).useLogarithmicDepth)
+            {
+                this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
+            }
+
             this._effect.setFloat("offset", useOverlay ? 0 : mesh.outlineWidth);
             this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : material.alpha);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
@@ -38,14 +45,16 @@
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 var alphaTexture = material.getAlphaTestTexture();
-                this._effect.setTexture("diffuseSampler", alphaTexture);
-                this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                if (alphaTexture) {
+                    this._effect.setTexture("diffuseSampler", alphaTexture);
+                    this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                }
             }
 
             engine.setZOffset(-this.zOffset);
 
             mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => { this._effect.setMatrix("world", world)});
+                (isInstance, world) => { this._effect.setMatrix("world", world) });
 
             engine.setZOffset(0);
         }
@@ -57,19 +66,26 @@
             var mesh = subMesh.getMesh();
             var material = subMesh.getMaterial();
 
-            // Alpha test
-            if (material && material.needAlphaTesting()) {
-                defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    attribs.push(VertexBuffer.UVKind);
-                    defines.push("#define UV1");
+            if (material) {
+                // Alpha test
+                if(material.needAlphaTesting())
+                {
+                    defines.push("#define ALPHATEST");
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                        attribs.push(VertexBuffer.UVKind);
+                        defines.push("#define UV1");
+                    }
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                        attribs.push(VertexBuffer.UV2Kind);
+                        defines.push("#define UV2");
+                    }
                 }
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    attribs.push(VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
+                //Logarithmic depth
+                if((<any> material).useLogarithmicDepth)
+                {
+                    defines.push("#define LOGARITHMICDEPTH");
                 }
             }
-
             // Bones
             if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
@@ -99,7 +115,7 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("outline",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant"],
                     ["diffuseSampler"], join);
             }
 

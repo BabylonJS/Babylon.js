@@ -258,7 +258,8 @@ declare module BABYLON.GLTF2 {
     interface IGLTFTexture extends IGLTFChildRootProperty {
         sampler?: number;
         source: number;
-        babylonTextures?: Texture[];
+        url?: string;
+        dataReadyObservable?: Observable<IGLTFTexture>;
     }
     interface IGLTFTextureInfo {
         index: number;
@@ -273,7 +274,6 @@ declare module BABYLON.GLTF2 {
         cameras?: IGLTFCamera[];
         extensionsUsed?: string[];
         extensionsRequired?: string[];
-        glExtensionsUsed?: string[];
         images?: IGLTFImage[];
         materials?: IGLTFMaterial[];
         meshes?: IGLTFMesh[];
@@ -299,7 +299,6 @@ declare module BABYLON.GLTF2 {
         private _errorCallback;
         private _renderReady;
         private _disposed;
-        private _objectURLs;
         private _blockPendingTracking;
         private _nonBlockingData;
         private _renderReadyObservable;
@@ -344,7 +343,14 @@ declare module BABYLON.GLTF2 {
         private _loadAnimations();
         private _loadAnimationChannel(animation, animationIndex, channelIndex);
         private _loadBufferAsync(index, onSuccess);
-        private _loadBufferViewAsync(bufferView, byteOffset, byteLength, componentType, onSuccess);
+        private _buildInt8ArrayBuffer(buffer, byteOffset, byteLength, byteStride, bytePerComponent);
+        private _buildUint8ArrayBuffer(buffer, byteOffset, byteLength, byteStride, bytePerComponent);
+        private _buildInt16ArrayBuffer(buffer, byteOffset, byteLength, byteStride, bytePerComponent);
+        private _buildUint16ArrayBuffer(buffer, byteOffset, byteLength, byteStride, bytePerComponent);
+        private _buildUint32ArrayBuffer(buffer, byteOffset, byteLength, byteStride, bytePerComponent);
+        private _buildFloat32ArrayBuffer(buffer, byteOffset, byteLength, byteStride, bytePerComponent);
+        private _extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, stride, length);
+        private _loadBufferViewAsync(bufferView, byteOffset, byteLength, bytePerComponent, componentType, onSuccess);
         private _loadAccessorAsync(accessor, onSuccess);
         private _getByteStrideFromType(accessor);
         blockPendingTracking: boolean;

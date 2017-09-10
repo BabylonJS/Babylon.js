@@ -128,6 +128,8 @@
         private _instancesData: Float32Array;
         private _overridenInstanceCount: number;
 
+        private _effectiveMaterial: Material;
+
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
         private _sideOrientation: number = Mesh._DEFAULTSIDE;
@@ -137,7 +139,7 @@
         private _sourceNormals: Float32Array;   // Will be used to save original normals when using software skinning
 
         // Will be used to save a source mesh reference, If any
-        private _source: BABYLON.Mesh = null; 
+        private _source: BABYLON.Mesh = null;
         public get source(): BABYLON.Mesh {
             return this._source;
         }
@@ -224,7 +226,7 @@
          */
         public getClassName(): string {
             return "Mesh";
-        }   
+        }
 
         /**
          * Returns a string.  
@@ -648,7 +650,7 @@
             if (this.subMeshes && this.subMeshes.length > 0) {
                 var totalIndices = this.getIndices().length;
                 let needToRecreate = false;
-    
+
                 if (force) {
                     needToRecreate = true;
                 } else {
@@ -900,14 +902,15 @@
             return this;
         }
 
-        public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
+        public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate = false): Mesh {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return this;
             }
 
             this.onBeforeDrawObservable.notifyObservers(this);
 
-            var engine = this.getScene().getEngine();
+            let scene = this.getScene();
+            let engine = scene.getEngine();
 
             // Draw order
             switch (fillMode) {
@@ -928,6 +931,21 @@
                     } else {
                         engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
                     }
+            }
+
+            if (scene._isAlternateRenderingEnabled && !alternate) {
+                let effect = subMesh.effect || this._effectiveMaterial.getEffect();
+                scene._switchToAlternateCameraConfiguration(true);
+                this._effectiveMaterial.bindView(effect);
+                this._effectiveMaterial.bindViewProjection(effect);
+
+                engine.setViewport(scene.activeCamera._alternateCamera.viewport);
+                this._draw(subMesh, fillMode, instancesCount, true);
+                engine.setViewport(scene.activeCamera.viewport);
+
+                scene._switchToAlternateCameraConfiguration(false);
+                this._effectiveMaterial.bindView(effect);
+                this._effectiveMaterial.bindViewProjection(effect);
             }
             return this;
         }
@@ -1106,6 +1124,12 @@
          * Returns the Mesh.   
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+
+            this.checkOcclusionQuery();
+            if (this._isOccluded) {
+                return;
+            }
+
             var scene = this.getScene();
 
             // Managing instances
@@ -1127,25 +1151,25 @@
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
             // Material
-            var effectiveMaterial = subMesh.getMaterial();
+            this._effectiveMaterial = subMesh.getMaterial();
 
-            if (!effectiveMaterial) {
+            if (!this._effectiveMaterial) {
                 return this;
             }
 
-            if (effectiveMaterial.storeEffectOnSubMeshes) {
-                if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
+                if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                     return this;
                 }
-            } else if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+            } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
 
             // Alpha mode
             if (enableAlphaMode) {
-                engine.setAlphaMode(effectiveMaterial.alphaMode);
+                engine.setAlphaMode(this._effectiveMaterial.alphaMode);
             }
-            
+
             // Outline - step 1
             var savedDepthWrite = engine.getDepthWrite();
             if (this.renderOutline) {
@@ -1155,34 +1179,34 @@
             }
 
             var effect: Effect;
-            if (effectiveMaterial.storeEffectOnSubMeshes) {
+            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 effect = subMesh.effect;
             } else {
-                effect = effectiveMaterial.getEffect();
+                effect = this._effectiveMaterial.getEffect();
             }
 
-            effectiveMaterial._preBind(effect);
+            this._effectiveMaterial._preBind(effect);
 
             // Bind
-            var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode);
+            var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : this._effectiveMaterial.fillMode);
 
             if (!hardwareInstancedRendering) { // Binding will be done later because we need to add more info to the VB
                 this._bind(subMesh, effect, fillMode);
             }
 
             var world = this.getWorldMatrix();
-            
-            if (effectiveMaterial.storeEffectOnSubMeshes) {
-                effectiveMaterial.bindForSubMesh(world, this, subMesh);
+
+            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
+                this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
             } else {
-                effectiveMaterial.bind(world, this);
+                this._effectiveMaterial.bind(world, this);
             }
 
             // Draw
-            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
+            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
 
             // Unbind
-            effectiveMaterial.unbind();
+            this._effectiveMaterial.unbind();
 
             // Outline - step 2
             if (this.renderOutline && savedDepthWrite) {
@@ -1272,8 +1296,7 @@
                     this._delayLoadingFunction(JSON.parse(data), this);
                 }
 
-                this.instances.forEach(instance =>
-                {
+                this.instances.forEach(instance => {
                     instance._syncSubMeshes();
                 });
 
@@ -2006,7 +2029,7 @@
             // Alpha
             serializationObject.alphaIndex = this.alphaIndex;
             serializationObject.hasVertexAlpha = this.hasVertexAlpha;
-            
+
             // Overlay
             serializationObject.overlayAlpha = this.overlayAlpha;
             serializationObject.overlayColor = this.overlayColor.asArray();
@@ -2020,7 +2043,7 @@
                 serializationObject.actions = this.actionManager.serialize(this.name);
             }
         }
-        
+
         public _syncGeometryWithMorphTargetManager() {
             if (!this.geometry) {
                 return;
@@ -2048,22 +2071,19 @@
                 }
             } else {
                 var index = 0;
-                
+
                 // Positions
-                while (this.geometry.isVerticesDataPresent(VertexBuffer.PositionKind + index))
-                {
+                while (this.geometry.isVerticesDataPresent(VertexBuffer.PositionKind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.PositionKind + index);
-                    
-                    if (this.geometry.isVerticesDataPresent(VertexBuffer.NormalKind + index))
-                    {
+
+                    if (this.geometry.isVerticesDataPresent(VertexBuffer.NormalKind + index)) {
                         this.geometry.removeVerticesData(VertexBuffer.NormalKind + index);
                     }
-                    if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index))
-                    {
+                    if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index)) {
                         this.geometry.removeVerticesData(VertexBuffer.TangentKind + index);
                     }
                     index++;
-                }    
+                }
             }
         }
 
@@ -2074,7 +2094,7 @@
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
-            var mesh : Mesh;
+            var mesh: Mesh;
 
             if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
                 mesh = GroundMesh.Parse(parsedMesh, scene);
@@ -2139,7 +2159,7 @@
             if (parsedMesh.isBlocker !== undefined) {
                 mesh.isBlocker = parsedMesh.isBlocker;
             }
-            
+
             mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
 
             // freezeWorldMatrix
@@ -2549,12 +2569,12 @@
                 sideOrientation: sideOrientation
             }
             return MeshBuilder.CreatePolygon(name, options, scene);
-		}
+        }
 
-       /**
-         * Creates an extruded polygon mesh, with depth in the Y direction. 
-         * Please consider using the same method from the MeshBuilder class instead. 
-		*/
+        /**
+          * Creates an extruded polygon mesh, with depth in the Y direction. 
+          * Please consider using the same method from the MeshBuilder class instead. 
+         */
         public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
             var options = {
                 shape: shape,
@@ -2564,7 +2584,7 @@
                 sideOrientation: sideOrientation
             }
             return MeshBuilder.ExtrudePolygon(name, options, scene);
-		}
+        }
 
         /**
          * Creates an extruded shape mesh.    
@@ -3092,12 +3112,12 @@
 
             // Subdivide
             if (subdivideWithSubMeshes) {
-                
+
                 //-- Suppresions du submesh global
                 meshSubclass.releaseSubMeshes();
                 index = 0;
                 var offset = 0;
-                
+
                 //-- aplique la subdivision en fonction du tableau d'indices
                 while (index < indiceArray.length) {
                     BABYLON.SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);

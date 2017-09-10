@@ -3,7 +3,8 @@ module BABYLON {
         camera: ArcRotateCamera;
 
         public gamepad: Gamepad;
-        private _gamepads: Gamepads<Gamepad>;
+        private _onGamepadConnectedObserver : Observer<Gamepad>;
+        private _onGamepadDisconnectedObserver : Observer<Gamepad>;
 
         @serialize()
         public gamepadRotationSensibility = 80;
@@ -12,13 +13,28 @@ module BABYLON {
         public gamepadMoveSensibility = 40;
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
-            this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
+            let manager = this.camera.getScene().gamepadManager;
+            this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
+                if (gamepad.type !== Gamepad.POSE_ENABLED) {
+                    // prioritize XBOX gamepads.
+                    if (!this.gamepad || gamepad.type === Gamepad.XBOX) {
+                        this.gamepad = gamepad;
+                    }
+                }
+            });  
+
+            this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad)=> {
+                if (this.gamepad === gamepad) {
+                    this.gamepad = null;
+                }
+            });            
+            
+            this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
         }
 
         detachControl(element: HTMLElement) {
-            if (this._gamepads) {
-                this._gamepads.dispose();
-            }
+            this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);            
+            this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;
         }
 
@@ -51,15 +67,6 @@ module BABYLON {
                     }
                 }
 
-            }
-        }
-
-        private _onNewGameConnected(gamepad: Gamepad) {
-            if (gamepad.type !== Gamepad.POSE_ENABLED) {
-                // prioritize XBOX gamepads.
-                if (!this.gamepad || gamepad.type === Gamepad.XBOX) {
-                    this.gamepad = gamepad;
-                }
             }
         }
 

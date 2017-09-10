@@ -4,7 +4,7 @@ module BABYLON {
     export var CollisionWorker = "";
 
     export interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
         init(scene: Scene): void;
         destroy(): void;
 
@@ -186,12 +186,12 @@ module BABYLON {
             }
         }
 
-        public getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void {
+        public getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void {
             if (!this._init) return;
             if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000]) return;
 
             position.divideToRef(collider.radius, this._scaledPosition);
-            velocity.divideToRef(collider.radius, this._scaledVelocity);
+            displacement.divideToRef(collider.radius, this._scaledVelocity);
 
             this._collisionsCallbackArray[collisionIndex] = onNewPosition;
 
@@ -347,9 +347,9 @@ module BABYLON {
 
         private _finalPosition = Vector3.Zero();
 
-        public getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void {
+        public getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void {
             position.divideToRef(collider.radius, this._scaledPosition);
-            velocity.divideToRef(collider.radius, this._scaledVelocity);
+            displacement.divideToRef(collider.radius, this._scaledVelocity);
             collider.collidedMesh = null;
             collider.retry = 0;
             collider.initialVelocity = this._scaledVelocity;

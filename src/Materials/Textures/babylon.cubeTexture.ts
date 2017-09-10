@@ -71,7 +71,7 @@
                 if (this._texture.isReady) {
                     Tools.SetImmediate(() => onLoad());
                 } else {
-                    this._texture.onLoadedCallbacks.push(onLoad);
+                    this._texture.onLoadedObservable.add(onLoad);
                 }
             }
         }

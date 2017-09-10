@@ -154,6 +154,10 @@
         }
 
         public set usePoissonSampling(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_POISSONSAMPLING) {
+                return;
+            }    
+
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
         }
 
@@ -179,6 +183,9 @@
             return this.filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP;
         }
         public set useExponentialShadowMap(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP) {
+                return;
+            }
             this.filter = (value ? ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
@@ -186,6 +193,9 @@
             return this.filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP;
         }
         public set useBlurExponentialShadowMap(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP) {
+                return;
+            }            
             this.filter = (value ? ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
@@ -193,6 +203,9 @@
             return this.filter === ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP;
         }
         public set useCloseExponentialShadowMap(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP) {
+                return;
+            }                   
             this.filter = (value ? ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
@@ -200,6 +213,9 @@
             return this.filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
         }
         public set useBlurCloseExponentialShadowMap(value: boolean) {
+            if (!value && this.filter!== ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) {
+                return;
+            }                  
             this.filter = (value ? ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
@@ -351,6 +367,7 @@
             this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
+            this._shadowMap.ignoreCameraViewport = true;
 
             // Record Face Index before render.
             this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
@@ -370,7 +387,7 @@
                     this._initializeBlurRTTAndPostProcesses();
                 }
 
-                this._scene.postProcessManager.directRender(this._blurPostProcesses, this.getShadowMapForRendering().getInternalTexture());
+                this._scene.postProcessManager.directRender(this._blurPostProcesses, this.getShadowMapForRendering().getInternalTexture(), true);
             });
 
             // Clear according to the chosen filter.
@@ -428,8 +445,18 @@
             }
         }
 
-        private _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void {
+        private _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
             var index: number;
+            let engine = this._scene.getEngine();
+
+            if (depthOnlySubMeshes.length) {
+                engine.setColorWrite(false);            
+                for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                    this._renderSubMeshForShadowMap(depthOnlySubMeshes.data[index]);
+                }
+                engine.setColorWrite(true);
+            }
+            
             for (index = 0; index < opaqueSubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(opaqueSubMeshes.data[index]);
             }

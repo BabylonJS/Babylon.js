@@ -20,6 +20,7 @@
         public OPACITYDIRECTUV = 0;
         public OPACITYRGB = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public ALPHABLEND = false;
         public ALPHAFROMALBEDO = false;
         public ALPHATESTVALUE = 0.5;
@@ -1061,7 +1062,9 @@
                 this._uniformBuffer.bindToEffect(effect, "Material");
 
                 this.bindViewProjection(effect);
-
+                var reflectionTexture = this._getReflectionTexture();
+                var refractionTexture = this._getRefractionTexture();
+                               
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
 
                     // Texture uniforms
@@ -1081,7 +1084,6 @@
                             MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
                         }
 
-                        var reflectionTexture = this._getReflectionTexture();
                         if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
@@ -1146,7 +1148,6 @@
                             }                                                         
                         }
 
-                        var refractionTexture = this._getRefractionTexture();
                         if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
 

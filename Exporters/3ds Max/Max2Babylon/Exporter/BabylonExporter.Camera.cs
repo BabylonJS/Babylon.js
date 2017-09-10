@@ -7,12 +7,23 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private void ExportCamera(IIGameScene scene,  IIGameNode cameraNode, BabylonScene babylonScene)
+        private bool IsCameraExportable(IIGameNode cameraNode)
         {
             if (cameraNode.MaxNode.GetBoolProperty("babylonjs_noexport"))
             {
-                return;
+                return false;
             }
+
+            return true;
+        }
+
+        private BabylonCamera ExportCamera(IIGameScene scene,  IIGameNode cameraNode, BabylonScene babylonScene)
+        {
+            if (IsCameraExportable(cameraNode) == false)
+            {
+                return null;
+            }
+
             var gameCamera = cameraNode.IGameObject.AsGameCamera();
             var maxCamera = gameCamera.MaxObject as ICameraObject;
             var initialized = gameCamera.InitializeData;
@@ -23,7 +34,7 @@ namespace Max2Babylon
             babylonCamera.id = cameraNode.MaxNode.GetGuid().ToString();
             if (cameraNode.NodeParent != null)
             {
-                babylonCamera.parentId = GetParentID(cameraNode.NodeParent, babylonScene, scene);
+                babylonCamera.parentId = cameraNode.NodeParent.MaxNode.GetGuid().ToString();
             }
 
             babylonCamera.fov = Tools.ConvertFov(maxCamera.GetFOV(0, Tools.Forever));
@@ -56,15 +67,28 @@ namespace Max2Babylon
             babylonCamera.applyGravity = cameraNode.MaxNode.GetBoolProperty("babylonjs_applygravity");
             babylonCamera.ellipsoid = cameraNode.MaxNode.GetVector3Property("babylonjs_ellipsoid");
 
-            // Position
-            var wm = cameraNode.GetLocalTM(0);
+            // Position / rotation
+            var localTM = cameraNode.GetObjectTM(0);
             if (cameraNode.NodeParent != null)
             {
                 var parentWorld = cameraNode.NodeParent.GetObjectTM(0);
-                wm.MultiplyBy(parentWorld.Inverse);
+                localTM.MultiplyBy(parentWorld.Inverse);
             }
-            var position = wm.Translation;
-            babylonCamera.position = new [] { position.X, position.Y, position.Z };
+
+            var position = localTM.Translation;
+            var rotation = localTM.Rotation;
+
+            babylonCamera.position = new[] { position.X, position.Y, position.Z };
+
+            var rotationQuaternion = new BabylonQuaternion { X = rotation.X, Y = rotation.Y, Z = rotation.Z, W = -rotation.W };
+            if (ExportQuaternionsInsteadOfEulers)
+            {
+                babylonCamera.rotationQuaternion = rotationQuaternion.ToArray();
+            }
+            else
+            {
+                babylonCamera.rotation = rotationQuaternion.toEulerAngles().ToArray();
+            }
 
             // Target
             var target = gameCamera.CameraTarget;
@@ -74,7 +98,7 @@ namespace Max2Babylon
             }
             else
             {
-                var dir = wm.GetRow(3);
+                var dir = localTM.GetRow(3);
                 babylonCamera.target = new [] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
             }
 
@@ -122,6 +146,8 @@ namespace Max2Babylon
             }
 
             babylonScene.CamerasList.Add(babylonCamera);
+
+            return babylonCamera;
         }
     }
 }

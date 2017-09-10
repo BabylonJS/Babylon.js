@@ -89,7 +89,7 @@
             super(name, position, scene);
             this.inputs = new FreeCameraInputsManager(this);
             this.inputs.addKeyboard().addMouse();
-        }
+        }     
 
         // Controls
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
@@ -114,7 +114,7 @@
             this._collisionMask = !isNaN(mask) ? mask : -1;
         }
 	 
-        public _collideWithWorld(velocity: Vector3): void {
+        public _collideWithWorld(displacement: Vector3): void {
             var globalPosition: Vector3;
 
             if (this.parent) {
@@ -133,15 +133,15 @@
             this._collider.collisionMask = this._collisionMask;
 		
             //no need for clone, as long as gravity is not on.
-            var actualVelocity = velocity;
+            var actualDisplacement = displacement;
 			
-            //add gravity to the velocity to prevent the dual-collision checking
+            //add gravity to the direction to prevent the dual-collision checking
             if (this.applyGravity) {
                 //this prevents mending with cameraDirection, a global variable of the free camera class.
-                actualVelocity = velocity.add(this.getScene().gravity);
+                actualDisplacement = displacement.add(this.getScene().gravity);
             }
 
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
 
         }
 

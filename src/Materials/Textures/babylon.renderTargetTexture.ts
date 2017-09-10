@@ -1,12 +1,4 @@
 ﻿module BABYLON {
-    export interface IRenderTargetOptions {
-        generateMipMaps: boolean,
-        type: number,
-        samplingMode: number,
-        generateDepthBuffer: boolean,
-        generateStencilBuffer: boolean
-    }
-
     export class RenderTargetTexture extends Texture {
         public static _REFRESHRATE_RENDER_ONCE: number = 0;
         public static _REFRESHRATE_RENDER_ONEVERYFRAME: number = 1;
@@ -38,7 +30,7 @@
         public renderSprites = false;
         public coordinatesMode = Texture.PROJECTION_MODE;
         public activeCamera: Camera;
-        public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
+        public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
         public useCameraPostProcesses: boolean;
         public ignoreCameraViewport: boolean = false;
 
@@ -119,8 +111,8 @@
         protected _refreshRate = 1;
         protected _textureMatrix: Matrix;
         protected _samples = 1;
-        protected _renderTargetOptions: IRenderTargetOptions;
-        public get renderTargetOptions(): IRenderTargetOptions {
+        protected _renderTargetOptions: RenderTargetCreationOptions;
+        public get renderTargetOptions(): RenderTargetCreationOptions {
             return this._renderTargetOptions;
         }
 
@@ -246,13 +238,6 @@
 
             this._currentRefreshId++;
             return false;
-        }
-
-        public isReady(): boolean {
-            if (!this.getScene().renderTargetsEnabled) {
-                return false;
-            }
-            return super.isReady();
         }
 
         public getRenderSize(): number {
@@ -439,7 +424,7 @@
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
 
             if (this._postProcessManager) {
-                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses);
+                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses, this.ignoreCameraViewport);
             }
             else if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);
@@ -576,6 +561,16 @@
             }
 
             super.dispose();
+        }
+
+        public _rebuild(): void {
+            if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
+                this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+            }
+
+            if (this._postProcessManager) {
+                this._postProcessManager._rebuild();
+            }
         }
     }
 }

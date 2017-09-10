@@ -103,10 +103,8 @@
 
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
 
-        public _cachedAnisotropicFilteringLevel: number;
-
         private _scene: Scene;
-        public _texture: WebGLTexture;
+        public _texture: InternalTexture;
         private _uid: string;
 
         public get isBlocking(): boolean {
@@ -131,7 +129,7 @@
             return null;
         }
 
-        public getInternalTexture(): WebGLTexture {
+        public getInternalTexture(): InternalTexture {
             return this._texture;
         }
 
@@ -153,8 +151,8 @@
         }
 
         public getSize(): ISize {
-            if (this._texture._width) {
-                return new Size(this._texture._width, this._texture._height);
+            if (this._texture.width) {
+                return new Size(this._texture.width, this._texture.height);
             }
 
             if (this._texture._size) {
@@ -172,7 +170,7 @@
                 return new Size(this._texture._size, this._texture._size);
             }
 
-            return new Size(this._texture._baseWidth, this._texture._baseHeight);
+            return new Size(this._texture.baseWidth, this._texture.baseHeight);
         }
 
         public scale(ratio: number): void {
@@ -182,32 +180,24 @@
             return false;
         }
 
-        public _removeFromCache(url: string, noMipmap: boolean): void {
-            var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
-            for (var index = 0; index < texturesCache.length; index++) {
-                var texturesCacheEntry = texturesCache[index];
-
-                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
-                    texturesCache.splice(index, 1);
-                    return;
-                }
-            }
-        }
-
-        public _getFromCache(url: string, noMipmap: boolean, sampling?: number): WebGLTexture {
+        public _getFromCache(url: string, noMipmap: boolean, sampling?: number): InternalTexture {
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
 
                 if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
                     if (!sampling || sampling === texturesCacheEntry.samplingMode) {
-                        texturesCacheEntry.references++;
+                        texturesCacheEntry.incrementReferences();
                         return texturesCacheEntry;
                     }
                 }
             }
 
             return null;
+        }
+
+        public _rebuild(): void {
+            
         }
 
         public delayLoad(): void {
@@ -250,8 +240,8 @@
 
         public releaseInternalTexture(): void {
             if (this._texture) {
-                this._scene.getEngine().releaseInternalTexture(this._texture);
-                delete this._texture;
+                this._texture.dispose();
+                this._texture = null;
             }
         }
 

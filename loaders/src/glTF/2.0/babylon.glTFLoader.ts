@@ -12,7 +12,6 @@ module BABYLON.GLTF2 {
         private _errorCallback: (message: string) => void;
         private _renderReady: boolean = false;
         private _disposed: boolean = false;
-        private _objectURLs: string[] = new Array<string>();
         private _blockPendingTracking: boolean = false;
         private _nonBlockingData: Array<any>;
 
@@ -68,8 +67,13 @@ module BABYLON.GLTF2 {
             this._disposed = true;
 
             // Revoke object urls created during load
-            this._objectURLs.forEach(url => URL.revokeObjectURL(url));
-            this._objectURLs.length = 0;
+            if (this._gltf.textures) {
+                this._gltf.textures.forEach(texture => {
+                    if (texture.url) {
+                        URL.revokeObjectURL(texture.url);
+                    }
+                });
+            }
 
             this._gltf = undefined;
             this._babylonScene = undefined;
@@ -158,7 +162,7 @@ module BABYLON.GLTF2 {
 
             var binaryBuffer: IGLTFBuffer;
             var buffers = this._gltf.buffers;
-            if (buffers.length > 0 && buffers[0].uri === undefined) {
+            if (buffers && buffers[0].uri === undefined) {
                 binaryBuffer = buffers[0];
             }
 
@@ -182,10 +186,12 @@ module BABYLON.GLTF2 {
             rootMesh.rotation.y = Math.PI;
 
             var nodes = this._gltf.nodes;
-            for (var i = 0; i < nodes.length; i++) {
-                var mesh = nodes[i].babylonMesh;
-                if (mesh && !mesh.parent) {
-                    mesh.parent = rootMesh;
+            if (nodes) {
+                for (var i = 0; i < nodes.length; i++) {
+                    var mesh = nodes[i].babylonMesh;
+                    if (mesh && !mesh.parent) {
+                        mesh.parent = rootMesh;
+                    }
                 }
             }
         }
@@ -800,7 +806,99 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _loadBufferViewAsync(bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, componentType: EComponentType, onSuccess: (data: ArrayBufferView) => void): void {
+        private _buildInt8ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Int8Array {
+            if (!byteStride) {
+                return new Int8Array(buffer, byteOffset, byteLength);
+            }
+
+            let sourceBuffer = new Int8Array(buffer, byteOffset);
+            let targetBuffer = new Int8Array(byteLength);
+
+            this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
+
+            return targetBuffer;              
+        }
+
+        private _buildUint8ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Uint8Array {
+            if (!byteStride) {
+                return new Uint8Array(buffer, byteOffset, byteLength);
+            }
+
+            let sourceBuffer = new Uint8Array(buffer, byteOffset);
+            let targetBuffer = new Uint8Array(byteLength);
+
+            this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
+
+            return targetBuffer;              
+        }        
+
+        private _buildInt16ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Int16Array {
+            if (!byteStride) {
+                return new Int16Array(buffer, byteOffset, byteLength);
+            }
+
+            let sourceBuffer = new Int16Array(buffer, byteOffset);
+            let targetBuffer = new Int16Array(byteLength);
+
+            this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
+
+            return targetBuffer;             
+        }   
+
+        private _buildUint16ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Uint16Array {
+            if (!byteStride) {
+                return new Uint16Array(buffer, byteOffset, byteLength);
+            }
+
+            let sourceBuffer = new Uint16Array(buffer, byteOffset);
+            let targetBuffer = new Uint16Array(byteLength);
+
+            this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
+
+            return targetBuffer;             
+        }          
+        
+        private _buildUint32ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Uint32Array {
+            if (!byteStride) {
+                return new Uint32Array(buffer, byteOffset, byteLength);
+            }
+
+            let sourceBuffer = new Uint32Array(buffer, byteOffset);
+            let targetBuffer = new Uint32Array(byteLength);
+
+            this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 4, targetBuffer.length);
+
+            return targetBuffer;            
+        }     
+        
+        private _buildFloat32ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Float32Array {
+            if (!byteStride) {
+                return new Float32Array(buffer, byteOffset, byteLength);
+            }
+
+            let sourceBuffer = new Float32Array(buffer, byteOffset);
+            let targetBuffer = new Float32Array(byteLength);
+
+            this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 4, targetBuffer.length);
+
+            return targetBuffer;
+        }    
+        
+        private _extractInterleavedData(sourceBuffer: ArrayBufferView, targetBuffer: ArrayBufferView, bytePerComponent: number, stride: number, length: number): void {
+            let tempIndex = 0;
+            let sourceIndex = 0;            
+            let storageSize = bytePerComponent;
+
+            while (tempIndex < length) {
+                for (var cursor = 0; cursor < storageSize; cursor++) {
+                    targetBuffer[tempIndex] = sourceBuffer[sourceIndex + cursor]
+                    tempIndex++;
+                }
+                sourceIndex += stride;
+            }
+        }
+
+        private _loadBufferViewAsync(bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, bytePerComponent: number, componentType: EComponentType, onSuccess: (data: ArrayBufferView) => void): void {
             byteOffset += (bufferView.byteOffset || 0);
 
             this._loadBufferAsync(bufferView.buffer, bufferData => {
@@ -815,22 +913,22 @@ module BABYLON.GLTF2 {
                 var bufferViewData;
                 switch (componentType) {
                     case EComponentType.BYTE:
-                        bufferViewData = new Int8Array(buffer, byteOffset, byteLength);
+                        bufferViewData = this._buildInt8ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                         break;
                     case EComponentType.UNSIGNED_BYTE:
-                        bufferViewData = new Uint8Array(buffer, byteOffset, byteLength);
+                        bufferViewData = this._buildUint8ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                         break;
                     case EComponentType.SHORT:
-                        bufferViewData = new Int16Array(buffer, byteOffset, byteLength);
+                        bufferViewData = this._buildInt16ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                         break;
                     case EComponentType.UNSIGNED_SHORT:
-                        bufferViewData = new Uint16Array(buffer, byteOffset, byteLength);
+                        bufferViewData = this._buildUint16ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                         break;
                     case EComponentType.UNSIGNED_INT:
-                        bufferViewData = new Uint32Array(buffer, byteOffset, byteLength);
+                        bufferViewData = this._buildUint32ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                         break;
                     case EComponentType.FLOAT:
-                        bufferViewData = new Float32Array(buffer, byteOffset, byteLength);
+                        bufferViewData = this._buildFloat32ArrayBuffer(buffer, byteOffset, byteLength, bufferView.byteStride, bytePerComponent);
                         break;
                     default:
                         this._onError("Invalid component type (" + componentType + ")");
@@ -844,8 +942,9 @@ module BABYLON.GLTF2 {
         private _loadAccessorAsync(accessor: IGLTFAccessor, onSuccess: (data: ArrayBufferView) => void): void {
             var bufferView = this._gltf.bufferViews[accessor.bufferView];
             var byteOffset = accessor.byteOffset || 0;
-            var byteLength = accessor.count * this._getByteStrideFromType(accessor);
-            this._loadBufferViewAsync(bufferView, byteOffset, byteLength, accessor.componentType, onSuccess);
+            let bytePerComponent = this._getByteStrideFromType(accessor);
+            var byteLength = accessor.count * bytePerComponent;
+            this._loadBufferViewAsync(bufferView, byteOffset, byteLength, bytePerComponent, accessor.componentType, onSuccess);
         }
 
         private _getByteStrideFromType(accessor: IGLTFAccessor): number {
@@ -996,7 +1095,7 @@ module BABYLON.GLTF2 {
             if (material.normalTexture) {
                 babylonMaterial.bumpTexture = this.loadTexture(material.normalTexture);
                 babylonMaterial.invertNormalMapX = true;
-                babylonMaterial.invertNormalMapY = true;
+                babylonMaterial.invertNormalMapY = false;
                 if (material.normalTexture.scale !== undefined) {
                     babylonMaterial.bumpTexture.level = material.normalTexture.scale;
                 }
@@ -1038,6 +1137,8 @@ module BABYLON.GLTF2 {
                     Tools.Warn("Invalid alpha mode '" + material.alphaMode + "'");
                     break;
             }
+
+            babylonMaterial.alphaCutOff = material.alphaCutoff === undefined ? 0.5 : material.alphaCutoff;
         }
 
         public loadTexture(textureInfo: IGLTFTextureInfo): Texture {
@@ -1048,31 +1149,13 @@ module BABYLON.GLTF2 {
                 return null;
             }
 
-            // check the cache first
-            var babylonTexture: Texture;
-            if (texture.babylonTextures) {
-                babylonTexture = texture.babylonTextures[texCoord];
-                if (!babylonTexture) {
-                    for (var i = 0; i < texture.babylonTextures.length; i++) {
-                        babylonTexture = texture.babylonTextures[i];
-                        if (babylonTexture) {
-                            babylonTexture = babylonTexture.clone();
-                            babylonTexture.coordinatesIndex = texCoord;
-                            break;
-                        }
-                    }
-                }
-
-                return babylonTexture;
-            }
-
             var source = this._gltf.images[texture.source];
             var sampler = (texture.sampler === undefined ? <IGLTFSampler>{} : this._gltf.samplers[texture.sampler]);
             var noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
             var samplingMode = GLTFUtils.GetTextureSamplingMode(sampler.magFilter, sampler.minFilter);
 
             this.addPendingData(texture);
-            babylonTexture = new Texture(null, this._babylonScene, noMipMaps, false, samplingMode, () => {
+            var babylonTexture = new Texture(null, this._babylonScene, noMipMaps, false, samplingMode, () => {
                 if (!this._disposed) {
                     this.removePendingData(texture);
                 }
@@ -1083,37 +1166,47 @@ module BABYLON.GLTF2 {
                 }
             });
 
-            var setTextureData = data => {
-                var url = URL.createObjectURL(new Blob([data], { type: source.mimeType }));
-                this._objectURLs.push(url);
-                babylonTexture.updateURL(url);
-            };
-
-            if (!source.uri) {
-                var bufferView = this._gltf.bufferViews[source.bufferView];
-                this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE, setTextureData);
+            if (texture.url) {
+                babylonTexture.updateURL(texture.url);
             }
-            else if (GLTFUtils.IsBase64(source.uri)) {
-                setTextureData(new Uint8Array(GLTFUtils.DecodeBase64(source.uri)));
+            else if (texture.dataReadyObservable) {
+                texture.dataReadyObservable.add(texture => {
+                    babylonTexture.updateURL(texture.url);
+                });
             }
             else {
-                Tools.LoadFile(this._rootUrl + source.uri, setTextureData, event => {
-                    if (!this._disposed) {
-                        this._onProgress(event);
-                    }
-                }, this._babylonScene.database, true, request => {
-                    this._onError("Failed to load file '" + source.uri + "': " + request.status + " " + request.statusText);
+                texture.dataReadyObservable = new Observable<IGLTFTexture>();
+                texture.dataReadyObservable.add(texture => {
+                    babylonTexture.updateURL(texture.url);
                 });
+
+                var setTextureData = data => {
+                    texture.url = URL.createObjectURL(new Blob([data], { type: source.mimeType }));
+                    texture.dataReadyObservable.notifyObservers(texture);
+                };
+
+                if (!source.uri) {
+                    var bufferView = this._gltf.bufferViews[source.bufferView];
+                    this._loadBufferViewAsync(bufferView, 0, bufferView.byteLength, 1, EComponentType.UNSIGNED_BYTE, setTextureData);
+                }
+                else if (GLTFUtils.IsBase64(source.uri)) {
+                    setTextureData(new Uint8Array(GLTFUtils.DecodeBase64(source.uri)));
+                }
+                else {
+                    Tools.LoadFile(this._rootUrl + source.uri, setTextureData, event => {
+                        if (!this._disposed) {
+                            this._onProgress(event);
+                        }
+                    }, this._babylonScene.database, true, request => {
+                        this._onError("Failed to load file '" + source.uri + "': " + request.status + " " + request.statusText);
+                    });
+                }
             }
 
             babylonTexture.coordinatesIndex = texCoord;
             babylonTexture.wrapU = GLTFUtils.GetTextureWrapMode(sampler.wrapS);
             babylonTexture.wrapV = GLTFUtils.GetTextureWrapMode(sampler.wrapT);
             babylonTexture.name = texture.name || "texture" + textureInfo.index;
-
-            // Cache the texture
-            texture.babylonTextures = texture.babylonTextures || [];
-            texture.babylonTextures[texCoord] = babylonTexture;
 
             if (this._parent.onTextureLoaded) {
                 this._parent.onTextureLoaded(babylonTexture);

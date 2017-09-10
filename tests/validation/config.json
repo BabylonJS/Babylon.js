@@ -214,7 +214,13 @@
       "renderCount": 10,
       "playgroundId": "#12MKMN#0",
       "referenceImage": "MultiSample render targets.png"
-    },            
+    },      
+    {
+      "title": "Default rendering pipeline",
+      "renderCount": 20,
+      "playgroundId": "#5XB8YT#2",
+      "referenceImage": "DefaultRenderingPipeline.png"
+    },             
     {
       "title": "Water material (only visual check)",
       "renderCount": 10,

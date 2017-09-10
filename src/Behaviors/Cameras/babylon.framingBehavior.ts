@@ -4,9 +4,9 @@ module BABYLON {
             return "Framing";
         }
 
-        private _mode = FramingBehavior.IgnoreBoundsSizeMode;
+        private _mode = FramingBehavior.FitFrustumSidesMode;
         private _radiusScale = 1.0;
-        private _positionY = 0;
+        private _positionScale = 0.5;
         private _defaultElevation = 0.3;
         private _elevationReturnTime = 1500;
         private _elevationReturnWaitTime = 1000;
@@ -52,17 +52,17 @@ module BABYLON {
 		}
 
 		/**
-		 * Sets the Y offset of the target mesh from the camera's focus.
+		 * Sets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
 		 */
-		public set positionY(positionY: number) {
-			this._positionY = positionY;
+		public set positionScale(scale: number) {
+			this._positionScale = scale;
 		}
 
 		/**
-		 * Gets the Y offset of the target mesh from the camera's focus.
+		 * Gets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
 		 */
-		public get positionY(): number {
-			return this._positionY;
+		public get positionScale(): number {
+			return this._positionScale;
 		}
 
 		/**
@@ -181,12 +181,14 @@ module BABYLON {
             });
         }
              
-        public detach(camera: ArcRotateCamera): void {
+        public detach(): void {
             let scene = this._attachedCamera.getScene();
             
             scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
-			camera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
-			camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+			this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			this._attachedCamera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
+
+			this._attachedCamera = null;
         }
 
         // Framing control
@@ -201,25 +203,39 @@ module BABYLON {
 		 * Targets the given mesh and updates zoom level accordingly.
 		 * @param mesh  The mesh to target.
 		 * @param radius Optional. If a cached radius position already exists, overrides default.
-		 * @param applyToLowerLimit Optional. Indicates if the calculated target radius should be applied to the
-		 *		camera's lower radius limit too.
 		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
 		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+		 * @param onAnimationEnd Callback triggered at the end of the framing animation
 		 */
-		public zoomOnMesh(mesh: AbstractMesh, radius?: number, applyToLowerLimit: boolean = true, framingPositionY?: number, focusOnOriginXZ: boolean = false): void {
-			if (framingPositionY == null) {
-				framingPositionY = this._positionY;
-			}
-
+		public zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ: boolean = false, onAnimationEnd: () => void = null): void {
 			mesh.computeWorldMatrix(true);
-			
+
+			let boundingBox = mesh.getBoundingInfo().boundingBox;
+			this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ, onAnimationEnd);
+		}
+
+		/**
+		 * Targets the given mesh and updates zoom level accordingly.
+		 * @param mesh  The mesh to target.
+		 * @param radius Optional. If a cached radius position already exists, overrides default.
+		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+		 * @param onAnimationEnd Callback triggered at the end of the framing animation
+		 */
+		public zoomOnBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, focusOnOriginXZ: boolean = false, onAnimationEnd: () => void = null): void {
 			let zoomTarget: BABYLON.Vector3;
-			let center = mesh.getBoundingInfo().boundingSphere.centerWorld;
+
+			// Find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
+			let bottom = minimumWorld.y;
+			let top = maximumWorld.y;
+			let zoomTargetY = bottom + (top - bottom) * this._positionScale;
+			let radiusWorld = maximumWorld.subtract(minimumWorld).scale(0.5);
 
 			if (focusOnOriginXZ) {	
-				zoomTarget = new BABYLON.Vector3(0, center.y, 0);
+				zoomTarget = new BABYLON.Vector3(0, zoomTargetY, 0);
 			} else {
-				zoomTarget = center.clone();
+				let centerWorld = minimumWorld.add(radiusWorld);
+				zoomTarget = new BABYLON.Vector3(centerWorld.x, zoomTargetY, centerWorld.z);
 			}
 
 			if (!this._vectorTransition) {
@@ -231,20 +247,18 @@ module BABYLON {
 									60, this._vectorTransition, this._framingTime));
 
 			// sets the radius and lower radius bounds
-			if (radius == null) {
-				// Small delta ensures camera is not always at lower zoom limit.
-				let delta = 0.1;
-				if (this._mode === FramingBehavior.FitFrustumSidesMode) {
-					let position = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
-					this._attachedCamera.lowerRadiusLimit = position - delta;
-					radius = position;
-				} else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
-					radius = this._calculateLowerRadiusFromModelBoundingSphere(mesh);
+			// Small delta ensures camera is not always at lower zoom limit.
+			let delta = 0.1;
+			let radius = 0;
+			if (this._mode === FramingBehavior.FitFrustumSidesMode) {
+				let position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
+				this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
+				radius = position;
+			} else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
+				radius = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
+				if (this._attachedCamera.lowerRadiusLimit === null) {
+					this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
 				}
-			}
-
-			if (applyToLowerLimit) {
-				this._attachedCamera.lowerRadiusLimit = mesh.getBoundingInfo().boundingSphere.radiusWorld;;
 			}
 
 			// transition to new radius
@@ -253,8 +267,8 @@ module BABYLON {
 			}
 
 			this._animatables.push(Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
-									60, this._radiusTransition, this._framingTime));															
-		}	
+				60, this._radiusTransition, this._framingTime, onAnimationEnd));
+		}
 		
 		/**
 		 * Calculates the lowest radius for the camera based on the bounding box of the mesh.
@@ -263,8 +277,9 @@ module BABYLON {
 		 * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
 		 *		 to fully enclose the mesh in the viewing frustum.
 		 */
-		protected _calculateLowerRadiusFromModelBoundingSphere(mesh: AbstractMesh): number {
-            let boxVectorGlobalDiagonal = mesh.getBoundingInfo().diagonalLength;
+		protected _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3): number {
+			let size = maximumWorld.subtract(minimumWorld);
+            let boxVectorGlobalDiagonal = size.length();
 			let frustumSlope: BABYLON.Vector2 = this._getFrustumSlope();
 
 			// Formula for setting distance
@@ -338,7 +353,7 @@ module BABYLON {
 			// Slope of the frustum left/right planes in view space, relative to the forward vector.
 			// Provides the amount that one side (e.g. left) of the frustum gets wider for every unit
 			// along the forward vector.
-			var frustumSlopeX = frustumSlopeY / aspectRatio;
+			var frustumSlopeX = frustumSlopeY * aspectRatio;
 
 			return new Vector2(frustumSlopeX, frustumSlopeY);
 		}		
@@ -354,7 +369,7 @@ module BABYLON {
 		 *  Applies any current user interaction to the camera. Takes into account maximum alpha rotation.
 		 */          
         private _applyUserInteraction(): void {
-			if (this._userIsMoving()) {
+			if (this.isUserIsMoving) {
                 this._lastInteractionTime = Tools.Now;
 				this.stopAllAnimations();				
 				this._clearAnimationLocks();
@@ -375,8 +390,10 @@ module BABYLON {
 			}
 		}        
 
-        // Tools
-        private _userIsMoving(): boolean {
+        /**
+		 * Gets a value indicating if the user is moving the camera
+		 */
+        public get isUserIsMoving(): boolean {
 			return this._attachedCamera.inertialAlphaOffset !== 0 ||
 				this._attachedCamera.inertialBetaOffset !== 0 ||
 				this._attachedCamera.inertialRadiusOffset !== 0 ||

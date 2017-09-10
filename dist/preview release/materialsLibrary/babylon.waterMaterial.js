@@ -25,6 +25,7 @@ var BABYLON;
             _this.REFLECTION = false;
             _this.CLIPPLANE = false;
             _this.ALPHATEST = false;
+            _this.DEPTHPREPASS = false;
             _this.POINTSIZE = false;
             _this.FOG = false;
             _this.NORMAL = false;

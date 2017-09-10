@@ -154,7 +154,7 @@
                 if (this._texture.isReady) {
                     Tools.SetImmediate(() => load());
                 } else {
-                    this._texture.onLoadedCallbacks.push(load);
+                    this._texture.onLoadedObservable.add(load);
                 }
             }
         }
@@ -182,7 +182,7 @@
                 if (this._texture.isReady) {
                     Tools.SetImmediate(() => this._delayedOnLoad());
                 } else {
-                    this._texture.onLoadedCallbacks.push(this._delayedOnLoad);
+                    this._texture.onLoadedObservable.add(this._delayedOnLoad);
                 }
             }
         }

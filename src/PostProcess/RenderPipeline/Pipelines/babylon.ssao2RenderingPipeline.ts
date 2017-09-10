@@ -120,7 +120,7 @@
         */
         public static get IsSupported(): boolean {
             var engine = Engine.LastCreatedEngine;
-            return engine.webGLVersion > 1;
+            return engine.getCaps().drawBuffersExtension;
         }
 
         private _scene: Scene;
@@ -249,6 +249,12 @@
                     this._firstUpdate = false;
                 }
             };
+        }
+        
+        public _rebuild() {
+            this._firstUpdate = true;
+
+            super._rebuild();
         }
 
         private _generateHemisphere(): number[] {

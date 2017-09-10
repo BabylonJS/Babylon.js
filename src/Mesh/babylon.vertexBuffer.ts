@@ -60,6 +60,14 @@
             this._kind = kind;
         }
 
+        public _rebuild(): void {
+            if (!this._buffer) {
+                return;
+            }
+
+            this._buffer._rebuild();
+        }
+
         /**
          * Returns the kind of the VertexBuffer (string).  
          */

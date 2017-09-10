@@ -106,6 +106,23 @@
             return true;
         }
 
+        public _rebuild(): void {
+            if (this._vertexArrayObjects) {
+                this._vertexArrayObjects = {};
+            }
+
+            // Index buffer
+            if (this._meshes.length !== 0 && this._indices) {
+                this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+            }
+
+            // Vertex buffers
+            for (var key in this._vertexBuffers) {
+                let vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
+                vertexBuffer._rebuild();
+            }
+        }
+
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
             vertexData.applyToGeometry(this, updatable);
             this.notifyUpdate();

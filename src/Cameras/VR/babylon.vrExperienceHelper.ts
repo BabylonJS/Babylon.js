@@ -18,6 +18,8 @@ module BABYLON {
                 if ((<FreeCamera>scene.activeCamera).rotation) {
                     newCamera.rotation = (<FreeCamera>scene.activeCamera).rotation.clone();
                 }
+                newCamera.minZ = this._scene.activeCamera.minZ;
+                newCamera.maxZ = this._scene.activeCamera.maxZ;
                 this._scene.activeCamera = newCamera;
             }
             this._position = this._scene.activeCamera.position;
@@ -93,8 +95,10 @@ module BABYLON {
             if (this._webVRsupportedAndReady) {
                 this._scene.getEngine().disableVR();
             }
-            this._position = this._scene.activeCamera.position;
-            this._scene.activeCamera.dispose();
+            if (this._scene.activeCamera) {
+                this._position = this._scene.activeCamera.position;
+                this._scene.activeCamera.dispose();
+            }
             this._scene.activeCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position, this._scene); 
             this._scene.activeCamera.attachControl(this._canvas);
             this._isInVRMode = false;

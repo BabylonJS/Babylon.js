@@ -5,6 +5,7 @@ module BABYLON {
         public DIFFUSE = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
         public LIGHT0 = false;

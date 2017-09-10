@@ -21,6 +21,8 @@
         dispose(): void; 
         clone(name: string, newEmitter: any): IParticleSystem;
         serialize(): any;
+
+        rebuild(): void
     }
 
     export class ParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
@@ -127,19 +129,7 @@
 
             scene.particleSystems.push(this);
 
-            var indices = [];
-            var index = 0;
-            for (var count = 0; count < capacity; count++) {
-                indices.push(index);
-                indices.push(index + 1);
-                indices.push(index + 2);
-                indices.push(index);
-                indices.push(index + 2);
-                indices.push(index + 3);
-                index += 4;
-            }
-
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._createIndexBuffer();
 
             // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
             this._vertexData = new Float32Array(capacity * 11 * 4);
@@ -197,6 +187,22 @@
                     }
                 }
             }
+        }
+
+        private _createIndexBuffer() {
+            var indices = [];
+            var index = 0;
+            for (var count = 0; count < this._capacity ; count++) {
+                indices.push(index);
+                indices.push(index + 1);
+                indices.push(index + 2);
+                indices.push(index);
+                indices.push(index + 2);
+                indices.push(index + 3);
+                index += 4;
+            }
+
+            this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
         }
 
         public recycleParticle(particle: Particle): void {
@@ -394,6 +400,12 @@
             }
 
             this._vertexBuffer.update(this._vertexData);
+        }
+
+        public rebuild(): void {
+            this._createIndexBuffer();
+
+            this._vertexBuffer._rebuild();
         }
 
         public render(): number {

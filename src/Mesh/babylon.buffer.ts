@@ -90,6 +90,11 @@
             }
         }
 
+        public _rebuild(): void {
+            this._buffer = null;
+            this.create(this._data);
+        }
+
         public update(data: number[] | Float32Array): void {
             this.create(data);
         }

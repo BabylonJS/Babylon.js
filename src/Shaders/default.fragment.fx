@@ -185,6 +185,8 @@ void main(void) {
 		discard;
 #endif
 
+#include<depthPrePass>
+
 #ifdef ALPHAFROMDIFFUSE
 	alpha *= baseColor.a;
 #endif
