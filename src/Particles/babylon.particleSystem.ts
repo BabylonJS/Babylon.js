@@ -60,11 +60,6 @@
         public customShader: any = null;
         public preventAutoStart: boolean = false;
 
-        public cellWidth: number;
-        public cellHeight: number;
-        public cellIndex: number;
-        public invertU: number;
-        public invertV: number;
         public disposeParticlesWhenFinishedAnimating = false;
         private _epsilon: number;
 
@@ -129,29 +124,29 @@
         private _scaledUpdateSpeed: number;
 
         // sheet animation
-        private _animationStarted = false;
-        private _loopAnimation = false;
-        private _fromIndex = 0;
-        private _toIndex = 0;
-        private _delay = 0;
-        private _sheetDirection = 1;
-        private _time = 0;
+        public startSpriteCellID = 0;
+        public endSpriteCellID = 0;
+        public spriteCellLoop = true;
+        public spriteCellChangeSpeed = 0; //(cellID++ every 4 frames). If this value is set to 0 (default) then we need to compute the speed base on lifetime like we are doing for colorDead. In other word, the particle will born with startCellId and die at endCellId
+
+        private _spriteCellWidth = 0;
+        private _spriteCellHeight = 0;
         private _vertexBufferSize = 11;
         // end of sheet animation
 
-        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, private cellSize?: any, epsilon: number = 0.01) {
+        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, private spriteCellSize?: any, epsilon: number = 0.01) {
             this.id = name;
             this._capacity = capacity;
 
             this._epsilon = epsilon;
-            if (cellSize) {
-                this._vertexBufferSize = 15;
-                if (cellSize.width && cellSize.height) {
-                    this.cellWidth = cellSize.width;
-                    this.cellHeight = cellSize.height;
+            if (spriteCellSize) {
+                this._vertexBufferSize = 12;
+                if (spriteCellSize.width && spriteCellSize.height) {
+                    this._spriteCellWidth = spriteCellSize.width;
+                    this._spriteCellHeight = spriteCellSize.height;
                 } else {
-                    this.cellWidth = cellSize;
-                    this.cellHeight = cellSize;
+                    this._spriteCellWidth = spriteCellSize;
+                    this._spriteCellHeight = spriteCellSize;
                 }
             }
 
@@ -171,9 +166,9 @@
             var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
             var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
 
-            if (this.cellSize) {
-                var cellInfo = this._vertexBuffer.createVertexBuffer("cellInfo", 11, 4);
-                this._vertexBuffers["cellInfo"] = cellInfo;
+            if (this.spriteCellSize) {
+                var cellIndex = this._vertexBuffer.createVertexBuffer("cellIndex", 11, 1);
+                this._vertexBuffers["cellIndex"] = cellIndex;
             }
 
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
@@ -223,7 +218,7 @@
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
-                        if (this.cellSize && this._animationStarted) {
+                        if (this.spriteCellSize) {
                             particle.updateCellIndex(deltaTime);
                         }
                     }
@@ -279,21 +274,6 @@
         }
 
         // animation sheet
-        public playAnimation(from: number, to: number, loop: boolean, delay: number): void {
-            this._fromIndex = from;
-            this._toIndex = to;
-            this._loopAnimation = loop;
-            this._delay = delay;
-            this._animationStarted = true;
-            this._sheetDirection = from < to ? 1 : -1;
-            this.cellIndex = from;
-            this._time = 0;
-        }
-
-        public stopAnimation(): void {
-            this._animationStarted = false;
-        }
-        // animation sheet
 
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
             var offset = index * this._vertexBufferSize;
@@ -322,10 +302,8 @@
             else if (offsetY === 1)
                 offsetY = 1 - this._epsilon;
 
-            var rowOffset = (particle.cellIndex / rowSize) >> 0;
-            var columnOffset = particle.cellIndex - rowOffset * rowSize;
-            var intertU = particle.invertU ? 1 : 0;
-            var interV = particle.invertV ? 1 : 0;
+            // var rowOffset = (particle.cellIndex / rowSize) >> 0;
+            // var columnOffset = particle.cellIndex - rowOffset * rowSize;
 
             var offset = index * this._vertexBufferSize;
             this._vertexData[offset] = particle.position.x;
@@ -339,10 +317,10 @@
             this._vertexData[offset + 8] = particle.size;
             this._vertexData[offset + 9] = offsetX;
             this._vertexData[offset + 10] = offsetY;
-            this._vertexData[offset + 11] = intertU;
-            this._vertexData[offset + 12] = interV;
-            this._vertexData[offset + 13] = columnOffset;
-            this._vertexData[offset + 14] = rowOffset;
+            this._vertexData[offset + 11] = 0;
+            // this._vertexData[offset + 12] = interV;
+            // this._vertexData[offset + 13] = columnOffset;
+            // this._vertexData[offset + 14] = rowOffset;
         }
 
         private _update(newParticles: number): void {
@@ -371,10 +349,10 @@
                 if (this._stockParticles.length !== 0) {
                     particle = this._stockParticles.pop();
                     particle.age = 0;
-                    particle.cellIndex = this._fromIndex;
+                    particle.cellIndex = this.startSpriteCellID;
                 } else {
-                    if (this.cellSize) {
-                        particle = new Particle(this, this.cellIndex, this.invertU, this.invertV, this._loopAnimation, this._fromIndex, this._toIndex, this._delay, this._sheetDirection, this._time, this.disposeParticlesWhenFinishedAnimating);
+                    if (this.spriteCellSize) {
+                        particle = new Particle(this, this.startSpriteCellID, this.spriteCellLoop, this.startSpriteCellID, this.endSpriteCellID, this.disposeParticlesWhenFinishedAnimating);
                     }
                     else {
                         particle = new Particle(this);
@@ -414,7 +392,7 @@
                 defines.push("#define CLIPPLANE");
             }
 
-            if (this.cellSize) {
+            if (this.spriteCellSize) {
                 defines.push("#define ANIMATESHEET");
             }
 
@@ -426,8 +404,8 @@
                 var attributesNamesOrOptions: any;
                 var effectCreationOption: any;
 
-                if (this.cellSize) {
-                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellInfo"];
+                if (this.spriteCellSize) {
+                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellIndex"];
                     effectCreationOption = ["invView", "view", "projection", "textureInfos", "vClipPlane", "textureMask"];
                 }
                 else {
@@ -463,7 +441,7 @@
 
             this._scaledUpdateSpeed = this.updateSpeed * this._scene.getAnimationRatio();
 
-            // determine the number of particles we need to create   
+            // determine the number of particles we need to create
             var newParticles;
 
             if (this.manualEmitCount > -1) {
@@ -508,11 +486,10 @@
 
             // Animation sheet
             var rowSize = 0;
-            if (this.cellSize) {
+            if (this.spriteCellSize) {
                 var baseSize = this.particleTexture.getBaseSize();
-                rowSize = baseSize.width / this.cellWidth;
+                rowSize = baseSize.width / this._spriteCellWidth;
                 this.appendParticleVertexes = this.appenedParticleVertexesWithSheet;
-
             }
             else {
                 this.appendParticleVertexes = this.appenedParticleVertexesNoSheet;
@@ -569,9 +546,9 @@
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-            if (this.cellSize) {
+            if (this.spriteCellSize) {
                 var baseSize = this.particleTexture.getBaseSize();
-                effect.setFloat2("textureInfos", this.cellWidth / baseSize.width, this.cellHeight / baseSize.height);
+                effect.setFloat3("textureInfos", this._spriteCellWidth / baseSize.width, this._spriteCellHeight / baseSize.height, baseSize.width / this._spriteCellWidth);
             }
 
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
