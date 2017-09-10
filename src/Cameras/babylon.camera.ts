@@ -63,7 +63,7 @@
 
         public static ForceAttachControlToAlwaysPreventDefault = false;
 
-        public static UseImprovedWebVRRendering = false;
+        public static UseAlternateWebVRRendering = false;
 
         // Members
         @serializeAsVector3()
@@ -740,7 +740,7 @@
                         this._rigCameras[1].parent = this;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
 
-                        if (Camera.UseImprovedWebVRRendering) {
+                        if (Camera.UseAlternateWebVRRendering) {
                             this._rigCameras[1]._skipRendering = true;
                             this._rigCameras[0]._alternateCamera = this._rigCameras[1];
                         }
