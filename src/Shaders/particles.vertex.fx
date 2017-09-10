@@ -41,12 +41,12 @@ void main(void) {
 	vColor = color;
 
 	#ifdef ANIMATESHEET
-	//float rowOffset = (cellIndex / textureInfos.z) >> 0;
-    //float columnOffset = cellIndex - rowOffset * textureInfos.z;
+	float rowOffset = (cellIndex / textureInfos.z);
+    float columnOffset = cellIndex - rowOffset * textureInfos.z;
 
-	// vec2 uvScale = textureInfos.xy;
-	// vec2 uvOffset = vec2(offset.x , 1.0 - offset.y);
-	// vUV = (uvOffset + vec2(columnOffset, rowOffset)) * uvScale;
+	vec2 uvScale = textureInfos.xy;
+	vec2 uvOffset = vec2(offset.x , 1.0 - offset.y);
+	vUV = (uvOffset + vec2(columnOffset, rowOffset)) * uvScale;
 	#else
 	vUV = offset;
 	#endif

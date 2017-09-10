@@ -167,8 +167,8 @@
             var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
 
             if (this.spriteCellSize) {
-                var cellIndex = this._vertexBuffer.createVertexBuffer("cellIndex", 11, 1);
-                this._vertexBuffers["cellIndex"] = cellIndex;
+                var cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", 11, 1);
+                this._vertexBuffers["cellIndex"] = cellIndexBuffer;
             }
 
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
