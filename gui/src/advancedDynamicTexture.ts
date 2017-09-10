@@ -351,8 +351,8 @@ module BABYLON.GUI {
                 let camera = scene.cameraToUseForPointers || scene.activeCamera;
                 let engine = scene.getEngine();
                 let viewport = camera.viewport;
-                let x = (scene.pointerX - viewport.x * engine.getRenderWidth()) / viewport.width;
-                let y = (scene.pointerY - viewport.y * engine.getRenderHeight()) / viewport.height;
+                let x = (scene.pointerX / engine.getHardwareScalingLevel() - viewport.x * engine.getRenderWidth()) / viewport.width;
+                let y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
 
                 this._shouldBlockPointer = false;
                 this._doPicking(x, y, pi.type);
