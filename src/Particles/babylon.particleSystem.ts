@@ -60,7 +60,6 @@
         public customShader: any = null;
         public preventAutoStart: boolean = false;
 
-        public disposeParticlesWhenFinishedAnimating = false;
         private _epsilon: number;
 
 
@@ -193,7 +192,6 @@
             }
 
             this.updateFunction = (particles: Particle[]): void => {
-                var deltaTime = this._scene.getEngine().getDeltaTime();
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
                     particle.age += this._scaledUpdateSpeed;
@@ -219,7 +217,7 @@
                         particle.direction.addInPlace(this._scaledGravity);
 
                         if (this.spriteCellSize) {
-                            particle.updateCellIndex(deltaTime);
+                            particle.updateCellIndex(this._scaledUpdateSpeed);
                         }
                     }
                 }
@@ -290,7 +288,7 @@
             this._vertexData[offset + 10] = offsetY;
         }
 
-        public _appendParticleVertexWithAnimation(index: number, particle: Particle, offsetX: number, offsetY: number, rowSize: number): void {
+        public _appendParticleVertexWithAnimation(index: number, particle: Particle, offsetX: number, offsetY: number): void {
 
             if (offsetX === 0)
                 offsetX = this._epsilon;
@@ -301,9 +299,6 @@
                 offsetY = this._epsilon;
             else if (offsetY === 1)
                 offsetY = 1 - this._epsilon;
-
-            // var rowOffset = (particle.cellIndex / rowSize) >> 0;
-            // var columnOffset = particle.cellIndex - rowOffset * rowSize;
 
             var offset = index * this._vertexBufferSize;
             this._vertexData[offset] = particle.position.x;
@@ -317,10 +312,7 @@
             this._vertexData[offset + 8] = particle.size;
             this._vertexData[offset + 9] = offsetX;
             this._vertexData[offset + 10] = offsetY;
-            this._vertexData[offset + 11] = 0;
-            // this._vertexData[offset + 12] = interV;
-            // this._vertexData[offset + 13] = columnOffset;
-            // this._vertexData[offset + 14] = rowOffset;
+            this._vertexData[offset + 11] = particle.cellIndex;
         }
 
         private _update(newParticles: number): void {
@@ -352,7 +344,7 @@
                     particle.cellIndex = this.startSpriteCellID;
                 } else {
                     if (this.spriteCellSize) {
-                        particle = new Particle(this, this.startSpriteCellID, this.spriteCellLoop, this.startSpriteCellID, this.endSpriteCellID, this.disposeParticlesWhenFinishedAnimating);
+                        particle = new Particle(this, this.startSpriteCellID, this.spriteCellLoop, this.startSpriteCellID, this.endSpriteCellID);
                     }
                     else {
                         particle = new Particle(this);
@@ -406,7 +398,7 @@
 
                 if (this.spriteCellSize) {
                     attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellIndex"];
-                    effectCreationOption = ["invView", "view", "projection", "textureInfos", "vClipPlane", "textureMask"];
+                    effectCreationOption = ["invView", "view", "projection", "particlesInfos", "vClipPlane", "textureMask"];
                 }
                 else {
                     attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options"];
@@ -485,10 +477,7 @@
             }
 
             // Animation sheet
-            var rowSize = 0;
             if (this.spriteCellSize) {
-                var baseSize = this.particleTexture.getBaseSize();
-                rowSize = baseSize.width / this._spriteCellWidth;
                 this.appendParticleVertexes = this.appenedParticleVertexesWithSheet;
             }
             else {
@@ -499,23 +488,23 @@
             var offset = 0;
             for (var index = 0; index < this.particles.length; index++) {
                 var particle = this.particles[index];
-                this.appendParticleVertexes(offset, particle, rowSize);
+                this.appendParticleVertexes(offset, particle);
                 offset += 4;
             }
 
             this._vertexBuffer.update(this._vertexData);
         }
 
-        public appendParticleVertexes: (offset: number, particle: Particle, rowSize: number) => void = null;
+        public appendParticleVertexes: (offset: number, particle: Particle) => void = null;
 
-        private appenedParticleVertexesWithSheet(offset: number, particle: Particle, rowSize: number) {
-            this._appendParticleVertexWithAnimation(offset++, particle, 0, 0, rowSize);
-            this._appendParticleVertexWithAnimation(offset++, particle, 1, 0, rowSize);
-            this._appendParticleVertexWithAnimation(offset++, particle, 1, 1, rowSize);
-            this._appendParticleVertexWithAnimation(offset++, particle, 0, 1, rowSize);
+        private appenedParticleVertexesWithSheet(offset: number, particle: Particle) {
+            this._appendParticleVertexWithAnimation(offset++, particle, 0, 0);
+            this._appendParticleVertexWithAnimation(offset++, particle, 1, 0);
+            this._appendParticleVertexWithAnimation(offset++, particle, 1, 1);
+            this._appendParticleVertexWithAnimation(offset++, particle, 0, 1);
         }
 
-        private appenedParticleVertexesNoSheet(offset: number, particle: Particle, rowSize: number) {
+        private appenedParticleVertexesNoSheet(offset: number, particle: Particle) {
             this._appendParticleVertex(offset++, particle, 0, 0);
             this._appendParticleVertex(offset++, particle, 1, 0);
             this._appendParticleVertex(offset++, particle, 1, 1);
@@ -548,7 +537,7 @@
 
             if (this.spriteCellSize) {
                 var baseSize = this.particleTexture.getBaseSize();
-                effect.setFloat3("textureInfos", this._spriteCellWidth / baseSize.width, this._spriteCellHeight / baseSize.height, baseSize.width / this._spriteCellWidth);
+                effect.setFloat3("particlesInfos", this._spriteCellWidth / baseSize.width, this._spriteCellHeight / baseSize.height, baseSize.width / this._spriteCellWidth);
             }
 
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);

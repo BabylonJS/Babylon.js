@@ -7,7 +7,7 @@ attribute float cellIndex;
 // Uniforms
 uniform mat4 view;
 uniform mat4 projection;
-uniform vec3 textureInfos; // x (number of rows) y(number of columns) z(rowSize)
+uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSize)
 
 // Output
 varying vec2 vUV;
@@ -41,10 +41,10 @@ void main(void) {
 	vColor = color;
 
 	#ifdef ANIMATESHEET
-	float rowOffset = (cellIndex / textureInfos.z);
-    float columnOffset = cellIndex - rowOffset * textureInfos.z;
+	float rowOffset = floor(cellIndex / particlesInfos.z);
+    float columnOffset = cellIndex - rowOffset * particlesInfos.z;
 
-	vec2 uvScale = textureInfos.xy;
+	vec2 uvScale = particlesInfos.xy;
 	vec2 uvOffset = vec2(offset.x , 1.0 - offset.y);
 	vUV = (uvOffset + vec2(columnOffset, rowOffset)) * uvScale;
 	#else
