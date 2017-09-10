@@ -941,8 +941,11 @@
 
                 engine.setViewport(scene.activeCamera._alternateCamera.viewport);
                 this._draw(subMesh, fillMode, instancesCount, true);
-                scene._switchToAlternateCameraConfiguration(false);
                 engine.setViewport(scene.activeCamera.viewport);
+
+                scene._switchToAlternateCameraConfiguration(false);
+                this._effectiveMaterial.bindView(effect);
+                this._effectiveMaterial.bindViewProjection(effect);
             }
             return this;
         }
