@@ -11,26 +11,26 @@
         public angle = 0;
         public angularSpeed = 0;
 
-        constructor(private particleSystem: ParticleSystem, public cellIndex: number = 0, public invertU: number = 0, public invertV: number = 0, private _loopAnimation = false, private _fromIndex = 0, private _toIndex = 0, private _delay = 0, private _sheetDirection = 1, private _time = 0, private disposeWhenFinishedAnimating = false) {
+        constructor(private particleSystem: ParticleSystem, public cellIndex: number = 0, private _loopAnimation = false, private _fromIndex = 0, private _toIndex = 0, private disposeWhenFinishedAnimating = false) {
         }
 
         public updateCellIndex(deltaTime: number): void {
-            this._time += deltaTime;
-            if (this._time > this._delay) {
-                this._time = this._time % this._delay;
-                this.cellIndex += this._sheetDirection;
-                if (this.cellIndex > this._toIndex) {
-                    if (this._loopAnimation) {
-                        this.cellIndex = this._fromIndex;
-                    }
-                    else {
-                        this.cellIndex = this._toIndex;
-                        if (this.disposeWhenFinishedAnimating) {
-                            this.readyForRecycling();
-                        }
-                    }
-                }
-            }
+            // this._time += deltaTime;
+            // if (this._time > this._delay) {
+            //     this._time = this._time % this._delay;
+            //     this.cellIndex += this._sheetDirection;
+            //     if (this.cellIndex > this._toIndex) {
+            //         if (this._loopAnimation) {
+            //             this.cellIndex = this._fromIndex;
+            //         }
+            //         else {
+            //             this.cellIndex = this._toIndex;
+            //             if (this.disposeWhenFinishedAnimating) {
+            //                 this.readyForRecycling();
+            //             }
+            //         }
+            //     }
+            // }
         }
 
         public copyTo(other: Particle) {
@@ -45,14 +45,9 @@
             other.angularSpeed = this.angularSpeed;
             other.particleSystem = this.particleSystem;
             other.cellIndex = this.cellIndex;
-            other.invertU = this.invertU;
-            other.invertV = this.invertV;
             other._loopAnimation = this._loopAnimation;
             other._fromIndex = this._fromIndex;
             other._toIndex = this._toIndex;
-            other._delay = this._delay;
-            other._sheetDirection = this._sheetDirection;
-            other._time = this._time;
             other.disposeWhenFinishedAnimating = this.disposeWhenFinishedAnimating;
         }
 
