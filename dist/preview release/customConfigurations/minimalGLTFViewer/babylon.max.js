@@ -15597,7 +15597,7 @@ var BABYLON;
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[1].parent = this;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
-                        if (Camera.UseImprovedWebVRRendering) {
+                        if (Camera.UseAlternateWebVRRendering) {
                             this._rigCameras[1]._skipRendering = true;
                             this._rigCameras[0]._alternateCamera = this._rigCameras[1];
                         }
@@ -15793,7 +15793,7 @@ var BABYLON;
         Camera._RIG_MODE_VR = 20;
         Camera._RIG_MODE_WEBVR = 21;
         Camera.ForceAttachControlToAlwaysPreventDefault = false;
-        Camera.UseImprovedWebVRRendering = false;
+        Camera.UseAlternateWebVRRendering = false;
         __decorate([
             BABYLON.serializeAsVector3()
         ], Camera.prototype, "position", void 0);
@@ -22160,8 +22160,10 @@ var BABYLON;
                 this._effectiveMaterial.bindViewProjection(effect);
                 engine.setViewport(scene.activeCamera._alternateCamera.viewport);
                 this._draw(subMesh, fillMode, instancesCount, true);
-                scene._switchToAlternateCameraConfiguration(false);
                 engine.setViewport(scene.activeCamera.viewport);
+                scene._switchToAlternateCameraConfiguration(false);
+                this._effectiveMaterial.bindView(effect);
+                this._effectiveMaterial.bindViewProjection(effect);
             }
             return this;
         };
