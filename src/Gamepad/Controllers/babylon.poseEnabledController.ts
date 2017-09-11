@@ -58,7 +58,7 @@ module BABYLON {
         private _poseControlledCamera: TargetCamera;
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
-
+        
         constructor(public vrGamepad) {
             super(vrGamepad.id, vrGamepad.index, vrGamepad);
             this.type = Gamepad.POSE_ENABLED;

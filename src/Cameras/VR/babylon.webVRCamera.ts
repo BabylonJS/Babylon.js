@@ -386,39 +386,41 @@ module BABYLON {
             this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad) => {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
-                    let index = this.controllers.indexOf(webVrController);
-
-                    if (index === -1) {
-                        // we are good
-                        return;
+                    
+                    if (webVrController.defaultModel) {
+                        webVrController.defaultModel.setEnabled(false);
                     }
-
-                    this.controllers.splice(index, 1);
                 }
             });
 
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
+                    
                     if (this.webVROptions.controllerMeshes) {
-                        webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
-                            if (this.webVROptions.defaultLightingOnControllers) {
-                                if (!this._lightOnControllers) {
-                                    this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), this.getScene());
-                                }
-                                let activateLightOnSubMeshes = function(mesh: AbstractMesh, light: HemisphericLight) {
-                                    let children = mesh.getChildren();
-                                    if (children.length !== 0) {
-                                        children.forEach((mesh) => {
-                                            light.includedOnlyMeshes.push(<AbstractMesh>mesh);
-                                            activateLightOnSubMeshes(<AbstractMesh>mesh, light);
-                                        });
+                        if (webVrController.defaultModel) {
+                            webVrController.defaultModel.setEnabled(true);
+                        } else {
+                            // Load the meshes
+                            webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
+                                if (this.webVROptions.defaultLightingOnControllers) {
+                                    if (!this._lightOnControllers) {
+                                        this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), this.getScene());
                                     }
+                                    let activateLightOnSubMeshes = function(mesh: AbstractMesh, light: HemisphericLight) {
+                                        let children = mesh.getChildren();
+                                        if (children.length !== 0) {
+                                            children.forEach((mesh) => {
+                                                light.includedOnlyMeshes.push(<AbstractMesh>mesh);
+                                                activateLightOnSubMeshes(<AbstractMesh>mesh, light);
+                                            });
+                                        }
+                                    }
+                                    this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
+                                    activateLightOnSubMeshes(loadedMesh, this._lightOnControllers);
                                 }
-                                this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
-                                activateLightOnSubMeshes(loadedMesh, this._lightOnControllers);
-                            }
-                        });
+                            });
+                        }
                     }
                     webVrController.attachToPoseControlledCamera(this);
 

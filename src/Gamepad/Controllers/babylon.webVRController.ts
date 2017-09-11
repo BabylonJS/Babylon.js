@@ -2,6 +2,8 @@ module BABYLON {
 
     export abstract class WebVRController extends PoseEnabledController {
 
+        protected _defaultModel: AbstractMesh;
+
         public onTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
         public onMainButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
@@ -22,6 +24,10 @@ module BABYLON {
         public pad: StickValues = { x: 0, y: 0 };
 
         public hand: string; // 'left' or 'right', see https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
+
+        public get defaultModel(): AbstractMesh {
+            return this._defaultModel;
+        }
 
         constructor(vrGamepad) {
             super(vrGamepad);

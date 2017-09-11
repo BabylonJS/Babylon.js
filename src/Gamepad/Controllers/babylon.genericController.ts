@@ -1,8 +1,6 @@
 module BABYLON {
     
     export class GenericController extends WebVRController {
-        private _defaultModel: BABYLON.AbstractMesh;
-
         constructor(vrGamepad) {
             super(vrGamepad);
         }
