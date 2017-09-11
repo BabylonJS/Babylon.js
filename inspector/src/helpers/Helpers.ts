@@ -98,6 +98,13 @@ module INSPECTOR {
             return Helpers.CreateElement('div', className, parent);
         }
 
+        /**
+         * Useful function used to create a input
+         */
+        public static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement {
+            return <HTMLInputElement>Helpers.CreateElement('input', className, parent);
+        }
+
         public static CreateElement(element: string, className?: string, parent?: HTMLElement): HTMLElement {
             let elem = Inspector.DOCUMENT.createElement(element);
 

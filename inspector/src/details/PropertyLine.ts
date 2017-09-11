@@ -81,13 +81,15 @@ module INSPECTOR {
         private _validateInputHandler: EventListener;
         /** Handler used to validate the input by pressing 'esc' */
         private _escapeInputHandler: EventListener;
+        /** Handler used on focus out */
+        private _focusOutInputHandler: EventListener;
         /** Handler used to get mouse position */
         private _onMouseDownHandler: EventListener;
         private _onMouseDragHandler: EventListener;
         private _onMouseUpHandler: EventListener;
         /** Save previous Y mouse position */
         private _prevY: number;
-        /**Save value while slider in on */
+        /**Save value while slider is on */
         private _preValue: number;
 
         constructor(prop: Property, parent?: PropertyLine, level: number = 0) {
@@ -123,6 +125,7 @@ module INSPECTOR {
                 this._valueDiv.addEventListener('click', this._displayInputHandler);
                 this._input.addEventListener('keypress', this._validateInputHandler);
                 this._input.addEventListener('keydown', this._escapeInputHandler);
+                this._input.addEventListener('focusout', this._focusOutInputHandler);
             }
 
             // Add this property to the scheduler
@@ -135,7 +138,6 @@ module INSPECTOR {
          * - enters updates the property
          */
         private _initInput() {
-
             // Create the input element
             this._input = document.createElement('input') as HTMLInputElement;
             this._input.setAttribute('type', 'text');
@@ -144,6 +146,8 @@ module INSPECTOR {
             this._displayInputHandler = this._displayInput.bind(this);
             this._validateInputHandler = this._validateInput.bind(this);
             this._escapeInputHandler = this._escapeInput.bind(this);
+            this._focusOutInputHandler = this.update.bind(this);
+
             this._onMouseDownHandler = this._onMouseDown.bind(this);
             this._onMouseDragHandler = this._onMouseDrag.bind(this);
             this._onMouseUpHandler = this._onMouseUp.bind(this);
@@ -162,7 +166,7 @@ module INSPECTOR {
             }
         }
 
-        public validateInput(value: any): void {            
+        public validateInput(value: any): void {
             this.updateObject();
 
             if(typeof this._property.value === 'number'){
@@ -180,6 +184,8 @@ module INSPECTOR {
          * On escape : removes the input
          */
         private _escapeInput(e: KeyboardEvent) {
+            // Remove focus out handler
+            this._input.removeEventListener('focusout', this._focusOutInputHandler);
             if (e.keyCode == 27) {
                 // Esc : remove input
                 this.update();
@@ -207,10 +213,12 @@ module INSPECTOR {
             this._valueDiv.textContent = "";
             this._input.value = valueTxt;
             this._valueDiv.appendChild(this._input);
+            this._input.focus();
 
             if(typeof this.value === 'number') {
                 this._input.addEventListener('mousedown', this._onMouseDownHandler);
             }
+            this._input.addEventListener('focusout', this._focusOutInputHandler);
             // Pause the scheduler
             Scheduler.getInstance().pause = true;
         }
@@ -250,6 +258,7 @@ module INSPECTOR {
 
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
+                console.log('colorpicker',this);
                 this._elements.push(new ColorPickerElement(this.value, this));
                 //this._elements.push(new ColorElement(this.value));
             }
@@ -271,7 +280,6 @@ module INSPECTOR {
         // - If the type is complex, but instance of Vector2, Size, display the type and its tostring
         // - If the type is another one, display the Type
         private _displayValueContent() {
-
             let value = this.value;
             // If the value is a number, truncate it if needed
             if (typeof value === 'number') {
@@ -313,6 +321,7 @@ module INSPECTOR {
             // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
             this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
             for (let elem of this._elements) {
+                console.log('elem', elem);
                 elem.update(this.value);
             }
         }
@@ -388,13 +397,14 @@ module INSPECTOR {
             }
         }
 
+
         /**
          * Refresh mouse position on y axis
          * @param e 
          */
         private _onMouseDrag(e: MouseEvent): void {      
             const diff = this._prevY - e.clientY;
-            this.validateInput(this._preValue + diff);
+            this._input.value = (this._preValue + diff).toString();
         }
 
         /**

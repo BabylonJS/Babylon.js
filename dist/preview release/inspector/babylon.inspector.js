@@ -964,21 +964,7 @@ var INSPECTOR;
         };
         /** Returns the list of properties to be displayed for this adapter */
         CameraAdapter.prototype.getProperties = function () {
-            var propertiesLines = [];
-            var camToDisplay = [];
-            // The if is there to work with the min version of babylon
-            if (this._obj instanceof BABYLON.ArcRotateCamera) {
-                camToDisplay = INSPECTOR.PROPERTIES['ArcRotateCamera'].properties;
-            }
-            else if (this._obj instanceof BABYLON.FreeCamera) {
-                camToDisplay = INSPECTOR.PROPERTIES['FreeCamera'].properties;
-            }
-            for (var _i = 0, camToDisplay_1 = camToDisplay; _i < camToDisplay_1.length; _i++) {
-                var dirty = camToDisplay_1[_i];
-                var infos = new INSPECTOR.Property(dirty, this._obj);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            return propertiesLines;
+            return INSPECTOR.Helpers.GetAllLinesProperties(this._obj);
         };
         CameraAdapter.prototype.getTools = function () {
             var tools = [];
@@ -1031,13 +1017,7 @@ var INSPECTOR;
         };
         /** Returns the list of properties to be displayed for this adapter */
         PhysicsImpostorAdapter.prototype.getProperties = function () {
-            var propertiesLines = [];
-            for (var _i = 0, _a = INSPECTOR.PROPERTIES['PhysicsImpostor'].properties; _i < _a.length; _i++) {
-                var dirty = _a[_i];
-                var infos = new INSPECTOR.Property(dirty, this._obj);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            return propertiesLines;
+            return INSPECTOR.Helpers.GetAllLinesProperties(this._obj);
         };
         PhysicsImpostorAdapter.prototype.getTools = function () {
             var tools = [];
@@ -1094,97 +1074,7 @@ var INSPECTOR;
         };
         /** Returns the list of properties to be displayed for this adapter */
         GUIAdapter.prototype.getProperties = function () {
-            var propertiesLines = [];
-            for (var _i = 0, _a = INSPECTOR.PROPERTIES['Control'].properties; _i < _a.length; _i++) {
-                var dirty = _a[_i];
-                var infos = new INSPECTOR.Property(dirty, this._obj);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            if (this._obj instanceof BABYLON.GUI.Button) {
-                for (var _b = 0, _c = INSPECTOR.PROPERTIES['Button'].properties; _b < _c.length; _b++) {
-                    var dirty = _c[_b];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.ColorPicker) {
-                for (var _d = 0, _e = INSPECTOR.PROPERTIES['ColorPicker'].properties; _d < _e.length; _d++) {
-                    var dirty = _e[_d];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.Checkbox) {
-                for (var _f = 0, _g = INSPECTOR.PROPERTIES['Checkbox'].properties; _f < _g.length; _f++) {
-                    var dirty = _g[_f];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.Ellipse) {
-                for (var _h = 0, _j = INSPECTOR.PROPERTIES['Ellipse'].properties; _h < _j.length; _h++) {
-                    var dirty = _j[_h];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.Image) {
-                for (var _k = 0, _l = INSPECTOR.PROPERTIES['Image'].properties; _k < _l.length; _k++) {
-                    var dirty = _l[_k];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.Line) {
-                for (var _m = 0, _o = INSPECTOR.PROPERTIES['Line'].properties; _m < _o.length; _m++) {
-                    var dirty = _o[_m];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.RadioButton) {
-                for (var _p = 0, _q = INSPECTOR.PROPERTIES['RadioButton'].properties; _p < _q.length; _p++) {
-                    var dirty = _q[_p];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.Rectangle) {
-                for (var _r = 0, _s = INSPECTOR.PROPERTIES['Rectangle'].properties; _r < _s.length; _r++) {
-                    var dirty = _s[_r];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.Slider) {
-                for (var _t = 0, _u = INSPECTOR.PROPERTIES['Slider'].properties; _t < _u.length; _t++) {
-                    var dirty = _u[_t];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.StackPanel) {
-                for (var _v = 0, _w = INSPECTOR.PROPERTIES['StackPanel'].properties; _v < _w.length; _v++) {
-                    var dirty = _w[_v];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.TextBlock) {
-                for (var _x = 0, _y = INSPECTOR.PROPERTIES['TextBlock'].properties; _x < _y.length; _x++) {
-                    var dirty = _y[_x];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            if (this._obj instanceof BABYLON.GUI.Container) {
-                for (var _z = 0, _0 = INSPECTOR.PROPERTIES['Container'].properties; _z < _0.length; _z++) {
-                    var dirty = _0[_z];
-                    var infos = new INSPECTOR.Property(dirty, this._obj);
-                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-                }
-            }
-            return propertiesLines;
+            return INSPECTOR.Helpers.GetAllLinesProperties(this._obj);
         };
         GUIAdapter.prototype.getTools = function () {
             var tools = [];
@@ -1235,16 +1125,7 @@ var INSPECTOR;
         };
         /** Returns the list of properties to be displayed for this adapter */
         SoundAdapter.prototype.getProperties = function () {
-            var propertiesLines = [];
-            var camToDisplay = [];
-            // The if is there to work with the min version of babylon
-            var soundProperties = INSPECTOR.PROPERTIES['Sound'].properties;
-            for (var _i = 0, soundProperties_1 = soundProperties; _i < soundProperties_1.length; _i++) {
-                var dirty = soundProperties_1[_i];
-                var infos = new INSPECTOR.Property(dirty, this._obj);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            return propertiesLines;
+            return INSPECTOR.Helpers.GetAllLinesProperties(this._obj);
         };
         SoundAdapter.prototype.getTools = function () {
             var tools = [];
@@ -1346,13 +1227,7 @@ var INSPECTOR;
         };
         /** Returns the list of properties to be displayed for this adapter */
         LightAdapter.prototype.getProperties = function () {
-            var propertiesLines = [];
-            for (var _i = 0, _a = LightAdapter._PROPERTIES; _i < _a.length; _i++) {
-                var dirty = _a[_i];
-                var infos = new INSPECTOR.Property(dirty, this._obj);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            return propertiesLines;
+            return INSPECTOR.Helpers.GetAllLinesProperties(this._obj);
         };
         LightAdapter.prototype.getTools = function () {
             var tools = [];
@@ -1365,14 +1240,6 @@ var INSPECTOR;
         LightAdapter.prototype.isVisible = function () {
             return this._obj.isEnabled();
         };
-        LightAdapter._PROPERTIES = [
-            'position',
-            'diffuse',
-            'intensity',
-            'radius',
-            'range',
-            'specular'
-        ];
         return LightAdapter;
     }(INSPECTOR.Adapter));
     INSPECTOR.LightAdapter = LightAdapter;
@@ -1411,21 +1278,7 @@ var INSPECTOR;
         };
         /** Returns the list of properties to be displayed for this adapter */
         MaterialAdapter.prototype.getProperties = function () {
-            var propertiesLines = [];
-            var propToDisplay = [];
-            // The if is there to work with the min version of babylon
-            if (this._obj instanceof BABYLON.StandardMaterial) {
-                propToDisplay = INSPECTOR.PROPERTIES['StandardMaterial'].properties;
-            }
-            else if (this._obj instanceof BABYLON.PBRMaterial) {
-                propToDisplay = INSPECTOR.PROPERTIES['PBRMaterial'].properties;
-            }
-            for (var _i = 0, propToDisplay_1 = propToDisplay; _i < propToDisplay_1.length; _i++) {
-                var dirty = propToDisplay_1[_i];
-                var infos = new INSPECTOR.Property(dirty, this._obj);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            return propertiesLines;
+            return INSPECTOR.Helpers.GetAllLinesProperties(this._obj);
         };
         /** No tools for a material adapter */
         MaterialAdapter.prototype.getTools = function () {
@@ -1472,13 +1325,7 @@ var INSPECTOR;
         };
         /** Returns the list of properties to be displayed for this adapter */
         MeshAdapter.prototype.getProperties = function () {
-            var propertiesLines = [];
-            for (var _i = 0, _a = INSPECTOR.PROPERTIES['Mesh'].properties; _i < _a.length; _i++) {
-                var dirty = _a[_i];
-                var infos = new INSPECTOR.Property(dirty, this._obj);
-                propertiesLines.push(new INSPECTOR.PropertyLine(infos));
-            }
-            return propertiesLines;
+            return INSPECTOR.Helpers.GetAllLinesProperties(this._obj);
         };
         MeshAdapter.prototype.getTools = function () {
             var tools = [];
@@ -1970,6 +1817,7 @@ var INSPECTOR;
         PropertyLine.prototype._createElements = function () {
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
+                console.log('color', new INSPECTOR.ColorPickerElement(this.value));
                 this._elements.push(new INSPECTOR.ColorElement(this.value));
             }
             // Texture
@@ -2162,6 +2010,44 @@ var INSPECTOR;
         return ColorElement;
     }(INSPECTOR.BasicElement));
     INSPECTOR.ColorElement = ColorElement;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var INSPECTOR;
+(function (INSPECTOR) {
+    /**
+     * Represents a html div element.
+     * The div is built when an instance of BasicElement is created.
+     */
+    var ColorPickerElement = (function () {
+        function ColorPickerElement(color) {
+            this._input = INSPECTOR.Helpers.CreateInput();
+            this._input.type = 'color';
+            this._input.value = this._toRgba(color);
+        }
+        /**
+         * Returns the input element
+         */
+        ColorPickerElement.prototype.toHtml = function () {
+            return this._input;
+        };
+        ColorPickerElement.prototype._toRgba = function (color) {
+            if (color) {
+                var r = (color.r * 255) | 0;
+                var g = (color.g * 255) | 0;
+                var b = (color.b * 255) | 0;
+                var a = 1;
+                if (color instanceof BABYLON.Color4) {
+                    var a_1 = color.a;
+                }
+                return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
+            }
+            else {
+                return '';
+            }
+        };
+        return ColorPickerElement;
+    }());
+    INSPECTOR.ColorPickerElement = ColorPickerElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || (function () {
@@ -2539,6 +2425,12 @@ var INSPECTOR;
         Helpers.CreateDiv = function (className, parent) {
             return Helpers.CreateElement('div', className, parent);
         };
+        /**
+         * Useful function used to create a input
+         */
+        Helpers.CreateInput = function (className, parent) {
+            return Helpers.CreateElement('input', className, parent);
+        };
         Helpers.CreateElement = function (element, className, parent) {
             var elem = INSPECTOR.Inspector.DOCUMENT.createElement(element);
             if (className) {
@@ -2594,6 +2486,23 @@ var INSPECTOR;
                 return false;
             }
             return name.indexOf("###") === 0 && name.lastIndexOf("###") === (name.length - 3);
+        };
+        /**
+         * Return an array of PropertyLine for an obj
+         * @param obj
+         */
+        Helpers.GetAllLinesProperties = function (obj) {
+            var propertiesLines = [];
+            for (var prop in obj) {
+                /**
+                 * No private and no function
+                 */
+                if (prop.substring(0, 1) !== '_' && typeof obj[prop] !== 'function') {
+                    var infos = new INSPECTOR.Property(prop, obj);
+                    propertiesLines.push(new INSPECTOR.PropertyLine(infos));
+                }
+            }
+            return propertiesLines;
         };
         return Helpers;
     }());
