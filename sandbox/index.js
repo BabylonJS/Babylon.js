@@ -68,7 +68,6 @@
             currentScene.createDefaultCameraOrLight(true);
             // Enable camera's behaviors
             currentScene.activeCamera.useBouncingBehavior = true;
-            currentScene.activeCamera.useAutoRotationBehavior  = true;
             currentScene.activeCamera.useFramingBehavior = true;
 
             var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
