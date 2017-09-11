@@ -12,9 +12,14 @@
         public angularSpeed = 0;
 
         private _currentFrameCounter = 0;
+        public cellIndex: number = 0;
 
-        constructor(private particleSystem: ParticleSystem, public cellIndex: number = 0, private _loopAnimation = false, private _fromIndex = 0, private _toIndex = 0) {
-            this.cellIndex = this._fromIndex;
+        constructor(private particleSystem: ParticleSystem) {
+            if (!this.particleSystem.IsAnimationSheetEnabled) {
+                return;
+            }
+
+            this.cellIndex = this.particleSystem.startSpriteCellID;
 
             if (this.particleSystem.spriteCellChangeSpeed == 0) {
                 this.updateCellIndex = this.updateCellIndexWithSpeedCalculated;
@@ -29,15 +34,15 @@
         private updateCellIndexWithSpeedCalculated(scaledUpdateSpeed: number): void {
             var ageOffset = this.lifeTime - this.age;
             var numberOfScaledSlots = ageOffset / scaledUpdateSpeed;
-            var availableIndexes = this._toIndex +1 - this.cellIndex;
+            var availableIndexes = this.particleSystem.endSpriteCellID + 1 - this.cellIndex;
             var incrementAt = numberOfScaledSlots / availableIndexes;
 
             this._currentFrameCounter += scaledUpdateSpeed;
             if (this._currentFrameCounter >= incrementAt * scaledUpdateSpeed) {
                 this._currentFrameCounter = 0;
                 this.cellIndex++;
-                if (this.cellIndex > this._toIndex) {
-                    this.cellIndex = this._toIndex;
+                if (this.cellIndex > this.particleSystem.endSpriteCellID) {
+                    this.cellIndex = this.particleSystem.endSpriteCellID;
                 }
             }
         }
@@ -46,12 +51,12 @@
             if (this._currentFrameCounter >= this.particleSystem.spriteCellChangeSpeed) {
                 this.cellIndex++;
                 this._currentFrameCounter = 0;
-                if (this.cellIndex > this._toIndex) {
-                    if (this._loopAnimation) {
-                        this.cellIndex = this._fromIndex;
+                if (this.cellIndex > this.particleSystem.endSpriteCellID) {
+                    if (this.particleSystem.spriteCellLoop) {
+                        this.cellIndex = this.particleSystem.startSpriteCellID;
                     }
                     else {
-                        this.cellIndex = this._toIndex;
+                        this.cellIndex = this.particleSystem.endSpriteCellID;
                     }
                 }
             }
@@ -72,13 +77,6 @@
             other.angularSpeed = this.angularSpeed;
             other.particleSystem = this.particleSystem;
             other.cellIndex = this.cellIndex;
-            other._loopAnimation = this._loopAnimation;
-            other._fromIndex = this._fromIndex;
-            other._toIndex = this._toIndex;
-        }
-
-        public readyForRecycling() {
-            this.age = this.lifeTime;
         }
     }
 } 

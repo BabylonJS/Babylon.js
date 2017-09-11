@@ -40930,16 +40930,8 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var Particle = (function () {
-        function Particle(particleSystem, cellIndex, _loopAnimation, _fromIndex, _toIndex) {
-            if (cellIndex === void 0) { cellIndex = 0; }
-            if (_loopAnimation === void 0) { _loopAnimation = false; }
-            if (_fromIndex === void 0) { _fromIndex = 0; }
-            if (_toIndex === void 0) { _toIndex = 0; }
+        function Particle(particleSystem) {
             this.particleSystem = particleSystem;
-            this.cellIndex = cellIndex;
-            this._loopAnimation = _loopAnimation;
-            this._fromIndex = _fromIndex;
-            this._toIndex = _toIndex;
             this.position = BABYLON.Vector3.Zero();
             this.direction = BABYLON.Vector3.Zero();
             this.color = new BABYLON.Color4(0, 0, 0, 0);
@@ -40950,7 +40942,11 @@ var BABYLON;
             this.angle = 0;
             this.angularSpeed = 0;
             this._currentFrameCounter = 0;
-            this.cellIndex = this._fromIndex;
+            this.cellIndex = 0;
+            if (!this.particleSystem.IsAnimationSheetEnabled) {
+                return;
+            }
+            this.cellIndex = this.particleSystem.startSpriteCellID;
             if (this.particleSystem.spriteCellChangeSpeed == 0) {
                 this.updateCellIndex = this.updateCellIndexWithSpeedCalculated;
             }
@@ -40961,14 +40957,14 @@ var BABYLON;
         Particle.prototype.updateCellIndexWithSpeedCalculated = function (scaledUpdateSpeed) {
             var ageOffset = this.lifeTime - this.age;
             var numberOfScaledSlots = ageOffset / scaledUpdateSpeed;
-            var availableIndexes = this._toIndex + 1 - this.cellIndex;
+            var availableIndexes = this.particleSystem.endSpriteCellID + 1 - this.cellIndex;
             var incrementAt = numberOfScaledSlots / availableIndexes;
             this._currentFrameCounter += scaledUpdateSpeed;
             if (this._currentFrameCounter >= incrementAt * scaledUpdateSpeed) {
                 this._currentFrameCounter = 0;
                 this.cellIndex++;
-                if (this.cellIndex > this._toIndex) {
-                    this.cellIndex = this._toIndex;
+                if (this.cellIndex > this.particleSystem.endSpriteCellID) {
+                    this.cellIndex = this.particleSystem.endSpriteCellID;
                 }
             }
         };
@@ -40976,12 +40972,12 @@ var BABYLON;
             if (this._currentFrameCounter >= this.particleSystem.spriteCellChangeSpeed) {
                 this.cellIndex++;
                 this._currentFrameCounter = 0;
-                if (this.cellIndex > this._toIndex) {
-                    if (this._loopAnimation) {
-                        this.cellIndex = this._fromIndex;
+                if (this.cellIndex > this.particleSystem.endSpriteCellID) {
+                    if (this.particleSystem.spriteCellLoop) {
+                        this.cellIndex = this.particleSystem.startSpriteCellID;
                     }
                     else {
-                        this.cellIndex = this._toIndex;
+                        this.cellIndex = this.particleSystem.endSpriteCellID;
                     }
                 }
             }
@@ -41001,12 +40997,6 @@ var BABYLON;
             other.angularSpeed = this.angularSpeed;
             other.particleSystem = this.particleSystem;
             other.cellIndex = this.cellIndex;
-            other._loopAnimation = this._loopAnimation;
-            other._fromIndex = this._fromIndex;
-            other._toIndex = this._toIndex;
-        };
-        Particle.prototype.readyForRecycling = function () {
-            this.age = this.lifeTime;
         };
         return Particle;
     }());
@@ -41026,11 +41016,12 @@ var BABYLON;
     };
     var ParticleSystem = (function () {
         // end of sheet animation
-        function ParticleSystem(name, capacity, scene, customEffect, spriteCellSize, epsilon) {
+        function ParticleSystem(name, capacity, scene, customEffect, _isAnimationSheetEnabled, epsilon) {
+            if (_isAnimationSheetEnabled === void 0) { _isAnimationSheetEnabled = false; }
             if (epsilon === void 0) { epsilon = 0.01; }
             var _this = this;
             this.name = name;
-            this.spriteCellSize = spriteCellSize;
+            this._isAnimationSheetEnabled = _isAnimationSheetEnabled;
             // Members
             this.animations = [];
             this.renderingGroupId = 0;
@@ -41084,24 +41075,16 @@ var BABYLON;
             this.startSpriteCellID = 0;
             this.endSpriteCellID = 0;
             this.spriteCellLoop = true;
-            this.spriteCellChangeSpeed = 0; //(cellID++ every 4 frames). If this value is set to 0 (default) then we need to compute the speed base on lifetime like we are doing for colorDead. In other word, the particle will born with startCellId and die at endCellId
-            this._spriteCellWidth = 0;
-            this._spriteCellHeight = 0;
+            this.spriteCellChangeSpeed = 0;
+            this.spriteCellWidth = 0;
+            this.spriteCellHeight = 0;
             this._vertexBufferSize = 11;
             this.appendParticleVertexes = null;
             this.id = name;
             this._capacity = capacity;
             this._epsilon = epsilon;
-            if (spriteCellSize) {
+            if (_isAnimationSheetEnabled) {
                 this._vertexBufferSize = 12;
-                if (spriteCellSize.width && spriteCellSize.height) {
-                    this._spriteCellWidth = spriteCellSize.width;
-                    this._spriteCellHeight = spriteCellSize.height;
-                }
-                else {
-                    this._spriteCellWidth = spriteCellSize;
-                    this._spriteCellHeight = spriteCellSize;
-                }
             }
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._customEffect = customEffect;
@@ -41113,7 +41096,7 @@ var BABYLON;
             var positions = this._vertexBuffer.createVertexBuffer(BABYLON.VertexBuffer.PositionKind, 0, 3);
             var colors = this._vertexBuffer.createVertexBuffer(BABYLON.VertexBuffer.ColorKind, 3, 4);
             var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
-            if (this.spriteCellSize) {
+            if (this._isAnimationSheetEnabled) {
                 var cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", 11, 1);
                 this._vertexBuffers["cellIndex"] = cellIndexBuffer;
             }
@@ -41152,7 +41135,7 @@ var BABYLON;
                         particle.position.addInPlace(_this._scaledDirection);
                         _this.gravity.scaleToRef(_this._scaledUpdateSpeed, _this._scaledGravity);
                         particle.direction.addInPlace(_this._scaledGravity);
-                        if (_this.spriteCellSize) {
+                        if (_this._isAnimationSheetEnabled) {
                             particle.updateCellIndex(_this._scaledUpdateSpeed);
                         }
                     }
@@ -41165,6 +41148,13 @@ var BABYLON;
                     this.onDisposeObservable.remove(this._onDisposeObserver);
                 }
                 this._onDisposeObserver = this.onDisposeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "IsAnimationSheetEnabled", {
+            get: function () {
+                return this._isAnimationSheetEnabled;
             },
             enumerable: true,
             configurable: true
@@ -41270,12 +41260,7 @@ var BABYLON;
                     particle.cellIndex = this.startSpriteCellID;
                 }
                 else {
-                    if (this.spriteCellSize) {
-                        particle = new BABYLON.Particle(this, this.startSpriteCellID, this.spriteCellLoop, this.startSpriteCellID, this.endSpriteCellID);
-                    }
-                    else {
-                        particle = new BABYLON.Particle(this);
-                    }
+                    particle = new BABYLON.Particle(this);
                 }
                 this.particles.push(particle);
                 var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
@@ -41299,7 +41284,7 @@ var BABYLON;
             if (this._scene.clipPlane) {
                 defines.push("#define CLIPPLANE");
             }
-            if (this.spriteCellSize) {
+            if (this._isAnimationSheetEnabled) {
                 defines.push("#define ANIMATESHEET");
             }
             // Effect
@@ -41308,7 +41293,7 @@ var BABYLON;
                 this._cachedDefines = join;
                 var attributesNamesOrOptions;
                 var effectCreationOption;
-                if (this.spriteCellSize) {
+                if (this._isAnimationSheetEnabled) {
                     attributesNamesOrOptions = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.ColorKind, "options", "cellIndex"];
                     effectCreationOption = ["invView", "view", "projection", "particlesInfos", "vClipPlane", "textureMask"];
                 }
@@ -41370,7 +41355,7 @@ var BABYLON;
                 }
             }
             // Animation sheet
-            if (this.spriteCellSize) {
+            if (this._isAnimationSheetEnabled) {
                 this.appendParticleVertexes = this.appenedParticleVertexesWithSheet;
             }
             else {
@@ -41414,9 +41399,9 @@ var BABYLON;
             effect.setTexture("diffuseSampler", this.particleTexture);
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
-            if (this.spriteCellSize) {
+            if (this._isAnimationSheetEnabled) {
                 var baseSize = this.particleTexture.getBaseSize();
-                effect.setFloat3("particlesInfos", this._spriteCellWidth / baseSize.width, this._spriteCellHeight / baseSize.height, baseSize.width / this._spriteCellWidth);
+                effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
             }
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
             if (this._scene.clipPlane) {
