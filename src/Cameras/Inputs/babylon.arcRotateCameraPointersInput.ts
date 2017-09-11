@@ -45,6 +45,10 @@ module BABYLON {
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
 
+                if (engine.isInVRExclusivePointerMode) {
+                    return;
+                }
+
                 if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                     return;
                 }
