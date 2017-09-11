@@ -145,14 +145,14 @@ var BABYLON;
             var texture = BABYLON.SerializationHelper.Parse(function () { return new AsciiArtFontTexture(source.name, source.font, source.text, scene); }, source, scene, null);
             return texture;
         };
-        __decorate([
-            BABYLON.serialize("font")
-        ], AsciiArtFontTexture.prototype, "_font", void 0);
-        __decorate([
-            BABYLON.serialize("text")
-        ], AsciiArtFontTexture.prototype, "_text", void 0);
         return AsciiArtFontTexture;
     }(BABYLON.BaseTexture));
+    __decorate([
+        BABYLON.serialize("font")
+    ], AsciiArtFontTexture.prototype, "_font", void 0);
+    __decorate([
+        BABYLON.serialize("text")
+    ], AsciiArtFontTexture.prototype, "_text", void 0);
     BABYLON.AsciiArtFontTexture = AsciiArtFontTexture;
     /**
      * AsciiArtPostProcess helps rendering everithing in Ascii Art.

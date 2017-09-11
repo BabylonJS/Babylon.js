@@ -206,11 +206,11 @@ var BABYLON;
         ShadowOnlyMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new ShadowOnlyMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serialize()
-        ], ShadowOnlyMaterial.prototype, "_worldViewProjectionMatrix", void 0);
         return ShadowOnlyMaterial;
     }(BABYLON.PushMaterial));
+    __decorate([
+        BABYLON.serialize()
+    ], ShadowOnlyMaterial.prototype, "_worldViewProjectionMatrix", void 0);
     BABYLON.ShadowOnlyMaterial = ShadowOnlyMaterial;
 })(BABYLON || (BABYLON = {}));
 

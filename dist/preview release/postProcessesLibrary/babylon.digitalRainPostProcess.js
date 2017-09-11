@@ -145,14 +145,14 @@ var BABYLON;
             var texture = BABYLON.SerializationHelper.Parse(function () { return new DigitalRainFontTexture(source.name, source.font, source.text, scene); }, source, scene, null);
             return texture;
         };
-        __decorate([
-            BABYLON.serialize("font")
-        ], DigitalRainFontTexture.prototype, "_font", void 0);
-        __decorate([
-            BABYLON.serialize("text")
-        ], DigitalRainFontTexture.prototype, "_text", void 0);
         return DigitalRainFontTexture;
     }(BABYLON.BaseTexture));
+    __decorate([
+        BABYLON.serialize("font")
+    ], DigitalRainFontTexture.prototype, "_font", void 0);
+    __decorate([
+        BABYLON.serialize("text")
+    ], DigitalRainFontTexture.prototype, "_text", void 0);
     BABYLON.DigitalRainFontTexture = DigitalRainFontTexture;
     /**
      * DigitalRainPostProcess helps rendering everithing in digital rain.

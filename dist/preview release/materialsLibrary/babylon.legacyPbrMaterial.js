@@ -1284,228 +1284,228 @@ var BABYLON;
         LegacyPBRMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new LegacyPBRMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        LegacyPBRMaterial._scaledAlbedo = new BABYLON.Color3();
-        LegacyPBRMaterial._scaledReflectivity = new BABYLON.Color3();
-        LegacyPBRMaterial._scaledEmissive = new BABYLON.Color3();
-        LegacyPBRMaterial._scaledReflection = new BABYLON.Color3();
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "directIntensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "emissiveIntensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "environmentIntensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "specularIntensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "disableBumpMap", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "overloadedShadowIntensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "overloadedShadeIntensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "cameraExposure", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "cameraContrast", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "cameraColorGradingTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsColorCurves()
-        ], LegacyPBRMaterial.prototype, "cameraColorCurves", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], LegacyPBRMaterial.prototype, "overloadedAmbient", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "overloadedAmbientIntensity", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], LegacyPBRMaterial.prototype, "overloadedAlbedo", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "overloadedAlbedoIntensity", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], LegacyPBRMaterial.prototype, "overloadedReflectivity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "overloadedReflectivityIntensity", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], LegacyPBRMaterial.prototype, "overloadedEmissive", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "overloadedEmissiveIntensity", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], LegacyPBRMaterial.prototype, "overloadedReflection", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "overloadedReflectionIntensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "overloadedMicroSurface", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "overloadedMicroSurfaceIntensity", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "albedoTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "ambientTexture", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "ambientTextureStrength", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "opacityTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "reflectionTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "emissiveTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "reflectivityTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "metallicTexture", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "metallic", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "roughness", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "microSurfaceTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "bumpTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "lightmapTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LegacyPBRMaterial.prototype, "refractionTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("ambient")
-        ], LegacyPBRMaterial.prototype, "ambientColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("albedo")
-        ], LegacyPBRMaterial.prototype, "albedoColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("reflectivity")
-        ], LegacyPBRMaterial.prototype, "reflectivityColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("reflection")
-        ], LegacyPBRMaterial.prototype, "reflectionColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("emissive")
-        ], LegacyPBRMaterial.prototype, "emissiveColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "microSurface", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "indexOfRefraction", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "invertRefractionY", void 0);
-        __decorate([
-            BABYLON.serializeAsFresnelParameters()
-        ], LegacyPBRMaterial.prototype, "opacityFresnelParameters", void 0);
-        __decorate([
-            BABYLON.serializeAsFresnelParameters()
-        ], LegacyPBRMaterial.prototype, "emissiveFresnelParameters", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "linkRefractionWithTransparency", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "linkEmissiveWithAlbedo", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useLightmapAsShadowmap", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useEmissiveAsIllumination", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useAlphaFromAlbedoTexture", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useSpecularOverAlpha", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useMicroSurfaceFromReflectivityMapAlpha", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useRoughnessFromMetallicTextureAlpha", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useRoughnessFromMetallicTextureGreen", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useMetallnessFromMetallicTextureBlue", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useAmbientOcclusionFromMetallicTextureRed", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useAmbientInGrayScale", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useAutoMicroSurfaceFromReflectivityMap", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useScalarInLinearSpace", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "usePhysicalLightFalloff", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useRadianceOverAlpha", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useParallax", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useParallaxOcclusion", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "parallaxScaleBias", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "invertNormalMapX", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "invertNormalMapY", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "twoSidedLighting", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LegacyPBRMaterial.prototype, "useLogarithmicDepth", null);
         return LegacyPBRMaterial;
     }(BABYLON.Material));
+    LegacyPBRMaterial._scaledAlbedo = new BABYLON.Color3();
+    LegacyPBRMaterial._scaledReflectivity = new BABYLON.Color3();
+    LegacyPBRMaterial._scaledEmissive = new BABYLON.Color3();
+    LegacyPBRMaterial._scaledReflection = new BABYLON.Color3();
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "directIntensity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "emissiveIntensity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "environmentIntensity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "specularIntensity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "disableBumpMap", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "overloadedShadowIntensity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "overloadedShadeIntensity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "cameraExposure", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "cameraContrast", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "cameraColorGradingTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsColorCurves()
+    ], LegacyPBRMaterial.prototype, "cameraColorCurves", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], LegacyPBRMaterial.prototype, "overloadedAmbient", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "overloadedAmbientIntensity", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], LegacyPBRMaterial.prototype, "overloadedAlbedo", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "overloadedAlbedoIntensity", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], LegacyPBRMaterial.prototype, "overloadedReflectivity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "overloadedReflectivityIntensity", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], LegacyPBRMaterial.prototype, "overloadedEmissive", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "overloadedEmissiveIntensity", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], LegacyPBRMaterial.prototype, "overloadedReflection", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "overloadedReflectionIntensity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "overloadedMicroSurface", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "overloadedMicroSurfaceIntensity", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "albedoTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "ambientTexture", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "ambientTextureStrength", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "opacityTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "reflectionTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "emissiveTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "reflectivityTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "metallicTexture", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "metallic", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "roughness", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "microSurfaceTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "bumpTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "lightmapTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LegacyPBRMaterial.prototype, "refractionTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3("ambient")
+    ], LegacyPBRMaterial.prototype, "ambientColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3("albedo")
+    ], LegacyPBRMaterial.prototype, "albedoColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3("reflectivity")
+    ], LegacyPBRMaterial.prototype, "reflectivityColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3("reflection")
+    ], LegacyPBRMaterial.prototype, "reflectionColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3("emissive")
+    ], LegacyPBRMaterial.prototype, "emissiveColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "microSurface", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "indexOfRefraction", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "invertRefractionY", void 0);
+    __decorate([
+        BABYLON.serializeAsFresnelParameters()
+    ], LegacyPBRMaterial.prototype, "opacityFresnelParameters", void 0);
+    __decorate([
+        BABYLON.serializeAsFresnelParameters()
+    ], LegacyPBRMaterial.prototype, "emissiveFresnelParameters", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "linkRefractionWithTransparency", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "linkEmissiveWithAlbedo", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useLightmapAsShadowmap", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useEmissiveAsIllumination", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useAlphaFromAlbedoTexture", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useSpecularOverAlpha", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useMicroSurfaceFromReflectivityMapAlpha", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useRoughnessFromMetallicTextureAlpha", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useRoughnessFromMetallicTextureGreen", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useMetallnessFromMetallicTextureBlue", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useAmbientOcclusionFromMetallicTextureRed", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useAmbientInGrayScale", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useAutoMicroSurfaceFromReflectivityMap", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useScalarInLinearSpace", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "usePhysicalLightFalloff", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useRadianceOverAlpha", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useParallax", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useParallaxOcclusion", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "parallaxScaleBias", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "invertNormalMapX", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "invertNormalMapY", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "twoSidedLighting", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LegacyPBRMaterial.prototype, "useLogarithmicDepth", null);
     BABYLON.LegacyPBRMaterial = LegacyPBRMaterial;
 })(BABYLON || (BABYLON = {}));
 
