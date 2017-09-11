@@ -32,13 +32,11 @@
         public updateCellIndex: (scaledUpdateSpeed: number) => void;
 
         private updateCellIndexWithSpeedCalculated(scaledUpdateSpeed: number): void {
-            var ageOffset = this.lifeTime - this.age;
-            var numberOfScaledSlots = ageOffset / scaledUpdateSpeed;
-            var availableIndexes = this.particleSystem.endSpriteCellID + 1 - this.cellIndex;
-            var incrementAt = numberOfScaledSlots / availableIndexes;
+            //   (ageOffset / scaledUpdateSpeed) / available cells
+            var numberOfScaledUpdatesPerCell = ((this.lifeTime - this.age) / scaledUpdateSpeed) / (this.particleSystem.endSpriteCellID + 1 - this.cellIndex);
 
             this._currentFrameCounter += scaledUpdateSpeed;
-            if (this._currentFrameCounter >= incrementAt * scaledUpdateSpeed) {
+            if (this._currentFrameCounter >= numberOfScaledUpdatesPerCell * scaledUpdateSpeed) {
                 this._currentFrameCounter = 0;
                 this.cellIndex++;
                 if (this.cellIndex > this.particleSystem.endSpriteCellID) {
