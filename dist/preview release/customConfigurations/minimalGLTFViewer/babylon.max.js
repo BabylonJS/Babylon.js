@@ -49330,6 +49330,7 @@ var BABYLON;
 (function (BABYLON) {
     var FilesInput = (function () {
         function FilesInput(engine, scene, sceneLoadedCallback, progressCallback, additionalRenderLoopLogicCallback, textureLoadingCallback, startingProcessingFilesCallback, onReloadCallback) {
+            this.onProcessFileCallback = function () { return true; };
             this._engine = engine;
             this._currentScene = scene;
             this._sceneLoadedCallback = sceneLoadedCallback;
@@ -49408,9 +49409,14 @@ var BABYLON;
             });
         };
         FilesInput.prototype._processFiles = function (files) {
+            var skippedFiles = 0;
             for (var i = 0; i < files.length; i++) {
                 var name = files[i].correctName.toLowerCase();
                 var extension = name.split('.').pop();
+                if (!this.onProcessFileCallback(files[i], name, extension)) {
+                    skippedFiles++;
+                    continue;
+                }
                 if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
                     && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
                     this._sceneFileToLoad = files[i];
@@ -49422,7 +49428,7 @@ var BABYLON;
             if (this._onReloadCallback) {
                 this._onReloadCallback(this._sceneFileToLoad);
             }
-            else {
+            else if (skippedFiles < files.length) {
                 this.reload();
             }
         };
@@ -51378,12 +51384,20 @@ var BABYLON;
             this.onGamepadDisconnectedObservable = new BABYLON.Observable();
             this._onGamepadConnectedEvent = function (evt) {
                 var gamepad = evt.gamepad;
-                // Protection code for Chrome which has a very buggy gamepad implementation...
-                // And raises a connected event on disconnection for instance
                 if (gamepad.index in _this._babylonGamepads) {
-                    return;
+                    if (_this._babylonGamepads[gamepad.index].isConnected) {
+                        return;
+                    }
                 }
-                var newGamepad = _this._addNewGamepad(gamepad);
+                var newGamepad;
+                if (_this._babylonGamepads[gamepad.index]) {
+                    newGamepad = _this._babylonGamepads[gamepad.index];
+                    newGamepad.browserGamepad = gamepad;
+                    newGamepad._isConnected = true;
+                }
+                else {
+                    newGamepad = _this._addNewGamepad(gamepad);
+                }
                 _this.onGamepadConnectedObservable.notifyObservers(newGamepad);
                 _this._startMonitoringGamepads();
             };
@@ -51392,10 +51406,9 @@ var BABYLON;
                 // Remove the gamepad from the list of gamepads to monitor.
                 for (var i in _this._babylonGamepads) {
                     if (_this._babylonGamepads[i].index === gamepad.index) {
-                        var gamepadToRemove = _this._babylonGamepads[i];
-                        _this._babylonGamepads[i] = null;
-                        _this.onGamepadDisconnectedObservable.notifyObservers(gamepadToRemove);
-                        gamepadToRemove.dispose();
+                        var disconnectedGamepad = _this._babylonGamepads[i];
+                        disconnectedGamepad._isConnected = false;
+                        _this.onGamepadDisconnectedObservable.notifyObservers(disconnectedGamepad);
                         break;
                     }
                 }
@@ -51440,6 +51453,10 @@ var BABYLON;
                 this._onGamepadConnectedEvent = null;
                 this._onGamepadDisconnectedEvent = null;
             }
+            for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
+                var gamepad = _a[_i];
+                gamepad.dispose();
+            }
             this._oneGamepadConnected = false;
             this._stopMonitoringGamepads();
             this._babylonGamepads = [];
@@ -51477,7 +51494,7 @@ var BABYLON;
             this._updateGamepadObjects();
             for (var i in this._babylonGamepads) {
                 var gamepad = this._babylonGamepads[i];
-                if (!gamepad) {
+                if (!gamepad || !gamepad.isConnected) {
                     continue;
                 }
                 gamepad.update();
@@ -51499,6 +51516,10 @@ var BABYLON;
                     else {
                         // Forced to copy again this object for Chrome for unknown reason
                         this._babylonGamepads[i].browserGamepad = gamepads[i];
+                        if (!this._babylonGamepads[i].isConnected) {
+                            this._babylonGamepads[i]._isConnected = true;
+                            this.onGamepadConnectedObservable.notifyObservers(this._babylonGamepads[i]);
+                        }
                     }
                 }
             }
@@ -51530,6 +51551,7 @@ var BABYLON;
             this.id = id;
             this.index = index;
             this.browserGamepad = browserGamepad;
+            this._isConnected = true;
             this.type = Gamepad.GAMEPAD;
             this._leftStickAxisX = leftStickX;
             this._leftStickAxisY = leftStickY;
@@ -51542,6 +51564,13 @@ var BABYLON;
                 this._rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };
             }
         }
+        Object.defineProperty(Gamepad.prototype, "isConnected", {
+            get: function () {
+                return this._isConnected;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Gamepad.prototype.onleftstickchanged = function (callback) {
             this._onleftstickchanged = callback;
         };
@@ -51948,6 +51977,9 @@ var BABYLON;
             if (vrGamepad.id.indexOf('Oculus Touch') !== -1) {
                 return new BABYLON.OculusTouchController(vrGamepad);
             }
+            else if (vrGamepad.id.indexOf(BABYLON.WindowsMotionController.GAMEPAD_ID_PREFIX) === 0) {
+                return new BABYLON.WindowsMotionController(vrGamepad);
+            }
             else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
                 return new BABYLON.ViveController(vrGamepad);
             }
@@ -51960,9 +51992,8 @@ var BABYLON;
     BABYLON.PoseEnabledControllerHelper = PoseEnabledControllerHelper;
     var PoseEnabledController = (function (_super) {
         __extends(PoseEnabledController, _super);
-        function PoseEnabledController(vrGamepad) {
-            var _this = _super.call(this, vrGamepad.id, vrGamepad.index, vrGamepad) || this;
-            _this.vrGamepad = vrGamepad;
+        function PoseEnabledController(browserGamepad) {
+            var _this = _super.call(this, browserGamepad.id, browserGamepad.index, browserGamepad) || this;
             _this.deviceScaleFactor = 1;
             _this._leftHandSystemQuaternion = new BABYLON.Quaternion();
             _this.type = BABYLON.Gamepad.POSE_ENABLED;
@@ -51978,7 +52009,7 @@ var BABYLON;
         }
         PoseEnabledController.prototype.update = function () {
             _super.prototype.update.call(this);
-            var pose = this.vrGamepad.pose;
+            var pose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
             if (this._mesh) {
                 this._mesh.position.copyFrom(this._calculatedPosition);
@@ -52090,10 +52121,17 @@ var BABYLON;
         WebVRController.prototype.onButtonStateChange = function (callback) {
             this._onButtonStateChange = callback;
         };
+        Object.defineProperty(WebVRController.prototype, "defaultModel", {
+            get: function () {
+                return this._defaultModel;
+            },
+            enumerable: true,
+            configurable: true
+        });
         WebVRController.prototype.update = function () {
             _super.prototype.update.call(this);
             for (var index = 0; index < this._buttons.length; index++) {
-                this._setButtonValue(this.vrGamepad.buttons[index], this._buttons[index], index);
+                this._setButtonValue(this.browserGamepad.buttons[index], this._buttons[index], index);
             }
             ;
             if (this.leftStick.x !== this.pad.x || this.leftStick.y !== this.pad.y) {
@@ -52409,6 +52447,378 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.genericController.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    var WindowsMotionController = (function (_super) {
+        __extends(WindowsMotionController, _super);
+        function WindowsMotionController(vrGamepad) {
+            var _this = _super.call(this, vrGamepad) || this;
+            _this._mapping = {
+                // Semantic button names
+                buttons: ['thumbstick', 'trigger', 'grip', 'menu', 'trackpad'],
+                // A mapping of the button name to glTF model node name
+                // that should be transformed by button value.
+                buttonMeshNames: {
+                    'trigger': 'SELECT',
+                    'menu': 'MENU',
+                    'grip': 'GRASP',
+                    'thumbstick': 'THUMBSTICK_PRESS',
+                    'trackpad': 'TOUCHPAD_PRESS'
+                },
+                // This mapping is used to translate from the Motion Controller to Babylon semantics
+                buttonObservableNames: {
+                    'trigger': 'onTriggerStateChangedObservable',
+                    'menu': 'onSecondaryButtonStateChangedObservable',
+                    'grip': 'onMainButtonStateChangedObservable',
+                    'thumbstick': 'onPadStateChangedObservable',
+                    'trackpad': 'onTrackpadChangedObservable'
+                },
+                // A mapping of the axis name to glTF model node name
+                // that should be transformed by axis value.
+                // This array mirrors the browserGamepad.axes array, such that 
+                // the mesh corresponding to axis 0 is in this array index 0.
+                axisMeshNames: [
+                    'THUMBSTICK_X',
+                    'THUMBSTICK_Y',
+                    'TOUCHPAD_TOUCH_X',
+                    'TOUCHPAD_TOUCH_Y'
+                ]
+            };
+            _this.onTrackpadChangedObservable = new BABYLON.Observable();
+            _this.controllerType = BABYLON.PoseEnabledControllerType.WINDOWS;
+            _this._parentMeshName = _this.id + " " + _this.hand;
+            _this._loadedMeshInfo = null;
+            return _this;
+        }
+        Object.defineProperty(WindowsMotionController.prototype, "onTriggerButtonStateChangedObservable", {
+            get: function () {
+                return this.onTriggerStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onMenuButtonStateChangedObservable", {
+            get: function () {
+                return this.onSecondaryButtonStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onGripButtonStateChangedObservable", {
+            get: function () {
+                return this.onMainButtonStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onThumbstickButtonStateChangedObservable", {
+            get: function () {
+                return this.onPadStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onTouchpadButtonStateChangedObservable", {
+            get: function () {
+                return this.onTrackpadChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Called once per frame by the engine.
+         */
+        WindowsMotionController.prototype.update = function () {
+            _super.prototype.update.call(this);
+            // Only need to animate axes if there is a loaded mesh
+            if (this._loadedMeshInfo) {
+                if (this.browserGamepad.axes) {
+                    for (var axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
+                        this.lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
+                    }
+                }
+            }
+        };
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        WindowsMotionController.prototype.handleButtonChange = function (buttonIdx, state, changes) {
+            var buttonName = this._mapping.buttons[buttonIdx];
+            if (!buttonName)
+                return;
+            // Only emit events for buttons that we know how to map from index to name
+            var observable = this[this._mapping.buttonObservableNames[buttonName]];
+            if (observable) {
+                observable.notifyObservers(state);
+            }
+            this.lerpButtonTransform(buttonName, state.value);
+        };
+        WindowsMotionController.prototype.lerpButtonTransform = function (buttonName, buttonValue) {
+            // If there is no loaded mesh, there is nothing to transform.
+            if (!this._loadedMeshInfo)
+                return;
+            var meshInfo = this._loadedMeshInfo.buttonMeshes[buttonName];
+            BABYLON.Quaternion.SlerpToRef(meshInfo.unpressed.rotationQuaternion, meshInfo.pressed.rotationQuaternion, buttonValue, meshInfo.value.rotationQuaternion);
+            BABYLON.Vector3.LerpToRef(meshInfo.unpressed.position, meshInfo.pressed.position, buttonValue, meshInfo.value.position);
+        };
+        WindowsMotionController.prototype.lerpAxisTransform = function (axis, axisValue) {
+            var meshInfo = this._loadedMeshInfo.axisMeshes[axis];
+            if (!meshInfo)
+                return;
+            // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
+            var lerpValue = axisValue * 0.5 + 0.5;
+            BABYLON.Quaternion.SlerpToRef(meshInfo.min.rotationQuaternion, meshInfo.max.rotationQuaternion, lerpValue, meshInfo.value.rotationQuaternion);
+            BABYLON.Vector3.LerpToRef(meshInfo.min.position, meshInfo.max.position, lerpValue, meshInfo.value.position);
+        };
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        WindowsMotionController.prototype.initControllerMesh = function (scene, meshLoaded) {
+            var _this = this;
+            var parentMesh = scene.getMeshByName(this._parentMeshName);
+            if (parentMesh) {
+                // A mesh with the name we are expecting already exists in the scene, use that.
+                if (!this._loadedMeshInfo) {
+                    // Create our mesh info. Note that this method will always return non-null.
+                    this._loadedMeshInfo = this.createMeshInfo(parentMesh);
+                    this.attachToMesh(this._loadedMeshInfo.rootNode);
+                }
+                if (meshLoaded)
+                    meshLoaded(this._loadedMeshInfo.rootNode);
+            }
+            else {
+                // Make a call to load a mesh from CDN
+                this.loadModel(scene)
+                    .then(function (mesh) {
+                    _this.attachToMesh(mesh);
+                    if (meshLoaded)
+                        meshLoaded(mesh);
+                })
+                    .catch(function (message) {
+                    BABYLON.Tools.Warn(message);
+                    // We failed to load our custom models; fall back and attempt to the generic model.
+                    _super.prototype.initControllerMesh.call(_this, scene, meshLoaded);
+                });
+            }
+        };
+        /**
+         * Starts a load request to get model data from the remote server, then parse it to ensure a valid format.
+         * If the first attempt fails, a second attempt will be made to retrieve a fallback model which is (non specific to the device ID suffix)
+         *
+         * @param scene in which to insert new Meshes
+         * @return A promise that resolves with the mesh that represents the loaded controller model, or rejects with an error message.
+         */
+        WindowsMotionController.prototype.loadModel = function (scene) {
+            var _this = this;
+            var self = this;
+            return new Promise(function (resolve, reject) {
+                // First attempt, use ID Suffix specific URL
+                attemptLoad(_this.createControllerModelUrl(false))
+                    .then(resolve)
+                    .catch(function (message) {
+                    BABYLON.Tools.Warn(message);
+                    // Second attempt, use fallback URL
+                    attemptLoad(_this.createControllerModelUrl(true))
+                        .then(resolve)
+                        .catch(reject);
+                });
+            });
+            function attemptLoad(controllerSrc) {
+                var _this = this;
+                return new Promise(function (resolve, reject) {
+                    BABYLON.SceneLoader.ImportMesh("" /* all meshes */, controllerSrc.path, controllerSrc.name, scene, function (meshes) {
+                        // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
+                        _this._loadedMeshInfo = self.processModel(scene, meshes);
+                        if (_this._loadedMeshInfo) {
+                            // Mesh data processed successfully!
+                            resolve(_this._loadedMeshInfo.rootNode);
+                        }
+                        else {
+                            reject('Failed to parse controller model for device');
+                        }
+                    }, null, function (scene, message) {
+                        BABYLON.Tools.Log(message);
+                        reject('Failed to retrieve controller model from the remote server: ' + controllerSrc.path + controllerSrc.name);
+                    });
+                });
+            }
+        };
+        /**
+         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
+         * can be transformed by button presses and axes values, based on this._mapping.
+         *
+         * @param scene scene in which the meshes exist
+         * @param meshes list of meshes that make up the controller model to process
+         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+         */
+        WindowsMotionController.prototype.processModel = function (scene, meshes) {
+            var loadedMeshInfo = null;
+            // Create a new mesh to contain the glTF hierarchy
+            var parentMesh = new BABYLON.Mesh(this._parentMeshName, scene);
+            // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
+            var childMesh = null;
+            for (var i = 0; i < meshes.length; i++) {
+                var mesh = meshes[i];
+                if (mesh.id === WindowsMotionController.MODEL_ROOT_NODE_NAME) {
+                    // There may be a parent mesh to perform the RH to LH matrix transform.
+                    // Exclude controller meshes from picking results
+                    mesh.isPickable = false;
+                    // Handle root node, attach to the new parentMesh
+                    if (mesh.parent && mesh.parent.name === WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME)
+                        mesh = mesh.parent;
+                    childMesh = mesh;
+                    break;
+                }
+            }
+            if (childMesh) {
+                childMesh.setParent(parentMesh);
+                // Create our mesh info. Note that this method will always return non-null.
+                loadedMeshInfo = this.createMeshInfo(parentMesh);
+                // Apply rotation offsets
+                var rotOffset = WindowsMotionController.ROTATE_OFFSET;
+                childMesh.addRotation(rotOffset[0], rotOffset[1], rotOffset[2]);
+            }
+            else {
+                BABYLON.Tools.Warn('No node with name ' + WindowsMotionController.MODEL_ROOT_NODE_NAME + ' in model file.');
+            }
+            return loadedMeshInfo;
+        };
+        /**
+         * Helper function that constructs a URL from the controller ID suffix, for future proofed
+         * art assets.
+         */
+        WindowsMotionController.prototype.createControllerModelUrl = function (forceDefault) {
+            // Determine the device specific folder based on the ID suffix
+            var device = 'default';
+            if (!forceDefault) {
+                if (this.id) {
+                    var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
+                    device = ((match && match[0]) || device);
+                }
+            }
+            // Hand
+            var filename;
+            if (this.hand === 'left')
+                filename = WindowsMotionController.MODEL_LEFT_FILENAME;
+            else if (this.hand === 'right')
+                filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
+            else
+                filename = WindowsMotionController.MODEL_UNIVERSAL_FILENAME;
+            // Final url
+            return {
+                //                path: WindowsMotionController.MODEL_BASE_URL + device + '/',
+                path: WindowsMotionController.MODEL_BASE_URL,
+                name: filename
+            };
+        };
+        WindowsMotionController.prototype.createMeshInfo = function (rootNode) {
+            var loadedMeshInfo = new LoadedMeshInfo();
+            var i;
+            loadedMeshInfo.rootNode = rootNode;
+            // Reset the caches
+            loadedMeshInfo.buttonMeshes = {};
+            loadedMeshInfo.axisMeshes = {};
+            // Button Meshes
+            for (i = 0; i < this._mapping.buttons.length; i++) {
+                var buttonMeshName = this._mapping.buttonMeshNames[this._mapping.buttons[i]];
+                if (!buttonMeshName) {
+                    BABYLON.Tools.Log('Skipping unknown button at index: ' + i + ' with mapped name: ' + this._mapping.buttons[i]);
+                    continue;
+                }
+                var buttonMesh = getChildByName(rootNode, buttonMeshName);
+                if (!buttonMesh) {
+                    BABYLON.Tools.Warn('Missing button mesh with name: ' + buttonMeshName);
+                    continue;
+                }
+                var buttonMeshInfo = {
+                    index: i,
+                    value: getImmediateChildByName(buttonMesh, 'VALUE'),
+                    pressed: getImmediateChildByName(buttonMesh, 'PRESSED'),
+                    unpressed: getImmediateChildByName(buttonMesh, 'UNPRESSED')
+                };
+                if (buttonMeshInfo.value && buttonMeshInfo.pressed && buttonMeshInfo.unpressed) {
+                    loadedMeshInfo.buttonMeshes[this._mapping.buttons[i]] = buttonMeshInfo;
+                }
+                else {
+                    // If we didn't find the mesh, it simply means this button won't have transforms applied as mapped button value changes.
+                    BABYLON.Tools.Warn('Missing button submesh under mesh with name: ' + buttonMeshName +
+                        '(VALUE: ' + !!buttonMeshInfo.value +
+                        ', PRESSED: ' + !!buttonMeshInfo.pressed +
+                        ', UNPRESSED:' + !!buttonMeshInfo.unpressed +
+                        ')');
+                }
+            }
+            // Axis Meshes
+            for (i = 0; i < this._mapping.axisMeshNames.length; i++) {
+                var axisMeshName = this._mapping.axisMeshNames[i];
+                if (!axisMeshName) {
+                    BABYLON.Tools.Log('Skipping unknown axis at index: ' + i);
+                    continue;
+                }
+                var axisMesh = getChildByName(rootNode, axisMeshName);
+                if (!axisMesh) {
+                    BABYLON.Tools.Warn('Missing axis mesh with name: ' + axisMeshName);
+                    continue;
+                }
+                var axisMeshInfo = {
+                    index: i,
+                    value: getImmediateChildByName(axisMesh, 'VALUE'),
+                    min: getImmediateChildByName(axisMesh, 'MIN'),
+                    max: getImmediateChildByName(axisMesh, 'MAX')
+                };
+                if (axisMeshInfo.value && axisMeshInfo.min && axisMeshInfo.max) {
+                    loadedMeshInfo.axisMeshes[i] = axisMeshInfo;
+                }
+                else {
+                    // If we didn't find the mesh, it simply means thit axis won't have transforms applied as mapped axis values change.
+                    BABYLON.Tools.Warn('Missing axis submesh under mesh with name: ' + axisMeshName +
+                        '(VALUE: ' + !!axisMeshInfo.value +
+                        ', MIN: ' + !!axisMeshInfo.min +
+                        ', MAX:' + !!axisMeshInfo.max +
+                        ')');
+                }
+            }
+            return loadedMeshInfo;
+            // Look through all children recursively. This will return null if no mesh exists with the given name.
+            function getChildByName(node, name) {
+                return node.getChildMeshes(false, function (n) { return n.name === name; })[0];
+            }
+            // Look through only immediate children. This will return null if no mesh exists with the given name.
+            function getImmediateChildByName(node, name) {
+                return node.getChildMeshes(true, function (n) { return n.name == name; })[0];
+            }
+        };
+        // TODO: Update with final asset URL's
+        WindowsMotionController.MODEL_BASE_URL = 'http://yoda.blob.core.windows.net/models/';
+        WindowsMotionController.MODEL_LEFT_FILENAME = 'genericvrcontroller.babylon';
+        WindowsMotionController.MODEL_RIGHT_FILENAME = 'genericvrcontroller.babylon';
+        WindowsMotionController.MODEL_UNIVERSAL_FILENAME = 'genericvrcontroller.babylon';
+        WindowsMotionController.MODEL_ROOT_NODE_NAME = 'RootNode';
+        WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME = 'root';
+        WindowsMotionController.GAMEPAD_ID_PREFIX = 'Spatial Controller (Spatial Interaction Source) ';
+        WindowsMotionController.GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
+        // TODO: Why do we need to flip the model around? Art asset or BabylonJS specific?
+        WindowsMotionController.ROTATE_OFFSET = [Math.PI, 0, 0]; // x, y, z.
+        return WindowsMotionController;
+    }(BABYLON.GenericController));
+    BABYLON.WindowsMotionController = WindowsMotionController;
+    var LoadedMeshInfo = (function () {
+        function LoadedMeshInfo() {
+            this.buttonMeshes = {};
+            this.axisMeshes = {};
+        }
+        return LoadedMeshInfo;
+    }());
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.windowsMotionController.js.map
 
 /// <reference path="babylon.targetCamera.ts" />
 
@@ -66579,36 +66989,39 @@ var BABYLON;
             this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add(function (gamepad) {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     var webVrController = gamepad;
-                    var index = _this.controllers.indexOf(webVrController);
-                    if (index === -1) {
-                        // we are good
-                        return;
+                    if (webVrController.defaultModel) {
+                        webVrController.defaultModel.setEnabled(false);
                     }
-                    _this.controllers.splice(index, 1);
                 }
             });
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     var webVrController = gamepad;
                     if (_this.webVROptions.controllerMeshes) {
-                        webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
-                            if (_this.webVROptions.defaultLightingOnControllers) {
-                                if (!_this._lightOnControllers) {
-                                    _this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), _this.getScene());
-                                }
-                                var activateLightOnSubMeshes_1 = function (mesh, light) {
-                                    var children = mesh.getChildren();
-                                    if (children.length !== 0) {
-                                        children.forEach(function (mesh) {
-                                            light.includedOnlyMeshes.push(mesh);
-                                            activateLightOnSubMeshes_1(mesh, light);
-                                        });
+                        if (webVrController.defaultModel) {
+                            webVrController.defaultModel.setEnabled(true);
+                        }
+                        else {
+                            // Load the meshes
+                            webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
+                                if (_this.webVROptions.defaultLightingOnControllers) {
+                                    if (!_this._lightOnControllers) {
+                                        _this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), _this.getScene());
                                     }
-                                };
-                                _this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
-                                activateLightOnSubMeshes_1(loadedMesh, _this._lightOnControllers);
-                            }
-                        });
+                                    var activateLightOnSubMeshes_1 = function (mesh, light) {
+                                        var children = mesh.getChildren();
+                                        if (children.length !== 0) {
+                                            children.forEach(function (mesh) {
+                                                light.includedOnlyMeshes.push(mesh);
+                                                activateLightOnSubMeshes_1(mesh, light);
+                                            });
+                                        }
+                                    };
+                                    _this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
+                                    activateLightOnSubMeshes_1(loadedMesh, _this._lightOnControllers);
+                                }
+                            });
+                        }
                     }
                     webVrController.attachToPoseControlledCamera(_this);
                     // since this is async - sanity check. Is the controller already stored?

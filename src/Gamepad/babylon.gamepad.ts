@@ -18,6 +18,8 @@
         private _leftStick: StickValues;
         private _rightStick: StickValues;
 
+        public _isConnected = true;
+
         private _leftStickAxisX: number;
         private _leftStickAxisY: number;
         private _rightStickAxisX: number;
@@ -30,6 +32,10 @@
         public static GENERIC = 1;
         public static XBOX = 2;
         public static POSE_ENABLED = 3;
+
+        public get isConnected(): boolean {
+            return this._isConnected;
+        }
 
         constructor(public id: string, public index: number, public browserGamepad, leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
             this.type = Gamepad.GAMEPAD;
