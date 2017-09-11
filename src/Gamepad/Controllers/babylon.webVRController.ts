@@ -38,7 +38,7 @@ module BABYLON {
         public update() {
             super.update();
             for (var index = 0; index < this._buttons.length; index++) {
-                this._setButtonValue(this.vrGamepad.buttons[index], this._buttons[index], index);
+                this._setButtonValue(this.browserGamepad.buttons[index], this._buttons[index], index);
             };
             if (this.leftStick.x !== this.pad.x || this.leftStick.y !== this.pad.y) {
                 this.pad.x = this.leftStick.x;

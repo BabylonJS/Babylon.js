@@ -28,6 +28,7 @@
 
                 if (this._babylonGamepads[gamepad.index]) {
                     newGamepad = this._babylonGamepads[gamepad.index];
+                    newGamepad.browserGamepad = gamepad;
                     newGamepad._isConnected = true;
                 } else {
                     newGamepad = this._addNewGamepad(gamepad);
@@ -137,7 +138,7 @@
 
             for (var i in this._babylonGamepads) {
                 let gamepad = this._babylonGamepads[i];
-                if (!gamepad) {
+                if (!gamepad || !gamepad.isConnected) {
                     continue;
                 }
                 gamepad.update();
