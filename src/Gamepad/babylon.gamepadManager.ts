@@ -18,13 +18,21 @@
             this._onGamepadConnectedEvent = (evt) => {
                 let gamepad = evt.gamepad;
 
-                // Protection code for Chrome which has a very buggy gamepad implementation...
-                // And raises a connected event on disconnection for instance
                 if (gamepad.index in this._babylonGamepads) {
-                    return;
+                    if (this._babylonGamepads[gamepad.index].isConnected) {
+                        return;
+                    }
                 }
 
-                var newGamepad = this._addNewGamepad(gamepad);
+                let newGamepad: Gamepad;
+
+                if (this._babylonGamepads[gamepad.index]) {
+                    newGamepad = this._babylonGamepads[gamepad.index];
+                    newGamepad.browserGamepad = gamepad;
+                    newGamepad._isConnected = true;
+                } else {
+                    newGamepad = this._addNewGamepad(gamepad);
+                }
                 this.onGamepadConnectedObservable.notifyObservers(newGamepad);
                 this._startMonitoringGamepads();                
             };
@@ -35,12 +43,10 @@
                 // Remove the gamepad from the list of gamepads to monitor.
                 for (var i in this._babylonGamepads) {
                     if (this._babylonGamepads[i].index === gamepad.index) {
-                        let gamepadToRemove = this._babylonGamepads[i];
-                        this._babylonGamepads[i] = null;
+                        let disconnectedGamepad = this._babylonGamepads[i];
+                        disconnectedGamepad._isConnected = false;
                         
-                        this.onGamepadDisconnectedObservable.notifyObservers(gamepadToRemove);
-
-                        gamepadToRemove.dispose();
+                        this.onGamepadDisconnectedObservable.notifyObservers(disconnectedGamepad);
                         break;
                     }
                 }            
@@ -84,6 +90,11 @@
                 this._onGamepadConnectedEvent = null;
                 this._onGamepadDisconnectedEvent = null;
             }
+
+            for (let gamepad of this._babylonGamepads) {
+                gamepad.dispose();
+            }
+
             this._oneGamepadConnected = false;
             this._stopMonitoringGamepads();
             this._babylonGamepads = [];
@@ -127,7 +138,7 @@
 
             for (var i in this._babylonGamepads) {
                 let gamepad = this._babylonGamepads[i];
-                if (!gamepad) {
+                if (!gamepad || !gamepad.isConnected) {
                     continue;
                 }
                 gamepad.update();
@@ -151,6 +162,11 @@
                     else {
                         // Forced to copy again this object for Chrome for unknown reason
                         this._babylonGamepads[i].browserGamepad = gamepads[i];
+
+                        if (!this._babylonGamepads[i].isConnected) {
+                            this._babylonGamepads[i]._isConnected = true;                            
+                            this.onGamepadConnectedObservable.notifyObservers(this._babylonGamepads[i]);
+                        }
                     }
                 }
             }
