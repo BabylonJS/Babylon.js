@@ -49330,6 +49330,7 @@ var BABYLON;
 (function (BABYLON) {
     var FilesInput = (function () {
         function FilesInput(engine, scene, sceneLoadedCallback, progressCallback, additionalRenderLoopLogicCallback, textureLoadingCallback, startingProcessingFilesCallback, onReloadCallback) {
+            this.onProcessFileCallback = function () { return true; };
             this._engine = engine;
             this._currentScene = scene;
             this._sceneLoadedCallback = sceneLoadedCallback;
@@ -49408,9 +49409,14 @@ var BABYLON;
             });
         };
         FilesInput.prototype._processFiles = function (files) {
+            var skippedFiles = 0;
             for (var i = 0; i < files.length; i++) {
                 var name = files[i].correctName.toLowerCase();
                 var extension = name.split('.').pop();
+                if (!this.onProcessFileCallback(files[i], name, extension)) {
+                    skippedFiles++;
+                    continue;
+                }
                 if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
                     && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
                     this._sceneFileToLoad = files[i];
@@ -49422,7 +49428,7 @@ var BABYLON;
             if (this._onReloadCallback) {
                 this._onReloadCallback(this._sceneFileToLoad);
             }
-            else {
+            else if (skippedFiles < files.length) {
                 this.reload();
             }
         };
