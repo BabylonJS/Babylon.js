@@ -728,7 +728,7 @@
             var height = options.height || 10.0;
             var subdivisions = options.subdivisions || 1|0;
             var minHeight = options.minHeight || 0.0;
-            var maxHeight = options.maxHeight || 10.0;
+            var maxHeight = options.maxHeight || 1.0;
             var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
             var updatable = options.updatable;
             var onReady = options.onReady;
