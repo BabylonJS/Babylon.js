@@ -63,7 +63,11 @@
             }
         }
 
-        public getGamepadByType(type: number = Gamepad.XBOX) {
+        public get gamepads(): Gamepad[] {
+            return this._babylonGamepads;
+        }
+
+        public getGamepadByType(type: number = Gamepad.XBOX): Gamepad {
             for (var gamepad of this._babylonGamepads) {
                 if (gamepad && gamepad.type === type) {
                     return gamepad;

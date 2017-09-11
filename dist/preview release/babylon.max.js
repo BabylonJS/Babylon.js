@@ -44379,7 +44379,7 @@ var BABYLON;
             var height = options.height || 10.0;
             var subdivisions = options.subdivisions || 1 | 0;
             var minHeight = options.minHeight || 0.0;
-            var maxHeight = options.maxHeight || 10.0;
+            var maxHeight = options.maxHeight || 1.0;
             var filter = options.colorFilter || new BABYLON.Color3(0.3, 0.59, 0.11);
             var updatable = options.updatable;
             var onReady = options.onReady;
@@ -51414,6 +51414,13 @@ var BABYLON;
                 }
             }
         }
+        Object.defineProperty(GamepadManager.prototype, "gamepads", {
+            get: function () {
+                return this._babylonGamepads;
+            },
+            enumerable: true,
+            configurable: true
+        });
         GamepadManager.prototype.getGamepadByType = function (type) {
             if (type === void 0) { type = BABYLON.Gamepad.XBOX; }
             for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
