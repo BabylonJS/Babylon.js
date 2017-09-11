@@ -126,27 +126,24 @@
         public startSpriteCellID = 0;
         public endSpriteCellID = 0;
         public spriteCellLoop = true;
-        public spriteCellChangeSpeed = 0; //(cellID++ every 4 frames). If this value is set to 0 (default) then we need to compute the speed base on lifetime like we are doing for colorDead. In other word, the particle will born with startCellId and die at endCellId
+        public spriteCellChangeSpeed = 0;
 
-        private _spriteCellWidth = 0;
-        private _spriteCellHeight = 0;
+        public spriteCellWidth = 0;
+        public spriteCellHeight = 0;
         private _vertexBufferSize = 11;
+
+        public get IsAnimationSheetEnabled(): Boolean {
+            return this._isAnimationSheetEnabled;
+        }
         // end of sheet animation
 
-        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, private spriteCellSize?: any, epsilon: number = 0.01) {
+        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, private _isAnimationSheetEnabled: boolean = false, epsilon: number = 0.01) {
             this.id = name;
             this._capacity = capacity;
 
             this._epsilon = epsilon;
-            if (spriteCellSize) {
+            if (_isAnimationSheetEnabled) {
                 this._vertexBufferSize = 12;
-                if (spriteCellSize.width && spriteCellSize.height) {
-                    this._spriteCellWidth = spriteCellSize.width;
-                    this._spriteCellHeight = spriteCellSize.height;
-                } else {
-                    this._spriteCellWidth = spriteCellSize;
-                    this._spriteCellHeight = spriteCellSize;
-                }
             }
 
             this._scene = scene || Engine.LastCreatedScene;
@@ -165,7 +162,7 @@
             var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
             var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
 
-            if (this.spriteCellSize) {
+            if (this._isAnimationSheetEnabled) {
                 var cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", 11, 1);
                 this._vertexBuffers["cellIndex"] = cellIndexBuffer;
             }
@@ -216,7 +213,7 @@
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
-                        if (this.spriteCellSize) {
+                        if (this._isAnimationSheetEnabled) {
                             particle.updateCellIndex(this._scaledUpdateSpeed);
                         }
                     }
@@ -343,12 +340,7 @@
                     particle.age = 0;
                     particle.cellIndex = this.startSpriteCellID;
                 } else {
-                    if (this.spriteCellSize) {
-                        particle = new Particle(this, this.startSpriteCellID, this.spriteCellLoop, this.startSpriteCellID, this.endSpriteCellID);
-                    }
-                    else {
-                        particle = new Particle(this);
-                    }
+                    particle = new Particle(this);
                 }
 
                 this.particles.push(particle);
@@ -384,7 +376,7 @@
                 defines.push("#define CLIPPLANE");
             }
 
-            if (this.spriteCellSize) {
+            if (this._isAnimationSheetEnabled) {
                 defines.push("#define ANIMATESHEET");
             }
 
@@ -396,7 +388,7 @@
                 var attributesNamesOrOptions: any;
                 var effectCreationOption: any;
 
-                if (this.spriteCellSize) {
+                if (this._isAnimationSheetEnabled) {
                     attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellIndex"];
                     effectCreationOption = ["invView", "view", "projection", "particlesInfos", "vClipPlane", "textureMask"];
                 }
@@ -477,7 +469,7 @@
             }
 
             // Animation sheet
-            if (this.spriteCellSize) {
+            if (this._isAnimationSheetEnabled) {
                 this.appendParticleVertexes = this.appenedParticleVertexesWithSheet;
             }
             else {
@@ -535,9 +527,9 @@
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-            if (this.spriteCellSize) {
+            if (this._isAnimationSheetEnabled) {
                 var baseSize = this.particleTexture.getBaseSize();
-                effect.setFloat3("particlesInfos", this._spriteCellWidth / baseSize.width, this._spriteCellHeight / baseSize.height, baseSize.width / this._spriteCellWidth);
+                effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
             }
 
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
