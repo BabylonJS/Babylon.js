@@ -4235,8 +4235,10 @@
             var value = texture.anisotropicFilteringLevel;
 
 
-            if (internalTexture.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
-                value = 1;
+            if (internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPNEAREST 
+                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPLINEAR
+                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR) {
+                value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
             }
 
             if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {

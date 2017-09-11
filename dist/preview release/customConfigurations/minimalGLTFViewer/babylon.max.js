@@ -11001,8 +11001,10 @@ var BABYLON;
             }
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-                value = 1;
+            if (internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST
+                && internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR
+                && internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR) {
+                value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
             }
             if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {
                 this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
