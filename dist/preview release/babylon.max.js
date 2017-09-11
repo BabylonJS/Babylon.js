@@ -11001,8 +11001,10 @@ var BABYLON;
             }
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-                value = 1;
+            if (internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST
+                && internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR
+                && internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR) {
+                value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
             }
             if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {
                 this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
@@ -44379,7 +44381,7 @@ var BABYLON;
             var height = options.height || 10.0;
             var subdivisions = options.subdivisions || 1 | 0;
             var minHeight = options.minHeight || 0.0;
-            var maxHeight = options.maxHeight || 10.0;
+            var maxHeight = options.maxHeight || 1.0;
             var filter = options.colorFilter || new BABYLON.Color3(0.3, 0.59, 0.11);
             var updatable = options.updatable;
             var onReady = options.onReady;
@@ -51414,6 +51416,13 @@ var BABYLON;
                 }
             }
         }
+        Object.defineProperty(GamepadManager.prototype, "gamepads", {
+            get: function () {
+                return this._babylonGamepads;
+            },
+            enumerable: true,
+            configurable: true
+        });
         GamepadManager.prototype.getGamepadByType = function (type) {
             if (type === void 0) { type = BABYLON.Gamepad.XBOX; }
             for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
@@ -66881,17 +66890,17 @@ var BABYLON;
             this._isInVRMode = false;
             this._scene = scene;
             if (!this._scene.activeCamera) {
-                this._scene.activeCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
             }
             else {
-                var newCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._scene.activeCamera.position, scene);
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._scene.activeCamera.position, scene);
                 if (scene.activeCamera.rotation) {
-                    newCamera.rotation = scene.activeCamera.rotation.clone();
+                    this._deviceOrientationCamera.rotation = scene.activeCamera.rotation.clone();
                 }
-                newCamera.minZ = this._scene.activeCamera.minZ;
-                newCamera.maxZ = this._scene.activeCamera.maxZ;
-                this._scene.activeCamera = newCamera;
+                this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
+                this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
             }
+            this._scene.activeCamera = this._deviceOrientationCamera;
             this._position = this._scene.activeCamera.position;
             this._canvas = scene.getEngine().getRenderingCanvas();
             this._scene.activeCamera.attachControl(this._canvas);
@@ -66924,13 +66933,14 @@ var BABYLON;
             if (navigator.getVRDisplays) {
                 navigator.getVRDisplays().then(function (headsets) {
                     if (headsets.length > 0) {
-                        scene.getEngine().initWebVR();
+                        _this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", _this._position, _this._scene);
                         _this._webVRsupportedAndReady = true;
                     }
                     document.body.appendChild(_this._btnVR);
                 });
             }
             else {
+                this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
                 document.body.appendChild(this._btnVR);
             }
             this._btnVR.addEventListener("click", function () {
@@ -66938,13 +66948,14 @@ var BABYLON;
             });
         }
         VRExperienceHelper.prototype.enterVR = function () {
-            this._scene.activeCamera.dispose();
             // If WebVR is supported and a headset is connected
             if (this._webVRsupportedAndReady) {
-                this._scene.activeCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene);
+                this._webVRCamera.position = this._position;
+                this._scene.activeCamera = this._webVRCamera;
             }
             else {
-                this._scene.activeCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
+                this._vrDeviceOrientationCamera.position = this._position;
+                this._scene.activeCamera = this._vrDeviceOrientationCamera;
                 this._scene.getEngine().switchFullscreen(true);
             }
             this._scene.activeCamera.attachControl(this._canvas);
@@ -66957,9 +66968,9 @@ var BABYLON;
             }
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position;
-                this._scene.activeCamera.dispose();
             }
-            this._scene.activeCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position, this._scene);
+            this._deviceOrientationCamera.position = this._position;
+            this._scene.activeCamera = this._deviceOrientationCamera;
             this._scene.activeCamera.attachControl(this._canvas);
             this._isInVRMode = false;
             this._btnVR.style.display = "";
@@ -66978,6 +66989,13 @@ var BABYLON;
         VRExperienceHelper.prototype.dispose = function () {
             if (this._isInVRMode) {
                 this.exitVR();
+            }
+            this._deviceOrientationCamera.dispose();
+            if (this._webVRCamera) {
+                this._webVRCamera.dispose();
+            }
+            if (this._vrDeviceOrientationCamera) {
+                this._vrDeviceOrientationCamera.dispose();
             }
             document.body.removeChild(this._btnVR);
         };
