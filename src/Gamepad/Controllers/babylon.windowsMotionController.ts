@@ -201,8 +201,8 @@ module BABYLON {
                 path = WindowsMotionController.MODEL_BASE_URL + device + '/';
             } else {
                 Tools.Warn("You need to reference GLTF loader to load Windows Motion Controllers model. Falling back to generic models");
-                path = "http://yoda.blob.core.windows.net/models/";
-                filename = "genericvrcontroller.babylon";
+                path = GenericController.MODEL_BASE_URL;
+                filename = GenericController.MODEL_FILENAME;
             }
 
 
