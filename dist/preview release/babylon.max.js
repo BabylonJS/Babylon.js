@@ -7629,6 +7629,7 @@ var BABYLON;
              * Observable event triggered each time the canvas receives pointerout event
              */
             this.onCanvasPointerOutObservable = new BABYLON.Observable();
+            this._vrExclusivePointerMode = false;
             // Uniform buffers list
             this.disableUniformBuffers = false;
             this._uniformBuffers = new Array();
@@ -7859,9 +7860,13 @@ var BABYLON;
                 document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
                 this._onVRDisplayPointerRestricted = function () {
+                    _this._vrExclusivePointerMode = true;
+                    console.log("enter");
                     canvas.requestPointerLock();
                 };
                 this._onVRDisplayPointerUnrestricted = function () {
+                    _this._vrExclusivePointerMode = false;
+                    console.log("exit");
                     document.exitPointerLock();
                 };
                 window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
@@ -8210,6 +8215,13 @@ var BABYLON;
         Object.defineProperty(Engine, "Version", {
             get: function () {
                 return "3.1-alpha";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "isInVRExclusivePointerMode", {
+            get: function () {
+                return this._vrExclusivePointerMode;
             },
             enumerable: true,
             configurable: true
@@ -34375,6 +34387,9 @@ var BABYLON;
             if (!this._pointerInput) {
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
+                    if (engine.isInVRExclusivePointerMode) {
+                        return;
+                    }
                     if (!_this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
@@ -34434,6 +34449,9 @@ var BABYLON;
             }
             this._onMouseMove = function (evt) {
                 if (!engine.isPointerLock) {
+                    return;
+                }
+                if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
@@ -35381,6 +35399,9 @@ var BABYLON;
             var previousMultiTouchPanPosition = { x: 0, y: 0, isPaning: false };
             this._pointerInput = function (p, s) {
                 var evt = p.event;
+                if (engine.isInVRExclusivePointerMode) {
+                    return;
+                }
                 if (p.type !== BABYLON.PointerEventTypes.POINTERMOVE && _this.buttons.indexOf(evt.button) === -1) {
                     return;
                 }

@@ -1,6 +1,4 @@
-
 module BABYLON {
-    declare var Promise: any;
     export class WindowsMotionController extends GenericController {
 
         // TODO: Update with final asset URL's
@@ -17,7 +15,6 @@ module BABYLON {
         // TODO: Why do we need to flip the model around? Art asset or BabylonJS specific?
         private static readonly ROTATE_OFFSET:number[] = [Math.PI, 0, 0]; // x, y, z.
 
-        private _parentMeshName: string;
         private _loadedMeshInfo: LoadedMeshInfo;
         private readonly _mapping : IControllerMappingInfo = {
             // Semantic button names
@@ -56,7 +53,6 @@ module BABYLON {
         constructor(vrGamepad) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.WINDOWS;
-            this._parentMeshName = this.id + " " + this.hand;
             this._loadedMeshInfo = null;
         }
         
@@ -157,73 +153,41 @@ module BABYLON {
          * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
          */
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
-            let parentMesh = scene.getMeshByName(this._parentMeshName);
-            if (parentMesh) {
-                // A mesh with the name we are expecting already exists in the scene, use that.
-                if (!this._loadedMeshInfo) {
-                    // Create our mesh info. Note that this method will always return non-null.
-                    this._loadedMeshInfo = this.createMeshInfo(parentMesh);
-                    
+            // Determine the device specific folder based on the ID suffix
+            var device = 'default';
+            if (this.id) {
+                var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
+                device = ((match && match[0]) || device);
+            }
+
+            // Hand
+            var filename;
+            if (this.hand === 'left') {
+                filename = WindowsMotionController.MODEL_LEFT_FILENAME;
+            }
+            else if (this.hand === 'right') {
+                filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
+            }
+            else {
+                filename = WindowsMotionController.MODEL_UNIVERSAL_FILENAME;
+            }
+
+            let path = WindowsMotionController.MODEL_BASE_URL + device + '/';
+
+            SceneLoader.ImportMesh("", path, filename, scene, (meshes: AbstractMesh[]) => {
+                    // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
+                    this._loadedMeshInfo = this.processModel(scene, meshes);
+
                     this.attachToMesh(this._loadedMeshInfo.rootNode);
-                }
-                if (meshLoaded) meshLoaded(this._loadedMeshInfo.rootNode);
-            } else {
-                // Make a call to load a mesh from CDN
-                this.loadModel(scene)
-                    .then((mesh) => {
-                        this.attachToMesh(mesh);
-                        if (meshLoaded) meshLoaded(mesh);
-                    })
-                    .catch((message) => {
-                        Tools.Warn(message);
-                        // We failed to load our custom models; fall back and attempt to the generic model.
-                        super.initControllerMesh(scene, meshLoaded);
-                    });
-            }
-        }
-
-        /**
-         * Starts a load request to get model data from the remote server, then parse it to ensure a valid format.
-         * If the first attempt fails, a second attempt will be made to retrieve a fallback model which is (non specific to the device ID suffix)
-         * 
-         * @param scene in which to insert new Meshes
-         * @return A promise that resolves with the mesh that represents the loaded controller model, or rejects with an error message.
-         */
-        protected loadModel(scene: Scene) : Promise<AbstractMesh> {
-            var self = this;
-            return new Promise((resolve, reject) => {
-                // First attempt, use ID Suffix specific URL
-                attemptLoad(this.createControllerModelUrl(false))
-                    .then(resolve)
-                    .catch((message) => {
-                        Tools.Warn(message);
-                        // Second attempt, use fallback URL
-                        attemptLoad(this.createControllerModelUrl(true))
-                            .then(resolve)
-                            .catch(reject);
-                    });
-                });
-
-            function attemptLoad(controllerSrc) {
-                return new Promise((resolve, reject) => {
-                        SceneLoader.ImportMesh("" /* all meshes */, controllerSrc.path, controllerSrc.name, scene, (meshes: AbstractMesh[]) => {
-                                // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
-                                this._loadedMeshInfo = self.processModel(scene, meshes);
-
-                                if (this._loadedMeshInfo) {
-                                    // Mesh data processed successfully!
-                                    resolve(this._loadedMeshInfo.rootNode);
-                                } else {
-                                    reject('Failed to parse controller model for device');
-                                }
-                            }, 
-                            null, 
-                            (scene: Scene, message: string) => {
-                                Tools.Log(message);
-                                reject('Failed to retrieve controller model from the remote server: ' + controllerSrc.path + controllerSrc.name);
-                            });
-                    });
-            }
+                    if (meshLoaded) {
+                        meshLoaded(this._loadedMeshInfo.rootNode);
+                    }
+                }, 
+                null, 
+                (scene: Scene, message: string) => {
+                    Tools.Log(message);
+                    Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
+            });
         }
 
         /**
@@ -239,7 +203,7 @@ module BABYLON {
             let loadedMeshInfo = null;
 
             // Create a new mesh to contain the glTF hierarchy
-            let parentMesh = new BABYLON.Mesh(this._parentMeshName, scene);
+            let parentMesh = new BABYLON.Mesh(this.id + " " + this.hand, scene);
 
             // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
             let childMesh : AbstractMesh = null;
@@ -269,38 +233,10 @@ module BABYLON {
                 var rotOffset = WindowsMotionController.ROTATE_OFFSET;
                 childMesh.addRotation(rotOffset[0], rotOffset[1], rotOffset[2]);
             } else {
-                Tools.Warn('No node with name '+WindowsMotionController.MODEL_ROOT_NODE_NAME+' in model file.');
+                Tools.Warn('No node with name ' + WindowsMotionController.MODEL_ROOT_NODE_NAME +' in model file.');
             }
 
             return loadedMeshInfo;
-        }
-
-        /**
-         * Helper function that constructs a URL from the controller ID suffix, for future proofed
-         * art assets.
-         */
-        private createControllerModelUrl(forceDefault: boolean) : IControllerUrl {
-            // Determine the device specific folder based on the ID suffix
-            var device = 'default';
-            if (!forceDefault) {
-                if (this.id) {
-                    var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
-                    device = ((match && match[0]) || device);
-                }
-            }
-
-            // Hand
-            var filename;
-            if (this.hand === 'left') filename = WindowsMotionController.MODEL_LEFT_FILENAME;
-            else if (this.hand === 'right') filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
-            else filename = WindowsMotionController.MODEL_UNIVERSAL_FILENAME;
-
-            // Final url
-            return {
-//                path: WindowsMotionController.MODEL_BASE_URL + device + '/',
-                path: WindowsMotionController.MODEL_BASE_URL,
-                name: filename
-            };
         }
         
         private createMeshInfo(rootNode: AbstractMesh) : LoadedMeshInfo {
