@@ -3,7 +3,6 @@ module BABYLON {
     class LoadedMeshInfo {
         public rootNode: AbstractMesh;
         public pointingPoseNode: AbstractMesh;
-        public holdingPoseNode: AbstractMesh;
         public buttonMeshes: { [id: string] : IButtonMeshInfo; } = {};
         public axisMeshes: { [id: number] : IAxisMeshInfo; } = {};
     }
@@ -24,10 +23,9 @@ module BABYLON {
     }
 
     export class WindowsMotionController extends WebVRController {
-        private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/microsoft/';
+        private static readonly MODEL_BASE_URL:string = '/assets/meshes/controllers/microsoft/';
         private static readonly MODEL_LEFT_FILENAME:string = 'left.glb';
         private static readonly MODEL_RIGHT_FILENAME:string = 'right.glb';
-        private static readonly MODEL_ROOT_NODE_NAME:string = 'RootNode';
         private static readonly GLTF_ROOT_TRANSFORM_NAME:string = 'root';
 
         public static readonly GAMEPAD_ID_PREFIX:string = 'Spatial Controller (Spatial Interaction Source) ';
@@ -64,7 +62,8 @@ module BABYLON {
                 'THUMBSTICK_Y',
                 'TOUCHPAD_TOUCH_X',
                 'TOUCHPAD_TOUCH_Y'
-            ]
+            ],
+            pointingPoseMeshName: 'POINTING_POSE'
         };
 
         public onTrackpadChangedObservable = new Observable<ExtendedGamepadButton>();
@@ -247,15 +246,16 @@ module BABYLON {
             let childMesh : AbstractMesh = null;
             for (let i = 0; i < meshes.length; i++) {
                 let mesh = meshes[i];
-                if (mesh.id === WindowsMotionController.MODEL_ROOT_NODE_NAME) {
-                    // There may be a parent mesh to perform the RH to LH matrix transform.
+
+                // There may be a parent mesh to perform the RH to LH matrix transform.
+                if (mesh.parent && mesh.parent.name === WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME)
+                    mesh = <AbstractMesh>mesh.parent;
+
+                if (!mesh.parent || mesh.id === WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME) {
                     // Exclude controller meshes from picking results
                     mesh.isPickable = false;
-
-                    // Handle root node, attach to the new parentMesh
-                    if (mesh.parent && mesh.parent.name === WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME)
-                        mesh = <AbstractMesh>mesh.parent;
                     
+                    // Handle root node, attach to the new parentMesh
                     childMesh = mesh;
                     break;
                 }
@@ -267,7 +267,7 @@ module BABYLON {
                 // Create our mesh info. Note that this method will always return non-null.
                 loadedMeshInfo = this.createMeshInfo(parentMesh);
             } else {
-                Tools.Warn('No node with name ' + WindowsMotionController.MODEL_ROOT_NODE_NAME +' in model file.');
+                Tools.Warn('Could not find root node in model file.');
             }
 
             return loadedMeshInfo;
@@ -346,6 +346,12 @@ module BABYLON {
                 }
             }
 
+            // Pointing Ray
+            loadedMeshInfo.pointingPoseNode = getChildByName(rootNode, this._mapping.pointingPoseMeshName);
+            if (!loadedMeshInfo.pointingPoseNode) {                
+                Tools.Warn('Missing pointing pose mesh with name: ' + this._mapping.pointingPoseMeshName);
+            }
+
             return loadedMeshInfo;
             
             // Look through all children recursively. This will return null if no mesh exists with the given name.
@@ -356,6 +362,22 @@ module BABYLON {
             function getImmediateChildByName (node, name) : AbstractMesh {
                 return node.getChildMeshes(true, n => n.name == name)[0];
             }
+        }
+
+        public getForwardRay(length = 100): Ray {
+            if (!(this._loadedMeshInfo && this._loadedMeshInfo.pointingPoseNode)) {
+                return super.getForwardRay(length);
+            }
+
+            var m = this._loadedMeshInfo.pointingPoseNode.getWorldMatrix();
+            var origin = m.getTranslation();
+
+            var forward = new BABYLON.Vector3(0, 0, -1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);            
+
+            return new Ray(origin, direction, length);
         }
 
         public dispose(): void {
