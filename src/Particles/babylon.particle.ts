@@ -15,7 +15,7 @@
         public cellIndex: number = 0;
 
         constructor(private particleSystem: ParticleSystem) {
-            if (!this.particleSystem.IsAnimationSheetEnabled) {
+            if (!this.particleSystem.isAnimationSheetEnabled) {
                 return;
             }
 
