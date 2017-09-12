@@ -7629,6 +7629,7 @@ var BABYLON;
              * Observable event triggered each time the canvas receives pointerout event
              */
             this.onCanvasPointerOutObservable = new BABYLON.Observable();
+            this._vrExclusivePointerMode = false;
             // Uniform buffers list
             this.disableUniformBuffers = false;
             this._uniformBuffers = new Array();
@@ -7859,9 +7860,13 @@ var BABYLON;
                 document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
                 this._onVRDisplayPointerRestricted = function () {
+                    _this._vrExclusivePointerMode = true;
+                    console.log("enter");
                     canvas.requestPointerLock();
                 };
                 this._onVRDisplayPointerUnrestricted = function () {
+                    _this._vrExclusivePointerMode = false;
+                    console.log("exit");
                     document.exitPointerLock();
                 };
                 window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
@@ -8210,6 +8215,13 @@ var BABYLON;
         Object.defineProperty(Engine, "Version", {
             get: function () {
                 return "3.1-alpha";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "isInVRExclusivePointerMode", {
+            get: function () {
+                return this._vrExclusivePointerMode;
             },
             enumerable: true,
             configurable: true
@@ -11001,8 +11013,10 @@ var BABYLON;
             }
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-                value = 1;
+            if (internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST
+                && internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR
+                && internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR) {
+                value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
             }
             if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {
                 this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
@@ -15200,22 +15214,6 @@ var BABYLON;
             var engine = this.getEngine();
             this._cache.position.copyFrom(this.position);
             this._cache.upVector.copyFrom(this.upVector);
-            this._cache.mode = this.mode;
-            this._cache.minZ = this.minZ;
-            this._cache.maxZ = this.maxZ;
-            this._cache.fov = this.fov;
-            this._cache.fovMode = this.fovMode;
-            this._cache.aspectRatio = engine.getAspectRatio(this);
-            this._cache.orthoLeft = this.orthoLeft;
-            this._cache.orthoRight = this.orthoRight;
-            this._cache.orthoBottom = this.orthoBottom;
-            this._cache.orthoTop = this.orthoTop;
-            this._cache.renderWidth = engine.getRenderWidth();
-            this._cache.renderHeight = engine.getRenderHeight();
-        };
-        Camera.prototype._updateFromScene = function () {
-            this.updateCache();
-            this.update();
         };
         // Synchronized
         Camera.prototype._isSynchronized = function () {
@@ -15257,10 +15255,10 @@ var BABYLON;
         Camera.prototype.detachControl = function (element) {
         };
         Camera.prototype.update = function () {
+            this._checkInputs();
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
-            this._checkInputs();
         };
         Camera.prototype._checkInputs = function () {
             this.onAfterCheckInputsObservable.notifyObservers(this);
@@ -15359,6 +15357,7 @@ var BABYLON;
             if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
+            this.updateCache();
             this._computedViewMatrix = this._getViewMatrix();
             this._currentRenderId = this.getScene().getRenderId();
             this._refreshFrustumPlanes = true;
@@ -15396,10 +15395,18 @@ var BABYLON;
             if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
             }
+            // Cache
+            this._cache.mode = this.mode;
+            this._cache.minZ = this.minZ;
+            this._cache.maxZ = this.maxZ;
+            // Matrix
             this._refreshFrustumPlanes = true;
             var engine = this.getEngine();
             var scene = this.getScene();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
+                this._cache.fov = this.fov;
+                this._cache.fovMode = this.fovMode;
+                this._cache.aspectRatio = engine.getAspectRatio(this);
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
@@ -15419,6 +15426,12 @@ var BABYLON;
                 else {
                     BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
                 }
+                this._cache.orthoLeft = this.orthoLeft;
+                this._cache.orthoRight = this.orthoRight;
+                this._cache.orthoBottom = this.orthoBottom;
+                this._cache.orthoTop = this.orthoTop;
+                this._cache.renderWidth = engine.getRenderWidth();
+                this._cache.renderHeight = engine.getRenderHeight();
             }
             this.onProjectionMatrixChangedObservable.notifyObservers(this);
             return this._projectionMatrix;
@@ -18804,6 +18817,7 @@ var BABYLON;
             // Camera
             this.resetCachedMaterial();
             this._renderId++;
+            this.activeCamera.update();
             this.updateTransformMatrix();
             if (camera._alternateCamera) {
                 this.updateAlternateTransformMatrix(camera._alternateCamera);
@@ -18938,8 +18952,6 @@ var BABYLON;
             this._renderDuration.endMonitoring(false);
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
-            // Update camera
-            this.activeCamera._updateFromScene();
             // Reset some special arrays
             this._renderTargets.reset();
             this._alternateRendering = false;
@@ -18951,14 +18963,14 @@ var BABYLON;
                 this._renderForCamera(camera);
                 return;
             }
+            // Update camera
+            this.activeCamera.update();
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
                 this._renderForCamera(camera._rigCameras[index]);
             }
             this.activeCamera = camera;
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-            // Update camera
-            this.activeCamera._updateFromScene();
         };
         Scene.prototype._checkIntersections = function () {
             for (var index = 0; index < this._meshesForIntersections.length; index++) {
@@ -34373,6 +34385,9 @@ var BABYLON;
             if (!this._pointerInput) {
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
+                    if (engine.isInVRExclusivePointerMode) {
+                        return;
+                    }
                     if (!_this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
@@ -34432,6 +34447,9 @@ var BABYLON;
             }
             this._onMouseMove = function (evt) {
                 if (!engine.isPointerLock) {
+                    return;
+                }
+                if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
@@ -35379,6 +35397,9 @@ var BABYLON;
             var previousMultiTouchPanPosition = { x: 0, y: 0, isPaning: false };
             this._pointerInput = function (p, s) {
                 var evt = p.event;
+                if (engine.isInVRExclusivePointerMode) {
+                    return;
+                }
                 if (p.type !== BABYLON.PointerEventTypes.POINTERMOVE && _this.buttons.indexOf(evt.button) === -1) {
                     return;
                 }
@@ -44513,7 +44534,7 @@ var BABYLON;
             var height = options.height || 10.0;
             var subdivisions = options.subdivisions || 1 | 0;
             var minHeight = options.minHeight || 0.0;
-            var maxHeight = options.maxHeight || 10.0;
+            var maxHeight = options.maxHeight || 1.0;
             var filter = options.colorFilter || new BABYLON.Color3(0.3, 0.59, 0.11);
             var updatable = options.updatable;
             var onReady = options.onReady;
@@ -49462,6 +49483,7 @@ var BABYLON;
 (function (BABYLON) {
     var FilesInput = (function () {
         function FilesInput(engine, scene, sceneLoadedCallback, progressCallback, additionalRenderLoopLogicCallback, textureLoadingCallback, startingProcessingFilesCallback, onReloadCallback) {
+            this.onProcessFileCallback = function () { return true; };
             this._engine = engine;
             this._currentScene = scene;
             this._sceneLoadedCallback = sceneLoadedCallback;
@@ -49540,9 +49562,14 @@ var BABYLON;
             });
         };
         FilesInput.prototype._processFiles = function (files) {
+            var skippedFiles = 0;
             for (var i = 0; i < files.length; i++) {
                 var name = files[i].correctName.toLowerCase();
                 var extension = name.split('.').pop();
+                if (!this.onProcessFileCallback(files[i], name, extension)) {
+                    skippedFiles++;
+                    continue;
+                }
                 if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
                     && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
                     this._sceneFileToLoad = files[i];
@@ -49554,7 +49581,7 @@ var BABYLON;
             if (this._onReloadCallback) {
                 this._onReloadCallback(this._sceneFileToLoad);
             }
-            else {
+            else if (skippedFiles < files.length) {
                 this.reload();
             }
         };
@@ -51510,12 +51537,20 @@ var BABYLON;
             this.onGamepadDisconnectedObservable = new BABYLON.Observable();
             this._onGamepadConnectedEvent = function (evt) {
                 var gamepad = evt.gamepad;
-                // Protection code for Chrome which has a very buggy gamepad implementation...
-                // And raises a connected event on disconnection for instance
                 if (gamepad.index in _this._babylonGamepads) {
-                    return;
+                    if (_this._babylonGamepads[gamepad.index].isConnected) {
+                        return;
+                    }
                 }
-                var newGamepad = _this._addNewGamepad(gamepad);
+                var newGamepad;
+                if (_this._babylonGamepads[gamepad.index]) {
+                    newGamepad = _this._babylonGamepads[gamepad.index];
+                    newGamepad.browserGamepad = gamepad;
+                    newGamepad._isConnected = true;
+                }
+                else {
+                    newGamepad = _this._addNewGamepad(gamepad);
+                }
                 _this.onGamepadConnectedObservable.notifyObservers(newGamepad);
                 _this._startMonitoringGamepads();
             };
@@ -51524,10 +51559,9 @@ var BABYLON;
                 // Remove the gamepad from the list of gamepads to monitor.
                 for (var i in _this._babylonGamepads) {
                     if (_this._babylonGamepads[i].index === gamepad.index) {
-                        var gamepadToRemove = _this._babylonGamepads[i];
-                        _this._babylonGamepads[i] = null;
-                        _this.onGamepadDisconnectedObservable.notifyObservers(gamepadToRemove);
-                        gamepadToRemove.dispose();
+                        var disconnectedGamepad = _this._babylonGamepads[i];
+                        disconnectedGamepad._isConnected = false;
+                        _this.onGamepadDisconnectedObservable.notifyObservers(disconnectedGamepad);
                         break;
                     }
                 }
@@ -51548,6 +51582,13 @@ var BABYLON;
                 }
             }
         }
+        Object.defineProperty(GamepadManager.prototype, "gamepads", {
+            get: function () {
+                return this._babylonGamepads;
+            },
+            enumerable: true,
+            configurable: true
+        });
         GamepadManager.prototype.getGamepadByType = function (type) {
             if (type === void 0) { type = BABYLON.Gamepad.XBOX; }
             for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
@@ -51564,6 +51605,10 @@ var BABYLON;
                 window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
                 this._onGamepadConnectedEvent = null;
                 this._onGamepadDisconnectedEvent = null;
+            }
+            for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
+                var gamepad = _a[_i];
+                gamepad.dispose();
             }
             this._oneGamepadConnected = false;
             this._stopMonitoringGamepads();
@@ -51602,7 +51647,7 @@ var BABYLON;
             this._updateGamepadObjects();
             for (var i in this._babylonGamepads) {
                 var gamepad = this._babylonGamepads[i];
-                if (!gamepad) {
+                if (!gamepad || !gamepad.isConnected) {
                     continue;
                 }
                 gamepad.update();
@@ -51624,6 +51669,10 @@ var BABYLON;
                     else {
                         // Forced to copy again this object for Chrome for unknown reason
                         this._babylonGamepads[i].browserGamepad = gamepads[i];
+                        if (!this._babylonGamepads[i].isConnected) {
+                            this._babylonGamepads[i]._isConnected = true;
+                            this.onGamepadConnectedObservable.notifyObservers(this._babylonGamepads[i]);
+                        }
                     }
                 }
             }
@@ -51655,6 +51704,7 @@ var BABYLON;
             this.id = id;
             this.index = index;
             this.browserGamepad = browserGamepad;
+            this._isConnected = true;
             this.type = Gamepad.GAMEPAD;
             this._leftStickAxisX = leftStickX;
             this._leftStickAxisY = leftStickY;
@@ -51667,6 +51717,13 @@ var BABYLON;
                 this._rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };
             }
         }
+        Object.defineProperty(Gamepad.prototype, "isConnected", {
+            get: function () {
+                return this._isConnected;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Gamepad.prototype.onleftstickchanged = function (callback) {
             this._onleftstickchanged = callback;
         };
@@ -52073,6 +52130,9 @@ var BABYLON;
             if (vrGamepad.id.indexOf('Oculus Touch') !== -1) {
                 return new BABYLON.OculusTouchController(vrGamepad);
             }
+            else if (vrGamepad.id.indexOf(BABYLON.WindowsMotionController.GAMEPAD_ID_PREFIX) === 0) {
+                return new BABYLON.WindowsMotionController(vrGamepad);
+            }
             else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
                 return new BABYLON.ViveController(vrGamepad);
             }
@@ -52085,9 +52145,8 @@ var BABYLON;
     BABYLON.PoseEnabledControllerHelper = PoseEnabledControllerHelper;
     var PoseEnabledController = (function (_super) {
         __extends(PoseEnabledController, _super);
-        function PoseEnabledController(vrGamepad) {
-            var _this = _super.call(this, vrGamepad.id, vrGamepad.index, vrGamepad) || this;
-            _this.vrGamepad = vrGamepad;
+        function PoseEnabledController(browserGamepad) {
+            var _this = _super.call(this, browserGamepad.id, browserGamepad.index, browserGamepad) || this;
             _this.deviceScaleFactor = 1;
             _this._leftHandSystemQuaternion = new BABYLON.Quaternion();
             _this.type = BABYLON.Gamepad.POSE_ENABLED;
@@ -52103,7 +52162,7 @@ var BABYLON;
         }
         PoseEnabledController.prototype.update = function () {
             _super.prototype.update.call(this);
-            var pose = this.vrGamepad.pose;
+            var pose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
             if (this._mesh) {
                 this._mesh.position.copyFrom(this._calculatedPosition);
@@ -52195,6 +52254,7 @@ var BABYLON;
         __extends(WebVRController, _super);
         function WebVRController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
+            // Observables
             _this.onTriggerStateChangedObservable = new BABYLON.Observable();
             _this.onMainButtonStateChangedObservable = new BABYLON.Observable();
             _this.onSecondaryButtonStateChangedObservable = new BABYLON.Observable();
@@ -52215,10 +52275,17 @@ var BABYLON;
         WebVRController.prototype.onButtonStateChange = function (callback) {
             this._onButtonStateChange = callback;
         };
+        Object.defineProperty(WebVRController.prototype, "defaultModel", {
+            get: function () {
+                return this._defaultModel;
+            },
+            enumerable: true,
+            configurable: true
+        });
         WebVRController.prototype.update = function () {
             _super.prototype.update.call(this);
             for (var index = 0; index < this._buttons.length; index++) {
-                this._setButtonValue(this.vrGamepad.buttons[index], this._buttons[index], index);
+                this._setButtonValue(this.browserGamepad.buttons[index], this._buttons[index], index);
             }
             ;
             if (this.leftStick.x !== this.pad.x || this.leftStick.y !== this.pad.y) {
@@ -52259,6 +52326,14 @@ var BABYLON;
             this._changes.valueChanged = newState.value !== currentState.value;
             this._changes.changed = this._changes.pressChanged || this._changes.touchChanged || this._changes.valueChanged;
             return this._changes;
+        };
+        WebVRController.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            this.onTriggerStateChangedObservable.clear();
+            this.onMainButtonStateChangedObservable.clear();
+            this.onSecondaryButtonStateChangedObservable.clear();
+            this.onPadStateChangedObservable.clear();
+            this.onPadValuesChangedObservable.clear();
         };
         return WebVRController;
     }(BABYLON.PoseEnabledController));
@@ -52534,6 +52609,319 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.genericController.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    var LoadedMeshInfo = (function () {
+        function LoadedMeshInfo() {
+            this.buttonMeshes = {};
+            this.axisMeshes = {};
+        }
+        return LoadedMeshInfo;
+    }());
+    var WindowsMotionController = (function (_super) {
+        __extends(WindowsMotionController, _super);
+        function WindowsMotionController(vrGamepad) {
+            var _this = _super.call(this, vrGamepad) || this;
+            _this._mapping = {
+                // Semantic button names
+                buttons: ['thumbstick', 'trigger', 'grip', 'menu', 'trackpad'],
+                // A mapping of the button name to glTF model node name
+                // that should be transformed by button value.
+                buttonMeshNames: {
+                    'trigger': 'SELECT',
+                    'menu': 'MENU',
+                    'grip': 'GRASP',
+                    'thumbstick': 'THUMBSTICK_PRESS',
+                    'trackpad': 'TOUCHPAD_PRESS'
+                },
+                // This mapping is used to translate from the Motion Controller to Babylon semantics
+                buttonObservableNames: {
+                    'trigger': 'onTriggerStateChangedObservable',
+                    'menu': 'onSecondaryButtonStateChangedObservable',
+                    'grip': 'onMainButtonStateChangedObservable',
+                    'thumbstick': 'onPadStateChangedObservable',
+                    'trackpad': 'onTrackpadChangedObservable'
+                },
+                // A mapping of the axis name to glTF model node name
+                // that should be transformed by axis value.
+                // This array mirrors the browserGamepad.axes array, such that 
+                // the mesh corresponding to axis 0 is in this array index 0.
+                axisMeshNames: [
+                    'THUMBSTICK_X',
+                    'THUMBSTICK_Y',
+                    'TOUCHPAD_TOUCH_X',
+                    'TOUCHPAD_TOUCH_Y'
+                ]
+            };
+            _this.onTrackpadChangedObservable = new BABYLON.Observable();
+            _this.controllerType = BABYLON.PoseEnabledControllerType.WINDOWS;
+            _this._loadedMeshInfo = null;
+            return _this;
+        }
+        Object.defineProperty(WindowsMotionController.prototype, "onTriggerButtonStateChangedObservable", {
+            get: function () {
+                return this.onTriggerStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onMenuButtonStateChangedObservable", {
+            get: function () {
+                return this.onSecondaryButtonStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onGripButtonStateChangedObservable", {
+            get: function () {
+                return this.onMainButtonStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onThumbstickButtonStateChangedObservable", {
+            get: function () {
+                return this.onPadStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onTouchpadButtonStateChangedObservable", {
+            get: function () {
+                return this.onTrackpadChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Called once per frame by the engine.
+         */
+        WindowsMotionController.prototype.update = function () {
+            _super.prototype.update.call(this);
+            // Only need to animate axes if there is a loaded mesh
+            if (this._loadedMeshInfo) {
+                if (this.browserGamepad.axes) {
+                    for (var axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
+                        this.lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
+                    }
+                }
+            }
+        };
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        WindowsMotionController.prototype.handleButtonChange = function (buttonIdx, state, changes) {
+            var buttonName = this._mapping.buttons[buttonIdx];
+            if (!buttonName) {
+                return;
+            }
+            // Only emit events for buttons that we know how to map from index to name
+            var observable = this[this._mapping.buttonObservableNames[buttonName]];
+            if (observable) {
+                observable.notifyObservers(state);
+            }
+            this.lerpButtonTransform(buttonName, state.value);
+        };
+        WindowsMotionController.prototype.lerpButtonTransform = function (buttonName, buttonValue) {
+            // If there is no loaded mesh, there is nothing to transform.
+            if (!this._loadedMeshInfo) {
+                return;
+            }
+            var meshInfo = this._loadedMeshInfo.buttonMeshes[buttonName];
+            BABYLON.Quaternion.SlerpToRef(meshInfo.unpressed.rotationQuaternion, meshInfo.pressed.rotationQuaternion, buttonValue, meshInfo.value.rotationQuaternion);
+            BABYLON.Vector3.LerpToRef(meshInfo.unpressed.position, meshInfo.pressed.position, buttonValue, meshInfo.value.position);
+        };
+        WindowsMotionController.prototype.lerpAxisTransform = function (axis, axisValue) {
+            var meshInfo = this._loadedMeshInfo.axisMeshes[axis];
+            if (!meshInfo) {
+                return;
+            }
+            // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
+            var lerpValue = axisValue * 0.5 + 0.5;
+            BABYLON.Quaternion.SlerpToRef(meshInfo.min.rotationQuaternion, meshInfo.max.rotationQuaternion, lerpValue, meshInfo.value.rotationQuaternion);
+            BABYLON.Vector3.LerpToRef(meshInfo.min.position, meshInfo.max.position, lerpValue, meshInfo.value.position);
+        };
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        WindowsMotionController.prototype.initControllerMesh = function (scene, meshLoaded, forceDefault) {
+            var _this = this;
+            if (forceDefault === void 0) { forceDefault = false; }
+            // Determine the device specific folder based on the ID suffix
+            var device = 'default';
+            if (this.id && !forceDefault) {
+                var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
+                device = ((match && match[0]) || device);
+            }
+            // Hand
+            var filename;
+            if (this.hand === 'left') {
+                filename = WindowsMotionController.MODEL_LEFT_FILENAME;
+            }
+            else {
+                filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
+            }
+            var path = WindowsMotionController.MODEL_BASE_URL + device + '/';
+            BABYLON.SceneLoader.ImportMesh("", path, filename, scene, function (meshes) {
+                // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
+                _this._loadedMeshInfo = _this.processModel(scene, meshes);
+                if (!_this._loadedMeshInfo) {
+                    return;
+                }
+                _this._defaultModel = _this._loadedMeshInfo.rootNode;
+                _this.attachToMesh(_this._defaultModel);
+                if (meshLoaded) {
+                    meshLoaded(_this._defaultModel);
+                }
+            }, null, function (scene, message) {
+                BABYLON.Tools.Log(message);
+                BABYLON.Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
+                _this.initControllerMesh(scene, meshLoaded, true);
+            });
+        };
+        /**
+         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
+         * can be transformed by button presses and axes values, based on this._mapping.
+         *
+         * @param scene scene in which the meshes exist
+         * @param meshes list of meshes that make up the controller model to process
+         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+         */
+        WindowsMotionController.prototype.processModel = function (scene, meshes) {
+            var loadedMeshInfo = null;
+            // Create a new mesh to contain the glTF hierarchy
+            var parentMesh = new BABYLON.Mesh(this.id + " " + this.hand, scene);
+            // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
+            var childMesh = null;
+            for (var i = 0; i < meshes.length; i++) {
+                var mesh = meshes[i];
+                if (mesh.id === WindowsMotionController.MODEL_ROOT_NODE_NAME) {
+                    // There may be a parent mesh to perform the RH to LH matrix transform.
+                    // Exclude controller meshes from picking results
+                    mesh.isPickable = false;
+                    // Handle root node, attach to the new parentMesh
+                    if (mesh.parent && mesh.parent.name === WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME)
+                        mesh = mesh.parent;
+                    childMesh = mesh;
+                    break;
+                }
+            }
+            if (childMesh) {
+                childMesh.setParent(parentMesh);
+                // Create our mesh info. Note that this method will always return non-null.
+                loadedMeshInfo = this.createMeshInfo(parentMesh);
+                // Apply rotation offsets
+                var rotOffset = WindowsMotionController.ROTATE_OFFSET;
+                childMesh.addRotation(rotOffset[0], rotOffset[1], rotOffset[2]);
+            }
+            else {
+                BABYLON.Tools.Warn('No node with name ' + WindowsMotionController.MODEL_ROOT_NODE_NAME + ' in model file.');
+            }
+            return loadedMeshInfo;
+        };
+        WindowsMotionController.prototype.createMeshInfo = function (rootNode) {
+            var loadedMeshInfo = new LoadedMeshInfo();
+            var i;
+            loadedMeshInfo.rootNode = rootNode;
+            // Reset the caches
+            loadedMeshInfo.buttonMeshes = {};
+            loadedMeshInfo.axisMeshes = {};
+            // Button Meshes
+            for (i = 0; i < this._mapping.buttons.length; i++) {
+                var buttonMeshName = this._mapping.buttonMeshNames[this._mapping.buttons[i]];
+                if (!buttonMeshName) {
+                    BABYLON.Tools.Log('Skipping unknown button at index: ' + i + ' with mapped name: ' + this._mapping.buttons[i]);
+                    continue;
+                }
+                var buttonMesh = getChildByName(rootNode, buttonMeshName);
+                if (!buttonMesh) {
+                    BABYLON.Tools.Warn('Missing button mesh with name: ' + buttonMeshName);
+                    continue;
+                }
+                var buttonMeshInfo = {
+                    index: i,
+                    value: getImmediateChildByName(buttonMesh, 'VALUE'),
+                    pressed: getImmediateChildByName(buttonMesh, 'PRESSED'),
+                    unpressed: getImmediateChildByName(buttonMesh, 'UNPRESSED')
+                };
+                if (buttonMeshInfo.value && buttonMeshInfo.pressed && buttonMeshInfo.unpressed) {
+                    loadedMeshInfo.buttonMeshes[this._mapping.buttons[i]] = buttonMeshInfo;
+                }
+                else {
+                    // If we didn't find the mesh, it simply means this button won't have transforms applied as mapped button value changes.
+                    BABYLON.Tools.Warn('Missing button submesh under mesh with name: ' + buttonMeshName +
+                        '(VALUE: ' + !!buttonMeshInfo.value +
+                        ', PRESSED: ' + !!buttonMeshInfo.pressed +
+                        ', UNPRESSED:' + !!buttonMeshInfo.unpressed +
+                        ')');
+                }
+            }
+            // Axis Meshes
+            for (i = 0; i < this._mapping.axisMeshNames.length; i++) {
+                var axisMeshName = this._mapping.axisMeshNames[i];
+                if (!axisMeshName) {
+                    BABYLON.Tools.Log('Skipping unknown axis at index: ' + i);
+                    continue;
+                }
+                var axisMesh = getChildByName(rootNode, axisMeshName);
+                if (!axisMesh) {
+                    BABYLON.Tools.Warn('Missing axis mesh with name: ' + axisMeshName);
+                    continue;
+                }
+                var axisMeshInfo = {
+                    index: i,
+                    value: getImmediateChildByName(axisMesh, 'VALUE'),
+                    min: getImmediateChildByName(axisMesh, 'MIN'),
+                    max: getImmediateChildByName(axisMesh, 'MAX')
+                };
+                if (axisMeshInfo.value && axisMeshInfo.min && axisMeshInfo.max) {
+                    loadedMeshInfo.axisMeshes[i] = axisMeshInfo;
+                }
+                else {
+                    // If we didn't find the mesh, it simply means thit axis won't have transforms applied as mapped axis values change.
+                    BABYLON.Tools.Warn('Missing axis submesh under mesh with name: ' + axisMeshName +
+                        '(VALUE: ' + !!axisMeshInfo.value +
+                        ', MIN: ' + !!axisMeshInfo.min +
+                        ', MAX:' + !!axisMeshInfo.max +
+                        ')');
+                }
+            }
+            return loadedMeshInfo;
+            // Look through all children recursively. This will return null if no mesh exists with the given name.
+            function getChildByName(node, name) {
+                return node.getChildMeshes(false, function (n) { return n.name === name; })[0];
+            }
+            // Look through only immediate children. This will return null if no mesh exists with the given name.
+            function getImmediateChildByName(node, name) {
+                return node.getChildMeshes(true, function (n) { return n.name == name; })[0];
+            }
+        };
+        WindowsMotionController.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            this.onTrackpadChangedObservable.clear();
+        };
+        WindowsMotionController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/microsoft/';
+        WindowsMotionController.MODEL_LEFT_FILENAME = 'left.glb';
+        WindowsMotionController.MODEL_RIGHT_FILENAME = 'right.glb';
+        WindowsMotionController.MODEL_ROOT_NODE_NAME = 'RootNode';
+        WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME = 'root';
+        WindowsMotionController.GAMEPAD_ID_PREFIX = 'Spatial Controller (Spatial Interaction Source) ';
+        WindowsMotionController.GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
+        // Art assets is backward facing
+        WindowsMotionController.ROTATE_OFFSET = [Math.PI, 0, 0]; // x, y, z.
+        return WindowsMotionController;
+    }(BABYLON.WebVRController));
+    BABYLON.WindowsMotionController = WindowsMotionController;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.windowsMotionController.js.map
 
 /// <reference path="babylon.targetCamera.ts" />
 
@@ -66704,36 +67092,39 @@ var BABYLON;
             this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add(function (gamepad) {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     var webVrController = gamepad;
-                    var index = _this.controllers.indexOf(webVrController);
-                    if (index === -1) {
-                        // we are good
-                        return;
+                    if (webVrController.defaultModel) {
+                        webVrController.defaultModel.setEnabled(false);
                     }
-                    _this.controllers.splice(index, 1);
                 }
             });
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     var webVrController = gamepad;
                     if (_this.webVROptions.controllerMeshes) {
-                        webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
-                            if (_this.webVROptions.defaultLightingOnControllers) {
-                                if (!_this._lightOnControllers) {
-                                    _this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), _this.getScene());
-                                }
-                                var activateLightOnSubMeshes_1 = function (mesh, light) {
-                                    var children = mesh.getChildren();
-                                    if (children.length !== 0) {
-                                        children.forEach(function (mesh) {
-                                            light.includedOnlyMeshes.push(mesh);
-                                            activateLightOnSubMeshes_1(mesh, light);
-                                        });
+                        if (webVrController.defaultModel) {
+                            webVrController.defaultModel.setEnabled(true);
+                        }
+                        else {
+                            // Load the meshes
+                            webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
+                                if (_this.webVROptions.defaultLightingOnControllers) {
+                                    if (!_this._lightOnControllers) {
+                                        _this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), _this.getScene());
                                     }
-                                };
-                                _this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
-                                activateLightOnSubMeshes_1(loadedMesh, _this._lightOnControllers);
-                            }
-                        });
+                                    var activateLightOnSubMeshes_1 = function (mesh, light) {
+                                        var children = mesh.getChildren();
+                                        if (children.length !== 0) {
+                                            children.forEach(function (mesh) {
+                                                light.includedOnlyMeshes.push(mesh);
+                                                activateLightOnSubMeshes_1(mesh, light);
+                                            });
+                                        }
+                                    };
+                                    _this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
+                                    activateLightOnSubMeshes_1(loadedMesh, _this._lightOnControllers);
+                                }
+                            });
+                        }
                     }
                     webVrController.attachToPoseControlledCamera(_this);
                     // since this is async - sanity check. Is the controller already stored?

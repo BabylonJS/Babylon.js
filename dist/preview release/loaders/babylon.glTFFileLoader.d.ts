@@ -797,6 +797,7 @@ declare module BABYLON.GLTF2 {
         private _disposed;
         private _blockPendingTracking;
         private _nonBlockingData;
+        private _rootMesh;
         private _renderReadyObservable;
         private _renderPendingCount;
         private _loaderPendingCount;
