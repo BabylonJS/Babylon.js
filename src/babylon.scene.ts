@@ -2829,13 +2829,14 @@
                 throw new Error("Active camera not set");
 
             Tools.StartPerformanceCounter("Rendering camera " + this.activeCamera.name);
-
+           
             // Viewport
             engine.setViewport(this.activeCamera.viewport);
 
             // Camera
             this.resetCachedMaterial();
             this._renderId++;
+            this.activeCamera.update();
             this.updateTransformMatrix();
 
             if (camera._alternateCamera) {
@@ -3005,8 +3006,8 @@
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
 
             // Update camera
-            this.activeCamera._updateFromScene();
-
+            this.activeCamera.updateCache();
+            
             // Reset some special arrays
             this._renderTargets.reset();
 
@@ -3023,6 +3024,9 @@
                 return;
             }
 
+            // Update camera
+            this.activeCamera.update();
+            
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
                 this._renderForCamera(camera._rigCameras[index]);
@@ -3030,9 +3034,7 @@
 
             this.activeCamera = camera;
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-
-            // Update camera
-            this.activeCamera._updateFromScene();
+            this.activeCamera.updateCache();
         }
 
         private _checkIntersections(): void {

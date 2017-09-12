@@ -24,6 +24,10 @@ module BABYLON {
                 this._pointerInput = (p, s) => {
                     var evt = <PointerEvent>p.event;
 
+                    if (engine.isInVRExclusivePointerMode) {
+                        return;
+                    }
+
                     if (!this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
@@ -92,6 +96,10 @@ module BABYLON {
 
             this._onMouseMove = evt => {
                 if (!engine.isPointerLock) {
+                    return;
+                }
+
+                if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
 
