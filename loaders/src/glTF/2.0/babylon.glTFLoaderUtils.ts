@@ -52,7 +52,7 @@ module BABYLON.GLTF2 {
         public static GetTextureSamplingMode(magFilter: ETextureMagFilter, minFilter: ETextureMinFilter): number {
             // Set defaults if undefined
             magFilter = magFilter === undefined ? ETextureMagFilter.LINEAR : magFilter;
-            minFilter = minFilter === undefined ? ETextureMinFilter.LINEAR_MIPMAP_NEAREST : minFilter;
+            minFilter = minFilter === undefined ? ETextureMinFilter.LINEAR_MIPMAP_LINEAR : minFilter;
 
             if (magFilter === ETextureMagFilter.LINEAR) {
                 switch (minFilter) {
