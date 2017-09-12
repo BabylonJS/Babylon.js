@@ -7861,12 +7861,10 @@ var BABYLON;
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
                 this._onVRDisplayPointerRestricted = function () {
                     _this._vrExclusivePointerMode = true;
-                    console.log("enter");
                     canvas.requestPointerLock();
                 };
                 this._onVRDisplayPointerUnrestricted = function () {
                     _this._vrExclusivePointerMode = false;
-                    console.log("exit");
                     document.exitPointerLock();
                 };
                 window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
@@ -35483,7 +35481,7 @@ var BABYLON;
                             previousPinchDistance = pinchDistance;
                             return;
                         }
-                        if (Math.abs(pinchDistance - previousPinchDistance) > _this.camera.pinchToPanMaxDistance) {
+                        if (pinchDistance > _this.camera.panMaxFingersDistance || Math.abs(pinchDistance - previousPinchDistance) > _this.camera.pinchToPanMaxDistance) {
                             _this.camera
                                 .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (_this.pinchPrecision *
@@ -35643,7 +35641,8 @@ var BABYLON;
             _this.upperRadiusLimit = null;
             _this.inertialPanningX = 0;
             _this.inertialPanningY = 0;
-            _this.pinchToPanMaxDistance = 2;
+            _this.pinchToPanMaxDistance = 3;
+            _this.panMaxFingersDistance = 100;
             _this.panningDistanceLimit = null;
             _this.panningOriginTarget = BABYLON.Vector3.Zero();
             _this.panningInertia = 0.9;
@@ -36332,6 +36331,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "pinchToPanMaxDistance", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "panMaxFingersDistance", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "panningDistanceLimit", void 0);
@@ -52222,8 +52224,15 @@ var BABYLON;
         }
         OculusTouchController.prototype.initControllerMesh = function (scene, meshLoaded) {
             var _this = this;
-            var meshName = this.hand === 'right' ? 'RightTouch.babylon' : 'LeftTouch.babylon';
-            BABYLON.SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", meshName, scene, function (newMeshes) {
+            var meshName;
+            // Hand
+            if (this.hand === 'left') {
+                meshName = OculusTouchController.MODEL_LEFT_FILENAME;
+            }
+            else {
+                meshName = OculusTouchController.MODEL_RIGHT_FILENAME;
+            }
+            BABYLON.SceneLoader.ImportMesh("", OculusTouchController.MODEL_BASE_URL, meshName, scene, function (newMeshes) {
                 /*
                 Parent Mesh name: oculus_touch_left
                 - body
@@ -52346,6 +52355,9 @@ var BABYLON;
                     return;
             }
         };
+        OculusTouchController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/oculus/';
+        OculusTouchController.MODEL_LEFT_FILENAME = 'left.babylon';
+        OculusTouchController.MODEL_RIGHT_FILENAME = 'right.babylon';
         return OculusTouchController;
     }(BABYLON.WebVRController));
     BABYLON.OculusTouchController = OculusTouchController;
@@ -52365,7 +52377,7 @@ var BABYLON;
         }
         ViveController.prototype.initControllerMesh = function (scene, meshLoaded) {
             var _this = this;
-            BABYLON.SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", "ViveWand.babylon", scene, function (newMeshes) {
+            BABYLON.SceneLoader.ImportMesh("", ViveController.MODEL_BASE_URL, ViveController.MODEL_FILENAME, scene, function (newMeshes) {
                 /*
                 Parent Mesh name: ViveWand
                 - body
@@ -52440,6 +52452,8 @@ var BABYLON;
                     return;
             }
         };
+        ViveController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/vive/';
+        ViveController.MODEL_FILENAME = 'wand.babylon';
         return ViveController;
     }(BABYLON.WebVRController));
     BABYLON.ViveController = ViveController;
@@ -52457,7 +52471,7 @@ var BABYLON;
         }
         GenericController.prototype.initControllerMesh = function (scene, meshLoaded) {
             var _this = this;
-            BABYLON.SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", "genericvrcontroller.babylon", scene, function (newMeshes) {
+            BABYLON.SceneLoader.ImportMesh("", GenericController.MODEL_BASE_URL, GenericController.MODEL_FILENAME, scene, function (newMeshes) {
                 _this._defaultModel = newMeshes[1];
                 if (meshLoaded) {
                     meshLoaded(_this._defaultModel);
@@ -52469,6 +52483,8 @@ var BABYLON;
             console.log("Button id: " + buttonIdx + "state: ");
             console.dir(state);
         };
+        GenericController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/generic/';
+        GenericController.MODEL_FILENAME = 'generic.babylon';
         return GenericController;
     }(BABYLON.WebVRController));
     BABYLON.GenericController = GenericController;
@@ -52620,21 +52636,30 @@ var BABYLON;
         WindowsMotionController.prototype.initControllerMesh = function (scene, meshLoaded, forceDefault) {
             var _this = this;
             if (forceDefault === void 0) { forceDefault = false; }
-            // Determine the device specific folder based on the ID suffix
-            var device = 'default';
-            if (this.id && !forceDefault) {
-                var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
-                device = ((match && match[0]) || device);
-            }
-            // Hand
+            var path;
             var filename;
-            if (this.hand === 'left') {
-                filename = WindowsMotionController.MODEL_LEFT_FILENAME;
+            // Checking if GLB loader is present
+            if (BABYLON.SceneLoader.GetPluginForExtension("glb")) {
+                // Determine the device specific folder based on the ID suffix
+                var device = 'default';
+                if (this.id && !forceDefault) {
+                    var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
+                    device = ((match && match[0]) || device);
+                }
+                // Hand
+                if (this.hand === 'left') {
+                    filename = WindowsMotionController.MODEL_LEFT_FILENAME;
+                }
+                else {
+                    filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
+                }
+                path = WindowsMotionController.MODEL_BASE_URL + device + '/';
             }
             else {
-                filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
+                BABYLON.Tools.Warn("You need to reference GLTF loader to load Windows Motion Controllers model. Falling back to generic models");
+                path = BABYLON.GenericController.MODEL_BASE_URL;
+                filename = BABYLON.GenericController.MODEL_FILENAME;
             }
-            var path = WindowsMotionController.MODEL_BASE_URL + device + '/';
             BABYLON.SceneLoader.ImportMesh("", path, filename, scene, function (meshes) {
                 // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
                 _this._loadedMeshInfo = _this.processModel(scene, meshes);
@@ -52649,7 +52674,9 @@ var BABYLON;
             }, null, function (scene, message) {
                 BABYLON.Tools.Log(message);
                 BABYLON.Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
-                _this.initControllerMesh(scene, meshLoaded, true);
+                if (!forceDefault) {
+                    _this.initControllerMesh(scene, meshLoaded, true);
+                }
             });
         };
         /**
@@ -52683,9 +52710,6 @@ var BABYLON;
                 childMesh.setParent(parentMesh);
                 // Create our mesh info. Note that this method will always return non-null.
                 loadedMeshInfo = this.createMeshInfo(parentMesh);
-                // Apply rotation offsets
-                var rotOffset = WindowsMotionController.ROTATE_OFFSET;
-                childMesh.addRotation(rotOffset[0], rotOffset[1], rotOffset[2]);
             }
             else {
                 BABYLON.Tools.Warn('No node with name ' + WindowsMotionController.MODEL_ROOT_NODE_NAME + ' in model file.');
@@ -52780,8 +52804,6 @@ var BABYLON;
         WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME = 'root';
         WindowsMotionController.GAMEPAD_ID_PREFIX = 'Spatial Controller (Spatial Interaction Source) ';
         WindowsMotionController.GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
-        // Art assets is backward facing
-        WindowsMotionController.ROTATE_OFFSET = [Math.PI, 0, 0]; // x, y, z.
         return WindowsMotionController;
     }(BABYLON.WebVRController));
     BABYLON.WindowsMotionController = WindowsMotionController;
