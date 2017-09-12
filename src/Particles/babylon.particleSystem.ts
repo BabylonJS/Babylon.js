@@ -132,7 +132,7 @@
         public spriteCellHeight = 0;
         private _vertexBufferSize = 11;
 
-        public get IsAnimationSheetEnabled(): Boolean {
+        public get isAnimationSheetEnabled(): Boolean {
             return this._isAnimationSheetEnabled;
         }
         // end of sheet animation

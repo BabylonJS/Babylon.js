@@ -35483,7 +35483,7 @@ var BABYLON;
                             previousPinchDistance = pinchDistance;
                             return;
                         }
-                        if (Math.abs(pinchDistance - previousPinchDistance) > _this.camera.pinchToPanMaxDistance) {
+                        if (pinchDistance > _this.camera.panMaxFingersDistance || Math.abs(pinchDistance - previousPinchDistance) > _this.camera.pinchToPanMaxDistance) {
                             _this.camera
                                 .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (_this.pinchPrecision *
@@ -35643,7 +35643,8 @@ var BABYLON;
             _this.upperRadiusLimit = null;
             _this.inertialPanningX = 0;
             _this.inertialPanningY = 0;
-            _this.pinchToPanMaxDistance = 2;
+            _this.pinchToPanMaxDistance = 3;
+            _this.panMaxFingersDistance = 100;
             _this.panningDistanceLimit = null;
             _this.panningOriginTarget = BABYLON.Vector3.Zero();
             _this.panningInertia = 0.9;
@@ -36332,6 +36333,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "pinchToPanMaxDistance", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "panMaxFingersDistance", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "panningDistanceLimit", void 0);
@@ -40964,7 +40968,7 @@ var BABYLON;
             this.angularSpeed = 0;
             this._currentFrameCounter = 0;
             this.cellIndex = 0;
-            if (!this.particleSystem.IsAnimationSheetEnabled) {
+            if (!this.particleSystem.isAnimationSheetEnabled) {
                 return;
             }
             this.cellIndex = this.particleSystem.startSpriteCellID;
@@ -41171,7 +41175,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ParticleSystem.prototype, "IsAnimationSheetEnabled", {
+        Object.defineProperty(ParticleSystem.prototype, "isAnimationSheetEnabled", {
             get: function () {
                 return this._isAnimationSheetEnabled;
             },
