@@ -14,6 +14,7 @@ module BABYLON.GLTF2 {
         private _disposed: boolean = false;
         private _blockPendingTracking: boolean = false;
         private _nonBlockingData: Array<any>;
+        private _rootMesh: Mesh;
 
         // Observable with boolean indicating success or error.
         private _renderReadyObservable = new Observable<GLTFLoader>();
@@ -181,16 +182,17 @@ module BABYLON.GLTF2 {
         }
 
         private _addRightHandToLeftHandRootTransform(): void {
-            var rootMesh = new Mesh("root", this._babylonScene);
-            rootMesh.scaling = new Vector3(1, 1, -1);
-            rootMesh.rotation.y = Math.PI;
+            this._rootMesh = new Mesh("root", this._babylonScene);
+            this._rootMesh.isVisible = false;
+            this._rootMesh.scaling = new Vector3(1, 1, -1);
+            this._rootMesh.rotation.y = Math.PI;
 
             var nodes = this._gltf.nodes;
             if (nodes) {
                 for (var i = 0; i < nodes.length; i++) {
                     var mesh = nodes[i].babylonMesh;
                     if (mesh && !mesh.parent) {
-                        mesh.parent = rootMesh;
+                        mesh.parent = this._rootMesh;
                     }
                 }
             }
@@ -198,6 +200,10 @@ module BABYLON.GLTF2 {
 
         private _getMeshes(): Mesh[] {
             var meshes = [];
+
+            if (this._rootMesh) {
+                meshes.push(this._rootMesh);
+            }
 
             var nodes = this._gltf.nodes;
             if (nodes) {

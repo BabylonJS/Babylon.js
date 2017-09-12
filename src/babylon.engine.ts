@@ -564,6 +564,11 @@
         private _vrDisplayEnabled;
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
+        private _vrExclusivePointerMode = false;
+
+        public get isInVRExclusivePointerMode(): boolean {
+            return this._vrExclusivePointerMode;
+        }
 
         // Uniform buffers list
         public disableUniformBuffers = false;
@@ -941,10 +946,14 @@
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
                 this._onVRDisplayPointerRestricted = () => {
+                    this._vrExclusivePointerMode = true;
+                    console.log("enter");
                     canvas.requestPointerLock();
                 }
 
                 this._onVRDisplayPointerUnrestricted = () => {
+                    this._vrExclusivePointerMode = false;
+                    console.log("exit");
                     document.exitPointerLock();
                 }
 

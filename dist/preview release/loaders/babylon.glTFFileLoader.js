@@ -2620,21 +2620,25 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._addRightHandToLeftHandRootTransform = function () {
-                var rootMesh = new BABYLON.Mesh("root", this._babylonScene);
-                rootMesh.scaling = new BABYLON.Vector3(1, 1, -1);
-                rootMesh.rotation.y = Math.PI;
+                this._rootMesh = new BABYLON.Mesh("root", this._babylonScene);
+                this._rootMesh.isVisible = false;
+                this._rootMesh.scaling = new BABYLON.Vector3(1, 1, -1);
+                this._rootMesh.rotation.y = Math.PI;
                 var nodes = this._gltf.nodes;
                 if (nodes) {
                     for (var i = 0; i < nodes.length; i++) {
                         var mesh = nodes[i].babylonMesh;
                         if (mesh && !mesh.parent) {
-                            mesh.parent = rootMesh;
+                            mesh.parent = this._rootMesh;
                         }
                     }
                 }
             };
             GLTFLoader.prototype._getMeshes = function () {
                 var meshes = [];
+                if (this._rootMesh) {
+                    meshes.push(this._rootMesh);
+                }
                 var nodes = this._gltf.nodes;
                 if (nodes) {
                     nodes.forEach(function (node) {
@@ -3578,7 +3582,7 @@ var BABYLON;
             GLTFUtils.GetTextureSamplingMode = function (magFilter, minFilter) {
                 // Set defaults if undefined
                 magFilter = magFilter === undefined ? GLTF2.ETextureMagFilter.LINEAR : magFilter;
-                minFilter = minFilter === undefined ? GLTF2.ETextureMinFilter.LINEAR_MIPMAP_NEAREST : minFilter;
+                minFilter = minFilter === undefined ? GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR : minFilter;
                 if (magFilter === GLTF2.ETextureMagFilter.LINEAR) {
                     switch (minFilter) {
                         case GLTF2.ETextureMinFilter.NEAREST: return BABYLON.Texture.LINEAR_NEAREST;

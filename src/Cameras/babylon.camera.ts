@@ -278,11 +278,6 @@
             this._cache.renderHeight = engine.getRenderHeight();
         }
 
-        public _updateFromScene(): void {
-            this.updateCache();
-            this.update();
-        }
-
         // Synchronized
         public _isSynchronized(): boolean {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
