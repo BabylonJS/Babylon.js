@@ -1,22 +1,43 @@
 module BABYLON {
-    export class WindowsMotionController extends GenericController {
 
-        // TODO: Update with final asset URL's
-        private static readonly MODEL_BASE_URL:string = 'http://yoda.blob.core.windows.net/models/';
-        private static readonly MODEL_LEFT_FILENAME:string = 'genericvrcontroller.babylon';
-        private static readonly MODEL_RIGHT_FILENAME:string = 'genericvrcontroller.babylon';
-        private static readonly MODEL_UNIVERSAL_FILENAME:string = 'genericvrcontroller.babylon';
+    class LoadedMeshInfo {
+        public rootNode: AbstractMesh;
+        public pointingPoseNode: AbstractMesh;
+        public holdingPoseNode: AbstractMesh;
+        public buttonMeshes: { [id: string] : IButtonMeshInfo; } = {};
+        public axisMeshes: { [id: number] : IAxisMeshInfo; } = {};
+    }
+
+    interface IMeshInfo {
+        index: number;
+        value: AbstractMesh;
+    }
+
+    interface IButtonMeshInfo extends IMeshInfo {
+        pressed: AbstractMesh;
+        unpressed: AbstractMesh;
+    }
+
+    interface IAxisMeshInfo extends IMeshInfo {
+        min: AbstractMesh;
+        max: AbstractMesh;
+    }
+
+    export class WindowsMotionController extends WebVRController {
+        private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/';
+        private static readonly MODEL_LEFT_FILENAME:string = 'left.glb';
+        private static readonly MODEL_RIGHT_FILENAME:string = 'right.glb';
         private static readonly MODEL_ROOT_NODE_NAME:string = 'RootNode';
         private static readonly GLTF_ROOT_TRANSFORM_NAME:string = 'root';
 
         public static readonly GAMEPAD_ID_PREFIX:string = 'Spatial Controller (Spatial Interaction Source) ';
         private static readonly GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
 
-        // TODO: Why do we need to flip the model around? Art asset or BabylonJS specific?
+        // Art assets is backward facing
         private static readonly ROTATE_OFFSET:number[] = [Math.PI, 0, 0]; // x, y, z.
 
         private _loadedMeshInfo: LoadedMeshInfo;
-        private readonly _mapping : IControllerMappingInfo = {
+        private readonly _mapping = {
             // Semantic button names
             buttons: ['thumbstick', 'trigger', 'grip', 'menu', 'trackpad'],
             // A mapping of the button name to glTF model node name
@@ -56,23 +77,23 @@ module BABYLON {
             this._loadedMeshInfo = null;
         }
         
-        public get onTriggerButtonStateChangedObservable() {
+        public get onTriggerButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onTriggerStateChangedObservable;
         }
 
-        public get onMenuButtonStateChangedObservable() {
+        public get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onSecondaryButtonStateChangedObservable;
         }
 
-        public get onGripButtonStateChangedObservable() {
+        public get onGripButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onMainButtonStateChangedObservable;
         }
 
-        public get onThumbstickButtonStateChangedObservable() {
+        public get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onPadStateChangedObservable;
         }    
 
-        public get onTouchpadButtonStateChangedObservable() {
+        public get onTouchpadButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onTrackpadChangedObservable;
         }
         
@@ -100,7 +121,9 @@ module BABYLON {
          */
         protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             let buttonName = this._mapping.buttons[buttonIdx];
-            if (!buttonName) return; 
+            if (!buttonName) {
+                return; 
+            }
 
             // Only emit events for buttons that we know how to map from index to name
             let observable = this[this._mapping.buttonObservableNames[buttonName]];
@@ -114,7 +137,9 @@ module BABYLON {
         protected lerpButtonTransform(buttonName: string, buttonValue: number) {
             
             // If there is no loaded mesh, there is nothing to transform.
-            if (!this._loadedMeshInfo) return;
+            if (!this._loadedMeshInfo) {
+                return;
+            }
 
             var meshInfo = this._loadedMeshInfo.buttonMeshes[buttonName];
             BABYLON.Quaternion.SlerpToRef(
@@ -131,7 +156,9 @@ module BABYLON {
         
         protected lerpAxisTransform(axis:number, axisValue: number) {
             let meshInfo = this._loadedMeshInfo.axisMeshes[axis];
-            if (!meshInfo) return;
+            if (!meshInfo) {
+                return;
+            }
 
             // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
             let lerpValue = axisValue * 0.5 + 0.5;
@@ -154,39 +181,40 @@ module BABYLON {
          */
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
             // Determine the device specific folder based on the ID suffix
-            var device = 'default';
+            let device = 'default';
             if (this.id) {
-                var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
+                let match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
                 device = ((match && match[0]) || device);
             }
 
             // Hand
-            var filename;
+            let filename: string;
             if (this.hand === 'left') {
                 filename = WindowsMotionController.MODEL_LEFT_FILENAME;
             }
-            else if (this.hand === 'right') {
+            else { // Right is the default if no hand is specified
                 filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
-            }
-            else {
-                filename = WindowsMotionController.MODEL_UNIVERSAL_FILENAME;
             }
 
             let path = WindowsMotionController.MODEL_BASE_URL + device + '/';
 
             SceneLoader.ImportMesh("", path, filename, scene, (meshes: AbstractMesh[]) => {
-                    // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
-                    this._loadedMeshInfo = this.processModel(scene, meshes);
+                // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
+                this._loadedMeshInfo = this.processModel(scene, meshes);
 
-                    this.attachToMesh(this._loadedMeshInfo.rootNode);
-                    if (meshLoaded) {
-                        meshLoaded(this._loadedMeshInfo.rootNode);
-                    }
-                }, 
-                null, 
-                (scene: Scene, message: string) => {
-                    Tools.Log(message);
-                    Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
+                if (!this._loadedMeshInfo) {
+                    return;
+                }
+
+                this._defaultModel = this._loadedMeshInfo.rootNode;
+                this.attachToMesh(this._defaultModel);
+                
+                if (meshLoaded) {
+                    meshLoaded(this._defaultModel);
+                }
+            }, null, (scene: Scene, message: string) => {
+                Tools.Log(message);
+                Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
             });
         }
 
@@ -199,7 +227,6 @@ module BABYLON {
          * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
          */
         private processModel(scene: Scene, meshes: AbstractMesh[]) : LoadedMeshInfo {
-
             let loadedMeshInfo = null;
 
             // Create a new mesh to contain the glTF hierarchy
@@ -240,7 +267,6 @@ module BABYLON {
         }
         
         private createMeshInfo(rootNode: AbstractMesh) : LoadedMeshInfo {
-
             let loadedMeshInfo = new LoadedMeshInfo();
             var i;
             loadedMeshInfo.rootNode = rootNode;
@@ -324,40 +350,11 @@ module BABYLON {
                 return node.getChildMeshes(true, n => n.name == name)[0];
             }
         }
-    }
 
-    class LoadedMeshInfo {
-        public rootNode: AbstractMesh;
-        public pointingPoseNode: AbstractMesh;
-        public holdingPoseNode: AbstractMesh;
-        public buttonMeshes: { [id: string] : IButtonMeshInfo; } = {};
-        public axisMeshes: { [id: number] : IAxisMeshInfo; } = {};
-    }
+        public dispose(): void {
+            super.dispose();
 
-    interface IMeshInfo {
-        index: number;
-        value: AbstractMesh;
-    }
-
-    interface IButtonMeshInfo extends IMeshInfo {
-        pressed: AbstractMesh;
-        unpressed: AbstractMesh;
-    }
-
-    interface IAxisMeshInfo extends IMeshInfo {
-        min: AbstractMesh;
-        max: AbstractMesh;
-    }
-
-    interface IControllerMappingInfo {
-        buttons: string[];
-        buttonMeshNames: { [id: string ] : string };
-        buttonObservableNames: { [id: string ] : string };
-        axisMeshNames: string[];
-    }
-
-    interface IControllerUrl {
-        path: string;
-        name: string;
+            this.onTrackpadChangedObservable.clear();
+        }
     }
 }

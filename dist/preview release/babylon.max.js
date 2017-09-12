@@ -52122,6 +52122,7 @@ var BABYLON;
         __extends(WebVRController, _super);
         function WebVRController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
+            // Observables
             _this.onTriggerStateChangedObservable = new BABYLON.Observable();
             _this.onMainButtonStateChangedObservable = new BABYLON.Observable();
             _this.onSecondaryButtonStateChangedObservable = new BABYLON.Observable();
@@ -52193,6 +52194,14 @@ var BABYLON;
             this._changes.valueChanged = newState.value !== currentState.value;
             this._changes.changed = this._changes.pressChanged || this._changes.touchChanged || this._changes.valueChanged;
             return this._changes;
+        };
+        WebVRController.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            this.onTriggerStateChangedObservable.clear();
+            this.onMainButtonStateChangedObservable.clear();
+            this.onSecondaryButtonStateChangedObservable.clear();
+            this.onPadStateChangedObservable.clear();
+            this.onPadValuesChangedObservable.clear();
         };
         return WebVRController;
     }(BABYLON.PoseEnabledController));
@@ -52472,6 +52481,13 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var LoadedMeshInfo = (function () {
+        function LoadedMeshInfo() {
+            this.buttonMeshes = {};
+            this.axisMeshes = {};
+        }
+        return LoadedMeshInfo;
+    }());
     var WindowsMotionController = (function (_super) {
         __extends(WindowsMotionController, _super);
         function WindowsMotionController(vrGamepad) {
@@ -52509,7 +52525,6 @@ var BABYLON;
             };
             _this.onTrackpadChangedObservable = new BABYLON.Observable();
             _this.controllerType = BABYLON.PoseEnabledControllerType.WINDOWS;
-            _this._parentMeshName = _this.id + " " + _this.hand;
             _this._loadedMeshInfo = null;
             return _this;
         }
@@ -52570,8 +52585,9 @@ var BABYLON;
          */
         WindowsMotionController.prototype.handleButtonChange = function (buttonIdx, state, changes) {
             var buttonName = this._mapping.buttons[buttonIdx];
-            if (!buttonName)
+            if (!buttonName) {
                 return;
+            }
             // Only emit events for buttons that we know how to map from index to name
             var observable = this[this._mapping.buttonObservableNames[buttonName]];
             if (observable) {
@@ -52581,16 +52597,18 @@ var BABYLON;
         };
         WindowsMotionController.prototype.lerpButtonTransform = function (buttonName, buttonValue) {
             // If there is no loaded mesh, there is nothing to transform.
-            if (!this._loadedMeshInfo)
+            if (!this._loadedMeshInfo) {
                 return;
+            }
             var meshInfo = this._loadedMeshInfo.buttonMeshes[buttonName];
             BABYLON.Quaternion.SlerpToRef(meshInfo.unpressed.rotationQuaternion, meshInfo.pressed.rotationQuaternion, buttonValue, meshInfo.value.rotationQuaternion);
             BABYLON.Vector3.LerpToRef(meshInfo.unpressed.position, meshInfo.pressed.position, buttonValue, meshInfo.value.position);
         };
         WindowsMotionController.prototype.lerpAxisTransform = function (axis, axisValue) {
             var meshInfo = this._loadedMeshInfo.axisMeshes[axis];
-            if (!meshInfo)
+            if (!meshInfo) {
                 return;
+            }
             // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
             var lerpValue = axisValue * 0.5 + 0.5;
             BABYLON.Quaternion.SlerpToRef(meshInfo.min.rotationQuaternion, meshInfo.max.rotationQuaternion, lerpValue, meshInfo.value.rotationQuaternion);
@@ -52603,73 +52621,35 @@ var BABYLON;
          */
         WindowsMotionController.prototype.initControllerMesh = function (scene, meshLoaded) {
             var _this = this;
-            var parentMesh = scene.getMeshByName(this._parentMeshName);
-            if (parentMesh) {
-                // A mesh with the name we are expecting already exists in the scene, use that.
-                if (!this._loadedMeshInfo) {
-                    // Create our mesh info. Note that this method will always return non-null.
-                    this._loadedMeshInfo = this.createMeshInfo(parentMesh);
-                    this.attachToMesh(this._loadedMeshInfo.rootNode);
-                }
-                if (meshLoaded)
-                    meshLoaded(this._loadedMeshInfo.rootNode);
+            // Determine the device specific folder based on the ID suffix
+            var device = 'default';
+            if (this.id) {
+                var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
+                device = ((match && match[0]) || device);
+            }
+            // Hand
+            var filename;
+            if (this.hand === 'left') {
+                filename = WindowsMotionController.MODEL_LEFT_FILENAME;
             }
             else {
-                // Make a call to load a mesh from CDN
-                this.loadModel(scene)
-                    .then(function (mesh) {
-                    _this.attachToMesh(mesh);
-                    if (meshLoaded)
-                        meshLoaded(mesh);
-                })
-                    .catch(function (message) {
-                    BABYLON.Tools.Warn(message);
-                    // We failed to load our custom models; fall back and attempt to the generic model.
-                    _super.prototype.initControllerMesh.call(_this, scene, meshLoaded);
-                });
+                filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
             }
-        };
-        /**
-         * Starts a load request to get model data from the remote server, then parse it to ensure a valid format.
-         * If the first attempt fails, a second attempt will be made to retrieve a fallback model which is (non specific to the device ID suffix)
-         *
-         * @param scene in which to insert new Meshes
-         * @return A promise that resolves with the mesh that represents the loaded controller model, or rejects with an error message.
-         */
-        WindowsMotionController.prototype.loadModel = function (scene) {
-            var _this = this;
-            var self = this;
-            return new Promise(function (resolve, reject) {
-                // First attempt, use ID Suffix specific URL
-                attemptLoad(_this.createControllerModelUrl(false))
-                    .then(resolve)
-                    .catch(function (message) {
-                    BABYLON.Tools.Warn(message);
-                    // Second attempt, use fallback URL
-                    attemptLoad(_this.createControllerModelUrl(true))
-                        .then(resolve)
-                        .catch(reject);
-                });
+            var path = WindowsMotionController.MODEL_BASE_URL + device + '/';
+            BABYLON.SceneLoader.ImportMesh("", path, filename, scene, function (meshes) {
+                // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
+                _this._loadedMeshInfo = _this.processModel(scene, meshes);
+                if (!_this._loadedMeshInfo) {
+                    return;
+                }
+                _this.attachToMesh(_this._loadedMeshInfo.rootNode);
+                if (meshLoaded) {
+                    meshLoaded(_this._loadedMeshInfo.rootNode);
+                }
+            }, null, function (scene, message) {
+                BABYLON.Tools.Log(message);
+                BABYLON.Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
             });
-            function attemptLoad(controllerSrc) {
-                var _this = this;
-                return new Promise(function (resolve, reject) {
-                    BABYLON.SceneLoader.ImportMesh("" /* all meshes */, controllerSrc.path, controllerSrc.name, scene, function (meshes) {
-                        // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
-                        _this._loadedMeshInfo = self.processModel(scene, meshes);
-                        if (_this._loadedMeshInfo) {
-                            // Mesh data processed successfully!
-                            resolve(_this._loadedMeshInfo.rootNode);
-                        }
-                        else {
-                            reject('Failed to parse controller model for device');
-                        }
-                    }, null, function (scene, message) {
-                        BABYLON.Tools.Log(message);
-                        reject('Failed to retrieve controller model from the remote server: ' + controllerSrc.path + controllerSrc.name);
-                    });
-                });
-            }
         };
         /**
          * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
@@ -52682,7 +52662,7 @@ var BABYLON;
         WindowsMotionController.prototype.processModel = function (scene, meshes) {
             var loadedMeshInfo = null;
             // Create a new mesh to contain the glTF hierarchy
-            var parentMesh = new BABYLON.Mesh(this._parentMeshName, scene);
+            var parentMesh = new BABYLON.Mesh(this.id + " " + this.hand, scene);
             // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
             var childMesh = null;
             for (var i = 0; i < meshes.length; i++) {
@@ -52710,34 +52690,6 @@ var BABYLON;
                 BABYLON.Tools.Warn('No node with name ' + WindowsMotionController.MODEL_ROOT_NODE_NAME + ' in model file.');
             }
             return loadedMeshInfo;
-        };
-        /**
-         * Helper function that constructs a URL from the controller ID suffix, for future proofed
-         * art assets.
-         */
-        WindowsMotionController.prototype.createControllerModelUrl = function (forceDefault) {
-            // Determine the device specific folder based on the ID suffix
-            var device = 'default';
-            if (!forceDefault) {
-                if (this.id) {
-                    var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
-                    device = ((match && match[0]) || device);
-                }
-            }
-            // Hand
-            var filename;
-            if (this.hand === 'left')
-                filename = WindowsMotionController.MODEL_LEFT_FILENAME;
-            else if (this.hand === 'right')
-                filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
-            else
-                filename = WindowsMotionController.MODEL_UNIVERSAL_FILENAME;
-            // Final url
-            return {
-                //                path: WindowsMotionController.MODEL_BASE_URL + device + '/',
-                path: WindowsMotionController.MODEL_BASE_URL,
-                name: filename
-            };
         };
         WindowsMotionController.prototype.createMeshInfo = function (rootNode) {
             var loadedMeshInfo = new LoadedMeshInfo();
@@ -52816,27 +52768,22 @@ var BABYLON;
                 return node.getChildMeshes(true, function (n) { return n.name == name; })[0];
             }
         };
-        // TODO: Update with final asset URL's
-        WindowsMotionController.MODEL_BASE_URL = 'http://yoda.blob.core.windows.net/models/';
-        WindowsMotionController.MODEL_LEFT_FILENAME = 'genericvrcontroller.babylon';
-        WindowsMotionController.MODEL_RIGHT_FILENAME = 'genericvrcontroller.babylon';
-        WindowsMotionController.MODEL_UNIVERSAL_FILENAME = 'genericvrcontroller.babylon';
+        WindowsMotionController.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            this.onTrackpadChangedObservable.clear();
+        };
+        WindowsMotionController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/';
+        WindowsMotionController.MODEL_LEFT_FILENAME = 'left.glb';
+        WindowsMotionController.MODEL_RIGHT_FILENAME = 'right.glb';
         WindowsMotionController.MODEL_ROOT_NODE_NAME = 'RootNode';
         WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME = 'root';
         WindowsMotionController.GAMEPAD_ID_PREFIX = 'Spatial Controller (Spatial Interaction Source) ';
         WindowsMotionController.GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
-        // TODO: Why do we need to flip the model around? Art asset or BabylonJS specific?
+        // Art assets is backward facing
         WindowsMotionController.ROTATE_OFFSET = [Math.PI, 0, 0]; // x, y, z.
         return WindowsMotionController;
-    }(BABYLON.GenericController));
+    }(BABYLON.WebVRController));
     BABYLON.WindowsMotionController = WindowsMotionController;
-    var LoadedMeshInfo = (function () {
-        function LoadedMeshInfo() {
-            this.buttonMeshes = {};
-            this.axisMeshes = {};
-        }
-        return LoadedMeshInfo;
-    }());
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.windowsMotionController.js.map

@@ -4,12 +4,10 @@ module BABYLON {
 
         protected _defaultModel: AbstractMesh;
 
+        // Observables
         public onTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
-
         public onMainButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
-
         public onSecondaryButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
-
         public onPadStateChangedObservable = new Observable<ExtendedGamepadButton>();
         public onPadValuesChangedObservable = new Observable<StickValues>();
 
@@ -93,6 +91,16 @@ module BABYLON {
             this._changes.valueChanged = newState.value !== currentState.value;
             this._changes.changed = this._changes.pressChanged || this._changes.touchChanged || this._changes.valueChanged;
             return this._changes;
+        }
+
+        public dispose(): void {
+            super.dispose();
+
+            this.onTriggerStateChangedObservable.clear();
+            this.onMainButtonStateChangedObservable.clear();
+            this.onSecondaryButtonStateChangedObservable.clear();
+            this.onPadStateChangedObservable.clear();
+            this.onPadValuesChangedObservable.clear();
         }
     }
         
