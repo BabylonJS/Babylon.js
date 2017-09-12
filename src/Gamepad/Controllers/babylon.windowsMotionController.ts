@@ -26,7 +26,6 @@ module BABYLON {
         private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/microsoft/';
         private static readonly MODEL_LEFT_FILENAME:string = 'left.glb';
         private static readonly MODEL_RIGHT_FILENAME:string = 'right.glb';
-        private static readonly GLTF_ROOT_TRANSFORM_NAME:string = 'root';
 
         public static readonly GAMEPAD_ID_PREFIX:string = 'Spatial Controller (Spatial Interaction Source) ';
         private static readonly GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
@@ -247,11 +246,7 @@ module BABYLON {
             for (let i = 0; i < meshes.length; i++) {
                 let mesh = meshes[i];
 
-                // There may be a parent mesh to perform the RH to LH matrix transform.
-                if (mesh.parent && mesh.parent.name === WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME)
-                    mesh = <AbstractMesh>mesh.parent;
-
-                if (!mesh.parent || mesh.id === WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME) {
+                if (!mesh.parent) {
                     // Exclude controller meshes from picking results
                     mesh.isPickable = false;
                     
