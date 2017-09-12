@@ -24,7 +24,7 @@ module BABYLON {
     }
 
     export class WindowsMotionController extends WebVRController {
-        private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/';
+        private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/microsoft/';
         private static readonly MODEL_LEFT_FILENAME:string = 'left.glb';
         private static readonly MODEL_RIGHT_FILENAME:string = 'right.glb';
         private static readonly MODEL_ROOT_NODE_NAME:string = 'RootNode';
@@ -180,10 +180,10 @@ module BABYLON {
          * @param scene scene in which to add meshes
          * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
          */
-        public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
+        public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault = false) {
             // Determine the device specific folder based on the ID suffix
             let device = 'default';
-            if (this.id) {
+            if (this.id && !forceDefault) {
                 let match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
                 device = ((match && match[0]) || device);
             }
@@ -216,6 +216,7 @@ module BABYLON {
             }, null, (scene: Scene, message: string) => {
                 Tools.Log(message);
                 Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
+                this.initControllerMesh(scene, meshLoaded, true);
             });
         }
 
