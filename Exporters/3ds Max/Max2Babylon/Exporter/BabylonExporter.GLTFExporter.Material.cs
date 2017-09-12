@@ -147,39 +147,35 @@ namespace Max2Babylon
 
                 if (babylonStandardMaterial.diffuseTexture != null)
                 {
-                    Func<string, Bitmap> loadTexture = delegate (string textureName)
+                    Func<string, Bitmap> loadTextureFromOutput = delegate (string textureName)
                     {
-                        var pathDiffuse = Path.Combine(gltf.OutputPath, textureName);
-                        if (File.Exists(pathDiffuse))
-                        {
-                            return new Bitmap(pathDiffuse);
-                        }
-                        else
-                        {
-                            RaiseWarning(string.Format("GLTFExporter.Material | Texture {0} not found.", textureName), 2);
-                            return null;
-                        }
+                        return LoadTexture(Path.Combine(gltf.OutputPath, textureName));
                     };
 
-                    Bitmap diffuseBitmap = loadTexture(babylonStandardMaterial.diffuseTexture.name);
+                    Bitmap diffuseBitmap = loadTextureFromOutput(babylonStandardMaterial.diffuseTexture.name);
 
                     if (diffuseBitmap != null)
                     {
                         Bitmap specularBitmap = null;
                         if (babylonStandardMaterial.specularTexture != null)
                         {
-                            specularBitmap = loadTexture(babylonStandardMaterial.specularTexture.name);
+                            specularBitmap = loadTextureFromOutput(babylonStandardMaterial.specularTexture.name);
                         }
 
                         Bitmap opacityBitmap = null;
                         if (babylonStandardMaterial.diffuseTexture.hasAlpha == false && babylonStandardMaterial.opacityTexture != null)
                         {
-                            opacityBitmap = loadTexture(babylonStandardMaterial.opacityTexture.name);
+                            opacityBitmap = loadTextureFromOutput(babylonStandardMaterial.opacityTexture.name);
                         }
 
-                        // Retreive dimension from diffuse map
-                        var width = diffuseBitmap.Width;
-                        var height = diffuseBitmap.Height;
+                        // Retreive dimensions
+                        int width = 0;
+                        int height = 0;
+                        var haveSameDimensions = _getMinimalBitmapDimensions(out width, out height, diffuseBitmap, specularBitmap, opacityBitmap);
+                        if (!haveSameDimensions)
+                        {
+                            RaiseWarning("Diffuse, specular and opacity maps should have same dimensions", 2);
+                        }
 
                         // Create base color and metallic+roughness maps
                         Bitmap baseColorBitmap = new Bitmap(width, height);
