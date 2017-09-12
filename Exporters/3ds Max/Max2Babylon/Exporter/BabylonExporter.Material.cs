@@ -216,6 +216,7 @@ namespace Max2Babylon
 
                 babylonMaterial.alpha = 1.0f - materialNode.MaxMaterial.GetXParency(0, false);
 
+                // TODO - Add alpha
                 babylonMaterial.baseColor = materialNode.MaxMaterial.GetDiffuse(0, false).ToArray();
 
                 babylonMaterial.metallic = propertyContainer.GetFloatProperty(6);
@@ -242,6 +243,7 @@ namespace Max2Babylon
 
                 // --- Textures ---
 
+                // TODO - Add alpha
                 babylonMaterial.baseTexture = ExportPBRTexture(materialNode, 1, babylonScene);
 
                 babylonMaterial.metallicRoughnessTexture = ExportMetallicRoughnessTexture(materialNode, babylonMaterial.metallic, babylonMaterial.roughness, babylonScene, name);
