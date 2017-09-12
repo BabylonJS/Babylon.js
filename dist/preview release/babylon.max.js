@@ -15227,10 +15227,6 @@ var BABYLON;
             this._cache.renderWidth = engine.getRenderWidth();
             this._cache.renderHeight = engine.getRenderHeight();
         };
-        Camera.prototype._updateFromScene = function () {
-            this.updateCache();
-            this.update();
-        };
         // Synchronized
         Camera.prototype._isSynchronized = function () {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
@@ -18818,6 +18814,7 @@ var BABYLON;
             // Camera
             this.resetCachedMaterial();
             this._renderId++;
+            this.activeCamera.update();
             this.updateTransformMatrix();
             if (camera._alternateCamera) {
                 this.updateAlternateTransformMatrix(camera._alternateCamera);
@@ -18953,7 +18950,7 @@ var BABYLON;
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
             // Update camera
-            this.activeCamera._updateFromScene();
+            this.activeCamera.updateCache();
             // Reset some special arrays
             this._renderTargets.reset();
             this._alternateRendering = false;
@@ -18965,14 +18962,15 @@ var BABYLON;
                 this._renderForCamera(camera);
                 return;
             }
+            // Update camera
+            this.activeCamera.update();
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
                 this._renderForCamera(camera._rigCameras[index]);
             }
             this.activeCamera = camera;
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-            // Update camera
-            this.activeCamera._updateFromScene();
+            this.activeCamera.updateCache();
         };
         Scene.prototype._checkIntersections = function () {
             for (var index = 0; index < this._meshesForIntersections.length; index++) {
@@ -52642,9 +52640,10 @@ var BABYLON;
                 if (!_this._loadedMeshInfo) {
                     return;
                 }
-                _this.attachToMesh(_this._loadedMeshInfo.rootNode);
+                _this._defaultModel = _this._loadedMeshInfo.rootNode;
+                _this.attachToMesh(_this._defaultModel);
                 if (meshLoaded) {
-                    meshLoaded(_this._loadedMeshInfo.rootNode);
+                    meshLoaded(_this._defaultModel);
                 }
             }, null, function (scene, message) {
                 BABYLON.Tools.Log(message);

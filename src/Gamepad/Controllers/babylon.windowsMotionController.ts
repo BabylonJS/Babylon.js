@@ -40,6 +40,7 @@ module BABYLON {
         private readonly _mapping = {
             // Semantic button names
             buttons: ['thumbstick', 'trigger', 'grip', 'menu', 'trackpad'],
+            
             // A mapping of the button name to glTF model node name
             // that should be transformed by button value.
             buttonMeshNames: {
@@ -208,7 +209,7 @@ module BABYLON {
 
                 this._defaultModel = this._loadedMeshInfo.rootNode;
                 this.attachToMesh(this._defaultModel);
-                
+
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
                 }
