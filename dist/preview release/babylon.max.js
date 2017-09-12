@@ -13262,6 +13262,25 @@ var BABYLON;
             this._isDirty = true;
             return this;
         };
+        AbstractMesh.prototype.getHierarchyBoundingVectors = function () {
+            this.computeWorldMatrix();
+            var min = this.getBoundingInfo().boundingBox.minimumWorld;
+            var max = this.getBoundingInfo().boundingBox.maximumWorld;
+            var descendants = this.getDescendants(false, function (node) { return node.subMeshes; });
+            for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
+                var descendant = descendants_1[_i];
+                var childMesh = descendant;
+                childMesh.computeWorldMatrix();
+                var minBox = childMesh.getBoundingInfo().boundingBox.minimumWorld;
+                var maxBox = childMesh.getBoundingInfo().boundingBox.maximumWorld;
+                BABYLON.Tools.CheckExtends(minBox, min, max);
+                BABYLON.Tools.CheckExtends(maxBox, min, max);
+            }
+            return {
+                min: min,
+                max: max
+            };
+        };
         /**
          * Updates the mesh BoundingInfo object and all its children BoundingInfo objects also.
          * Returns the AbstractMesh.
@@ -52538,7 +52557,8 @@ var BABYLON;
                     'THUMBSTICK_Y',
                     'TOUCHPAD_TOUCH_X',
                     'TOUCHPAD_TOUCH_Y'
-                ]
+                ],
+                pointingPoseMeshName: 'POINTING_POSE'
             };
             _this.onTrackpadChangedObservable = new BABYLON.Observable();
             _this.controllerType = BABYLON.PoseEnabledControllerType.WINDOWS;
@@ -52698,13 +52718,10 @@ var BABYLON;
             var childMesh = null;
             for (var i = 0; i < meshes.length; i++) {
                 var mesh = meshes[i];
-                if (mesh.id === WindowsMotionController.MODEL_ROOT_NODE_NAME) {
-                    // There may be a parent mesh to perform the RH to LH matrix transform.
+                if (!mesh.parent) {
                     // Exclude controller meshes from picking results
                     mesh.isPickable = false;
                     // Handle root node, attach to the new parentMesh
-                    if (mesh.parent && mesh.parent.name === WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME)
-                        mesh = mesh.parent;
                     childMesh = mesh;
                     break;
                 }
@@ -52715,7 +52732,7 @@ var BABYLON;
                 loadedMeshInfo = this.createMeshInfo(parentMesh);
             }
             else {
-                BABYLON.Tools.Warn('No node with name ' + WindowsMotionController.MODEL_ROOT_NODE_NAME + ' in model file.');
+                BABYLON.Tools.Warn('Could not find root node in model file.');
             }
             return loadedMeshInfo;
         };
@@ -52786,6 +52803,11 @@ var BABYLON;
                         ')');
                 }
             }
+            // Pointing Ray
+            loadedMeshInfo.pointingPoseNode = getChildByName(rootNode, this._mapping.pointingPoseMeshName);
+            if (!loadedMeshInfo.pointingPoseNode) {
+                BABYLON.Tools.Warn('Missing pointing pose mesh with name: ' + this._mapping.pointingPoseMeshName);
+            }
             return loadedMeshInfo;
             // Look through all children recursively. This will return null if no mesh exists with the given name.
             function getChildByName(node, name) {
@@ -52796,6 +52818,18 @@ var BABYLON;
                 return node.getChildMeshes(true, function (n) { return n.name == name; })[0];
             }
         };
+        WindowsMotionController.prototype.getForwardRay = function (length) {
+            if (length === void 0) { length = 100; }
+            if (!(this._loadedMeshInfo && this._loadedMeshInfo.pointingPoseNode)) {
+                return _super.prototype.getForwardRay.call(this, length);
+            }
+            var m = this._loadedMeshInfo.pointingPoseNode.getWorldMatrix();
+            var origin = m.getTranslation();
+            var forward = new BABYLON.Vector3(0, 0, -1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            return new BABYLON.Ray(origin, direction, length);
+        };
         WindowsMotionController.prototype.dispose = function () {
             _super.prototype.dispose.call(this);
             this.onTrackpadChangedObservable.clear();
@@ -52803,8 +52837,6 @@ var BABYLON;
         WindowsMotionController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/microsoft/';
         WindowsMotionController.MODEL_LEFT_FILENAME = 'left.glb';
         WindowsMotionController.MODEL_RIGHT_FILENAME = 'right.glb';
-        WindowsMotionController.MODEL_ROOT_NODE_NAME = 'RootNode';
-        WindowsMotionController.GLTF_ROOT_TRANSFORM_NAME = 'root';
         WindowsMotionController.GAMEPAD_ID_PREFIX = 'Spatial Controller (Spatial Interaction Source) ';
         WindowsMotionController.GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
         return WindowsMotionController;

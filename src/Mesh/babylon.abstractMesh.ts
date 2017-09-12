@@ -1155,6 +1155,30 @@
             return this;
         }
 
+        public getHierarchyBoundingVectors(): { min: Vector3, max: Vector3 }{
+            this.computeWorldMatrix();
+            let min = this.getBoundingInfo().boundingBox.minimumWorld;
+            let max = this.getBoundingInfo().boundingBox.maximumWorld;
+
+            let descendants = this.getDescendants(false, (node) => (<any>node).subMeshes);
+
+            for (var descendant of descendants) {
+                let childMesh = <AbstractMesh>descendant;
+
+                childMesh.computeWorldMatrix();
+                var minBox = childMesh.getBoundingInfo().boundingBox.minimumWorld;
+                var maxBox = childMesh.getBoundingInfo().boundingBox.maximumWorld;
+
+                Tools.CheckExtends(minBox, min, max);
+                Tools.CheckExtends(maxBox, min, max);
+            }
+
+            return {
+                min: min,
+                max: max
+            }
+        }
+
         /**
          * Updates the mesh BoundingInfo object and all its children BoundingInfo objects also.  
          * Returns the AbstractMesh.  
