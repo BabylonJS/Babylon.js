@@ -23,7 +23,7 @@ module BABYLON {
     }
 
     export class WindowsMotionController extends WebVRController {
-        private static readonly MODEL_BASE_URL:string = '/assets/meshes/controllers/microsoft/';
+        private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/microsoft/';
         private static readonly MODEL_LEFT_FILENAME:string = 'left.glb';
         private static readonly MODEL_RIGHT_FILENAME:string = 'right.glb';
         private static readonly GLTF_ROOT_TRANSFORM_NAME:string = 'root';
