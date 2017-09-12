@@ -33,9 +33,6 @@ module BABYLON {
         public static readonly GAMEPAD_ID_PREFIX:string = 'Spatial Controller (Spatial Interaction Source) ';
         private static readonly GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
 
-        // Art assets is backward facing
-        private static readonly ROTATE_OFFSET:number[] = [Math.PI, 0, 0]; // x, y, z.
-
         private _loadedMeshInfo: LoadedMeshInfo;
         private readonly _mapping = {
             // Semantic button names
@@ -181,23 +178,33 @@ module BABYLON {
          * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
          */
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault = false) {
-            // Determine the device specific folder based on the ID suffix
-            let device = 'default';
-            if (this.id && !forceDefault) {
-                let match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
-                device = ((match && match[0]) || device);
-            }
-
-            // Hand
+            let path: string;        
             let filename: string;
-            if (this.hand === 'left') {
-                filename = WindowsMotionController.MODEL_LEFT_FILENAME;
-            }
-            else { // Right is the default if no hand is specified
-                filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
+
+            // Checking if GLB loader is present
+            if (SceneLoader.GetPluginForExtension("glb")) {
+                // Determine the device specific folder based on the ID suffix
+                let device = 'default';
+                if (this.id && !forceDefault) {
+                    let match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
+                    device = ((match && match[0]) || device);
+                }
+
+                // Hand
+                if (this.hand === 'left') {
+                    filename = WindowsMotionController.MODEL_LEFT_FILENAME;
+                }
+                else { // Right is the default if no hand is specified
+                    filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
+                }
+
+                path = WindowsMotionController.MODEL_BASE_URL + device + '/';
+            } else {
+                Tools.Warn("You need to reference GLTF loader to load Windows Motion Controllers model. Falling back to generic models");
+                path = GenericController.MODEL_BASE_URL;
+                filename = GenericController.MODEL_FILENAME;
             }
 
-            let path = WindowsMotionController.MODEL_BASE_URL + device + '/';
 
             SceneLoader.ImportMesh("", path, filename, scene, (meshes: AbstractMesh[]) => {
                 // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
@@ -216,7 +223,9 @@ module BABYLON {
             }, null, (scene: Scene, message: string) => {
                 Tools.Log(message);
                 Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
-                this.initControllerMesh(scene, meshLoaded, true);
+                if (!forceDefault) {
+                    this.initControllerMesh(scene, meshLoaded, true);
+                }
             });
         }
 
@@ -257,10 +266,6 @@ module BABYLON {
 
                 // Create our mesh info. Note that this method will always return non-null.
                 loadedMeshInfo = this.createMeshInfo(parentMesh);
-
-                // Apply rotation offsets
-                var rotOffset = WindowsMotionController.ROTATE_OFFSET;
-                childMesh.addRotation(rotOffset[0], rotOffset[1], rotOffset[2]);
             } else {
                 Tools.Warn('No node with name ' + WindowsMotionController.MODEL_ROOT_NODE_NAME +' in model file.');
             }

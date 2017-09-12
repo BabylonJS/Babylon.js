@@ -947,13 +947,11 @@
 
                 this._onVRDisplayPointerRestricted = () => {
                     this._vrExclusivePointerMode = true;
-                    console.log("enter");
                     canvas.requestPointerLock();
                 }
 
                 this._onVRDisplayPointerUnrestricted = () => {
                     this._vrExclusivePointerMode = false;
-                    console.log("exit");
                     document.exitPointerLock();
                 }
 
