@@ -3004,10 +3004,7 @@
 
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
-
-            // Update camera
-            this.activeCamera.updateCache();
-            
+           
             // Reset some special arrays
             this._renderTargets.reset();
 
@@ -3034,7 +3031,6 @@
 
             this.activeCamera = camera;
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-            this.activeCamera.updateCache();
         }
 
         private _checkIntersections(): void {
