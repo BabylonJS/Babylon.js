@@ -13,6 +13,52 @@ namespace Max2Babylon
 {
     public static class Tools
     {
+        // -------------------------
+        // -- IIPropertyContainer --
+        // -------------------------
+
+        public static string GetStringProperty(this IIPropertyContainer propertyContainer, int indexProperty)
+        {
+            string value = "";
+            propertyContainer.GetProperty(indexProperty).GetPropertyValue(ref value, 0);
+            return value;
+        }
+
+        public static int GetIntProperty(this IIPropertyContainer propertyContainer, int indexProperty)
+        {
+            int value = 0;
+            propertyContainer.GetProperty(indexProperty).GetPropertyValue(ref value, 0);
+            return value;
+        }
+
+        public static bool GetBoolProperty(this IIPropertyContainer propertyContainer, int indexProperty)
+        {
+            return propertyContainer.GetIntProperty(indexProperty) == 1;
+        }
+
+        public static float GetFloatProperty(this IIPropertyContainer propertyContainer, int indexProperty)
+        {
+            float value = 0.0f;
+            propertyContainer.GetProperty(indexProperty).GetPropertyValue(ref value, 0, true);
+            return value;
+        }
+
+        public static IPoint3 GetPoint3Property(this IIPropertyContainer propertyContainer, int indexProperty)
+        {
+            IPoint3 value = Loader.Global.Point3.Create(0, 0, 0);
+            propertyContainer.GetProperty(indexProperty).GetPropertyValue(value, 0);
+            return value;
+        }
+
+        public static IPoint4 GetPoint4Property(this IIPropertyContainer propertyContainer, int indexProperty)
+        {
+            IPoint4 value = Loader.Global.Point4.Create(0, 0, 0, 0);
+            propertyContainer.GetProperty(indexProperty).GetPropertyValue(value, 0);
+            return value;
+        }
+
+        // -------------------------
+
         public static IntPtr GetNativeHandle(this INativeObject obj)
         {
 #if MAX2015 || MAX2016 || MAX2017
