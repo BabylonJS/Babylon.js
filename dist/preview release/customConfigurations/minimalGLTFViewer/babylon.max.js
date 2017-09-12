@@ -13262,6 +13262,25 @@ var BABYLON;
             this._isDirty = true;
             return this;
         };
+        AbstractMesh.prototype.getHierarchyBoundingVectors = function () {
+            this.computeWorldMatrix();
+            var min = this.getBoundingInfo().boundingBox.minimumWorld;
+            var max = this.getBoundingInfo().boundingBox.maximumWorld;
+            var descendants = this.getDescendants(false, function (node) { return node.subMeshes; });
+            for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
+                var descendant = descendants_1[_i];
+                var childMesh = descendant;
+                childMesh.computeWorldMatrix();
+                var minBox = childMesh.getBoundingInfo().boundingBox.minimumWorld;
+                var maxBox = childMesh.getBoundingInfo().boundingBox.maximumWorld;
+                BABYLON.Tools.CheckExtends(minBox, min, max);
+                BABYLON.Tools.CheckExtends(maxBox, min, max);
+            }
+            return {
+                min: min,
+                max: max
+            };
+        };
         /**
          * Updates the mesh BoundingInfo object and all its children BoundingInfo objects also.
          * Returns the AbstractMesh.
