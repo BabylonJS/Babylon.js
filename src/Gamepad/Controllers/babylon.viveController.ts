@@ -1,7 +1,6 @@
 module BABYLON {
 
     export class ViveController extends WebVRController {
-        private _defaultModel: BABYLON.AbstractMesh;
 
         constructor(vrGamepad) {
             super(vrGamepad);

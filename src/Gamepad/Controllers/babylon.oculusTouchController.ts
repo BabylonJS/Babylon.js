@@ -1,8 +1,6 @@
 module BABYLON {
 
     export class OculusTouchController extends WebVRController {
-        private _defaultModel: BABYLON.AbstractMesh;
-
         public onSecondaryTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
         public onThumbRestChangedObservable = new Observable<ExtendedGamepadButton>();
