@@ -139,7 +139,7 @@ module BABYLON {
                             return;
                         }
 
-                        if (Math.abs(pinchDistance - previousPinchDistance) > this.camera.pinchToPanMaxDistance) {
+                        if (pinchDistance > this.camera.panMaxFingersDistance || Math.abs(pinchDistance - previousPinchDistance) > this.camera.pinchToPanMaxDistance) {
                             this.camera
                                 .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (this.pinchPrecision *
