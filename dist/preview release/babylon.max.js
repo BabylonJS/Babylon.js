@@ -15214,18 +15214,6 @@ var BABYLON;
             var engine = this.getEngine();
             this._cache.position.copyFrom(this.position);
             this._cache.upVector.copyFrom(this.upVector);
-            this._cache.mode = this.mode;
-            this._cache.minZ = this.minZ;
-            this._cache.maxZ = this.maxZ;
-            this._cache.fov = this.fov;
-            this._cache.fovMode = this.fovMode;
-            this._cache.aspectRatio = engine.getAspectRatio(this);
-            this._cache.orthoLeft = this.orthoLeft;
-            this._cache.orthoRight = this.orthoRight;
-            this._cache.orthoBottom = this.orthoBottom;
-            this._cache.orthoTop = this.orthoTop;
-            this._cache.renderWidth = engine.getRenderWidth();
-            this._cache.renderHeight = engine.getRenderHeight();
         };
         // Synchronized
         Camera.prototype._isSynchronized = function () {
@@ -15267,10 +15255,10 @@ var BABYLON;
         Camera.prototype.detachControl = function (element) {
         };
         Camera.prototype.update = function () {
+            this._checkInputs();
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
-            this._checkInputs();
         };
         Camera.prototype._checkInputs = function () {
             this.onAfterCheckInputsObservable.notifyObservers(this);
@@ -15369,6 +15357,7 @@ var BABYLON;
             if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
+            this.updateCache();
             this._computedViewMatrix = this._getViewMatrix();
             this._currentRenderId = this.getScene().getRenderId();
             this._refreshFrustumPlanes = true;
@@ -15406,10 +15395,18 @@ var BABYLON;
             if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
             }
+            // Cache
+            this._cache.mode = this.mode;
+            this._cache.minZ = this.minZ;
+            this._cache.maxZ = this.maxZ;
+            // Matrix
             this._refreshFrustumPlanes = true;
             var engine = this.getEngine();
             var scene = this.getScene();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
+                this._cache.fov = this.fov;
+                this._cache.fovMode = this.fovMode;
+                this._cache.aspectRatio = engine.getAspectRatio(this);
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
@@ -15429,6 +15426,12 @@ var BABYLON;
                 else {
                     BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
                 }
+                this._cache.orthoLeft = this.orthoLeft;
+                this._cache.orthoRight = this.orthoRight;
+                this._cache.orthoBottom = this.orthoBottom;
+                this._cache.orthoTop = this.orthoTop;
+                this._cache.renderWidth = engine.getRenderWidth();
+                this._cache.renderHeight = engine.getRenderHeight();
             }
             this.onProjectionMatrixChangedObservable.notifyObservers(this);
             return this._projectionMatrix;
@@ -18949,8 +18952,6 @@ var BABYLON;
             this._renderDuration.endMonitoring(false);
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
-            // Update camera
-            this.activeCamera.updateCache();
             // Reset some special arrays
             this._renderTargets.reset();
             this._alternateRendering = false;
@@ -18970,7 +18971,6 @@ var BABYLON;
             }
             this.activeCamera = camera;
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-            this.activeCamera.updateCache();
         };
         Scene.prototype._checkIntersections = function () {
             for (var index = 0; index < this._meshesForIntersections.length; index++) {
@@ -52617,11 +52617,12 @@ var BABYLON;
          * @param scene scene in which to add meshes
          * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
          */
-        WindowsMotionController.prototype.initControllerMesh = function (scene, meshLoaded) {
+        WindowsMotionController.prototype.initControllerMesh = function (scene, meshLoaded, forceDefault) {
             var _this = this;
+            if (forceDefault === void 0) { forceDefault = false; }
             // Determine the device specific folder based on the ID suffix
             var device = 'default';
-            if (this.id) {
+            if (this.id && !forceDefault) {
                 var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
                 device = ((match && match[0]) || device);
             }
@@ -52648,6 +52649,7 @@ var BABYLON;
             }, null, function (scene, message) {
                 BABYLON.Tools.Log(message);
                 BABYLON.Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
+                _this.initControllerMesh(scene, meshLoaded, true);
             });
         };
         /**
@@ -52771,7 +52773,7 @@ var BABYLON;
             _super.prototype.dispose.call(this);
             this.onTrackpadChangedObservable.clear();
         };
-        WindowsMotionController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/';
+        WindowsMotionController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/microsoft/';
         WindowsMotionController.MODEL_LEFT_FILENAME = 'left.glb';
         WindowsMotionController.MODEL_RIGHT_FILENAME = 'right.glb';
         WindowsMotionController.MODEL_ROOT_NODE_NAME = 'RootNode';
