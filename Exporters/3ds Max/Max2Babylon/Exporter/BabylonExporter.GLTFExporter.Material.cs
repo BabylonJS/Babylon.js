@@ -196,7 +196,7 @@ namespace Max2Babylon
                                     specular = specularBitmap != null ? new BabylonColor3(specularBitmap.GetPixel(x, y)) :
                                                new BabylonColor3(),
                                     glossiness = babylonStandardMaterial.useGlossinessFromSpecularMapAlpha && specularBitmap != null ? specularBitmap.GetPixel(x, y).A / 255.0f :
-                                                 babylonStandardMaterial.specularPower / 256.0f
+                                                 0
                                 };
 
                                 var displayPrints = x == width / 2 && y == height / 2;
@@ -229,7 +229,10 @@ namespace Max2Babylon
                         // Export maps and textures
                         var baseColorFileName = babylonMaterial.name + "_baseColor" + (hasAlpha ? ".png" : ".jpg");
                         gltfPbrMetallicRoughness.baseColorTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, baseColorBitmap, baseColorFileName, gltf);
-                        gltfPbrMetallicRoughness.metallicRoughnessTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, metallicRoughnessBitmap, babylonMaterial.name + "_metallicRoughness" + ".jpg", gltf);
+                        if (specularBitmap != null)
+                        {
+                            gltfPbrMetallicRoughness.metallicRoughnessTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, metallicRoughnessBitmap, babylonMaterial.name + "_metallicRoughness" + ".jpg", gltf);
+                        }
                     }
                 }
             }
