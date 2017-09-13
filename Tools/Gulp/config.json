@@ -175,6 +175,7 @@
         {
             "files": [
                 "../../src/Animations/babylon.animation.js",
+                "../../src/Animations/babylon.runtimeAnimation.js",
                 "../../src/Animations/babylon.animatable.js",
                 "../../src/Animations/babylon.easing.js"
             ],

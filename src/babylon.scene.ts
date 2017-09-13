@@ -3657,6 +3657,10 @@
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
 
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                    continue;
+                }
+
                 mesh.computeWorldMatrix(true);
                 var minBox = mesh.getBoundingInfo().boundingBox.minimumWorld;
                 var maxBox = mesh.getBoundingInfo().boundingBox.maximumWorld;
