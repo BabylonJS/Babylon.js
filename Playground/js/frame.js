@@ -50,7 +50,6 @@
 
             var canvas = document.getElementById("renderCanvas");
             engine = new BABYLON.Engine(canvas, true, {stencil: true});
-            engine.renderEvenInBackground = false;
             BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault = true;
 
             engine.runRenderLoop(function () {

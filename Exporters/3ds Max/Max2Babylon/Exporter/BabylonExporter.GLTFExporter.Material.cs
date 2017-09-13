@@ -24,9 +24,9 @@ namespace Max2Babylon
 
                 RaiseMessage("GLTFExporter.Material | babylonMaterial data", 2);
                 RaiseMessage("GLTFExporter.Material | babylonMaterial.alpha=" + babylonMaterial.alpha, 3);
+                RaiseMessage("GLTFExporter.Material | babylonMaterial.alphaMode=" + babylonMaterial.alphaMode, 3);
                 RaiseMessage("GLTFExporter.Material | babylonMaterial.backFaceCulling=" + babylonMaterial.backFaceCulling, 3);
                 RaiseMessage("GLTFExporter.Material | babylonMaterial.wireframe=" + babylonMaterial.wireframe, 3);
-                RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.specularPower=" + babylonStandardMaterial.specularPower, 3);
 
                 // Ambient
                 for (int i = 0; i < babylonStandardMaterial.ambient.Length; i++)
@@ -128,7 +128,7 @@ namespace Max2Babylon
                 };
 
                 MetallicRoughness _metallicRoughness = ConvertToMetallicRoughness(_specularGlossiness, true);
-
+                
                 // Base color
                 gltfPbrMetallicRoughness.baseColorFactor = new float[4]
                 {
@@ -147,43 +147,40 @@ namespace Max2Babylon
 
                 if (babylonStandardMaterial.diffuseTexture != null)
                 {
-                    Func<string, Bitmap> loadTexture = delegate (string textureName)
+                    Func<string, Bitmap> loadTextureFromOutput = delegate (string textureName)
                     {
-                        var pathDiffuse = Path.Combine(gltf.OutputPath, textureName);
-                        if (File.Exists(pathDiffuse))
-                        {
-                            return new Bitmap(pathDiffuse);
-                        }
-                        else
-                        {
-                            RaiseWarning(string.Format("GLTFExporter.Material | Texture {0} not found.", textureName), 2);
-                            return null;
-                        }
+                        return LoadTexture(Path.Combine(gltf.OutputFolder, textureName));
                     };
 
-                    Bitmap diffuseBitmap = loadTexture(babylonStandardMaterial.diffuseTexture.name);
+                    Bitmap diffuseBitmap = loadTextureFromOutput(babylonStandardMaterial.diffuseTexture.name);
 
                     if (diffuseBitmap != null)
                     {
                         Bitmap specularBitmap = null;
                         if (babylonStandardMaterial.specularTexture != null)
                         {
-                            specularBitmap = loadTexture(babylonStandardMaterial.specularTexture.name);
+                            specularBitmap = loadTextureFromOutput(babylonStandardMaterial.specularTexture.name);
                         }
 
                         Bitmap opacityBitmap = null;
                         if (babylonStandardMaterial.diffuseTexture.hasAlpha == false && babylonStandardMaterial.opacityTexture != null)
                         {
-                            opacityBitmap = loadTexture(babylonStandardMaterial.opacityTexture.name);
+                            opacityBitmap = loadTextureFromOutput(babylonStandardMaterial.opacityTexture.name);
                         }
 
-                        // Retreive dimension from diffuse map
-                        var width = diffuseBitmap.Width;
-                        var height = diffuseBitmap.Height;
+                        // Retreive dimensions
+                        int width = 0;
+                        int height = 0;
+                        var haveSameDimensions = _getMinimalBitmapDimensions(out width, out height, diffuseBitmap, specularBitmap, opacityBitmap);
+                        if (!haveSameDimensions)
+                        {
+                            RaiseWarning("Diffuse, specular and opacity maps should have same dimensions", 2);
+                        }
 
                         // Create base color and metallic+roughness maps
                         Bitmap baseColorBitmap = new Bitmap(width, height);
                         Bitmap metallicRoughnessBitmap = new Bitmap(width, height);
+                        var hasAlpha = false;
                         for (int x = 0; x < width; x++)
                         {
                             for (int y = 0; y < height; y++)
@@ -199,7 +196,7 @@ namespace Max2Babylon
                                     specular = specularBitmap != null ? new BabylonColor3(specularBitmap.GetPixel(x, y)) :
                                                new BabylonColor3(),
                                     glossiness = babylonStandardMaterial.useGlossinessFromSpecularMapAlpha && specularBitmap != null ? specularBitmap.GetPixel(x, y).A / 255.0f :
-                                                 babylonStandardMaterial.specularPower / 256.0f
+                                                 0
                                 };
 
                                 var displayPrints = x == width / 2 && y == height / 2;
@@ -212,6 +209,10 @@ namespace Max2Babylon
                                     (int)(metallicRoughnessTexture.baseColor.b * 255)
                                 );
                                 baseColorBitmap.SetPixel(x, y, colorBase);
+                                if (metallicRoughnessTexture.opacity != 1)
+                                {
+                                    hasAlpha = true;
+                                }
 
                                 // The metalness values are sampled from the B channel.
                                 // The roughness values are sampled from the G channel.
@@ -226,10 +227,149 @@ namespace Max2Babylon
                         }
 
                         // Export maps and textures
-                        gltfPbrMetallicRoughness.baseColorTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, baseColorBitmap, babylonMaterial.name + "_baseColor" + ".png", gltf);
-                        gltfPbrMetallicRoughness.metallicRoughnessTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, metallicRoughnessBitmap, babylonMaterial.name + "_metallicRoughness" + ".jpg", gltf);
+                        var baseColorFileName = babylonMaterial.name + "_baseColor" + (hasAlpha ? ".png" : ".jpg");
+                        gltfPbrMetallicRoughness.baseColorTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, baseColorBitmap, baseColorFileName, gltf);
+                        if (specularBitmap != null)
+                        {
+                            gltfPbrMetallicRoughness.metallicRoughnessTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, metallicRoughnessBitmap, babylonMaterial.name + "_metallicRoughness" + ".jpg", gltf);
+                        }
                     }
                 }
+            }
+            else if (babylonMaterial.GetType() == typeof(BabylonPBRMetallicRoughnessMaterial))
+            {
+
+                var babylonPBRMetallicRoughnessMaterial = babylonMaterial as BabylonPBRMetallicRoughnessMaterial;
+
+
+                // --- prints ---
+
+                RaiseMessage("GLTFExporter.Material | babylonMaterial data", 2);
+                RaiseMessage("GLTFExporter.Material | babylonMaterial.alpha=" + babylonMaterial.alpha, 3);
+                RaiseMessage("GLTFExporter.Material | babylonMaterial.alphaMode=" + babylonMaterial.alphaMode, 3);
+                RaiseMessage("GLTFExporter.Material | babylonMaterial.backFaceCulling=" + babylonMaterial.backFaceCulling, 3);
+                RaiseMessage("GLTFExporter.Material | babylonMaterial.wireframe=" + babylonMaterial.wireframe, 3);
+
+                // Global
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.maxSimultaneousLights=" + babylonPBRMetallicRoughnessMaterial.maxSimultaneousLights, 3);
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.disableLighting=" + babylonPBRMetallicRoughnessMaterial.disableLighting, 3);
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.alphaCutOff=" + babylonPBRMetallicRoughnessMaterial.alphaCutOff, 3);
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.transparencyMode=" + babylonPBRMetallicRoughnessMaterial.transparencyMode, 3);
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.doubleSided=" + babylonPBRMetallicRoughnessMaterial.doubleSided, 3);
+
+                // Base color
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.baseColor.Length=" + babylonPBRMetallicRoughnessMaterial.baseColor.Length, 3);
+                for (int i = 0; i < babylonPBRMetallicRoughnessMaterial.baseColor.Length; i++)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.baseColor[" + i + "]=" + babylonPBRMetallicRoughnessMaterial.baseColor[i], 3);
+                }
+                if (babylonPBRMetallicRoughnessMaterial.baseTexture == null)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.baseTexture=null", 3);
+                }
+
+                // Metallic+roughness
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.metallic=" + babylonPBRMetallicRoughnessMaterial.metallic, 3);
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.roughness=" + babylonPBRMetallicRoughnessMaterial.roughness, 3);
+                if (babylonPBRMetallicRoughnessMaterial.metallicRoughnessTexture == null)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.metallicRoughnessTexture=null", 3);
+                }
+
+                // Environment
+                if (babylonPBRMetallicRoughnessMaterial.environmentTexture == null)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.environmentTexture=null", 3);
+                }
+
+                // Normal / bump
+                if (babylonPBRMetallicRoughnessMaterial.normalTexture == null)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.normalTexture=null", 3);
+                }
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.invertNormalMapX=" + babylonPBRMetallicRoughnessMaterial.invertNormalMapX, 3);
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.invertNormalMapY=" + babylonPBRMetallicRoughnessMaterial.invertNormalMapY, 3);
+
+                // Emissive
+                for (int i = 0; i < babylonPBRMetallicRoughnessMaterial.emissiveColor.Length; i++)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.emissiveColor[" + i + "]=" + babylonPBRMetallicRoughnessMaterial.emissiveColor[i], 3);
+                }
+                if (babylonPBRMetallicRoughnessMaterial.emissiveTexture == null)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.emissiveTexture=null", 3);
+                }
+
+                // Ambient occlusion
+                RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.occlusionStrength=" + babylonPBRMetallicRoughnessMaterial.occlusionStrength, 3);
+                if (babylonPBRMetallicRoughnessMaterial.occlusionTexture == null)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonPBRMetallicRoughnessMaterial.occlusionTexture=null", 3);
+                }
+
+
+                // --------------------------------
+                // --------- gltfMaterial ---------
+                // --------------------------------
+
+                RaiseMessage("GLTFExporter.Material | create gltfMaterial", 2);
+                var gltfMaterial = new GLTFMaterial
+                {
+                    name = name
+                };
+                gltfMaterial.id = babylonMaterial.id;
+                gltfMaterial.index = gltf.MaterialsList.Count;
+                gltf.MaterialsList.Add(gltfMaterial);
+
+                // Alpha
+                string alphaMode;
+                float? alphaCutoff;
+                getAlphaMode(babylonPBRMetallicRoughnessMaterial, out alphaMode, out alphaCutoff);
+                gltfMaterial.alphaMode = alphaMode;
+                gltfMaterial.alphaCutoff = alphaCutoff;
+
+                // DoubleSided
+                gltfMaterial.doubleSided = babylonPBRMetallicRoughnessMaterial.doubleSided;
+
+                // Normal
+                gltfMaterial.normalTexture = ExportTexture(babylonPBRMetallicRoughnessMaterial.normalTexture, gltf);
+
+                // Occulison
+                gltfMaterial.occlusionTexture = ExportTexture(babylonPBRMetallicRoughnessMaterial.occlusionTexture, gltf);
+
+                // Emissive
+                gltfMaterial.emissiveFactor = babylonPBRMetallicRoughnessMaterial.emissiveColor;
+                gltfMaterial.emissiveTexture = ExportTexture(babylonPBRMetallicRoughnessMaterial.emissiveTexture, gltf);
+
+
+                // --------------------------------
+                // --- gltfPbrMetallicRoughness ---
+                // --------------------------------
+
+                RaiseMessage("GLTFExporter.Material | create gltfPbrMetallicRoughness", 2);
+                var gltfPbrMetallicRoughness = new GLTFPBRMetallicRoughness();
+                gltfMaterial.pbrMetallicRoughness = gltfPbrMetallicRoughness;
+
+                // --- Global ---
+
+                // Base color
+                gltfPbrMetallicRoughness.baseColorFactor = new float[4]
+                {
+                    babylonPBRMetallicRoughnessMaterial.baseColor[0],
+                    babylonPBRMetallicRoughnessMaterial.baseColor[1],
+                    babylonPBRMetallicRoughnessMaterial.baseColor[2],
+                    1.0f // TODO - alpha
+                };
+                gltfPbrMetallicRoughness.baseColorTexture = ExportTexture(babylonPBRMetallicRoughnessMaterial.baseTexture, gltf);
+
+                // Metallic roughness
+                gltfPbrMetallicRoughness.metallicFactor = babylonPBRMetallicRoughnessMaterial.metallic;
+                gltfPbrMetallicRoughness.roughnessFactor = babylonPBRMetallicRoughnessMaterial.roughness;
+                gltfPbrMetallicRoughness.metallicRoughnessTexture = ExportTexture(babylonPBRMetallicRoughnessMaterial.metallicRoughnessTexture, gltf);
+            }
+            else
+            {
+                RaiseWarning("GLTFExporter.Material | Unsupported material type: " + babylonMaterial.GetType(), 2);
             }
         }
 
@@ -237,6 +377,21 @@ namespace Max2Babylon
         {
             if ((babylonMaterial.diffuseTexture != null && babylonMaterial.diffuseTexture.hasAlpha) ||
                  babylonMaterial.opacityTexture != null)
+            {
+                // TODO - Babylon standard material is assumed to useAlphaFromDiffuseTexture. If not, the alpha mode is a mask.
+                alphaMode = GLTFMaterial.AlphaMode.BLEND.ToString();
+            }
+            else
+            {
+                // glTF alpha mode default value is "OPAQUE"
+                alphaMode = null; // GLTFMaterial.AlphaMode.OPAQUE.ToString();
+            }
+            alphaCutoff = null;
+        }
+
+        private void getAlphaMode(BabylonPBRMetallicRoughnessMaterial babylonMaterial, out string alphaMode, out float? alphaCutoff)
+        {
+            if (babylonMaterial.baseTexture != null && babylonMaterial.baseTexture.hasAlpha)
             {
                 // TODO - Babylon standard material is assumed to useAlphaFromDiffuseTexture. If not, the alpha mode is a mask.
                 alphaMode = GLTFMaterial.AlphaMode.BLEND.ToString();
