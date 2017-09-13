@@ -49,8 +49,12 @@
 
         private _eventState: EventState;
 
-        constructor() {
+        private _onObserverAdded: (observer: Observer<T>) => void;
+
+        constructor(onObserverAdded?: (observer: Observer<T>) => void) {
             this._eventState = new EventState(0);
+
+            this._onObserverAdded = onObserverAdded;
         }
 
         /**
@@ -70,6 +74,10 @@
                 this._observers.unshift(observer);
             } else {
                 this._observers.push(observer);
+            }
+
+            if (this._onObserverAdded) {
+                this._onObserverAdded(observer);
             }
 
             return observer;
@@ -131,6 +139,19 @@
         }
 
         /**
+         * Notify a specific observer
+         * @param eventData
+         * @param mask
+         */
+        public notifyObserver(observer: Observer<T>, eventData: T, mask: number = -1): void {
+            let state = this._eventState;
+            state.mask = mask;
+            state.skipNextObservers = false;
+
+            observer.callback(eventData, state);
+        }        
+
+        /**
          * return true is the Observable has at least one Observer registered
          */
         public hasObservers(): boolean {
@@ -142,6 +163,7 @@
         */
         public clear(): void {
             this._observers = new Array<Observer<T>>();
+            this._onObserverAdded = null;
         }
 
         /**
