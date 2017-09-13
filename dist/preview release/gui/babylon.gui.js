@@ -291,15 +291,7 @@ var BABYLON;
                         this._lastControlOver = null;
                     }
                 }
-                // Focus management
-                if (this._focusedControl) {
-                    if (this._focusedControl !== this._lastPickedControl) {
-                        if (this._lastPickedControl.isFocusInvisible) {
-                            return;
-                        }
-                        this.focusedControl = null;
-                    }
-                }
+                this._manageFocus();
             };
             AdvancedDynamicTexture.prototype.attach = function () {
                 var _this = this;
@@ -341,6 +333,7 @@ var BABYLON;
                             _this._lastControlDown.forcePointerUp();
                         }
                         _this._lastControlDown = null;
+                        _this.focusedControl = null;
                     }
                     else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (_this._lastControlOver) {
@@ -351,6 +344,17 @@ var BABYLON;
                 });
                 mesh.enablePointerMoveEvents = supportPointerMove;
                 this._attachToOnPointerOut(scene);
+            };
+            AdvancedDynamicTexture.prototype._manageFocus = function () {
+                // Focus management
+                if (this._focusedControl) {
+                    if (this._focusedControl !== this._lastPickedControl) {
+                        if (this._lastPickedControl.isFocusInvisible) {
+                            return;
+                        }
+                        this.focusedControl = null;
+                    }
+                }
             };
             AdvancedDynamicTexture.prototype._attachToOnPointerOut = function (scene) {
                 var _this = this;
