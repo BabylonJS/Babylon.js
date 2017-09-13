@@ -430,17 +430,17 @@ namespace Max2Babylon
         {
             var haveSameDimensions = true;
 
-            var bitmapsNoNull = new List<Bitmap>(bitmaps).FindAll(bitmap => bitmap != null).ToArray();
+            var bitmapsNoNull = ((new List<Bitmap>(bitmaps)).FindAll(bitmap => bitmap != null)).ToArray();
             if (bitmapsNoNull.Length > 0)
             {
                 // Init with first element
-                width = bitmaps[0].Width;
-                height = bitmaps[0].Height;
+                width = bitmapsNoNull[0].Width;
+                height = bitmapsNoNull[0].Height;
 
                 // Update with others
                 for (int i = 1; i < bitmapsNoNull.Length; i++)
                 {
-                    var bitmap = bitmaps[i];
+                    var bitmap = bitmapsNoNull[i];
                     if (width != bitmap.Width || height != bitmap.Height)
                     {
                         haveSameDimensions = false;
