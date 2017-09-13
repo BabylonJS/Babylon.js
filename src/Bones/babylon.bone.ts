@@ -371,7 +371,7 @@ module BABYLON {
          */
         public setScale(x: number, y: number, z: number, scaleChildren = false): void {
 
-            if (this.animations[0] && !this.animations[0].isStopped()) {
+            if (this.animations[0] && !this.animations[0].hasRunningRuntimeAnimations) {
                 if (!scaleChildren) {
                     this._negateScaleChildren.x = 1/x;
                     this._negateScaleChildren.y = 1/y;

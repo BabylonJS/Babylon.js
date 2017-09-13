@@ -1155,6 +1155,9 @@
             return this;
         }
 
+        /**
+         * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
+         */
         public getHierarchyBoundingVectors(): { min: Vector3, max: Vector3 }{
             this.computeWorldMatrix();
             let min = this.getBoundingInfo().boundingBox.minimumWorld;

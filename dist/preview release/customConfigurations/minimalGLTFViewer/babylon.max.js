@@ -13262,6 +13262,9 @@ var BABYLON;
             this._isDirty = true;
             return this;
         };
+        /**
+         * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
+         */
         AbstractMesh.prototype.getHierarchyBoundingVectors = function () {
             this.computeWorldMatrix();
             var min = this.getBoundingInfo().boundingBox.minimumWorld;
@@ -37222,10 +37225,7 @@ var BABYLON;
             this.dataType = dataType;
             this.loopMode = loopMode;
             this.enableBlending = enableBlending;
-            this._offsetsCache = {};
-            this._highLimitsCache = {};
-            this._stopped = false;
-            this._blendingFactor = 0;
+            this._runtimeAnimations = new Array();
             // The set of event that will be linked to this animation
             this._events = new Array();
             this.blendingSpeed = 0.01;
@@ -37323,6 +37323,29 @@ var BABYLON;
             animation.onAnimationEnd = onAnimationEnd;
             return animation;
         };
+        Object.defineProperty(Animation.prototype, "runtimeAnimations", {
+            /**
+             * Return the array of runtime animations currently using this animation
+             */
+            get: function () {
+                return this._runtimeAnimations;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Animation.prototype, "hasRunningRuntimeAnimations", {
+            get: function () {
+                for (var _i = 0, _a = this._runtimeAnimations; _i < _a.length; _i++) {
+                    var runtimeAnimation = _a[_i];
+                    if (!runtimeAnimation.isStopped) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
@@ -37364,6 +37387,9 @@ var BABYLON;
                 }
             }
         };
+        Animation.prototype.getEvents = function () {
+            return this._events;
+        };
         Animation.prototype.createRange = function (name, from, to) {
             // check name not already in use; could happen for bones after serialized
             if (!this._ranges[name]) {
@@ -37388,16 +37414,6 @@ var BABYLON;
         };
         Animation.prototype.getRange = function (name) {
             return this._ranges[name];
-        };
-        Animation.prototype.reset = function () {
-            this._offsetsCache = {};
-            this._highLimitsCache = {};
-            this.currentFrame = 0;
-            this._blendingFactor = 0;
-            this._originalBlendValue = null;
-        };
-        Animation.prototype.isStopped = function () {
-            return this._stopped;
         };
         Animation.prototype.getKeys = function () {
             return this._keys;
@@ -37467,310 +37483,6 @@ var BABYLON;
         };
         Animation.prototype.setKeys = function (values) {
             this._keys = values.slice(0);
-            this._offsetsCache = {};
-            this._highLimitsCache = {};
-        };
-        Animation.prototype._getKeyValue = function (value) {
-            if (typeof value === "function") {
-                return value();
-            }
-            return value;
-        };
-        Animation.prototype._interpolate = function (currentFrame, repeatCount, loopMode, offsetValue, highLimitValue) {
-            if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
-                return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
-            }
-            this.currentFrame = currentFrame;
-            // Try to get a hash to find the right key
-            var startKeyIndex = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
-            if (this._keys[startKeyIndex].frame >= currentFrame) {
-                while (startKeyIndex - 1 >= 0 && this._keys[startKeyIndex].frame >= currentFrame) {
-                    startKeyIndex--;
-                }
-            }
-            for (var key = startKeyIndex; key < this._keys.length; key++) {
-                var endKey = this._keys[key + 1];
-                if (endKey.frame >= currentFrame) {
-                    var startKey = this._keys[key];
-                    var startValue = this._getKeyValue(startKey.value);
-                    var endValue = this._getKeyValue(endKey.value);
-                    var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
-                    var frameDelta = endKey.frame - startKey.frame;
-                    // gradient : percent of currentFrame between the frame inf and the frame sup
-                    var gradient = (currentFrame - startKey.frame) / frameDelta;
-                    // check for easingFunction and correction of gradient
-                    if (this._easingFunction != null) {
-                        gradient = this._easingFunction.ease(gradient);
-                    }
-                    switch (this.dataType) {
-                        // Float
-                        case Animation.ANIMATIONTYPE_FLOAT:
-                            var floatValue = useTangent ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this.floatInterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return floatValue;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return offsetValue * repeatCount + floatValue;
-                            }
-                            break;
-                        // Quaternion
-                        case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quatValue = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return quatValue;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return quatValue.add(offsetValue.scale(repeatCount));
-                            }
-                            return quatValue;
-                        // Vector3
-                        case Animation.ANIMATIONTYPE_VECTOR3:
-                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return vec3Value;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return vec3Value.add(offsetValue.scale(repeatCount));
-                            }
-                        // Vector2
-                        case Animation.ANIMATIONTYPE_VECTOR2:
-                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return vec2Value;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return vec2Value.add(offsetValue.scale(repeatCount));
-                            }
-                        // Size
-                        case Animation.ANIMATIONTYPE_SIZE:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.sizeInterpolateFunction(startValue, endValue, gradient);
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.sizeInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                            }
-                        // Color3
-                        case Animation.ANIMATIONTYPE_COLOR3:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.color3InterpolateFunction(startValue, endValue, gradient);
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.color3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                            }
-                        // Matrix
-                        case Animation.ANIMATIONTYPE_MATRIX:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    if (Animation.AllowMatricesInterpolation) {
-                                        return this.matrixInterpolateFunction(startValue, endValue, gradient);
-                                    }
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return startValue;
-                            }
-                        default:
-                            break;
-                    }
-                    break;
-                }
-            }
-            return this._getKeyValue(this._keys[this._keys.length - 1].value);
-        };
-        Animation.prototype.setValue = function (currentValue, blend) {
-            if (blend === void 0) { blend = false; }
-            // Set value
-            var path;
-            var destination;
-            if (this.targetPropertyPath.length > 1) {
-                var property = this._target[this.targetPropertyPath[0]];
-                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
-                    property = property[this.targetPropertyPath[index]];
-                }
-                path = this.targetPropertyPath[this.targetPropertyPath.length - 1];
-                destination = property;
-            }
-            else {
-                path = this.targetPropertyPath[0];
-                destination = this._target;
-            }
-            // Blending
-            if (this.enableBlending && this._blendingFactor <= 1.0) {
-                if (!this._originalBlendValue) {
-                    if (destination[path].clone) {
-                        this._originalBlendValue = destination[path].clone();
-                    }
-                    else {
-                        this._originalBlendValue = destination[path];
-                    }
-                }
-                if (this._originalBlendValue.prototype) {
-                    if (this._originalBlendValue.prototype.Lerp) {
-                        destination[path] = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
-                    }
-                    else {
-                        destination[path] = currentValue;
-                    }
-                }
-                else if (this._originalBlendValue.m) {
-                    destination[path] = BABYLON.Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
-                }
-                else {
-                    destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
-                }
-                this._blendingFactor += this.blendingSpeed;
-            }
-            else {
-                destination[path] = currentValue;
-            }
-            if (this._target.markAsDirty) {
-                this._target.markAsDirty(this.targetProperty);
-            }
-        };
-        Animation.prototype.goToFrame = function (frame) {
-            if (frame < this._keys[0].frame) {
-                frame = this._keys[0].frame;
-            }
-            else if (frame > this._keys[this._keys.length - 1].frame) {
-                frame = this._keys[this._keys.length - 1].frame;
-            }
-            var currentValue = this._interpolate(frame, 0, this.loopMode);
-            this.setValue(currentValue);
-        };
-        Animation.prototype.animate = function (delay, from, to, loop, speedRatio, blend) {
-            if (blend === void 0) { blend = false; }
-            if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
-                this._stopped = true;
-                return false;
-            }
-            var returnValue = true;
-            // Adding a start key at frame 0 if missing
-            if (this._keys[0].frame !== 0) {
-                var newKey = { frame: 0, value: this._keys[0].value };
-                this._keys.splice(0, 0, newKey);
-            }
-            // Check limits
-            if (from < this._keys[0].frame || from > this._keys[this._keys.length - 1].frame) {
-                from = this._keys[0].frame;
-            }
-            if (to < this._keys[0].frame || to > this._keys[this._keys.length - 1].frame) {
-                to = this._keys[this._keys.length - 1].frame;
-            }
-            //to and from cannot be the same key
-            if (from === to) {
-                from++;
-            }
-            // Compute ratio
-            var range = to - from;
-            var offsetValue;
-            // ratio represents the frame delta between from and to
-            var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
-            var highLimitValue = 0;
-            if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) {
-                returnValue = false;
-                highLimitValue = this._getKeyValue(this._keys[this._keys.length - 1].value);
-            }
-            else {
-                // Get max value if required
-                if (this.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
-                    var keyOffset = to.toString() + from.toString();
-                    if (!this._offsetsCache[keyOffset]) {
-                        var fromValue = this._interpolate(from, 0, Animation.ANIMATIONLOOPMODE_CYCLE);
-                        var toValue = this._interpolate(to, 0, Animation.ANIMATIONLOOPMODE_CYCLE);
-                        switch (this.dataType) {
-                            // Float
-                            case Animation.ANIMATIONTYPE_FLOAT:
-                                this._offsetsCache[keyOffset] = toValue - fromValue;
-                                break;
-                            // Quaternion
-                            case Animation.ANIMATIONTYPE_QUATERNION:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                                break;
-                            // Vector3
-                            case Animation.ANIMATIONTYPE_VECTOR3:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                            // Vector2
-                            case Animation.ANIMATIONTYPE_VECTOR2:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                            // Size
-                            case Animation.ANIMATIONTYPE_SIZE:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                            // Color3
-                            case Animation.ANIMATIONTYPE_COLOR3:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                            default:
-                                break;
-                        }
-                        this._highLimitsCache[keyOffset] = toValue;
-                    }
-                    highLimitValue = this._highLimitsCache[keyOffset];
-                    offsetValue = this._offsetsCache[keyOffset];
-                }
-            }
-            if (offsetValue === undefined) {
-                switch (this.dataType) {
-                    // Float
-                    case Animation.ANIMATIONTYPE_FLOAT:
-                        offsetValue = 0;
-                        break;
-                    // Quaternion
-                    case Animation.ANIMATIONTYPE_QUATERNION:
-                        offsetValue = new BABYLON.Quaternion(0, 0, 0, 0);
-                        break;
-                    // Vector3
-                    case Animation.ANIMATIONTYPE_VECTOR3:
-                        offsetValue = BABYLON.Vector3.Zero();
-                        break;
-                    // Vector2
-                    case Animation.ANIMATIONTYPE_VECTOR2:
-                        offsetValue = BABYLON.Vector2.Zero();
-                        break;
-                    // Size
-                    case Animation.ANIMATIONTYPE_SIZE:
-                        offsetValue = BABYLON.Size.Zero();
-                        break;
-                    // Color3
-                    case Animation.ANIMATIONTYPE_COLOR3:
-                        offsetValue = BABYLON.Color3.Black();
-                }
-            }
-            // Compute value
-            var repeatCount = (ratio / range) >> 0;
-            var currentFrame = returnValue ? from + ratio % range : to;
-            var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
-            // Set value
-            this.setValue(currentValue);
-            // Check events
-            for (var index = 0; index < this._events.length; index++) {
-                // Make sure current frame has passed event frame and that event frame is within the current range
-                // Also, handle both forward and reverse animations
-                if ((range > 0 && currentFrame >= this._events[index].frame && this._events[index].frame >= from) ||
-                    (range < 0 && currentFrame <= this._events[index].frame && this._events[index].frame <= from)) {
-                    var event = this._events[index];
-                    if (!event.isDone) {
-                        // If event should be done only once, remove it.
-                        if (event.onlyOnce) {
-                            this._events.splice(index, 1);
-                            index--;
-                        }
-                        event.isDone = true;
-                        event.action();
-                    } // Don't do anything if the event has already be done.
-                }
-                else if (this._events[index].isDone && !this._events[index].onlyOnce) {
-                    // reset event, the animation is looping
-                    this._events[index].isDone = false;
-                }
-            }
-            if (!returnValue) {
-                this._stopped = true;
-            }
-            return returnValue;
         };
         Animation.prototype.serialize = function () {
             var serializationObject = {};
@@ -37957,6 +37669,357 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var RuntimeAnimation = (function () {
+        function RuntimeAnimation(target, animation) {
+            this._offsetsCache = {};
+            this._highLimitsCache = {};
+            this._stopped = false;
+            this._blendingFactor = 0;
+            this._animation = animation;
+            this._target = target;
+            animation._runtimeAnimations.push(this);
+        }
+        Object.defineProperty(RuntimeAnimation.prototype, "animation", {
+            get: function () {
+                return this._animation;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RuntimeAnimation.prototype.reset = function () {
+            this._offsetsCache = {};
+            this._highLimitsCache = {};
+            this.currentFrame = 0;
+            this._blendingFactor = 0;
+            this._originalBlendValue = null;
+        };
+        RuntimeAnimation.prototype.isStopped = function () {
+            return this._stopped;
+        };
+        RuntimeAnimation.prototype.dispose = function () {
+            var index = this._animation.runtimeAnimations.indexOf(this);
+            if (index > -1) {
+                this._animation.runtimeAnimations.splice(index, 1);
+            }
+        };
+        RuntimeAnimation.prototype._getKeyValue = function (value) {
+            if (typeof value === "function") {
+                return value();
+            }
+            return value;
+        };
+        RuntimeAnimation.prototype._interpolate = function (currentFrame, repeatCount, loopMode, offsetValue, highLimitValue) {
+            if (loopMode === BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
+                return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
+            }
+            this.currentFrame = currentFrame;
+            var keys = this._animation.getKeys();
+            // Try to get a hash to find the right key
+            var startKeyIndex = Math.max(0, Math.min(keys.length - 1, Math.floor(keys.length * (currentFrame - keys[0].frame) / (keys[keys.length - 1].frame - keys[0].frame)) - 1));
+            if (keys[startKeyIndex].frame >= currentFrame) {
+                while (startKeyIndex - 1 >= 0 && keys[startKeyIndex].frame >= currentFrame) {
+                    startKeyIndex--;
+                }
+            }
+            for (var key = startKeyIndex; key < keys.length; key++) {
+                var endKey = keys[key + 1];
+                if (endKey.frame >= currentFrame) {
+                    var startKey = keys[key];
+                    var startValue = this._getKeyValue(startKey.value);
+                    var endValue = this._getKeyValue(endKey.value);
+                    var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
+                    var frameDelta = endKey.frame - startKey.frame;
+                    // gradient : percent of currentFrame between the frame inf and the frame sup
+                    var gradient = (currentFrame - startKey.frame) / frameDelta;
+                    // check for easingFunction and correction of gradient
+                    var easingFunction = this._animation.getEasingFunction();
+                    if (easingFunction != null) {
+                        gradient = easingFunction.ease(gradient);
+                    }
+                    switch (this._animation.dataType) {
+                        // Float
+                        case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
+                            var floatValue = useTangent ? this._animation.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this._animation.floatInterpolateFunction(startValue, endValue, gradient);
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return floatValue;
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return offsetValue * repeatCount + floatValue;
+                            }
+                            break;
+                        // Quaternion
+                        case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
+                            var quatValue = useTangent ? this._animation.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this._animation.quaternionInterpolateFunction(startValue, endValue, gradient);
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return quatValue;
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return quatValue.add(offsetValue.scale(repeatCount));
+                            }
+                            return quatValue;
+                        // Vector3
+                        case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
+                            var vec3Value = useTangent ? this._animation.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this._animation.vector3InterpolateFunction(startValue, endValue, gradient);
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return vec3Value;
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return vec3Value.add(offsetValue.scale(repeatCount));
+                            }
+                        // Vector2
+                        case BABYLON.Animation.ANIMATIONTYPE_VECTOR2:
+                            var vec2Value = useTangent ? this._animation.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this._animation.vector2InterpolateFunction(startValue, endValue, gradient);
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return vec2Value;
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return vec2Value.add(offsetValue.scale(repeatCount));
+                            }
+                        // Size
+                        case BABYLON.Animation.ANIMATIONTYPE_SIZE:
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this._animation.sizeInterpolateFunction(startValue, endValue, gradient);
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return this._animation.sizeInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                            }
+                        // Color3
+                        case BABYLON.Animation.ANIMATIONTYPE_COLOR3:
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this._animation.color3InterpolateFunction(startValue, endValue, gradient);
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return this._animation.color3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                            }
+                        // Matrix
+                        case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    if (BABYLON.Animation.AllowMatricesInterpolation) {
+                                        return this._animation.matrixInterpolateFunction(startValue, endValue, gradient);
+                                    }
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return startValue;
+                            }
+                        default:
+                            break;
+                    }
+                    break;
+                }
+            }
+            return this._getKeyValue(keys[keys.length - 1].value);
+        };
+        RuntimeAnimation.prototype.setValue = function (currentValue, blend) {
+            if (blend === void 0) { blend = false; }
+            // Set value
+            var path;
+            var destination;
+            var targetPropertyPath = this._animation.targetPropertyPath;
+            if (targetPropertyPath.length > 1) {
+                var property = this._target[targetPropertyPath[0]];
+                for (var index = 1; index < targetPropertyPath.length - 1; index++) {
+                    property = property[targetPropertyPath[index]];
+                }
+                path = targetPropertyPath[targetPropertyPath.length - 1];
+                destination = property;
+            }
+            else {
+                path = targetPropertyPath[0];
+                destination = this._target;
+            }
+            // Blending
+            if (this._animation.enableBlending && this._blendingFactor <= 1.0) {
+                if (!this._originalBlendValue) {
+                    if (destination[path].clone) {
+                        this._originalBlendValue = destination[path].clone();
+                    }
+                    else {
+                        this._originalBlendValue = destination[path];
+                    }
+                }
+                if (this._originalBlendValue.prototype) {
+                    if (this._originalBlendValue.prototype.Lerp) {
+                        destination[path] = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                    }
+                    else {
+                        destination[path] = currentValue;
+                    }
+                }
+                else if (this._originalBlendValue.m) {
+                    destination[path] = BABYLON.Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                }
+                else {
+                    destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
+                }
+                this._blendingFactor += this._animation.blendingSpeed;
+            }
+            else {
+                destination[path] = currentValue;
+            }
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this._animation.targetProperty);
+            }
+        };
+        RuntimeAnimation.prototype.goToFrame = function (frame) {
+            var keys = this._animation.getKeys();
+            if (frame < keys[0].frame) {
+                frame = keys[0].frame;
+            }
+            else if (frame > keys[keys.length - 1].frame) {
+                frame = keys[keys.length - 1].frame;
+            }
+            var currentValue = this._interpolate(frame, 0, this._animation.loopMode);
+            this.setValue(currentValue);
+        };
+        RuntimeAnimation.prototype.animate = function (delay, from, to, loop, speedRatio, blend) {
+            if (blend === void 0) { blend = false; }
+            var targetPropertyPath = this._animation.targetPropertyPath;
+            if (!targetPropertyPath || targetPropertyPath.length < 1) {
+                this._stopped = true;
+                return false;
+            }
+            var returnValue = true;
+            var keys = this._animation.getKeys();
+            // Adding a start key at frame 0 if missing
+            if (keys[0].frame !== 0) {
+                var newKey = { frame: 0, value: keys[0].value };
+                keys.splice(0, 0, newKey);
+            }
+            // Check limits
+            if (from < keys[0].frame || from > keys[keys.length - 1].frame) {
+                from = keys[0].frame;
+            }
+            if (to < keys[0].frame || to > keys[keys.length - 1].frame) {
+                to = keys[keys.length - 1].frame;
+            }
+            //to and from cannot be the same key
+            if (from === to) {
+                from++;
+            }
+            // Compute ratio
+            var range = to - from;
+            var offsetValue;
+            // ratio represents the frame delta between from and to
+            var ratio = delay * (this._animation.framePerSecond * speedRatio) / 1000.0;
+            var highLimitValue = 0;
+            if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) {
+                returnValue = false;
+                highLimitValue = this._getKeyValue(keys[keys.length - 1].value);
+            }
+            else {
+                // Get max value if required
+                if (this._animation.loopMode !== BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE) {
+                    var keyOffset = to.toString() + from.toString();
+                    if (!this._offsetsCache[keyOffset]) {
+                        var fromValue = this._interpolate(from, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        var toValue = this._interpolate(to, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        switch (this._animation.dataType) {
+                            // Float
+                            case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
+                                this._offsetsCache[keyOffset] = toValue - fromValue;
+                                break;
+                            // Quaternion
+                            case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                                break;
+                            // Vector3
+                            case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            // Vector2
+                            case BABYLON.Animation.ANIMATIONTYPE_VECTOR2:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            // Size
+                            case BABYLON.Animation.ANIMATIONTYPE_SIZE:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            // Color3
+                            case BABYLON.Animation.ANIMATIONTYPE_COLOR3:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            default:
+                                break;
+                        }
+                        this._highLimitsCache[keyOffset] = toValue;
+                    }
+                    highLimitValue = this._highLimitsCache[keyOffset];
+                    offsetValue = this._offsetsCache[keyOffset];
+                }
+            }
+            if (offsetValue === undefined) {
+                switch (this._animation.dataType) {
+                    // Float
+                    case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
+                        offsetValue = 0;
+                        break;
+                    // Quaternion
+                    case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
+                        offsetValue = new BABYLON.Quaternion(0, 0, 0, 0);
+                        break;
+                    // Vector3
+                    case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
+                        offsetValue = BABYLON.Vector3.Zero();
+                        break;
+                    // Vector2
+                    case BABYLON.Animation.ANIMATIONTYPE_VECTOR2:
+                        offsetValue = BABYLON.Vector2.Zero();
+                        break;
+                    // Size
+                    case BABYLON.Animation.ANIMATIONTYPE_SIZE:
+                        offsetValue = BABYLON.Size.Zero();
+                        break;
+                    // Color3
+                    case BABYLON.Animation.ANIMATIONTYPE_COLOR3:
+                        offsetValue = BABYLON.Color3.Black();
+                }
+            }
+            // Compute value
+            var repeatCount = (ratio / range) >> 0;
+            var currentFrame = returnValue ? from + ratio % range : to;
+            var currentValue = this._interpolate(currentFrame, repeatCount, this._animation.loopMode, offsetValue, highLimitValue);
+            // Set value
+            this.setValue(currentValue);
+            // Check events
+            var events = this._animation.getEvents();
+            for (var index = 0; index < events.length; index++) {
+                // Make sure current frame has passed event frame and that event frame is within the current range
+                // Also, handle both forward and reverse animations
+                if ((range > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
+                    (range < 0 && currentFrame <= events[index].frame && events[index].frame <= from)) {
+                    var event = events[index];
+                    if (!event.isDone) {
+                        // If event should be done only once, remove it.
+                        if (event.onlyOnce) {
+                            events.splice(index, 1);
+                            index--;
+                        }
+                        event.isDone = true;
+                        event.action();
+                    } // Don't do anything if the event has already be done.
+                }
+                else if (events[index].isDone && !events[index].onlyOnce) {
+                    // reset event, the animation is looping
+                    events[index].isDone = false;
+                }
+            }
+            if (!returnValue) {
+                this._stopped = true;
+            }
+            return returnValue;
+        };
+        return RuntimeAnimation;
+    }());
+    BABYLON.RuntimeAnimation = RuntimeAnimation;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.runtimeAnimation.js.map
+
+var BABYLON;
+(function (BABYLON) {
     var Animatable = (function () {
         function Animatable(scene, target, fromFrame, toFrame, loopAnimation, speedRatio, onAnimationEnd, animations) {
             if (fromFrame === void 0) { fromFrame = 0; }
@@ -37971,7 +38034,7 @@ var BABYLON;
             this.onAnimationEnd = onAnimationEnd;
             this._localDelayOffset = null;
             this._pausedDelay = null;
-            this._animations = new Array();
+            this._runtimeAnimations = new Array();
             this._paused = false;
             this.animationStarted = false;
             if (animations) {
@@ -37982,56 +38045,64 @@ var BABYLON;
         }
         // Methods
         Animatable.prototype.getAnimations = function () {
-            return this._animations;
+            return this._runtimeAnimations;
         };
         Animatable.prototype.appendAnimations = function (target, animations) {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
-                animation._target = target;
-                this._animations.push(animation);
+                this._runtimeAnimations.push(new BABYLON.RuntimeAnimation(target, animation));
             }
         };
         Animatable.prototype.getAnimationByTargetProperty = function (property) {
-            var animations = this._animations;
-            for (var index = 0; index < animations.length; index++) {
-                if (animations[index].targetProperty === property) {
-                    return animations[index];
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                if (runtimeAnimations[index].animation.targetProperty === property) {
+                    return runtimeAnimations[index].animation;
+                }
+            }
+            return null;
+        };
+        Animatable.prototype.getRuntimeAnimationByTargetProperty = function (property) {
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                if (runtimeAnimations[index].animation.targetProperty === property) {
+                    return runtimeAnimations[index];
                 }
             }
             return null;
         };
         Animatable.prototype.reset = function () {
-            var animations = this._animations;
-            for (var index = 0; index < animations.length; index++) {
-                animations[index].reset();
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                runtimeAnimations[index].reset();
             }
             this._localDelayOffset = null;
             this._pausedDelay = null;
         };
         Animatable.prototype.enableBlending = function (blendingSpeed) {
-            var animations = this._animations;
-            for (var index = 0; index < animations.length; index++) {
-                animations[index].enableBlending = true;
-                animations[index].blendingSpeed = blendingSpeed;
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                runtimeAnimations[index].animation.enableBlending = true;
+                runtimeAnimations[index].animation.blendingSpeed = blendingSpeed;
             }
         };
         Animatable.prototype.disableBlending = function () {
-            var animations = this._animations;
-            for (var index = 0; index < animations.length; index++) {
-                animations[index].enableBlending = false;
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                runtimeAnimations[index].animation.enableBlending = false;
             }
         };
         Animatable.prototype.goToFrame = function (frame) {
-            var animations = this._animations;
-            if (animations[0]) {
-                var fps = animations[0].framePerSecond;
-                var currentFrame = animations[0].currentFrame;
+            var runtimeAnimations = this._runtimeAnimations;
+            if (runtimeAnimations[0]) {
+                var fps = runtimeAnimations[0].animation.framePerSecond;
+                var currentFrame = runtimeAnimations[0].currentFrame;
                 var adjustTime = frame - currentFrame;
                 var delay = adjustTime * 1000 / fps;
                 this._localDelayOffset -= delay;
             }
-            for (var index = 0; index < animations.length; index++) {
-                animations[index].goToFrame(frame);
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                runtimeAnimations[index].goToFrame(frame);
             }
         };
         Animatable.prototype.pause = function () {
@@ -38047,15 +38118,15 @@ var BABYLON;
             if (animationName) {
                 var idx = this._scene._activeAnimatables.indexOf(this);
                 if (idx > -1) {
-                    var animations = this._animations;
-                    for (var index = animations.length - 1; index >= 0; index--) {
-                        if (typeof animationName === "string" && animations[index].name != animationName) {
+                    var runtimeAnimations = this._runtimeAnimations;
+                    for (var index = runtimeAnimations.length - 1; index >= 0; index--) {
+                        if (typeof animationName === "string" && runtimeAnimations[index].animation.name != animationName) {
                             continue;
                         }
-                        animations[index].reset();
-                        animations.splice(index, 1);
+                        runtimeAnimations[index].dispose();
+                        runtimeAnimations.splice(index, 1);
                     }
-                    if (animations.length == 0) {
+                    if (runtimeAnimations.length == 0) {
                         this._scene._activeAnimatables.splice(idx, 1);
                         if (this.onAnimationEnd) {
                             this.onAnimationEnd();
@@ -38067,9 +38138,9 @@ var BABYLON;
                 var index = this._scene._activeAnimatables.indexOf(this);
                 if (index > -1) {
                     this._scene._activeAnimatables.splice(index, 1);
-                    var animations = this._animations;
-                    for (var index = 0; index < animations.length; index++) {
-                        animations[index].reset();
+                    var runtimeAnimations = this._runtimeAnimations;
+                    for (var index = 0; index < runtimeAnimations.length; index++) {
+                        runtimeAnimations[index].dispose();
                     }
                     if (this.onAnimationEnd) {
                         this.onAnimationEnd();
@@ -38094,10 +38165,10 @@ var BABYLON;
             }
             // Animating
             var running = false;
-            var animations = this._animations;
+            var runtimeAnimations = this._runtimeAnimations;
             var index;
-            for (index = 0; index < animations.length; index++) {
-                var animation = animations[index];
+            for (index = 0; index < runtimeAnimations.length; index++) {
+                var animation = runtimeAnimations[index];
                 var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
                 running = running || isRunning;
             }
@@ -38106,6 +38177,10 @@ var BABYLON;
                 // Remove from active animatables
                 index = this._scene._activeAnimatables.indexOf(this);
                 this._scene._activeAnimatables.splice(index, 1);
+                // Dispose all runtime animations
+                for (index = 0; index < runtimeAnimations.length; index++) {
+                    runtimeAnimations[index].dispose();
+                }
             }
             if (!running && this.onAnimationEnd) {
                 this.onAnimationEnd();
@@ -57233,7 +57308,7 @@ var BABYLON;
          */
         Bone.prototype.setScale = function (x, y, z, scaleChildren) {
             if (scaleChildren === void 0) { scaleChildren = false; }
-            if (this.animations[0] && !this.animations[0].isStopped()) {
+            if (this.animations[0] && !this.animations[0].hasRunningRuntimeAnimations) {
                 if (!scaleChildren) {
                     this._negateScaleChildren.x = 1 / x;
                     this._negateScaleChildren.y = 1 / y;
