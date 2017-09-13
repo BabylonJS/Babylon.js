@@ -98,7 +98,7 @@ module BABYLON.GUI {
         }
 
         public set focusedControl(control: IFocusableControl) {
-            if (this._focusedControl === control) {
+            if (this._focusedControl == control) {
                 return;
             }
 

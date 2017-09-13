@@ -125,7 +125,7 @@ var BABYLON;
                     return this._focusedControl;
                 },
                 set: function (control) {
-                    if (this._focusedControl === control) {
+                    if (this._focusedControl == control) {
                         return;
                     }
                     if (!this._focusedControl) {
