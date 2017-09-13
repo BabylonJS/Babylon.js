@@ -240,15 +240,6 @@ namespace Max2Babylon
                         babylonScene.fogColor = fog.GetColor(0).ToArray();
                         babylonScene.fogMode = 3;
                     }
-#if !MAX2015 && !MAX2016 && !MAX2017
-                    else
-                    {
-                        var paramBlock = atmospheric.GetReference(0) as IIParamBlock;
-
-                        babylonScene.fogColor = Tools.GetParamBlockValueColor(paramBlock, "Fog Color");
-                        babylonScene.fogMode = 3;
-                    }
-#endif
                     if (babylonMainCamera != null)
                     {
                         babylonScene.fogStart = maxMainCameraObject.GetEnvRange(0, 0, Tools.Forever);
