@@ -26,9 +26,9 @@ module BABYLON {
                 return new OculusTouchController(vrGamepad);
             }
             // Windows Mixed Reality controllers 
-            // else if (vrGamepad.id.indexOf('Spatial Control') === 0) {
-            //     //return new WindowsMixedRealityController(vrGamepad);
-            // }
+            else if (vrGamepad.id.indexOf(WindowsMotionController.GAMEPAD_ID_PREFIX) === 0) {
+                return new WindowsMotionController(vrGamepad);
+            }
             // HTC Vive
             else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
                 return new ViveController(vrGamepad);
@@ -58,9 +58,9 @@ module BABYLON {
         private _poseControlledCamera: TargetCamera;
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
-
-        constructor(public vrGamepad) {
-            super(vrGamepad.id, vrGamepad.index, vrGamepad);
+        
+        constructor(browserGamepad) {
+            super(browserGamepad.id, browserGamepad.index, browserGamepad);
             this.type = Gamepad.POSE_ENABLED;
             this.controllerType = PoseEnabledControllerType.GENERIC;
             this.position = Vector3.Zero();
@@ -75,9 +75,9 @@ module BABYLON {
 
         public update() {
             super.update();
-            var pose: GamepadPose = this.vrGamepad.pose;
+            var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
-
+            
             if (this._mesh) {
                 this._mesh.position.copyFrom(this._calculatedPosition);
                 this._mesh.rotationQuaternion.copyFrom(this._calculatedRotation);
@@ -95,6 +95,7 @@ module BABYLON {
 
                     this.devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
+
                 }
                 if (poseData.orientation) {
                     this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);

@@ -261,26 +261,6 @@
 
             this._cache.position.copyFrom(this.position);
             this._cache.upVector.copyFrom(this.upVector);
-
-            this._cache.mode = this.mode;
-            this._cache.minZ = this.minZ;
-            this._cache.maxZ = this.maxZ;
-
-            this._cache.fov = this.fov;
-            this._cache.fovMode = this.fovMode;
-            this._cache.aspectRatio = engine.getAspectRatio(this);
-
-            this._cache.orthoLeft = this.orthoLeft;
-            this._cache.orthoRight = this.orthoRight;
-            this._cache.orthoBottom = this.orthoBottom;
-            this._cache.orthoTop = this.orthoTop;
-            this._cache.renderWidth = engine.getRenderWidth();
-            this._cache.renderHeight = engine.getRenderHeight();
-        }
-
-        public _updateFromScene(): void {
-            this.updateCache();
-            this.update();
         }
 
         // Synchronized
@@ -333,10 +313,10 @@
         }
 
         public update(): void {
+            this._checkInputs();
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
-            this._checkInputs();
         }
 
         public _checkInputs(): void {
@@ -441,6 +421,7 @@
                 return this._computedViewMatrix;
             }
 
+            this.updateCache();
             this._computedViewMatrix = this._getViewMatrix();
             this._currentRenderId = this.getScene().getRenderId();
             
@@ -489,11 +470,21 @@
                 return this._projectionMatrix;
             }
 
+            // Cache
+            this._cache.mode = this.mode;
+            this._cache.minZ = this.minZ;
+            this._cache.maxZ = this.maxZ;
+        
+            // Matrix
             this._refreshFrustumPlanes = true;
 
             var engine = this.getEngine();
             var scene = this.getScene();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
+                this._cache.fov = this.fov;
+                this._cache.fovMode = this.fovMode;
+                this._cache.aspectRatio = engine.getAspectRatio(this);
+                
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
@@ -533,6 +524,13 @@
                         this.maxZ,
                         this._projectionMatrix);
                 }
+
+                this._cache.orthoLeft = this.orthoLeft;
+                this._cache.orthoRight = this.orthoRight;
+                this._cache.orthoBottom = this.orthoBottom;
+                this._cache.orthoTop = this.orthoTop;
+                this._cache.renderWidth = engine.getRenderWidth();
+                this._cache.renderHeight = engine.getRenderHeight();                    
             }
 
             this.onProjectionMatrixChangedObservable.notifyObservers(this);

@@ -7629,6 +7629,7 @@ var BABYLON;
              * Observable event triggered each time the canvas receives pointerout event
              */
             this.onCanvasPointerOutObservable = new BABYLON.Observable();
+            this._vrExclusivePointerMode = false;
             // Uniform buffers list
             this.disableUniformBuffers = false;
             this._uniformBuffers = new Array();
@@ -7859,9 +7860,11 @@ var BABYLON;
                 document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
                 this._onVRDisplayPointerRestricted = function () {
+                    _this._vrExclusivePointerMode = true;
                     canvas.requestPointerLock();
                 };
                 this._onVRDisplayPointerUnrestricted = function () {
+                    _this._vrExclusivePointerMode = false;
                     document.exitPointerLock();
                 };
                 window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
@@ -8210,6 +8213,13 @@ var BABYLON;
         Object.defineProperty(Engine, "Version", {
             get: function () {
                 return "3.1-alpha";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "isInVRExclusivePointerMode", {
+            get: function () {
+                return this._vrExclusivePointerMode;
             },
             enumerable: true,
             configurable: true
@@ -11001,8 +11011,10 @@ var BABYLON;
             }
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
-            if (internalTexture.samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-                value = 1;
+            if (internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST
+                && internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR
+                && internalTexture.samplingMode !== BABYLON.Texture.LINEAR_LINEAR) {
+                value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
             }
             if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {
                 this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
@@ -13251,6 +13263,28 @@ var BABYLON;
             return this;
         };
         /**
+         * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
+         */
+        AbstractMesh.prototype.getHierarchyBoundingVectors = function () {
+            this.computeWorldMatrix();
+            var min = this.getBoundingInfo().boundingBox.minimumWorld;
+            var max = this.getBoundingInfo().boundingBox.maximumWorld;
+            var descendants = this.getDescendants(false, function (node) { return node.subMeshes; });
+            for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
+                var descendant = descendants_1[_i];
+                var childMesh = descendant;
+                childMesh.computeWorldMatrix();
+                var minBox = childMesh.getBoundingInfo().boundingBox.minimumWorld;
+                var maxBox = childMesh.getBoundingInfo().boundingBox.maximumWorld;
+                BABYLON.Tools.CheckExtends(minBox, min, max);
+                BABYLON.Tools.CheckExtends(maxBox, min, max);
+            }
+            return {
+                min: min,
+                max: max
+            };
+        };
+        /**
          * Updates the mesh BoundingInfo object and all its children BoundingInfo objects also.
          * Returns the AbstractMesh.
          */
@@ -15200,22 +15234,6 @@ var BABYLON;
             var engine = this.getEngine();
             this._cache.position.copyFrom(this.position);
             this._cache.upVector.copyFrom(this.upVector);
-            this._cache.mode = this.mode;
-            this._cache.minZ = this.minZ;
-            this._cache.maxZ = this.maxZ;
-            this._cache.fov = this.fov;
-            this._cache.fovMode = this.fovMode;
-            this._cache.aspectRatio = engine.getAspectRatio(this);
-            this._cache.orthoLeft = this.orthoLeft;
-            this._cache.orthoRight = this.orthoRight;
-            this._cache.orthoBottom = this.orthoBottom;
-            this._cache.orthoTop = this.orthoTop;
-            this._cache.renderWidth = engine.getRenderWidth();
-            this._cache.renderHeight = engine.getRenderHeight();
-        };
-        Camera.prototype._updateFromScene = function () {
-            this.updateCache();
-            this.update();
         };
         // Synchronized
         Camera.prototype._isSynchronized = function () {
@@ -15257,10 +15275,10 @@ var BABYLON;
         Camera.prototype.detachControl = function (element) {
         };
         Camera.prototype.update = function () {
+            this._checkInputs();
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
-            this._checkInputs();
         };
         Camera.prototype._checkInputs = function () {
             this.onAfterCheckInputsObservable.notifyObservers(this);
@@ -15359,6 +15377,7 @@ var BABYLON;
             if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
+            this.updateCache();
             this._computedViewMatrix = this._getViewMatrix();
             this._currentRenderId = this.getScene().getRenderId();
             this._refreshFrustumPlanes = true;
@@ -15396,10 +15415,18 @@ var BABYLON;
             if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
             }
+            // Cache
+            this._cache.mode = this.mode;
+            this._cache.minZ = this.minZ;
+            this._cache.maxZ = this.maxZ;
+            // Matrix
             this._refreshFrustumPlanes = true;
             var engine = this.getEngine();
             var scene = this.getScene();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
+                this._cache.fov = this.fov;
+                this._cache.fovMode = this.fovMode;
+                this._cache.aspectRatio = engine.getAspectRatio(this);
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
@@ -15419,6 +15446,12 @@ var BABYLON;
                 else {
                     BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
                 }
+                this._cache.orthoLeft = this.orthoLeft;
+                this._cache.orthoRight = this.orthoRight;
+                this._cache.orthoBottom = this.orthoBottom;
+                this._cache.orthoTop = this.orthoTop;
+                this._cache.renderWidth = engine.getRenderWidth();
+                this._cache.renderHeight = engine.getRenderHeight();
             }
             this.onProjectionMatrixChangedObservable.notifyObservers(this);
             return this._projectionMatrix;
@@ -18804,6 +18837,7 @@ var BABYLON;
             // Camera
             this.resetCachedMaterial();
             this._renderId++;
+            this.activeCamera.update();
             this.updateTransformMatrix();
             if (camera._alternateCamera) {
                 this.updateAlternateTransformMatrix(camera._alternateCamera);
@@ -18938,8 +18972,6 @@ var BABYLON;
             this._renderDuration.endMonitoring(false);
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
-            // Update camera
-            this.activeCamera._updateFromScene();
             // Reset some special arrays
             this._renderTargets.reset();
             this._alternateRendering = false;
@@ -18951,14 +18983,14 @@ var BABYLON;
                 this._renderForCamera(camera);
                 return;
             }
+            // Update camera
+            this.activeCamera.update();
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
                 this._renderForCamera(camera._rigCameras[index]);
             }
             this.activeCamera = camera;
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-            // Update camera
-            this.activeCamera._updateFromScene();
         };
         Scene.prototype._checkIntersections = function () {
             for (var index = 0; index < this._meshesForIntersections.length; index++) {
@@ -19487,6 +19519,9 @@ var BABYLON;
             var max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                    continue;
+                }
                 mesh.computeWorldMatrix(true);
                 var minBox = mesh.getBoundingInfo().boundingBox.minimumWorld;
                 var maxBox = mesh.getBoundingInfo().boundingBox.maximumWorld;
@@ -34373,6 +34408,9 @@ var BABYLON;
             if (!this._pointerInput) {
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
+                    if (engine.isInVRExclusivePointerMode) {
+                        return;
+                    }
                     if (!_this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
@@ -34432,6 +34470,9 @@ var BABYLON;
             }
             this._onMouseMove = function (evt) {
                 if (!engine.isPointerLock) {
+                    return;
+                }
+                if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
@@ -35379,6 +35420,9 @@ var BABYLON;
             var previousMultiTouchPanPosition = { x: 0, y: 0, isPaning: false };
             this._pointerInput = function (p, s) {
                 var evt = p.event;
+                if (engine.isInVRExclusivePointerMode) {
+                    return;
+                }
                 if (p.type !== BABYLON.PointerEventTypes.POINTERMOVE && _this.buttons.indexOf(evt.button) === -1) {
                     return;
                 }
@@ -35462,7 +35506,7 @@ var BABYLON;
                             previousPinchDistance = pinchDistance;
                             return;
                         }
-                        if (Math.abs(pinchDistance - previousPinchDistance) > _this.camera.pinchToPanMaxDistance) {
+                        if (pinchDistance > _this.camera.panMaxFingersDistance || Math.abs(pinchDistance - previousPinchDistance) > _this.camera.pinchToPanMaxDistance) {
                             _this.camera
                                 .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (_this.pinchPrecision *
@@ -35622,7 +35666,8 @@ var BABYLON;
             _this.upperRadiusLimit = null;
             _this.inertialPanningX = 0;
             _this.inertialPanningY = 0;
-            _this.pinchToPanMaxDistance = 2;
+            _this.pinchToPanMaxDistance = 3;
+            _this.panMaxFingersDistance = 100;
             _this.panningDistanceLimit = null;
             _this.panningOriginTarget = BABYLON.Vector3.Zero();
             _this.panningInertia = 0.9;
@@ -36311,6 +36356,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "pinchToPanMaxDistance", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "panMaxFingersDistance", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "panningDistanceLimit", void 0);
@@ -37177,10 +37225,7 @@ var BABYLON;
             this.dataType = dataType;
             this.loopMode = loopMode;
             this.enableBlending = enableBlending;
-            this._offsetsCache = {};
-            this._highLimitsCache = {};
-            this._stopped = false;
-            this._blendingFactor = 0;
+            this._runtimeAnimations = new Array();
             // The set of event that will be linked to this animation
             this._events = new Array();
             this.blendingSpeed = 0.01;
@@ -37278,6 +37323,29 @@ var BABYLON;
             animation.onAnimationEnd = onAnimationEnd;
             return animation;
         };
+        Object.defineProperty(Animation.prototype, "runtimeAnimations", {
+            /**
+             * Return the array of runtime animations currently using this animation
+             */
+            get: function () {
+                return this._runtimeAnimations;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Animation.prototype, "hasRunningRuntimeAnimations", {
+            get: function () {
+                for (var _i = 0, _a = this._runtimeAnimations; _i < _a.length; _i++) {
+                    var runtimeAnimation = _a[_i];
+                    if (!runtimeAnimation.isStopped) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
@@ -37319,6 +37387,9 @@ var BABYLON;
                 }
             }
         };
+        Animation.prototype.getEvents = function () {
+            return this._events;
+        };
         Animation.prototype.createRange = function (name, from, to) {
             // check name not already in use; could happen for bones after serialized
             if (!this._ranges[name]) {
@@ -37343,16 +37414,6 @@ var BABYLON;
         };
         Animation.prototype.getRange = function (name) {
             return this._ranges[name];
-        };
-        Animation.prototype.reset = function () {
-            this._offsetsCache = {};
-            this._highLimitsCache = {};
-            this.currentFrame = 0;
-            this._blendingFactor = 0;
-            this._originalBlendValue = null;
-        };
-        Animation.prototype.isStopped = function () {
-            return this._stopped;
         };
         Animation.prototype.getKeys = function () {
             return this._keys;
@@ -37422,310 +37483,6 @@ var BABYLON;
         };
         Animation.prototype.setKeys = function (values) {
             this._keys = values.slice(0);
-            this._offsetsCache = {};
-            this._highLimitsCache = {};
-        };
-        Animation.prototype._getKeyValue = function (value) {
-            if (typeof value === "function") {
-                return value();
-            }
-            return value;
-        };
-        Animation.prototype._interpolate = function (currentFrame, repeatCount, loopMode, offsetValue, highLimitValue) {
-            if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
-                return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
-            }
-            this.currentFrame = currentFrame;
-            // Try to get a hash to find the right key
-            var startKeyIndex = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
-            if (this._keys[startKeyIndex].frame >= currentFrame) {
-                while (startKeyIndex - 1 >= 0 && this._keys[startKeyIndex].frame >= currentFrame) {
-                    startKeyIndex--;
-                }
-            }
-            for (var key = startKeyIndex; key < this._keys.length; key++) {
-                var endKey = this._keys[key + 1];
-                if (endKey.frame >= currentFrame) {
-                    var startKey = this._keys[key];
-                    var startValue = this._getKeyValue(startKey.value);
-                    var endValue = this._getKeyValue(endKey.value);
-                    var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
-                    var frameDelta = endKey.frame - startKey.frame;
-                    // gradient : percent of currentFrame between the frame inf and the frame sup
-                    var gradient = (currentFrame - startKey.frame) / frameDelta;
-                    // check for easingFunction and correction of gradient
-                    if (this._easingFunction != null) {
-                        gradient = this._easingFunction.ease(gradient);
-                    }
-                    switch (this.dataType) {
-                        // Float
-                        case Animation.ANIMATIONTYPE_FLOAT:
-                            var floatValue = useTangent ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this.floatInterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return floatValue;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return offsetValue * repeatCount + floatValue;
-                            }
-                            break;
-                        // Quaternion
-                        case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quatValue = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return quatValue;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return quatValue.add(offsetValue.scale(repeatCount));
-                            }
-                            return quatValue;
-                        // Vector3
-                        case Animation.ANIMATIONTYPE_VECTOR3:
-                            var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return vec3Value;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return vec3Value.add(offsetValue.scale(repeatCount));
-                            }
-                        // Vector2
-                        case Animation.ANIMATIONTYPE_VECTOR2:
-                            var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return vec2Value;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return vec2Value.add(offsetValue.scale(repeatCount));
-                            }
-                        // Size
-                        case Animation.ANIMATIONTYPE_SIZE:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.sizeInterpolateFunction(startValue, endValue, gradient);
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.sizeInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                            }
-                        // Color3
-                        case Animation.ANIMATIONTYPE_COLOR3:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.color3InterpolateFunction(startValue, endValue, gradient);
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.color3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                            }
-                        // Matrix
-                        case Animation.ANIMATIONTYPE_MATRIX:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    if (Animation.AllowMatricesInterpolation) {
-                                        return this.matrixInterpolateFunction(startValue, endValue, gradient);
-                                    }
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return startValue;
-                            }
-                        default:
-                            break;
-                    }
-                    break;
-                }
-            }
-            return this._getKeyValue(this._keys[this._keys.length - 1].value);
-        };
-        Animation.prototype.setValue = function (currentValue, blend) {
-            if (blend === void 0) { blend = false; }
-            // Set value
-            var path;
-            var destination;
-            if (this.targetPropertyPath.length > 1) {
-                var property = this._target[this.targetPropertyPath[0]];
-                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
-                    property = property[this.targetPropertyPath[index]];
-                }
-                path = this.targetPropertyPath[this.targetPropertyPath.length - 1];
-                destination = property;
-            }
-            else {
-                path = this.targetPropertyPath[0];
-                destination = this._target;
-            }
-            // Blending
-            if (this.enableBlending && this._blendingFactor <= 1.0) {
-                if (!this._originalBlendValue) {
-                    if (destination[path].clone) {
-                        this._originalBlendValue = destination[path].clone();
-                    }
-                    else {
-                        this._originalBlendValue = destination[path];
-                    }
-                }
-                if (this._originalBlendValue.prototype) {
-                    if (this._originalBlendValue.prototype.Lerp) {
-                        destination[path] = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
-                    }
-                    else {
-                        destination[path] = currentValue;
-                    }
-                }
-                else if (this._originalBlendValue.m) {
-                    destination[path] = BABYLON.Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
-                }
-                else {
-                    destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
-                }
-                this._blendingFactor += this.blendingSpeed;
-            }
-            else {
-                destination[path] = currentValue;
-            }
-            if (this._target.markAsDirty) {
-                this._target.markAsDirty(this.targetProperty);
-            }
-        };
-        Animation.prototype.goToFrame = function (frame) {
-            if (frame < this._keys[0].frame) {
-                frame = this._keys[0].frame;
-            }
-            else if (frame > this._keys[this._keys.length - 1].frame) {
-                frame = this._keys[this._keys.length - 1].frame;
-            }
-            var currentValue = this._interpolate(frame, 0, this.loopMode);
-            this.setValue(currentValue);
-        };
-        Animation.prototype.animate = function (delay, from, to, loop, speedRatio, blend) {
-            if (blend === void 0) { blend = false; }
-            if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
-                this._stopped = true;
-                return false;
-            }
-            var returnValue = true;
-            // Adding a start key at frame 0 if missing
-            if (this._keys[0].frame !== 0) {
-                var newKey = { frame: 0, value: this._keys[0].value };
-                this._keys.splice(0, 0, newKey);
-            }
-            // Check limits
-            if (from < this._keys[0].frame || from > this._keys[this._keys.length - 1].frame) {
-                from = this._keys[0].frame;
-            }
-            if (to < this._keys[0].frame || to > this._keys[this._keys.length - 1].frame) {
-                to = this._keys[this._keys.length - 1].frame;
-            }
-            //to and from cannot be the same key
-            if (from === to) {
-                from++;
-            }
-            // Compute ratio
-            var range = to - from;
-            var offsetValue;
-            // ratio represents the frame delta between from and to
-            var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
-            var highLimitValue = 0;
-            if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) {
-                returnValue = false;
-                highLimitValue = this._getKeyValue(this._keys[this._keys.length - 1].value);
-            }
-            else {
-                // Get max value if required
-                if (this.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
-                    var keyOffset = to.toString() + from.toString();
-                    if (!this._offsetsCache[keyOffset]) {
-                        var fromValue = this._interpolate(from, 0, Animation.ANIMATIONLOOPMODE_CYCLE);
-                        var toValue = this._interpolate(to, 0, Animation.ANIMATIONLOOPMODE_CYCLE);
-                        switch (this.dataType) {
-                            // Float
-                            case Animation.ANIMATIONTYPE_FLOAT:
-                                this._offsetsCache[keyOffset] = toValue - fromValue;
-                                break;
-                            // Quaternion
-                            case Animation.ANIMATIONTYPE_QUATERNION:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                                break;
-                            // Vector3
-                            case Animation.ANIMATIONTYPE_VECTOR3:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                            // Vector2
-                            case Animation.ANIMATIONTYPE_VECTOR2:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                            // Size
-                            case Animation.ANIMATIONTYPE_SIZE:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                            // Color3
-                            case Animation.ANIMATIONTYPE_COLOR3:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-                            default:
-                                break;
-                        }
-                        this._highLimitsCache[keyOffset] = toValue;
-                    }
-                    highLimitValue = this._highLimitsCache[keyOffset];
-                    offsetValue = this._offsetsCache[keyOffset];
-                }
-            }
-            if (offsetValue === undefined) {
-                switch (this.dataType) {
-                    // Float
-                    case Animation.ANIMATIONTYPE_FLOAT:
-                        offsetValue = 0;
-                        break;
-                    // Quaternion
-                    case Animation.ANIMATIONTYPE_QUATERNION:
-                        offsetValue = new BABYLON.Quaternion(0, 0, 0, 0);
-                        break;
-                    // Vector3
-                    case Animation.ANIMATIONTYPE_VECTOR3:
-                        offsetValue = BABYLON.Vector3.Zero();
-                        break;
-                    // Vector2
-                    case Animation.ANIMATIONTYPE_VECTOR2:
-                        offsetValue = BABYLON.Vector2.Zero();
-                        break;
-                    // Size
-                    case Animation.ANIMATIONTYPE_SIZE:
-                        offsetValue = BABYLON.Size.Zero();
-                        break;
-                    // Color3
-                    case Animation.ANIMATIONTYPE_COLOR3:
-                        offsetValue = BABYLON.Color3.Black();
-                }
-            }
-            // Compute value
-            var repeatCount = (ratio / range) >> 0;
-            var currentFrame = returnValue ? from + ratio % range : to;
-            var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
-            // Set value
-            this.setValue(currentValue);
-            // Check events
-            for (var index = 0; index < this._events.length; index++) {
-                // Make sure current frame has passed event frame and that event frame is within the current range
-                // Also, handle both forward and reverse animations
-                if ((range > 0 && currentFrame >= this._events[index].frame && this._events[index].frame >= from) ||
-                    (range < 0 && currentFrame <= this._events[index].frame && this._events[index].frame <= from)) {
-                    var event = this._events[index];
-                    if (!event.isDone) {
-                        // If event should be done only once, remove it.
-                        if (event.onlyOnce) {
-                            this._events.splice(index, 1);
-                            index--;
-                        }
-                        event.isDone = true;
-                        event.action();
-                    } // Don't do anything if the event has already be done.
-                }
-                else if (this._events[index].isDone && !this._events[index].onlyOnce) {
-                    // reset event, the animation is looping
-                    this._events[index].isDone = false;
-                }
-            }
-            if (!returnValue) {
-                this._stopped = true;
-            }
-            return returnValue;
         };
         Animation.prototype.serialize = function () {
             var serializationObject = {};
@@ -37912,6 +37669,357 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var RuntimeAnimation = (function () {
+        function RuntimeAnimation(target, animation) {
+            this._offsetsCache = {};
+            this._highLimitsCache = {};
+            this._stopped = false;
+            this._blendingFactor = 0;
+            this._animation = animation;
+            this._target = target;
+            animation._runtimeAnimations.push(this);
+        }
+        Object.defineProperty(RuntimeAnimation.prototype, "animation", {
+            get: function () {
+                return this._animation;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RuntimeAnimation.prototype.reset = function () {
+            this._offsetsCache = {};
+            this._highLimitsCache = {};
+            this.currentFrame = 0;
+            this._blendingFactor = 0;
+            this._originalBlendValue = null;
+        };
+        RuntimeAnimation.prototype.isStopped = function () {
+            return this._stopped;
+        };
+        RuntimeAnimation.prototype.dispose = function () {
+            var index = this._animation.runtimeAnimations.indexOf(this);
+            if (index > -1) {
+                this._animation.runtimeAnimations.splice(index, 1);
+            }
+        };
+        RuntimeAnimation.prototype._getKeyValue = function (value) {
+            if (typeof value === "function") {
+                return value();
+            }
+            return value;
+        };
+        RuntimeAnimation.prototype._interpolate = function (currentFrame, repeatCount, loopMode, offsetValue, highLimitValue) {
+            if (loopMode === BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
+                return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
+            }
+            this.currentFrame = currentFrame;
+            var keys = this._animation.getKeys();
+            // Try to get a hash to find the right key
+            var startKeyIndex = Math.max(0, Math.min(keys.length - 1, Math.floor(keys.length * (currentFrame - keys[0].frame) / (keys[keys.length - 1].frame - keys[0].frame)) - 1));
+            if (keys[startKeyIndex].frame >= currentFrame) {
+                while (startKeyIndex - 1 >= 0 && keys[startKeyIndex].frame >= currentFrame) {
+                    startKeyIndex--;
+                }
+            }
+            for (var key = startKeyIndex; key < keys.length; key++) {
+                var endKey = keys[key + 1];
+                if (endKey.frame >= currentFrame) {
+                    var startKey = keys[key];
+                    var startValue = this._getKeyValue(startKey.value);
+                    var endValue = this._getKeyValue(endKey.value);
+                    var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
+                    var frameDelta = endKey.frame - startKey.frame;
+                    // gradient : percent of currentFrame between the frame inf and the frame sup
+                    var gradient = (currentFrame - startKey.frame) / frameDelta;
+                    // check for easingFunction and correction of gradient
+                    var easingFunction = this._animation.getEasingFunction();
+                    if (easingFunction != null) {
+                        gradient = easingFunction.ease(gradient);
+                    }
+                    switch (this._animation.dataType) {
+                        // Float
+                        case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
+                            var floatValue = useTangent ? this._animation.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this._animation.floatInterpolateFunction(startValue, endValue, gradient);
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return floatValue;
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return offsetValue * repeatCount + floatValue;
+                            }
+                            break;
+                        // Quaternion
+                        case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
+                            var quatValue = useTangent ? this._animation.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this._animation.quaternionInterpolateFunction(startValue, endValue, gradient);
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return quatValue;
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return quatValue.add(offsetValue.scale(repeatCount));
+                            }
+                            return quatValue;
+                        // Vector3
+                        case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
+                            var vec3Value = useTangent ? this._animation.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this._animation.vector3InterpolateFunction(startValue, endValue, gradient);
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return vec3Value;
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return vec3Value.add(offsetValue.scale(repeatCount));
+                            }
+                        // Vector2
+                        case BABYLON.Animation.ANIMATIONTYPE_VECTOR2:
+                            var vec2Value = useTangent ? this._animation.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this._animation.vector2InterpolateFunction(startValue, endValue, gradient);
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return vec2Value;
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return vec2Value.add(offsetValue.scale(repeatCount));
+                            }
+                        // Size
+                        case BABYLON.Animation.ANIMATIONTYPE_SIZE:
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this._animation.sizeInterpolateFunction(startValue, endValue, gradient);
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return this._animation.sizeInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                            }
+                        // Color3
+                        case BABYLON.Animation.ANIMATIONTYPE_COLOR3:
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this._animation.color3InterpolateFunction(startValue, endValue, gradient);
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return this._animation.color3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                            }
+                        // Matrix
+                        case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
+                            switch (loopMode) {
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    if (BABYLON.Animation.AllowMatricesInterpolation) {
+                                        return this._animation.matrixInterpolateFunction(startValue, endValue, gradient);
+                                    }
+                                case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return startValue;
+                            }
+                        default:
+                            break;
+                    }
+                    break;
+                }
+            }
+            return this._getKeyValue(keys[keys.length - 1].value);
+        };
+        RuntimeAnimation.prototype.setValue = function (currentValue, blend) {
+            if (blend === void 0) { blend = false; }
+            // Set value
+            var path;
+            var destination;
+            var targetPropertyPath = this._animation.targetPropertyPath;
+            if (targetPropertyPath.length > 1) {
+                var property = this._target[targetPropertyPath[0]];
+                for (var index = 1; index < targetPropertyPath.length - 1; index++) {
+                    property = property[targetPropertyPath[index]];
+                }
+                path = targetPropertyPath[targetPropertyPath.length - 1];
+                destination = property;
+            }
+            else {
+                path = targetPropertyPath[0];
+                destination = this._target;
+            }
+            // Blending
+            if (this._animation.enableBlending && this._blendingFactor <= 1.0) {
+                if (!this._originalBlendValue) {
+                    if (destination[path].clone) {
+                        this._originalBlendValue = destination[path].clone();
+                    }
+                    else {
+                        this._originalBlendValue = destination[path];
+                    }
+                }
+                if (this._originalBlendValue.prototype) {
+                    if (this._originalBlendValue.prototype.Lerp) {
+                        destination[path] = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                    }
+                    else {
+                        destination[path] = currentValue;
+                    }
+                }
+                else if (this._originalBlendValue.m) {
+                    destination[path] = BABYLON.Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                }
+                else {
+                    destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
+                }
+                this._blendingFactor += this._animation.blendingSpeed;
+            }
+            else {
+                destination[path] = currentValue;
+            }
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this._animation.targetProperty);
+            }
+        };
+        RuntimeAnimation.prototype.goToFrame = function (frame) {
+            var keys = this._animation.getKeys();
+            if (frame < keys[0].frame) {
+                frame = keys[0].frame;
+            }
+            else if (frame > keys[keys.length - 1].frame) {
+                frame = keys[keys.length - 1].frame;
+            }
+            var currentValue = this._interpolate(frame, 0, this._animation.loopMode);
+            this.setValue(currentValue);
+        };
+        RuntimeAnimation.prototype.animate = function (delay, from, to, loop, speedRatio, blend) {
+            if (blend === void 0) { blend = false; }
+            var targetPropertyPath = this._animation.targetPropertyPath;
+            if (!targetPropertyPath || targetPropertyPath.length < 1) {
+                this._stopped = true;
+                return false;
+            }
+            var returnValue = true;
+            var keys = this._animation.getKeys();
+            // Adding a start key at frame 0 if missing
+            if (keys[0].frame !== 0) {
+                var newKey = { frame: 0, value: keys[0].value };
+                keys.splice(0, 0, newKey);
+            }
+            // Check limits
+            if (from < keys[0].frame || from > keys[keys.length - 1].frame) {
+                from = keys[0].frame;
+            }
+            if (to < keys[0].frame || to > keys[keys.length - 1].frame) {
+                to = keys[keys.length - 1].frame;
+            }
+            //to and from cannot be the same key
+            if (from === to) {
+                from++;
+            }
+            // Compute ratio
+            var range = to - from;
+            var offsetValue;
+            // ratio represents the frame delta between from and to
+            var ratio = delay * (this._animation.framePerSecond * speedRatio) / 1000.0;
+            var highLimitValue = 0;
+            if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) {
+                returnValue = false;
+                highLimitValue = this._getKeyValue(keys[keys.length - 1].value);
+            }
+            else {
+                // Get max value if required
+                if (this._animation.loopMode !== BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE) {
+                    var keyOffset = to.toString() + from.toString();
+                    if (!this._offsetsCache[keyOffset]) {
+                        var fromValue = this._interpolate(from, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        var toValue = this._interpolate(to, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        switch (this._animation.dataType) {
+                            // Float
+                            case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
+                                this._offsetsCache[keyOffset] = toValue - fromValue;
+                                break;
+                            // Quaternion
+                            case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                                break;
+                            // Vector3
+                            case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            // Vector2
+                            case BABYLON.Animation.ANIMATIONTYPE_VECTOR2:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            // Size
+                            case BABYLON.Animation.ANIMATIONTYPE_SIZE:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            // Color3
+                            case BABYLON.Animation.ANIMATIONTYPE_COLOR3:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            default:
+                                break;
+                        }
+                        this._highLimitsCache[keyOffset] = toValue;
+                    }
+                    highLimitValue = this._highLimitsCache[keyOffset];
+                    offsetValue = this._offsetsCache[keyOffset];
+                }
+            }
+            if (offsetValue === undefined) {
+                switch (this._animation.dataType) {
+                    // Float
+                    case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
+                        offsetValue = 0;
+                        break;
+                    // Quaternion
+                    case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
+                        offsetValue = new BABYLON.Quaternion(0, 0, 0, 0);
+                        break;
+                    // Vector3
+                    case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
+                        offsetValue = BABYLON.Vector3.Zero();
+                        break;
+                    // Vector2
+                    case BABYLON.Animation.ANIMATIONTYPE_VECTOR2:
+                        offsetValue = BABYLON.Vector2.Zero();
+                        break;
+                    // Size
+                    case BABYLON.Animation.ANIMATIONTYPE_SIZE:
+                        offsetValue = BABYLON.Size.Zero();
+                        break;
+                    // Color3
+                    case BABYLON.Animation.ANIMATIONTYPE_COLOR3:
+                        offsetValue = BABYLON.Color3.Black();
+                }
+            }
+            // Compute value
+            var repeatCount = (ratio / range) >> 0;
+            var currentFrame = returnValue ? from + ratio % range : to;
+            var currentValue = this._interpolate(currentFrame, repeatCount, this._animation.loopMode, offsetValue, highLimitValue);
+            // Set value
+            this.setValue(currentValue);
+            // Check events
+            var events = this._animation.getEvents();
+            for (var index = 0; index < events.length; index++) {
+                // Make sure current frame has passed event frame and that event frame is within the current range
+                // Also, handle both forward and reverse animations
+                if ((range > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
+                    (range < 0 && currentFrame <= events[index].frame && events[index].frame <= from)) {
+                    var event = events[index];
+                    if (!event.isDone) {
+                        // If event should be done only once, remove it.
+                        if (event.onlyOnce) {
+                            events.splice(index, 1);
+                            index--;
+                        }
+                        event.isDone = true;
+                        event.action();
+                    } // Don't do anything if the event has already be done.
+                }
+                else if (events[index].isDone && !events[index].onlyOnce) {
+                    // reset event, the animation is looping
+                    events[index].isDone = false;
+                }
+            }
+            if (!returnValue) {
+                this._stopped = true;
+            }
+            return returnValue;
+        };
+        return RuntimeAnimation;
+    }());
+    BABYLON.RuntimeAnimation = RuntimeAnimation;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.runtimeAnimation.js.map
+
+var BABYLON;
+(function (BABYLON) {
     var Animatable = (function () {
         function Animatable(scene, target, fromFrame, toFrame, loopAnimation, speedRatio, onAnimationEnd, animations) {
             if (fromFrame === void 0) { fromFrame = 0; }
@@ -37926,7 +38034,7 @@ var BABYLON;
             this.onAnimationEnd = onAnimationEnd;
             this._localDelayOffset = null;
             this._pausedDelay = null;
-            this._animations = new Array();
+            this._runtimeAnimations = new Array();
             this._paused = false;
             this.animationStarted = false;
             if (animations) {
@@ -37937,56 +38045,64 @@ var BABYLON;
         }
         // Methods
         Animatable.prototype.getAnimations = function () {
-            return this._animations;
+            return this._runtimeAnimations;
         };
         Animatable.prototype.appendAnimations = function (target, animations) {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
-                animation._target = target;
-                this._animations.push(animation);
+                this._runtimeAnimations.push(new BABYLON.RuntimeAnimation(target, animation));
             }
         };
         Animatable.prototype.getAnimationByTargetProperty = function (property) {
-            var animations = this._animations;
-            for (var index = 0; index < animations.length; index++) {
-                if (animations[index].targetProperty === property) {
-                    return animations[index];
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                if (runtimeAnimations[index].animation.targetProperty === property) {
+                    return runtimeAnimations[index].animation;
+                }
+            }
+            return null;
+        };
+        Animatable.prototype.getRuntimeAnimationByTargetProperty = function (property) {
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                if (runtimeAnimations[index].animation.targetProperty === property) {
+                    return runtimeAnimations[index];
                 }
             }
             return null;
         };
         Animatable.prototype.reset = function () {
-            var animations = this._animations;
-            for (var index = 0; index < animations.length; index++) {
-                animations[index].reset();
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                runtimeAnimations[index].reset();
             }
             this._localDelayOffset = null;
             this._pausedDelay = null;
         };
         Animatable.prototype.enableBlending = function (blendingSpeed) {
-            var animations = this._animations;
-            for (var index = 0; index < animations.length; index++) {
-                animations[index].enableBlending = true;
-                animations[index].blendingSpeed = blendingSpeed;
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                runtimeAnimations[index].animation.enableBlending = true;
+                runtimeAnimations[index].animation.blendingSpeed = blendingSpeed;
             }
         };
         Animatable.prototype.disableBlending = function () {
-            var animations = this._animations;
-            for (var index = 0; index < animations.length; index++) {
-                animations[index].enableBlending = false;
+            var runtimeAnimations = this._runtimeAnimations;
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                runtimeAnimations[index].animation.enableBlending = false;
             }
         };
         Animatable.prototype.goToFrame = function (frame) {
-            var animations = this._animations;
-            if (animations[0]) {
-                var fps = animations[0].framePerSecond;
-                var currentFrame = animations[0].currentFrame;
+            var runtimeAnimations = this._runtimeAnimations;
+            if (runtimeAnimations[0]) {
+                var fps = runtimeAnimations[0].animation.framePerSecond;
+                var currentFrame = runtimeAnimations[0].currentFrame;
                 var adjustTime = frame - currentFrame;
                 var delay = adjustTime * 1000 / fps;
                 this._localDelayOffset -= delay;
             }
-            for (var index = 0; index < animations.length; index++) {
-                animations[index].goToFrame(frame);
+            for (var index = 0; index < runtimeAnimations.length; index++) {
+                runtimeAnimations[index].goToFrame(frame);
             }
         };
         Animatable.prototype.pause = function () {
@@ -38002,15 +38118,15 @@ var BABYLON;
             if (animationName) {
                 var idx = this._scene._activeAnimatables.indexOf(this);
                 if (idx > -1) {
-                    var animations = this._animations;
-                    for (var index = animations.length - 1; index >= 0; index--) {
-                        if (typeof animationName === "string" && animations[index].name != animationName) {
+                    var runtimeAnimations = this._runtimeAnimations;
+                    for (var index = runtimeAnimations.length - 1; index >= 0; index--) {
+                        if (typeof animationName === "string" && runtimeAnimations[index].animation.name != animationName) {
                             continue;
                         }
-                        animations[index].reset();
-                        animations.splice(index, 1);
+                        runtimeAnimations[index].dispose();
+                        runtimeAnimations.splice(index, 1);
                     }
-                    if (animations.length == 0) {
+                    if (runtimeAnimations.length == 0) {
                         this._scene._activeAnimatables.splice(idx, 1);
                         if (this.onAnimationEnd) {
                             this.onAnimationEnd();
@@ -38022,9 +38138,9 @@ var BABYLON;
                 var index = this._scene._activeAnimatables.indexOf(this);
                 if (index > -1) {
                     this._scene._activeAnimatables.splice(index, 1);
-                    var animations = this._animations;
-                    for (var index = 0; index < animations.length; index++) {
-                        animations[index].reset();
+                    var runtimeAnimations = this._runtimeAnimations;
+                    for (var index = 0; index < runtimeAnimations.length; index++) {
+                        runtimeAnimations[index].dispose();
                     }
                     if (this.onAnimationEnd) {
                         this.onAnimationEnd();
@@ -38049,10 +38165,10 @@ var BABYLON;
             }
             // Animating
             var running = false;
-            var animations = this._animations;
+            var runtimeAnimations = this._runtimeAnimations;
             var index;
-            for (index = 0; index < animations.length; index++) {
-                var animation = animations[index];
+            for (index = 0; index < runtimeAnimations.length; index++) {
+                var animation = runtimeAnimations[index];
                 var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
                 running = running || isRunning;
             }
@@ -38061,6 +38177,10 @@ var BABYLON;
                 // Remove from active animatables
                 index = this._scene._activeAnimatables.indexOf(this);
                 this._scene._activeAnimatables.splice(index, 1);
+                // Dispose all runtime animations
+                for (index = 0; index < runtimeAnimations.length; index++) {
+                    runtimeAnimations[index].dispose();
+                }
             }
             if (!running && this.onAnimationEnd) {
                 this.onAnimationEnd();
@@ -44379,7 +44499,7 @@ var BABYLON;
             var height = options.height || 10.0;
             var subdivisions = options.subdivisions || 1 | 0;
             var minHeight = options.minHeight || 0.0;
-            var maxHeight = options.maxHeight || 10.0;
+            var maxHeight = options.maxHeight || 1.0;
             var filter = options.colorFilter || new BABYLON.Color3(0.3, 0.59, 0.11);
             var updatable = options.updatable;
             var onReady = options.onReady;
@@ -49328,6 +49448,7 @@ var BABYLON;
 (function (BABYLON) {
     var FilesInput = (function () {
         function FilesInput(engine, scene, sceneLoadedCallback, progressCallback, additionalRenderLoopLogicCallback, textureLoadingCallback, startingProcessingFilesCallback, onReloadCallback) {
+            this.onProcessFileCallback = function () { return true; };
             this._engine = engine;
             this._currentScene = scene;
             this._sceneLoadedCallback = sceneLoadedCallback;
@@ -49406,9 +49527,14 @@ var BABYLON;
             });
         };
         FilesInput.prototype._processFiles = function (files) {
+            var skippedFiles = 0;
             for (var i = 0; i < files.length; i++) {
                 var name = files[i].correctName.toLowerCase();
                 var extension = name.split('.').pop();
+                if (!this.onProcessFileCallback(files[i], name, extension)) {
+                    skippedFiles++;
+                    continue;
+                }
                 if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
                     && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
                     this._sceneFileToLoad = files[i];
@@ -49420,7 +49546,7 @@ var BABYLON;
             if (this._onReloadCallback) {
                 this._onReloadCallback(this._sceneFileToLoad);
             }
-            else {
+            else if (skippedFiles < files.length) {
                 this.reload();
             }
         };
@@ -51376,12 +51502,20 @@ var BABYLON;
             this.onGamepadDisconnectedObservable = new BABYLON.Observable();
             this._onGamepadConnectedEvent = function (evt) {
                 var gamepad = evt.gamepad;
-                // Protection code for Chrome which has a very buggy gamepad implementation...
-                // And raises a connected event on disconnection for instance
                 if (gamepad.index in _this._babylonGamepads) {
-                    return;
+                    if (_this._babylonGamepads[gamepad.index].isConnected) {
+                        return;
+                    }
                 }
-                var newGamepad = _this._addNewGamepad(gamepad);
+                var newGamepad;
+                if (_this._babylonGamepads[gamepad.index]) {
+                    newGamepad = _this._babylonGamepads[gamepad.index];
+                    newGamepad.browserGamepad = gamepad;
+                    newGamepad._isConnected = true;
+                }
+                else {
+                    newGamepad = _this._addNewGamepad(gamepad);
+                }
                 _this.onGamepadConnectedObservable.notifyObservers(newGamepad);
                 _this._startMonitoringGamepads();
             };
@@ -51390,10 +51524,9 @@ var BABYLON;
                 // Remove the gamepad from the list of gamepads to monitor.
                 for (var i in _this._babylonGamepads) {
                     if (_this._babylonGamepads[i].index === gamepad.index) {
-                        var gamepadToRemove = _this._babylonGamepads[i];
-                        _this._babylonGamepads[i] = null;
-                        _this.onGamepadDisconnectedObservable.notifyObservers(gamepadToRemove);
-                        gamepadToRemove.dispose();
+                        var disconnectedGamepad = _this._babylonGamepads[i];
+                        disconnectedGamepad._isConnected = false;
+                        _this.onGamepadDisconnectedObservable.notifyObservers(disconnectedGamepad);
                         break;
                     }
                 }
@@ -51414,6 +51547,13 @@ var BABYLON;
                 }
             }
         }
+        Object.defineProperty(GamepadManager.prototype, "gamepads", {
+            get: function () {
+                return this._babylonGamepads;
+            },
+            enumerable: true,
+            configurable: true
+        });
         GamepadManager.prototype.getGamepadByType = function (type) {
             if (type === void 0) { type = BABYLON.Gamepad.XBOX; }
             for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
@@ -51430,6 +51570,10 @@ var BABYLON;
                 window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
                 this._onGamepadConnectedEvent = null;
                 this._onGamepadDisconnectedEvent = null;
+            }
+            for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
+                var gamepad = _a[_i];
+                gamepad.dispose();
             }
             this._oneGamepadConnected = false;
             this._stopMonitoringGamepads();
@@ -51468,7 +51612,7 @@ var BABYLON;
             this._updateGamepadObjects();
             for (var i in this._babylonGamepads) {
                 var gamepad = this._babylonGamepads[i];
-                if (!gamepad) {
+                if (!gamepad || !gamepad.isConnected) {
                     continue;
                 }
                 gamepad.update();
@@ -51490,6 +51634,10 @@ var BABYLON;
                     else {
                         // Forced to copy again this object for Chrome for unknown reason
                         this._babylonGamepads[i].browserGamepad = gamepads[i];
+                        if (!this._babylonGamepads[i].isConnected) {
+                            this._babylonGamepads[i]._isConnected = true;
+                            this.onGamepadConnectedObservable.notifyObservers(this._babylonGamepads[i]);
+                        }
                     }
                 }
             }
@@ -51521,6 +51669,7 @@ var BABYLON;
             this.id = id;
             this.index = index;
             this.browserGamepad = browserGamepad;
+            this._isConnected = true;
             this.type = Gamepad.GAMEPAD;
             this._leftStickAxisX = leftStickX;
             this._leftStickAxisY = leftStickY;
@@ -51533,6 +51682,13 @@ var BABYLON;
                 this._rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };
             }
         }
+        Object.defineProperty(Gamepad.prototype, "isConnected", {
+            get: function () {
+                return this._isConnected;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Gamepad.prototype.onleftstickchanged = function (callback) {
             this._onleftstickchanged = callback;
         };
@@ -51939,6 +52095,9 @@ var BABYLON;
             if (vrGamepad.id.indexOf('Oculus Touch') !== -1) {
                 return new BABYLON.OculusTouchController(vrGamepad);
             }
+            else if (vrGamepad.id.indexOf(BABYLON.WindowsMotionController.GAMEPAD_ID_PREFIX) === 0) {
+                return new BABYLON.WindowsMotionController(vrGamepad);
+            }
             else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
                 return new BABYLON.ViveController(vrGamepad);
             }
@@ -51951,9 +52110,8 @@ var BABYLON;
     BABYLON.PoseEnabledControllerHelper = PoseEnabledControllerHelper;
     var PoseEnabledController = (function (_super) {
         __extends(PoseEnabledController, _super);
-        function PoseEnabledController(vrGamepad) {
-            var _this = _super.call(this, vrGamepad.id, vrGamepad.index, vrGamepad) || this;
-            _this.vrGamepad = vrGamepad;
+        function PoseEnabledController(browserGamepad) {
+            var _this = _super.call(this, browserGamepad.id, browserGamepad.index, browserGamepad) || this;
             _this.deviceScaleFactor = 1;
             _this._leftHandSystemQuaternion = new BABYLON.Quaternion();
             _this.type = BABYLON.Gamepad.POSE_ENABLED;
@@ -51969,7 +52127,7 @@ var BABYLON;
         }
         PoseEnabledController.prototype.update = function () {
             _super.prototype.update.call(this);
-            var pose = this.vrGamepad.pose;
+            var pose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
             if (this._mesh) {
                 this._mesh.position.copyFrom(this._calculatedPosition);
@@ -52061,6 +52219,7 @@ var BABYLON;
         __extends(WebVRController, _super);
         function WebVRController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
+            // Observables
             _this.onTriggerStateChangedObservable = new BABYLON.Observable();
             _this.onMainButtonStateChangedObservable = new BABYLON.Observable();
             _this.onSecondaryButtonStateChangedObservable = new BABYLON.Observable();
@@ -52081,10 +52240,17 @@ var BABYLON;
         WebVRController.prototype.onButtonStateChange = function (callback) {
             this._onButtonStateChange = callback;
         };
+        Object.defineProperty(WebVRController.prototype, "defaultModel", {
+            get: function () {
+                return this._defaultModel;
+            },
+            enumerable: true,
+            configurable: true
+        });
         WebVRController.prototype.update = function () {
             _super.prototype.update.call(this);
             for (var index = 0; index < this._buttons.length; index++) {
-                this._setButtonValue(this.vrGamepad.buttons[index], this._buttons[index], index);
+                this._setButtonValue(this.browserGamepad.buttons[index], this._buttons[index], index);
             }
             ;
             if (this.leftStick.x !== this.pad.x || this.leftStick.y !== this.pad.y) {
@@ -52126,6 +52292,14 @@ var BABYLON;
             this._changes.changed = this._changes.pressChanged || this._changes.touchChanged || this._changes.valueChanged;
             return this._changes;
         };
+        WebVRController.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            this.onTriggerStateChangedObservable.clear();
+            this.onMainButtonStateChangedObservable.clear();
+            this.onSecondaryButtonStateChangedObservable.clear();
+            this.onPadStateChangedObservable.clear();
+            this.onPadValuesChangedObservable.clear();
+        };
         return WebVRController;
     }(BABYLON.PoseEnabledController));
     BABYLON.WebVRController = WebVRController;
@@ -52147,8 +52321,15 @@ var BABYLON;
         }
         OculusTouchController.prototype.initControllerMesh = function (scene, meshLoaded) {
             var _this = this;
-            var meshName = this.hand === 'right' ? 'RightTouch.babylon' : 'LeftTouch.babylon';
-            BABYLON.SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", meshName, scene, function (newMeshes) {
+            var meshName;
+            // Hand
+            if (this.hand === 'left') {
+                meshName = OculusTouchController.MODEL_LEFT_FILENAME;
+            }
+            else {
+                meshName = OculusTouchController.MODEL_RIGHT_FILENAME;
+            }
+            BABYLON.SceneLoader.ImportMesh("", OculusTouchController.MODEL_BASE_URL, meshName, scene, function (newMeshes) {
                 /*
                 Parent Mesh name: oculus_touch_left
                 - body
@@ -52271,6 +52452,9 @@ var BABYLON;
                     return;
             }
         };
+        OculusTouchController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/oculus/';
+        OculusTouchController.MODEL_LEFT_FILENAME = 'left.babylon';
+        OculusTouchController.MODEL_RIGHT_FILENAME = 'right.babylon';
         return OculusTouchController;
     }(BABYLON.WebVRController));
     BABYLON.OculusTouchController = OculusTouchController;
@@ -52290,7 +52474,7 @@ var BABYLON;
         }
         ViveController.prototype.initControllerMesh = function (scene, meshLoaded) {
             var _this = this;
-            BABYLON.SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", "ViveWand.babylon", scene, function (newMeshes) {
+            BABYLON.SceneLoader.ImportMesh("", ViveController.MODEL_BASE_URL, ViveController.MODEL_FILENAME, scene, function (newMeshes) {
                 /*
                 Parent Mesh name: ViveWand
                 - body
@@ -52365,6 +52549,8 @@ var BABYLON;
                     return;
             }
         };
+        ViveController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/vive/';
+        ViveController.MODEL_FILENAME = 'wand.babylon';
         return ViveController;
     }(BABYLON.WebVRController));
     BABYLON.ViveController = ViveController;
@@ -52382,7 +52568,7 @@ var BABYLON;
         }
         GenericController.prototype.initControllerMesh = function (scene, meshLoaded) {
             var _this = this;
-            BABYLON.SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", "genericvrcontroller.babylon", scene, function (newMeshes) {
+            BABYLON.SceneLoader.ImportMesh("", GenericController.MODEL_BASE_URL, GenericController.MODEL_FILENAME, scene, function (newMeshes) {
                 _this._defaultModel = newMeshes[1];
                 if (meshLoaded) {
                     meshLoaded(_this._defaultModel);
@@ -52394,12 +52580,346 @@ var BABYLON;
             console.log("Button id: " + buttonIdx + "state: ");
             console.dir(state);
         };
+        GenericController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/generic/';
+        GenericController.MODEL_FILENAME = 'generic.babylon';
         return GenericController;
     }(BABYLON.WebVRController));
     BABYLON.GenericController = GenericController;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.genericController.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    var LoadedMeshInfo = (function () {
+        function LoadedMeshInfo() {
+            this.buttonMeshes = {};
+            this.axisMeshes = {};
+        }
+        return LoadedMeshInfo;
+    }());
+    var WindowsMotionController = (function (_super) {
+        __extends(WindowsMotionController, _super);
+        function WindowsMotionController(vrGamepad) {
+            var _this = _super.call(this, vrGamepad) || this;
+            _this._mapping = {
+                // Semantic button names
+                buttons: ['thumbstick', 'trigger', 'grip', 'menu', 'trackpad'],
+                // A mapping of the button name to glTF model node name
+                // that should be transformed by button value.
+                buttonMeshNames: {
+                    'trigger': 'SELECT',
+                    'menu': 'MENU',
+                    'grip': 'GRASP',
+                    'thumbstick': 'THUMBSTICK_PRESS',
+                    'trackpad': 'TOUCHPAD_PRESS'
+                },
+                // This mapping is used to translate from the Motion Controller to Babylon semantics
+                buttonObservableNames: {
+                    'trigger': 'onTriggerStateChangedObservable',
+                    'menu': 'onSecondaryButtonStateChangedObservable',
+                    'grip': 'onMainButtonStateChangedObservable',
+                    'thumbstick': 'onPadStateChangedObservable',
+                    'trackpad': 'onTrackpadChangedObservable'
+                },
+                // A mapping of the axis name to glTF model node name
+                // that should be transformed by axis value.
+                // This array mirrors the browserGamepad.axes array, such that 
+                // the mesh corresponding to axis 0 is in this array index 0.
+                axisMeshNames: [
+                    'THUMBSTICK_X',
+                    'THUMBSTICK_Y',
+                    'TOUCHPAD_TOUCH_X',
+                    'TOUCHPAD_TOUCH_Y'
+                ],
+                pointingPoseMeshName: 'POINTING_POSE'
+            };
+            _this.onTrackpadChangedObservable = new BABYLON.Observable();
+            _this.controllerType = BABYLON.PoseEnabledControllerType.WINDOWS;
+            _this._loadedMeshInfo = null;
+            return _this;
+        }
+        Object.defineProperty(WindowsMotionController.prototype, "onTriggerButtonStateChangedObservable", {
+            get: function () {
+                return this.onTriggerStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onMenuButtonStateChangedObservable", {
+            get: function () {
+                return this.onSecondaryButtonStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onGripButtonStateChangedObservable", {
+            get: function () {
+                return this.onMainButtonStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onThumbstickButtonStateChangedObservable", {
+            get: function () {
+                return this.onPadStateChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WindowsMotionController.prototype, "onTouchpadButtonStateChangedObservable", {
+            get: function () {
+                return this.onTrackpadChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Called once per frame by the engine.
+         */
+        WindowsMotionController.prototype.update = function () {
+            _super.prototype.update.call(this);
+            // Only need to animate axes if there is a loaded mesh
+            if (this._loadedMeshInfo) {
+                if (this.browserGamepad.axes) {
+                    for (var axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
+                        this.lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
+                    }
+                }
+            }
+        };
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        WindowsMotionController.prototype.handleButtonChange = function (buttonIdx, state, changes) {
+            var buttonName = this._mapping.buttons[buttonIdx];
+            if (!buttonName) {
+                return;
+            }
+            // Only emit events for buttons that we know how to map from index to name
+            var observable = this[this._mapping.buttonObservableNames[buttonName]];
+            if (observable) {
+                observable.notifyObservers(state);
+            }
+            this.lerpButtonTransform(buttonName, state.value);
+        };
+        WindowsMotionController.prototype.lerpButtonTransform = function (buttonName, buttonValue) {
+            // If there is no loaded mesh, there is nothing to transform.
+            if (!this._loadedMeshInfo) {
+                return;
+            }
+            var meshInfo = this._loadedMeshInfo.buttonMeshes[buttonName];
+            BABYLON.Quaternion.SlerpToRef(meshInfo.unpressed.rotationQuaternion, meshInfo.pressed.rotationQuaternion, buttonValue, meshInfo.value.rotationQuaternion);
+            BABYLON.Vector3.LerpToRef(meshInfo.unpressed.position, meshInfo.pressed.position, buttonValue, meshInfo.value.position);
+        };
+        WindowsMotionController.prototype.lerpAxisTransform = function (axis, axisValue) {
+            var meshInfo = this._loadedMeshInfo.axisMeshes[axis];
+            if (!meshInfo) {
+                return;
+            }
+            // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
+            var lerpValue = axisValue * 0.5 + 0.5;
+            BABYLON.Quaternion.SlerpToRef(meshInfo.min.rotationQuaternion, meshInfo.max.rotationQuaternion, lerpValue, meshInfo.value.rotationQuaternion);
+            BABYLON.Vector3.LerpToRef(meshInfo.min.position, meshInfo.max.position, lerpValue, meshInfo.value.position);
+        };
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        WindowsMotionController.prototype.initControllerMesh = function (scene, meshLoaded, forceDefault) {
+            var _this = this;
+            if (forceDefault === void 0) { forceDefault = false; }
+            var path;
+            var filename;
+            // Checking if GLB loader is present
+            if (BABYLON.SceneLoader.GetPluginForExtension("glb")) {
+                // Determine the device specific folder based on the ID suffix
+                var device = 'default';
+                if (this.id && !forceDefault) {
+                    var match = this.id.match(WindowsMotionController.GAMEPAD_ID_PATTERN);
+                    device = ((match && match[0]) || device);
+                }
+                // Hand
+                if (this.hand === 'left') {
+                    filename = WindowsMotionController.MODEL_LEFT_FILENAME;
+                }
+                else {
+                    filename = WindowsMotionController.MODEL_RIGHT_FILENAME;
+                }
+                path = WindowsMotionController.MODEL_BASE_URL + device + '/';
+            }
+            else {
+                BABYLON.Tools.Warn("You need to reference GLTF loader to load Windows Motion Controllers model. Falling back to generic models");
+                path = BABYLON.GenericController.MODEL_BASE_URL;
+                filename = BABYLON.GenericController.MODEL_FILENAME;
+            }
+            BABYLON.SceneLoader.ImportMesh("", path, filename, scene, function (meshes) {
+                // glTF files successfully loaded from the remote server, now process them to ensure they are in the right format.
+                _this._loadedMeshInfo = _this.processModel(scene, meshes);
+                if (!_this._loadedMeshInfo) {
+                    return;
+                }
+                _this._defaultModel = _this._loadedMeshInfo.rootNode;
+                _this.attachToMesh(_this._defaultModel);
+                if (meshLoaded) {
+                    meshLoaded(_this._defaultModel);
+                }
+            }, null, function (scene, message) {
+                BABYLON.Tools.Log(message);
+                BABYLON.Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
+                if (!forceDefault) {
+                    _this.initControllerMesh(scene, meshLoaded, true);
+                }
+            });
+        };
+        /**
+         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
+         * can be transformed by button presses and axes values, based on this._mapping.
+         *
+         * @param scene scene in which the meshes exist
+         * @param meshes list of meshes that make up the controller model to process
+         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+         */
+        WindowsMotionController.prototype.processModel = function (scene, meshes) {
+            var loadedMeshInfo = null;
+            // Create a new mesh to contain the glTF hierarchy
+            var parentMesh = new BABYLON.Mesh(this.id + " " + this.hand, scene);
+            // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
+            var childMesh = null;
+            for (var i = 0; i < meshes.length; i++) {
+                var mesh = meshes[i];
+                if (!mesh.parent) {
+                    // Exclude controller meshes from picking results
+                    mesh.isPickable = false;
+                    // Handle root node, attach to the new parentMesh
+                    childMesh = mesh;
+                    break;
+                }
+            }
+            if (childMesh) {
+                childMesh.setParent(parentMesh);
+                // Create our mesh info. Note that this method will always return non-null.
+                loadedMeshInfo = this.createMeshInfo(parentMesh);
+            }
+            else {
+                BABYLON.Tools.Warn('Could not find root node in model file.');
+            }
+            return loadedMeshInfo;
+        };
+        WindowsMotionController.prototype.createMeshInfo = function (rootNode) {
+            var loadedMeshInfo = new LoadedMeshInfo();
+            var i;
+            loadedMeshInfo.rootNode = rootNode;
+            // Reset the caches
+            loadedMeshInfo.buttonMeshes = {};
+            loadedMeshInfo.axisMeshes = {};
+            // Button Meshes
+            for (i = 0; i < this._mapping.buttons.length; i++) {
+                var buttonMeshName = this._mapping.buttonMeshNames[this._mapping.buttons[i]];
+                if (!buttonMeshName) {
+                    BABYLON.Tools.Log('Skipping unknown button at index: ' + i + ' with mapped name: ' + this._mapping.buttons[i]);
+                    continue;
+                }
+                var buttonMesh = getChildByName(rootNode, buttonMeshName);
+                if (!buttonMesh) {
+                    BABYLON.Tools.Warn('Missing button mesh with name: ' + buttonMeshName);
+                    continue;
+                }
+                var buttonMeshInfo = {
+                    index: i,
+                    value: getImmediateChildByName(buttonMesh, 'VALUE'),
+                    pressed: getImmediateChildByName(buttonMesh, 'PRESSED'),
+                    unpressed: getImmediateChildByName(buttonMesh, 'UNPRESSED')
+                };
+                if (buttonMeshInfo.value && buttonMeshInfo.pressed && buttonMeshInfo.unpressed) {
+                    loadedMeshInfo.buttonMeshes[this._mapping.buttons[i]] = buttonMeshInfo;
+                }
+                else {
+                    // If we didn't find the mesh, it simply means this button won't have transforms applied as mapped button value changes.
+                    BABYLON.Tools.Warn('Missing button submesh under mesh with name: ' + buttonMeshName +
+                        '(VALUE: ' + !!buttonMeshInfo.value +
+                        ', PRESSED: ' + !!buttonMeshInfo.pressed +
+                        ', UNPRESSED:' + !!buttonMeshInfo.unpressed +
+                        ')');
+                }
+            }
+            // Axis Meshes
+            for (i = 0; i < this._mapping.axisMeshNames.length; i++) {
+                var axisMeshName = this._mapping.axisMeshNames[i];
+                if (!axisMeshName) {
+                    BABYLON.Tools.Log('Skipping unknown axis at index: ' + i);
+                    continue;
+                }
+                var axisMesh = getChildByName(rootNode, axisMeshName);
+                if (!axisMesh) {
+                    BABYLON.Tools.Warn('Missing axis mesh with name: ' + axisMeshName);
+                    continue;
+                }
+                var axisMeshInfo = {
+                    index: i,
+                    value: getImmediateChildByName(axisMesh, 'VALUE'),
+                    min: getImmediateChildByName(axisMesh, 'MIN'),
+                    max: getImmediateChildByName(axisMesh, 'MAX')
+                };
+                if (axisMeshInfo.value && axisMeshInfo.min && axisMeshInfo.max) {
+                    loadedMeshInfo.axisMeshes[i] = axisMeshInfo;
+                }
+                else {
+                    // If we didn't find the mesh, it simply means thit axis won't have transforms applied as mapped axis values change.
+                    BABYLON.Tools.Warn('Missing axis submesh under mesh with name: ' + axisMeshName +
+                        '(VALUE: ' + !!axisMeshInfo.value +
+                        ', MIN: ' + !!axisMeshInfo.min +
+                        ', MAX:' + !!axisMeshInfo.max +
+                        ')');
+                }
+            }
+            // Pointing Ray
+            loadedMeshInfo.pointingPoseNode = getChildByName(rootNode, this._mapping.pointingPoseMeshName);
+            if (!loadedMeshInfo.pointingPoseNode) {
+                BABYLON.Tools.Warn('Missing pointing pose mesh with name: ' + this._mapping.pointingPoseMeshName);
+            }
+            return loadedMeshInfo;
+            // Look through all children recursively. This will return null if no mesh exists with the given name.
+            function getChildByName(node, name) {
+                return node.getChildMeshes(false, function (n) { return n.name === name; })[0];
+            }
+            // Look through only immediate children. This will return null if no mesh exists with the given name.
+            function getImmediateChildByName(node, name) {
+                return node.getChildMeshes(true, function (n) { return n.name == name; })[0];
+            }
+        };
+        WindowsMotionController.prototype.getForwardRay = function (length) {
+            if (length === void 0) { length = 100; }
+            if (!(this._loadedMeshInfo && this._loadedMeshInfo.pointingPoseNode)) {
+                return _super.prototype.getForwardRay.call(this, length);
+            }
+            var m = this._loadedMeshInfo.pointingPoseNode.getWorldMatrix();
+            var origin = m.getTranslation();
+            var forward = new BABYLON.Vector3(0, 0, -1);
+            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            return new BABYLON.Ray(origin, direction, length);
+        };
+        WindowsMotionController.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            this.onTrackpadChangedObservable.clear();
+        };
+        WindowsMotionController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/microsoft/';
+        WindowsMotionController.MODEL_LEFT_FILENAME = 'left.glb';
+        WindowsMotionController.MODEL_RIGHT_FILENAME = 'right.glb';
+        WindowsMotionController.GAMEPAD_ID_PREFIX = 'Spatial Controller (Spatial Interaction Source) ';
+        WindowsMotionController.GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
+        return WindowsMotionController;
+    }(BABYLON.WebVRController));
+    BABYLON.WindowsMotionController = WindowsMotionController;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.windowsMotionController.js.map
 
 /// <reference path="babylon.targetCamera.ts" />
 
@@ -56788,7 +57308,7 @@ var BABYLON;
          */
         Bone.prototype.setScale = function (x, y, z, scaleChildren) {
             if (scaleChildren === void 0) { scaleChildren = false; }
-            if (this.animations[0] && !this.animations[0].isStopped()) {
+            if (this.animations[0] && !this.animations[0].hasRunningRuntimeAnimations) {
                 if (!scaleChildren) {
                     this._negateScaleChildren.x = 1 / x;
                     this._negateScaleChildren.y = 1 / y;
@@ -66570,36 +67090,39 @@ var BABYLON;
             this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add(function (gamepad) {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     var webVrController = gamepad;
-                    var index = _this.controllers.indexOf(webVrController);
-                    if (index === -1) {
-                        // we are good
-                        return;
+                    if (webVrController.defaultModel) {
+                        webVrController.defaultModel.setEnabled(false);
                     }
-                    _this.controllers.splice(index, 1);
                 }
             });
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     var webVrController = gamepad;
                     if (_this.webVROptions.controllerMeshes) {
-                        webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
-                            if (_this.webVROptions.defaultLightingOnControllers) {
-                                if (!_this._lightOnControllers) {
-                                    _this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), _this.getScene());
-                                }
-                                var activateLightOnSubMeshes_1 = function (mesh, light) {
-                                    var children = mesh.getChildren();
-                                    if (children.length !== 0) {
-                                        children.forEach(function (mesh) {
-                                            light.includedOnlyMeshes.push(mesh);
-                                            activateLightOnSubMeshes_1(mesh, light);
-                                        });
+                        if (webVrController.defaultModel) {
+                            webVrController.defaultModel.setEnabled(true);
+                        }
+                        else {
+                            // Load the meshes
+                            webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
+                                if (_this.webVROptions.defaultLightingOnControllers) {
+                                    if (!_this._lightOnControllers) {
+                                        _this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), _this.getScene());
                                     }
-                                };
-                                _this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
-                                activateLightOnSubMeshes_1(loadedMesh, _this._lightOnControllers);
-                            }
-                        });
+                                    var activateLightOnSubMeshes_1 = function (mesh, light) {
+                                        var children = mesh.getChildren();
+                                        if (children.length !== 0) {
+                                            children.forEach(function (mesh) {
+                                                light.includedOnlyMeshes.push(mesh);
+                                                activateLightOnSubMeshes_1(mesh, light);
+                                            });
+                                        }
+                                    };
+                                    _this._lightOnControllers.includedOnlyMeshes.push(loadedMesh);
+                                    activateLightOnSubMeshes_1(loadedMesh, _this._lightOnControllers);
+                                }
+                            });
+                        }
                     }
                     webVrController.attachToPoseControlledCamera(_this);
                     // since this is async - sanity check. Is the controller already stored?

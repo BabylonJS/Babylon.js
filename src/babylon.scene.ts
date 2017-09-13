@@ -2829,13 +2829,14 @@
                 throw new Error("Active camera not set");
 
             Tools.StartPerformanceCounter("Rendering camera " + this.activeCamera.name);
-
+           
             // Viewport
             engine.setViewport(this.activeCamera.viewport);
 
             // Camera
             this.resetCachedMaterial();
             this._renderId++;
+            this.activeCamera.update();
             this.updateTransformMatrix();
 
             if (camera._alternateCamera) {
@@ -3003,10 +3004,7 @@
 
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
-
-            // Update camera
-            this.activeCamera._updateFromScene();
-
+           
             // Reset some special arrays
             this._renderTargets.reset();
 
@@ -3023,6 +3021,9 @@
                 return;
             }
 
+            // Update camera
+            this.activeCamera.update();
+            
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
                 this._renderForCamera(camera._rigCameras[index]);
@@ -3030,9 +3031,6 @@
 
             this.activeCamera = camera;
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-
-            // Update camera
-            this.activeCamera._updateFromScene();
         }
 
         private _checkIntersections(): void {
@@ -3658,6 +3656,10 @@
             var max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
+
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                    continue;
+                }
 
                 mesh.computeWorldMatrix(true);
                 var minBox = mesh.getBoundingInfo().boundingBox.minimumWorld;
