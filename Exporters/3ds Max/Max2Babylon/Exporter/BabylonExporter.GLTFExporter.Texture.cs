@@ -21,9 +21,10 @@ namespace Max2Babylon
             // Copy image to output
             if (CopyTexturesToOutput)
             {
-                var absolutePath = Path.Combine(gltf.OutputPath, name);
+                var absolutePath = Path.Combine(gltf.OutputFolder, name);
+                var imageFormat = Path.GetExtension(name) == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png;
                 RaiseMessage($"GLTFExporter.Texture | write image '{name}' to '{absolutePath}'", 1);
-                bitmap.Save(absolutePath);
+                bitmap.Save(absolutePath, imageFormat);
             }
 
             return ExportTexture(babylonTexture, gltf, name);
@@ -76,6 +77,15 @@ namespace Max2Babylon
 
             gltfImage.index = gltf.ImagesList.Count;
             gltf.ImagesList.Add(gltfImage);
+            switch (Path.GetExtension(name))
+            {
+                case ".jpg":
+                    gltfImage.FileExtension = "jpeg";
+                    break;
+                case ".png":
+                    gltfImage.FileExtension = "png";
+                    break;
+            }
 
 
             // --------------------------

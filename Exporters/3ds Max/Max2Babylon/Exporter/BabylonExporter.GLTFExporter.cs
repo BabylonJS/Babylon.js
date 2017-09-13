@@ -3,6 +3,7 @@ using GLTFExport.Entities;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Max2Babylon
 
         private List<BabylonNode> babylonNodes;
 
-        public void ExportGltf(BabylonScene babylonScene, string outputFile, bool generateBinary)
+        public void ExportGltf(BabylonScene babylonScene, string outputFile, bool generateBinary, bool exportGltfImagesAsBinary)
         {
             RaiseMessage("GLTFExporter | Export outputFile=" + outputFile + " generateBinary=" + generateBinary);
             RaiseMessage("GLTFExporter | Exportation started", Color.Blue);
@@ -29,7 +30,7 @@ namespace Max2Babylon
             initBabylonNodes(babylonScene);
             babylonMaterialsToExport = new List<BabylonMaterial>();
 
-            var gltf = new GLTF(Path.GetDirectoryName(outputFile));
+            var gltf = new GLTF(outputFile);
 
             // Asset
             gltf.asset = new GLTFAsset
@@ -96,11 +97,18 @@ namespace Max2Babylon
                 CheckCancelled();
             };
             RaiseMessage(string.Format("GLTFExporter | Nb materials exported: {0}", gltf.MaterialsList.Count), Color.Gray, 1);
+            
+            if (exportGltfImagesAsBinary)
+            {
+                SwitchImagesFromUriToBinary(gltf);
+            }
+
+            // Cast lists to arrays
+            gltf.Prepare();
 
             // Output
             RaiseMessage("GLTFExporter | Saving to output file");
-            // Cast lists to arrays
-            gltf.Prepare();
+            
             string outputGltfFile = Path.ChangeExtension(outputFile, "gltf");
             File.WriteAllText(outputGltfFile, gltfToJson(gltf));
 
@@ -137,6 +145,17 @@ namespace Max2Babylon
                 {
                     gltfBuffer.uri = null;
                 }
+                // Switch images to binary if not already done
+                // TODO - make it optional
+                if (!exportGltfImagesAsBinary)
+                {
+                    var imageBufferViews = SwitchImagesFromUriToBinary(gltf);
+                    imageBufferViews.ForEach(imageBufferView =>
+                    {
+                        imageBufferView.Buffer.bytesList.AddRange(imageBufferView.bytesList);
+                    });
+                }
+                gltf.Prepare();
                 // Serialize gltf data to JSON string then convert it to bytes
                 byte[] chunkDataJson = Encoding.ASCII.GetBytes(gltfToJson(gltf));
                 // JSON chunk must be padded with trailing Space chars (0x20) to satisfy alignment requirements 
@@ -316,6 +335,57 @@ namespace Max2Babylon
                 jsonSerializer.Serialize(jsonWriter, gltf);
             }
             return sb.ToString();
+        }
+
+        private List<GLTFBufferView> SwitchImagesFromUriToBinary(GLTF gltf)
+        {
+            var imageBufferViews = new List<GLTFBufferView>();
+
+            foreach (GLTFImage gltfImage in gltf.ImagesList)
+            {
+                var path = Path.Combine(gltf.OutputFolder, gltfImage.uri);
+                using (Image image = Image.FromFile(path))
+                {
+                    using (MemoryStream m = new MemoryStream())
+                    {
+                        var imageFormat = gltfImage.FileExtension == "jpeg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png;
+                        image.Save(m, imageFormat);
+                        byte[] imageBytes = m.ToArray();
+
+                        // JSON chunk must be padded with trailing Space chars (0x20) to satisfy alignment requirements 
+                        var nbSpaceToAdd = imageBytes.Length % 4 == 0 ? 0 : (4 - imageBytes.Length % 4);
+                        var imageBytesList = new List<byte>(imageBytes);
+                        for (int i = 0; i < nbSpaceToAdd; i++)
+                        {
+                            imageBytesList.Add(0x00);
+                        }
+                        imageBytes = imageBytesList.ToArray();
+
+                        // BufferView - Image
+                        var buffer = gltf.buffer;
+                        var bufferViewImage = new GLTFBufferView
+                        {
+                            name = "bufferViewImage",
+                            buffer = buffer.index,
+                            Buffer = buffer,
+                            byteOffset = buffer.byteLength
+                        };
+                        bufferViewImage.index = gltf.BufferViewsList.Count;
+                        gltf.BufferViewsList.Add(bufferViewImage);
+                        imageBufferViews.Add(bufferViewImage);
+
+
+                        gltfImage.uri = null;
+                        gltfImage.bufferView = bufferViewImage.index;
+                        gltfImage.mimeType = "image/" + gltfImage.FileExtension;
+
+                        bufferViewImage.bytesList.AddRange(imageBytes);
+                        bufferViewImage.byteLength += imageBytes.Length;
+                        bufferViewImage.Buffer.byteLength += imageBytes.Length;
+                    }
+                }
+            }
+            return imageBufferViews;
         }
     }
 }
