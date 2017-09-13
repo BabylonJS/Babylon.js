@@ -67607,6 +67607,9 @@ var BABYLON;
                         _this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", _this._position, _this._scene);
                         _this._webVRsupportedAndReady = true;
                     }
+                    else {
+                        _this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", _this._position, _this._scene);
+                    }
                     document.body.appendChild(_this._btnVR);
                 });
             }
