@@ -1159,18 +1159,33 @@
          * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
          */
         public getHierarchyBoundingVectors(): { min: Vector3, max: Vector3 }{
-            this.computeWorldMatrix();
-            let min = this.getBoundingInfo().boundingBox.minimumWorld;
-            let max = this.getBoundingInfo().boundingBox.maximumWorld;
+            this.computeWorldMatrix(true);
 
-            let descendants = this.getDescendants(false, (node) => (<any>node).subMeshes);
+            let min: Vector3;
+            let max: Vector3;
+            
+            if (!this.subMeshes) {
+                min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            } else {
+                min = this.getBoundingInfo().boundingBox.minimumWorld;
+                max = this.getBoundingInfo().boundingBox.maximumWorld;
+            }
+
+            let descendants = this.getDescendants(false);
 
             for (var descendant of descendants) {
                 let childMesh = <AbstractMesh>descendant;
 
-                childMesh.computeWorldMatrix();
-                var minBox = childMesh.getBoundingInfo().boundingBox.minimumWorld;
-                var maxBox = childMesh.getBoundingInfo().boundingBox.maximumWorld;
+                childMesh.computeWorldMatrix(true);
+
+                if (childMesh.getTotalVertices() === 0) {
+                    continue;
+                }
+                let boundingBox = childMesh.getBoundingInfo().boundingBox;
+
+                var minBox = boundingBox.minimumWorld;
+                var maxBox = boundingBox.maximumWorld;
 
                 Tools.CheckExtends(minBox, min, max);
                 Tools.CheckExtends(maxBox, min, max);
