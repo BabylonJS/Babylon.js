@@ -127,6 +127,7 @@ declare module BABYLON.GUI {
         _host: AdvancedDynamicTexture;
         _currentMeasure: Measure;
         private _fontFamily;
+        private _fontStyle;
         private _fontSize;
         private _font;
         _width: ValueAndUnit;
@@ -213,6 +214,7 @@ declare module BABYLON.GUI {
         width: string | number;
         height: string | number;
         fontFamily: string;
+        fontStyle: string;
         fontSize: string | number;
         color: string;
         zIndex: number;
