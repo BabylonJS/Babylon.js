@@ -67,6 +67,10 @@ module BABYLON {
                         this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene);
                         this._webVRsupportedAndReady = true;
                     }
+                    else 
+                    {
+                        this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
+                    }
                     document.body.appendChild(this._btnVR); 
                 });
             }
