@@ -45,6 +45,10 @@ module BABYLON {
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
 
+                if (engine.isInVRExclusivePointerMode) {
+                    return;
+                }
+
                 if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                     return;
                 }
@@ -135,7 +139,7 @@ module BABYLON {
                             return;
                         }
 
-                        if (Math.abs(pinchDistance - previousPinchDistance) > this.camera.pinchToPanMaxDistance) {
+                        if (pinchDistance > this.camera.panMaxFingersDistance || Math.abs(pinchDistance - previousPinchDistance) > this.camera.pinchToPanMaxDistance) {
                             this.camera
                                 .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (this.pinchPrecision *

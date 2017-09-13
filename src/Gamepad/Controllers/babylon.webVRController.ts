@@ -2,12 +2,12 @@ module BABYLON {
 
     export abstract class WebVRController extends PoseEnabledController {
 
+        protected _defaultModel: AbstractMesh;
+
+        // Observables
         public onTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
-
         public onMainButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
-
         public onSecondaryButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
-
         public onPadStateChangedObservable = new Observable<ExtendedGamepadButton>();
         public onPadValuesChangedObservable = new Observable<StickValues>();
 
@@ -23,6 +23,10 @@ module BABYLON {
 
         public hand: string; // 'left' or 'right', see https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
 
+        public get defaultModel(): AbstractMesh {
+            return this._defaultModel;
+        }
+
         constructor(vrGamepad) {
             super(vrGamepad);
             this._buttons = new Array<ExtendedGamepadButton>(vrGamepad.buttons.length);
@@ -32,7 +36,7 @@ module BABYLON {
         public update() {
             super.update();
             for (var index = 0; index < this._buttons.length; index++) {
-                this._setButtonValue(this.vrGamepad.buttons[index], this._buttons[index], index);
+                this._setButtonValue(this.browserGamepad.buttons[index], this._buttons[index], index);
             };
             if (this.leftStick.x !== this.pad.x || this.leftStick.y !== this.pad.y) {
                 this.pad.x = this.leftStick.x;
@@ -87,6 +91,16 @@ module BABYLON {
             this._changes.valueChanged = newState.value !== currentState.value;
             this._changes.changed = this._changes.pressChanged || this._changes.touchChanged || this._changes.valueChanged;
             return this._changes;
+        }
+
+        public dispose(): void {
+            super.dispose();
+
+            this.onTriggerStateChangedObservable.clear();
+            this.onMainButtonStateChangedObservable.clear();
+            this.onSecondaryButtonStateChangedObservable.clear();
+            this.onPadStateChangedObservable.clear();
+            this.onPadValuesChangedObservable.clear();
         }
     }
         

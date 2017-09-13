@@ -175,6 +175,7 @@
         {
             "files": [
                 "../../src/Animations/babylon.animation.js",
+                "../../src/Animations/babylon.runtimeAnimation.js",
                 "../../src/Animations/babylon.animatable.js",
                 "../../src/Animations/babylon.easing.js"
             ],
@@ -544,7 +545,8 @@
                 "../../src/Gamepad/Controllers/babylon.webVRController.js",
                 "../../src/Gamepad/Controllers/babylon.oculusTouchController.js",
                 "../../src/Gamepad/Controllers/babylon.viveController.js",
-                "../../src/Gamepad/Controllers/babylon.genericController.js"
+                "../../src/Gamepad/Controllers/babylon.genericController.js",
+                "../../src/Gamepad/Controllers/babylon.windowsMotionController.js"
             ],
             "dependUpon" : [
                 "core"

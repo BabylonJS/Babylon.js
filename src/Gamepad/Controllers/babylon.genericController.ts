@@ -1,14 +1,15 @@
 module BABYLON {
     
     export class GenericController extends WebVRController {
-        private _defaultModel: BABYLON.AbstractMesh;
+        public static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/generic/';
+        public static readonly MODEL_FILENAME:string = 'generic.babylon';
 
         constructor(vrGamepad) {
             super(vrGamepad);
         }
 
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
-            SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", "genericvrcontroller.babylon", scene, (newMeshes) => {
+            SceneLoader.ImportMesh("", GenericController.MODEL_BASE_URL, GenericController.MODEL_FILENAME, scene, (newMeshes) => {
                 this._defaultModel = newMeshes[1];
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
