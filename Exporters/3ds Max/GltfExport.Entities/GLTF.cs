@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 
 namespace GLTFExport.Entities
@@ -45,7 +46,8 @@ namespace GLTFExport.Entities
         [DataMember(EmitDefaultValue = false)]
         public GLTFSampler[] samplers { get; set; }
 
-        public string OutputPath { get; private set; }
+        public string OutputFolder { get; private set; }
+        public string OutputFile { get; private set; }
 
         public List<GLTFNode> NodesList { get; private set; }
         public List<GLTFCamera> CamerasList { get; private set; }
@@ -58,9 +60,17 @@ namespace GLTFExport.Entities
         public List<GLTFImage> ImagesList { get; private set; }
         public List<GLTFSampler> SamplersList { get; private set; }
 
+        public GLTFBuffer buffer;
+        public GLTFBufferView bufferViewScalar;
+        public GLTFBufferView bufferViewFloatVec3;
+        public GLTFBufferView bufferViewFloatVec4;
+        public GLTFBufferView bufferViewFloatVec2;
+        public GLTFBufferView bufferViewImage;
+
         public GLTF(string outputPath)
         {
-            OutputPath = outputPath;
+            OutputFolder = Path.GetDirectoryName(outputPath);
+            OutputFile = Path.GetFileNameWithoutExtension(outputPath);
 
             NodesList = new List<GLTFNode>();
             CamerasList = new List<GLTFCamera>();

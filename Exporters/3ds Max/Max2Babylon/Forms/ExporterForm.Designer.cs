@@ -48,6 +48,7 @@
             this.butExportAndRun = new System.Windows.Forms.Button();
             this.butClose = new System.Windows.Forms.Button();
             this.chkGltf = new System.Windows.Forms.CheckBox();
+            this.chkGltfImagesAsBinary = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -180,6 +181,7 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chkGltfImagesAsBinary);
             this.groupBox1.Controls.Add(this.chkBinary);
             this.groupBox1.Controls.Add(this.chkOnlySelected);
             this.groupBox1.Controls.Add(this.chkAutoSave);
@@ -277,6 +279,18 @@
             this.chkGltf.UseVisualStyleBackColor = true;
             this.chkGltf.CheckedChanged += new System.EventHandler(this.chkGltf_CheckedChanged);
             // 
+            // chkGltfImageAsBinary
+            // 
+            this.chkGltfImagesAsBinary.AutoSize = true;
+            this.chkGltfImagesAsBinary.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkGltfImagesAsBinary.Location = new System.Drawing.Point(166, 127);
+            this.chkGltfImagesAsBinary.Name = "chkGltfImagesAsBinary";
+            this.chkGltfImagesAsBinary.Size = new System.Drawing.Size(158, 17);
+            this.chkGltfImagesAsBinary.TabIndex = 18;
+            this.chkGltfImagesAsBinary.Text = "Export glTF images as binary";
+            this.chkGltfImagesAsBinary.UseVisualStyleBackColor = true;
+            this.chkGltfImagesAsBinary.CheckedChanged += new System.EventHandler(this.checkGltfImagesAsBinary_CheckedChanged);
+            // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -330,5 +344,6 @@
         private System.Windows.Forms.Button butClose;
         private System.Windows.Forms.CheckBox chkBinary;
         private System.Windows.Forms.CheckBox chkGltf;
+        private System.Windows.Forms.CheckBox chkGltfImagesAsBinary;
     }
 }

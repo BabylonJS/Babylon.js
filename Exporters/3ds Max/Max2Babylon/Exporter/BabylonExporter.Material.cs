@@ -16,6 +16,65 @@ namespace Max2Babylon
 
             RaiseMessage(name, 1);
 
+            // --- prints ---
+            {
+                RaiseMessage("materialNode.MaterialClass=" + materialNode.MaterialClass, 2);
+                RaiseMessage("materialNode.NumberOfTextureMaps=" + materialNode.NumberOfTextureMaps, 2);
+
+                var propertyContainer = materialNode.IPropertyContainer;
+                RaiseMessage("propertyContainer=" + propertyContainer, 2);
+                if (propertyContainer != null)
+                {
+                    RaiseMessage("propertyContainer.NumberOfProperties=" + propertyContainer.NumberOfProperties, 3);
+                    for (int i = 0; i < propertyContainer.NumberOfProperties; i++)
+                    {
+                        var prop = propertyContainer.GetProperty(i);
+                        if (prop != null)
+                        {
+                            RaiseMessage("propertyContainer.GetProperty(" + i + ")=" + prop.Name, 3);
+                            switch (prop.GetType_)
+                            {
+                                case PropType.StringProp:
+                                    string propertyString = "";
+                                    RaiseMessage("prop.GetPropertyValue(ref propertyString, 0)=" + prop.GetPropertyValue(ref propertyString, 0), 4);
+                                    RaiseMessage("propertyString=" + propertyString, 4);
+                                    break;
+                                case PropType.IntProp:
+                                    int propertyInt = 0;
+                                    RaiseMessage("prop.GetPropertyValue(ref propertyInt, 0)=" + prop.GetPropertyValue(ref propertyInt, 0), 4);
+                                    RaiseMessage("propertyInt=" + propertyInt, 4);
+                                    break;
+                                case PropType.FloatProp:
+                                    float propertyFloat = 0;
+                                    RaiseMessage("prop.GetPropertyValue(ref propertyFloat, 0)=" + prop.GetPropertyValue(ref propertyFloat, 0, true), 4);
+                                    RaiseMessage("propertyFloat=" + propertyFloat, 4);
+                                    RaiseMessage("prop.GetPropertyValue(ref propertyFloat, 0)=" + prop.GetPropertyValue(ref propertyFloat, 0, false), 4);
+                                    RaiseMessage("propertyFloat=" + propertyFloat, 4);
+                                    break;
+                                case PropType.Point3Prop:
+                                    IPoint3 propertyPoint3 = Loader.Global.Point3.Create(0, 0, 0); 
+                                    RaiseMessage("prop.GetPropertyValue(ref propertyPoint3, 0)=" + prop.GetPropertyValue(propertyPoint3, 0), 4);
+                                    RaiseMessage("propertyPoint3=" + Point3ToString(propertyPoint3), 4);
+                                    break;
+                                case PropType.Point4Prop:
+                                    IPoint4 propertyPoint4 = Loader.Global.Point4.Create(0,0,0,0);
+                                    RaiseMessage("prop.GetPropertyValue(ref propertyPoint4, 0)=" + prop.GetPropertyValue(propertyPoint4, 0), 4);
+                                    RaiseMessage("propertyPoint4=" + Point4ToString(propertyPoint4), 4);
+                                    break;
+                                case PropType.UnknownProp:
+                                default:
+                                    RaiseMessage("Unknown property type", 4);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            RaiseMessage("propertyContainer.GetProperty(" + i + ") IS NULL", 3);
+                        }
+                    }
+                }
+            }
+
             if (materialNode.SubMaterialCount > 0)
             {
                 var babylonMultimaterial = new BabylonMultiMaterial { name = name, id = id };
@@ -47,27 +106,26 @@ namespace Max2Babylon
                 babylonScene.MultiMaterialsList.Add(babylonMultimaterial);
                 return;
             }
-
-            var babylonMaterial = new BabylonStandardMaterial
-            {
-                name = name,
-                id = id,
-                ambient = materialNode.MaxMaterial.GetAmbient(0, false).ToArray(),
-                diffuse = materialNode.MaxMaterial.GetDiffuse(0, false).ToArray(),
-                specular = materialNode.MaxMaterial.GetSpecular(0, false).Scale(materialNode.MaxMaterial.GetShinStr(0, false)),
-                specularPower = materialNode.MaxMaterial.GetShininess(0, false) * 256,
-                emissive =
-                    materialNode.MaxMaterial.GetSelfIllumColorOn(0, false)
-                        ? materialNode.MaxMaterial.GetSelfIllumColor(0, false).ToArray()
-                        : materialNode.MaxMaterial.GetDiffuse(0, false).Scale(materialNode.MaxMaterial.GetSelfIllum(0, false)),
-                alpha = 1.0f - materialNode.MaxMaterial.GetXParency(0, false)
-            };
-
-
+            
             var stdMat = materialNode.MaxMaterial.GetParamBlock(0).Owner as IStdMat2;
 
             if (stdMat != null)
             {
+                var babylonMaterial = new BabylonStandardMaterial
+                {
+                    name = name,
+                    id = id,
+                    ambient = materialNode.MaxMaterial.GetAmbient(0, false).ToArray(),
+                    diffuse = materialNode.MaxMaterial.GetDiffuse(0, false).ToArray(),
+                    specular = materialNode.MaxMaterial.GetSpecular(0, false).Scale(materialNode.MaxMaterial.GetShinStr(0, false)),
+                    specularPower = materialNode.MaxMaterial.GetShininess(0, false) * 256,
+                    emissive =
+                        materialNode.MaxMaterial.GetSelfIllumColorOn(0, false)
+                            ? materialNode.MaxMaterial.GetSelfIllumColor(0, false).ToArray()
+                            : materialNode.MaxMaterial.GetDiffuse(0, false).Scale(materialNode.MaxMaterial.GetSelfIllum(0, false)),
+                    alpha = 1.0f - materialNode.MaxMaterial.GetXParency(0, false)
+                };
+
                 babylonMaterial.backFaceCulling = !stdMat.TwoSided;
                 babylonMaterial.wireframe = stdMat.Wire;
 
@@ -141,9 +199,106 @@ namespace Max2Babylon
                     RaiseWarning("Opacity texture was removed because alpha from diffuse texture can be use instead", 2);
                     RaiseWarning("If you do not want this behavior, just set Alpha Source = None on your diffuse texture", 2);
                 }
+
+                babylonScene.MaterialsList.Add(babylonMaterial);
+            }
+            else if (materialNode.MaterialClass == "Physical Material")
+            {
+                var propertyContainer = materialNode.IPropertyContainer;
+
+                var babylonMaterial = new BabylonPBRMetallicRoughnessMaterial
+                {
+                    name = name,
+                    id = id
+                };
+
+                // --- Global ---
+
+                babylonMaterial.alpha = 1.0f - materialNode.MaxMaterial.GetXParency(0, false);
+
+                // TODO - Add alpha
+                babylonMaterial.baseColor = materialNode.MaxMaterial.GetDiffuse(0, false).ToArray();
+
+                babylonMaterial.metallic = propertyContainer.GetFloatProperty(6);
+
+                babylonMaterial.roughness = propertyContainer.GetFloatProperty(4);
+                if (propertyContainer.GetIntProperty(5) == 1)
+                {
+                    // Inverse roughness
+                    babylonMaterial.roughness = 1 - babylonMaterial.roughness;
+                }
+
+                // Self illumination is computed from emission color, luminance, temperature and weight
+                babylonMaterial.emissiveColor = materialNode.MaxMaterial.GetSelfIllumColorOn(0, false)
+                                                ? materialNode.MaxMaterial.GetSelfIllumColor(0, false).ToArray()
+                                                : materialNode.MaxMaterial.GetDiffuse(0, false).Scale(materialNode.MaxMaterial.GetSelfIllum(0, false));
+
+                // TODO - occlusionStrength - use default? ignored?
+
+                // TODO - alphaCutOff - use default?
+
+                // TODO - transparencyMode - private or public ?
+
+                // TODO - doubleSided - use default?
+
+                // --- Textures ---
+
+                // TODO - Add alpha
+                babylonMaterial.baseTexture = ExportPBRTexture(materialNode, 1, babylonScene);
+
+                babylonMaterial.metallicRoughnessTexture = ExportMetallicRoughnessTexture(materialNode, babylonMaterial.metallic, babylonMaterial.roughness, babylonScene, name);
+
+                // TODO - environmentTexture - as simple as that?
+                babylonMaterial.environmentTexture = ExportPBRTexture(materialNode, 3, babylonScene);
+
+                var normalMapAmount = propertyContainer.GetFloatProperty(91);
+                babylonMaterial.normalTexture = ExportPBRTexture(materialNode, 30, babylonScene, normalMapAmount);
+                
+                babylonMaterial.emissiveTexture = ExportPBRTexture(materialNode, 17, babylonScene);
+                
+                // TODO - occlusionTexture - ignored?
+
+
+                babylonScene.MaterialsList.Add(babylonMaterial);
+            }
+            else
+            {
+                RaiseWarning("Unsupported material type: " + materialNode.MaterialClass, 2);
+            }
+        }
+
+        // -------------------------
+        // --------- Utils ---------
+        // -------------------------
+
+        private string ColorToString(IColor color)
+        {
+            if (color == null)
+            {
+                return "";
             }
 
-            babylonScene.MaterialsList.Add(babylonMaterial);
+            return "{ r=" + color.R + ", g=" + color.G + ", b=" + color.B + " }";
+        }
+
+        private string Point3ToString(IPoint3 point)
+        {
+            if (point == null)
+            {
+                return "";
+            }
+
+            return "{ x=" + point.X + ", y=" + point.Y + ", z=" + point.Z + " }";
+        }
+
+        private string Point4ToString(IPoint4 point)
+        {
+            if (point == null)
+            {
+                return "";
+            }
+
+            return "{ x=" + point.X + ", y=" + point.Y + ", z=" + point.Z + ", w=" + point.W + " }";
         }
     }
 }
