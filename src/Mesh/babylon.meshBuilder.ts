@@ -422,9 +422,8 @@
         public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh {
             var points = options.points;
             var instance = options.instance;
-            var gapSize = options.gapSize;
-            var dashNb = options.dashNb;
-            var dashSize = options.dashSize;
+            var gapSize = options.gapSize || 1;
+            var dashSize = options.dashSize || 3;
 
             if (instance) {  //  dashed lines update
                 var positionFunction = (positions: number[]): void => {
