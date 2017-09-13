@@ -5347,9 +5347,10 @@ var BABYLON;
      * A given observer can register itself with only Move and Stop (mask = 0x03), then it will only be notified when one of these two occurs and will never be for Turn Left/Right.
      */
     var Observable = (function () {
-        function Observable() {
+        function Observable(onObserverAdded) {
             this._observers = new Array();
             this._eventState = new EventState(0);
+            this._onObserverAdded = onObserverAdded;
         }
         /**
          * Create a new Observer with the specified callback
@@ -5369,6 +5370,9 @@ var BABYLON;
             }
             else {
                 this._observers.push(observer);
+            }
+            if (this._onObserverAdded) {
+                this._onObserverAdded(observer);
             }
             return observer;
         };
@@ -5420,6 +5424,18 @@ var BABYLON;
             return true;
         };
         /**
+         * Notify a specific observer
+         * @param eventData
+         * @param mask
+         */
+        Observable.prototype.notifyObserver = function (observer, eventData, mask) {
+            if (mask === void 0) { mask = -1; }
+            var state = this._eventState;
+            state.mask = mask;
+            state.skipNextObservers = false;
+            observer.callback(eventData, state);
+        };
+        /**
          * return true is the Observable has at least one Observer registered
          */
         Observable.prototype.hasObservers = function () {
@@ -5430,6 +5446,7 @@ var BABYLON;
         */
         Observable.prototype.clear = function () {
             this._observers = new Array();
+            this._onObserverAdded = null;
         };
         /**
         * Clone the current observable
@@ -51628,8 +51645,16 @@ var BABYLON;
             this._gamepadEventSupported = 'GamepadEvent' in window;
             this._gamepadSupport = (navigator.getGamepads ||
                 navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
-            this.onGamepadConnectedObservable = new BABYLON.Observable();
             this.onGamepadDisconnectedObservable = new BABYLON.Observable();
+            this.onGamepadConnectedObservable = new BABYLON.Observable(function (observer) {
+                // This will be used to raise the onGamepadConnected for all gamepads ALREADY connected
+                for (var i in _this._babylonGamepads) {
+                    var gamepad = _this._babylonGamepads[i];
+                    if (gamepad && gamepad._isConnected) {
+                        _this.onGamepadConnectedObservable.notifyObserver(observer, gamepad);
+                    }
+                }
+            });
             this._onGamepadConnectedEvent = function (evt) {
                 var gamepad = evt.gamepad;
                 if (gamepad.index in _this._babylonGamepads) {
@@ -51705,6 +51730,8 @@ var BABYLON;
                 var gamepad = _a[_i];
                 gamepad.dispose();
             }
+            this.onGamepadConnectedObservable.clear();
+            this.onGamepadDisconnectedObservable.clear();
             this._oneGamepadConnected = false;
             this._stopMonitoringGamepads();
             this._babylonGamepads = [];
@@ -67579,6 +67606,9 @@ var BABYLON;
                     if (headsets.length > 0) {
                         _this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", _this._position, _this._scene);
                         _this._webVRsupportedAndReady = true;
+                    }
+                    else {
+                        _this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", _this._position, _this._scene);
                     }
                     document.body.appendChild(_this._btnVR);
                 });
