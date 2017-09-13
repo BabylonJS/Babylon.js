@@ -58,6 +58,12 @@ namespace GLTFExport.Entities
         public List<GLTFImage> ImagesList { get; private set; }
         public List<GLTFSampler> SamplersList { get; private set; }
 
+        public GLTFBuffer buffer;
+        public GLTFBufferView bufferViewScalar;
+        public GLTFBufferView bufferViewFloatVec3;
+        public GLTFBufferView bufferViewFloatVec4;
+        public GLTFBufferView bufferViewFloatVec2;
+
         public GLTF(string outputPath)
         {
             OutputPath = outputPath;

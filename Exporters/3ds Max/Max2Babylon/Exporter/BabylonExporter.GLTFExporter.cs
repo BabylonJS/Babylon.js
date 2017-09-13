@@ -101,25 +101,90 @@ namespace Max2Babylon
             RaiseMessage("GLTFExporter | Saving to output file");
             // Cast lists to arrays
             gltf.Prepare();
-            var jsonSerializer = JsonSerializer.Create(new JsonSerializerSettings());
-            var sb = new StringBuilder();
-            var sw = new StringWriter(sb, CultureInfo.InvariantCulture);
-
-            // Do not use the optimized writer because it's not necessary to truncate values
-            // Use the bounded writer in case some values are infinity ()
-            using (var jsonWriter = new JsonTextWriterBounded(sw))
-            {
-                jsonWriter.Formatting = Formatting.None;
-                jsonSerializer.Serialize(jsonWriter, gltf);
-            }
             string outputGltfFile = Path.ChangeExtension(outputFile, "gltf");
-            File.WriteAllText(outputGltfFile, sb.ToString());
+            File.WriteAllText(outputGltfFile, gltfToJson(gltf));
+
+            // Write data to binary file
+            string outputBinaryFile = Path.ChangeExtension(outputFile, "bin");
+            using (BinaryWriter writer = new BinaryWriter(File.Open(outputBinaryFile, FileMode.Create)))
+            {
+                gltf.BuffersList.ForEach(buffer =>
+                {
+                    buffer.bytesList = new List<byte>();
+                    gltf.BufferViewsList.FindAll(bufferView => bufferView.buffer == buffer.index).ForEach(bufferView =>
+                    {
+                        bufferView.bytesList.ForEach(b => writer.Write(b));
+                        buffer.bytesList.AddRange(bufferView.bytesList);
+                    });
+                });
+            }
 
             // Binary
             if (generateBinary)
             {
-                // TODO - Export glTF data to binary format .glb
-                RaiseError("GLTFExporter | TODO - Generating binary files");
+                // Export glTF data to binary format .glb
+                RaiseMessage("GLTFExporter | Generating .glb file");
+
+                // Header
+                UInt32 magic = 0x46546C67; // ASCII code for glTF
+                UInt32 version = 2;
+                UInt32 length = 12; // Header length
+
+                // --- JSON chunk ---
+                UInt32 chunkTypeJson = 0x4E4F534A; // ASCII code for JSON
+                // Remove buffers uri
+                foreach (GLTFBuffer gltfBuffer in gltf.BuffersList)
+                {
+                    gltfBuffer.uri = null;
+                }
+                // Serialize gltf data to JSON string then convert it to bytes
+                byte[] chunkDataJson = Encoding.ASCII.GetBytes(gltfToJson(gltf));
+                // JSON chunk must be padded with trailing Space chars (0x20) to satisfy alignment requirements 
+                var nbSpaceToAdd = chunkDataJson.Length % 4 == 0 ? 0 : (4 - chunkDataJson.Length % 4);
+                var chunkDataJsonList = new List<byte>(chunkDataJson);
+                for (int i = 0; i < nbSpaceToAdd; i++)
+                {
+                    chunkDataJsonList.Add(0x20);
+                }
+                chunkDataJson = chunkDataJsonList.ToArray();
+                UInt32 chunkLengthJson = (UInt32)chunkDataJson.Length;
+                length += chunkLengthJson + 8; // 8 = JSON chunk header length
+                
+                // bin chunk
+                UInt32 chunkTypeBin = 0x004E4942; // ASCII code for BIN
+                UInt32 chunkLengthBin = 0;
+                if (gltf.BuffersList.Count > 0)
+                {
+                    foreach (GLTFBuffer gltfBuffer in gltf.BuffersList)
+                    {
+                        chunkLengthBin += (uint)gltfBuffer.byteLength;
+                    }
+                    length += chunkLengthBin + 8; // 8 = bin chunk header length
+                }
+                
+
+                // Write binary file
+                string outputGlbFile = Path.ChangeExtension(outputFile, "glb");
+                using (BinaryWriter writer = new BinaryWriter(File.Open(outputGlbFile, FileMode.Create)))
+                {
+                    // Header
+                    writer.Write(magic);
+                    writer.Write(version);
+                    writer.Write(length);
+                    
+                    // JSON chunk
+                    writer.Write(chunkLengthJson);
+                    writer.Write(chunkTypeJson);
+                    writer.Write(chunkDataJson);
+
+                    // bin chunk
+                    if (gltf.BuffersList.Count > 0)
+                    {
+                        writer.Write(chunkLengthBin);
+                        writer.Write(chunkTypeBin);
+                        gltf.BuffersList[0].bytesList.ForEach(b => writer.Write(b));
+                    }
+                };
             }
 
             ReportProgressChanged(100);
@@ -235,6 +300,22 @@ namespace Max2Babylon
 
             // No relevant node found in hierarchy
             return false;
+        }
+
+        private string gltfToJson(GLTF gltf)
+        {
+            var jsonSerializer = JsonSerializer.Create(new JsonSerializerSettings());
+            var sb = new StringBuilder();
+            var sw = new StringWriter(sb, CultureInfo.InvariantCulture);
+
+            // Do not use the optimized writer because it's not necessary to truncate values
+            // Use the bounded writer in case some values are infinity ()
+            using (var jsonWriter = new JsonTextWriterBounded(sw))
+            {
+                jsonWriter.Formatting = Formatting.None;
+                jsonSerializer.Serialize(jsonWriter, gltf);
+            }
+            return sb.ToString();
         }
     }
 }
