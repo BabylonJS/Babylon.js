@@ -128,7 +128,7 @@ namespace Max2Babylon
                 };
 
                 MetallicRoughness _metallicRoughness = ConvertToMetallicRoughness(_specularGlossiness, true);
-
+                
                 // Base color
                 gltfPbrMetallicRoughness.baseColorFactor = new float[4]
                 {
@@ -149,7 +149,7 @@ namespace Max2Babylon
                 {
                     Func<string, Bitmap> loadTextureFromOutput = delegate (string textureName)
                     {
-                        return LoadTexture(Path.Combine(gltf.OutputPath, textureName));
+                        return LoadTexture(Path.Combine(gltf.OutputFolder, textureName));
                     };
 
                     Bitmap diffuseBitmap = loadTextureFromOutput(babylonStandardMaterial.diffuseTexture.name);
@@ -180,6 +180,7 @@ namespace Max2Babylon
                         // Create base color and metallic+roughness maps
                         Bitmap baseColorBitmap = new Bitmap(width, height);
                         Bitmap metallicRoughnessBitmap = new Bitmap(width, height);
+                        var hasAlpha = false;
                         for (int x = 0; x < width; x++)
                         {
                             for (int y = 0; y < height; y++)
@@ -208,6 +209,10 @@ namespace Max2Babylon
                                     (int)(metallicRoughnessTexture.baseColor.b * 255)
                                 );
                                 baseColorBitmap.SetPixel(x, y, colorBase);
+                                if (metallicRoughnessTexture.opacity != 1)
+                                {
+                                    hasAlpha = true;
+                                }
 
                                 // The metalness values are sampled from the B channel.
                                 // The roughness values are sampled from the G channel.
@@ -222,7 +227,8 @@ namespace Max2Babylon
                         }
 
                         // Export maps and textures
-                        gltfPbrMetallicRoughness.baseColorTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, baseColorBitmap, babylonMaterial.name + "_baseColor" + ".png", gltf);
+                        var baseColorFileName = babylonMaterial.name + "_baseColor" + (hasAlpha ? ".png" : ".jpg");
+                        gltfPbrMetallicRoughness.baseColorTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, baseColorBitmap, baseColorFileName, gltf);
                         gltfPbrMetallicRoughness.metallicRoughnessTexture = ExportBitmapTexture(babylonStandardMaterial.diffuseTexture, metallicRoughnessBitmap, babylonMaterial.name + "_metallicRoughness" + ".jpg", gltf);
                     }
                 }

@@ -97,7 +97,7 @@ namespace Max2Babylon
             {
                 buffer = new GLTFBuffer
                 {
-                    uri = gltfMesh.name + ".bin"
+                    uri = gltf.OutputFile + ".bin"
                 };
                 buffer.index = gltf.BuffersList.Count;
                 gltf.BuffersList.Add(buffer);
