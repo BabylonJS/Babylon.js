@@ -13283,16 +13283,28 @@ var BABYLON;
          * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
          */
         AbstractMesh.prototype.getHierarchyBoundingVectors = function () {
-            this.computeWorldMatrix();
-            var min = this.getBoundingInfo().boundingBox.minimumWorld;
-            var max = this.getBoundingInfo().boundingBox.maximumWorld;
-            var descendants = this.getDescendants(false, function (node) { return node.subMeshes; });
+            this.computeWorldMatrix(true);
+            var min;
+            var max;
+            if (!this.subMeshes) {
+                min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            }
+            else {
+                min = this.getBoundingInfo().boundingBox.minimumWorld;
+                max = this.getBoundingInfo().boundingBox.maximumWorld;
+            }
+            var descendants = this.getDescendants(false);
             for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
                 var descendant = descendants_1[_i];
                 var childMesh = descendant;
-                childMesh.computeWorldMatrix();
-                var minBox = childMesh.getBoundingInfo().boundingBox.minimumWorld;
-                var maxBox = childMesh.getBoundingInfo().boundingBox.maximumWorld;
+                childMesh.computeWorldMatrix(true);
+                if (childMesh.getTotalVertices() === 0) {
+                    continue;
+                }
+                var boundingBox = childMesh.getBoundingInfo().boundingBox;
+                var minBox = boundingBox.minimumWorld;
+                var maxBox = boundingBox.maximumWorld;
                 BABYLON.Tools.CheckExtends(minBox, min, max);
                 BABYLON.Tools.CheckExtends(maxBox, min, max);
             }
