@@ -8,13 +8,23 @@
         private _gamepadSupport: () => Array<any> = (navigator.getGamepads ||
             navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
 
-        public onGamepadConnectedObservable = new Observable<Gamepad>();
+        public onGamepadConnectedObservable: Observable<Gamepad>;
         public onGamepadDisconnectedObservable = new Observable<Gamepad>();
 
         private _onGamepadConnectedEvent: (evt) => void;
         private _onGamepadDisconnectedEvent: (evt) => void;
 
         constructor() {
+            this.onGamepadConnectedObservable = new Observable<Gamepad>((observer) => {
+                // This will be used to raise the onGamepadConnected for all gamepads ALREADY connected
+                for (var i in this._babylonGamepads) {
+                    let gamepad = this._babylonGamepads[i];
+                    if (gamepad && gamepad._isConnected) {                      
+                        this.onGamepadConnectedObservable.notifyObserver(observer, gamepad);
+                    }
+                }   
+            });
+
             this._onGamepadConnectedEvent = (evt) => {
                 let gamepad = evt.gamepad;
 
@@ -94,6 +104,9 @@
             for (let gamepad of this._babylonGamepads) {
                 gamepad.dispose();
             }
+
+            this.onGamepadConnectedObservable.clear();
+            this.onGamepadDisconnectedObservable.clear();
 
             this._oneGamepadConnected = false;
             this._stopMonitoringGamepads();
