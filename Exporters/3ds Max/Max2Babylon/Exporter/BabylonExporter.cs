@@ -77,7 +77,7 @@ namespace Max2Babylon
             }
         }
 
-        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, bool generateBinary, bool exportGltf, Form callerForm)
+        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, bool generateBinary, bool exportGltf, bool exportGltfImagesAsBinary, Form callerForm)
         {
             var gameConversionManger = Loader.Global.ConversionManager;
             gameConversionManger.CoordSystem = Autodesk.Max.IGameConversionManager.CoordSystem.D3d;
@@ -240,15 +240,6 @@ namespace Max2Babylon
                         babylonScene.fogColor = fog.GetColor(0).ToArray();
                         babylonScene.fogMode = 3;
                     }
-#if !MAX2015 && !MAX2016 && !MAX2017
-                    else
-                    {
-                        var paramBlock = atmospheric.GetReference(0) as IIParamBlock;
-
-                        babylonScene.fogColor = Tools.GetParamBlockValueColor(paramBlock, "Fog Color");
-                        babylonScene.fogMode = 3;
-                    }
-#endif
                     if (babylonMainCamera != null)
                     {
                         babylonScene.fogStart = maxMainCameraObject.GetEnvRange(0, 0, Tools.Forever);
@@ -307,7 +298,7 @@ namespace Max2Babylon
             // Export glTF
             if (exportGltf)
             {
-                ExportGltf(babylonScene, outputFile, generateBinary);
+                ExportGltf(babylonScene, outputFile, generateBinary, exportGltfImagesAsBinary);
             }
 
             watch.Stop();
