@@ -447,6 +447,7 @@ gulp.task('deployLocalDev', function () {
  */
 gulp.task('webserver', function () {
     gulp.src('../../.').pipe(webserver({
+        host: '0.0.0.0',
         port: 1338,
         livereload: false
     }));
