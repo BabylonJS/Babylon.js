@@ -3,8 +3,20 @@
     var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
+    var refreshAnchor = document.getElementById("refresh");
+    var linkAnchor = document.getElementById("link");
     var scripts;
     var zipCode;
+
+    if (location.href.toLowerCase().indexOf("noui") > -1) {
+        fpsLabel.style.visibility = "hidden";
+        fpsLabel.style.display = "none";
+        refreshAnchor.style.visibility = "hidden";
+        refreshAnchor.style.display = "none";
+        linkAnchor.style.visibility = "hidden";
+        linkAnchor.style.display = "none";
+    }
+
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
     var loadScript = function (scriptURL, title) {
         var xhr = new XMLHttpRequest();
