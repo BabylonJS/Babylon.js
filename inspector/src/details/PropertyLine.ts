@@ -255,10 +255,8 @@ module INSPECTOR {
          * type of the property.
          */
         private _createElements() {
-
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
-                console.log('colorpicker',this);
                 this._elements.push(new ColorPickerElement(this.value, this));
                 //this._elements.push(new ColorElement(this.value));
             }
@@ -321,7 +319,6 @@ module INSPECTOR {
             // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
             this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
             for (let elem of this._elements) {
-                console.log('elem', elem);
                 elem.update(this.value);
             }
         }
