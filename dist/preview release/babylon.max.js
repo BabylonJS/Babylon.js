@@ -37704,6 +37704,7 @@ var BABYLON;
             this._highLimitsCache = {};
             this._stopped = false;
             this._blendingFactor = 0;
+            this._ratioOffset = 0;
             this._animation = animation;
             this._target = target;
             animation._runtimeAnimations.push(this);
@@ -37907,6 +37908,10 @@ var BABYLON;
             var currentValue = this._interpolate(frame, 0, this._animation.loopMode);
             this.setValue(currentValue);
         };
+        RuntimeAnimation.prototype._prepareForSpeedRatioChange = function (newSpeedRatio) {
+            var newRatio = this._previousDelay * (this._animation.framePerSecond * newSpeedRatio) / 1000.0;
+            this._ratioOffset = this._previousRatio - newRatio;
+        };
         RuntimeAnimation.prototype.animate = function (delay, from, to, loop, speedRatio, blend) {
             if (blend === void 0) { blend = false; }
             var targetPropertyPath = this._animation.targetPropertyPath;
@@ -37936,8 +37941,10 @@ var BABYLON;
             var range = to - from;
             var offsetValue;
             // ratio represents the frame delta between from and to
-            var ratio = delay * (this._animation.framePerSecond * speedRatio) / 1000.0;
+            var ratio = (delay * (this._animation.framePerSecond * speedRatio) / 1000.0) + this._ratioOffset;
             var highLimitValue = 0;
+            this._previousDelay = delay;
+            this._previousRatio = ratio;
             if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) {
                 returnValue = false;
                 highLimitValue = this._getKeyValue(keys[keys.length - 1].value);
@@ -38059,19 +38066,34 @@ var BABYLON;
             this.fromFrame = fromFrame;
             this.toFrame = toFrame;
             this.loopAnimation = loopAnimation;
-            this.speedRatio = speedRatio;
             this.onAnimationEnd = onAnimationEnd;
             this._localDelayOffset = null;
             this._pausedDelay = null;
             this._runtimeAnimations = new Array();
             this._paused = false;
+            this._speedRatio = 1;
             this.animationStarted = false;
             if (animations) {
                 this.appendAnimations(target, animations);
             }
+            this._speedRatio = speedRatio;
             this._scene = scene;
             scene._activeAnimatables.push(this);
         }
+        Object.defineProperty(Animatable.prototype, "speedRatio", {
+            get: function () {
+                return this._speedRatio;
+            },
+            set: function (value) {
+                for (var index = 0; index < this._runtimeAnimations.length; index++) {
+                    var animation = this._runtimeAnimations[index];
+                    animation._prepareForSpeedRatioChange(value);
+                }
+                this._speedRatio = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         Animatable.prototype.getAnimations = function () {
             return this._runtimeAnimations;
@@ -38198,7 +38220,7 @@ var BABYLON;
             var index;
             for (index = 0; index < runtimeAnimations.length; index++) {
                 var animation = runtimeAnimations[index];
-                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
+                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this._speedRatio);
                 running = running || isRunning;
             }
             this.animationStarted = running;
