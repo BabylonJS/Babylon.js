@@ -125,7 +125,7 @@ var BABYLON;
                     return this._focusedControl;
                 },
                 set: function (control) {
-                    if (this._focusedControl === control) {
+                    if (this._focusedControl == control) {
                         return;
                     }
                     if (!this._focusedControl) {
@@ -291,15 +291,7 @@ var BABYLON;
                         this._lastControlOver = null;
                     }
                 }
-                // Focus management
-                if (this._focusedControl) {
-                    if (this._focusedControl !== this._lastPickedControl) {
-                        if (this._lastPickedControl.isFocusInvisible) {
-                            return;
-                        }
-                        this.focusedControl = null;
-                    }
-                }
+                this._manageFocus();
             };
             AdvancedDynamicTexture.prototype.attach = function () {
                 var _this = this;
@@ -313,8 +305,8 @@ var BABYLON;
                     var camera = scene.cameraToUseForPointers || scene.activeCamera;
                     var engine = scene.getEngine();
                     var viewport = camera.viewport;
-                    var x = (scene.pointerX - viewport.x * engine.getRenderWidth()) / viewport.width;
-                    var y = (scene.pointerY - viewport.y * engine.getRenderHeight()) / viewport.height;
+                    var x = (scene.pointerX / engine.getHardwareScalingLevel() - viewport.x * engine.getRenderWidth()) / viewport.width;
+                    var y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
                     _this._shouldBlockPointer = false;
                     _this._doPicking(x, y, pi.type);
                     pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
@@ -341,6 +333,7 @@ var BABYLON;
                             _this._lastControlDown.forcePointerUp();
                         }
                         _this._lastControlDown = null;
+                        _this.focusedControl = null;
                     }
                     else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (_this._lastControlOver) {
@@ -351,6 +344,17 @@ var BABYLON;
                 });
                 mesh.enablePointerMoveEvents = supportPointerMove;
                 this._attachToOnPointerOut(scene);
+            };
+            AdvancedDynamicTexture.prototype._manageFocus = function () {
+                // Focus management
+                if (this._focusedControl) {
+                    if (this._focusedControl !== this._lastPickedControl) {
+                        if (this._lastPickedControl.isFocusInvisible) {
+                            return;
+                        }
+                        this.focusedControl = null;
+                    }
+                }
             };
             AdvancedDynamicTexture.prototype._attachToOnPointerOut = function (scene) {
                 var _this = this;
@@ -699,6 +703,7 @@ var BABYLON;
                 this._zIndex = 0;
                 this._currentMeasure = GUI.Measure.Empty();
                 this._fontFamily = "Arial";
+                this._fontStyle = "";
                 this._fontSize = new GUI.ValueAndUnit(18, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 this._width = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._height = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
@@ -929,6 +934,20 @@ var BABYLON;
                         return;
                     }
                     this._fontFamily = value;
+                    this._fontSet = true;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "fontStyle", {
+                get: function () {
+                    return this._fontStyle;
+                },
+                set: function (value) {
+                    if (this._fontStyle === value) {
+                        return;
+                    }
+                    this._fontStyle = value;
                     this._fontSet = true;
                 },
                 enumerable: true,
@@ -1484,7 +1503,7 @@ var BABYLON;
                 if (!this._font && !this._fontSet) {
                     return;
                 }
-                this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
+                this._font = this._fontStyle + " " + this._fontSize.getValue(this._host) + "px " + this._fontFamily;
                 this._fontOffset = Control._GetFontOffset(this._font);
             };
             Control.prototype.dispose = function () {

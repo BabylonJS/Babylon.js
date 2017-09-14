@@ -564,6 +564,11 @@
         private _vrDisplayEnabled;
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
+        private _vrExclusivePointerMode = false;
+
+        public get isInVRExclusivePointerMode(): boolean {
+            return this._vrExclusivePointerMode;
+        }
 
         // Uniform buffers list
         public disableUniformBuffers = false;
@@ -941,10 +946,12 @@
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
                 this._onVRDisplayPointerRestricted = () => {
+                    this._vrExclusivePointerMode = true;
                     canvas.requestPointerLock();
                 }
 
                 this._onVRDisplayPointerUnrestricted = () => {
+                    this._vrExclusivePointerMode = false;
                     document.exitPointerLock();
                 }
 
@@ -4235,8 +4242,10 @@
             var value = texture.anisotropicFilteringLevel;
 
 
-            if (internalTexture.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
-                value = 1;
+            if (internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPNEAREST 
+                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPLINEAR
+                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR) {
+                value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
             }
 
             if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {

@@ -13,8 +13,11 @@
 - New InputText for Babylon.GUI. [Doc here](http://doc.babylonjs.com/overviews/gui#inputtext) ([deltakosh](https://github.com/deltakosh))
 - New VirtualKeyboard for Babylon.GUI. [Doc here](http://doc.babylonjs.com/overviews/gui#virtualkeyboard) ([deltakosh](https://github.com/deltakosh) / [adam](https://github.com/abow))
 - Added support for depth pre-pass rendering. [Doc here](http://doc.babylonjs.com/tutorials/transparency_and_how_meshes_are_rendered#depth-pre-pass-meshes) ([deltakosh](https://github.com/deltakosh))
+- Added support for Windows Motion Controllers ([Lewis Weaver](https://github.com/leweaver))
+- Added support for Particle animation in ParticleSystem ([Ibraheem Osama](https://github.com/IbraheemOsama))
 
 ## Updates
+- New observables for gamepads: `onButtonDownObservable`, `onButtonUpObservable`, `onPadDownObservable`, `onPadUpObservable` ([deltakosh](https://github.com/deltakosh))
 - New `camera.storeState()` and `camera.restoreState()` functions to store / restore cameras position / rotation / fov. (Doc here)[http://doc.babylonjs.com/tutorials/cameras#state] ([deltakosh](https://github.com/deltakosh))
 - POW2 textures rescale is now done by shaders (It was previously done using canvas) ([deltakosh](https://github.com/deltakosh))
 - Added `SceneLoader.CleanBoneMatrixWeights` to force the loader to normalize matrix weights when loading bones (off by default) ([deltakosh](https://github.com/deltakosh)) 

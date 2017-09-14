@@ -13,5 +13,7 @@ namespace GLTFExport.Entities
 
         [DataMember(EmitDefaultValue = false)]
         public int? bufferView { get; set; }
+
+        public string FileExtension;
     }
 }

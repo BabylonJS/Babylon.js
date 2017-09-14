@@ -18,6 +18,8 @@
         private _leftStick: StickValues;
         private _rightStick: StickValues;
 
+        public _isConnected = true;
+
         private _leftStickAxisX: number;
         private _leftStickAxisY: number;
         private _rightStickAxisX: number;
@@ -30,6 +32,10 @@
         public static GENERIC = 1;
         public static XBOX = 2;
         public static POSE_ENABLED = 3;
+
+        public get isConnected(): boolean {
+            return this._isConnected;
+        }
 
         constructor(public id: string, public index: number, public browserGamepad, leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
             this.type = Gamepad.GAMEPAD;
@@ -88,7 +94,10 @@
     export class GenericPad extends Gamepad {
         private _buttons: Array<number>;
         private _onbuttondown: (buttonPressed: number) => void;
-        private _onbuttonup: (buttonReleased: number) => void;
+        private _onbuttonup: (buttonReleased: number) => void;        
+
+        public onButtonDownObservable = new Observable<number>();
+        public onButtonUpObservable = new Observable<number>();
 
         public onbuttondown(callback: (buttonPressed: number) => void) {
             this._onbuttondown = callback;
@@ -105,11 +114,19 @@
 
         private _setButtonValue(newValue: number, currentValue: number, buttonIndex: number): number {
             if (newValue !== currentValue) {
-                if (this._onbuttondown && newValue === 1) {
-                    this._onbuttondown(buttonIndex);
+                if (newValue === 1) {
+                    if (this._onbuttondown) {
+                        this._onbuttondown(buttonIndex);
+                    }
+
+                    this.onButtonDownObservable.notifyObservers(buttonIndex);
                 }
-                if (this._onbuttonup && newValue === 0) {
-                    this._onbuttonup(buttonIndex);
+                if (newValue === 0) {
+                    if (this._onbuttonup) {
+                        this._onbuttonup(buttonIndex);
+                    }
+
+                    this.onButtonUpObservable.notifyObservers(buttonIndex);
                 }
             }
             return newValue;

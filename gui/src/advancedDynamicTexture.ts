@@ -98,7 +98,7 @@ module BABYLON.GUI {
         }
 
         public set focusedControl(control: IFocusableControl) {
-            if (this._focusedControl === control) {
+            if (this._focusedControl == control) {
                 return;
             }
 
@@ -327,16 +327,7 @@ module BABYLON.GUI {
                 }
             }
 
-            // Focus management
-            if (this._focusedControl) {
-                if (this._focusedControl !== (<any>this._lastPickedControl)) {
-                    if (this._lastPickedControl.isFocusInvisible) {
-                        return;
-                    }
-
-                    this.focusedControl = null;
-                }
-            }
+            this._manageFocus();
         }
 
         public attach(): void {
@@ -381,6 +372,8 @@ module BABYLON.GUI {
                         this._lastControlDown.forcePointerUp();
                     }
                     this._lastControlDown = null;  
+
+                    this.focusedControl = null;
                 } else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                     if (this._lastControlOver) {
                         this._lastControlOver._onPointerOut();
@@ -391,6 +384,19 @@ module BABYLON.GUI {
 
             mesh.enablePointerMoveEvents = supportPointerMove;
             this._attachToOnPointerOut(scene);
+        }
+
+        private _manageFocus(): void {
+            // Focus management
+            if (this._focusedControl) {
+                if (this._focusedControl !== (<any>this._lastPickedControl)) {
+                    if (this._lastPickedControl.isFocusInvisible) {
+                        return;
+                    }
+
+                    this.focusedControl = null;
+                }
+            }
         }
 
         private _attachToOnPointerOut(scene: Scene): void {
