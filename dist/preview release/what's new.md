@@ -1,15 +1,20 @@
 # 3.1.0:
 
 ## Major updates
-- Added support for webgl context lost and restored events. (Doc here)[http://doc.babylonjs.com/tutorials/optimizing_your_scene#handling-webgl-context-lost] ([deltakosh](https://github.com/deltakosh))
+- Added support for webgl context lost and restored events. [Doc here](http://doc.babylonjs.com/tutorials/optimizing_your_scene#handling-webgl-context-lost) ([deltakosh](https://github.com/deltakosh))
 - Added support for non-pow2 textures when in WebGL2 mode ([deltakosh](https://github.com/deltakosh))
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
-- Introduced behaviors. (Doc here)[http://doc.babylonjs.com/overviews/behaviors] ([deltakosh](https://github.com/deltakosh))
-- Added support for WebGL Occlusion queries. (Doc here)[http://doc.babylonjs.com/overviews/occlusionquery] ([Ibraheem Osama](https://github.com/IbraheemOsama))
-- New behaviors for ArcRotateCamera:
- - AutoRotation ([deltakosh](https://github.com/deltakosh))
- - Framing ([deltakosh](https://github.com/deltakosh))
- - Bouncing ([deltakosh](https://github.com/deltakosh))
+- Introduced behaviors. [Doc here](http://doc.babylonjs.com/overviews/behaviors) ([deltakosh](https://github.com/deltakosh))
+- Added support for WebGL Occlusion queries. [Doc here](http://doc.babylonjs.com/overviews/occlusionquery) ([Ibraheem Osama](https://github.com/IbraheemOsama))
+- New behaviors for ArcRotateCamera [Doc here](http://doc.babylonjs.com/overviews/behaviors): 
+  - AutoRotation ([deltakosh](https://github.com/deltakosh))
+  - Framing ([deltakosh](https://github.com/deltakosh))
+  - Bouncing ([deltakosh](https://github.com/deltakosh))
+- New InputText for Babylon.GUI. [Doc here](http://doc.babylonjs.com/overviews/gui#inputtext) ([deltakosh](https://github.com/deltakosh))
+- New VirtualKeyboard for Babylon.GUI. [Doc here](http://doc.babylonjs.com/overviews/gui#virtualkeyboard) ([deltakosh](https://github.com/deltakosh) / [adam](https://github.com/abow))
+- Added support for depth pre-pass rendering. [Doc here](http://doc.babylonjs.com/tutorials/transparency_and_how_meshes_are_rendered#depth-pre-pass-meshes) ([deltakosh](https://github.com/deltakosh))
+- Added support for Windows Motion Controllers ([Lewis Weaver](https://github.com/leweaver))
+- Added support for Particle animation in ParticleSystem ([Ibraheem Osama](https://github.com/IbraheemOsama))
 
 ## Updates
 - New `camera.storeState()` and `camera.restoreState()` functions to store / restore cameras position / rotation / fov. (Doc here)[http://doc.babylonjs.com/tutorials/cameras#state] ([deltakosh](https://github.com/deltakosh))

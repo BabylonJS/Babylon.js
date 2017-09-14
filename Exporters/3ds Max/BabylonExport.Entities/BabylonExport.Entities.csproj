@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="BabylonActions.cs" />
     <Compile Include="BabylonAnimation.cs" />
+    <Compile Include="BabylonPBRMetallicRoughnessMaterial.cs" />
     <Compile Include="BabylonAnimationKey.cs" />
     <Compile Include="BabylonBone.cs" />
     <Compile Include="BabylonCamera.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="BabylonNode.cs" />
     <Compile Include="BabylonPBRMaterial.cs" />
     <Compile Include="BabylonShaderMaterial.cs" />
+    <Compile Include="BabylonColor3.cs" />
     <Compile Include="BabylonStandardMaterial.cs" />
     <Compile Include="BabylonAbstractMesh.cs" />
     <Compile Include="BabylonMesh.cs" />

@@ -18,6 +18,7 @@ module BABYLON {
         public NDOTL = true;
         public CUSTOMUSERLIGHTING = true;
         public CELLBASIC = true;
+        public DEPTHPREPASS = false;
         public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {

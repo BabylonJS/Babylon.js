@@ -2,6 +2,8 @@
     export class FilesInput {
         public static FilesToLoad: File[] = new Array<File>();
 
+        public onProcessFileCallback: (file: File, name: string, extension: string) => true = () => { return true; };
+
         private _engine: Engine;
         private _currentScene: Scene;
         private _sceneLoadedCallback: (sceneFile: File, scene: Scene) => void;
@@ -114,10 +116,16 @@
         }
 
         private _processFiles(files: Array<any>): void {
+            var skippedFiles = 0;
             for (var i = 0; i < files.length; i++) {
                 var name = files[i].correctName.toLowerCase();
                 var extension = name.split('.').pop();
-                
+
+                if (!this.onProcessFileCallback(files[i], name, extension)) {
+                    skippedFiles++;
+                    continue;
+                }
+
                 if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb") 
                     && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
                     this._sceneFileToLoad = files[i];
@@ -130,7 +138,7 @@
             if (this._onReloadCallback) {
                 this._onReloadCallback(this._sceneFileToLoad);
             }
-            else {
+            else if (skippedFiles < files.length) {
                 this.reload();
             }
         }

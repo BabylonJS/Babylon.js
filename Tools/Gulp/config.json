@@ -27,16 +27,19 @@
         "minimal": ["standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalWithBuilder": ["meshBuilder", "standardMaterial", "freeCamera", "hemisphericLight"],
         "minimalGLTFViewer": [
-                "animations", "arcRotateCamera", "additionalTextures", "textureFormats",
-                "shadows", "pointLight", "directionalLight", "spotLight",
-                "multiMaterial", "pbrMaterial",
-                "meshBuilder", "layer",
-                "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_highlights", 
-                "additionalPostProcess_imageProcessing", "colorCurves", "defaultRenderingPipeline", "imageProcessing",
-                "debug", "textureTools", "hdr",
-                "loader",
+                "standardMaterial", "pbrMaterial", "freeCamera", "arcRotateCamera", "hemisphericLight", 
+                "pointLight", "directionalLight", "spotLight", "animations", "actions", "sprites", "picking", "collisions",
+                "particles", "solidParticles", "additionalMeshes", "meshBuilder", "audio", "additionalTextures", "shadows",
+                "loader", "userData", "offline", "fresnel", "multiMaterial", "touchCamera", "procedural", "gamepad",
+                "additionalCameras", "postProcesses", "renderingPipeline", "additionalRenderingPipeline", "defaultRenderingPipeline",
+                "depthRenderer", "geometryBufferRenderer", "additionalPostProcesses",
+                "additionalPostProcess_blur", "additionalPostProcess_fxaa", "additionalPostProcess_imageProcessing",
+                "bones", "hdr", "polygonMesh", "csg", "lensFlares", "physics", "textureFormats", "debug", "morphTargets",
+                "colorCurves", "octrees", "simd", "vr", "virtualJoystick", "optimizations", "highlights", "assetsManager",
+                "mapTexture", "dynamicFloatArray",
+                "imageProcessing", "serialization", "probes", "layer", "textureTools", "cameraBehaviors",
                 "materialsLibrary/babylon.gridMaterial.js",
-                "loaders/babylon.glTFFileLoader.js", "cameraBehaviors", "morphTargets"
+                "loaders/babylon.glTFFileLoader.js"
         ],
         "distributed": ["minimalGLTFViewer"]
     },
@@ -45,6 +48,8 @@
         "core" :
         {
             "files":[
+                "../../src/Events/babylon.keyboardEvents.js",
+                "../../src/Events/babylon.pointerEvents.js",
                 "../../src/Math/babylon.math.js",
                 "../../src/Math/babylon.math.scalar.js",
                 "../../src/babylon.mixins.js",
@@ -82,6 +87,9 @@
                 "../../src/Mesh/babylon.geometry.js",
                 "../../src/PostProcess/babylon.postProcessManager.js",
                 "../../src/Tools/babylon.performanceMonitor.js"
+            ],
+            "shaderIncludes": [
+                "depthPrePass"
             ]
         },         
         "particles" : 
@@ -167,6 +175,7 @@
         {
             "files": [
                 "../../src/Animations/babylon.animation.js",
+                "../../src/Animations/babylon.runtimeAnimation.js",
                 "../../src/Animations/babylon.animatable.js",
                 "../../src/Animations/babylon.easing.js"
             ],
@@ -536,7 +545,8 @@
                 "../../src/Gamepad/Controllers/babylon.webVRController.js",
                 "../../src/Gamepad/Controllers/babylon.oculusTouchController.js",
                 "../../src/Gamepad/Controllers/babylon.viveController.js",
-                "../../src/Gamepad/Controllers/babylon.genericController.js"
+                "../../src/Gamepad/Controllers/babylon.genericController.js",
+                "../../src/Gamepad/Controllers/babylon.windowsMotionController.js"
             ],
             "dependUpon" : [
                 "core"
@@ -585,10 +595,11 @@
                 "geometry.fragment"
             ],
             "shaderIncludes": [
+                "mrtFragmentDeclaration",
                 "bones300Declaration",
                 "instances300Declaration",
                 "instancesVertex",
-                "bonesVertex"
+                "bonesVertex"               
             ]
         },
         "postProcesses" : 
@@ -1439,7 +1450,8 @@
                     "../../gui/src/controls/image.ts",
                     "../../gui/src/controls/button.ts",
                     "../../gui/src/controls/colorPicker.ts",
-                    "../../gui/src/controls/inputText.ts"
+                    "../../gui/src/controls/inputText.ts",
+                    "../../gui/src/controls/virtualKeyboard.ts"
                 ],
                 "output": "babylon.gui.js",
                 "buildAsModule": "true",

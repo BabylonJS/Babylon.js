@@ -1,7 +1,8 @@
 module BABYLON {
 
     export class ViveController extends WebVRController {
-        private _defaultModel: BABYLON.AbstractMesh;
+        private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/vive/';
+        private static readonly MODEL_FILENAME:string = 'wand.babylon';
 
         constructor(vrGamepad) {
             super(vrGamepad);
@@ -9,7 +10,7 @@ module BABYLON {
         }
 
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
-            SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", "ViveWand.babylon", scene, (newMeshes) => {
+            SceneLoader.ImportMesh("", ViveController.MODEL_BASE_URL, ViveController.MODEL_FILENAME, scene, (newMeshes) => {
                 /*
                 Parent Mesh name: ViveWand
                 - body
