@@ -55,7 +55,7 @@
             this._depthStencilBufferAlreadyCleaned = true;
         }
 
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void,
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void,
             activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void {          
                   
             // Check if there's at least on observer on the onRenderingGroupObservable and initialize things to fire it

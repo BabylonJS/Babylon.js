@@ -10,57 +10,9 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private GLTFNode ExportMesh(BabylonMesh babylonMesh, GLTF gltf, GLTFNode gltfParentNode, BabylonScene babylonScene)
+        private GLTFMesh ExportMesh(BabylonMesh babylonMesh, GLTF gltf, BabylonScene babylonScene)
         {
             RaiseMessage("GLTFExporter.Mesh | Export mesh named: " + babylonMesh.name, 1);
-
-            // --------------------------
-            // ---------- Node ----------
-            // --------------------------
-
-            RaiseMessage("GLTFExporter.Mesh | Node", 2);
-            // Node
-            var gltfNode = new GLTFNode();
-            gltfNode.name = babylonMesh.name;
-            gltfNode.index = gltf.NodesList.Count;
-            gltf.NodesList.Add(gltfNode);
-
-            // Hierarchy
-            if (gltfParentNode != null)
-            {
-                RaiseMessage("GLTFExporter.Mesh | Add " + babylonMesh.name + " as child to " + gltfParentNode.name, 3);
-                gltfParentNode.ChildrenList.Add(gltfNode.index);
-            }
-            else
-            {
-                // It's a root node
-                // Only root nodes are listed in a gltf scene
-                RaiseMessage("GLTFExporter.Mesh | Add " + babylonMesh.name + " as root node to scene", 3);
-                gltf.scenes[0].NodesList.Add(gltfNode.index);
-            }
-
-            // Transform
-            gltfNode.translation = babylonMesh.position;
-            // TODO - Choose between this method and the extra root node
-            // Switch from left to right handed coordinate system
-            //gltfNode.translation[0] *= -1;
-            if (babylonMesh.rotationQuaternion != null)
-            {
-                gltfNode.rotation = babylonMesh.rotationQuaternion;
-            }
-            else
-            {
-                // Convert rotation vector to quaternion
-                BabylonVector3 rotationVector3 = new BabylonVector3
-                {
-                    X = babylonMesh.rotation[0],
-                    Y = babylonMesh.rotation[1],
-                    Z = babylonMesh.rotation[2]
-                };
-                gltfNode.rotation = rotationVector3.toQuaternionGltf().ToArray();
-            }
-            gltfNode.scale = babylonMesh.scaling;
-
 
             // --------------------------
             // --- Mesh from babylon ----
@@ -69,7 +21,7 @@ namespace Max2Babylon
             if (babylonMesh.positions == null)
             {
                 RaiseMessage("GLTFExporter.Mesh | Mesh is a dummy", 2);
-                return gltfNode;
+                return null;
             }
 
             RaiseMessage("GLTFExporter.Mesh | Mesh from babylon", 2);
@@ -137,68 +89,92 @@ namespace Max2Babylon
             var gltfMesh = new GLTFMesh { name = babylonMesh.name };
             gltfMesh.index = gltf.MeshesList.Count;
             gltf.MeshesList.Add(gltfMesh);
-            gltfNode.mesh = gltfMesh.index;
-            gltfMesh.gltfNode = gltfNode;
+            gltfMesh.idGroupInstance = babylonMesh.idGroupInstance;
 
             // Buffer
-            var buffer = new GLTFBuffer
+            var buffer = gltf.buffer;
+            if (buffer == null)
             {
-                uri = gltfMesh.name + ".bin"
-            };
-            buffer.index = gltf.BuffersList.Count;
-            gltf.BuffersList.Add(buffer);
+                buffer = new GLTFBuffer
+                {
+                    uri = gltf.OutputFile + ".bin"
+                };
+                buffer.index = gltf.BuffersList.Count;
+                gltf.BuffersList.Add(buffer);
+                gltf.buffer = buffer;
+            }
 
             // BufferView - Scalar
-            var bufferViewScalar = new GLTFBufferView
+            var bufferViewScalar = gltf.bufferViewScalar;
+            if (bufferViewScalar == null)
             {
-                name = "bufferViewScalar",
-                buffer = buffer.index,
-                Buffer = buffer
-            };
-            bufferViewScalar.index = gltf.BufferViewsList.Count;
-            gltf.BufferViewsList.Add(bufferViewScalar);
+                bufferViewScalar = new GLTFBufferView
+                {
+                    name = "bufferViewScalar",
+                    buffer = buffer.index,
+                    Buffer = buffer
+                };
+                bufferViewScalar.index = gltf.BufferViewsList.Count;
+                gltf.BufferViewsList.Add(bufferViewScalar);
+                gltf.bufferViewScalar = bufferViewScalar;
+            }
 
             // BufferView - Vector3
-            var bufferViewFloatVec3 = new GLTFBufferView
+            var bufferViewFloatVec3 = gltf.bufferViewFloatVec3;
+            if (bufferViewFloatVec3 == null)
             {
-                name = "bufferViewFloatVec3",
-                buffer = buffer.index,
-                Buffer = buffer,
-                byteOffset = 0,
-                byteStride = 12 // Field only defined for buffer views that contain vertex attributes. A vertex needs 3 * 4 bytes
-            };
-            bufferViewFloatVec3.index = gltf.BufferViewsList.Count;
-            gltf.BufferViewsList.Add(bufferViewFloatVec3);
+                bufferViewFloatVec3 = new GLTFBufferView
+                {
+                    name = "bufferViewFloatVec3",
+                    buffer = buffer.index,
+                    Buffer = buffer,
+                    byteOffset = 0,
+                    byteStride = 12 // Field only defined for buffer views that contain vertex attributes. A vertex needs 3 * 4 bytes
+                };
+                bufferViewFloatVec3.index = gltf.BufferViewsList.Count;
+                gltf.BufferViewsList.Add(bufferViewFloatVec3);
+                gltf.bufferViewFloatVec3 = bufferViewFloatVec3;
+            }
 
             // BufferView - Vector4
             GLTFBufferView bufferViewFloatVec4 = null;
             if (hasColor)
             {
-                bufferViewFloatVec4 = new GLTFBufferView
+                bufferViewFloatVec4 = gltf.bufferViewFloatVec4;
+                if (bufferViewFloatVec4 == null)
                 {
-                    name = "bufferViewFloatVec4",
-                    buffer = buffer.index,
-                    Buffer = buffer,
-                    byteOffset = 0,
-                    byteStride = 16 // Field only defined for buffer views that contain vertex attributes. A vertex needs 4 * 4 bytes
-                };
-                bufferViewFloatVec4.index = gltf.BufferViewsList.Count;
-                gltf.BufferViewsList.Add(bufferViewFloatVec4);
+                    bufferViewFloatVec4 = new GLTFBufferView
+                    {
+                        name = "bufferViewFloatVec4",
+                        buffer = buffer.index,
+                        Buffer = buffer,
+                        byteOffset = 0,
+                        byteStride = 16 // Field only defined for buffer views that contain vertex attributes. A vertex needs 4 * 4 bytes
+                    };
+                    bufferViewFloatVec4.index = gltf.BufferViewsList.Count;
+                    gltf.BufferViewsList.Add(bufferViewFloatVec4);
+                    gltf.bufferViewFloatVec4 = bufferViewFloatVec4;
+                }
             }
 
             // BufferView - Vector2
             GLTFBufferView bufferViewFloatVec2 = null;
             if (hasUV || hasUV2)
             {
-                bufferViewFloatVec2 = new GLTFBufferView
+                bufferViewFloatVec2 = gltf.bufferViewFloatVec2;
+                if (bufferViewFloatVec2 == null)
                 {
-                    name = "bufferViewFloatVec2",
-                    buffer = buffer.index,
-                    Buffer = buffer,
-                    byteStride = 8 // Field only defined for buffer views that contain vertex attributes. A vertex needs 2 * 4 bytes
-                };
-                bufferViewFloatVec2.index = gltf.BufferViewsList.Count;
-                gltf.BufferViewsList.Add(bufferViewFloatVec2);
+                    bufferViewFloatVec2 = new GLTFBufferView
+                    {
+                        name = "bufferViewFloatVec2",
+                        buffer = buffer.index,
+                        Buffer = buffer,
+                        byteStride = 8 // Field only defined for buffer views that contain vertex attributes. A vertex needs 2 * 4 bytes
+                    };
+                    bufferViewFloatVec2.index = gltf.BufferViewsList.Count;
+                    gltf.BufferViewsList.Add(bufferViewFloatVec2);
+                    gltf.bufferViewFloatVec2 = bufferViewFloatVec2;
+                }
             }
 
             // --------------------------
@@ -395,6 +371,15 @@ namespace Max2Babylon
                 // Update byte length and count of accessors, bufferViews and buffers
                 // Scalar
                 AddElementsToAccessor(accessorIndices, _indices.Count);
+                // Ensure the byteoffset is a multiple of 4
+                // Indices accessor element size if 2
+                // So the count needs to be even
+                if (gltfIndices.Count % 2 != 0)
+                {
+                    gltfIndices.Add(0);
+                    bufferViewScalar.byteLength += 2;
+                    buffer.byteLength += 2;
+                }
                 // Vector3
                 AddElementsToAccessor(accessorPositions, globalVerticesSubMesh.Count);
                 AddElementsToAccessor(accessorNormals, globalVerticesSubMesh.Count);
@@ -431,53 +416,56 @@ namespace Max2Babylon
             // --------- Saving ---------
             // --------------------------
 
-            string outputBinaryFile = Path.Combine(gltf.OutputPath, gltfMesh.name + ".bin");
-            RaiseMessage("GLTFExporter.Mesh | Saving " + outputBinaryFile, 2);
+            RaiseMessage("GLTFExporter.Mesh | saving", 2);
 
-            // Write data to binary file
-            using (BinaryWriter writer = new BinaryWriter(File.Open(outputBinaryFile, FileMode.Create)))
+            // BufferView - Scalar
+            gltfIndices.ForEach(n => bufferViewScalar.bytesList.AddRange(BitConverter.GetBytes(n)));
+
+            // BufferView - Vector3
+            globalVerticesSubMeshes.ForEach(globalVerticesSubMesh =>
             {
-                // BufferView - Scalar
-                gltfIndices.ForEach(n => writer.Write(n));
+                List<float> vertices = globalVerticesSubMesh.SelectMany(v => new[] { v.Position.X, v.Position.Y, v.Position.Z }).ToList();
+                vertices.ForEach(n => bufferViewFloatVec3.bytesList.AddRange(BitConverter.GetBytes(n)));
 
-                // BufferView - Vector3
-                globalVerticesSubMeshes.ForEach(globalVerticesSubMesh =>
+                List<float> normals = globalVerticesSubMesh.SelectMany(v => new[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToList();
+                normals.ForEach(n => bufferViewFloatVec3.bytesList.AddRange(BitConverter.GetBytes(n)));
+            });
+
+            // BufferView - Vector4
+            globalVerticesSubMeshes.ForEach(globalVerticesSubMesh =>
+            {
+                if (hasColor)
                 {
-                    List<float> vertices = globalVerticesSubMesh.SelectMany(v => new[] { v.Position.X, v.Position.Y, v.Position.Z }).ToList();
-                    vertices.ForEach(n => writer.Write(n));
+                    List<float> colors = globalVerticesSubMesh.SelectMany(v => new[] { v.Color[0], v.Color[1], v.Color[2], v.Color[3] }).ToList();
+                    colors.ForEach(n => bufferViewFloatVec4.bytesList.AddRange(BitConverter.GetBytes(n)));
+                }
+            });
 
-                    List<float> normals = globalVerticesSubMesh.SelectMany(v => new[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToList();
-                    normals.ForEach(n => writer.Write(n));
-                });
-
-                // BufferView - Vector4
-                globalVerticesSubMeshes.ForEach(globalVerticesSubMesh =>
+            // BufferView - Vector2
+            globalVerticesSubMeshes.ForEach(globalVerticesSubMesh =>
+            {
+                if (hasUV)
                 {
-                    if (hasColor)
-                    {
-                        List<float> colors = globalVerticesSubMesh.SelectMany(v => new[] { v.Color[0], v.Color[1], v.Color[2], v.Color[3] }).ToList();
-                        colors.ForEach(n => writer.Write(n));
-                    }
-                });
+                    List<float> uvs = globalVerticesSubMesh.SelectMany(v => new[] { v.UV.X, v.UV.Y }).ToList();
+                    uvs.ForEach(n => bufferViewFloatVec2.bytesList.AddRange(BitConverter.GetBytes(n)));
+                }
 
-                // BufferView - Vector2
-                globalVerticesSubMeshes.ForEach(globalVerticesSubMesh =>
+                if (hasUV2)
                 {
-                    if (hasUV)
-                    {
-                        List<float> uvs = globalVerticesSubMesh.SelectMany(v => new[] { v.UV.X, v.UV.Y }).ToList();
-                        uvs.ForEach(n => writer.Write(n));
-                    }
-                    
-                    if (hasUV2)
-                    {
-                        List<float> uvs2 = globalVerticesSubMesh.SelectMany(v => new[] { v.UV2.X, v.UV2.Y }).ToList();
-                        uvs2.ForEach(n => writer.Write(n));
-                    }
-                });
-            }
+                    List<float> uvs2 = globalVerticesSubMesh.SelectMany(v => new[] { v.UV2.X, v.UV2.Y }).ToList();
+                    uvs2.ForEach(n => bufferViewFloatVec2.bytesList.AddRange(BitConverter.GetBytes(n)));
+                }
+            });
 
-            return gltfNode;
+            //// Write data to binary file
+            //string outputBinaryFile = Path.Combine(gltf.OutputPath, gltfMesh.name + ".bin");
+            //RaiseMessage("GLTFExporter.Mesh | Saving " + outputBinaryFile, 2);
+            //using (BinaryWriter writer = new BinaryWriter(File.Open(outputBinaryFile, FileMode.Create)))
+            //{
+            //    bytesList.ForEach(b => writer.Write(b));
+            //}
+
+            return gltfMesh;
         }
 
         private IPoint2 createIPoint2(float[] array, int index)

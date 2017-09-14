@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace GLTFExport.Entities
 {
@@ -10,5 +11,7 @@ namespace GLTFExport.Entities
 
         [DataMember(IsRequired = true)]
         public int byteLength { get; set; }
+
+        public List<byte> bytesList;
     }
 }

@@ -9,6 +9,7 @@ module BABYLON.GUI {
         public _host: AdvancedDynamicTexture;
         public _currentMeasure = Measure.Empty();
         private _fontFamily = "Arial";
+        private _fontStyle = "";
         private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
         private _font: string;
         public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
@@ -47,6 +48,7 @@ module BABYLON.GUI {
 
         public isHitTestVisible = true;
         public isPointerBlocker = false;
+        public isFocusInvisible = false;
 
         protected _linkOffsetX = new ValueAndUnit(0);
         protected _linkOffsetY = new ValueAndUnit(0);
@@ -242,6 +244,19 @@ module BABYLON.GUI {
             this._fontFamily = value;
             this._fontSet = true;
         }
+
+        public get fontStyle(): string {
+            return this._fontStyle;
+        }
+
+        public set fontStyle(value: string) {
+            if (this._fontStyle === value) {
+                return;
+            }
+
+            this._fontStyle = value;
+            this._fontSet = true;
+        }        
 
         public get fontSize(): string | number  {
             return this._fontSize.toString(this._host);
@@ -834,6 +849,7 @@ module BABYLON.GUI {
             if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
                 this._onPointerDown(this._dummyVector2);
                 this._host._lastControlDown = this;
+                this._host._lastPickedControl = this;
                 return true;
             }
 
@@ -853,9 +869,18 @@ module BABYLON.GUI {
                 return;
             }
 
-            this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
+            this._font = this._fontStyle + " " + this._fontSize.getValue(this._host) + "px " + this._fontFamily;
         
             this._fontOffset = Control._GetFontOffset(this._font);
+        }
+
+        public dispose() {
+            this.onDirtyObservable.clear();
+            this.onPointerDownObservable.clear();
+            this.onPointerEnterObservable.clear();
+            this.onPointerMoveObservable.clear();
+            this.onPointerOutObservable.clear();
+            this.onPointerUpObservable.clear();
         }
 
         // Statics

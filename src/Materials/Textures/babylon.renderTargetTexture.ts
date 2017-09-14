@@ -30,7 +30,7 @@
         public renderSprites = false;
         public coordinatesMode = Texture.PROJECTION_MODE;
         public activeCamera: Camera;
-        public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
+        public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
         public useCameraPostProcesses: boolean;
         public ignoreCameraViewport: boolean = false;
 
@@ -424,7 +424,7 @@
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
 
             if (this._postProcessManager) {
-                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses);
+                this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses, this.ignoreCameraViewport);
             }
             else if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);

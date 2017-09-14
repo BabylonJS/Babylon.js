@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace GLTFExport.Entities
 {
@@ -18,5 +19,6 @@ namespace GLTFExport.Entities
         public int? byteStride { get; set; }
 
         public GLTFBuffer Buffer;
+        public List<byte> bytesList = new List<byte>();
     }
 }

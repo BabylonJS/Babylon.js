@@ -20,6 +20,7 @@
         public scaleMode = Engine.SCALEMODE_FLOOR;
         public alwaysForcePOT = false;
         public samples = 1;
+        public adaptScaleToCurrentViewport = false;
 
         private _camera: Camera;
         private _scene: Scene;
@@ -221,8 +222,17 @@
                 var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderingCanvas().width) * <number>this._options) | 0;
                 var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderingCanvas().height) * <number>this._options) | 0;
 
-                var desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
+                var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
                 var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
+
+                if (this.adaptScaleToCurrentViewport) {
+                    let currentViewport = engine.currentViewport;
+
+                    if (currentViewport) {
+                        desiredWidth *= currentViewport.width;
+                        desiredHeight *= currentViewport.height;
+                    }
+                }
 
                 if (this.renderTargetSamplingMode === Texture.TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
                     if (!(<PostProcessOptions>this._options).width) {

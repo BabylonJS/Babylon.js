@@ -1156,6 +1156,48 @@
         }
 
         /**
+         * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
+         */
+        public getHierarchyBoundingVectors(): { min: Vector3, max: Vector3 }{
+            this.computeWorldMatrix(true);
+
+            let min: Vector3;
+            let max: Vector3;
+            
+            if (!this.subMeshes) {
+                min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            } else {
+                min = this.getBoundingInfo().boundingBox.minimumWorld;
+                max = this.getBoundingInfo().boundingBox.maximumWorld;
+            }
+
+            let descendants = this.getDescendants(false);
+
+            for (var descendant of descendants) {
+                let childMesh = <AbstractMesh>descendant;
+
+                childMesh.computeWorldMatrix(true);
+
+                if (childMesh.getTotalVertices() === 0) {
+                    continue;
+                }
+                let boundingBox = childMesh.getBoundingInfo().boundingBox;
+
+                var minBox = boundingBox.minimumWorld;
+                var maxBox = boundingBox.maximumWorld;
+
+                Tools.CheckExtends(minBox, min, max);
+                Tools.CheckExtends(maxBox, min, max);
+            }
+
+            return {
+                min: min,
+                max: max
+            }
+        }
+
+        /**
          * Updates the mesh BoundingInfo object and all its children BoundingInfo objects also.  
          * Returns the AbstractMesh.  
          */
@@ -1533,7 +1575,7 @@
             }
         }
 
-        public moveWithCollisions(direction: Vector3): AbstractMesh {
+        public moveWithCollisions(displacement: Vector3): AbstractMesh {
             var globalPosition = this.getAbsolutePosition();
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
@@ -1545,7 +1587,7 @@
 
             this._collider.radius = this.ellipsoid;
 
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, direction, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
             return this;
         }
 
@@ -1995,41 +2037,13 @@
 
             } else {
 
-                var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
-                var scale = Tmp.Vector3[1];
                 var m1 = Tmp.Matrix[0];
-                var m2 = Tmp.Matrix[1];
 
-                parent.getWorldMatrix().decompose(scale, rotation, position);
+                parent.getWorldMatrix().invertToRef(m1);
+                Vector3.TransformCoordinatesToRef(child.position, m1, position);
 
-                rotation.toRotationMatrix(m1);
-                m2.setTranslation(position);
-
-                m2.multiplyToRef(m1, m1);
-
-                var invParentMatrix = Matrix.Invert(m1);
-
-                var m = child.getWorldMatrix().multiply(invParentMatrix);
-
-                m.decompose(scale, rotation, position);
-
-                if (child.rotationQuaternion) {
-                    child.rotationQuaternion.copyFrom(rotation);
-                } else {
-                    rotation.toEulerAnglesToRef(child.rotation);
-                }
-
-                invParentMatrix = Matrix.Invert(parent.getWorldMatrix());
-
-                var m = child.getWorldMatrix().multiply(invParentMatrix);
-
-                m.decompose(scale, rotation, position);
-
-                child.position.x = position.x;
-                child.position.y = position.y;
-                child.position.z = position.z;
-
+                child.position.copyFrom(position);
             }
             child.parent = parent;
             return this;

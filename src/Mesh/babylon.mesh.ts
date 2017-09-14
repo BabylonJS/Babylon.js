@@ -128,6 +128,8 @@
         private _instancesData: Float32Array;
         private _overridenInstanceCount: number;
 
+        private _effectiveMaterial: Material;
+
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
         private _sideOrientation: number = Mesh._DEFAULTSIDE;
@@ -900,14 +902,15 @@
             return this;
         }
 
-        public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
+        public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate = false): Mesh {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return this;
             }
 
             this.onBeforeDrawObservable.notifyObservers(this);
 
-            var engine = this.getScene().getEngine();
+            let scene = this.getScene();
+            let engine = scene.getEngine();
 
             // Draw order
             switch (fillMode) {
@@ -928,6 +931,21 @@
                     } else {
                         engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
                     }
+            }
+
+            if (scene._isAlternateRenderingEnabled && !alternate) {
+                let effect = subMesh.effect || this._effectiveMaterial.getEffect();
+                scene._switchToAlternateCameraConfiguration(true);
+                this._effectiveMaterial.bindView(effect);
+                this._effectiveMaterial.bindViewProjection(effect);
+
+                engine.setViewport(scene.activeCamera._alternateCamera.viewport);
+                this._draw(subMesh, fillMode, instancesCount, true);
+                engine.setViewport(scene.activeCamera.viewport);
+
+                scene._switchToAlternateCameraConfiguration(false);
+                this._effectiveMaterial.bindView(effect);
+                this._effectiveMaterial.bindViewProjection(effect);
             }
             return this;
         }
@@ -1133,23 +1151,23 @@
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
             // Material
-            var effectiveMaterial = subMesh.getMaterial();
+            this._effectiveMaterial = subMesh.getMaterial();
 
-            if (!effectiveMaterial) {
+            if (!this._effectiveMaterial) {
                 return this;
             }
 
-            if (effectiveMaterial.storeEffectOnSubMeshes) {
-                if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
+                if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                     return this;
                 }
-            } else if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+            } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
 
             // Alpha mode
             if (enableAlphaMode) {
-                engine.setAlphaMode(effectiveMaterial.alphaMode);
+                engine.setAlphaMode(this._effectiveMaterial.alphaMode);
             }
 
             // Outline - step 1
@@ -1161,16 +1179,16 @@
             }
 
             var effect: Effect;
-            if (effectiveMaterial.storeEffectOnSubMeshes) {
+            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 effect = subMesh.effect;
             } else {
-                effect = effectiveMaterial.getEffect();
+                effect = this._effectiveMaterial.getEffect();
             }
 
-            effectiveMaterial._preBind(effect);
+            this._effectiveMaterial._preBind(effect);
 
             // Bind
-            var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode);
+            var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : this._effectiveMaterial.fillMode);
 
             if (!hardwareInstancedRendering) { // Binding will be done later because we need to add more info to the VB
                 this._bind(subMesh, effect, fillMode);
@@ -1178,17 +1196,17 @@
 
             var world = this.getWorldMatrix();
 
-            if (effectiveMaterial.storeEffectOnSubMeshes) {
-                effectiveMaterial.bindForSubMesh(world, this, subMesh);
+            if (this._effectiveMaterial.storeEffectOnSubMeshes) {
+                this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
             } else {
-                effectiveMaterial.bind(world, this);
+                this._effectiveMaterial.bind(world, this);
             }
 
             // Draw
-            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, effectiveMaterial);
+            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
 
             // Unbind
-            effectiveMaterial.unbind();
+            this._effectiveMaterial.unbind();
 
             // Outline - step 2
             if (this.renderOutline && savedDepthWrite) {
