@@ -51933,6 +51933,8 @@ var BABYLON;
         __extends(GenericPad, _super);
         function GenericPad(id, index, browserGamepad) {
             var _this = _super.call(this, id, index, browserGamepad) || this;
+            _this.onButtonDownObservable = new BABYLON.Observable();
+            _this.onButtonUpObservable = new BABYLON.Observable();
             _this.type = Gamepad.GENERIC;
             _this._buttons = new Array(browserGamepad.buttons.length);
             return _this;
@@ -51945,11 +51947,17 @@ var BABYLON;
         };
         GenericPad.prototype._setButtonValue = function (newValue, currentValue, buttonIndex) {
             if (newValue !== currentValue) {
-                if (this._onbuttondown && newValue === 1) {
-                    this._onbuttondown(buttonIndex);
+                if (newValue === 1) {
+                    if (this._onbuttondown) {
+                        this._onbuttondown(buttonIndex);
+                    }
+                    this.onButtonDownObservable.notifyObservers(buttonIndex);
                 }
-                if (this._onbuttonup && newValue === 0) {
-                    this._onbuttonup(buttonIndex);
+                if (newValue === 0) {
+                    if (this._onbuttonup) {
+                        this._onbuttonup(buttonIndex);
+                    }
+                    this.onButtonUpObservable.notifyObservers(buttonIndex);
                 }
             }
             return newValue;
@@ -51997,6 +52005,10 @@ var BABYLON;
             var _this = _super.call(this, id, index, gamepad, 0, 1, (xboxOne ? 3 : 2), (xboxOne ? 4 : 3)) || this;
             _this._leftTrigger = 0;
             _this._rightTrigger = 0;
+            _this.onButtonDownObservable = new BABYLON.Observable();
+            _this.onButtonUpObservable = new BABYLON.Observable();
+            _this.onPadDownObservable = new BABYLON.Observable();
+            _this.onPadUpObservable = new BABYLON.Observable();
             _this._buttonA = 0;
             _this._buttonB = 0;
             _this._buttonX = 0;
@@ -52062,22 +52074,34 @@ var BABYLON;
         };
         Xbox360Pad.prototype._setButtonValue = function (newValue, currentValue, buttonType) {
             if (newValue !== currentValue) {
-                if (this._onbuttondown && newValue === 1) {
-                    this._onbuttondown(buttonType);
+                if (newValue === 1) {
+                    if (this._onbuttondown) {
+                        this._onbuttondown(buttonType);
+                    }
+                    this.onButtonDownObservable.notifyObservers(buttonType);
                 }
-                if (this._onbuttonup && newValue === 0) {
-                    this._onbuttonup(buttonType);
+                if (newValue === 0) {
+                    if (this._onbuttonup) {
+                        this._onbuttonup(buttonType);
+                    }
+                    this.onButtonUpObservable.notifyObservers(buttonType);
                 }
             }
             return newValue;
         };
         Xbox360Pad.prototype._setDPadValue = function (newValue, currentValue, buttonType) {
             if (newValue !== currentValue) {
-                if (this._ondpaddown && newValue === 1) {
-                    this._ondpaddown(buttonType);
+                if (newValue === 1) {
+                    if (this._ondpaddown) {
+                        this._ondpaddown(buttonType);
+                    }
+                    this.onPadDownObservable.notifyObservers(buttonType);
                 }
-                if (this._ondpadup && newValue === 0) {
-                    this._ondpadup(buttonType);
+                if (newValue === 0) {
+                    if (this._ondpadup) {
+                        this._ondpadup(buttonType);
+                    }
+                    this.onPadUpObservable.notifyObservers(buttonType);
                 }
             }
             return newValue;
