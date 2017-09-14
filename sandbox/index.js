@@ -73,7 +73,7 @@
 
             var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
             framingBehavior.framingTime = 0;
-            framingBehavior.elevationReturnTime = -1;
+            framingBehavior.elevationReturnWaitTime = -1;
 
             var bouncingBehavior = currentScene.activeCamera.getBehaviorByName("Bouncing");
             bouncingBehavior.autoTransitionRange = true;        
