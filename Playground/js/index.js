@@ -183,6 +183,9 @@
         }
 
         var createNewScript = function () {
+            // check if checked is on
+            let iCanClear = checkSafeMode("Are you sure you want to create a new playground?");
+            if (!iCanClear) return;
             location.hash = "";
             currentSnippetToken = null;
             currentSnippetTitle = null;
@@ -196,11 +199,29 @@
         }
 
         var clear = function () {
+            // check if checked is on
+            let iCanClear = checkSafeMode("Are you sure you want to clear the playground?");
+            if (!iCanClear) return;
             location.hash = "";
             currentSnippetToken = null;
             jsEditor.setValue('');
             jsEditor.setPosition({ lineNumber: 0, column: 0 });
             jsEditor.focus();
+        }
+
+        var checkSafeMode = function (message) {
+            var safeToggle = document.getElementById("safemodeToggle1600");
+            if (safeToggle.classList.contains('checked')) {
+                let confirm = window.confirm(message);
+                if (!confirm) {
+                    return false;
+                } else {
+                    document.getElementById("safemodeToggle1600").classList.toggle('checked');
+                    return true;
+                }
+            } else {
+                return true;
+            }
         }
 
         var showError = function (errorMessage, errorEvent) {
@@ -287,14 +308,14 @@
                 var showDebugLayer = false;
                 var initialTabIndex = 0;
 
-                if(document.getElementsByClassName('insp-wrapper').length > 0){                  
-                    for(var i = 0; i < engine.scenes.length; i++){
-                        if(engine.scenes[i]._debugLayer){
+                if (document.getElementsByClassName('insp-wrapper').length > 0) {
+                    for (var i = 0; i < engine.scenes.length; i++) {
+                        if (engine.scenes[i]._debugLayer) {
                             //TODO: once inspector is updated on netlify, use getActiveTabIndex instead of the following loop
                             //initialTabIndex = engine.scenes[i]._debugLayer._inspector.getActiveTabIndex();
                             var tabs = engine.scenes[i]._debugLayer._inspector._tabbar._tabs;
-                            for(var j = 0; j < tabs.length; j++){
-                                if(tabs[j].isActive()){
+                            for (var j = 0; j < tabs.length; j++) {
+                                if (tabs[j].isActive()) {
                                     initialTabIndex = j;
                                     break;
                                 }
@@ -303,7 +324,7 @@
                         }
                     }
                     showInspector = true;
-                }else if(document.getElementById('DebugLayer')){
+                } else if (document.getElementById('DebugLayer')) {
                     showDebugLayer = true;
                 }
 
@@ -388,13 +409,13 @@
                     document.getElementById("statusBar").innerHTML = "";
                 });
 
-                if(scene){
-                    if(showInspector){
-                        scene.debugLayer.show({initialTab:initialTabIndex});
-                        scene.executeWhenReady(function(){
+                if (scene) {
+                    if (showInspector) {
+                        scene.debugLayer.show({ initialTab: initialTabIndex });
+                        scene.executeWhenReady(function () {
                             scene.debugLayer._inspector.refresh();
                         })
-                    }else if(showDebugLayer){
+                    } else if (showDebugLayer) {
                         scene.debugLayer.show();
                     }
                 }
@@ -594,7 +615,7 @@
 
         // Fullscreen
         document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function () {
-            if(document.webkitIsFullScreen) goFullPage();
+            if (document.webkitIsFullScreen) goFullPage();
             else exitFullPage();
         }, false);
 
@@ -617,11 +638,11 @@
         var editorGoFullscreen = function () {
             var editorDiv = document.getElementById("jsEditor");
             if (editorDiv.requestFullscreen) {
-            editorDiv.requestFullscreen();
+                editorDiv.requestFullscreen();
             } else if (editorDiv.mozRequestFullScreen) {
-            editorDiv.mozRequestFullScreen();
+                editorDiv.mozRequestFullScreen();
             } else if (editorDiv.webkitRequestFullscreen) {
-            editorDiv.webkitRequestFullscreen();
+                editorDiv.webkitRequestFullscreen();
             }
 
         }
