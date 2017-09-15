@@ -32,6 +32,11 @@
         private _ondpaddown: (dPadPressed: Xbox360Dpad) => void;
         private _ondpadup: (dPadReleased: Xbox360Dpad) => void;
 
+        public onButtonDownObservable = new Observable<Xbox360Button>();
+        public onButtonUpObservable = new Observable<Xbox360Button>();        
+        public onPadDownObservable = new Observable<Xbox360Dpad>();
+        public onPadUpObservable = new Observable<Xbox360Dpad>();        
+
         private _buttonA: number = 0;
         private _buttonB: number = 0;
         private _buttonX: number = 0;
@@ -99,11 +104,20 @@
 
         private _setButtonValue(newValue: number, currentValue: number, buttonType: Xbox360Button): number {
             if (newValue !== currentValue) {
-                if (this._onbuttondown && newValue === 1) {
-                    this._onbuttondown(buttonType);
+                if (newValue === 1) {
+                    if (this._onbuttondown) {
+                        this._onbuttondown(buttonType);
+                    }
+
+                    this.onButtonDownObservable.notifyObservers(buttonType);
                 }
-                if (this._onbuttonup && newValue === 0) {
-                    this._onbuttonup(buttonType);
+                if (newValue === 0) {
+
+                    if (this._onbuttonup) {
+                        this._onbuttonup(buttonType);
+                    }
+                    
+                    this.onButtonUpObservable.notifyObservers(buttonType);
                 }
             }
             return newValue;
@@ -111,11 +125,19 @@
 
         private _setDPadValue(newValue: number, currentValue: number, buttonType: Xbox360Dpad): number {
             if (newValue !== currentValue) {
-                if (this._ondpaddown && newValue === 1) {
-                    this._ondpaddown(buttonType);
+                if (newValue === 1) {
+                    if (this._ondpaddown) {
+                        this._ondpaddown(buttonType);
+                    }
+                    
+                    this.onPadDownObservable.notifyObservers(buttonType);
                 }
-                if (this._ondpadup && newValue === 0) {
-                    this._ondpadup(buttonType);
+                if (newValue === 0) {
+                    if (this._ondpadup) {
+                        this._ondpadup(buttonType);
+                    }
+
+                    this.onPadUpObservable.notifyObservers(buttonType);
                 }
             }
             return newValue;

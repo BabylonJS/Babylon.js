@@ -261,13 +261,24 @@ module BABYLON {
 				}
 			}
 
+			// Set sensibilities
+			let extend = maximumWorld.subtract(minimumWorld).length();
+			this._attachedCamera.panningSensibility = 5000 / extend;
+			this._attachedCamera.wheelPrecision = 100 / radius;
+
 			// transition to new radius
 			if (!this._radiusTransition) {
 				this._radiusTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
 			}
 
 			this._animatables.push(Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
-				60, this._radiusTransition, this._framingTime, onAnimationEnd));
+				60, this._radiusTransition, this._framingTime, () => {
+					if (onAnimationEnd) {
+						onAnimationEnd();
+					}
+
+					this._attachedCamera.storeState();
+				}));
 		}
 		
 		/**
@@ -311,6 +322,10 @@ module BABYLON {
 		 * is automatically returned to its default position (expected to be above ground plane). 
 		 */
 		private _maintainCameraAboveGround(): void {
+			if (this._elevationReturnTime < 0) {
+				return;
+			}
+
 			let timeSinceInteraction = Tools.Now - this._lastInteractionTime;
 			let defaultBeta = Math.PI * 0.5 - this._defaultElevation;
 			let limitBeta = Math.PI * 0.5;
