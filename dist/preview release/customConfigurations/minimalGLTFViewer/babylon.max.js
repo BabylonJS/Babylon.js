@@ -17108,7 +17108,7 @@ var BABYLON;
         Object.defineProperty(Scene.prototype, "mainSoundTrack", {
             get: function () {
                 if (!this._mainSoundTrack) {
-                    // this._mainSoundTrack = new SoundTrack(this, { mainTrack: true });
+                    this._mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
                 }
                 return this._mainSoundTrack;
             },
@@ -57001,7 +57001,7 @@ var BABYLON;
         };
         ImageProcessingPostProcess.prototype._updateParameters = function () {
             this._defines.FROMLINEARSPACE = this._fromLinearSpace;
-            this.imageProcessingConfiguration.prepareDefines(this._defines);
+            this.imageProcessingConfiguration.prepareDefines(this._defines, true);
             var defines = "";
             for (var define in this._defines) {
                 if (this._defines[define]) {
@@ -71165,7 +71165,19 @@ var BABYLON;
          * Prepare the list of defines associated to the shader.
          * @param defines the list of defines to complete
          */
-        ImageProcessingConfiguration.prototype.prepareDefines = function (defines) {
+        ImageProcessingConfiguration.prototype.prepareDefines = function (defines, forPostProcess) {
+            if (forPostProcess === void 0) { forPostProcess = false; }
+            if (forPostProcess !== this.applyByPostProcess) {
+                defines.VIGNETTE = false;
+                defines.TONEMAPPING = false;
+                defines.CONTRAST = false;
+                defines.EXPOSURE = false;
+                defines.COLORCURVES = false;
+                defines.COLORGRADING = false;
+                defines.IMAGEPROCESSING = false;
+                defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
+                return;
+            }
             defines.VIGNETTE = this.vignetteEnabled;
             defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
