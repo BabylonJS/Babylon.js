@@ -101,9 +101,9 @@
                 this._onGamepadDisconnectedEvent = null;
             }
 
-            for (let gamepad of this._babylonGamepads) {
+            this._babylonGamepads.forEach((gamepad) => {
                 gamepad.dispose();
-            }
+            });
 
             this.onGamepadConnectedObservable.clear();
             this.onGamepadDisconnectedObservable.clear();

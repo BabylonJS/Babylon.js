@@ -51761,10 +51761,9 @@ var BABYLON;
                 this._onGamepadConnectedEvent = null;
                 this._onGamepadDisconnectedEvent = null;
             }
-            for (var _i = 0, _a = this._babylonGamepads; _i < _a.length; _i++) {
-                var gamepad = _a[_i];
+            this._babylonGamepads.forEach(function (gamepad) {
                 gamepad.dispose();
-            }
+            });
             this.onGamepadConnectedObservable.clear();
             this.onGamepadDisconnectedObservable.clear();
             this._oneGamepadConnected = false;
