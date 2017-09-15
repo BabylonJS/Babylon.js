@@ -691,7 +691,7 @@
 
         public get mainSoundTrack(): SoundTrack {
             if (!this._mainSoundTrack) {
-               // this._mainSoundTrack = new SoundTrack(this, { mainTrack: true });
+                this._mainSoundTrack = new SoundTrack(this, { mainTrack: true });
             }
 
             return this._mainSoundTrack;
