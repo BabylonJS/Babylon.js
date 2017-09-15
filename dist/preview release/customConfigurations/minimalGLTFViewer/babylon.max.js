@@ -76665,16 +76665,7 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=KHR_materials_pbrSpecularGlossiness.js.map
-(function universalModuleDefinition(root, factory) {
-            if(typeof exports === 'object' && typeof module === 'object')
-                module.exports = factory();
-            else if(typeof define === 'function' && define.amd)
-                define([], factory);
-            else if(typeof exports === 'object')
-                exports["BABYLON"] = factory();
-            else
-                root["BABYLON"] = factory();
-        })(this, function() {
-            return BABYLON;
-        });
-        
+
+if (((typeof window != "undefined" && window.module) || (typeof module != "undefined")) && typeof module.exports != "undefined") {
+    module.exports = BABYLON;
+};
