@@ -5,8 +5,9 @@ module.exports = function (varName) {
     return through.obj(function (file, enc, cb) {
 
         var moduleExportsAddition =
- //           '\nexport as namespace ' + varName + ';\n' +
-            '\nexport = ' + varName + ';\n';
+            'export = ' + varName + ';\n' +
+            'export as namespace ' + varName + ';\n\n';
+
 
         if (file.isNull()) {
             cb(null, file);
@@ -19,7 +20,7 @@ module.exports = function (varName) {
         }
 
         try {
-            file.contents = new Buffer(String(file.contents) + moduleExportsAddition);
+            file.contents = new Buffer(moduleExportsAddition + String(file.contents));
             this.push(file);
 
         } catch (err) {
