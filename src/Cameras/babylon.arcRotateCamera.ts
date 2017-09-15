@@ -385,7 +385,7 @@ module BABYLON {
             this.alpha = this._storedAlpha;
             this.beta = this._storedBeta;
             this.radius = this._storedRadius;
-            this.setTarget(this._storedTarget);
+            this.setTarget(this._storedTarget.clone());
 
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
