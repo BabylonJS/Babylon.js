@@ -18,6 +18,10 @@
     var enableDebugLayer = false;
     var currentPluginName;
 
+    canvas.addEventListener("contextmenu", function(evt) {
+        evt.preventDefault();
+    }, false);
+
     currentHelpCounter = localStorage.getItem("helpcounter");
 
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
@@ -73,21 +77,14 @@
 
             var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
             framingBehavior.framingTime = 0;
-            framingBehavior.elevationReturnWaitTime = -1;
+            framingBehavior.elevationReturnTime = -1;
 
             var bouncingBehavior = currentScene.activeCamera.getBehaviorByName("Bouncing");
             bouncingBehavior.autoTransitionRange = true;        
 
             if (currentScene.meshes.length) {
-                // Let's zoom on the first object with geometry
-                for (var index = 0; index < currentScene.meshes.length; index++) {
-                    var mesh = currentScene.meshes[index];
-
-                    if (mesh.getTotalVertices()) {
-                        currentScene.activeCamera.setTarget(mesh);
-                        break;
-                    }
-                }
+                var worldExtends = currentScene.getWorldExtends();
+                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
             }
         }
 

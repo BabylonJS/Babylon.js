@@ -35463,7 +35463,7 @@ var BABYLON;
                         //Nothing to do with the error. Execution will continue.
                     }
                     // Manage panning with pan button click
-                    _this._isPanClick = evt.button === _this.camera._panningMouseButton;
+                    _this._isPanClick = evt.button === _this.camera._panningMouseButton && evt.pointerType !== "mouse";
                     // manage pointers
                     cacheSoloPointer = { x: evt.clientX, y: evt.clientY, pointerId: evt.pointerId, type: evt.pointerType };
                     if (pointA === undefined) {
@@ -36034,7 +36034,7 @@ var BABYLON;
             this.alpha = this._storedAlpha;
             this.beta = this._storedBeta;
             this.radius = this._storedRadius;
-            this.setTarget(this._storedTarget);
+            this.setTarget(this._storedTarget.clone());
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
@@ -48662,6 +48662,7 @@ var BABYLON;
             this._loadingDiv.id = "babylonjsLoadingDiv";
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.style.transition = "opacity 1.5s ease";
+            this._loadingDiv.style.pointerEvents = "none";
             // Loading text
             this._loadingTextDiv = document.createElement("div");
             this._loadingTextDiv.style.position = "absolute";
@@ -72152,6 +72153,7 @@ var BABYLON;
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
         FramingBehavior.prototype.zoomOnBoundingInfo = function (minimumWorld, maximumWorld, focusOnOriginXZ, onAnimationEnd) {
+            var _this = this;
             if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
             if (onAnimationEnd === void 0) { onAnimationEnd = null; }
             var zoomTarget;
@@ -72187,11 +72189,20 @@ var BABYLON;
                     this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
                 }
             }
+            // Set sensibilities
+            var extend = maximumWorld.subtract(minimumWorld).length();
+            this._attachedCamera.panningSensibility = 5000 / extend;
+            this._attachedCamera.wheelPrecision = 100 / radius;
             // transition to new radius
             if (!this._radiusTransition) {
                 this._radiusTransition = BABYLON.Animation.CreateAnimation("radius", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
             }
-            this._animatables.push(BABYLON.Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 60, this._radiusTransition, this._framingTime, onAnimationEnd));
+            this._animatables.push(BABYLON.Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 60, this._radiusTransition, this._framingTime, function () {
+                if (onAnimationEnd) {
+                    onAnimationEnd();
+                }
+                _this._attachedCamera.storeState();
+            }));
         };
         /**
          * Calculates the lowest radius for the camera based on the bounding box of the mesh.
@@ -72229,6 +72240,9 @@ var BABYLON;
          */
         FramingBehavior.prototype._maintainCameraAboveGround = function () {
             var _this = this;
+            if (this._elevationReturnTime < 0) {
+                return;
+            }
             var timeSinceInteraction = BABYLON.Tools.Now - this._lastInteractionTime;
             var defaultBeta = Math.PI * 0.5 - this._defaultElevation;
             var limitBeta = Math.PI * 0.5;
