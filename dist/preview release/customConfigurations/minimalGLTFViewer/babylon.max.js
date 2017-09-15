@@ -16804,9 +16804,6 @@ var BABYLON;
                 this._outlineRenderer = new BABYLON.OutlineRenderer(this);
             }
             this.attachControl();
-            if (BABYLON.SoundTrack) {
-                this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
-            }
             //simplification queue
             if (BABYLON.SimplificationQueue) {
                 this.simplificationQueue = new BABYLON.SimplificationQueue();
@@ -17104,6 +17101,16 @@ var BABYLON;
                     this._postProcessRenderPipelineManager = new BABYLON.PostProcessRenderPipelineManager();
                 }
                 return this._postProcessRenderPipelineManager;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "mainSoundTrack", {
+            get: function () {
+                if (!this._mainSoundTrack) {
+                    // this._mainSoundTrack = new SoundTrack(this, { mainTrack: true });
+                }
+                return this._mainSoundTrack;
             },
             enumerable: true,
             configurable: true
@@ -19245,7 +19252,7 @@ var BABYLON;
             this._activeParticles.addCount(0, true);
         };
         Scene.prototype._updateAudioParameters = function () {
-            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 1)) {
+            if (!this.audioEnabled || !this._mainSoundTrack || (this._mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 1)) {
                 return;
             }
             var listeningCamera;
@@ -19537,6 +19544,9 @@ var BABYLON;
         });
         // Release sounds & sounds tracks
         Scene.prototype.disposeSounds = function () {
+            if (!this._mainSoundTrack) {
+                return;
+            }
             this.mainSoundTrack.dispose();
             for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
                 this.soundTracks[scIndex].dispose();
@@ -76655,7 +76665,16 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=KHR_materials_pbrSpecularGlossiness.js.map
-
-if (((typeof window != "undefined" && window.module) || (typeof module != "undefined")) && typeof module.exports != "undefined") {
-    module.exports = BABYLON;
-};
+(function universalModuleDefinition(root, factory) {
+            if(typeof exports === 'object' && typeof module === 'object')
+                module.exports = factory();
+            else if(typeof define === 'function' && define.amd)
+                define([], factory);
+            else if(typeof exports === 'object')
+                exports["BABYLON"] = factory();
+            else
+                root["BABYLON"] = factory();
+        })(this, function() {
+            return BABYLON;
+        });
+        
