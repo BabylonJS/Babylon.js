@@ -131,7 +131,7 @@ module BABYLON {
                 var shaderName = "shadowOnly";
                 var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
-                                "vFogInfos", "vFogColor", "pointSize",
+                                "vFogInfos", "vFogColor", "pointSize", "alpha",
                                 "mBones",
                                 "vClipPlane"
                 ];
@@ -196,6 +196,8 @@ module BABYLON {
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
+
+                this._activeEffect.setFloat("alpha", this.alpha);
 
                 this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
             }
