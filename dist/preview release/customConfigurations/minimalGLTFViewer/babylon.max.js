@@ -35463,7 +35463,7 @@ var BABYLON;
                         //Nothing to do with the error. Execution will continue.
                     }
                     // Manage panning with pan button click
-                    _this._isPanClick = evt.button === _this.camera._panningMouseButton;
+                    _this._isPanClick = evt.button === _this.camera._panningMouseButton && evt.pointerType !== "mouse";
                     // manage pointers
                     cacheSoloPointer = { x: evt.clientX, y: evt.clientY, pointerId: evt.pointerId, type: evt.pointerType };
                     if (pointA === undefined) {
@@ -36034,7 +36034,7 @@ var BABYLON;
             this.alpha = this._storedAlpha;
             this.beta = this._storedBeta;
             this.radius = this._storedRadius;
-            this.setTarget(this._storedTarget);
+            this.setTarget(this._storedTarget.clone());
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
@@ -48662,6 +48662,7 @@ var BABYLON;
             this._loadingDiv.id = "babylonjsLoadingDiv";
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.style.transition = "opacity 1.5s ease";
+            this._loadingDiv.style.pointerEvents = "none";
             // Loading text
             this._loadingTextDiv = document.createElement("div");
             this._loadingTextDiv.style.position = "absolute";
@@ -51933,6 +51934,8 @@ var BABYLON;
         __extends(GenericPad, _super);
         function GenericPad(id, index, browserGamepad) {
             var _this = _super.call(this, id, index, browserGamepad) || this;
+            _this.onButtonDownObservable = new BABYLON.Observable();
+            _this.onButtonUpObservable = new BABYLON.Observable();
             _this.type = Gamepad.GENERIC;
             _this._buttons = new Array(browserGamepad.buttons.length);
             return _this;
@@ -51945,11 +51948,17 @@ var BABYLON;
         };
         GenericPad.prototype._setButtonValue = function (newValue, currentValue, buttonIndex) {
             if (newValue !== currentValue) {
-                if (this._onbuttondown && newValue === 1) {
-                    this._onbuttondown(buttonIndex);
+                if (newValue === 1) {
+                    if (this._onbuttondown) {
+                        this._onbuttondown(buttonIndex);
+                    }
+                    this.onButtonDownObservable.notifyObservers(buttonIndex);
                 }
-                if (this._onbuttonup && newValue === 0) {
-                    this._onbuttonup(buttonIndex);
+                if (newValue === 0) {
+                    if (this._onbuttonup) {
+                        this._onbuttonup(buttonIndex);
+                    }
+                    this.onButtonUpObservable.notifyObservers(buttonIndex);
                 }
             }
             return newValue;
@@ -51997,6 +52006,10 @@ var BABYLON;
             var _this = _super.call(this, id, index, gamepad, 0, 1, (xboxOne ? 3 : 2), (xboxOne ? 4 : 3)) || this;
             _this._leftTrigger = 0;
             _this._rightTrigger = 0;
+            _this.onButtonDownObservable = new BABYLON.Observable();
+            _this.onButtonUpObservable = new BABYLON.Observable();
+            _this.onPadDownObservable = new BABYLON.Observable();
+            _this.onPadUpObservable = new BABYLON.Observable();
             _this._buttonA = 0;
             _this._buttonB = 0;
             _this._buttonX = 0;
@@ -52062,22 +52075,34 @@ var BABYLON;
         };
         Xbox360Pad.prototype._setButtonValue = function (newValue, currentValue, buttonType) {
             if (newValue !== currentValue) {
-                if (this._onbuttondown && newValue === 1) {
-                    this._onbuttondown(buttonType);
+                if (newValue === 1) {
+                    if (this._onbuttondown) {
+                        this._onbuttondown(buttonType);
+                    }
+                    this.onButtonDownObservable.notifyObservers(buttonType);
                 }
-                if (this._onbuttonup && newValue === 0) {
-                    this._onbuttonup(buttonType);
+                if (newValue === 0) {
+                    if (this._onbuttonup) {
+                        this._onbuttonup(buttonType);
+                    }
+                    this.onButtonUpObservable.notifyObservers(buttonType);
                 }
             }
             return newValue;
         };
         Xbox360Pad.prototype._setDPadValue = function (newValue, currentValue, buttonType) {
             if (newValue !== currentValue) {
-                if (this._ondpaddown && newValue === 1) {
-                    this._ondpaddown(buttonType);
+                if (newValue === 1) {
+                    if (this._ondpaddown) {
+                        this._ondpaddown(buttonType);
+                    }
+                    this.onPadDownObservable.notifyObservers(buttonType);
                 }
-                if (this._ondpadup && newValue === 0) {
-                    this._ondpadup(buttonType);
+                if (newValue === 0) {
+                    if (this._ondpadup) {
+                        this._ondpadup(buttonType);
+                    }
+                    this.onPadUpObservable.notifyObservers(buttonType);
                 }
             }
             return newValue;
@@ -72128,6 +72153,7 @@ var BABYLON;
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
         FramingBehavior.prototype.zoomOnBoundingInfo = function (minimumWorld, maximumWorld, focusOnOriginXZ, onAnimationEnd) {
+            var _this = this;
             if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
             if (onAnimationEnd === void 0) { onAnimationEnd = null; }
             var zoomTarget;
@@ -72163,11 +72189,20 @@ var BABYLON;
                     this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
                 }
             }
+            // Set sensibilities
+            var extend = maximumWorld.subtract(minimumWorld).length();
+            this._attachedCamera.panningSensibility = 5000 / extend;
+            this._attachedCamera.wheelPrecision = 100 / radius;
             // transition to new radius
             if (!this._radiusTransition) {
                 this._radiusTransition = BABYLON.Animation.CreateAnimation("radius", BABYLON.Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
             }
-            this._animatables.push(BABYLON.Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 60, this._radiusTransition, this._framingTime, onAnimationEnd));
+            this._animatables.push(BABYLON.Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 60, this._radiusTransition, this._framingTime, function () {
+                if (onAnimationEnd) {
+                    onAnimationEnd();
+                }
+                _this._attachedCamera.storeState();
+            }));
         };
         /**
          * Calculates the lowest radius for the camera based on the bounding box of the mesh.
@@ -72205,6 +72240,9 @@ var BABYLON;
          */
         FramingBehavior.prototype._maintainCameraAboveGround = function () {
             var _this = this;
+            if (this._elevationReturnTime < 0) {
+                return;
+            }
             var timeSinceInteraction = BABYLON.Tools.Now - this._lastInteractionTime;
             var defaultBeta = Math.PI * 0.5 - this._defaultElevation;
             var limitBeta = Math.PI * 0.5;

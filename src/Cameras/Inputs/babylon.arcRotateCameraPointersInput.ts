@@ -61,7 +61,7 @@ module BABYLON {
                     }
 
                     // Manage panning with pan button click
-                    this._isPanClick = evt.button === this.camera._panningMouseButton;
+                    this._isPanClick = evt.button === this.camera._panningMouseButton && evt.pointerType !== "mouse";
 
                     // manage pointers
                     cacheSoloPointer = { x: evt.clientX, y: evt.clientY, pointerId: evt.pointerId, type: evt.pointerType };
