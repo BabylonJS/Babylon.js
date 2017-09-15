@@ -1,3 +1,6 @@
+export = BABYLON.GUI;
+export as namespace BABYLON.GUI;
+
 /// <reference path="../../dist/preview release/babylon.d.ts" />
 declare module BABYLON.GUI {
     interface IFocusableControl {
@@ -672,5 +675,3 @@ declare module BABYLON.GUI {
         static CreateDefaultLayout(): VirtualKeyboard;
     }
 }
-
-export = BABYLON.GUI;
