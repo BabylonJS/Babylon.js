@@ -318,7 +318,7 @@
 
         protected _updateParameters(): void {
             this._defines.FROMLINEARSPACE = this._fromLinearSpace;
-            this.imageProcessingConfiguration.prepareDefines(this._defines);
+            this.imageProcessingConfiguration.prepareDefines(this._defines, true);
             var defines = "";
             for (const define in this._defines) {
                 if (this._defines[define]) {
