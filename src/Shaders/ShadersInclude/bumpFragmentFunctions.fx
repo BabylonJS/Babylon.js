@@ -41,8 +41,8 @@
 	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv)
 	{
 		vec3 map = texture2D(bumpSampler, uv).xyz;
-		map.x = vNormalReoderParams.x + vNormalReoderParams.y * map.x;
-		map.y = vNormalReoderParams.z + vNormalReoderParams.w * map.y;
+		map.x = vNormalReorderParams.x + vNormalReorderParams.y * map.x;
+		map.y = vNormalReorderParams.z + vNormalReorderParams.w * map.y;
 
 		map = map * 255. / 127. - 128. / 127.;
 
