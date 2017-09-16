@@ -191,6 +191,7 @@ module INSPECTOR {
                 'position',
                 'rotation',
                 'rotationQuaternion',
+                'scaling',
                 'absolutePosition',
                 'material',
                 'actionManager',
