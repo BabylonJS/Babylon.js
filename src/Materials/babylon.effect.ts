@@ -186,8 +186,11 @@
                             this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
                                 this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
                                     if (baseName) {
-                                        this._vertexSourceCode = "#define SHADER_NAME vertex:" + baseName + "\n" + migratedVertexCode;
-                                        this._fragmentSourceCode = "#define SHADER_NAME fragment:" + baseName + "\n" + migratedFragmentCode;
+                                        var vertex = baseName.vertexElement || baseName.vertex || baseName;
+                                        var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+                            
+                                        this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
+                                        this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
                                     } else {
                                         this._vertexSourceCode = migratedVertexCode;
                                         this._fragmentSourceCode = migratedFragmentCode;
