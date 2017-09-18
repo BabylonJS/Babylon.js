@@ -641,7 +641,7 @@ var BABYLON;
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                    "logarithmicDepthConstant", "vNormalReoderParams"
+                    "logarithmicDepthConstant", "vNormalReorderParams"
                 ];
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
                 var uniformBuffers = ["Material", "Scene"];
@@ -705,7 +705,7 @@ var BABYLON;
             this._uniformBuffer.addUniform("lightmapMatrix", 16);
             this._uniformBuffer.addUniform("specularMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
-            this._uniformBuffer.addUniform("vNormalReoderParams", 4);
+            this._uniformBuffer.addUniform("vNormalReorderParams", 4);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("vRefractionInfos", 4);
             this._uniformBuffer.addUniform("vSpecularColor", 4);
@@ -797,10 +797,10 @@ var BABYLON;
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 0 : 1.0, this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 0 : 1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this.invertNormalMapX ? 0 : 1.0, this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 0 : 1.0, this.invertNormalMapY ? 1.0 : -1.0);
                             }
                             else {
-                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 1.0 : 0, this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? 1.0 : 0, this.invertNormalMapY ? -1.0 : 1.0);
+                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this.invertNormalMapX ? 1.0 : 0, this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? 1.0 : 0, this.invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
                         if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
