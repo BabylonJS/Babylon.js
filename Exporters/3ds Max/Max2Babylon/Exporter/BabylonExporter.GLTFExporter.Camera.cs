@@ -5,7 +5,6 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        // TODO - Test if ok with a gltf viewer working with custom camera (babylon loader/sandbox doesn't load them)
         private GLTFCamera ExportCamera(BabylonCamera babylonCamera, GLTF gltf, GLTFNode gltfParentNode)
         {
             RaiseMessage("GLTFExporter.Camera | Export camera named: " + babylonCamera.name, 1);
@@ -37,8 +36,6 @@ namespace Max2Babylon
 
             // Transform
             gltfNode.translation = babylonCamera.position;
-            // Switch from left to right handed coordinate system
-            //gltfNode.translation[0] *= -1;
             if (babylonCamera.rotationQuaternion != null)
             {
                 gltfNode.rotation = babylonCamera.rotationQuaternion;
@@ -85,8 +82,8 @@ namespace Max2Babylon
             {
                 case (BabylonCamera.CameraMode.ORTHOGRAPHIC_CAMERA):
                     var gltfCameraOrthographic = new GLTFCameraOrthographic();
-                    gltfCameraOrthographic.xmag = 1; // TODO - How to retreive value from babylon? xmag:The floating-point horizontal magnification of the view
-                    gltfCameraOrthographic.ymag = 1; // TODO - How to retreive value from babylon? ymag:The floating-point vertical magnification of the view
+                    gltfCameraOrthographic.xmag = 1; // Do not bother about it - still mandatory
+                    gltfCameraOrthographic.ymag = 1; // Do not bother about it - still mandatory
                     gltfCameraOrthographic.zfar = babylonCamera.maxZ;
                     gltfCameraOrthographic.znear = babylonCamera.minZ;
 
@@ -95,8 +92,8 @@ namespace Max2Babylon
                     break;
                 case (BabylonCamera.CameraMode.PERSPECTIVE_CAMERA):
                     var gltfCameraPerspective = new GLTFCameraPerspective();
-                    gltfCameraPerspective.aspectRatio = null; // 0.8f; // TODO - How to retreive value from babylon? The aspect ratio in babylon is computed based on the engine rather than set on a camera (aspectRatio = _gl.drawingBufferWidth / _gl.drawingBufferHeight)
-                    gltfCameraPerspective.yfov = babylonCamera.fov; // WARNING - Babylon camera fov mode is assumed to be vertical (FOVMODE_VERTICAL_FIXED)
+                    gltfCameraPerspective.aspectRatio = null; // Do not bother about it - use default glTF value
+                    gltfCameraPerspective.yfov = babylonCamera.fov; // Babylon camera fov mode is assumed to be vertical (FOVMODE_VERTICAL_FIXED)
                     gltfCameraPerspective.zfar = babylonCamera.maxZ;
                     gltfCameraPerspective.znear = babylonCamera.minZ;
 
