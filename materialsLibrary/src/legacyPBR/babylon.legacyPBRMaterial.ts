@@ -1139,7 +1139,7 @@ module BABYLON {
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
                         "vMicrosurfaceTextureLods",
-                        "vCameraInfos", "vNormalReorderParams"
+                        "vCameraInfos", "vTangentSpaceParams"
                 ];
 
                 var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "microSurfaceSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
@@ -1218,7 +1218,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("reflectivityMatrix", 16);
             this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
-            this._uniformBuffer.addUniform("vNormalReorderParams", 4);
+            this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("reflectionMatrix", 16);
 
@@ -1364,12 +1364,11 @@ module BABYLON {
                             this._uniformBuffer.updateFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
 
-
                             if (this._myScene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this.invertNormalMapX ? 0 : 1.0, this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 0 : 1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 1.0 : -1.0);
                             } else {
-                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this.invertNormalMapX ? 1.0 : 0, this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? 1.0 : 0, this.invertNormalMapY ? -1.0 : 1.0);
-                            }                              
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? -1.0 : 1.0);
+                            }
                         }
 
                         if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
