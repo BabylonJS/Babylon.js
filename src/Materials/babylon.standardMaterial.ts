@@ -69,7 +69,6 @@ module BABYLON {
         public MORPHTARGETS_NORMAL = false;
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
-        public USERIGHTHANDEDSYSTEM = false;
 
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;
@@ -843,7 +842,7 @@ module BABYLON {
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                    "logarithmicDepthConstant", "vNormalReorderParams"
+                    "logarithmicDepthConstant", "vTangentSpaceParams"
                 ];
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
@@ -920,7 +919,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("lightmapMatrix", 16);
             this._uniformBuffer.addUniform("specularMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
-            this._uniformBuffer.addUniform("vNormalReorderParams", 4);
+            this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("vRefractionInfos", 4);
             this._uniformBuffer.addUniform("vSpecularColor", 4);
@@ -1039,10 +1038,10 @@ module BABYLON {
                             MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
 
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this.invertNormalMapX ? 0 : 1.0, this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 0 : 1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 1.0 : -1.0);
                             } else {
-                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this.invertNormalMapX ? 1.0 : 0, this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? 1.0 : 0, this.invertNormalMapY ? -1.0 : 1.0);
-                            }                           
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? -1.0 : 1.0);
+                            }
                         }
 
                         if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {

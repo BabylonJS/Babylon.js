@@ -7,7 +7,6 @@ module BABYLON {
         public FOG = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
