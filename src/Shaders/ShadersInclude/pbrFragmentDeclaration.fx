@@ -18,7 +18,7 @@ uniform vec3 vAmbientInfos;
 
 #ifdef BUMP
 uniform vec3 vBumpInfos;
-uniform vec4 vNormalReorderParams;
+uniform vec2 vTangentSpaceParams;
 #endif
 
 #ifdef OPACITY	
