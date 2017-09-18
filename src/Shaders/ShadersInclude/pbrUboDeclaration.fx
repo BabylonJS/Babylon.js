@@ -20,7 +20,7 @@ uniform Material
 	uniform mat4 reflectivityMatrix;
 	uniform mat4 microSurfaceSamplerMatrix;
 	uniform mat4 bumpMatrix;
-	uniform vec4 vNormalReoderParams;
+	uniform vec4 vNormalReorderParams;
 	uniform mat4 refractionMatrix;
 	uniform mat4 reflectionMatrix;
 
