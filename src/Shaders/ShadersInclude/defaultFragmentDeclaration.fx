@@ -27,7 +27,7 @@ uniform vec2 vLightmapInfos;
 
 #ifdef BUMP
 uniform vec3 vBumpInfos;
-uniform vec4 vNormalReoderParams;
+uniform vec4 vNormalReorderParams;
 #endif
 
 #if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)

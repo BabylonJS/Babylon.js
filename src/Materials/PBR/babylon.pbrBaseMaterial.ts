@@ -929,7 +929,7 @@
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
                         "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos",
-                        "vNormalReoderParams"
+                        "vNormalReorderParams"
                 ];
 
                 var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler", 
@@ -1005,7 +1005,7 @@
             this._uniformBuffer.addUniform("reflectivityMatrix", 16);
             this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
-            this._uniformBuffer.addUniform("vNormalReoderParams", 4);
+            this._uniformBuffer.addUniform("vNormalReorderParams", 4);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("reflectionMatrix", 16);
 
@@ -1142,9 +1142,9 @@
                             MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
 
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this._invertNormalMapX ? 0 : 1.0, this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 0 : 1.0, this._invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this._invertNormalMapX ? 0 : 1.0, this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 0 : 1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             } else {
-                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this._invertNormalMapX ? 1.0 : 0, this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? 1.0 : 0, this._invertNormalMapY ? -1.0 : 1.0);
+                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this._invertNormalMapX ? 1.0 : 0, this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? 1.0 : 0, this._invertNormalMapY ? -1.0 : 1.0);
                             }                                                         
                         }
 
