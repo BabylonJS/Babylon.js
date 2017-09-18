@@ -18,7 +18,6 @@ module BABYLON {
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public HIGHLEVEL = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();

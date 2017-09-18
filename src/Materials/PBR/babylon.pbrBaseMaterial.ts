@@ -112,7 +112,6 @@
         public USEPHYSICALLIGHTFALLOFF = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFLOAT = false;
-        public USERIGHTHANDEDSYSTEM = false;
         public CLIPPLANE = false;
         public POINTSIZE = false;
         public FOG = false;
@@ -740,8 +739,6 @@
                         else {
                             defines.PARALLAX = false;
                         }
-
-                        defines.USERIGHTHANDEDSYSTEM = scene.useRightHandedSystem;
                     } else {
                         defines.BUMP = false;
                     }
@@ -929,7 +926,7 @@
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
                         "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos",
-                        "vNormalReorderParams"
+                        "vTangentSpaceParams"
                 ];
 
                 var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler", 
@@ -1005,7 +1002,7 @@
             this._uniformBuffer.addUniform("reflectivityMatrix", 16);
             this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
-            this._uniformBuffer.addUniform("vNormalReorderParams", 4);
+            this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("reflectionMatrix", 16);
 
@@ -1142,10 +1139,10 @@
                             MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
 
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this._invertNormalMapX ? 0 : 1.0, this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 0 : 1.0, this._invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             } else {
-                                this._uniformBuffer.updateFloat4("vNormalReorderParams", this._invertNormalMapX ? 1.0 : 0, this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? 1.0 : 0, this._invertNormalMapY ? -1.0 : 1.0);
-                            }                                                         
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
+                            }
                         }
 
                         if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {

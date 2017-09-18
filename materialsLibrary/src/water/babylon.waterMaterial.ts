@@ -22,7 +22,6 @@ module BABYLON {
         public FRESNELSEPARATE = false;
         public BUMPSUPERIMPOSE = false;
         public BUMPAFFECTSREFLECTION = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
