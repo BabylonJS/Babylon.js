@@ -17,7 +17,7 @@ module BABYLON {
         public pinchPrecision = 6.0;
 
         @serialize()
-        public panningSensibility: number = 50.0;
+        public panningSensibility: number = 3000.0;
 
         @serialize()
         public multiTouchPanning: boolean = true;
@@ -61,7 +61,7 @@ module BABYLON {
                     }
 
                     // Manage panning with pan button click
-                    this._isPanClick = evt.button === this.camera._panningMouseButton && evt.pointerType !== "mouse";
+                    this._isPanClick = evt.button === this.camera._panningMouseButton;
 
                     // manage pointers
                     cacheSoloPointer = { x: evt.clientX, y: evt.clientY, pointerId: evt.pointerId, type: evt.pointerType };
