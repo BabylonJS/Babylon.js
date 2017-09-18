@@ -3416,8 +3416,8 @@ var BABYLON;
                 }
                 if (material.normalTexture) {
                     babylonMaterial.bumpTexture = this.loadTexture(material.normalTexture);
-                    babylonMaterial.invertNormalMapX = true;
-                    babylonMaterial.invertNormalMapY = false;
+                    babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
+                    babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
                     if (material.normalTexture.scale !== undefined) {
                         babylonMaterial.bumpTexture.level = material.normalTexture.scale;
                     }

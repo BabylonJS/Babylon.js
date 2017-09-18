@@ -38,7 +38,6 @@ var BABYLON;
             _this.CUSTOMUSERLIGHTING = true;
             _this.CELLBASIC = true;
             _this.DEPTHPREPASS = false;
-            _this.USERIGHTHANDEDSYSTEM = false;
             _this.rebuild();
             return _this;
         }
