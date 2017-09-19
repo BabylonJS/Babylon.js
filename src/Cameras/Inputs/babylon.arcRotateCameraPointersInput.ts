@@ -17,7 +17,7 @@ module BABYLON {
         public pinchPrecision = 6.0;
 
         @serialize()
-        public panningSensibility: number = 50.0;
+        public panningSensibility: number = 3000.0;
 
         @serialize()
         public multiTouchPanning: boolean = true;
