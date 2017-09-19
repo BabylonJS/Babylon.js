@@ -1,0 +1,43 @@
+
+This file gives you a short description of the .NET wrapper's folders
+and what's located in them.
+
+
+"Doc"
+Sandcastle Help File Builder project file for creating a Microsoft Help API
+documentation (CHM file).
+FreeImage.NET uses Eric Woodruff's Sandcastle Help File Builder GUI to
+generate the API documentation. See http://www.codeplex.com/SHFB
+
+"Library"
+Source code of the C# .NET wrapper. Builds the FreeImageNET.dll.
+
+"Samples"
+Example projects showing how to use the wrapper.
+
+"SourceFileMerger"
+Program to merge all the wrapper's source files into a single source file
+for easy integration into your projects on source code basis.
+
+"UnitTest"
+NUnit-based test project for the .NET wrapper. NUnit needs to be installed
+for this project to work.
+
+"UnitTestData"   (not in CVS)
+Several images in each available color depth used by "UnitTest".
+
+"clear.bat"
+Batch file to clear the whole project, removing all temporary files.
+
+"FreeImage.chm"   (not in CVS)
+The .NET wrapper's API documentation. Build with Microsoft's Sandcastle
+project from C# source code documentation.
+
+"FreeImage.NET.nunit"
+NUnit project file. NUnit needs to be installed for this project to work.
+
+"FreeImage.NET.sln"
+The Microsoft Visual Studio 2005 solution file.
+
+"Whats_New.NET.txt"
+The changelog.

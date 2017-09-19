@@ -1,0 +1,219 @@
+// ==========================================================
+// FreeImage 3 .NET wrapper
+// Original FreeImage 3 functions and .NET compatible derived functions
+//
+// Design and implementation by
+// - Jean-Philippe Goerke (jpgoerke@users.sourceforge.net)
+// - Carsten Klein (cklein05@users.sourceforge.net)
+//
+// Contributors:
+// - David Boland (davidboland@vodafone.ie)
+//
+// Main reference : MSDN Knowlede Base
+//
+// This file is part of FreeImage 3
+//
+// COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY
+// OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES
+// THAT THE COVERED CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE
+// OR NON-INFRINGING. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED
+// CODE IS WITH YOU. SHOULD ANY COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT
+// THE INITIAL DEVELOPER OR ANY OTHER CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY
+// SERVICING, REPAIR OR CORRECTION. THIS DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL
+// PART OF THIS LICENSE. NO USE OF ANY COVERED CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER
+// THIS DISCLAIMER.
+//
+// Use at your own risk!
+// ==========================================================
+
+// ==========================================================
+// To build the project without VS use the following commandline:
+// "csc.exe /out:FreeImageNET.dll /target:library /doc:FreeImageNET.XML /debug- /o /unsafe+ /filealign:512 FreeImage.cs"
+// ==========================================================
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Reflection;
+using System.Resources;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml;
+using FreeImageAPI;
+using FreeImageAPI.IO;
+using FreeImageAPI.Metadata;
+using FreeImageAPI.Plugins;
+
+/////////////////////////////////////////////////////
+//                                                 //
+//              FreeImage.h import                 //
+//                                                 //
+/////////////////////////////////////////////////////
+
+	#region Structs
+
+#include "Structs\BITMAP.cs"
+
+#include "Structs\BITMAPINFOHEADER.cs"
+
+#include "Structs\BITMAPINFO.cs"
+
+#include "Structs\FIBITMAP.cs"
+
+#include "Structs\FIMULTIBITMAP.cs"
+
+#include "Structs\FIMEMORY.cs"
+
+#include "Structs\FIMETADATA.cs"
+
+#include "Structs\FITAG.cs"
+
+#include "Structs\FreeImageIO.cs"
+
+#include "Structs\RGBQUAD.cs"
+
+#include "Structs\RGBTRIPLE.cs"
+
+#include "Structs\FIRGBA16.cs"
+
+#include "Structs\FIRGB16.cs"
+
+#include "Structs\FIRGBAF.cs"
+
+#include "Structs\FIRGBF.cs"
+
+#include "Structs\FICOMPLEX.cs"
+
+#include "Structs\FIICCPROFILE.cs"
+
+#include "Structs\Plugin.cs"
+
+	#endregion
+
+	#region Enums
+
+#include "Enumerations\DisposalMethodType.cs"
+
+#include "Enumerations\FREE_IMAGE_FORMAT.cs"
+
+#include "Enumerations\FREE_IMAGE_TYPE.cs"
+
+#include "Enumerations\FREE_IMAGE_COLOR_OPTIONS.cs"
+
+#include "Enumerations\FREE_IMAGE_COLOR_TYPE.cs"
+
+#include "Enumerations\FREE_IMAGE_QUANTIZE.cs"
+
+#include "Enumerations\FREE_IMAGE_DITHER.cs"
+
+#include "Enumerations\FREE_IMAGE_JPEG_OPERATION.cs"
+
+#include "Enumerations\FREE_IMAGE_TMO.cs"
+
+#include "Enumerations\FREE_IMAGE_FILTER.cs"
+
+#include "Enumerations\FREE_IMAGE_COLOR_CHANNEL.cs"
+
+#include "Enumerations\FREE_IMAGE_MDTYPE.cs"
+
+#include "Enumerations\FREE_IMAGE_MDMODEL.cs"
+
+#include "Enumerations\FREE_IMAGE_LOAD_FLAGS.cs"
+
+#include "Enumerations\FREE_IMAGE_SAVE_FLAGS.cs"
+
+#include "Enumerations\ICC_FLAGS.cs"
+
+	#endregion
+
+	#region Delegates
+
+#include "Delegates.cs"
+
+	#endregion
+
+#include "FreeImageStaticImports.cs"
+
+/////////////////////////////////////////////////////
+//                                                 //
+//               Wrapper functions                 //
+//                                                 //
+/////////////////////////////////////////////////////
+
+	#region Structs
+
+#include "Structs\fi_handle.cs"
+
+#include "Structs\FI1BIT.cs"
+
+#include "Structs\FI4BIT.cs"
+
+#include "Structs\FI16RGB555.cs"
+
+#include "Structs\FI16RGB565.cs"
+
+#include "Structs\FIRational.cs"
+
+#include "Structs\FIURational.cs"
+
+	#endregion
+
+	#region Classes
+
+#include "Classes\FreeImageBitmap.cs"
+
+#include "Classes\FreeImageEngine.cs"
+
+#include "Classes\FreeImagePlugin.cs"
+
+#include "Classes\FreeImageStreamIO.cs"
+
+#include "Classes\GifInformation.cs"
+
+#include "Classes\ImageMetadata.cs"
+
+#include "Classes\LocalPlugin.cs"
+
+#include "Classes\MemoryArray.cs"
+
+#include "Classes\MetadataModel.cs"
+
+	#region Metadata Models
+
+	#include "Classes\MetadataModels.cs"
+
+	#endregion
+
+#include "Classes\MetadataTag.cs"
+
+#include "Classes\Palette.cs"
+
+#include "Classes\PluginRepository.cs"
+
+#include "Classes\Scanline.cs"
+
+#include "Classes\StreamWrapper.cs"
+
+	#endregion
+
+	#region Enums
+
+#include "Enumerations\FREE_IMAGE_COLOR_DEPTH.cs"
+
+#include "Enumerations\FREE_IMAGE_COMPARE_FLAGS.cs"
+
+#include "Enumerations\FREE_IMAGE_METADATA_COPY.cs"
+
+#include "Enumerations\MD_SEARCH_FLAGS.cs"
+
+	#endregion
+
+#include "FreeImageWrapper.cs"

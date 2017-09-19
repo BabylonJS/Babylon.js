@@ -1,0 +1,330 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ColorCanBeCollapsed" xml:space="preserve">
+    <value>Color {0} can be collapsed to {1}</value>
+  </data>
+  <data name="DecimalNoDigit" xml:space="preserve">
+    <value>Decimal point not followed by numeric digit</value>
+  </data>
+  <data name="DeclarationIgnored" xml:space="preserve">
+    <value>declaration ignored</value>
+  </data>
+  <data name="DeclarationIgnoredFormat" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="EquivalentNumbers" xml:space="preserve">
+    <value>Numeric value contains unnecessary characters: {0} is equivalent to {1}.</value>
+  </data>
+  <data name="ExpectedCharset" xml:space="preserve">
+    <value>Expected charset string, found '{0}'</value>
+  </data>
+  <data name="ExpectedClosingBracket" xml:space="preserve">
+    <value>Expected closing bracket, found '{0}'</value>
+  </data>
+  <data name="ExpectedColon" xml:space="preserve">
+    <value>Expected colon, found '{0}'</value>
+  </data>
+  <data name="ExpectedComma" xml:space="preserve">
+    <value>Expect comma, found '{0}'</value>
+  </data>
+  <data name="ExpectedCommaOrOpenBrace" xml:space="preserve">
+    <value>Expected comma or open brace, found '{0}'</value>
+  </data>
+  <data name="ExpectedCommaOrSemicolon" xml:space="preserve">
+    <value>Expected comma or semi-colon, found '{0}'</value>
+  </data>
+  <data name="ExpectedEqualSign" xml:space="preserve">
+    <value>Expected equal sign, found {0}</value>
+  </data>
+  <data name="ExpectedExpression" xml:space="preserve">
+    <value>Expected expression, found '{0}'</value>
+  </data>
+  <data name="ExpectedFunction" xml:space="preserve">
+    <value>Expected function, found '{0}'</value>
+  </data>
+  <data name="ExpectedHexColor" xml:space="preserve">
+    <value>Expected hex color, found '{0}'</value>
+  </data>
+  <data name="ExpectedIdentifier" xml:space="preserve">
+    <value>Expected identifier, found '{0}'</value>
+  </data>
+  <data name="ExpectedIdentifierOrString" xml:space="preserve">
+    <value>Expected identifier or string, found '{0}'</value>
+  </data>
+  <data name="ExpectedImport" xml:space="preserve">
+    <value>Expected import string or uri, found '{0}'</value>
+  </data>
+  <data name="ExpectedMediaIdentifier" xml:space="preserve">
+    <value>Expected media identifier, found '{0}'</value>
+  </data>
+  <data name="ExpectedNamespace" xml:space="preserve">
+    <value>Expected namespace string or uri, found '{0}'</value>
+  </data>
+  <data name="ExpectedOpenBrace" xml:space="preserve">
+    <value>Expected open brace, found '{0}'</value>
+  </data>
+  <data name="ExpectedOpenParenthesis" xml:space="preserve">
+    <value>Expected opening parenthesis</value>
+  </data>
+  <data name="ExpectedProgId" xml:space="preserve">
+    <value>Expected progid, found '{0}'</value>
+  </data>
+  <data name="ExpectedRgbNumberOrPercentage" xml:space="preserve">
+    <value>Expected number or percentage value in rgb function, found '{0}'</value>
+  </data>
+  <data name="ExpectedSelector" xml:space="preserve">
+    <value>Expected selector, found '{0}'</value>
+  </data>
+  <data name="ExpectedSemicolon" xml:space="preserve">
+    <value>Expected semi-colon, found '{0}'</value>
+  </data>
+  <data name="ExpectedSemicolonOrOpenBrace" xml:space="preserve">
+    <value>Expected semi-colon or close brace, found '{0}'</value>
+  </data>
+  <data name="ExpectedTerm" xml:space="preserve">
+    <value>Expected term, found {0}</value>
+  </data>
+  <data name="HashAfterUnaryNotAllowed" xml:space="preserve">
+    <value>Hash ({0}) not allowed after unary operator</value>
+  </data>
+  <data name="HighSurrogateNoLow" xml:space="preserve">
+    <value>Unicode high-surrogate value (0x{0:x}) not immediately followed by unicode-escaped low-surrogate value</value>
+  </data>
+  <data name="InvalidLowSurrogate" xml:space="preserve">
+    <value>Unicode high-surrogate value (0x{0:x}) followed by invalid low-surrogate value: 0x{1:x}</value>
+  </data>
+  <data name="ParserSubsystem" xml:space="preserve">
+    <value>Parser</value>
+  </data>
+  <data name="ProgIdIEOnly" xml:space="preserve">
+    <value>'progid:' is an IE-only construct that generates invalid CSS</value>
+  </data>
+  <data name="ScannerSubsystem" xml:space="preserve">
+    <value>Scanner</value>
+  </data>
+  <data name="TokenAfterUnaryNotAllowed" xml:space="preserve">
+    <value>Token not allowed after unary operator: '{0}'</value>
+  </data>
+  <data name="UnderscoreNotValid" xml:space="preserve">
+    <value>An underscore is not a valid CSS1 or CSS2 identifier character</value>
+  </data>
+  <data name="UnexpectedAtKeyword" xml:space="preserve">
+    <value>Unexpected at-keyword, found '{0}'</value>
+  </data>
+  <data name="UnexpectedDimension" xml:space="preserve">
+    <value>Unexpected dimension: '{0}'</value>
+  </data>
+  <data name="UnexpectedEscape" xml:space="preserve">
+    <value>Unexpected escape sequence: \{0}</value>
+  </data>
+  <data name="UnexpectedNumberCharacter" xml:space="preserve">
+    <value>Unexpected number character: {0}</value>
+  </data>
+  <data name="UnexpectedStringCharacter" xml:space="preserve">
+    <value>Unexpected string character: {0}</value>
+  </data>
+  <data name="UnexpectedToken" xml:space="preserve">
+    <value>Unexpected token, found '{0}'</value>
+  </data>
+  <data name="UnknownCharacterEncoding" xml:space="preserve">
+    <value>?</value>
+  </data>
+  <data name="UnknownError" xml:space="preserve">
+    <value>Unknown error</value>
+  </data>
+  <data name="UnnecessaryUnits" xml:space="preserve">
+    <value>Unnecessary units on a value of zero</value>
+  </data>
+  <data name="UnterminatedComment" xml:space="preserve">
+    <value>Unterminated comment.</value>
+  </data>
+  <data name="UnterminatedString" xml:space="preserve">
+    <value>Unterminated string: {0}</value>
+  </data>
+  <data name="ExpectedEndOfFile" xml:space="preserve">
+    <value>Expected end of file; invalid input file</value>
+  </data>
+  <data name="DuplicateNamespaceDeclaration" xml:space="preserve">
+    <value>Duplicate namespace declaration; already declared '{0}'</value>
+  </data>
+  <data name="HackGeneratesInvalidCss" xml:space="preserve">
+    <value>Browser hack generates invalid CSS</value>
+  </data>
+  <data name="UndeclaredNamespace" xml:space="preserve">
+    <value>Namespace used but not declared in a @namespace statement: '{0}'</value>
+  </data>
+  <data name="InvalidUnicodeRange" xml:space="preserve">
+    <value>Invalid Unicode Range Token: '{0}'</value>
+  </data>
+  <data name="ExpressionError" xml:space="preserve">
+    <value>JavaScript error in expression property: {0}</value>
+  </data>
+  <data name="ExpectedClosingParenthesis" xml:space="preserve">
+    <value>Expected closing parenthesis, found '{0}'</value>
+  </data>
+  <data name="ExpectedMediaFeature" xml:space="preserve">
+    <value>Expected media feature, found '{0}'</value>
+  </data>
+  <data name="ExpectedMediaQuery" xml:space="preserve">
+    <value>Expected media query, found '{0}'</value>
+  </data>
+  <data name="ExpectedMediaQueryExpression" xml:space="preserve">
+    <value>Expected media-query expression, found '{0}'</value>
+  </data>
+  <data name="MediaQueryRequiresSpace" xml:space="preserve">
+    <value>Media queries require a space between 'and' and the opening parenthesis: '{0}'</value>
+  </data>
+  <data name="PossibleInvalidClassName" xml:space="preserve">
+    <value>Possible cross-browser invalid class name: {0}</value>
+  </data>
+  <data name="ExpectedClosingBrace" xml:space="preserve">
+    <value>Expected closing curly-brace, found '{0}'</value>
+  </data>
+  <data name="ExpectedPercentageFromOrTo" xml:space="preserve">
+    <value>Expected percentage, 'from', or 'to'; found '{0}'</value>
+  </data>
+  <data name="ExpectedSemicolonOrClosingBrace" xml:space="preserve">
+    <value>Expected semicolon or closing curly-brace, found '{0}'</value>
+  </data>
+  <data name="UnexpectedFunction" xml:space="preserve">
+    <value>Unexpected function; only calc( or attr( allowed here, found '{0}'</value>
+  </data>
+  <data name="ExpectedProduct" xml:space="preserve">
+    <value>Expected calculation product, found '{0}'</value>
+  </data>
+  <data name="ExpectedSum" xml:space="preserve">
+    <value>Expected calculation sum, found '{0}'</value>
+  </data>
+  <data name="ExpectedUnit" xml:space="preserve">
+    <value>Expected calculation unit, found '{0}'</value>
+  </data>
+  <data name="UnexpectedEndOfFile" xml:space="preserve">
+    <value>Unexpected end of file encountered</value>
+  </data>
+  <data name="ExpectedNumber" xml:space="preserve">
+    <value>Expected number, found '{0}'</value>
+  </data>
+  <data name="PossibleCharsetError" xml:space="preserve">
+    <value>Byte-order mark at front of source indicates possible encoding issue.</value>
+  </data>
+  <data name="UnexpectedCharset" xml:space="preserve">
+    <value>@charset must be very first token in file</value>
+  </data>
+</root>

@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{DFDB930E-1162-4514-A91D-C8595A807F13}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>
+    </ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>AjaxMin</AssemblyName>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Microsoft.Ajax.Utilities</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <PlatformTarget>anycpu</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>NET_35</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>pdbonly</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CommonData.cs" />
+    <Compile Include="CommonSettings.cs" />
+    <Compile Include="CommonStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CommonStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Configuration.cs" />
+    <Compile Include="ContextError.cs" />
+    <Compile Include="CssEncoderFallback.cs" />
+    <Compile Include="Css\CssColorName.cs" />
+    <Compile Include="Css\CssParser.cs" />
+    <Compile Include="Css\CssScanner.cs" />
+    <Compile Include="Css\CssSettings.cs" />
+    <Compile Include="Css\CssErrorCode.cs" />
+    <Compile Include="Css\CssToken.cs" />
+    <Compile Include="Css\CssStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CssStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Helpers.cs" />
+    <Compile Include="JavaScript\activationobject.cs" />
+    <Compile Include="JavaScript\AnalyzeNodeVisitor.cs" />
+    <Compile Include="JavaScript\arrayliteral.cs" />
+    <Compile Include="JavaScript\aspnetblocknode.cs" />
+    <Compile Include="JavaScript\ast.cs" />
+    <Compile Include="JavaScript\astlist.cs" />
+    <Compile Include="JavaScript\binaryop.cs" />
+    <Compile Include="JavaScript\BindingIdentifier.cs" />
+    <Compile Include="JavaScript\BindingsVisitor.cs" />
+    <Compile Include="JavaScript\BindingTransform.cs" />
+    <Compile Include="JavaScript\block.cs" />
+    <Compile Include="JavaScript\blockscope.cs" />
+    <Compile Include="JavaScript\break.cs" />
+    <Compile Include="JavaScript\call.cs" />
+    <Compile Include="JavaScript\catchscope.cs" />
+    <Compile Include="JavaScript\cccomment.cs" />
+    <Compile Include="JavaScript\ccelif.cs" />
+    <Compile Include="JavaScript\ccelse.cs" />
+    <Compile Include="JavaScript\ccend.cs" />
+    <Compile Include="JavaScript\ccif.cs" />
+    <Compile Include="JavaScript\ccon.cs" />
+    <Compile Include="JavaScript\ccset.cs" />
+    <Compile Include="JavaScript\ccstatement.cs" />
+    <Compile Include="JavaScript\ClassNode.cs" />
+    <Compile Include="JavaScript\codesettings.cs" />
+    <Compile Include="JavaScript\CommaOperator.cs" />
+    <Compile Include="JavaScript\ComprehensionClause.cs" />
+    <Compile Include="JavaScript\ComprehensionForClause.cs" />
+    <Compile Include="JavaScript\ComprehensionIfClause.cs" />
+    <Compile Include="JavaScript\ComprehensionNode.cs" />
+    <Compile Include="JavaScript\conditional.cs" />
+    <Compile Include="JavaScript\const.cs" />
+    <Compile Include="JavaScript\constantwrapper.cs" />
+    <Compile Include="JavaScript\constantwrapperpp.cs" />
+    <Compile Include="JavaScript\context.cs" />
+    <Compile Include="JavaScript\continue.cs" />
+    <Compile Include="JavaScript\crunchenumerator.cs" />
+    <Compile Include="JavaScript\CustomNode.cs" />
+    <Compile Include="JavaScript\debugger.cs" />
+    <Compile Include="JavaScript\declaration.cs" />
+    <Compile Include="JavaScript\DetachReferences.cs" />
+    <Compile Include="JavaScript\directiveprologue.cs" />
+    <Compile Include="JavaScript\documentcontext.cs" />
+    <Compile Include="JavaScript\dowhile.cs" />
+    <Compile Include="JavaScript\emptystatement.cs" />
+    <Compile Include="JavaScript\EvaluateLiteralVisitor.cs" />
+    <Compile Include="JavaScript\ExportNode.cs" />
+    <Compile Include="JavaScript\expr.cs" />
+    <Compile Include="JavaScript\FinalPassVisitor.cs" />
+    <Compile Include="JavaScript\for.cs" />
+    <Compile Include="JavaScript\forin.cs" />
+    <Compile Include="JavaScript\functionobject.cs" />
+    <Compile Include="JavaScript\functionscope.cs" />
+    <Compile Include="JavaScript\gettersetter.cs" />
+    <Compile Include="JavaScript\globalscope.cs" />
+    <Compile Include="JavaScript\grouping.cs" />
+    <Compile Include="JavaScript\if.cs" />
+    <Compile Include="JavaScript\IModuleReference.cs" />
+    <Compile Include="JavaScript\importantcomment.cs" />
+    <Compile Include="JavaScript\ImportExportStatement.cs" />
+    <Compile Include="JavaScript\ImportExportSpecifier.cs" />
+    <Compile Include="JavaScript\ImportNode.cs" />
+    <Compile Include="JavaScript\INameReference.cs" />
+    <Compile Include="JavaScript\Initializer.cs" />
+    <Compile Include="JavaScript\IRenameable.cs" />
+    <Compile Include="JavaScript\ISourceMap.cs" />
+    <Compile Include="JavaScript\IterationStatement.cs" />
+    <Compile Include="JavaScript\IVisitor.cs" />
+    <Compile Include="JavaScript\JScript.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>JScript.resx</DependentUpon>
+    </Compile>
+    <Compile Include="JavaScript\jserror.cs" />
+    <Compile Include="JavaScript\jskeyword.cs" />
+    <Compile Include="JavaScript\JSON.cs" />
+    <Compile Include="JavaScript\JSONOutputVisitor.cs" />
+    <Compile Include="JavaScript\jsparser.cs" />
+    <Compile Include="JavaScript\jsscanner.cs" />
+    <Compile Include="JavaScript\jstoken.cs" />
+    <Compile Include="JavaScript\jsvariablefield.cs" />
+    <Compile Include="JavaScript\labeledstatement.cs" />
+    <Compile Include="JavaScript\LexicalDeclaration.cs" />
+    <Compile Include="JavaScript\LogicalNotVisitor.cs" />
+    <Compile Include="JavaScript\lookup.cs" />
+    <Compile Include="JavaScript\MatchPropertiesVisitor.cs" />
+    <Compile Include="JavaScript\member.cs" />
+    <Compile Include="JavaScript\missing.cs" />
+    <Compile Include="JavaScript\INameDeclaration.cs" />
+    <Compile Include="JavaScript\ModuleDeclaration.cs" />
+    <Compile Include="JavaScript\ModuleScope.cs" />
+    <Compile Include="JavaScript\NewParensVisitor.cs" />
+    <Compile Include="JavaScript\objectliteral.cs" />
+    <Compile Include="JavaScript\objectliteralfield.cs" />
+    <Compile Include="JavaScript\ObjectLiteralProperty.cs" />
+    <Compile Include="JavaScript\opprec.cs" />
+    <Compile Include="JavaScript\OutputVisitor.cs" />
+    <Compile Include="JavaScript\parameterdeclaration.cs" />
+    <Compile Include="JavaScript\ReferencesVisitor.cs" />
+    <Compile Include="JavaScript\regexpliteral.cs" />
+    <Compile Include="JavaScript\ReorderScopeVisitor.cs" />
+    <Compile Include="JavaScript\RequiresSeparatorVisitor.cs" />
+    <Compile Include="JavaScript\ResolutionVisitor.cs" />
+    <Compile Include="JavaScript\return.cs" />
+    <Compile Include="JavaScript\ScriptSharpSourceMap.cs" />
+    <Compile Include="JavaScript\StatementStartVisitor.cs" />
+    <Compile Include="JavaScript\switch.cs" />
+    <Compile Include="JavaScript\switchcase.cs" />
+    <Compile Include="JavaScript\SourceMapFactory.cs" />
+    <Compile Include="JavaScript\TemplateLiteral.cs" />
+    <Compile Include="JavaScript\TemplateLiteralExpression.cs" />
+    <Compile Include="JavaScript\thisliteral.cs" />
+    <Compile Include="JavaScript\throw.cs" />
+    <Compile Include="JavaScript\TreeVisitor.cs" />
+    <Compile Include="JavaScript\try.cs" />
+    <Compile Include="JavaScript\unaryop.cs" />
+    <Compile Include="JavaScript\V3SourceMap.cs" />
+    <Compile Include="JavaScript\var.cs" />
+    <Compile Include="JavaScript\variabledeclaration.cs" />
+    <Compile Include="JavaScript\while.cs" />
+    <Compile Include="JavaScript\with.cs" />
+    <Compile Include="JavaScript\withscope.cs" />
+    <Compile Include="JSEncoderFallback.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Minifier.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ResourceStrings.cs" />
+    <Compile Include="StringBuilderPool.cs" />
+    <Compile Include="SwitchParser.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Migrated rules for AjaxMinDll.ruleset" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CommonStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>CommonStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Css\CssStrings.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>Microsoft.Ajax.Utilities</CustomToolNamespace>
+      <LastGenOutput>CssStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="JavaScript\JScript.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>Microsoft.Ajax.Utilities</CustomToolNamespace>
+      <LastGenOutput>JScript.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDictionary Include="..\CustomDictionary.xml">
+      <Link>CustomDictionary.xml</Link>
+    </CodeAnalysisDictionary>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

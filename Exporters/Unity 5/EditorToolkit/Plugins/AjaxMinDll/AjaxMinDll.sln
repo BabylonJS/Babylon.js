@@ -1,0 +1,17 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AjaxMinDll", "AjaxMinDll.csproj", "{DFDB930E-1162-4514-A91D-C8595A807F13}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DFDB930E-1162-4514-A91D-C8595A807F13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFDB930E-1162-4514-A91D-C8595A807F13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFDB930E-1162-4514-A91D-C8595A807F13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFDB930E-1162-4514-A91D-C8595A807F13}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,231 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6598A7CD-8F27-4D3F-A675-5AE63113A7C3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FreeImageAPI</RootNamespace>
+    <AssemblyName>FreeImageNET</AssemblyName>
+    <StartupObject>
+    </StartupObject>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>none</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <BaseAddress>4194304</BaseAddress>
+    <FileAlignment>512</FileAlignment>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>419</NoWarn>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <DocumentationFile>bin\Debug\FreeImageNET.XML</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>
+    </DefineConstants>
+    <ErrorReport>none</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <BaseAddress>4194304</BaseAddress>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <NoWarn>419</NoWarn>
+    <DocumentationFile>bin\Release\FreeImageNET.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Debug\FreeImageNET.XML</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <FileAlignment>512</FileAlignment>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>none</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Release\FreeImageNET.XML</DocumentationFile>
+    <Optimize>true</Optimize>
+    <FileAlignment>512</FileAlignment>
+    <DebugType>
+    </DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>none</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Debug\FreeImageNET.XML</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <FileAlignment>512</FileAlignment>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>none</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Release\FreeImageNET.XML</DocumentationFile>
+    <Optimize>true</Optimize>
+    <FileAlignment>512</FileAlignment>
+    <DebugType>
+    </DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>none</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Classes\FreeImagePlugin.cs" />
+    <Compile Include="Classes\FreeImageBitmap.cs" />
+    <Compile Include="Classes\FreeImageEngine.cs" />
+    <Compile Include="Classes\FreeImageStreamIO.cs" />
+    <Compile Include="Classes\GifInformation.cs" />
+    <Compile Include="Classes\ImageMetadata.cs" />
+    <Compile Include="Classes\LocalPlugin.cs" />
+    <Compile Include="Classes\MemoryArray.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Classes\MetadataModel.cs" />
+    <Compile Include="Classes\MetadataModels.cs" />
+    <Compile Include="Classes\MetadataTag.cs" />
+    <Compile Include="Classes\Palette.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Classes\PluginRepository.cs" />
+    <Compile Include="Classes\Scanline.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Classes\StreamWrapper.cs" />
+    <Compile Include="Delegates.cs" />
+    <Compile Include="Enumerations\DisposalMethodType.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_COLOR_OPTIONS.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_DITHER.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_FORMAT.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_TMO.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_TYPE.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_COLOR_CHANNEL.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_COLOR_TYPE.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_FILTER.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_JPEG_OPERATION.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_LOAD_FLAGS.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_MDMODEL.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_MDTYPE.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_QUANTIZE.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_SAVE_FLAGS.cs" />
+    <Compile Include="Enumerations\ICC_FLAGS.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_COLOR_DEPTH.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_COMPARE_FLAGS.cs" />
+    <Compile Include="Enumerations\FREE_IMAGE_METADATA_COPY.cs" />
+    <Compile Include="Enumerations\MD_SEARCH_FLAGS.cs" />
+    <Compile Include="Structs\BITMAP.cs" />
+    <Compile Include="Structs\BITMAPINFO.cs" />
+    <Compile Include="Structs\BITMAPINFOHEADER.cs" />
+    <Compile Include="Structs\FI16RGB555.cs" />
+    <Compile Include="Structs\FI16RGB565.cs" />
+    <Compile Include="Structs\FI1BIT.cs" />
+    <Compile Include="Structs\FIBITMAP.cs" />
+    <Compile Include="Structs\FICOMPLEX.cs" />
+    <Compile Include="Structs\FIICCPROFILE.cs" />
+    <Compile Include="Structs\FIMEMORY.cs" />
+    <Compile Include="Structs\FIMETADATA.cs" />
+    <Compile Include="Structs\FIMULTIBITMAP.cs" />
+    <Compile Include="Structs\FIRational.cs" />
+    <Compile Include="Structs\FIRGB16.cs" />
+    <Compile Include="Structs\FIRGBA16.cs" />
+    <Compile Include="Structs\FIRGBAF.cs" />
+    <Compile Include="Structs\FIRGBF.cs" />
+    <Compile Include="FreeImageStaticImports.cs" />
+    <Compile Include="FreeImageWrapper.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>
+      </SubType>
+    </Compile>
+    <Compile Include="Structs\FITAG.cs" />
+    <Compile Include="Structs\FIURational.cs" />
+    <Compile Include="Structs\fi_handle.cs" />
+    <Compile Include="Structs\FreeImageIO.cs" />
+    <Compile Include="Structs\FI4BIT.cs" />
+    <Compile Include="Structs\Plugin.cs" />
+    <Compile Include="Structs\RGBQUAD.cs" />
+    <Compile Include="Structs\RGBTRIPLE.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

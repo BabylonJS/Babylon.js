@@ -1,0 +1,117 @@
+What's New for FreeImage Delphi Wrapper
+
+* : fixed
+- : removed
+! : changed
++ : added
+
+May 5, 2014
++ [Lorenzo Monti] updated wrapper for FreeImage 3.16.1
++ [Lorenzo Monti] added preprocessor tests for Delphi XE2..XE6
++ [Lorenzo Monti] merged changes for OSX compatibility (submitted by Maurício)
+
+December 8, 2012
++ [Lorenzo Monti] updated wrapper for FreeImage 3.15.4
+
+June 4, 2012
++ [Lorenzo Monti] updated wrapper for FreeImage 3.15.3
+
+March 4, 2011
+* [Jean-Marc Bottura] some bugfixes in FreeBitmap.pas
++ [Jean-Marc Bottura] added support for 64 bit compilers
+
+February 15, 2011
++ [Lorenzo Monti] updated wrapper for FreeImage 3.15.0
+
+January 4, 2011
++ [Lorenzo Monti] updated ImagePreview demo to support latest Graphics32 components (1.9) and Delphi 2010 / XE
+
+November 12, 2010
++ [Lorenzo Monti] updated wrapper for FreeImage 3.14.1
++ [Lorenzo Monti] added Delphi XE support
+
+July 29, 2010
++ [Lorenzo Monti] added Free Pascal / Lazarus 32 bit support
+
+July 14, 2010
++ [Lorenzo Monti] updated wrapper for FreeImage 3.13.1
+* [Lorenzo Monti] fixed declaration of FreeImageIO functions (FI_ReadProc, FI_WriteProc, FI_SeekProc, FI_TellProc)
+! [Lorenzo Monti] renamed structure PluginStruct to Plugin, according to FreeImage.h
+* [Lorenzo Monti] fixed declaration of JPEG_CMYK constant
+* [Lorenzo Monti] fixed declaration of type FreeImage_OutputMessageFunction
+* [Lorenzo Monti] fixed declaration of FreeImage_OutputMessageProc
++ [Lorenzo Monti] added wrapper for FreeImage_OutputMessageProc for older Delphi compilers (<6) not supporting varargs
+* [Lorenzo Monti] fixed declaration of FreeImage_LookupX11Color and FreeImage_LookupSVGColor
+! [Lorenzo Monti] changed declaration of FreeImage_GetPixelIndex, FreeImage_GetPixelColor, FreeImage_SetPixelIndex, FreeImage_SetPixelColor
+! [Lorenzo Monti] changed declaration of FreeImage_GetInfo
+! [Lorenzo Monti] changed declaration of FreeImage_GetICCProfile, FreeImage_CreateICCProfile, FreeImage_DestroyICCProfile
+* [Lorenzo Monti] fixed declaration of FreeImage_SetComplexChannel
++ [Lorenzo Monti] added Delphi 2010 support
++ [Lorenzo Monti] added Version.inc to determine compiler version
+! [Lorenzo Monti] moved all "external" definitions to implementation section
+! [Lorenzo Monti] changed FreeBitmap.pas, FreeUtils.pas and TargaImage.pas to reflect changes in the FreeImage.pas unit
+
+July 17, 2006
++ [Hervé Drolon] added FIF_FAXG3 and FIF_SGI definitions, added FreeImage_MakeThumbnail definition. 
+
+January 20, 2006
+! [Anatoliy Pulyaevskiy] updated WinBitmap demo
+* [Anatoliy Pulyaevskiy] fixed TFreeBitmap.ConvertToStandartType renamed to TFreeBitmap.ConvertToStandardType
+* [Anatoliy Pulyaevskiy] fixed using of SetFreeImageMarker (only for HDR dib)
+
+October 19, 2005
++ [Anatoliy Pulyaevskiy] updated wrapper for FreeImage 3.8.0
++ [Anatoliy Pulyaevskiy] added Delphi 5 support
++ [Anatoliy Pulyaevskiy] added TFreeBitmap.OnChanging event
+! [Anatoliy Pulyaevskiy] changed declaration of TFreeBitmap.Assign method
++ [Anatoliy Pulyaevskiy] added TFreeBitmap.CanSave function
+! [Anatoliy Pulyaevskiy] property TFreeBitmap.Dib now have read/write access
++ [Anatoliy Pulyaevskiy] added TFreeTag class incapsulating FreeImage FITAG type
+
+August 5, 2005
+* [kaare-nysite] fixed the prototype of FreeImage_ConvertFromRawBits
+
+June 21, 2005
+* [Maarten Veerman] fixed the prototype of FreeImage_OpenMultiBitmap
+
+February 17, 2005 - Version 1.3.0
++ [Anatoliy Pulyaevskiy] updated the wrapper for FreeImage 3.6.0
+! [Anatoliy Pulyaevskiy] FreeImage.pas unit has been reworked
+
+January 14, 2005 - Version 1.2.1
++ [Anatoliy Pulyaevskiy] updated the wrapper for FreeImage 3.5.3
++ [Anatoliy Pulyaevskiy] added TFreeBitmap.SetHorizontalResolution and TFreeBitmap.SetVerticalResolution
++ [Anatoliy Pulyaevskiy] added TFreeBitmap.MakeThumbnail procedure ( an adapted version of function given by Enzo Costantini)
++ [Enzo Costantini] added FIU_GetFIFType utility function
++ [Enzo Costantini] added TFreeWinBitmap.CopyToBitmapH function
+* [Anatoliy Pulyaevskiy] fixed TFreeBitmap.Rotate (fix from FreeImage CVS)
++ [Anatoliy Pulyaevskiy] added TFreeBitmap.ConvertToStandartType
+
+December 20, 2004 - Version 1.2.0
++ [Anatoliy Pulyaevskiy] added MultiBitmap Demo
+* [Anatoliy Pulyaevskiy] fixed TFreeMultiBitmap.LockPage due to error with Locking/Unlocking pages
++ [Anatoliy Pulyaevskiy] added TFreeBitmap.ConvertTo4Bits
+* [Anatoliy Pulyaevskiy] TFreeBitmap.ConvertToGrayScale fixed converting bitmaps with FIC_MINISWHITE color type
+* [Anatoliy Pulyaevskiy] fixed TFreeWinBitmap.DrawEx FDisplayDib deleting
++ [Anatoliy Pulyaevskiy] updated the wrapper for FreeImage 3.5.2
+
+November 12, 2004 - Version 1.1.0
++ [Anatoliy Pulyaevskiy] added TFreeBitmap.Assign(Source: PFIBITMAP)
+- [Anatoliy Pulyaevskiy] removed TFreeBitmap.SetDib
+! [Anatoliy Pulyaevskiy] TFreeBitmap.Dib property now read-only
+* [Anatoliy Pulyaevskiy] TFreeMultiBitmap.UnlockPage implemented
+* [Anatoliy Pulyaevskiy] fixed TFreeBitmap.Rescale not applies changes
+
+November 8, 2004 - Version 1.0.0
++ [Anatoliy Pulyaevskiy] added Delphi version of FreeImagePlus
++ [Anatoliy Pulyaevskiy] updated the wrapper for FreeImage 3.5.0
+
+January 7, 2004
++ [Tommy] added TargaImage unit
+
+October 28, 2003
++ [Peter Byström] updated the wrapper for FreeImage 3.0.2
+
+August 9, 2003
++ [Simon Beavis] added a wrapper for FreeImage 2.6.1
+
