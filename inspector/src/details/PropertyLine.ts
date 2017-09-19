@@ -81,6 +81,16 @@ module INSPECTOR {
         private _validateInputHandler: EventListener;
         /** Handler used to validate the input by pressing 'esc' */
         private _escapeInputHandler: EventListener;
+        /** Handler used on focus out */
+        private _focusOutInputHandler: EventListener;
+        /** Handler used to get mouse position */
+        private _onMouseDownHandler: EventListener;
+        private _onMouseDragHandler: EventListener;
+        private _onMouseUpHandler: EventListener;
+        /** Save previous Y mouse position */
+        private _prevY: number;
+        /**Save value while slider is on */
+        private _preValue: number;
 
         constructor(prop: Property, parent?: PropertyLine, level: number = 0) {
             this._property = prop;
@@ -115,6 +125,7 @@ module INSPECTOR {
                 this._valueDiv.addEventListener('click', this._displayInputHandler);
                 this._input.addEventListener('keypress', this._validateInputHandler);
                 this._input.addEventListener('keydown', this._escapeInputHandler);
+                this._input.addEventListener('focusout', this._focusOutInputHandler);
             }
 
             // Add this property to the scheduler
@@ -127,7 +138,6 @@ module INSPECTOR {
          * - enters updates the property
          */
         private _initInput() {
-
             // Create the input element
             this._input = document.createElement('input') as HTMLInputElement;
             this._input.setAttribute('type', 'text');
@@ -136,6 +146,11 @@ module INSPECTOR {
             this._displayInputHandler = this._displayInput.bind(this);
             this._validateInputHandler = this._validateInput.bind(this);
             this._escapeInputHandler = this._escapeInput.bind(this);
+            this._focusOutInputHandler = this.update.bind(this);
+
+            this._onMouseDownHandler = this._onMouseDown.bind(this);
+            this._onMouseDragHandler = this._onMouseDrag.bind(this);
+            this._onMouseUpHandler = this._onMouseUp.bind(this);
         }
 
         /** 
@@ -144,31 +159,33 @@ module INSPECTOR {
          */
         private _validateInput(e: KeyboardEvent) {
             if (e.keyCode == 13) {
-                // Enter : validate the new value
-                let newValue:any = this._input.value;
-
-                this.updateObject();
-
-                if(typeof this._property.value === 'number'){
-                    this._property.value = parseFloat(newValue);
-                }else{
-                    this._property.value = newValue;
-                }
-                // Remove input
-                this.update();
-                // resume scheduler
-                Scheduler.getInstance().pause = false;
-
+                this.validateInput(this._input.value);
             } else if (e.keyCode == 27) {
                 // Esc : remove input
                 this.update();
             }
         }
 
+        public validateInput(value: any): void {
+            this.updateObject();
+
+            if(typeof this._property.value === 'number'){
+                this._property.value = parseFloat(value);
+            }else{
+                this._property.value = value;
+            }
+            // Remove input
+            this.update();
+            // resume scheduler
+            Scheduler.getInstance().pause = false;
+        }
+
         /** 
          * On escape : removes the input
          */
         private _escapeInput(e: KeyboardEvent) {
+            // Remove focus out handler
+            this._input.removeEventListener('focusout', this._focusOutInputHandler);
             if (e.keyCode == 27) {
                 // Esc : remove input
                 this.update();
@@ -196,7 +213,12 @@ module INSPECTOR {
             this._valueDiv.textContent = "";
             this._input.value = valueTxt;
             this._valueDiv.appendChild(this._input);
+            this._input.focus();
 
+            if(typeof this.value === 'number') {
+                this._input.addEventListener('mousedown', this._onMouseDownHandler);
+            }
+            this._input.addEventListener('focusout', this._focusOutInputHandler);
             // Pause the scheduler
             Scheduler.getInstance().pause = true;
         }
@@ -233,10 +255,10 @@ module INSPECTOR {
          * type of the property.
          */
         private _createElements() {
-
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
-                this._elements.push(new ColorElement(this.value));
+                this._elements.push(new ColorPickerElement(this.value, this));
+                //this._elements.push(new ColorElement(this.value));
             }
             // Texture
             if (this.type == 'Texture') {
@@ -256,7 +278,6 @@ module INSPECTOR {
         // - If the type is complex, but instance of Vector2, Size, display the type and its tostring
         // - If the type is another one, display the Type
         private _displayValueContent() {
-
             let value = this.value;
             // If the value is a number, truncate it if needed
             if (typeof value === 'number') {
@@ -372,6 +393,36 @@ module INSPECTOR {
                 }
             }
         }
-    }
 
+
+        /**
+         * Refresh mouse position on y axis
+         * @param e 
+         */
+        private _onMouseDrag(e: MouseEvent): void {      
+            const diff = this._prevY - e.clientY;
+            this._input.value = (this._preValue + diff).toString();
+        }
+
+        /**
+         * Save new value from slider
+         * @param e 
+         */
+        private _onMouseUp(e: MouseEvent): void {
+            window.removeEventListener('mousemove', this._onMouseDragHandler);
+            window.removeEventListener('mouseup', this._onMouseUpHandler);
+            this._prevY = e.clientY;
+        }
+      
+        /**
+         * Start record mouse position
+         * @param e 
+         */
+        private _onMouseDown(e: MouseEvent): void {
+            this._prevY = e.clientY;
+            this._preValue = this.value;
+            window.addEventListener('mousemove', this._onMouseDragHandler);
+            window.addEventListener('mouseup', this._onMouseUpHandler);
+        }
+    }
 }
