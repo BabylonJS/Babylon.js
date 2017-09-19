@@ -556,11 +556,7 @@
 
         //WebVR
 
-        //The new WebVR uses promises.
-        //this promise resolves with the current devices available.
-        public vrDisplaysPromise;
-
-        private _vrDisplays;
+        private _vrDisplays: any[];
         private _vrDisplayEnabled;
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
@@ -612,6 +608,11 @@
 
         private _onVRDisplayPointerRestricted: () => void;
         private _onVRDisplayPointerUnrestricted: () => void;
+
+        // VRDisplay connection
+        private _onVrDisplayConnect: (display: any) => void;
+        private _onVrDisplayDisconnect: () => void;        
+        public onVRDisplayChangedObservable = new Observable<any>();
 
         private _hardwareScalingLevel: number;
         private _caps: EngineCapabilities;
@@ -1578,50 +1579,39 @@
             }
         }
 
-
         //WebVR functions
-        public isVRDevicePresent(callback: (result: boolean) => void) {
-            this.getVRDevice(null, (device) => {
-                callback(device !== null);
-            });
+        public isVRDevicePresent() : boolean {
+            return this._vrDisplays != null && this._vrDisplays.length > 0);
         }
 
-        public getVRDevice(name: string, callback: (device: any) => void) {
-            if (!this.vrDisplaysPromise) {
-                callback(null);
-                return;
-            }
+        public getVRDevice() : any {
+            var devices = this._vrDisplays || [];
 
-            this.vrDisplaysPromise.then((devices) => {
-                if (devices.length > 0) {
-                    if (name) {
-                        var found = devices.some(device => {
-                            if (device.displayName === name) {
-                                callback(device);
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        });
-                        if (!found) {
-                            Tools.Warn("Display " + name + " was not found. Using " + devices[0].displayName);
-                            callback(devices[0]);
-                        }
-                    } else {
-                        //choose the first one
-                        callback(devices[0]);
-                    }
-                } else {
-                    Tools.Error("No WebVR devices found!");
-                    callback(null);
-                }
-            });
+            if (devices.length > 0) {
+                return devices[0];
+            } else {
+                Tools.Error("No WebVR devices found!");
+                return null;
+            }
         }
 
-        public initWebVR(): void {
-            if (!this.vrDisplaysPromise) {
-                this._getVRDisplays();
+        public initWebVR(): Observable<any> {
+            this.onVRDisplayChangedObservable = new Observable<any>();
+
+            if (!this._onVrDisplayConnect) {
+                this._onVrDisplayConnect = (display) => {
+                    this._vrDisplays = [display];
+                    // TODO: Notify observable
+                };
+                this._onVrDisplayDisconnect = () => {
+                    this._vrDisplays = [];
+                    // TODO: Notify observable
+                };
             }
+            
+            this._getVRDisplays();
+
+            return this.onVRDisplayChangedObservable;
         }
 
         public enableVR(vrDevice) {
@@ -1656,16 +1646,16 @@
 
         private _getVRDisplays() {
             var getWebVRDevices = (devices: Array<any>) => {
-
-                this._vrDisplays = devices.filter(function (device) {
-                    return device instanceof VRDisplay;
-                });
-
-                return this._vrDisplays;
+                return this._vrDisplays = devices;
             }
 
             if (navigator.getVRDisplays) {
-                this.vrDisplaysPromise = navigator.getVRDisplays().then(getWebVRDevices);
+                navigator.getVRDisplays().then(getWebVRDevices).catch((error) => {
+                    // TODO: System CANNOT support WebVR, despite API presence.
+                });
+            } else {
+                // TODO: Browser does not support WebVR
+                this._vrDisplays = [];
             }
         }
 
