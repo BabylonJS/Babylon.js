@@ -234,7 +234,7 @@ gulp.task('typescript-compile', function () {
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.dts
             .pipe(concat(config.build.declarationModuleFilename))
-            .pipe(addDtsExport("BABYLON"))
+            .pipe(addDtsExport("BABYLON", "babylonjs"))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
             .pipe(sourcemaps.write("./",
@@ -274,13 +274,19 @@ var buildExternalLibrary = function (library, settings, watch) {
         .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, library.output + '.fx'))
         .pipe(gulp.dest(settings.build.srcOutputDirectory));
 
-    var dev = tsProcess.js.pipe(sourcemaps.write("./", {
-        includeContent: false,
-        sourceRoot: (filePath) => {
-            return '';
-        }
-    }))
-        .pipe(gulp.dest(settings.build.srcOutputDirectory));
+    var dev = tsProcess.js
+        .pipe(sourcemaps.write("./", {
+            includeContent: false,
+            sourceRoot: (filePath) => {
+                return '';
+            }
+        }));
+
+    if (library.buildAsModule) {
+        dev = dev.pipe(addModuleExports(library.moduleDeclaration, true))
+    }
+
+    dev = dev.pipe(gulp.dest(settings.build.srcOutputDirectory));
 
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
     var css = gulp.src(library.sassFiles || [])
@@ -325,10 +331,10 @@ var buildExternalLibrary = function (library, settings, watch) {
 
         if (library.buildAsModule) {
             var dts2 = tsProcess.dts
-            .pipe(concat(library.output))
-            .pipe(addDtsExport(library.moduleDeclaration))
-            .pipe(rename({ extname: ".module.d.ts" }))
-            .pipe(gulp.dest(outputDirectory));
+                .pipe(concat(library.output))
+                .pipe(addDtsExport(library.moduleDeclaration, library.moduleName, true))
+                .pipe(rename({ extname: ".module.d.ts" }))
+                .pipe(gulp.dest(outputDirectory));
             waitAll = merge2([dev, code, css, dts, dts2]);
         } else {
             waitAll = merge2([dev, code, css, dts]);
