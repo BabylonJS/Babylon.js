@@ -1,0 +1,124 @@
+What's New for FreeImage.NET
+
+* : fixed
+- : removed
+! : changed
++ : added
+
+Month Day, 2011 - 3.15.2.0
++ [Herve Drolon] added missing save flags JPEG_OPTIMIZE, JPEG_BASELINE
+* [raburton] fixed FreeImageBitmap constructor with initialisation of X/Y resolution
+
+July 25th, 2011 - 3.15.1.0
++ [Herve Drolon] added VS 2008 project files
+* [Stefan Wetter] fixed FreeImage.IsAvailable method returning false in case the wrapper was out of date
+* [Herve Drolon] fixed FreeImage.GetBitmap returning false with dib without resolution info
+* [cclouston] fixed EnlargeCanvas returning always NULL
+
+December 21, 2009 - 3.13.1.1
+* [Carsten Klein] Fixed a threading bug in OpenMultiBitmapFromStream and CloseMultiBitmap. Access to the streamHandles Dictionary is now thread safe.
+
+September 15, 2009 - 3.13.0.1
++ [Jean-Philippe Goerke] Added PFM, PICT and RAW file formats.
++ [Jean-Philippe Goerke] Added loading flag JPEG_EXIFROTATE.
++ [Jean-Philippe Goerke] Added method GetNativeVersion() to the FreeImage class.
+! [Jean-Philippe Goerke] Changed FreeImage.IsAvailable() now returning false in case the native library is out of date or unusable.
+- [Jean-Philippe Goerke] Removed FREEIMAGE_MAJOR_VERSION, FREEIMAGE_MINOR_VERSION and FREEIMAGE_RELEASE_SERIAL constants from class FreeImage.
++ [Jean-Philippe Goerke] Added enumeration FREE_IMAGE_COLOR_OPTIONS.
++ [Jean-Philippe Goerke] Added new overloads for FreeImage.Allocate() and FreeImage.AllocateT().
++ [Jean-Philippe Goerke] Added methods AllocateEx(), AllocateExT(), FillBackground() and EnlargeCanvas() to class FreeImage.
++ [Jean-Philippe Goerke] Added methods FillBackground(), EnlargeCanvas() and GetEnlargedInstance() to class FreeImageBitmap.
+- [Jean-Philippe Goerke] Removed unused ConvertLineXtoY() methods.
+* [kruno13] Fixed a bug in the FreeImageBitmap constructors.
+- [Jean-Philippe Goerke] Removed unneeded GCHandles used with delegates.
++ [Jean-Philippe Goerke] Added overloaded method OpenMultiBitmapFromStream to class FreeImage.
++ [Jean-Philippe Goerke] FreeImageBitmap now supports loading multipage bitmaps from streams. Warning: The stream must remain open for the bitmap's lifetime.
+* [mshanke] Fixed some IPTC metadata incorrect namings.
+! [Jean-Philippe Goerke] Method FreeImage.RotateClassic is now deprecated.
++ [Jean-Philippe Goerke] Added method Rotate() to the FreeImage class.
+! [Jean-Philippe Goerke] FreeImageBitmap now uses the method Rotate instead of RotateClassic.
+
+April 20, 2009 - 1.10
+! [Jean-Philippe Goerke] Updated wrapper-version to 1.10 including some minor changes.
+
+February 27, 2009 - 1.09
++ [Jean-Philippe Goerke] Help file creation now uses the Version Builder plugin of Sandcastle Help File Builder to generate an MSDN-like Version Information paragraph in the help file.
++ [Jean-Philippe Goerke] Added new metadata model class MDM_EXIF_MAIN to replace MDM_MAIN. Class MDM_MAIN still exists but is marked obsolete and will be removed in a future release.
++ [Jean-Philippe Goerke] Added various properties to access the value of metadata tags directly to all MDM_* classes expect MDM_CUSTOM, MDM_NODATA and MDM_MAKERNOTE.
+! [Jean-Philippe Goerke] Now classes deriving from MetadataModel, expect obsoltete class MDM_MAIN, are no longer sealed.
+! [Jean-Philippe Goerke] Class GifInformation now derives from MDM_ANIMATION. Moved properties into base class MDM_ANIMATION.
++ [Jean-Philippe Goerke] Added enumerations AltitudeType, DirectionReference, InteroperabilityMode, LatitudeType, LongitudeType, ImageOrientation and VelocityUnit to class MetadataModel.
+* [Jean-Philippe Goerke] Fixed a bug in MetadataTag.Count, MetadataTag.Length and MetadataTag.Value.
++ [Jean-Philippe Goerke] Added attribute DebuggerBrowsable(DebuggerBrowsableState.Never) to some protected and private fields.
+
+February 23, 2009 - 1.08
+! [Jean-Philippe Goerke] FreeImage.NET now uses Sandcastle Help File Builder 1.8.0.1
++ [Jean-Philippe Goerke] Added new Sandcastle Help File Builder project file FreeImage.NET.shfbproj.
+* [headkaze] Fixed a bug in FreeImage.CreateFromBitmap, which now incorporates any transparency information from palletized .NET Bitmaps.
++ [Jean-Philippe Goerke] Added new overloaded method CreateGlobalPalette() to class GifInformation to create global palettes from local palettes.
+! [Jean-Philippe Goerke] Renamed internal method FreeImage.SetTransparencyTable_ to FreeImage.SetTransparencyTable.
++ [Jean-Philippe Goerke] Added attribute DebuggerBrowsable(DebuggerBrowsableState.Never) to many protected and private fields.
+
+February 20, 2009 - 1.07
+* [Jean-Philippe Goerke] Fixed a bug in FreeImage.IsFilenameValidForFIF and FreeImage.IsExtensionValidForFIF.
+* [Jean-Philippe Goerke] Fixed a bug in FreeImage.SaveEx that could prevent saving supported non-bitmap types.
+* [Jean-Philippe Goerke] Fixed a small bug in FreeImage.CompareData.
++ [Jean-Philippe Goerke] Added two overloads of ColorQuantizeEx() in class FreeImage to return images with a color depth smaller than 8.
+! [Jean-Philippe Goerke] Updated FreeImage.ConvertColorDepth to support 1- and 4-bpp color conversions (FreeImage_ConvertTo4Bits only creates grayscale results).
+* [headkaze] Fixed a bug in FreeImage.GetBitmap, which now adds any transparency information to palletized .NET Bitmaps.
+* [headkaze] Fixed a bug in FreeImage.GetBitmap and FreeImage.CreateFromBitmap to support palettes with sizes different from 2, 16 and 256 entries.
+! [Jean-Philippe Goerke] Improved handling of multipage bitmaps in FreeImageBitmap class.
++ [Jean-Philippe Goerke] Added new overloads for FreeImageBitmap.SaveAdd() to allow inserting frames at a specified page index.
++ [Jean-Philippe Goerke] Added new class GifInformation which provides access to GIF format specific metadata (GlobalPalette, Animation, etc.).
++ [Jean-Philippe Goerke] Added enumeration DisposalMethodType.
+! [Jean-Philippe Goerke] Updated class MemoryArray<T>, which now is Disposable and has a new static constructor.
+! [Jean-Philippe Goerke] Removed code using reflection from class ImageMetadata.
++ [Jean-Philippe Goerke] Added new ctor(FITAG) and ctor(MetadataTag) to class Palette to support palettes stored in metadata tags.
++ [Jean-Philippe Goerke] Added new ctor(RGBQUAD[]), ctor(Color[]) and ctor(int) to create new stand-alone palettes to class Palette.
++ [Jean-Philippe Goerke] Added overloaded CreateGrayscalePalette(), Reverse() and CopyFrom() to class Palette.
+! [Jean-Philippe Goerke] Changed the behavior of MetadataTag.Value. byte and byte[] are now stored as FREE_IMAGE_MDTYPE.FIDT_BYTE instead of FREE_IMAGE_MDTYPE.FIDT_UNDEFINED.
++ [Jean-Philippe Goerke] Added a type check to MetadataTag.SetValue(object), MetadataTag.SetValue(object, FREE_IMAGE_MDTYPE) and the setter of MetadataTag.Value.
+
+November 18, 2008 - 1.06
+* [Jean-Philippe Goerke] Fixed a bug in FreeImage.SaveEx.
+! [Jean-Philippe Goerke] Improved method FreeImage.IsFilenameValidForFIF.
+
+November 5, 2008 - 1.05
+! [Jean-Philippe Goerke] Updated documentation of FreeImage.ConvertFromRawBits and FreeImage.ConvertToRawBits.
++ [Jean-Philippe Goerke] Added new overload ConvertFromRawBits(byte[],int,int,int,uint,uint,uint,uint,bool) to the FreeImage class.
++ [Jean-Philippe Goerke] Added new overload ConvertFromRawBits(byte[],FREE_IMAGE_TYPE,int,int,int,uint,uint,uint,uint bool) to the FreeImage class.
++ [Jean-Philippe Goerke] Added new overload ConvertToRawBits(byte[],FIBITMAP,int,uint,uint,uint,uint,bool) to the FreeImage class.
+! [Jean-Philippe Goerke] Improved method FreeImage.CreatePropertyItem.
++ [Jean-Philippe Goerke] Added overloads for CopyMemory to class FreeImage which support direct usage of arrays.
+! [Jean-Philippe Goerke] Replaced calls to FreeImage.MoveMemory with FreeImage.CopyMemory.
+! [Jean-Philippe Goerke] Class FreeImageBitmap now derives from MarshalByRefObject.
++ [Jean-Philippe Goerke] Added new ctor(int,int,int,PixelFormat,byte[]) and ctor(int,int,int,int,FREE_IMAGE_TYPE,byte[]) to the FreeImageBitmap class.
+
+August 29, 2008 - 1.04
++ [Jean-Philippe Goerke] Added new target architectures x86 and x64 to the Visual Studio 2005 solution and project files.
++ [Jean-Philippe Goerke] Added static readonly field Zero to FIBITMAP, FIMEMORY, FIMETADATA, FIMULTIBITMAP and FITAG.
+! [Jean-Philippe Goerke] Changed CreateFromBitmap to handle all formats contained by System.Drawing.Imaging.PixelFormat.
++ [Jean-Philippe Goerke] Added overload for ConvertFromRawBits to class FreeImage which supports creating images of any FREE_IMAGE_TYPE from raw bits.
++ [Jean-Philippe Goerke] Added method GetTypeParameters to class FreeImage.
+! [Jean-Philippe Goerke] Both constructors FreeImageBitmap.ctor(int,int,PixelFormat) and FreeImageBitmap.ctor(int,int,int,PixelFormat,IntPtr) now work with all formats defined in PixelFormat.
++ [Jean-Philippe Goerke] Added new constructor FreeImageBitmap.ctor(int,int,int,int,FREE_IMAGE_TYPE,IntPtr) to FreeImageBitmap class.
+
+August 18, 2008 - 1.03
+* [Eric T. Wilson] Added GC.AddMemoryPressure and GC.RemoveMemoryPressure to FreeImageBitmap class.
++ [Eric T. Wilson] Added ToBitmap method to FreeImageBitmap class.
+! [Eric T. Wilson] Changed implicit conversion operators to and from System.Drawing.Bitmap to explicit operators.
+- [Eric T. Wilson] Removed Message event from FreeImage class. Use event FreeImageEngine.Message instead.
+- [Eric T. Wilson] Removed contructors ctor(int) and ctor(IntPtr) from FIBITMAP, FIMULTIBITMAP, FIMEMORY, FIMETADATA and FITAG.
+- [Eric T. Wilson] Removed implicit conversion operators from and to int and IntPtr from FIBITMAP, FIMULTIBITMAP, FIMEMORY, FIMETADATA and FITAG.
++ [Jean-Philippe Goerke] Added SetNull method to FIBITMAP, FIMULTIBITMAP, FIMEMORY, FIMETADATA and FITAG.
+! [Jean-Philippe Goerke] Changed handling of multipage images in FreeImageBitmap: As with System.Drawing.Bitmap, any changes applied to an active frame are no longer written back to the multipage image loaded.
+* [Jean-Philippe Goerke] Fixed a bug in FreeImage.SaveToStream(ref FIBITMAP, Stream, 	FREE_IMAGE_FORMAT, FREE_IMAGE_SAVE_FLAGS, FREE_IMAGE_COLOR_DEPTH, bool): changed catch block into a finally block.
+
+July 25, 2008 - 1.02
++ [Jean-Philippe Goerke] Improved handling of XMP metadata in MetadataTag.cs: Key is now set to "XMLPacket" not changeable if Model is FREE_IMAGE_MDMODEL.FIMD_XMP.
+
+July 01, 2008 - 1.01
++ [Jean-Philippe Goerke] Added methods Quantize and GetQuantizedInstance to the FreeImageBitmap class.
+
+November 12, 2007 - 1.00
++ [Jean-Philippe Goerke] Initial release.

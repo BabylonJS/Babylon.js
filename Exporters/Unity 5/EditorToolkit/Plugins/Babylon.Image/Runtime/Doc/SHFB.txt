@@ -1,0 +1,9 @@
+Eric Woodruff's Sandcastle Help File Builder 1.6.x.x (SHFB) is needed for FreeImage.NET wrapper
+help file creation. It can be downloaded from http://www.codeplex.com/SHFB
+
+As of FreeImage.NET version 1.08, version 1.8.01 of Sandcastle Help File Builder is used by FreeImage.NET
+and thus needed for FreeImage.NET wrapper help file creation. It can still be downloaded
+from http://www.codeplex.com/SHFB
+
+Microsoft's Sandcaste is also needed for SHFB to run correctly. It can be downloaded from
+http://www.microsoft.com/downloads/details.aspx?FamilyId=E82EA71D-DA89-42EE-A715-696E3A4873B2&displaylang=en

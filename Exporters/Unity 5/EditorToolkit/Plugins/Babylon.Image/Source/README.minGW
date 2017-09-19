@@ -1,0 +1,236 @@
+=====================================================================
+Using the FreeImage library with the MinGW Compiler Suite
+=====================================================================
+
+This file describes how to use the precompiled FreeImage library
+FreeImage.dll with the MinGW port of the GNU Compiler Collection
+(GCC), how to build this library from source using MinGW and how
+to use this MinGW-built library with Microsoft Visual Studio.
+
+Contents:
+
+I. Prerequisites
+
+1. Using the precompiled FreeImage library with MinGW
+
+2. Building the FreeImage library with MinGW
+
+3. Using the MinGW FreeImage library with Microsoft Visual Studio
+
+4. Useful links
+
+
+---------------------------------------------------------------------
+I. Prerequisites
+=====================================================================
+
+The procedures described in this document have been developed and
+tested using the following free tools:
+
+1. MinGW GCC Version 4.4.0 (Core and C++ including required libs)
+2. MinGW GNU Binutils Version 2.19.1
+3. MinGW GNU Make Version 3.81-20080326-3
+4. MinGW Runtime Version 3.15.2
+5. MinGW API for MS-Windows Version 3.13
+6. GnuWin32 Package CoreUtils Version 5.3.0 (only for building)
+7. GnuWin32 Package Sed Version 4.2 (only for creating the GCC
+   import library)*
+
+* Sed is only needed to create a GCC-native import library from
+  the MSVC import library FreeImage.lib. However, since MinGW now
+  supports linking against MSVC lib files, this process seems to
+  be obsolete. See section 1.
+
+Basically, no version dependent capabilities are used so, this
+should also work with older versions of the tools mentioned above.
+Similarly, the GnuWin32 packages (which I just prefer over MSYS)
+could likely be replaced by a properly installed MSYS environment.
+
+Furthermore, the following preconditions should be met:
+
+1. The folders 'bin' under both the MinGW and the GnuWin32
+   installation directory should have been added to the PATH
+   environment variable. Likely it is best adding these
+   directories permanently to PATH through the System
+   Properties dialog on the Control Panel.
+
+2. The MinGW Make package only provides a 'mingw32-make.exe'
+   executable. There is no alias 'make.exe'. However, make is
+   preconfigured to use 'make' as the default $(MAKE) command.
+   This seems to be a bug in the MinGW GNU Make distribution.
+   Thus, a copy of 'mingw32-make.exe' named 'make.exe' should
+   be placed into MinGW's 'bin' directory.
+
+
+
+---------------------------------------------------------------------
+1. Using the precompiled FreeImage library with MinGW
+=====================================================================
+
+When using functions from C/C++, that reside in a DLL, the linker
+needs a so called import library, which specifies, how to
+dynamically link these external functions during runtime. However,
+different linkers use different types or formats of these import
+libraries.
+
+Since the precompiled FreeImage library was build with Microsoft
+Visual Studio, in the past, some extra work was required to use it
+from MinGW. An import library, that was compatible with GNU ld,
+must have been created first.
+
+However, for several MinGW versions, the GNU linker ld also
+supports linking against Microsoft Visual C++ import libraries
+directly. So, this effectively makes any circulating HOWTO's on
+how to create a GCC-compatible import library from a MSVC lib file
+more or less obsolete. Additionally, MinGW does not require the
+GCC/Linux usual lib prefix for libraries, so linking with MinGW
+against the precompiled FreeImage DLL is as easy as with MSVC:
+
+1.) Open a DOS shell (run application cmd.exe)
+
+2.) Ensure, that the 'bin' folder of MinGW is added to the PATH
+    environment variable (see Prerequisites).
+
+3.) Link directly against the supplied lib file:
+
+    C:\>gcc -oFreeImageTest.exe FreeImageTest.c -lFreeImage
+
+Nonetheless, for the sake of completeness, the following steps
+describe how to create a native GCC import library:
+
+1.) Open a DOS shell (run application cmd.exe)
+
+2.) Ensure, that the 'bin' folders of both MinGW and GnuWin32 are
+    added to the PATH environment variable (see Prerequisites).
+
+3.) Create a .def file 'libfreeimage.def', that contains all symbols
+    exported by the FreeImage library:
+
+    C:\>pexports FreeImage.dll | sed "s/^_//" > libfreeimage.def
+
+4.) Create the GCC compatible import library 'libfreeimage.a':
+
+    C:\>dlltool --add-underscore -d libfreeimage.def -l libfreeimage.a
+
+5.) Use this library to link against with GCC:
+
+    C:\>gcc -oFreeImageTest.exe FreeImageTest.c -lfreeimage
+
+
+
+---------------------------------------------------------------------
+2. Building the FreeImage library with MinGW
+=====================================================================
+
+You *do not* need to have any other third party library (like
+libjpeg, libpng, libtiff, libmng and zlib and others) installed on
+your system in order to compile and use the library. FreeImage uses
+its own versions of these libraries. This way, you can be sure that
+FreeImage will always use the latest and properly tested versions
+of of these third party libraries.
+
+In order to build the FreeImage library under Windows with MinGW
+(GCC), ensure that all the prerequisites mentioned above are met.
+The MinGW makefile aims to build a Windows DLL, that differs as
+least as possible from the precompiled library that comes with the
+FreeImage distribution. Thus, the build process also includes the
+DLL version resource as well as the __stdcall attribute for all the
+exported functions, including the MSVC-like function decorations
+_FuncName@nn.
+
+When building the FreeImage DLL, of course, an import library is
+generated, too. However, this input library is not in GCC's native
+format, but in MSVC lib format, which makes it usable from both
+MinGW and Microsoft Visual Studio with no further processing.
+
+The MinGW makefile can also be used to build a static library.
+However, due to the different function export attributes needed
+for both the dynamic and the shared library (DLL), this requires
+a separate invocation of make, which in turn needs to rebuild every
+source file after switching from dynamic to static and vice versa.
+So, a 'make clean' is required each time, the library type is
+changed.
+
+The type of library to build is specified by a variable named
+FREEIMAGE_LIBRARY_TYPE, which may either be set directly in the
+Makefile.mingw near line 18 or may be specified as an environment
+variable. This variable may either take SHARED or STATIC to build
+a dynamic link library (DLL) or a static library respectively.
+Since this value is used to dynamically form the actual make target
+internally, only uppercase values are valid. Defaults to SHARED.
+
+The MinGW makefile also supports the 'install' target. However,
+this only copies the FreeImage dynamic link library (DLL) from the
+Dist folder into the %SystemRoot%\system32 folder. So, invoking this
+target only makes sense, if the DLL has been built before.
+
+Since there is neither a common system wide 'include' nor a 'lib'
+directory available under Windows, the FreeImage header file
+FreeImage.h as well as both the static library and the DLL import
+library FreeImage.lib just remain in the 'Dist' folder.
+
+The following procedure creates the FreeImage dynamic link library
+(DLL) from the sources, installs it and also creates a static
+FreeImage library:
+
+1.) Open a DOS shell (run application cmd.exe)
+
+2.) Ensure, that the 'bin' folders of both MinGW and GnuWin32 are
+    added to the PATH environment variable (see Prerequisites).
+
+3.) Create the FreeImage dynamic link library (DLL):
+
+    C:\>make
+
+4.) Install the FreeImage dynamic link library (DLL):
+
+    C:\>make install
+
+5.) Clean all files produced by the recent build process:
+
+    C:\>make clean
+
+6.) Create a static FreeImage library:
+
+    C:\>set FREEIMAGE_LIBRARY_TYPE=STATIC
+    C:\>make
+
+You should be able to link progams with the -lFreeImage option
+after the shared library is compiled and installed. You can also
+link statically against FreeImage.a from MinGW.
+
+
+
+---------------------------------------------------------------------
+3. Using the MinGW FreeImage library with Microsoft Visual Studio
+=====================================================================
+
+Since the MinGW makefile creates an import library in MSVC's lib
+format, the produced shared library (DLL) can be used from both
+MinGW and Microsoft Visual Studio with no further adaption. Just
+link to the import library FreeImage.lib from either MinGW or
+Microsoft Visual Studio.
+
+
+
+---------------------------------------------------------------------
+4. Useful links
+=====================================================================
+
+- The MinGW homepage:
+     http://www.mingw.org/
+
+- The GnuWin32 homepage:
+     http://gnuwin32.sourceforge.net/
+
+- The GCC homepage and online documentation:
+     http://gcc.gnu.org/
+     http://gcc.gnu.org/onlinedocs/
+
+- The GNU Binutils homepage and online documentation:
+     http://www.gnu.org/software/binutils/
+     http://sourceware.org/binutils/docs-2.19/
+
+- The GNU Make homepage and online documentation:
+     http://www.gnu.org/software/make/
+     http://www.gnu.org/software/make/manual/make.html

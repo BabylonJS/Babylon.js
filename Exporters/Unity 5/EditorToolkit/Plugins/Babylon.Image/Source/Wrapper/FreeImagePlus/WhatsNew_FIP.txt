@@ -1,0 +1,184 @@
+What's New for FreeImagePlus
+
+* : fixed
+- : removed
+! : changed
++ : added
+
+March 01st, 2015
++ [Herve Drolon] added fipImage::convertToRGBAF
++ [Herve Drolon] added fipImage::convertToRGBA16
++ [Herve Drolon] added fipImage::getImageMemorySize
+* [Herve Drolon] fixed returnd type of fipImage::getImageSize from LONG to unsigned
+
+July 17th, 2011
++ [Herve Drolon] added fipImage::convertToRGB16
+
+February 26th, 2011
++ [Herve Drolon] added fipImage::convertToFloat
+
+November 14th, 2010
++ [Herve Drolon] added getThumbnail, setThumbnail, hasThumbnail, clearThumbnail to fipImage
+
+November 7th, 2010
++ [Herve Drolon] added fipImage::convertToUINT16
+
+October 9th, 2010
+* [Herve Drolon] fixed fipWinImage::setToneMappingOperator when displaying RGBA HDR images
+
+April 18th, 2010
++ [Herve Drolon] added new multi-page functions
+	added fipMemoryIO:close
+	added fipMemoryIO:loadMultiPage
+	added fipMemoryIO:saveMultiPage
+	added fipMultiPage:FIMULTIBITMAP*
+	added fipMultiPage:open(FreeImageIO *io, fi_handle handle, int flags = 0)
+	added fipMultiPage:saveToHandle
+	added fipMultiPage:saveToMemory
+
+October 24th, 2009
+! [Herve Drolon] fixed the '65535' width/height/pitch size limitation (need recompilation as several prototypes changed)
+
+September 1rd, 2009
+! [Herve Drolon] changed prototypes for fipWinImage::setToneMappingOperator and fipWinImage::getToneMappingOperator
+! [Herve Drolon] changed prototype for fipImage::toneMapping
+! [Herve Drolon] changed prototype for fipImage::rotate (now support optional supplied background color)
++ [Herve Drolon] added FreeImage_TmoReinhard05Ex capability to fipImage & fipWinImage
+
+August 11th, 2009
+* [Mihail Naydenov] fixed fipImage::operator=(FIBITMAP *dib) for cases where dib == _dib
+
+July 10th, 2009
++ [Herve Drolon] added fipImage::adjustBrightnessContrastGamma(double brightness, double contrast, double gamma)
+
+October 27th, 2008
++ [Herve Drolon] added FIF static identification functions to fipImage
+
+August 3rd, 2008
+* [dimitriy.b] fixed warnings about "non virtual destructor with virtual class members" with gcc 4.1.2
+* [Herve Drolon] fixed display of RGBAF EXR images in fipWinImage::drawEx
+
+October 10th, 2007
+* [Terry Russell] fixed a memory leak in fipWinImage::captureWindow
+
+January 20th, 2007
++ [Herve Drolon] added support for 64-bit RGBA images
+
+January 11th, 2007
++ [Herve Drolon] added setKeyValue method (a ASCII tag constructor) to fipTag
++ [Herve Drolon] added PSD format support to fipMultiPage::open
+
+October 30th, 2006 - 3.9.2
++ [Herve Drolon] added BOOL fipMultiPage::open(fipMemoryIO& memIO, int flags)
++ [Herve Drolon] added fipMemoryIO::operator FIMEMORY*()
+* [Herve Drolon] fixed missing 'isValid' method in fipMetadataFind
+
+July 16th, 2006 - 3.9.1
+* [Herve Drolon] fixed a bug in fipWinImage::copyFromBitmap occuring with palettized images
+
+July 6th, 2006 - 3.9.0
+! [Herve Drolon] renamed fipMemoryIO::read to fipMemoryIO::load
+! [Herve Drolon] renamed fipMemoryIO::write to fipMemoryIO::save
++ [Herve Drolon] added fipMemoryIO::read (wrapper for FreeImage_ReadMemory)
++ [Herve Drolon] added fipMemoryIO::write (wrapper for FreeImage_WriteMemory)
++ [Herve Drolon] added version info to the DLL
++ [Herve Drolon] added fipImage::crop
++ [Herve Drolon] added support for most image types to fipImage::rescale
++ [Herve Drolon] added fipImage::makeThumbnail
++ [Herve Drolon] added fipTag
++ [Herve Drolon] added fipMetadataFind
+* [Sandor Szalacsi] improved fipWinWimage::drawEx behavior with non transparent PNG having a file background
+* [Herve Drolon] fixed a bug in fipWinImage::setToneMappingOperator
+* [Conrado PLG] added const keyword to fip methods
+* [Conrado PLG] made the copy constructors of fipMemoryIO private
+
+September 5, 2005 - 3.8.0
+[Herve Drolon]
+! fipImage::convertToGrayscale now uses FreeImage_ConvertToGreyscale
+! fipWinImage::captureWindow now converts 32-bit images to 24-bit
++ added UNICODE function fipImage::loadU
++ added UNICODE function fipImage::saveU
++ added load flags to fipMultiPage::open
++ fipWinImage::copyTo/FromHandle now work with non-standard bitmap types
++ added copy constructors to fipWinImage
++ added fipImage::clear() and fipWinImage::clear()
+* fixed a bug in fipWinWimage::drawEx with non transparent PNG having a file background
+* fixed fipMultiPage not reading GIF files
+* fixed a bug in fipImage::rescale whan handling FIT_UINT16 bitmaps
+
+May 3rd, 2005
+[Herve Drolon]
++ added accessors fipImage::setModified and fipImage::isModified
++ added fipImage::convertToRGBF
++ added fipImage::toneMapping
++ added tone mapping functions to fipWinImage (see get/setToneMappingOperator)
++ added tone mapping capabilities to fipWinImage::drawEx
+
+January 5th, 2005
+[Herve Drolon]
+! changed the prototype of get/set Resolution functions
+
+December 19th, 2004
+[Herve Drolon]
+! updated fipImage::rotate to handle 1-bit images
+
+November 18th, 2004
+[Herve Drolon]
++ added fipImage::convertTo4Bits
+
+August 18th, 2004
+[Herve Drolon]
+- removed fipInternetIO
+- removed copy constructor fipImage::fipImage(const FIBITMAP*)
+- removed copy constructor fipWinImage::fipWinImage(const FIBITMAP*)
+! fipMemoryIO rewritten. It now wraps the FreeImage memory stream API
+! fipGenericImage is now called fipObject
++ added fipImage::loadFromMemory
++ added fipImage::saveToMemory
++ added fipMultiPage
+
+March, 17th, 2004
+[Herve Drolon]
+! fipImage::setSize now accepts color masks
+* fixed fipWinImage::copyFromHandle not working with DIB having color masks
+
+February 11th, 2004
+[Herve Drolon]
+- removed fipImage::getRedChannel
+- removed fipImage::getGreenChannel
+- removed fipImage::getBlueChannel
+- removed fipImage::getAlphaChannel
+- removed fipImage::setAlphaChannel
++ added fipImage::setChannel
++ added fipImage::isTransparent
++ added fipImage::getTransparencyCount
++ added fipImage::getTransparencyTable
++ added fipImage::setTransparencyTable
++ added fipImage::hasFileBkColor
++ added fipImage::getFileBkColor
++ added fipImage::setFileBkColor
++ added fipWinImage::drawEx
+! fipWinImage::draw now works with transparent images
+
+January 26th, 2004
+[Herve Drolon]
++ added fipMemoryIO
++ added fipInternetIO (WIN32 only)
++ added fipImage::getImageType
++ added fipImage::convertToType
++ added fipWinImage::copyToClipboard
++ added fipWinImage::pasteFromClipboard
++ added fipWinImage::captureWindow
+
+! changed fipImage constructor
+! fipWinImage::copyFromHandle now returns a BOOL
+! fipWinImage::copyFromBitmap now returns a BOOL
+
+November 2, 2003
++ [Herve Drolon] added fipImage::getScanLine
+
+October 20, 2003
+* [Dennis Lim] fixed a bug in fipImage constructor
+! [Herve Drolon] fixed a bug with fipImage::saveToHandle prototype
+
+September 8th 2003 - Wrapper for FreeImage 3.0.0

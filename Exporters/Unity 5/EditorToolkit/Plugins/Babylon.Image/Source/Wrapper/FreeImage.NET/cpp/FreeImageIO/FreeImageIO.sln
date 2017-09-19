@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FreeImageIO.Net", "FreeImageIO.Net.vcproj", "{E87923FF-1FBD-450D-9287-539A90DE9776}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{E87923FF-1FBD-450D-9287-539A90DE9776}.Debug.ActiveCfg = Debug|Win32
+		{E87923FF-1FBD-450D-9287-539A90DE9776}.Debug.Build.0 = Debug|Win32
+		{E87923FF-1FBD-450D-9287-539A90DE9776}.Release.ActiveCfg = Release|Win32
+		{E87923FF-1FBD-450D-9287-539A90DE9776}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

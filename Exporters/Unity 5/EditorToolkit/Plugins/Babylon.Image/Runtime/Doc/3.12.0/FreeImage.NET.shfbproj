@@ -1,0 +1,41 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <!-- The configuration and platform will be used to determine which
+         assemblies to include from solution and project documentation
+         sources -->
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{d68736d0-a80d-453c-a921-6ada865504b5}</ProjectGuid>
+    <SHFBSchemaVersion>1.8.0.0</SHFBSchemaVersion>
+    <!-- AssemblyName, Name, and RootNamespace are not used by SHFB but Visual
+         Studio adds them anyway -->
+    <AssemblyName>Documentation</AssemblyName>
+    <RootNamespace>Documentation</RootNamespace>
+    <Name>Documentation</Name>
+    <!-- SHFB properties -->
+    <OutputPath>.\Out\</OutputPath>
+    <HtmlHelpName>FreeImage.NET</HtmlHelpName>
+    <HelpFileFormat>HtmlHelp1x</HelpFileFormat>
+    <KeepLogFile>False</KeepLogFile>
+    <FooterText>FreeImage - The productivity booster. FreeImage is licensed under the GNU General Public License %28GPL%29 and the FreeImage Public License %28FIPL%29.</FooterText>
+    <HelpTitle>FreeImage .NET Documentation</HelpTitle>
+    <NamingMethod>HashedMemberName</NamingMethod>
+    <SdkLinkType>Msdn</SdkLinkType>
+    <MissingTags>AutoDocumentCtors</MissingTags>
+    <VisibleItems>InheritedMembers, Protected</VisibleItems>
+    <DocumentationSources>
+      <DocumentationSource sourceFile="FreeImageNET.dll" />
+<DocumentationSource sourceFile="FreeImageNET.xml" /></DocumentationSources>
+    <PlugInConfigurations>
+    </PlugInConfigurations>
+  </PropertyGroup>
+  <!-- There are no properties for these two groups but they need to appear in
+       order for Visual Studio to perform the build. -->
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  </PropertyGroup>
+  <!-- Import the SHFB build targets -->
+  <Import Project="$(SHFBROOT)\SandcastleHelpFileBuilder.targets" />
+</Project>

@@ -1,0 +1,44 @@
+#include <windows.h>
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 3,17,0,0
+ PRODUCTVERSION 3,17,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e2"
+        BEGIN
+            VALUE "Comments", "FreeImage is an Open Source library project for developers who would like to support popular graphics image formats like PNG, BMP, JPEG, TIFF and others as needed by today's multimedia applications.\0"
+            VALUE "CompanyName", "FreeImage\0"
+            VALUE "FileDescription", "FreeImagePlus library\0"
+            VALUE "FileVersion", "3, 17, 0, 0\0"
+            VALUE "InternalName", "FreeImagePlus\0"
+            VALUE "LegalCopyright", "Copyright © 2003-2015 by FreeImage\0"
+            VALUE "LegalTrademarks", "See http://freeimage.sourceforge.net\0"
+            VALUE "OriginalFilename", "FreeImagePlus.dll\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "FreeImagePlus\0"
+            VALUE "ProductVersion", "3, 17, 0, 0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1250
+    END
+END
+

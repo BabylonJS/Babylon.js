@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SyntaxError" xml:space="preserve">
+    <value>Syntax error</value>
+  </data>
+  <data name="NoColon" xml:space="preserve">
+    <value>Expected ':'</value>
+  </data>
+  <data name="NoSemicolon" xml:space="preserve">
+    <value>Expected ';'</value>
+  </data>
+  <data name="NoLeftParenthesis" xml:space="preserve">
+    <value>Expected '('</value>
+  </data>
+  <data name="NoRightParenthesis" xml:space="preserve">
+    <value>Expected ')'</value>
+  </data>
+  <data name="NoRightBracket" xml:space="preserve">
+    <value>Expected ']'</value>
+  </data>
+  <data name="NoLeftCurly" xml:space="preserve">
+    <value>Expected '{'</value>
+  </data>
+  <data name="NoRightCurly" xml:space="preserve">
+    <value>Expected '}'</value>
+  </data>
+  <data name="NoIdentifier" xml:space="preserve">
+    <value>Expected identifier</value>
+  </data>
+  <data name="NoEqual" xml:space="preserve">
+    <value>Expected '='</value>
+  </data>
+  <data name="IllegalChar" xml:space="preserve">
+    <value>Invalid character</value>
+  </data>
+  <data name="UnterminatedString" xml:space="preserve">
+    <value>Unterminated string constant</value>
+  </data>
+  <data name="NoCommentEnd" xml:space="preserve">
+    <value>Unterminated comment</value>
+  </data>
+  <data name="BadReturn" xml:space="preserve">
+    <value>'return' statement outside of function</value>
+  </data>
+  <data name="BadBreak" xml:space="preserve">
+    <value>Can't have 'break' outside of loop</value>
+  </data>
+  <data name="BadContinue" xml:space="preserve">
+    <value>Can't have 'continue' outside of loop</value>
+  </data>
+  <data name="BadHexEscapeSequence" xml:space="preserve">
+    <value>Invalid hexadecimal escape sequence</value>
+  </data>
+  <data name="NoWhile" xml:space="preserve">
+    <value>Expected 'while'</value>
+  </data>
+  <data name="BadLabel" xml:space="preserve">
+    <value>Label redefined</value>
+  </data>
+  <data name="NoLabel" xml:space="preserve">
+    <value>Label not found</value>
+  </data>
+  <data name="DupDefault" xml:space="preserve">
+    <value>'default' can only appear once in a 'switch' statement</value>
+  </data>
+  <data name="NoMemberIdentifier" xml:space="preserve">
+    <value>Expected identifier or string</value>
+  </data>
+  <data name="NoCCEnd" xml:space="preserve">
+    <value>Expected '@end'</value>
+  </data>
+  <data name="CCOff" xml:space="preserve">
+    <value>Conditional compilation is turned off</value>
+  </data>
+  <data name="NoCatch" xml:space="preserve">
+    <value>Expected 'catch'</value>
+  </data>
+  <data name="InvalidElse" xml:space="preserve">
+    <value>Unmatched 'else'; no 'if' defined</value>
+  </data>
+  <data name="NoComma" xml:space="preserve">
+    <value>Expected ','</value>
+  </data>
+  <data name="BadSwitch" xml:space="preserve">
+    <value>Missing 'case' or 'default' statement</value>
+  </data>
+  <data name="CCInvalidEnd" xml:space="preserve">
+    <value>Unmatched '@end'; no '@if' defined</value>
+  </data>
+  <data name="CCInvalidElse" xml:space="preserve">
+    <value>Unmatched '@else'; no '@if' defined</value>
+  </data>
+  <data name="CCInvalidElseIf" xml:space="preserve">
+    <value>Unmatched '@elif'; no '@if' defined</value>
+  </data>
+  <data name="ErrorEndOfFile" xml:space="preserve">
+    <value>Expecting more source characters</value>
+  </data>
+  <data name="DuplicateName" xml:space="preserve">
+    <value>Name is already defined</value>
+  </data>
+  <data name="UndeclaredVariable" xml:space="preserve">
+    <value>Variable has not been declared</value>
+  </data>
+  <data name="KeywordUsedAsIdentifier" xml:space="preserve">
+    <value>Reserved words and should not be used as an identifier; cross-browser differences</value>
+  </data>
+  <data name="NoRightParenthesisOrComma" xml:space="preserve">
+    <value>Expected ',' or ')'</value>
+  </data>
+  <data name="NoRightBracketOrComma" xml:space="preserve">
+    <value>Expected ',' or ']'</value>
+  </data>
+  <data name="ExpressionExpected" xml:space="preserve">
+    <value>Expected expression</value>
+  </data>
+  <data name="UnexpectedSemicolon" xml:space="preserve">
+    <value>Unexpected ';'</value>
+  </data>
+  <data name="TooManyTokensSkipped" xml:space="preserve">
+    <value>Too many errors. The file might not be a JavaScript file</value>
+  </data>
+  <data name="SuspectAssignment" xml:space="preserve">
+    <value>Suspect assignment operator</value>
+  </data>
+  <data name="SuspectSemicolon" xml:space="preserve">
+    <value>Suspect semicolon</value>
+  </data>
+  <data name="ParameterListNotLast" xml:space="preserve">
+    <value>A variable argument list must be the last argument</value>
+  </data>
+  <data name="IllegalAssignment" xml:space="preserve">
+    <value>Illegal assignment</value>
+  </data>
+  <data name="RegExpSyntax" xml:space="preserve">
+    <value>Syntax error in regular expression</value>
+  </data>
+  <data name="StatementBlockExpected" xml:space="preserve">
+    <value>Always use full statement blocks</value>
+  </data>
+  <data name="UndeclaredFunction" xml:space="preserve">
+    <value>Function has not been defined</value>
+  </data>
+  <data name="VariableDefinedNotReferenced" xml:space="preserve">
+    <value>Variable defined but not referenced</value>
+  </data>
+  <data name="ArgumentNotReferenced" xml:space="preserve">
+    <value>Argument defined but not referenced</value>
+  </data>
+  <data name="WithNotRecommended" xml:space="preserve">
+    <value>'with' statement not recommended</value>
+  </data>
+  <data name="FunctionNotReferenced" xml:space="preserve">
+    <value>Function defined but not referenced</value>
+  </data>
+  <data name="AmbiguousCatchVar" xml:space="preserve">
+    <value>Ambiguous catch identifier. Cross-browser behavior difference. </value>
+  </data>
+  <data name="FunctionExpressionExpected" xml:space="preserve">
+    <value>Function expression expected</value>
+  </data>
+  <data name="ObjectConstructorTakesNoArguments" xml:space="preserve">
+    <value>Object constructor should take no arguments</value>
+  </data>
+  <data name="JSParserException" xml:space="preserve">
+    <value>JSParser Exception</value>
+  </data>
+  <data name="NumericOverflow" xml:space="preserve">
+    <value>Numeric literal evaluates to Number.POSITIVE_INFINITY or Number.NEGATIVE_INFINITY</value>
+  </data>
+  <data name="NumericMaximum" xml:space="preserve">
+    <value>Consider replacing maximum numeric literal with Number.MAX_VALUE</value>
+  </data>
+  <data name="NumericMinimum" xml:space="preserve">
+    <value>Consider replacing minimum numeric literal with Number.MIN_VALUE</value>
+  </data>
+  <data name="ResourceReferenceMustBeConstant" xml:space="preserve">
+    <value>Resource reference must be single constant argument</value>
+  </data>
+  <data name="AmbiguousNamedFunctionExpression" xml:space="preserve">
+    <value>Ambiguous reference to named function expression. Cross-browser behavior difference</value>
+  </data>
+  <data name="ConditionalCompilationTooComplex" xml:space="preserve">
+    <value>Conditional compilation expression not supported. Comment ignored</value>
+  </data>
+  <data name="UnterminatedAspNetBlock" xml:space="preserve">
+    <value>Unterminated ASP.NET block</value>
+  </data>
+  <data name="MisplacedFunctionDeclaration" xml:space="preserve">
+    <value>Function declaration should not be inside a statement. Cross-browser behavior difference</value>
+  </data>
+  <data name="OctalLiteralsDeprecated" xml:space="preserve">
+    <value>Octal literals are deprecated. Possible cross-browser behavior difference</value>
+  </data>
+  <data name="FunctionNameMustBeIdentifier" xml:space="preserve">
+    <value>Function name should be a simple identifier; possible browser-specific implementation</value>
+  </data>
+  <data name="StrictComparisonIsAlwaysTrueOrFalse" xml:space="preserve">
+    <value>Strict operator always evaluates to true or false</value>
+  </data>
+  <data name="StrictModeNoWith" xml:space="preserve">
+    <value>Strict-mode does not allow with-statements</value>
+  </data>
+  <data name="StrictModeDuplicateArgument" xml:space="preserve">
+    <value>Strict-mode does not allow duplicate argument names</value>
+  </data>
+  <data name="StrictModeVariableName" xml:space="preserve">
+    <value>Strict-mode does not allow certain variable names</value>
+  </data>
+  <data name="StrictModeFunctionName" xml:space="preserve">
+    <value>Strict-mode does not allow certain function names</value>
+  </data>
+  <data name="StrictModeDuplicateProperty" xml:space="preserve">
+    <value>Strict-mode does not allow duplicate property names</value>
+  </data>
+  <data name="StrictModeInvalidAssign" xml:space="preserve">
+    <value>Strict-mode does not allow assignment to certain variables</value>
+  </data>
+  <data name="StrictModeInvalidPreOrPost" xml:space="preserve">
+    <value>Strict-mode does not allow ++ or -- on certain objects</value>
+  </data>
+  <data name="StrictModeInvalidDelete" xml:space="preserve">
+    <value>Strict-mode does not allow certain delete operands</value>
+  </data>
+  <data name="StrictModeArgumentName" xml:space="preserve">
+    <value>Strict-mode does not allow certain argument names</value>
+  </data>
+  <data name="DuplicateConstantDeclaration" xml:space="preserve">
+    <value>Constant declaration already declared</value>
+  </data>
+  <data name="AssignmentToConstant" xml:space="preserve">
+    <value>Assignment to constant</value>
+  </data>
+  <data name="StringNotInlineSafe" xml:space="preserve">
+    <value>String literal is not safe for inline</value>
+  </data>
+  <data name="StrictModeUndefinedVariable" xml:space="preserve">
+    <value>Strict-mode does not allow assignment to undefined variables</value>
+  </data>
+  <data name="UnclosedFunction" xml:space="preserve">
+    <value>End of file encountered before function is properly closed</value>
+  </data>
+  <data name="ObjectLiteralKeyword" xml:space="preserve">
+    <value>Reserved word used as object literal property name; cross-browser issue.</value>
+  </data>
+  <data name="NoEndDebugDirective" xml:space="preserve">
+    <value>Expected ///#ENDDEBUG directive</value>
+  </data>
+  <data name="NoEndIfDirective" xml:space="preserve">
+    <value>Expected ///#ENDIF directive</value>
+  </data>
+  <data name="ApplicationError" xml:space="preserve">
+    <value>Application failed. Please report this issue.</value>
+  </data>
+  <data name="BadNumericLiteral" xml:space="preserve">
+    <value>Invalid numeric literal</value>
+  </data>
+  <data name="DuplicateLexicalDeclaration" xml:space="preserve">
+    <value>Duplicate lexical declaration; cannot redefine let or const variables</value>
+  </data>
+  <data name="DuplicateCatch" xml:space="preserve">
+    <value>Variable or function declaration redefines the catch error name</value>
+  </data>
+  <data name="SuspectEquality" xml:space="preserve">
+    <value>Suspect equality comparison</value>
+  </data>
+  <data name="SemicolonInsertion" xml:space="preserve">
+    <value>Semicolon insertion rules applied</value>
+  </data>
+  <data name="ArrayLiteralTrailingComma" xml:space="preserve">
+    <value>Trailing comma in array literal; cross-browser difference</value>
+  </data>
+  <data name="StrictModeCatchName" xml:space="preserve">
+    <value>Strict-mode does not allow certain catch binding names</value>
+  </data>
+  <data name="BindingPatternRequiresInitializer" xml:space="preserve">
+    <value>Binding pattern requires initializer</value>
+  </data>
+  <data name="ImplicitPropertyNameMustBeIdentifier" xml:space="preserve">
+    <value>Implicit property name must be identifier</value>
+  </data>
+  <data name="SetterMustHaveOneParameter" xml:space="preserve">
+    <value>Setter methods must have a single formal argument</value>
+  </data>
+  <data name="RestParameterNotLast" xml:space="preserve">
+    <value>Rest parameter can only be in last position</value>
+  </data>
+  <data name="UnableToConvertFromBinding" xml:space="preserve">
+    <value>Unable to convert from binding to reference</value>
+  </data>
+  <data name="UnableToConvertToBinding" xml:space="preserve">
+    <value>Unable to convert from reference to binding</value>
+  </data>
+  <data name="BadBindingSyntax" xml:space="preserve">
+    <value>Invalid binding syntax</value>
+  </data>
+  <data name="MethodsNotAllowedInBindings" xml:space="preserve">
+    <value>Methods not allowed in object literal bindings</value>
+  </data>
+  <data name="NoForOrIf" xml:space="preserve">
+    <value>Expected 'for' or 'if' keyword</value>
+  </data>
+  <data name="ClassElementExpected" xml:space="preserve">
+    <value>Expected class element</value>
+  </data>
+  <data name="DuplicateClassElementName" xml:space="preserve">
+    <value>Duplicate class element name</value>
+  </data>
+  <data name="SpecialConstructor" xml:space="preserve">
+    <value>Class constructor must be normal method</value>
+  </data>
+  <data name="StaticPrototype" xml:space="preserve">
+    <value>Class static method cannot be named "prototype"</value>
+  </data>
+  <data name="UnusedLabel" xml:space="preserve">
+    <value>Statement label never referenced</value>
+  </data>
+  <data name="NoBinding" xml:space="preserve">
+    <value>Expected binding syntax</value>
+  </data>
+  <data name="MultipleDefaultExports" xml:space="preserve">
+    <value>Multiple default exports</value>
+  </data>
+  <data name="ImportNoModuleName" xml:space="preserve">
+    <value>Import statement must include module name</value>
+  </data>
+  <data name="DuplicateModuleDeclaration" xml:space="preserve">
+    <value>Duplicate module declaration</value>
+  </data>
+  <data name="NoDefaultModuleExport" xml:space="preserve">
+    <value>Imported module has no default export</value>
+  </data>
+  <data name="NoModuleExport" xml:space="preserve">
+    <value>Imported module does not export name</value>
+  </data>
+  <data name="NewLineNotAllowed" xml:space="preserve">
+    <value>New line not allowed</value>
+  </data>
+  <data name="NoExpectedFrom" xml:space="preserve">
+    <value>Expected "from"</value>
+  </data>
+  <data name="NoSpecifierSet" xml:space="preserve">
+    <value>Expected specifier set</value>
+  </data>
+  <data name="NoStringLiteral" xml:space="preserve">
+    <value>Expected string literal</value>
+  </data>
+  <data name="ExportNotAtModuleLevel" xml:space="preserve">
+    <value>Export statements must be at top level of module</value>
+  </data>
+  <data name="NoSource" xml:space="preserve">
+    <value>No source set on parser</value>
+  </data>
+  <data name="ArrowCannotBeConstructor" xml:space="preserve">
+    <value>Arrow functions cannot be constructors</value>
+  </data>
+  <data name="HighSurrogate" xml:space="preserve">
+    <value>High-surrogate pair value not followed by low-surrogate value</value>
+  </data>
+  <data name="LowSurrogate" xml:space="preserve">
+    <value>Low-surrogate pair value not following a high-surrogate value</value>
+  </data>
+</root>
