@@ -540,6 +540,16 @@ declare module INSPECTOR {
         private _validateInputHandler;
         /** Handler used to validate the input by pressing 'esc' */
         private _escapeInputHandler;
+        /** Handler used on focus out */
+        private _focusOutInputHandler;
+        /** Handler used to get mouse position */
+        private _onMouseDownHandler;
+        private _onMouseDragHandler;
+        private _onMouseUpHandler;
+        /** Save previous Y mouse position */
+        private _prevY;
+        /**Save value while slider is on */
+        private _preValue;
         constructor(prop: Property, parent?: PropertyLine, level?: number);
         /**
          * Init the input element and al its handler :
@@ -552,6 +562,7 @@ declare module INSPECTOR {
          * On escape : removes the input
          */
         private _validateInput(e);
+        validateInput(value: any): void;
         /**
          * On escape : removes the input
          */
@@ -604,6 +615,21 @@ declare module INSPECTOR {
          * Add sub properties in case of a complex type
          */
         private _addDetails();
+        /**
+         * Refresh mouse position on y axis
+         * @param e
+         */
+        private _onMouseDrag(e);
+        /**
+         * Save new value from slider
+         * @param e
+         */
+        private _onMouseUp(e);
+        /**
+         * Start record mouse position
+         * @param e
+         */
+        private _onMouseDown(e);
     }
 }
 
@@ -623,13 +649,11 @@ declare module INSPECTOR {
      * Represents a html div element.
      * The div is built when an instance of BasicElement is created.
      */
-    class ColorPickerElement {
+    class ColorPickerElement extends BasicElement {
         protected _input: HTMLInputElement;
-        constructor(color: BABYLON.Color4 | BABYLON.Color3);
-        /**
-         * Returns the input element
-         */
-        toHtml(): HTMLInputElement;
+        private pline;
+        constructor(color: BABYLON.Color4 | BABYLON.Color3, propertyLine: PropertyLine);
+        update(color?: BABYLON.Color4 | BABYLON.Color3): void;
         private _toRgba(color);
     }
 }

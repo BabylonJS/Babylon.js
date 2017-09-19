@@ -3539,6 +3539,249 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Collider {
+        radius: Vector3;
+        retry: number;
+        velocity: Vector3;
+        basePoint: Vector3;
+        epsilon: number;
+        collisionFound: boolean;
+        velocityWorldLength: number;
+        basePointWorld: Vector3;
+        velocityWorld: Vector3;
+        normalizedVelocity: Vector3;
+        initialVelocity: Vector3;
+        initialPosition: Vector3;
+        nearestDistance: number;
+        intersectionPoint: Vector3;
+        collidedMesh: AbstractMesh;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        private _collisionMask;
+        collisionMask: number;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): any;
+        onMeshUpdated(mesh: AbstractMesh): any;
+        onMeshRemoved(mesh: AbstractMesh): any;
+        onGeometryAdded(geometry: Geometry): any;
+        onGeometryUpdated(geometry: Geometry): any;
+        onGeometryDeleted(geometry: Geometry): any;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: string;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    interface SerializedGeometry {
+        id: string;
+        positions: Float32Array;
+        indices: Uint32Array;
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId?: number;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _runningCollisionTask;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (mesh: AbstractMesh) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: number;
+        bv: number;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: number, bv: number, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Vector3;
+        pickedMesh: AbstractMesh;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Sprite;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
+        getTextureCoordinates(): Vector2;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -4063,249 +4306,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Collider {
-        radius: Vector3;
-        retry: number;
-        velocity: Vector3;
-        basePoint: Vector3;
-        epsilon: number;
-        collisionFound: boolean;
-        velocityWorldLength: number;
-        basePointWorld: Vector3;
-        velocityWorld: Vector3;
-        normalizedVelocity: Vector3;
-        initialVelocity: Vector3;
-        initialPosition: Vector3;
-        nearestDistance: number;
-        intersectionPoint: Vector3;
-        collidedMesh: AbstractMesh;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        private _collisionMask;
-        collisionMask: number;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): any;
-        onMeshUpdated(mesh: AbstractMesh): any;
-        onMeshRemoved(mesh: AbstractMesh): any;
-        onGeometryAdded(geometry: Geometry): any;
-        onGeometryUpdated(geometry: Geometry): any;
-        onGeometryDeleted(geometry: Geometry): any;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: string;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    interface SerializedGeometry {
-        id: string;
-        positions: Float32Array;
-        indices: Uint32Array;
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId?: number;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _runningCollisionTask;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (mesh: AbstractMesh) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: number;
-        bv: number;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: number, bv: number, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Vector3;
-        pickedMesh: AbstractMesh;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Sprite;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
-        getTextureCoordinates(): Vector2;
-    }
-}
-
-declare module BABYLON {
     class BoundingBox implements ICullable {
         minimum: Vector3;
         maximum: Vector3;
@@ -4423,6 +4423,134 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON.Debug {
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Scene;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class BoneAxesViewer extends Debug.AxesViewer {
+        mesh: Mesh;
+        bone: Bone;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class PhysicsViewer {
+        protected _impostors: Array<PhysicsImpostor>;
+        protected _meshes: Array<AbstractMesh>;
+        protected _scene: Scene;
+        protected _numMeshes: number;
+        protected _physicsEnginePlugin: IPhysicsEnginePlugin;
+        private _renderFunction;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        constructor(scene: Scene);
+        protected _updateDebugMeshes(): void;
+        showImpostor(impostor: PhysicsImpostor): void;
+        hideImpostor(impostor: PhysicsImpostor): void;
+        private _getDebugMaterial(scene);
+        private _getDebugBoxMesh(scene);
+        private _getDebugSphereMesh(scene);
+        private _getDebugMesh(impostor, scene);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Ray;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
+    }
+}
+
 declare module BABYLON {
     class KeyboardEventTypes {
         static _KEYDOWN: number;
@@ -4483,158 +4611,6 @@ declare module BABYLON {
     class PointerInfo extends PointerInfoBase {
         pickInfo: PickingInfo;
         constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: PickingInfo);
-    }
-}
-
-declare module BABYLON {
-    class StickValues {
-        x: any;
-        y: any;
-        constructor(x: any, y: any);
-    }
-    interface GamepadButtonChanges {
-        changed: boolean;
-        pressChanged: boolean;
-        touchChanged: boolean;
-        valueChanged: boolean;
-    }
-    class Gamepad {
-        id: string;
-        index: number;
-        browserGamepad: any;
-        type: number;
-        private _leftStick;
-        private _rightStick;
-        _isConnected: boolean;
-        private _leftStickAxisX;
-        private _leftStickAxisY;
-        private _rightStickAxisX;
-        private _rightStickAxisY;
-        private _onleftstickchanged;
-        private _onrightstickchanged;
-        static GAMEPAD: number;
-        static GENERIC: number;
-        static XBOX: number;
-        static POSE_ENABLED: number;
-        readonly isConnected: boolean;
-        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
-        onleftstickchanged(callback: (values: StickValues) => void): void;
-        onrightstickchanged(callback: (values: StickValues) => void): void;
-        leftStick: StickValues;
-        rightStick: StickValues;
-        update(): void;
-        dispose(): void;
-    }
-    class GenericPad extends Gamepad {
-        private _buttons;
-        private _onbuttondown;
-        private _onbuttonup;
-        onButtonDownObservable: Observable<number>;
-        onButtonUpObservable: Observable<number>;
-        onbuttondown(callback: (buttonPressed: number) => void): void;
-        onbuttonup(callback: (buttonReleased: number) => void): void;
-        constructor(id: string, index: number, browserGamepad: any);
-        private _setButtonValue(newValue, currentValue, buttonIndex);
-        update(): void;
-    }
-}
-
-declare module BABYLON {
-    class GamepadManager {
-        private _babylonGamepads;
-        private _oneGamepadConnected;
-        private _isMonitoring;
-        private _gamepadEventSupported;
-        private _gamepadSupport;
-        onGamepadConnectedObservable: Observable<Gamepad>;
-        onGamepadDisconnectedObservable: Observable<Gamepad>;
-        private _onGamepadConnectedEvent;
-        private _onGamepadDisconnectedEvent;
-        constructor();
-        readonly gamepads: Gamepad[];
-        getGamepadByType(type?: number): Gamepad;
-        dispose(): void;
-        private _addNewGamepad(gamepad);
-        private _startMonitoringGamepads();
-        private _stopMonitoringGamepads();
-        private _checkGamepadsStatus();
-        private _updateGamepadObjects();
-    }
-}
-
-declare module BABYLON {
-    enum Xbox360Button {
-        A = 0,
-        B = 1,
-        X = 2,
-        Y = 3,
-        Start = 4,
-        Back = 5,
-        LB = 6,
-        RB = 7,
-        LeftStick = 8,
-        RightStick = 9,
-    }
-    enum Xbox360Dpad {
-        Up = 0,
-        Down = 1,
-        Left = 2,
-        Right = 3,
-    }
-    class Xbox360Pad extends Gamepad {
-        private _leftTrigger;
-        private _rightTrigger;
-        private _onlefttriggerchanged;
-        private _onrighttriggerchanged;
-        private _onbuttondown;
-        private _onbuttonup;
-        private _ondpaddown;
-        private _ondpadup;
-        onButtonDownObservable: Observable<Xbox360Button>;
-        onButtonUpObservable: Observable<Xbox360Button>;
-        onPadDownObservable: Observable<Xbox360Dpad>;
-        onPadUpObservable: Observable<Xbox360Dpad>;
-        private _buttonA;
-        private _buttonB;
-        private _buttonX;
-        private _buttonY;
-        private _buttonBack;
-        private _buttonStart;
-        private _buttonLB;
-        private _buttonRB;
-        private _buttonLeftStick;
-        private _buttonRightStick;
-        private _dPadUp;
-        private _dPadDown;
-        private _dPadLeft;
-        private _dPadRight;
-        private _isXboxOnePad;
-        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
-        onlefttriggerchanged(callback: (value: number) => void): void;
-        onrighttriggerchanged(callback: (value: number) => void): void;
-        leftTrigger: number;
-        rightTrigger: number;
-        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
-        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
-        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
-        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
-        private _setButtonValue(newValue, currentValue, buttonType);
-        private _setDPadValue(newValue, currentValue, buttonType);
-        buttonA: number;
-        buttonB: number;
-        buttonX: number;
-        buttonY: number;
-        buttonStart: number;
-        buttonBack: number;
-        buttonLB: number;
-        buttonRB: number;
-        buttonLeftStick: number;
-        buttonRightStick: number;
-        dPadUp: number;
-        dPadDown: number;
-        dPadLeft: number;
-        dPadRight: number;
-        update(): void;
     }
 }
 
@@ -4895,6 +4871,158 @@ declare module BABYLON {
         _rebuild(): void;
         render(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class StickValues {
+        x: any;
+        y: any;
+        constructor(x: any, y: any);
+    }
+    interface GamepadButtonChanges {
+        changed: boolean;
+        pressChanged: boolean;
+        touchChanged: boolean;
+        valueChanged: boolean;
+    }
+    class Gamepad {
+        id: string;
+        index: number;
+        browserGamepad: any;
+        type: number;
+        private _leftStick;
+        private _rightStick;
+        _isConnected: boolean;
+        private _leftStickAxisX;
+        private _leftStickAxisY;
+        private _rightStickAxisX;
+        private _rightStickAxisY;
+        private _onleftstickchanged;
+        private _onrightstickchanged;
+        static GAMEPAD: number;
+        static GENERIC: number;
+        static XBOX: number;
+        static POSE_ENABLED: number;
+        readonly isConnected: boolean;
+        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
+        onleftstickchanged(callback: (values: StickValues) => void): void;
+        onrightstickchanged(callback: (values: StickValues) => void): void;
+        leftStick: StickValues;
+        rightStick: StickValues;
+        update(): void;
+        dispose(): void;
+    }
+    class GenericPad extends Gamepad {
+        private _buttons;
+        private _onbuttondown;
+        private _onbuttonup;
+        onButtonDownObservable: Observable<number>;
+        onButtonUpObservable: Observable<number>;
+        onbuttondown(callback: (buttonPressed: number) => void): void;
+        onbuttonup(callback: (buttonReleased: number) => void): void;
+        constructor(id: string, index: number, browserGamepad: any);
+        private _setButtonValue(newValue, currentValue, buttonIndex);
+        update(): void;
+    }
+}
+
+declare module BABYLON {
+    class GamepadManager {
+        private _babylonGamepads;
+        private _oneGamepadConnected;
+        private _isMonitoring;
+        private _gamepadEventSupported;
+        private _gamepadSupport;
+        onGamepadConnectedObservable: Observable<Gamepad>;
+        onGamepadDisconnectedObservable: Observable<Gamepad>;
+        private _onGamepadConnectedEvent;
+        private _onGamepadDisconnectedEvent;
+        constructor();
+        readonly gamepads: Gamepad[];
+        getGamepadByType(type?: number): Gamepad;
+        dispose(): void;
+        private _addNewGamepad(gamepad);
+        private _startMonitoringGamepads();
+        private _stopMonitoringGamepads();
+        private _checkGamepadsStatus();
+        private _updateGamepadObjects();
+    }
+}
+
+declare module BABYLON {
+    enum Xbox360Button {
+        A = 0,
+        B = 1,
+        X = 2,
+        Y = 3,
+        Start = 4,
+        Back = 5,
+        LB = 6,
+        RB = 7,
+        LeftStick = 8,
+        RightStick = 9,
+    }
+    enum Xbox360Dpad {
+        Up = 0,
+        Down = 1,
+        Left = 2,
+        Right = 3,
+    }
+    class Xbox360Pad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        onButtonDownObservable: Observable<Xbox360Button>;
+        onButtonUpObservable: Observable<Xbox360Button>;
+        onPadDownObservable: Observable<Xbox360Dpad>;
+        onPadUpObservable: Observable<Xbox360Dpad>;
+        private _buttonA;
+        private _buttonB;
+        private _buttonX;
+        private _buttonY;
+        private _buttonBack;
+        private _buttonStart;
+        private _buttonLB;
+        private _buttonRB;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        private _isXboxOnePad;
+        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        leftTrigger: number;
+        rightTrigger: number;
+        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
+        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
+        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
+        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
+        private _setButtonValue(newValue, currentValue, buttonType);
+        private _setDPadValue(newValue, currentValue, buttonType);
+        buttonA: number;
+        buttonB: number;
+        buttonX: number;
+        buttonY: number;
+        buttonStart: number;
+        buttonBack: number;
+        buttonLB: number;
+        buttonRB: number;
+        buttonLeftStick: number;
+        buttonRightStick: number;
+        dPadUp: number;
+        dPadDown: number;
+        dPadLeft: number;
+        dPadRight: number;
+        update(): void;
     }
 }
 
@@ -13527,6 +13655,309 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBoxRenderer {
+        frontColor: Color3;
+        backColor: Color3;
+        showBackLines: boolean;
+        renderList: SmartArray<BoundingBox>;
+        private _scene;
+        private _colorShader;
+        private _vertexBuffers;
+        private _indexBuffer;
+        constructor(scene: Scene);
+        private _prepareRessources();
+        private _createIndexBuffer();
+        _rebuild(): void;
+        reset(): void;
+        render(): void;
+        renderOcclusionBoundingBox(mesh: AbstractMesh): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DepthRenderer {
+        private _scene;
+        private _depthMap;
+        private _effect;
+        private _viewMatrix;
+        private _projectionMatrix;
+        private _transformMatrix;
+        private _worldViewProjection;
+        private _cachedDefines;
+        constructor(scene: Scene, type?: number);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        getDepthMap(): RenderTargetTexture;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class EdgesRenderer {
+        edgesWidthScalerForOrthographic: number;
+        edgesWidthScalerForPerspective: number;
+        private _source;
+        private _linesPositions;
+        private _linesNormals;
+        private _linesIndices;
+        private _epsilon;
+        private _indicesCount;
+        private _lineShader;
+        private _ib;
+        private _buffers;
+        private _checkVerticesInsteadOfIndices;
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
+        private _prepareRessources();
+        _rebuild(): void;
+        dispose(): void;
+        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
+        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
+        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
+        _generateEdgesLines(): void;
+        render(): void;
+    }
+}
+
+declare module BABYLON {
+    class GeometryBufferRenderer {
+        private _scene;
+        private _multiRenderTarget;
+        private _effect;
+        private _ratio;
+        private _viewMatrix;
+        private _projectionMatrix;
+        private _transformMatrix;
+        private _worldViewProjection;
+        private _cachedDefines;
+        private _enablePosition;
+        renderList: Mesh[];
+        readonly isSupported: boolean;
+        enablePosition: boolean;
+        constructor(scene: Scene, ratio?: number);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        getGBuffer(): MultiRenderTarget;
+        dispose(): void;
+        private _createRenderTargets();
+    }
+}
+
+declare module BABYLON {
+    class OutlineRenderer {
+        private _scene;
+        private _effect;
+        private _cachedDefines;
+        zOffset: number;
+        constructor(scene: Scene);
+        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class RenderingGroup {
+        index: number;
+        private _scene;
+        private _opaqueSubMeshes;
+        private _transparentSubMeshes;
+        private _alphaTestSubMeshes;
+        private _depthOnlySubMeshes;
+        private _particleSystems;
+        private _spriteManagers;
+        private _activeVertices;
+        private _opaqueSortCompareFn;
+        private _alphaTestSortCompareFn;
+        private _transparentSortCompareFn;
+        private _renderOpaque;
+        private _renderAlphaTest;
+        private _renderTransparent;
+        private _edgesRenderers;
+        onBeforeTransparentRendering: () => void;
+        /**
+         * Set the opaque sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        /**
+         * Set the alpha test sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        /**
+         * Set the transparent sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        /**
+         * Creates a new rendering group.
+         * @param index The rendering group index
+         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
+         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
+         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
+         */
+        constructor(index: number, scene: Scene, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number);
+        /**
+         * Render all the sub meshes contained in the group.
+         * @param customRenderFunction Used to override the default render behaviour of the group.
+         * @returns true if rendered some submeshes.
+         */
+        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void, renderSprites: boolean, renderParticles: boolean, activeMeshes: AbstractMesh[]): void;
+        /**
+         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderOpaqueSorted(subMeshes);
+        /**
+         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderAlphaTestSorted(subMeshes);
+        /**
+         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderTransparentSorted(subMeshes);
+        /**
+         * Renders the submeshes in a specified order.
+         * @param subMeshes The submeshes to sort before render
+         * @param sortCompareFn The comparison function use to sort
+         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
+         * @param transparent Specifies to activate blending if true
+         */
+        private static renderSorted(subMeshes, sortCompareFn, cameraPosition, transparent);
+        /**
+         * Renders the submeshes in the order they were dispatched (no sort applied).
+         * @param subMeshes The submeshes to render
+         */
+        private static renderUnsorted(subMeshes);
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front if in the same alpha index.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered front to back (prevent overdraw).
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Resets the different lists of submeshes to prepare a new frame.
+         */
+        prepare(): void;
+        dispose(): void;
+        /**
+         * Inserts the submesh in its correct queue depending on its material.
+         * @param subMesh The submesh to dispatch
+         */
+        dispatch(subMesh: SubMesh): void;
+        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        private _renderParticles(activeMeshes);
+        private _renderSprites();
+    }
+}
+
+declare module BABYLON {
+    class RenderingManager {
+        /**
+         * The max id used for rendering groups (not included)
+         */
+        static MAX_RENDERINGGROUPS: number;
+        /**
+         * The min id used for rendering groups (included)
+         */
+        static MIN_RENDERINGGROUPS: number;
+        /**
+         * Used to globally prevent autoclearing scenes.
+         */
+        static AUTOCLEAR: boolean;
+        private _scene;
+        private _renderingGroups;
+        private _depthStencilBufferAlreadyCleaned;
+        private _currentIndex;
+        private _autoClearDepthStencil;
+        private _customOpaqueSortCompareFn;
+        private _customAlphaTestSortCompareFn;
+        private _customTransparentSortCompareFn;
+        private _renderinGroupInfo;
+        constructor(scene: Scene);
+        private _clearDepthStencilBuffer(depth?, stencil?);
+        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
+        reset(): void;
+        dispose(): void;
+        private _prepareRenderingGroup(renderingGroupId);
+        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        dispatch(subMesh: SubMesh): void;
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         * @param depth Automatically clears depth between groups if true and autoClear is true.
+         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
+    }
+}
+
+declare module BABYLON {
     class AnaglyphPostProcess extends PostProcess {
         private _passedProcess;
         constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean);
@@ -14053,309 +14484,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBoxRenderer {
-        frontColor: Color3;
-        backColor: Color3;
-        showBackLines: boolean;
-        renderList: SmartArray<BoundingBox>;
-        private _scene;
-        private _colorShader;
-        private _vertexBuffers;
-        private _indexBuffer;
-        constructor(scene: Scene);
-        private _prepareRessources();
-        private _createIndexBuffer();
-        _rebuild(): void;
-        reset(): void;
-        render(): void;
-        renderOcclusionBoundingBox(mesh: AbstractMesh): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DepthRenderer {
-        private _scene;
-        private _depthMap;
-        private _effect;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _worldViewProjection;
-        private _cachedDefines;
-        constructor(scene: Scene, type?: number);
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        getDepthMap(): RenderTargetTexture;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class EdgesRenderer {
-        edgesWidthScalerForOrthographic: number;
-        edgesWidthScalerForPerspective: number;
-        private _source;
-        private _linesPositions;
-        private _linesNormals;
-        private _linesIndices;
-        private _epsilon;
-        private _indicesCount;
-        private _lineShader;
-        private _ib;
-        private _buffers;
-        private _checkVerticesInsteadOfIndices;
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
-        private _prepareRessources();
-        _rebuild(): void;
-        dispose(): void;
-        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
-        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
-        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
-        _generateEdgesLines(): void;
-        render(): void;
-    }
-}
-
-declare module BABYLON {
-    class GeometryBufferRenderer {
-        private _scene;
-        private _multiRenderTarget;
-        private _effect;
-        private _ratio;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _worldViewProjection;
-        private _cachedDefines;
-        private _enablePosition;
-        renderList: Mesh[];
-        readonly isSupported: boolean;
-        enablePosition: boolean;
-        constructor(scene: Scene, ratio?: number);
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        getGBuffer(): MultiRenderTarget;
-        dispose(): void;
-        private _createRenderTargets();
-    }
-}
-
-declare module BABYLON {
-    class OutlineRenderer {
-        private _scene;
-        private _effect;
-        private _cachedDefines;
-        zOffset: number;
-        constructor(scene: Scene);
-        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class RenderingGroup {
-        index: number;
-        private _scene;
-        private _opaqueSubMeshes;
-        private _transparentSubMeshes;
-        private _alphaTestSubMeshes;
-        private _depthOnlySubMeshes;
-        private _particleSystems;
-        private _spriteManagers;
-        private _activeVertices;
-        private _opaqueSortCompareFn;
-        private _alphaTestSortCompareFn;
-        private _transparentSortCompareFn;
-        private _renderOpaque;
-        private _renderAlphaTest;
-        private _renderTransparent;
-        private _edgesRenderers;
-        onBeforeTransparentRendering: () => void;
-        /**
-         * Set the opaque sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        /**
-         * Set the alpha test sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        /**
-         * Set the transparent sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        /**
-         * Creates a new rendering group.
-         * @param index The rendering group index
-         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
-         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
-         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
-         */
-        constructor(index: number, scene: Scene, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number);
-        /**
-         * Render all the sub meshes contained in the group.
-         * @param customRenderFunction Used to override the default render behaviour of the group.
-         * @returns true if rendered some submeshes.
-         */
-        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void, renderSprites: boolean, renderParticles: boolean, activeMeshes: AbstractMesh[]): void;
-        /**
-         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderOpaqueSorted(subMeshes);
-        /**
-         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderAlphaTestSorted(subMeshes);
-        /**
-         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderTransparentSorted(subMeshes);
-        /**
-         * Renders the submeshes in a specified order.
-         * @param subMeshes The submeshes to sort before render
-         * @param sortCompareFn The comparison function use to sort
-         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
-         * @param transparent Specifies to activate blending if true
-         */
-        private static renderSorted(subMeshes, sortCompareFn, cameraPosition, transparent);
-        /**
-         * Renders the submeshes in the order they were dispatched (no sort applied).
-         * @param subMeshes The submeshes to render
-         */
-        private static renderUnsorted(subMeshes);
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front if in the same alpha index.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered front to back (prevent overdraw).
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Resets the different lists of submeshes to prepare a new frame.
-         */
-        prepare(): void;
-        dispose(): void;
-        /**
-         * Inserts the submesh in its correct queue depending on its material.
-         * @param subMesh The submesh to dispatch
-         */
-        dispatch(subMesh: SubMesh): void;
-        dispatchSprites(spriteManager: SpriteManager): void;
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        private _renderParticles(activeMeshes);
-        private _renderSprites();
-    }
-}
-
-declare module BABYLON {
-    class RenderingManager {
-        /**
-         * The max id used for rendering groups (not included)
-         */
-        static MAX_RENDERINGGROUPS: number;
-        /**
-         * The min id used for rendering groups (included)
-         */
-        static MIN_RENDERINGGROUPS: number;
-        /**
-         * Used to globally prevent autoclearing scenes.
-         */
-        static AUTOCLEAR: boolean;
-        private _scene;
-        private _renderingGroups;
-        private _depthStencilBufferAlreadyCleaned;
-        private _currentIndex;
-        private _autoClearDepthStencil;
-        private _customOpaqueSortCompareFn;
-        private _customAlphaTestSortCompareFn;
-        private _customTransparentSortCompareFn;
-        private _renderinGroupInfo;
-        constructor(scene: Scene);
-        private _clearDepthStencilBuffer(depth?, stencil?);
-        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
-        reset(): void;
-        dispose(): void;
-        private _prepareRenderingGroup(renderingGroupId);
-        dispatchSprites(spriteManager: SpriteManager): void;
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        dispatch(subMesh: SubMesh): void;
-        /**
-         * Overrides the default sort function applied in the renderging group to prepare the meshes.
-         * This allowed control for front to back rendering or reversly depending of the special needs.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
-         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
-         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
-         */
-        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: (a: SubMesh, b: SubMesh) => number, alphaTestSortCompareFn?: (a: SubMesh, b: SubMesh) => number, transparentSortCompareFn?: (a: SubMesh, b: SubMesh) => number): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         * @param depth Automatically clears depth between groups if true and autoClear is true.
-         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
-    }
-}
-
-declare module BABYLON {
     class Sprite {
         name: string;
         position: Vector3;
@@ -14421,134 +14549,6 @@ declare module BABYLON {
         private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
         render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Scene;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class BoneAxesViewer extends Debug.AxesViewer {
-        mesh: Mesh;
-        bone: Bone;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class PhysicsViewer {
-        protected _impostors: Array<PhysicsImpostor>;
-        protected _meshes: Array<AbstractMesh>;
-        protected _scene: Scene;
-        protected _numMeshes: number;
-        protected _physicsEnginePlugin: IPhysicsEnginePlugin;
-        private _renderFunction;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        constructor(scene: Scene);
-        protected _updateDebugMeshes(): void;
-        showImpostor(impostor: PhysicsImpostor): void;
-        hideImpostor(impostor: PhysicsImpostor): void;
-        private _getDebugMaterial(scene);
-        private _getDebugBoxMesh(scene);
-        private _getDebugSphereMesh(scene);
-        private _getDebugMesh(impostor, scene);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Ray;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
         dispose(): void;
     }
 }

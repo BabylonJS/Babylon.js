@@ -33033,7 +33033,8 @@ var BABYLON;
                 // Colors
                 scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
                 var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
-                effect.setFloat4("vEyePosition", eyePosition.x, eyePosition.y, eyePosition.z, scene._mirroredCameraPosition ? -1 : 1);
+                var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition !== undefined));
+                effect.setFloat4("vEyePosition", eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
             if (mustRebind || !this.isFrozen) {
@@ -35468,8 +35469,9 @@ var BABYLON;
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
             var pointA, pointB;
             var previousPinchSquaredDistance = 0;
-            var previousPinchDistance = 0;
-            var previousMultiTouchPanPosition = { x: 0, y: 0, isPaning: false };
+            var initialDistance = 0;
+            var twoFingerActivityCount = 0;
+            var previousMultiTouchPanPosition = { x: 0, y: 0, isPaning: false, isPinching: false };
             this._pointerInput = function (p, s) {
                 var evt = p.event;
                 if (engine.isInVRExclusivePointerMode) {
@@ -35512,8 +35514,10 @@ var BABYLON;
                     }
                     cacheSoloPointer = null;
                     previousPinchSquaredDistance = 0;
-                    previousPinchDistance = 0;
                     previousMultiTouchPanPosition.isPaning = false;
+                    previousMultiTouchPanPosition.isPinching = false;
+                    twoFingerActivityCount = 0;
+                    initialDistance = 0;
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
@@ -35554,28 +35558,31 @@ var BABYLON;
                         var pinchSquaredDistance = (distX * distX) + (distY * distY);
                         var pinchDistance = Math.sqrt(pinchSquaredDistance);
                         if (previousPinchSquaredDistance === 0) {
+                            initialDistance = pinchDistance;
                             previousPinchSquaredDistance = pinchSquaredDistance;
-                            previousPinchDistance = pinchDistance;
                             return;
                         }
-                        if (pinchDistance > _this.camera.panMaxFingersDistance || Math.abs(pinchDistance - previousPinchDistance) > _this.camera.pinchToPanMaxDistance) {
+                        twoFingerActivityCount++;
+                        if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > _this.camera.pinchToPanMaxDistance)) {
                             _this.camera
                                 .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (_this.pinchPrecision *
                                     ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
                                     direction);
                             previousMultiTouchPanPosition.isPaning = false;
+                            previousMultiTouchPanPosition.isPinching = true;
                         }
                         else {
                             if (cacheSoloPointer.pointerId === ed.pointerId && _this.panningSensibility !== 0 && _this.multiTouchPanning) {
                                 if (!previousMultiTouchPanPosition.isPaning) {
                                     previousMultiTouchPanPosition.isPaning = true;
+                                    previousMultiTouchPanPosition.isPinching = false;
                                     previousMultiTouchPanPosition.x = ed.x;
                                     previousMultiTouchPanPosition.y = ed.y;
                                     return;
                                 }
-                                _this.camera.inertialPanningX += -(ed.x - previousMultiTouchPanPosition.x) / _this.panningSensibility;
-                                _this.camera.inertialPanningY += (ed.y - previousMultiTouchPanPosition.y) / _this.panningSensibility;
+                                _this.camera.inertialPanningX += -(ed.x - previousMultiTouchPanPosition.x) / (_this.panningSensibility * 0.5);
+                                _this.camera.inertialPanningY += (ed.y - previousMultiTouchPanPosition.y) / (_this.panningSensibility * 0.5);
                             }
                         }
                         if (cacheSoloPointer.pointerId === evt.pointerId) {
@@ -35583,7 +35590,6 @@ var BABYLON;
                             previousMultiTouchPanPosition.y = ed.y;
                         }
                         previousPinchSquaredDistance = pinchSquaredDistance;
-                        previousPinchDistance = pinchDistance;
                     }
                 }
             };
@@ -35598,9 +35604,11 @@ var BABYLON;
                 //this._keys = [];
                 pointA = pointB = undefined;
                 previousPinchSquaredDistance = 0;
-                previousPinchDistance = 0;
                 previousMultiTouchPanPosition.isPaning = false;
+                previousMultiTouchPanPosition.isPinching = false;
+                twoFingerActivityCount = 0;
                 cacheSoloPointer = null;
+                initialDistance = 0;
             };
             this._onMouseMove = function (evt) {
                 if (!engine.isPointerLock) {
@@ -35718,8 +35726,7 @@ var BABYLON;
             _this.upperRadiusLimit = null;
             _this.inertialPanningX = 0;
             _this.inertialPanningY = 0;
-            _this.pinchToPanMaxDistance = 3;
-            _this.panMaxFingersDistance = 100;
+            _this.pinchToPanMaxDistance = 20;
             _this.panningDistanceLimit = null;
             _this.panningOriginTarget = BABYLON.Vector3.Zero();
             _this.panningInertia = 0.9;
@@ -36408,9 +36415,6 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "pinchToPanMaxDistance", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "panMaxFingersDistance", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "panningDistanceLimit", void 0);
