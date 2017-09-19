@@ -95,7 +95,23 @@ module BABYLON {
             }
 
             //enable VR
-            this.getEngine().initWebVR();
+            var engine = this.getEngine();
+            engine.initWebVR().add(() => {
+                
+                this._vrDevice = engine.getVRDevice(this.webVROptions.displayName);
+                this._vrEnabled = !!this._vrDevice;
+
+                if (!this._vrEnabled) {
+                    return;
+                }
+
+                //reset the rig parameters.
+                this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
+
+                if (this._attached) {
+                    this.getEngine().enableVR(this._vrDevice)
+                }
+            });
 
             //check specs version
             if (!window.VRFrameData) {
@@ -105,22 +121,6 @@ module BABYLON {
             } else {
                 this._frameData = new VRFrameData();
             }
-
-            this.getEngine().getVRDevice(this.webVROptions.displayName, device => {
-                if (!device) {
-                    return;
-                }
-
-                this._vrEnabled = true;               
-                this._vrDevice = device;
-
-                //reset the rig parameters.
-                this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
-
-                if (this._attached) {
-                    this.getEngine().enableVR(this._vrDevice)
-                }
-            });                
 
             /**
              * The idea behind the following lines:
