@@ -399,7 +399,6 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     class LightAdapter extends Adapter implements IToolVisible {
-        private static _PROPERTIES;
         constructor(obj: BABYLON.Light);
         /** Returns the name displayed in the tree */
         id(): string;
@@ -621,6 +620,22 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     /**
+     * Represents a html div element.
+     * The div is built when an instance of BasicElement is created.
+     */
+    class ColorPickerElement {
+        protected _input: HTMLInputElement;
+        constructor(color: BABYLON.Color4 | BABYLON.Color3);
+        /**
+         * Returns the input element
+         */
+        toHtml(): HTMLInputElement;
+        private _toRgba(color);
+    }
+}
+
+declare module INSPECTOR {
+    /**
     * Display a very small div. A new canvas is created, with a new Babylon.js scene, containing only the
     * cube texture in a cube
     */
@@ -733,6 +748,10 @@ declare module INSPECTOR {
          * Useful function used to create a div
          */
         static CreateDiv(className?: string, parent?: HTMLElement): HTMLElement;
+        /**
+         * Useful function used to create a input
+         */
+        static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement;
         static CreateElement(element: string, className?: string, parent?: HTMLElement): HTMLElement;
         /**
          * Removes all children of the given div.
@@ -744,6 +763,11 @@ declare module INSPECTOR {
         static Css(elem: HTMLElement, cssAttribute: string): string;
         static LoadScript(): void;
         static IsSystemName(name: string): boolean;
+        /**
+         * Return an array of PropertyLine for an obj
+         * @param obj
+         */
+        static GetAllLinesProperties(obj: any): Array<PropertyLine>;
     }
 }
 
