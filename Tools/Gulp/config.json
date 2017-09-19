@@ -1485,6 +1485,7 @@
                     "../../inspector/src/details/Property.ts",
                     "../../inspector/src/details/PropertyLine.ts",
                     "../../inspector/src/gui/ColorElement.ts",
+                    "../../inspector/src/gui/ColorPickerElement.ts",
                     "../../inspector/src/gui/CubeTextureElement.ts",
                     "../../inspector/src/gui/HDRCubeTextureElement.ts",
                     "../../inspector/src/gui/SearchBar.ts",

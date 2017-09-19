@@ -57,10 +57,7 @@ module BABYLON {
         public inertialPanningY: number = 0;
 
         @serialize()
-        public pinchToPanMaxDistance: number = 3;
-
-        @serialize()
-        public panMaxFingersDistance: number = 100;
+        public pinchToPanMaxDistance: number = 20;
 
         @serialize()
         public panningDistanceLimit: number = null;

@@ -24,6 +24,7 @@ module BABYLON {
 
         private _isPanClick: boolean = false;
         public pinchInwards = true;
+        
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
         private _observer: Observer<PointerInfo>;
@@ -39,8 +40,9 @@ module BABYLON {
             var cacheSoloPointer: { x: number, y: number, pointerId: number, type: any }; // cache pointer object for better perf on camera rotation
             var pointA: { x: number, y: number, pointerId: number, type: any }, pointB: { x: number, y: number, pointerId: number, type: any };
             var previousPinchSquaredDistance = 0;
-            var previousPinchDistance = 0;
-            var previousMultiTouchPanPosition: { x: number, y: number, isPaning: boolean } = { x: 0, y:0, isPaning: false };
+            var initialDistance = 0;
+            var twoFingerActivityCount = 0;
+            var previousMultiTouchPanPosition: { x: number, y: number, isPaning: boolean, isPinching: boolean } = { x: 0, y:0, isPaning: false, isPinching: false };
 
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
@@ -88,8 +90,10 @@ module BABYLON {
 
                     cacheSoloPointer = null;
                     previousPinchSquaredDistance = 0;
-                    previousPinchDistance = 0;
-                    previousMultiTouchPanPosition.isPaning = false;
+                    previousMultiTouchPanPosition.isPaning = false;    
+                    previousMultiTouchPanPosition.isPinching = false;     
+                    twoFingerActivityCount = 0;  
+                    initialDistance = 0;            
 
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
@@ -134,30 +138,34 @@ module BABYLON {
                         var pinchSquaredDistance = (distX * distX) + (distY * distY);
                         var pinchDistance = Math.sqrt(pinchSquaredDistance);
                         if (previousPinchSquaredDistance === 0) {
+                            initialDistance = pinchDistance;
                             previousPinchSquaredDistance = pinchSquaredDistance;
-                            previousPinchDistance = pinchDistance;
                             return;
                         }
 
-                        if (pinchDistance > this.camera.panMaxFingersDistance || Math.abs(pinchDistance - previousPinchDistance) > this.camera.pinchToPanMaxDistance) {
+                        twoFingerActivityCount++;
+
+                        if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > this.camera.pinchToPanMaxDistance)) {                   
                             this.camera
-                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
-                                (this.pinchPrecision *
-                                    ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
-                                    direction);
+                            .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                            (this.pinchPrecision *
+                                ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
+                                direction);
                             previousMultiTouchPanPosition.isPaning = false;
+                            previousMultiTouchPanPosition.isPinching = true;
                         }
                         else {
                             if (cacheSoloPointer.pointerId === ed.pointerId && this.panningSensibility !== 0 && this.multiTouchPanning) {
                                 if (!previousMultiTouchPanPosition.isPaning) {
                                     previousMultiTouchPanPosition.isPaning = true;
+                                    previousMultiTouchPanPosition.isPinching = false;
                                     previousMultiTouchPanPosition.x = ed.x;
                                     previousMultiTouchPanPosition.y = ed.y;
                                     return;
                                 }
 
-                                this.camera.inertialPanningX += -(ed.x - previousMultiTouchPanPosition.x) / this.panningSensibility;
-                                this.camera.inertialPanningY += (ed.y - previousMultiTouchPanPosition.y) / this.panningSensibility;
+                                this.camera.inertialPanningX += -(ed.x - previousMultiTouchPanPosition.x) / (this.panningSensibility * 0.5);
+                                this.camera.inertialPanningY += (ed.y - previousMultiTouchPanPosition.y) / (this.panningSensibility * 0.5);
                             }
                         }
 
@@ -167,7 +175,6 @@ module BABYLON {
                         }
 
                         previousPinchSquaredDistance = pinchSquaredDistance;
-                        previousPinchDistance = pinchDistance;
                     }
                 }
             }
@@ -186,9 +193,11 @@ module BABYLON {
                 //this._keys = [];
                 pointA = pointB = undefined;
                 previousPinchSquaredDistance = 0;
-                previousPinchDistance = 0;
-                previousMultiTouchPanPosition.isPaning = false;
-                cacheSoloPointer = null;
+                previousMultiTouchPanPosition.isPaning = false;    
+                previousMultiTouchPanPosition.isPinching = false;     
+                twoFingerActivityCount = 0;                       
+                cacheSoloPointer = null;     
+                initialDistance = 0;        
             };
 
             this._onMouseMove = evt => {
