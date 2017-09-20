@@ -6,20 +6,6 @@ module.exports = function (varName, subModule) {
 
         var optionalRequire = 'var BABYLON = BABYLON || (typeof require !== \'undefined\' && require("babylonjs"));\n'
 
-        var moduleExportsAddition = `(function universalModuleDefinition(root, factory) {
-            if(typeof exports === 'object' && typeof module === 'object')
-                module.exports = factory();
-            else if(typeof define === 'function' && define.amd)
-                define([], factory);
-            else if(typeof exports === 'object')
-                exports["BABYLON"] = factory();
-            else
-                root["BABYLON"] = factory();
-        })(this, function() {
-            return BABYLON;
-        });
-        `;
-
         function moduleExportAddition(varName) {
             return `(function universalModuleDefinition(root, factory) {
                 if(typeof exports === 'object' && typeof module === 'object')
