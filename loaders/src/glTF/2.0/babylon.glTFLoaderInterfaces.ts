@@ -193,7 +193,7 @@ module BABYLON.GLTF2 {
         indices?: number;
         material?: number;
         mode?: EMeshPrimitiveMode;
-        targets?: [ { [name: string]: number } ];
+        targets?: { [name: string]: number }[];
     }
 
     export interface IGLTFMesh extends IGLTFChildRootProperty {
@@ -216,7 +216,7 @@ module BABYLON.GLTF2 {
         index?: number;
         parent?: IGLTFNode;
         babylonMesh?: Mesh;
-        babylonSkinToBones?: { [skin: number]: Bone };
+        babylonBones?: { [skin: number]: Bone };
         babylonAnimationTargets?: Node[];
     }
 

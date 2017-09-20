@@ -19,10 +19,10 @@ module BABYLON {
         public keysReset = [220];
 
         @serialize()
-        public panningSensibility: number = 300.0;
+        public panningSensibility: number = 50.0;
 
         @serialize()
-        public zoomingSensibility: number = 50.0;
+        public zoomingSensibility: number = 25.0;
 
         @serialize()
         public useAltToZoom: boolean = true;
