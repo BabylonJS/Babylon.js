@@ -10,7 +10,7 @@ module.exports = function (varName, moduleName, subModule, extendsRoot) {
         }
 
         var moduleExportsAddition =
-            `/// <reference types="babylonjs"/>
+            `${subModule ? '/// <reference types="babylonjs"/>' : ''}
 
 declare module '${moduleName}' { 
     export = ${exportText}; 
