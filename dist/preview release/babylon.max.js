@@ -7646,6 +7646,9 @@ var BABYLON;
              * Observable event triggered each time the canvas receives pointerout event
              */
             this.onCanvasPointerOutObservable = new BABYLON.Observable();
+            //WebVR
+            this._vrDisplay = undefined;
+            this._vrSupported = false;
             this._vrExclusivePointerMode = false;
             // Uniform buffers list
             this.disableUniformBuffers = false;
@@ -7654,6 +7657,9 @@ var BABYLON;
             this._webGLVersion = 1.0;
             this._badOS = false;
             this._badDesktopOS = false;
+            this.onVRDisplayChangedObservable = new BABYLON.Observable();
+            this.onVRRequestPresentComplete = new BABYLON.Observable();
+            this.onVRRequestPresentStart = new BABYLON.Observable();
             this._colorWrite = true;
             this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
@@ -7695,21 +7701,19 @@ var BABYLON;
             // Hardware supported Compressed Textures
             this._texturesSupported = new Array();
             this._onVRFullScreenTriggered = function () {
-                if (_this._vrDisplayEnabled && _this._vrDisplayEnabled.isPresenting) {
+                if (_this._vrDisplay && _this._vrDisplay.isPresenting) {
                     //get the old size before we change
                     _this._oldSize = new BABYLON.Size(_this.getRenderWidth(), _this.getRenderHeight());
                     _this._oldHardwareScaleFactor = _this.getHardwareScalingLevel();
                     //get the width and height, change the render size
-                    var leftEye = _this._vrDisplayEnabled.getEyeParameters('left');
+                    var leftEye = _this._vrDisplay.getEyeParameters('left');
                     var width, height;
                     _this.setHardwareScalingLevel(1);
                     _this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
                 }
                 else {
-                    //When the specs are implemented, need to uncomment this.
                     _this.setHardwareScalingLevel(_this._oldHardwareScaleFactor);
                     _this.setSize(_this._oldSize.width, _this._oldSize.height);
-                    _this._vrDisplayEnabled = undefined;
                 }
             };
             var canvas;
@@ -7877,11 +7881,9 @@ var BABYLON;
                 document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
                 this._onVRDisplayPointerRestricted = function () {
-                    _this._vrExclusivePointerMode = true;
                     canvas.requestPointerLock();
                 };
                 this._onVRDisplayPointerUnrestricted = function () {
-                    _this._vrExclusivePointerMode = false;
                     document.exitPointerLock();
                 };
                 window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
@@ -8689,7 +8691,10 @@ var BABYLON;
             }
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                this._frameHandler = BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
+                var requester = window;
+                if (this._vrDisplay && this._vrDisplay.isPresenting)
+                    requester = this._vrDisplay;
+                this._frameHandler = BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction, requester);
             }
             else {
                 this._renderingQueueLaunched = false;
@@ -8799,8 +8804,9 @@ var BABYLON;
                 this.flushFramebuffer();
             }
             //submit frame to the vr device, if enabled
-            if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
-                this._vrDisplayEnabled.submitFrame();
+            if (this._vrDisplay && this._vrDisplay.isPresenting) {
+                // TODO: We should only submit the frame if we read frameData successfully.
+                this._vrDisplay.submitFrame();
             }
         };
         /**
@@ -8812,7 +8818,7 @@ var BABYLON;
          */
         Engine.prototype.resize = function () {
             // We're not resizing the size of the canvas while in VR mode & presenting
-            if (!(this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting)) {
+            if (!(this._vrDisplay && this._vrDisplay.isPresenting)) {
                 var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
                 var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
                 this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
@@ -8840,69 +8846,83 @@ var BABYLON;
                 this.onResizeObservable.notifyObservers(this);
             }
         };
-        //WebVR functions
-        Engine.prototype.isVRDevicePresent = function (callback) {
-            this.getVRDevice(null, function (device) {
-                callback(device !== null);
-            });
+        // WebVR functions
+        Engine.prototype.isVRDevicePresent = function () {
+            return !!this._vrDisplay;
         };
-        Engine.prototype.getVRDevice = function (name, callback) {
-            if (!this.vrDisplaysPromise) {
-                callback(null);
-                return;
-            }
-            this.vrDisplaysPromise.then(function (devices) {
-                if (devices.length > 0) {
-                    if (name) {
-                        var found = devices.some(function (device) {
-                            if (device.displayName === name) {
-                                callback(device);
-                                return true;
-                            }
-                            else {
-                                return false;
-                            }
-                        });
-                        if (!found) {
-                            BABYLON.Tools.Warn("Display " + name + " was not found. Using " + devices[0].displayName);
-                            callback(devices[0]);
-                        }
-                    }
-                    else {
-                        //choose the first one
-                        callback(devices[0]);
-                    }
-                }
-                else {
-                    BABYLON.Tools.Error("No WebVR devices found!");
-                    callback(null);
-                }
-            });
+        Engine.prototype.getVRDevice = function () {
+            return this._vrDisplay;
         };
         Engine.prototype.initWebVR = function () {
-            if (!this.vrDisplaysPromise) {
-                this._getVRDisplays();
+            var _this = this;
+            var notifyObservers = function () {
+                var eventArgs = {
+                    vrDisplay: _this._vrDisplay,
+                    vrSupported: _this._vrSupported
+                };
+                _this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
+            };
+            if (!this._onVrDisplayConnect) {
+                this._onVrDisplayConnect = function (event) {
+                    _this._vrDisplay = event.display;
+                    notifyObservers();
+                };
+                this._onVrDisplayDisconnect = function () {
+                    _this._vrDisplay.cancelAnimationFrame(_this._frameHandler);
+                    _this._vrDisplay = undefined;
+                    _this._frameHandler = BABYLON.Tools.QueueNewFrame(_this._bindedRenderFunction);
+                    notifyObservers();
+                };
+                this._onVrDisplayPresentChange = function () {
+                    _this._vrExclusivePointerMode = _this._vrDisplay && _this._vrDisplay.isPresenting;
+                };
+                window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+                window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
             }
+            this._getVRDisplays(notifyObservers);
+            return this.onVRDisplayChangedObservable;
         };
-        Engine.prototype.enableVR = function (vrDevice) {
-            this._vrDisplayEnabled = vrDevice;
-            this._vrDisplayEnabled.requestPresent([{ source: this.getRenderingCanvas() }]).then(this._onVRFullScreenTriggered);
+        Engine.prototype.enableVR = function () {
+            var _this = this;
+            if (this._vrDisplay && !this._vrDisplay.isPresenting) {
+                var onResolved = function () {
+                    _this.onVRRequestPresentComplete.notifyObservers(true);
+                    _this._onVRFullScreenTriggered();
+                };
+                var onRejected = function () {
+                    _this.onVRRequestPresentComplete.notifyObservers(false);
+                };
+                this.onVRRequestPresentStart.notifyObservers(this);
+                this._vrDisplay.requestPresent([{ source: this.getRenderingCanvas() }]).then(onResolved).catch(onRejected);
+            }
         };
         Engine.prototype.disableVR = function () {
-            if (this._vrDisplayEnabled) {
-                this._vrDisplayEnabled.exitPresent().then(this._onVRFullScreenTriggered);
+            if (this._vrDisplay && this._vrDisplay.isPresenting) {
+                this._vrDisplay.exitPresent().then(this._onVRFullScreenTriggered).catch(this._onVRFullScreenTriggered);
             }
         };
-        Engine.prototype._getVRDisplays = function () {
+        Engine.prototype._getVRDisplays = function (callback) {
             var _this = this;
             var getWebVRDevices = function (devices) {
-                _this._vrDisplays = devices.filter(function (device) {
-                    return device instanceof VRDisplay;
-                });
-                return _this._vrDisplays;
+                _this._vrSupported = true;
+                // note that devices may actually be an empty array. This is fine;
+                // we expect this._vrDisplay to be undefined in this case.
+                return _this._vrDisplay = devices[0];
             };
             if (navigator.getVRDisplays) {
-                this.vrDisplaysPromise = navigator.getVRDisplays().then(getWebVRDevices);
+                // TODO: Backwards compatible for 1.0?
+                navigator.getVRDisplays().then(getWebVRDevices).then(callback).catch(function (error) {
+                    // TODO: System CANNOT support WebVR, despite API presence.
+                    _this._vrSupported = false;
+                    callback();
+                });
+            }
+            else {
+                // TODO: Browser does not support WebVR
+                this._vrDisplay = undefined;
+                this._vrSupported = false;
+                callback();
             }
         };
         Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight, forceFullscreenViewport) {
@@ -11175,6 +11195,13 @@ var BABYLON;
             document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
             document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
             document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+            if (this._onVrDisplayConnect) {
+                window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+                window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+                this._onVrDisplayConnect = undefined;
+                this._onVrDisplayDisconnect = undefined;
+            }
             // Remove from Instances
             var index = Engine.Instances.indexOf(this);
             if (index >= 0) {
@@ -24774,14 +24801,14 @@ var BABYLON;
             result = result.replace(/attribute[ \t]/g, "in ");
             result = result.replace(/[ \t]attribute/g, " in");
             if (isFragment) {
-                result = result.replace(/texture2DLodEXT\(/g, "textureLod(");
-                result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
-                result = result.replace(/texture2D\(/g, "texture(");
-                result = result.replace(/textureCube\(/g, "texture(");
+                result = result.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
+                result = result.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
+                result = result.replace(/texture2D\s*\(/g, "texture(");
+                result = result.replace(/textureCube\s*\(/g, "texture(");
                 result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
                 result = result.replace(/gl_FragColor/g, "glFragColor");
                 result = result.replace(/gl_FragData/g, "glFragData");
-                result = result.replace(/void\s+?main\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
+                result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
             }
             callback(result);
         };
@@ -35243,8 +35270,8 @@ var BABYLON;
             this.keysLeft = [37];
             this.keysRight = [39];
             this.keysReset = [220];
-            this.panningSensibility = 300.0;
-            this.zoomingSensibility = 50.0;
+            this.panningSensibility = 50.0;
+            this.zoomingSensibility = 25.0;
             this.useAltToZoom = true;
         }
         ArcRotateCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
@@ -35457,9 +35484,10 @@ var BABYLON;
             this.buttons = [0, 1, 2];
             this.angularSensibilityX = 1000.0;
             this.angularSensibilityY = 1000.0;
-            this.pinchPrecision = 6.0;
-            this.panningSensibility = 3000.0;
+            this.pinchPrecision = 12.0;
+            this.panningSensibility = 1000.0;
             this.multiTouchPanning = true;
+            this.multiTouchPanAndZoom = true;
             this._isPanClick = false;
             this.pinchInwards = true;
         }
@@ -35522,7 +35550,25 @@ var BABYLON;
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
                     //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                    pointA = pointB = undefined;
+                    if (engine.badOS) {
+                        pointA = pointB = undefined;
+                    }
+                    else {
+                        //only remove the impacted pointer in case of multitouch allowing on most 
+                        //platforms switching from rotate to zoom and pan seamlessly.
+                        if (pointB && pointA && pointA.pointerId == evt.pointerId) {
+                            pointA = pointB;
+                            pointB = undefined;
+                            cacheSoloPointer = { x: pointA.x, y: pointA.y, pointerId: pointA.pointerId, type: evt.pointerType };
+                        }
+                        else if (pointA && pointB && pointB.pointerId == evt.pointerId) {
+                            pointB = undefined;
+                            cacheSoloPointer = { x: pointA.x, y: pointA.y, pointerId: pointA.pointerId, type: evt.pointerType };
+                        }
+                        else {
+                            pointA = pointB = undefined;
+                        }
+                    }
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -35560,34 +35606,55 @@ var BABYLON;
                         if (previousPinchSquaredDistance === 0) {
                             initialDistance = pinchDistance;
                             previousPinchSquaredDistance = pinchSquaredDistance;
+                            previousMultiTouchPanPosition.x = (pointA.x + pointB.x) / 2;
+                            previousMultiTouchPanPosition.y = (pointA.y + pointB.y) / 2;
                             return;
                         }
-                        twoFingerActivityCount++;
-                        if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > _this.camera.pinchToPanMaxDistance)) {
+                        if (_this.multiTouchPanAndZoom) {
                             _this.camera
                                 .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (_this.pinchPrecision *
                                     ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
                                     direction);
-                            previousMultiTouchPanPosition.isPaning = false;
-                            previousMultiTouchPanPosition.isPinching = true;
-                        }
-                        else {
-                            if (cacheSoloPointer.pointerId === ed.pointerId && _this.panningSensibility !== 0 && _this.multiTouchPanning) {
-                                if (!previousMultiTouchPanPosition.isPaning) {
-                                    previousMultiTouchPanPosition.isPaning = true;
-                                    previousMultiTouchPanPosition.isPinching = false;
-                                    previousMultiTouchPanPosition.x = ed.x;
-                                    previousMultiTouchPanPosition.y = ed.y;
-                                    return;
-                                }
-                                _this.camera.inertialPanningX += -(ed.x - previousMultiTouchPanPosition.x) / (_this.panningSensibility * 0.5);
-                                _this.camera.inertialPanningY += (ed.y - previousMultiTouchPanPosition.y) / (_this.panningSensibility * 0.5);
+                            if (_this.panningSensibility !== 0) {
+                                var pointersCenterX = (pointA.x + pointB.x) / 2;
+                                var pointersCenterY = (pointA.y + pointB.y) / 2;
+                                var pointersCenterDistX = pointersCenterX - previousMultiTouchPanPosition.x;
+                                var pointersCenterDistY = pointersCenterY - previousMultiTouchPanPosition.y;
+                                previousMultiTouchPanPosition.x = pointersCenterX;
+                                previousMultiTouchPanPosition.y = pointersCenterY;
+                                _this.camera.inertialPanningX += -(pointersCenterDistX) / (_this.panningSensibility);
+                                _this.camera.inertialPanningY += (pointersCenterDistY) / (_this.panningSensibility);
                             }
                         }
-                        if (cacheSoloPointer.pointerId === evt.pointerId) {
-                            previousMultiTouchPanPosition.x = ed.x;
-                            previousMultiTouchPanPosition.y = ed.y;
+                        else {
+                            twoFingerActivityCount++;
+                            if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > _this.camera.pinchToPanMaxDistance)) {
+                                _this.camera
+                                    .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                                    (_this.pinchPrecision *
+                                        ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
+                                        direction);
+                                previousMultiTouchPanPosition.isPaning = false;
+                                previousMultiTouchPanPosition.isPinching = true;
+                            }
+                            else {
+                                if (cacheSoloPointer.pointerId === ed.pointerId && _this.panningSensibility !== 0 && _this.multiTouchPanning) {
+                                    if (!previousMultiTouchPanPosition.isPaning) {
+                                        previousMultiTouchPanPosition.isPaning = true;
+                                        previousMultiTouchPanPosition.isPinching = false;
+                                        previousMultiTouchPanPosition.x = ed.x;
+                                        previousMultiTouchPanPosition.y = ed.y;
+                                        return;
+                                    }
+                                    _this.camera.inertialPanningX += -(ed.x - previousMultiTouchPanPosition.x) / (_this.panningSensibility);
+                                    _this.camera.inertialPanningY += (ed.y - previousMultiTouchPanPosition.y) / (_this.panningSensibility);
+                                }
+                            }
+                            if (cacheSoloPointer.pointerId === evt.pointerId) {
+                                previousMultiTouchPanPosition.x = ed.x;
+                                previousMultiTouchPanPosition.y = ed.y;
+                            }
                         }
                         previousPinchSquaredDistance = pinchSquaredDistance;
                     }
@@ -35693,6 +35760,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "multiTouchPanning", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "multiTouchPanAndZoom", void 0);
         return ArcRotateCameraPointersInput;
     }());
     BABYLON.ArcRotateCameraPointersInput = ArcRotateCameraPointersInput;
@@ -37962,7 +38032,12 @@ var BABYLON;
             }
             //to and from cannot be the same key
             if (from === to) {
-                from++;
+                if (from > keys[0].frame) {
+                    from--;
+                }
+                else if (to < keys[keys.length - 1].frame) {
+                    to++;
+                }
             }
             // Compute ratio
             var range = to - from;
@@ -44823,14 +44898,21 @@ var BABYLON;
          */
         MeshBuilder.CreateTube = function (name, options, scene) {
             var path = options.path;
-            var radius = options.radius || 1.0;
+            var instance = options.instance;
+            var radius = 1.0;
+            if (instance) {
+                radius = instance.radius;
+            }
+            if (options.radius !== undefined) {
+                radius = options.radius;
+            }
+            ;
             var tessellation = options.tessellation || 64 | 0;
             var radiusFunction = options.radiusFunction;
             var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var invertUV = options.invertUV || false;
             var updatable = options.updatable;
             var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            var instance = options.instance;
             options.arc = (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
             // tube geometry
             var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) {
@@ -44901,6 +44983,7 @@ var BABYLON;
                 instance.path3D = path3D;
                 instance.pathArray = pathArray;
                 instance.arc = arc;
+                instance.radius = radius;
                 return instance;
             }
             // tube creation
@@ -44914,6 +44997,7 @@ var BABYLON;
             tube.tessellation = tessellation;
             tube.cap = cap;
             tube.arc = options.arc;
+            tube.radius = radius;
             return tube;
         };
         /**
@@ -67047,7 +67131,6 @@ var BABYLON;
             _this.webVROptions = webVROptions;
             _this._vrDevice = null;
             _this.rawPose = null;
-            _this._vrEnabled = false;
             _this._specsVersion = 1.1;
             _this._attached = false;
             _this._positionOffset = BABYLON.Vector3.Zero();
@@ -67078,7 +67161,19 @@ var BABYLON;
                 _this.deviceScaleFactor = _this.webVROptions.positionScale;
             }
             //enable VR
-            _this.getEngine().initWebVR();
+            var engine = _this.getEngine();
+            _this._onVREnabled = function (success) { if (success) {
+                _this.initControllers();
+            } };
+            engine.onVRRequestPresentComplete.add(_this._onVREnabled);
+            engine.initWebVR().add(function (event) {
+                _this._vrDevice = event.vrDisplay;
+                //reset the rig parameters.
+                _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
+                if (_this._attached && _this._vrDevice) {
+                    _this.getEngine().enableVR();
+                }
+            });
             //check specs version
             if (!window.VRFrameData) {
                 _this._specsVersion = 1.0;
@@ -67087,18 +67182,6 @@ var BABYLON;
             else {
                 _this._frameData = new VRFrameData();
             }
-            _this.getEngine().getVRDevice(_this.webVROptions.displayName, function (device) {
-                if (!device) {
-                    return;
-                }
-                _this._vrEnabled = true;
-                _this._vrDevice = device;
-                //reset the rig parameters.
-                _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
-                if (_this._attached) {
-                    _this.getEngine().enableVR(_this._vrDevice);
-                }
-            });
             /**
              * The idea behind the following lines:
              * objects that have the camera as parent should actually have the rig cameras as a parent.
@@ -67132,6 +67215,10 @@ var BABYLON;
             });
             return _this;
         }
+        WebVRFreeCamera.prototype.dispose = function () {
+            this.getEngine().onVRRequestPresentComplete.removeCallback(this._onVREnabled);
+            _super.prototype.dispose.call(this);
+        };
         WebVRFreeCamera.prototype.getControllerByName = function (name) {
             for (var _i = 0, _a = this.controllers; _i < _a.length; _i++) {
                 var gp = _a[_i];
@@ -67173,12 +67260,12 @@ var BABYLON;
             }
         };
         WebVRFreeCamera.prototype._checkInputs = function () {
-            if (this._vrEnabled) {
+            if (this._vrDevice && this._vrDevice.isPresenting) {
                 if (this._specsVersion === 1.1) {
                     this._vrDevice.getFrameData(this._frameData);
                 }
                 else {
-                    //backwards comp
+                    // TODO: Does backwards comp need to be here any more? The Engine class doesn't support it any more.
                     var pose = this._vrDevice.getPose();
                     this._frameData.pose = pose;
                 }
@@ -67217,17 +67304,14 @@ var BABYLON;
             _super.prototype.attachControl.call(this, element, noPreventDefault);
             this._attached = true;
             noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
-            if (this._vrEnabled) {
-                this.getEngine().enableVR(this._vrDevice);
+            if (this._vrDevice) {
+                this.getEngine().enableVR();
             }
-            // try to attach the controllers, if found.
-            this.initControllers();
         };
         WebVRFreeCamera.prototype.detachControl = function (element) {
             this.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
             this.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             _super.prototype.detachControl.call(this, element);
-            this._vrEnabled = false;
             this._attached = false;
             this.getEngine().disableVR();
         };
@@ -67642,8 +67726,16 @@ var BABYLON;
             if (webVROptions === void 0) { webVROptions = {}; }
             var _this = this;
             this.webVROptions = webVROptions;
-            this._webVRsupportedAndReady = false;
-            this._isInVRMode = false;
+            // Can the system support WebVR, even if a headset isn't plugged in?
+            this._webVRsupported = false;
+            // If WebVR is supported, is a headset plugged in and are we ready to present?
+            this._webVRready = false;
+            // Are we waiting for the requestPresent callback to complete?
+            this._webVRrequesting = false;
+            // Are we presenting to the headset right now?
+            this._webVRpresenting = false;
+            // Are we presenting in the fullscreen fallback?
+            this._fullscreenVRpresenting = false;
             this._scene = scene;
             if (!this._scene.activeCamera) {
                 this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
@@ -67665,64 +67757,128 @@ var BABYLON;
             this._btnVR.id = "babylonVRiconbtn";
             this._btnVR.title = "Click to switch to VR";
             var css = ".babylonVRicon { position: absolute; right: 20px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-image: url(data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%222048%22%20height%3D%221152%22%20viewBox%3D%220%200%202048%201152%22%20version%3D%221.1%22%3E%3Cpath%20transform%3D%22rotate%28180%201024%2C576.0000000000001%29%22%20d%3D%22m1109%2C896q17%2C0%2030%2C-12t13%2C-30t-12.5%2C-30.5t-30.5%2C-12.5l-170%2C0q-18%2C0%20-30.5%2C12.5t-12.5%2C30.5t13%2C30t30%2C12l170%2C0zm-85%2C256q59%2C0%20132.5%2C-1.5t154.5%2C-5.5t164.5%2C-11.5t163%2C-20t150%2C-30t124.5%2C-41.5q23%2C-11%2042%2C-24t38%2C-30q27%2C-25%2041%2C-61.5t14%2C-72.5l0%2C-257q0%2C-123%20-47%2C-232t-128%2C-190t-190%2C-128t-232%2C-47l-81%2C0q-37%2C0%20-68.5%2C14t-60.5%2C34.5t-55.5%2C45t-53%2C45t-53%2C34.5t-55.5%2C14t-55.5%2C-14t-53%2C-34.5t-53%2C-45t-55.5%2C-45t-60.5%2C-34.5t-68.5%2C-14l-81%2C0q-123%2C0%20-232%2C47t-190%2C128t-128%2C190t-47%2C232l0%2C257q0%2C68%2038%2C115t97%2C73q54%2C24%20124.5%2C41.5t150%2C30t163%2C20t164.5%2C11.5t154.5%2C5.5t132.5%2C1.5zm939%2C-298q0%2C39%20-24.5%2C67t-58.5%2C42q-54%2C23%20-122%2C39.5t-143.5%2C28t-155.5%2C19t-157%2C11t-148.5%2C5t-129.5%2C1.5q-59%2C0%20-130%2C-1.5t-148%2C-5t-157%2C-11t-155.5%2C-19t-143.5%2C-28t-122%2C-39.5q-34%2C-14%20-58.5%2C-42t-24.5%2C-67l0%2C-257q0%2C-106%2040.5%2C-199t110%2C-162.5t162.5%2C-109.5t199%2C-40l81%2C0q27%2C0%2052%2C14t50%2C34.5t51%2C44.5t55.5%2C44.5t63.5%2C34.5t74%2C14t74%2C-14t63.5%2C-34.5t55.5%2C-44.5t51%2C-44.5t50%2C-34.5t52%2C-14l14%2C0q37%2C0%2070%2C0.5t64.5%2C4.5t63.5%2C12t68%2C23q71%2C30%20128.5%2C78.5t98.5%2C110t63.5%2C133.5t22.5%2C149l0%2C257z%22%20fill%3D%22white%22%20/%3E%3C/svg%3E%0A); background-size: 80%; background-repeat:no-repeat; background-position: center; border: none; outline: none; transition: transform 0.125s ease-out } .babylonVRicon:hover { transform: scale(1.05) } .babylonVRicon:active {background-color: rgba(51,51,51,1) } .babylonVRicon:focus {background-color: rgba(51,51,51,1) }";
+            css += ".babylonVRicon.vrdisplaypresenting { display: none; }";
+            // TODO: Add user feedback so that they know what state the VRDisplay is in (disconnected, connected, entering-VR)
+            // css += ".babylonVRicon.vrdisplaysupported { }";
+            // css += ".babylonVRicon.vrdisplayready { }";
+            // css += ".babylonVRicon.vrdisplayrequesting { }";
             var style = document.createElement('style');
             style.appendChild(document.createTextNode(css));
             document.getElementsByTagName('head')[0].appendChild(style);
             this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
             this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
-            window.addEventListener("resize", function () {
-                _this._btnVR.style.top = _this._canvas.offsetTop + _this._canvas.offsetHeight - 70 + "px";
-                _this._btnVR.style.left = _this._canvas.offsetLeft + _this._canvas.offsetWidth - 100 + "px";
-            });
-            // Exiting VR mode using 'ESC' key on desktop
-            document.addEventListener("keydown", function (event) {
-                if (event.keyCode === 27 && _this._isInVRMode) {
-                    _this.exitVR();
-                }
-            });
-            // Exiting VR mode double tapping the touch screen
-            this._scene.onPrePointerObservable.add(function (pointerInfo, eventState) {
-                if (_this._isInVRMode) {
-                    _this.exitVR();
-                }
-            }, BABYLON.PointerEventTypes.POINTERDOUBLETAP, false);
-            if (navigator.getVRDisplays) {
-                navigator.getVRDisplays().then(function (headsets) {
-                    if (headsets.length > 0) {
-                        _this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", _this._position, _this._scene);
-                        _this._webVRsupportedAndReady = true;
-                    }
-                    else {
-                        _this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", _this._position, _this._scene);
-                    }
-                    document.body.appendChild(_this._btnVR);
-                });
-            }
-            else {
-                this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
-                document.body.appendChild(this._btnVR);
-            }
             this._btnVR.addEventListener("click", function () {
                 _this.enterVR();
             });
+            window.addEventListener("resize", function () {
+                _this._btnVR.style.top = _this._canvas.offsetTop + _this._canvas.offsetHeight - 70 + "px";
+                _this._btnVR.style.left = _this._canvas.offsetLeft + _this._canvas.offsetWidth - 100 + "px";
+                if (_this._fullscreenVRpresenting) {
+                    _this.exitVR();
+                }
+            });
+            document.body.appendChild(this._btnVR);
+            // Exiting VR mode using 'ESC' key on desktop
+            this._onKeyDown = function (event) {
+                if (event.keyCode === 27 && _this.isInVRMode()) {
+                    _this.exitVR();
+                }
+            };
+            document.addEventListener("keydown", this._onKeyDown);
+            // Exiting VR mode double tapping the touch screen
+            this._scene.onPrePointerObservable.add(function (pointerInfo, eventState) {
+                if (_this.isInVRMode()) {
+                    _this.exitVR();
+                }
+            }, BABYLON.PointerEventTypes.POINTERDOUBLETAP, false);
+            // Listen for WebVR display changes
+            this._onVRDisplayChanged = function (eventArgs) { return _this.onVRDisplayChanged(eventArgs); };
+            this._onVrDisplayPresentChange = function () { return _this.onVrDisplayPresentChange(); };
+            this._onVRRequestPresentStart = function () {
+                _this._webVRrequesting = true;
+                _this.updateButtonVisibility();
+            };
+            this._onVRRequestPresentComplete = function (success) {
+                _this._webVRrequesting = false;
+                _this.updateButtonVisibility();
+            };
+            scene.getEngine().onVRDisplayChangedObservable.add(this._onVRDisplayChanged);
+            scene.getEngine().onVRRequestPresentStart.add(this._onVRRequestPresentStart);
+            scene.getEngine().onVRRequestPresentComplete.add(this._onVRRequestPresentComplete);
+            window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+            // Create the cameras
+            this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
+            this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene);
+            this.updateButtonVisibility();
         }
+        VRExperienceHelper.prototype.isInVRMode = function () {
+            return this._webVRpresenting || this._fullscreenVRpresenting;
+        };
+        VRExperienceHelper.prototype.onVrDisplayPresentChange = function () {
+            var vrDisplay = this._scene.getEngine().getVRDevice();
+            if (vrDisplay) {
+                var wasPresenting = this._webVRpresenting;
+                // A VR display is connected
+                this._webVRpresenting = vrDisplay.isPresenting;
+                if (wasPresenting && !this._webVRpresenting)
+                    this.exitVR();
+            }
+            else {
+                BABYLON.Tools.Warn('Detected VRDisplayPresentChange on an unknown VRDisplay. Did you can enterVR on the vrExperienceHelper?');
+            }
+            this.updateButtonVisibility();
+        };
+        VRExperienceHelper.prototype.onVRDisplayChanged = function (eventArgs) {
+            this._webVRsupported = eventArgs.vrSupported;
+            this._webVRready = !!eventArgs.vrDisplay;
+            this._webVRpresenting = eventArgs.vrDisplay && eventArgs.vrDisplay.isPresenting;
+            this.updateButtonVisibility();
+        };
+        VRExperienceHelper.prototype.updateButtonVisibility = function () {
+            if (!this._btnVR) {
+                return;
+            }
+            this._btnVR.className = "babylonVRicon";
+            if (this.isInVRMode()) {
+                this._btnVR.className += " vrdisplaypresenting";
+            }
+            else {
+                if (this._webVRready)
+                    this._btnVR.className += " vrdisplayready";
+                if (this._webVRsupported)
+                    this._btnVR.className += " vrdisplaysupported";
+                if (this._webVRrequesting)
+                    this._btnVR.className += " vrdisplayrequesting";
+            }
+        };
+        /**
+         * Attempt to enter VR. If a headset is connected and ready, will request present on that.
+         * Otherwise, will use the fullscreen API.
+         */
         VRExperienceHelper.prototype.enterVR = function () {
+            if (this._webVRrequesting)
+                return;
             // If WebVR is supported and a headset is connected
-            if (this._webVRsupportedAndReady) {
-                this._webVRCamera.position = this._position;
-                this._scene.activeCamera = this._webVRCamera;
+            if (this._webVRready) {
+                if (!this._webVRpresenting) {
+                    this._webVRCamera.position = this._position;
+                    this._scene.activeCamera = this._webVRCamera;
+                }
             }
             else {
                 this._vrDeviceOrientationCamera.position = this._position;
                 this._scene.activeCamera = this._vrDeviceOrientationCamera;
                 this._scene.getEngine().switchFullscreen(true);
+                this._fullscreenVRpresenting = true;
+                this.updateButtonVisibility();
             }
             this._scene.activeCamera.attachControl(this._canvas);
-            this._isInVRMode = true;
-            this._btnVR.style.display = "none";
         };
+        /**
+         * Attempt to exit VR, or fullscreen.
+         */
         VRExperienceHelper.prototype.exitVR = function () {
-            if (this._webVRsupportedAndReady) {
+            if (this._webVRpresenting) {
                 this._scene.getEngine().disableVR();
             }
             if (this._scene.activeCamera) {
@@ -67731,8 +67887,8 @@ var BABYLON;
             this._deviceOrientationCamera.position = this._position;
             this._scene.activeCamera = this._deviceOrientationCamera;
             this._scene.activeCamera.attachControl(this._canvas);
-            this._isInVRMode = false;
-            this._btnVR.style.display = "";
+            this._fullscreenVRpresenting = false;
+            this.updateButtonVisibility();
         };
         Object.defineProperty(VRExperienceHelper.prototype, "position", {
             get: function () {
@@ -67746,7 +67902,7 @@ var BABYLON;
             configurable: true
         });
         VRExperienceHelper.prototype.dispose = function () {
-            if (this._isInVRMode) {
+            if (this.isInVRMode()) {
                 this.exitVR();
             }
             this._deviceOrientationCamera.dispose();
@@ -67757,6 +67913,8 @@ var BABYLON;
                 this._vrDeviceOrientationCamera.dispose();
             }
             document.body.removeChild(this._btnVR);
+            document.removeEventListener("keydown", this._onKeyDown);
+            window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
         };
         VRExperienceHelper.prototype.getClassName = function () {
             return "VRExperienceHelper";

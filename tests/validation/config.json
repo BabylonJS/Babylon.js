@@ -1,12 +1,12 @@
 ﻿{
   "root": "https://rawgit.com/BabylonJS/Website/master",
-  "tests": [   
+  "tests": [
     {
       "title": "Sponza",
       "sceneFolder": "/Scenes/Sponza/",
       "sceneFilename": "Sponza.babylon",
       "referenceImage": "Sponza.png"
-    },    
+    },
     {
       "title": "Windows cafe",
       "sceneFolder": "/Scenes/WCafe/",
@@ -14,7 +14,7 @@
       "referenceImage": "WCafe.png"
     },
     {
-      "title": "Espilit",      
+      "title": "Espilit",
       "renderCount": 10,
       "sceneFolder": "/Scenes/Espilit/",
       "sceneFilename": "Espilit.binary.babylon",
@@ -91,7 +91,7 @@
       "scriptToRun": "/Demos/Polygon/polygon.js",
       "functionToCall": "CreatePolygonScene",
       "referenceImage": "polygon.png"
-    },        
+    },
     {
       "title": "Soft Shadows",
       "renderCount": 5,
@@ -104,7 +104,7 @@
       "scriptToRun": "/Demos/Fresnel/fresnel.js",
       "functionToCall": "CreateFresnelTestScene",
       "referenceImage": "fresnel.png"
-    }, 
+    },
     {
       "title": "Highlights",
       "renderCount": 10,
@@ -173,7 +173,20 @@
       "referenceImage": "displacementMap.png",
       "replace": "/Scenes/Customs/skybox/, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Assets/skybox/"
     },
-     {
+    {
+      "title": "Normals",
+      "scriptToRun": "/Demos/Normals/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "normals.png"
+    },
+    {
+      "title": "GLTF Normals",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/GLTFNormals/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltfnormals.png"
+    },
+    {
       "title": "PBR glossy",
       "renderCount": 10,
       "scriptToRun": "/Demos/PBRGlossy/index.js",
@@ -193,41 +206,41 @@
       "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
       "functionToCall": "CreateReflectionProbeTestScene ",
       "referenceImage": "refprobe.png"
-    },   
+    },
     {
       "title": "PBRMetallicRoughnessMaterial",
       "playgroundId": "#2FDQT5#13",
       "referenceImage": "PBRMetallicRoughnessMaterial.png"
-    },   
+    },
     {
       "title": "PBRSpecularGlossinessMaterial",
       "playgroundId": "#Z1VL3V#4",
       "referenceImage": "PBRSpecularGlossinessMaterial.png"
-    },   
+    },
     {
       "title": "PBR",
       "playgroundId": "#LCA0Q4",
       "referenceImage": "pbr.png"
-    },   
+    },
     {
       "title": "MultiSample render targets",
       "renderCount": 10,
       "playgroundId": "#12MKMN#0",
       "referenceImage": "MultiSample render targets.png"
-    },      
+    },
     {
       "title": "Default rendering pipeline",
       "renderCount": 20,
       "playgroundId": "#5XB8YT#2",
       "referenceImage": "DefaultRenderingPipeline.png"
-    },             
+    },
     {
       "title": "Water material (only visual check)",
       "renderCount": 10,
       "scriptToRun": "/Demos/WaterMaterial/water.js",
       "functionToCall": "CreateWaterTestScene",
       "referenceImage": "waterMaterial.png",
-      "onlyVisual": true 
+      "onlyVisual": true
     },
     {
       "title": "Instances (only visual check)",
@@ -258,4 +271,3 @@
     }
   ]
 }
-

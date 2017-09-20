@@ -398,14 +398,14 @@
             result = result.replace(/[ \t]attribute/g, " in");
             
             if (isFragment) {
-                result = result.replace(/texture2DLodEXT\(/g, "textureLod(");
-                result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
-                result = result.replace(/texture2D\(/g, "texture(");
-                result = result.replace(/textureCube\(/g, "texture(");
+                result = result.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
+                result = result.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
+                result = result.replace(/texture2D\s*\(/g, "texture(");
+                result = result.replace(/textureCube\s*\(/g, "texture(");
                 result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
                 result = result.replace(/gl_FragColor/g, "glFragColor");
                 result = result.replace(/gl_FragData/g, "glFragData");
-                result = result.replace(/void\s+?main\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
+                result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
             }
             
             callback(result);
