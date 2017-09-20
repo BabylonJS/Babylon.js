@@ -1122,6 +1122,10 @@
                     "../../materialsLibrary/src/shadowOnly/shadowOnly.vertex.fx",
                     "../../materialsLibrary/src/shadowOnly/shadowOnly.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-shadow-only-material",
+                "moduleDeclaration": "ShadowOnlyMaterial",
+                "extendsRoot": true,
                 "output": "babylon.shadowOnlyMaterial.js"
             },
             {
@@ -1132,6 +1136,10 @@
                     "../../materialsLibrary/src/gradient/gradient.vertex.fx",
                     "../../materialsLibrary/src/gradient/gradient.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-gardient-material",
+                "moduleDeclaration": "GardientMaterial",
+                "extendsRoot": true,
                 "output": "babylon.gradientMaterial.js"
             },
             {
@@ -1142,6 +1150,10 @@
                     "../../materialsLibrary/src/normal/normal.vertex.fx",
                     "../../materialsLibrary/src/normal/normal.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-normal-material",
+                "moduleDeclaration": "NormalMaterial",
+                "extendsRoot": true,
                 "output": "babylon.normalMaterial.js"
             },
             {
@@ -1152,6 +1164,10 @@
                     "../../materialsLibrary/src/lava/lava.vertex.fx",
                     "../../materialsLibrary/src/lava/lava.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-lava-material",
+                "moduleDeclaration": "LavaMaterial",
+                "extendsRoot": true,
                 "output": "babylon.lavaMaterial.js"
             },
             {
@@ -1162,6 +1178,10 @@
                     "../../materialsLibrary/src/simple/simple.vertex.fx",
                     "../../materialsLibrary/src/simple/simple.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-simple-material",
+                "moduleDeclaration": "SimpleMaterial",
+                "extendsRoot": true,
                 "output": "babylon.simpleMaterial.js"
             },
             {
@@ -1172,6 +1192,10 @@
                     "../../materialsLibrary/src/water/water.vertex.fx",
                     "../../materialsLibrary/src/water/water.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-water-material",
+                "moduleDeclaration": "WaterMaterial",
+                "extendsRoot": true,
                 "output": "babylon.waterMaterial.js"
             },
             {
@@ -1182,6 +1206,10 @@
                     "../../materialsLibrary/src/fire/fire.vertex.fx",
                     "../../materialsLibrary/src/fire/fire.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-fire-material",
+                "moduleDeclaration": "FireMaterial",
+                "extendsRoot": true,
                 "output": "babylon.fireMaterial.js"
             },
             {
@@ -1192,6 +1220,10 @@
                     "../../materialsLibrary/src/fur/fur.vertex.fx",
                     "../../materialsLibrary/src/fur/fur.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-fur-material",
+                "moduleDeclaration": "FurMaterial",
+                "extendsRoot": true,
                 "output": "babylon.furMaterial.js"
             },
             {
@@ -1202,6 +1234,10 @@
                     "../../materialsLibrary/src/terrain/terrain.vertex.fx",
                     "../../materialsLibrary/src/terrain/terrain.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-terrain-material",
+                "moduleDeclaration": "TerrainMaterial",
+                "extendsRoot": true,
                 "output": "babylon.terrainMaterial.js"
             },
             {
@@ -1212,6 +1248,10 @@
                     "../../materialsLibrary/src/triPlanar/triplanar.vertex.fx",
                     "../../materialsLibrary/src/triPlanar/triplanar.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-tri-planar-material",
+                "moduleDeclaration": "TriPlanarMaterial",
+                "extendsRoot": true,
                 "output": "babylon.triPlanarMaterial.js"
             },
             {
@@ -1236,12 +1276,20 @@
                     "../../materialsLibrary/src/grid/grid.vertex.fx",
                     "../../materialsLibrary/src/grid/grid.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-grid-material",
+                "moduleDeclaration": "GridMaterial",
+                "extendsRoot": true,
                 "output": "babylon.gridMaterial.js"
             },
             {
                 "files": [
                     "../../materialsLibrary/src/custom/babylon.customMaterial.ts"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-custom-material",
+                "moduleDeclaration": "CustomMaterial",
+                "extendsRoot": true,
                 "output": "babylon.customMaterial.js"
             },
             {
@@ -1252,6 +1300,10 @@
                     "../../materialsLibrary/src/cell/cell.vertex.fx",
                     "../../materialsLibrary/src/cell/cell.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-cell-material",
+                "moduleDeclaration": "CellMaterial",
+                "extendsRoot": true,
                 "output": "babylon.cellMaterial.js"
             },
             {
@@ -1274,6 +1326,10 @@
                     "../../materialsLibrary/src/legacyPBR/legacyColorGrading.fx",
                     "../../materialsLibrary/src/legacyPBR/legacyColorGradingDefinition.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-legacy-pbr-material",
+                "moduleDeclaration": "LegacyPBRMaterial",
+                "extendsRoot": true,
                 "output": "babylon.legacyPbrMaterial.js"
             }
         ],
@@ -1291,6 +1347,10 @@
                 "shaderFiles": [
                     "../../postProcessLibrary/src/asciiArt/asciiart.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-ascii-art-post-process",
+                "moduleDeclaration": "AsciiArtPostProcess",
+                "extendsRoot": true,
                 "output": "babylon.asciiArtPostProcess.js"
             },
             {
@@ -1300,6 +1360,10 @@
                 "shaderFiles": [
                     "../../postProcessLibrary/src/digitalRain/digitalrain.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-digital-rain-post-process",
+                "moduleDeclaration": "DigitalRainPostProcess",
+                "extendsRoot": true,
                 "output": "babylon.digitalRainPostProcess.js"
             }
         ],
@@ -1317,6 +1381,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/wood/woodProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-wood-procedural-texture",
+                "moduleDeclaration": "WoodProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.woodProceduralTexture.js"
             },
             {
@@ -1326,6 +1394,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/fire/fireProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-fire-procedural-texture",
+                "moduleDeclaration": "FireProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.fireProceduralTexture.js"
             },
             {
@@ -1335,6 +1407,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/cloud/cloudProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-cloud-procedural-texture",
+                "moduleDeclaration": "CloudProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.cloudProceduralTexture.js"
             },
             {
@@ -1344,6 +1420,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/grass/grassProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-grass-procedural-texture",
+                "moduleDeclaration": "GrassProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.grassProceduralTexture.js"
             },
             {
@@ -1353,6 +1433,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/road/roadProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-road-procedural-texture",
+                "moduleDeclaration": "RoadProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.roadProceduralTexture.js"
             },
             {
@@ -1362,6 +1446,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/brick/brickProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-brick-procedural-texture",
+                "moduleDeclaration": "BrickProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.brickProceduralTexture.js"
             },
             {
@@ -1371,6 +1459,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/marble/marbleProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-marble-procedural-texture",
+                "moduleDeclaration": "MarbleProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.marbleProceduralTexture.js"
             },
             {
@@ -1380,6 +1472,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/starfield/starfieldProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-starfield-procedural-texture",
+                "moduleDeclaration": "StarfieldProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.starfieldProceduralTexture.js"
             },
             {
