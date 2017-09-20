@@ -3793,8 +3793,10 @@ var BABYLON;
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._text = "";
+                _this._placeholderText = "";
                 _this._background = "black";
                 _this._focusedBackground = "black";
+                _this._placeholderColor = "gray";
                 _this._thickness = 1;
                 _this._margin = new GUI.ValueAndUnit(10, GUI.ValueAndUnit.UNITMODE_PIXEL);
                 _this._autoStretchWidth = true;
@@ -3890,6 +3892,34 @@ var BABYLON;
                         return;
                     }
                     this._background = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "placeholderColor", {
+                get: function () {
+                    return this._placeholderColor;
+                },
+                set: function (value) {
+                    if (this._placeholderColor === value) {
+                        return;
+                    }
+                    this._placeholderColor = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "placeholderText", {
+                get: function () {
+                    return this._placeholderText;
+                },
+                set: function (value) {
+                    if (this._placeholderText === value) {
+                        return;
+                    }
+                    this._placeholderText = value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -4031,7 +4061,14 @@ var BABYLON;
                     if (this.color) {
                         context.fillStyle = this.color;
                     }
-                    var textWidth = context.measureText(this._text).width;
+                    var text = this._text;
+                    if (!this._isFocused && !this._text && this._placeholderText) {
+                        text = this._placeholderText;
+                        if (this._placeholderColor) {
+                            context.fillStyle = this._placeholderColor;
+                        }
+                    }
+                    var textWidth = context.measureText(text).width;
                     var marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
                     if (this._autoStretchWidth) {
                         this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), textWidth + marginWidth) + "px";
@@ -4051,7 +4088,7 @@ var BABYLON;
                     else {
                         this._scrollLeft = clipTextLeft;
                     }
-                    context.fillText(this._text, this._scrollLeft, this._currentMeasure.top + rootY);
+                    context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
                     // Cursor
                     if (this._isFocused) {
                         if (!this._blinkIsEven) {
