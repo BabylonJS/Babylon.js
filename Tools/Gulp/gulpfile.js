@@ -312,13 +312,13 @@ var buildExternalLibrary = function (library, settings, watch) {
             .pipe(concat(library.output))
 
         if (library.buildAsModule) {
-            code = code.pipe(addModuleExports(library.moduleDeclaration, true))
+            code = code.pipe(replace(extendsSearchRegex, ""))
+                .pipe(replace(decorateSearchRegex, ""))
+                .pipe(addModuleExports(library.moduleDeclaration, true, library.extendsRoot))
         }
 
         code = code.pipe(gulp.dest(outputDirectory))
             .pipe(cleants())
-            .pipe(replace(extendsSearchRegex, ""))
-            .pipe(replace(decorateSearchRegex, ""))
             .pipe(rename({ extname: ".min.js" }))
             .pipe(uglify())
             .pipe(optimisejs())

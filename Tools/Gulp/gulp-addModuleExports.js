@@ -1,25 +1,32 @@
 var gutil = require('gulp-util');
 var through = require('through2');
 
-module.exports = function (varName, subModule) {
+module.exports = function (varName, subModule, extendsRoot) {
     return through.obj(function (file, enc, cb) {
 
         var optionalRequire = 'var BABYLON = BABYLON || (typeof require !== \'undefined\' && require("babylonjs"));\n'
 
         function moduleExportAddition(varName) {
+
+            let basicInit = `root["BABYLON"]${(subModule && !extendsRoot) ? '["' + varName + '"]' : ''} = factory();`;
+            /*if (extendsRoot) {
+                basicInit = `__extends(root["BABYLON"], factory()); `
+            }*/
+
             return `(function universalModuleDefinition(root, factory) {
-                if(typeof exports === 'object' && typeof module === 'object')
-                    module.exports = factory();
-                else if(typeof define === 'function' && define.amd)
-                    define([], factory);
-                else if(typeof exports === 'object')
-                    exports["${varName}"] = factory();
-                else
-                    root["BABYLON"]${subModule ? '["' + varName + '"]' : ''} = factory();
-            })(this, function() {
-                return BABYLON${subModule ? '.' + varName : ''};
-            });
-            `;
+    if(typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if(typeof define === 'function' && define.amd)
+        define([], factory);
+    else if(typeof exports === 'object')
+        exports["${varName}"] = factory();
+    else {
+        ${basicInit}
+    }
+})(this, function() {
+    return BABYLON${(subModule && !extendsRoot) ? '.' + varName : ''};
+});
+`;
         }
 
         var extendsAddition =
