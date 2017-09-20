@@ -1222,6 +1222,10 @@
                     "../../materialsLibrary/src/sky/sky.vertex.fx",
                     "../../materialsLibrary/src/sky/sky.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-sky-material",
+                "moduleDeclaration": "SkyMaterial",
+                "extendsRoot": true,
                 "output": "babylon.skyMaterial.js"
             },
             {
@@ -1385,6 +1389,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/normalMap/normalMapProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-normal-map-procedural-texture",
+                "moduleDeclaration": "NormalMapProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.normalMapProceduralTexture.js"
             },
             {
@@ -1394,6 +1402,10 @@
                 "shaderFiles": [
                     "../../proceduralTexturesLibrary/src/perlinNoise/perlinNoiseProceduralTexture.fragment.fx"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-perlin-noise-procedural-texture",
+                "moduleDeclaration": "PerlinNoiseProceduralTexture",
+                "extendsRoot": true,
                 "output": "babylon.perlinNoiseProceduralTexture.js"
             }
         ],
@@ -1408,12 +1420,20 @@
                 "files": [
                     "../../loaders/src/STL/babylon.stlFileLoader.ts"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-stl-loader",
+                "moduleDeclaration": "STLFileLoader",
+                "extendsRoot": true,
                 "output": "babylon.stlFileLoader.js"
             },
             {
                 "files": [
                     "../../loaders/src/OBJ/babylon.objFileLoader.ts"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-obj-loader",
+                "moduleDeclaration": "OBJFileLoader",
+                "extendsRoot": true,
                 "output": "babylon.objFileLoader.js"
             },
             {
@@ -1426,6 +1446,10 @@
                     "../../loaders/src/glTF/1.0/babylon.glTFBinaryExtension.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFMaterialsCommonExtension.ts"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-gltf1-loader",
+                "moduleDeclaration": "glTF1FileLoader",
+                "extendsRoot": true,
                 "output": "babylon.glTF1FileLoader.js"
             },
             {
@@ -1438,6 +1462,10 @@
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-gltf2-loader",
+                "moduleDeclaration": "glTF2FileLoader",
+                "extendsRoot": true,
                 "output": "babylon.glTF2FileLoader.js"
             },
             {
@@ -1456,6 +1484,10 @@
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-gltf-loader",
+                "moduleDeclaration": "glTFFileLoader",
+                "extendsRoot": true,
                 "output": "babylon.glTFFileLoader.js"
             }
         ],
@@ -1470,6 +1502,10 @@
                 "files": [
                     "../../serializers/src/OBJ/babylon.objSerializer.ts"
                 ],
+                "buildAsModule": true,
+                "moduleName": "babylonjs-obj-serializer",
+                "moduleDeclaration": "OBJSerializer",
+                "extendsRoot": true,
                 "output": "babylon.objSerializer.js"
             }
         ],
@@ -1503,8 +1539,8 @@
                     "../../gui/src/controls/virtualKeyboard.ts"
                 ],
                 "output": "babylon.gui.js",
-                "buildAsModule": "true",
-                "moduleName": "babylon-gui",
+                "buildAsModule": true,
+                "moduleName": "babylonjs-gui",
                 "moduleDeclaration": "GUI"
             }
         ],
