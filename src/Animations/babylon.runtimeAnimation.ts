@@ -274,7 +274,11 @@
 
             //to and from cannot be the same key
             if(from === to) {
-                from++;
+                if (from > keys[0].frame) {
+                    from--;
+                } else if (to < keys[keys.length - 1].frame) {
+                    to++;
+                }
             }
             
             // Compute ratio
