@@ -180,6 +180,13 @@
       "referenceImage": "normals.png"
     },
     {
+      "title": "GLTF Normals",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/GLTFNormals/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltfnormals.png"
+    },
+    {
       "title": "PBR glossy",
       "renderCount": 10,
       "scriptToRun": "/Demos/PBRGlossy/index.js",
