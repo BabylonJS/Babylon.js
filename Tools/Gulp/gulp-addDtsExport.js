@@ -1,14 +1,19 @@
 var gutil = require('gulp-util');
 var through = require('through2');
 
-module.exports = function (varName, moduleName, subModule) {
+module.exports = function (varName, moduleName, subModule, extendsRoot) {
     return through.obj(function (file, enc, cb) {
+
+        let exportText = "BABYLON";
+        if (subModule && !extendsRoot) {
+            exportText += '.' + varName;
+        }
 
         var moduleExportsAddition =
             `/// <reference types="babylonjs"/>
 
 declare module '${moduleName}' { 
-    export = ${(subModule ? 'BABYLON.' : '')}${varName}; 
+    export = ${exportText}; 
 }
 `;
 

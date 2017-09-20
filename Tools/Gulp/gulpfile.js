@@ -336,7 +336,7 @@ var buildExternalLibrary = function (library, settings, watch) {
         if (library.buildAsModule) {
             var dts2 = tsProcess.dts
                 .pipe(concat(library.output))
-                .pipe(addDtsExport(library.moduleDeclaration, library.moduleName, true))
+                .pipe(addDtsExport(library.moduleDeclaration, library.moduleName, true, library.extendsRoot))
                 .pipe(rename({ extname: ".module.d.ts" }))
                 .pipe(gulp.dest(outputDirectory));
             waitAll = merge2([dev, code, css, dts, dts2]);
