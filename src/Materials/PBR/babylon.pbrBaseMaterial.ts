@@ -1264,7 +1264,7 @@
                 scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
 
                 var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
-                var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition !== undefined));
+                var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
                 effect.setFloat4("vEyePosition",
                     eyePosition.x,
                     eyePosition.y,
