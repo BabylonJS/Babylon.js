@@ -280,13 +280,7 @@ var buildExternalLibrary = function (library, settings, watch) {
             sourceRoot: (filePath) => {
                 return '';
             }
-        }));
-
-    if (library.buildAsModule) {
-        dev = dev.pipe(addModuleExports(library.moduleDeclaration, true))
-    }
-
-    dev = dev.pipe(gulp.dest(settings.build.srcOutputDirectory));
+        })).pipe(gulp.dest(settings.build.srcOutputDirectory));
 
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
     var css = gulp.src(library.sassFiles || [])
@@ -298,28 +292,38 @@ var buildExternalLibrary = function (library, settings, watch) {
         return merge2([shader, includeShader, dev, css]);
     }
     else {
-        if (library.bundle) {
+        /*if (library.bundle) {
             // Don't remove extends and decorate functions
             var code = merge2([tsProcess.js, shader, includeShader])
-                .pipe(concat(library.output))
-                .pipe(gulp.dest(outputDirectory))
+                .pipe(concat(library.output));
+
+            if (library.buildAsModule) {
+                code = code.pipe(addModuleExports(library.moduleDeclaration, true))
+            }
+
+            code.pipe(gulp.dest(outputDirectory))
                 .pipe(cleants())
                 .pipe(rename({ extname: ".min.js" }))
                 .pipe(uglify())
                 .pipe(optimisejs())
                 .pipe(gulp.dest(outputDirectory));
-        } else {
-            var code = merge2([tsProcess.js, shader, includeShader])
-                .pipe(concat(library.output))
-                .pipe(gulp.dest(outputDirectory))
-                .pipe(cleants())
-                .pipe(replace(extendsSearchRegex, ""))
-                .pipe(replace(decorateSearchRegex, ""))
-                .pipe(rename({ extname: ".min.js" }))
-                .pipe(uglify())
-                .pipe(optimisejs())
-                .pipe(gulp.dest(outputDirectory));
+        } else {*/
+        var code = merge2([tsProcess.js, shader, includeShader])
+            .pipe(concat(library.output))
+
+        if (library.buildAsModule) {
+            code = code.pipe(addModuleExports(library.moduleDeclaration, true))
         }
+
+        code = code.pipe(gulp.dest(outputDirectory))
+            .pipe(cleants())
+            .pipe(replace(extendsSearchRegex, ""))
+            .pipe(replace(decorateSearchRegex, ""))
+            .pipe(rename({ extname: ".min.js" }))
+            .pipe(uglify())
+            .pipe(optimisejs())
+            .pipe(gulp.dest(outputDirectory));
+        /*}*/
 
         var dts = tsProcess.dts
             .pipe(concat(library.output))
