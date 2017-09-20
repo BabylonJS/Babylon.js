@@ -859,14 +859,20 @@
          */
         public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
             var path = options.path;
-            var radius = options.radius || 1.0;
+            var instance = options.instance;
+            var radius = 1.0;
+            if (instance) {
+                radius = (<any>instance).radius;
+            }
+            if (options.radius !== undefined) {
+                radius = options.radius;
+            };
             var tessellation = options.tessellation || 64|0;
             var radiusFunction = options.radiusFunction;
             var cap = options.cap || Mesh.NO_CAP;
             var invertUV = options.invertUV || false;
             var updatable = options.updatable;
             var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            var instance = options.instance;
             options.arc = (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
 
             // tube geometry
@@ -929,6 +935,7 @@
                 }
                 return circlePaths;
             };
+
             var path3D;
             var pathArray;
             if (instance) { // tube update
@@ -939,10 +946,11 @@
                 (<any>instance).path3D = path3D;
                 (<any>instance).pathArray = pathArray;
                 (<any>instance).arc = arc;
+                (<any>instance).radius = radius;
 
                 return instance;
-
             }
+
             // tube creation
             path3D = <any>new Path3D(path);
             var newPathArray = new Array<Array<Vector3>>();
@@ -954,6 +962,7 @@
             (<any>tube).tessellation = tessellation;
             (<any>tube).cap = cap;
             (<any>tube).arc = options.arc;
+            (<any>tube).radius = radius;
 
             return tube;
         }
