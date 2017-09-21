@@ -609,9 +609,19 @@
             }
 
             // Postprocesses
-            var i = this._postProcesses.length;
-            while (--i >= 0) {
-                this._postProcesses[i].dispose(this);
+            if (this._rigPostProcess) {
+                this._rigPostProcess.dispose(this);
+                this._rigPostProcess = null;
+                this._postProcesses = [];
+            }
+            else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                this._rigPostProcess = null;
+                this._postProcesses = [];
+            } else {
+                var i = this._postProcesses.length;
+                while (--i >= 0) {
+                    this._postProcesses[i].dispose(this);
+                }
             }
 
             // Render targets
@@ -657,6 +667,10 @@
         }
 
         public setCameraRigMode(mode: number, rigParams: any): void {
+            if (this.cameraRigMode === mode) {
+                return;
+            }
+
             while (this._rigCameras.length > 0) {
                 this._rigCameras.pop().dispose();
             }
