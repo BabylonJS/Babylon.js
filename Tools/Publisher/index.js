@@ -51,9 +51,9 @@ if (loginCheck.code === 0) {
             packageJson.version = version;
             if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
             fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
-            console.log('Publishing ' + package.name);
+            console.log('Publishing ' + package.name + " from " + package.path);
             //publish the respected package
-            shelljs.exec('npm publih ' + package.path);
+            shelljs.exec('npm publish \"' + package.path + "\"");
         });
     });
 } else {
