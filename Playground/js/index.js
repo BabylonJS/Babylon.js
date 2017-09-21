@@ -153,8 +153,10 @@
                                 index = parseInt(query);
                                 if (!isNaN(index)) {
                                     loadScriptFromIndex(index);
-                                } else {
+                                } else if (query.indexOf("=") === -1) {
                                     loadScript("scripts/" + query + ".js", query);
+                                } else {
+                                    loadScript("scripts/basic scene.js", "Basic scene");
                                 }
                             } else {
                                 loadScript("scripts/basic scene.js", "Basic scene");

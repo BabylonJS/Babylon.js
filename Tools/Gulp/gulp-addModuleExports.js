@@ -13,7 +13,10 @@ module.exports = function (varName, subModule, extendsRoot) {
                 basicInit = `__extends(root["BABYLON"], factory()); `
             }*/
 
-            return `(function universalModuleDefinition(root, factory) {
+            return `\n\n(function universalModuleDefinition(root, factory) {
+                if (root && root["BABYLON"]) {
+                    return;
+                }
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = factory();
     else if(typeof define === 'function' && define.amd)
