@@ -9,14 +9,14 @@
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
-    "main": "babylon.proceduralTextures.min.js",
+    "main": "babylonjs.proceduralTextures.min.js",
     "files": [
-        "babylon.proceduralTextures.js",
-        "babylon.proceduralTextures.min.js",
-        "babylon.proceduralTextures.module.d.ts",
+        "babylonjs.proceduralTextures.js",
+        "babylonjs.proceduralTextures.min.js",
+        "babylonjs.proceduralTextures.module.d.ts",
         "package.json"
     ],
-    "typings": "babylon.proceduralTextures.module.d.ts",
+    "typings": "babylonjs.proceduralTextures.module.d.ts",
     "keywords": [
         "3D",
         "javascript",

@@ -9,14 +9,14 @@
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
-    "main": "babylon.serializers.min.js",
+    "main": "babylonjs.serializers.min.js",
     "files": [
-        "babylon.serializers.js",
-        "babylon.serializers.min.js",
-        "babylon.serializers.module.d.ts",
+        "babylonjs.serializers.js",
+        "babylonjs.serializers.min.js",
+        "babylonjs.serializers.module.d.ts",
         "package.json"
     ],
-    "typings": "babylon.serializers.module.d.ts",
+    "typings": "babylonjs.serializers.module.d.ts",
     "keywords": [
         "3D",
         "javascript",

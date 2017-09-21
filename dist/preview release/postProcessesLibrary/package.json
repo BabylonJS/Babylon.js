@@ -9,14 +9,14 @@
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
-    "main": "babylon.postProcess.min.js",
+    "main": "babylonjs.postProcess.min.js",
     "files": [
-        "babylon.postProcess.js",
-        "babylon.postProcess.min.js",
-        "babylon.postProcess.module.d.ts",
+        "babylonjs.postProcess.js",
+        "babylonjs.postProcess.min.js",
+        "babylonjs.postProcess.module.d.ts",
         "package.json"
     ],
-    "typings": "babylon.postProcess.module.d.ts",
+    "typings": "babylonjs.postProcess.module.d.ts",
     "keywords": [
         "3D",
         "javascript",

@@ -9,14 +9,14 @@
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
-    "main": "babylon.loaders.min.js",
+    "main": "babylonjs.loaders.min.js",
     "files": [
-        "babylon.loaders.js",
-        "babylon.loaders.min.js",
-        "babylon.loaders.module.d.ts",
+        "babylonjs.loaders.js",
+        "babylonjs.loaders.min.js",
+        "babylonjs.loaders.module.d.ts",
         "package.json"
     ],
-    "typings": "babylon.loaders.module.d.ts",
+    "typings": "babylonjs.loaders.module.d.ts",
     "keywords": [
         "3D",
         "javascript",

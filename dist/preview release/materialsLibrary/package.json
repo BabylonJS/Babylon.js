@@ -9,14 +9,14 @@
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
-    "main": "babylon.materials.min.js",
+    "main": "babylonjs.materials.min.js",
     "files": [
-        "babylon.materials.js",
-        "babylon.materials.min.js",
-        "babylon.materials.module.d.ts",
+        "babylonjs.materials.js",
+        "babylonjs.materials.min.js",
+        "babylonjs.materials.module.d.ts",
         "package.json"
     ],
-    "typings": "babylon.materials.module.d.ts",
+    "typings": "babylonjs.materials.module.d.ts",
     "keywords": [
         "3D",
         "javascript",
