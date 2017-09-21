@@ -1,0 +1,36 @@
+{
+    "author": {
+        "name": "David CATUHE"
+    },
+    "name": "babylonjs-post-process",
+    "description": "The Babylon.js materials library is a collection of advanced materials to be used in a Babylon.js scene.",
+    "version": "3.1.0-alpha1.3",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "main": "babylon.postProcess.min.js",
+    "files": [
+        "babylon.postProcess.js",
+        "babylon.postProcess.min.js",
+        "babylon.postProcess.module.d.ts",
+        "package.json"
+    ],
+    "typings": "babylon.postProcess.module.d.ts",
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "post process"
+    ],
+    "license": "Apache-2.0",
+    "peerDependencies": {
+        "babylonjs": ">=3.1.0-alpha1"
+    },
+    "engines": {
+        "node": "*"
+    },
+    "_id": "babylonjs-post-process@3.1.0-alpha1",
+    "_from": "babylonjs-post-process@"
+}
