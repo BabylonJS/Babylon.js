@@ -1598,7 +1598,7 @@
             return this._vrDisplay;
         }
 
-        public initWebVR(): Observable<any> {
+        public initWebVR(): Observable<{vrDisplay: any, vrSupported: any}> {
             var notifyObservers = () => {
                 var eventArgs = {
                     vrDisplay: this._vrDisplay,
