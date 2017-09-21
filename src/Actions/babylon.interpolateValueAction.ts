@@ -4,6 +4,8 @@
         private _effectiveTarget: any;
         private _property: string;
 
+        public onInterpolationDoneObservable = new Observable<InterpolateValueAction>();
+
         constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, public duration: number = 1000, condition?: Condition, public stopOtherAnimations?: boolean, public onInterpolationDone?: () => void) {
             super(triggerOptions, condition);
 
@@ -52,7 +54,14 @@
                 scene.stopAnimation(this._effectiveTarget);
             }
 
-            scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, this.onInterpolationDone);
+            let wrapper = ()=> {
+                this.onInterpolationDoneObservable.notifyObservers(this);
+                if (this.onInterpolationDone) {
+                    this.onInterpolationDone();
+                }
+            }
+
+            scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, wrapper);
         }
         
         public serialize(parent: any): any {

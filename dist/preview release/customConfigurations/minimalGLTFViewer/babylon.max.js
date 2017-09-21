@@ -38767,6 +38767,7 @@ var BABYLON;
     var Action = (function () {
         function Action(triggerOptions, condition) {
             this.triggerOptions = triggerOptions;
+            this.onBeforeExecuteObservable = new BABYLON.Observable();
             if (triggerOptions.parameter) {
                 this.trigger = triggerOptions.trigger;
                 this._triggerParameter = triggerOptions.parameter;
@@ -38802,6 +38803,7 @@ var BABYLON;
                     condition._currentResult = true;
                 }
             }
+            this.onBeforeExecuteObservable.notifyObservers(this);
             this._nextActiveAction.execute(evt);
             this.skipToNextActiveAction();
         };
@@ -39524,6 +39526,7 @@ var BABYLON;
             _this.duration = duration;
             _this.stopOtherAnimations = stopOtherAnimations;
             _this.onInterpolationDone = onInterpolationDone;
+            _this.onInterpolationDoneObservable = new BABYLON.Observable();
             _this._target = _this._effectiveTarget = target;
             return _this;
         }
@@ -39532,6 +39535,7 @@ var BABYLON;
             this._property = this._getProperty(this.propertyPath);
         };
         InterpolateValueAction.prototype.execute = function () {
+            var _this = this;
             var scene = this._actionManager.getScene();
             var keys = [
                 {
@@ -39567,7 +39571,13 @@ var BABYLON;
             if (this.stopOtherAnimations) {
                 scene.stopAnimation(this._effectiveTarget);
             }
-            scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, this.onInterpolationDone);
+            var wrapper = function () {
+                _this.onInterpolationDoneObservable.notifyObservers(_this);
+                if (_this.onInterpolationDone) {
+                    _this.onInterpolationDone();
+                }
+            };
+            scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, wrapper);
         };
         InterpolateValueAction.prototype.serialize = function (parent) {
             return _super.prototype._serialize.call(this, {
