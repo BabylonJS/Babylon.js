@@ -15568,9 +15568,20 @@ var BABYLON;
                 this._rigCameras.pop().dispose();
             }
             // Postprocesses
-            var i = this._postProcesses.length;
-            while (--i >= 0) {
-                this._postProcesses[i].dispose(this);
+            if (this._rigPostProcess) {
+                this._rigPostProcess.dispose(this);
+                this._rigPostProcess = null;
+                this._postProcesses = [];
+            }
+            else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                this._rigPostProcess = null;
+                this._postProcesses = [];
+            }
+            else {
+                var i = this._postProcesses.length;
+                while (--i >= 0) {
+                    this._postProcesses[i].dispose(this);
+                }
             }
             // Render targets
             var i = this.customRenderTargets.length;
@@ -15616,6 +15627,9 @@ var BABYLON;
             return this._rigCameras[1].getTarget();
         };
         Camera.prototype.setCameraRigMode = function (mode, rigParams) {
+            if (this.cameraRigMode === mode) {
+                return;
+            }
             while (this._rigCameras.length > 0) {
                 this._rigCameras.pop().dispose();
             }
@@ -67178,6 +67192,9 @@ var BABYLON;
             } };
             engine.onVRRequestPresentComplete.add(_this._onVREnabled);
             engine.initWebVR().add(function (event) {
+                if (_this._vrDevice === event.vrDisplay) {
+                    return;
+                }
                 _this._vrDevice = event.vrDisplay;
                 //reset the rig parameters.
                 _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
