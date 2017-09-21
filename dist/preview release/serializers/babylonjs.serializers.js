@@ -129,7 +129,12 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.objSerializer.js.map
+
+
 (function universalModuleDefinition(root, factory) {
+                if (root && root["BABYLON"]) {
+                    return;
+                }
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = factory();
     else if(typeof define === 'function' && define.amd)
