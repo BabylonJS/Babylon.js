@@ -1,7 +1,9 @@
-export = BABYLON.GUI;
-export as namespace BABYLON.GUI;
+/// <reference types="babylonjs"/>
 
-/// <reference path="../../dist/preview release/babylon.d.ts" />
+declare module 'babylonjs-gui' { 
+    export = BABYLON.GUI; 
+}
+
 declare module BABYLON.GUI {
     interface IFocusableControl {
         onFocus(): void;
@@ -58,7 +60,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Measure {
         left: number;
@@ -72,7 +74,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Matrix2D {
         m: Float32Array;
@@ -97,7 +99,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class ValueAndUnit {
         unit: number;
@@ -120,7 +122,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Control {
         name: string;
@@ -292,7 +294,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Container extends Control {
         name: string;
@@ -321,7 +323,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class StackPanel extends Container {
         name: string;
@@ -339,7 +341,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Rectangle extends Container {
         name: string;
@@ -356,7 +358,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Ellipse extends Container {
         name: string;
@@ -370,7 +372,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Line extends Control {
         name: string;
@@ -403,7 +405,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Slider extends Control {
         name: string;
@@ -433,7 +435,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Checkbox extends Control {
         name: string;
@@ -453,7 +455,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class RadioButton extends Control {
         name: string;
@@ -474,7 +476,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class TextBlock extends Control {
         name: string;
@@ -500,7 +502,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare var DOMImage: new (width?: number, height?: number) => HTMLImageElement;
 declare module BABYLON.GUI {
     class Image extends Control {
@@ -540,7 +542,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class Button extends Rectangle {
         name: string;
@@ -561,7 +563,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class ColorPicker extends Control {
         name: string;
@@ -600,7 +602,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class InputText extends Control implements IFocusableControl {
         name: string;
@@ -644,7 +646,7 @@ declare module BABYLON.GUI {
     }
 }
 
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON.GUI {
     class KeyPropertySet {
         width?: string;
