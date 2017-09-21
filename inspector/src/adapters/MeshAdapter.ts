@@ -27,13 +27,7 @@ module INSPECTOR {
 
         /** Returns the list of properties to be displayed for this adapter */
         public getProperties(): Array<PropertyLine> {
-            let propertiesLines: Array<PropertyLine> = [];
-
-            for (let dirty of PROPERTIES['Mesh'].properties) {
-                let infos = new Property(dirty, this._obj);
-                propertiesLines.push(new PropertyLine(infos));
-            }
-            return propertiesLines;
+            return Helpers.GetAllLinesProperties(this._obj);
         }
 
         public getTools(): Array<AbstractTreeTool> {
