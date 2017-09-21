@@ -31,9 +31,9 @@ module BABYLON.GLTF2.Extensions {
             // Tell the loader not to clear its state until the highest LOD is loaded.
             var materialLODs = [material.index, ...properties.ids];
 
-            loader.addLoaderPendingData(material);
+            loader._addLoaderPendingData(material);
             for (var index = 0; index < materialLODs.length; index++) {
-                loader.addLoaderNonBlockingPendingData(index);
+                loader._addLoaderNonBlockingPendingData(index);
             }
 
             // Start with the lowest quality LOD.
@@ -43,30 +43,30 @@ module BABYLON.GLTF2.Extensions {
         }
 
         private loadMaterialLOD(loader: GLTFLoader, material: IGLTFMaterial, materialLODs: number[], lod: number, assign: (babylonMaterial: Material, isNew: boolean) => void): void {
-            var materialLOD = loader.gltf.materials[materialLODs[lod]];
+            var materialLOD = loader._gltf.materials[materialLODs[lod]];
 
             if (lod !== materialLODs.length - 1) {
-                loader.blockPendingTracking = true;
+                loader._blockPendingTracking = true;
             }
             
-            loader.loadMaterial(materialLOD, (babylonMaterial, isNew) => {
+            loader._loadMaterial(materialLOD, (babylonMaterial, isNew) => {
                 assign(babylonMaterial, isNew);
 
-                loader.removeLoaderPendingData(lod);
+                loader._removeLoaderPendingData(lod);
 
                 // Loading is considered complete if this is the lowest quality LOD.
                 if (lod === materialLODs.length - 1) {
-                    loader.removeLoaderPendingData(material);
+                    loader._removeLoaderPendingData(material);
                 }
 
                 if (lod === 0) {
-                    loader.blockPendingTracking = false;
+                    loader._blockPendingTracking = false;
                     return;
                 }
 
                 // Load the next LOD when the loader is ready to render and
                 // all active material textures of the current LOD are loaded.
-                loader.executeWhenRenderReady(() => {
+                loader._executeWhenRenderReady(() => {
                     BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), () => {
                         setTimeout(()=> {
                             this.loadMaterialLOD(loader, material, materialLODs, lod - 1, assign);
