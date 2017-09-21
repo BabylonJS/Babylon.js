@@ -256,7 +256,47 @@ var buildExternalLibraries = function (settings) {
         return buildExternalLibrary(library, settings, false);
     });
 
-    return merge2(tasks);
+    let mergedTasks = merge2(tasks);
+
+    if (settings.build.buildAsModule) {
+        mergedTasks.on('end', function () {
+            //generate js file list
+            let files = settings.libraries.filter(function (lib) {
+                return !lib.doNotIncludeInBundle;
+            }).map(function (lib) {
+                return config.build.outputDirectory + settings.build.distOutputDirectory + lib.output;
+            });
+
+            var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
+
+            let srcTask = gulp.src(files)
+                .pipe(concat(settings.build.outputFilename + '.js'))
+                .pipe(replace(extendsSearchRegex, ""))
+                .pipe(replace(decorateSearchRegex, ""))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(addModuleExports(settings.build.moduleDeclaration, true, settings.build.extendsRoot))
+                .pipe(gulp.dest(outputDirectory))
+                .pipe(cleants())
+                .pipe(rename({ extname: ".min.js" }))
+                .pipe(uglify())
+                .pipe(optimisejs())
+                .pipe(gulp.dest(outputDirectory));
+
+            let dtsFiles = files.map(function (filename) {
+                return filename.replace(".js", ".d.ts");
+            });
+
+            let dtsTask = gulp.src(dtsFiles)
+                .pipe(concat(settings.build.outputFilename + '.module.d.ts'))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(addDtsExport(settings.build.moduleDeclaration, settings.build.moduleName, true, settings.build.extendsRoot))
+                .pipe(gulp.dest(outputDirectory));
+
+            return merge2([srcTask, dtsTask]);
+        });
+    }
+
+    return mergedTasks;
 }
 
 var buildExternalLibrary = function (library, settings, watch) {
