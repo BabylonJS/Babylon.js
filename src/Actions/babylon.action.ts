@@ -8,6 +8,8 @@
         private _condition: Condition;
         private _triggerParameter: any;
 
+        public onBeforeExecuteObservable = new Observable<Action>();
+
         constructor(public triggerOptions: any, condition?: Condition) {
 
             if (triggerOptions.parameter) {
@@ -50,7 +52,8 @@
                     condition._currentResult = true;
                 }
             }
-
+            
+            this.onBeforeExecuteObservable.notifyObservers(this);
             this._nextActiveAction.execute(evt);
 
             this.skipToNextActiveAction();
