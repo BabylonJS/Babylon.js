@@ -17,7 +17,6 @@
             }
         }
         
-        
         private _toRgba(color:BABYLON.Color4|BABYLON.Color3) : string {
             if (color) {
                 let r = (color.r * 255) | 0;

@@ -40,7 +40,7 @@ module BABYLON {
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         public _vrDevice = null;
         public rawPose: DevicePose = null;
-        private _vrEnabled = false;
+        private _onVREnabled: (success: boolean) => void;
         private _specsVersion: number = 1.1;
         private _attached: boolean = false;
 
@@ -95,7 +95,20 @@ module BABYLON {
             }
 
             //enable VR
-            this.getEngine().initWebVR();
+            var engine = this.getEngine();
+            this._onVREnabled = (success:boolean) => { if (success) { this.initControllers(); } };
+            engine.onVRRequestPresentComplete.add(this._onVREnabled);
+            engine.initWebVR().add((event:IDisplayChangedEventArgs) => {
+                
+                this._vrDevice = event.vrDisplay;
+
+                //reset the rig parameters.
+                this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
+
+                if (this._attached && this._vrDevice) {
+                    this.getEngine().enableVR();
+                }
+            });
 
             //check specs version
             if (!window.VRFrameData) {
@@ -105,22 +118,6 @@ module BABYLON {
             } else {
                 this._frameData = new VRFrameData();
             }
-
-            this.getEngine().getVRDevice(this.webVROptions.displayName, device => {
-                if (!device) {
-                    return;
-                }
-
-                this._vrEnabled = true;               
-                this._vrDevice = device;
-
-                //reset the rig parameters.
-                this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
-
-                if (this._attached) {
-                    this.getEngine().enableVR(this._vrDevice)
-                }
-            });                
 
             /**
              * The idea behind the following lines:
@@ -154,6 +151,11 @@ module BABYLON {
                     });
                 }
             });
+        }
+        
+        public dispose(): void {
+            this.getEngine().onVRRequestPresentComplete.removeCallback(this._onVREnabled);
+            super.dispose();
         }
 
         public getControllerByName(name: string): WebVRController {
@@ -194,11 +196,11 @@ module BABYLON {
         } 
 
         public _checkInputs(): void {
-            if (this._vrEnabled) {
+            if (this._vrDevice && this._vrDevice.isPresenting) {
                 if (this._specsVersion === 1.1) {
                     this._vrDevice.getFrameData(this._frameData);
                 } else {
-                    //backwards comp
+                    // TODO: Does backwards comp need to be here any more? The Engine class doesn't support it any more.
                     let pose = this._vrDevice.getPose();
                     this._frameData.pose = pose;
                 }
@@ -244,12 +246,9 @@ module BABYLON {
 
             noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
-            if (this._vrEnabled) {
-                this.getEngine().enableVR(this._vrDevice);
+            if (this._vrDevice) {
+                this.getEngine().enableVR();
             }
-
-            // try to attach the controllers, if found.
-            this.initControllers();
         }
 
         public detachControl(element: HTMLElement): void {
@@ -257,7 +256,6 @@ module BABYLON {
             this.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             
             super.detachControl(element);
-            this._vrEnabled = false;
             this._attached = false;
             this.getEngine().disableVR();
         }
