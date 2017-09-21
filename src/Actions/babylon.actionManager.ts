@@ -328,6 +328,9 @@
             if (index !== -1) {
                 this.actions.splice(index, 1);
                 ActionManager.Triggers[action.trigger] -= 1;
+                if (ActionManager.Triggers[action.trigger] === 0) {
+                    delete ActionManager.Triggers[action.trigger]
+                }
                 delete action._actionManager;
                 return true;
             }
