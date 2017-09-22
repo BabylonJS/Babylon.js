@@ -285,10 +285,28 @@
         public alphaMode = Engine.ALPHA_COMBINE;
 
         @serialize()
-        public needDepthPrePass = false;
+        private _needDepthPrePass = false;
+        public set needDepthPrePass(value : boolean) {
+            if (this._needDepthPrePass === value) {
+                return;
+            }
+            this._needDepthPrePass = value;
+            if (this._needDepthPrePass) {
+                this.checkReadyOnEveryCall = true;
+            }
+        }
+        public get needDepthPrePass(): boolean {
+            return this._needDepthPrePass;
+        }   
 
         @serialize()
         public disableDepthWrite = false;
+
+        @serialize()
+        public forceDepthWrite = false;
+
+        @serialize()
+        public separateCullingPass = false;
 
         @serialize("fogEnabled")
         private _fogEnabled = true;

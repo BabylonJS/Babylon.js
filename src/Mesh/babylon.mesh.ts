@@ -1187,6 +1187,10 @@
 
             this._effectiveMaterial._preBind(effect);
 
+            if (this._effectiveMaterial.forceDepthWrite) {
+                engine.setDepthWrite(true);
+            }
+
             // Bind
             var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : this._effectiveMaterial.fillMode);
 
@@ -1200,6 +1204,13 @@
                 this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
             } else {
                 this._effectiveMaterial.bind(world, this);
+            }
+
+            if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
+                var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
+                engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse);
+                this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
+                engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
             }
 
             // Draw
