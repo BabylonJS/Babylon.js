@@ -239,6 +239,16 @@
             this.setValue(currentValue);
         }
 
+        public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
+            let newRatio = this._previousDelay * (this._animation.framePerSecond * newSpeedRatio) / 1000.0;
+
+            this._ratioOffset = this._previousRatio - newRatio;
+        }
+
+        private _ratioOffset = 0;
+        private _previousDelay: number;
+        private _previousRatio: number;
+
         public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend: boolean = false): boolean {
             let targetPropertyPath = this._animation.targetPropertyPath
             if (!targetPropertyPath || targetPropertyPath.length < 1) {
@@ -264,15 +274,22 @@
 
             //to and from cannot be the same key
             if(from === to) {
-                from++;
+                if (from > keys[0].frame) {
+                    from--;
+                } else if (to < keys[keys.length - 1].frame) {
+                    to++;
+                }
             }
             
             // Compute ratio
             var range = to - from;
             var offsetValue;
             // ratio represents the frame delta between from and to
-            var ratio = delay * (this._animation.framePerSecond * speedRatio) / 1000.0;
+            var ratio = (delay * (this._animation.framePerSecond * speedRatio) / 1000.0) + this._ratioOffset;
             var highLimitValue = 0;
+
+            this._previousDelay = delay;
+            this._previousRatio = ratio;
 
             if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) { // If we are out of range and not looping get back to caller
                 returnValue = false;

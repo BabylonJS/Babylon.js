@@ -684,10 +684,18 @@
         public _proceduralTextures = new Array<ProceduralTexture>();
 
         // Sound Tracks
-        public mainSoundTrack: SoundTrack;
+        private _mainSoundTrack: SoundTrack;
         public soundTracks = new Array<SoundTrack>();
         private _audioEnabled = true;
         private _headphone = false;
+
+        public get mainSoundTrack(): SoundTrack {
+            if (!this._mainSoundTrack) {
+                this._mainSoundTrack = new SoundTrack(this, { mainTrack: true });
+            }
+
+            return this._mainSoundTrack;
+        }
 
         // VR Helper
         public VRHelper: VRExperienceHelper;
@@ -814,10 +822,6 @@
             }
 
             this.attachControl();
-
-            if (SoundTrack) {
-                this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
-            }
 
             //simplification queue
             if (SimplificationQueue) {
@@ -3305,7 +3309,7 @@
         }
 
         private _updateAudioParameters() {
-            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 1)) {
+            if (!this.audioEnabled || !this._mainSoundTrack || (this._mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 1)) {
                 return;
             }
 
@@ -3643,6 +3647,10 @@
 
         // Release sounds & sounds tracks
         public disposeSounds() {
+            if (!this._mainSoundTrack) {
+                return;
+            }
+
             this.mainSoundTrack.dispose();
 
             for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {

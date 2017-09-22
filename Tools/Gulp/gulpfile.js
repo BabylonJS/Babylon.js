@@ -234,7 +234,7 @@ gulp.task('typescript-compile', function () {
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.dts
             .pipe(concat(config.build.declarationModuleFilename))
-            .pipe(addDtsExport("BABYLON"))
+            .pipe(addDtsExport("BABYLON", "babylonjs"))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
             .pipe(sourcemaps.write("./",
@@ -256,7 +256,47 @@ var buildExternalLibraries = function (settings) {
         return buildExternalLibrary(library, settings, false);
     });
 
-    return merge2(tasks);
+    let mergedTasks = merge2(tasks);
+
+    if (settings.build.buildAsModule) {
+        mergedTasks.on('end', function () {
+            //generate js file list
+            let files = settings.libraries.filter(function (lib) {
+                return !lib.doNotIncludeInBundle;
+            }).map(function (lib) {
+                return config.build.outputDirectory + settings.build.distOutputDirectory + lib.output;
+            });
+
+            var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
+
+            let srcTask = gulp.src(files)
+                .pipe(concat(settings.build.outputFilename + '.js'))
+                .pipe(replace(extendsSearchRegex, ""))
+                .pipe(replace(decorateSearchRegex, ""))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(addModuleExports(settings.build.moduleDeclaration, true, settings.build.extendsRoot))
+                .pipe(gulp.dest(outputDirectory))
+                .pipe(cleants())
+                .pipe(rename({ extname: ".min.js" }))
+                .pipe(uglify())
+                .pipe(optimisejs())
+                .pipe(gulp.dest(outputDirectory));
+
+            let dtsFiles = files.map(function (filename) {
+                return filename.replace(".js", ".d.ts");
+            });
+
+            let dtsTask = gulp.src(dtsFiles)
+                .pipe(concat(settings.build.outputFilename + '.module.d.ts'))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(addDtsExport(settings.build.moduleDeclaration, settings.build.moduleName, true, settings.build.extendsRoot))
+                .pipe(gulp.dest(outputDirectory));
+
+            return merge2([srcTask, dtsTask]);
+        });
+    }
+
+    return mergedTasks;
 }
 
 var buildExternalLibrary = function (library, settings, watch) {
@@ -274,13 +314,13 @@ var buildExternalLibrary = function (library, settings, watch) {
         .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, library.output + '.fx'))
         .pipe(gulp.dest(settings.build.srcOutputDirectory));
 
-    var dev = tsProcess.js.pipe(sourcemaps.write("./", {
-        includeContent: false,
-        sourceRoot: (filePath) => {
-            return '';
-        }
-    }))
-        .pipe(gulp.dest(settings.build.srcOutputDirectory));
+    var dev = tsProcess.js
+        .pipe(sourcemaps.write("./", {
+            includeContent: false,
+            sourceRoot: (filePath) => {
+                return '';
+            }
+        })).pipe(gulp.dest(settings.build.srcOutputDirectory));
 
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
     var css = gulp.src(library.sassFiles || [])
@@ -292,28 +332,38 @@ var buildExternalLibrary = function (library, settings, watch) {
         return merge2([shader, includeShader, dev, css]);
     }
     else {
-        if (library.bundle) {
+        /*if (library.bundle) {
             // Don't remove extends and decorate functions
             var code = merge2([tsProcess.js, shader, includeShader])
-                .pipe(concat(library.output))
-                .pipe(gulp.dest(outputDirectory))
+                .pipe(concat(library.output));
+
+            if (library.buildAsModule) {
+                code = code.pipe(addModuleExports(library.moduleDeclaration, true))
+            }
+
+            code.pipe(gulp.dest(outputDirectory))
                 .pipe(cleants())
                 .pipe(rename({ extname: ".min.js" }))
                 .pipe(uglify())
                 .pipe(optimisejs())
                 .pipe(gulp.dest(outputDirectory));
-        } else {
-            var code = merge2([tsProcess.js, shader, includeShader])
-                .pipe(concat(library.output))
-                .pipe(gulp.dest(outputDirectory))
-                .pipe(cleants())
-                .pipe(replace(extendsSearchRegex, ""))
+        } else {*/
+        var code = merge2([tsProcess.js, shader, includeShader])
+            .pipe(concat(library.output))
+
+        if (library.buildAsModule) {
+            code = code.pipe(replace(extendsSearchRegex, ""))
                 .pipe(replace(decorateSearchRegex, ""))
-                .pipe(rename({ extname: ".min.js" }))
-                .pipe(uglify())
-                .pipe(optimisejs())
-                .pipe(gulp.dest(outputDirectory));
+                .pipe(addModuleExports(library.moduleDeclaration, true, library.extendsRoot))
         }
+
+        code = code.pipe(gulp.dest(outputDirectory))
+            .pipe(cleants())
+            .pipe(rename({ extname: ".min.js" }))
+            .pipe(uglify())
+            .pipe(optimisejs())
+            .pipe(gulp.dest(outputDirectory));
+        /*}*/
 
         var dts = tsProcess.dts
             .pipe(concat(library.output))
@@ -325,10 +375,11 @@ var buildExternalLibrary = function (library, settings, watch) {
 
         if (library.buildAsModule) {
             var dts2 = tsProcess.dts
-            .pipe(concat(library.output))
-            .pipe(addDtsExport(library.moduleDeclaration))
-            .pipe(rename({ extname: ".module.d.ts" }))
-            .pipe(gulp.dest(outputDirectory));
+                .pipe(concat(library.output))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(addDtsExport(library.moduleDeclaration, library.moduleName, true, library.extendsRoot))
+                .pipe(rename({ extname: ".module.d.ts" }))
+                .pipe(gulp.dest(outputDirectory));
             waitAll = merge2([dev, code, css, dts, dts2]);
         } else {
             waitAll = merge2([dev, code, css, dts]);

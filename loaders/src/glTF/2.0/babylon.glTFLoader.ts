@@ -286,92 +286,29 @@ module BABYLON.GLTF2 {
                 nodeIndices = filteredNodeIndices;
             }
 
-            this._traverseNodes(nodeIndices, node => this._loadSkin(node));
-            this._traverseNodes(nodeIndices, node => this._loadMesh(node));
+            this._traverseNodes(nodeIndices, node => this._loadNode(node));
         }
 
-        private _loadSkin(node: IGLTFNode): boolean {
-            if (node.skin !== undefined) {
-                var skin = this._gltf.skins[node.skin];
-                var skeletonId = "skeleton" + node.skin;
-                skin.babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
-                skin.index = node.skin;
+        private _loadNode(node: IGLTFNode): boolean {
+            node.babylonMesh = new Mesh(node.name || "mesh" + node.index, this._babylonScene);
+            node.babylonMesh.isVisible = false;
 
-                for (var i = 0; i < skin.joints.length; i++) {
-                    this._createBone(this._gltf.nodes[skin.joints[i]], skin);
-                }
-
-                if (skin.skeleton === undefined) {
-                    // TODO: handle when skeleton is not defined
-                    throw new Error("Not implemented");
-                }
-
-                if (skin.inverseBindMatrices === undefined) {
-                    // TODO: handle when inverse bind matrices are not defined
-                    throw new Error("Not implemented");
-                }
-
-                var accessor = this._gltf.accessors[skin.inverseBindMatrices];
-                this._loadAccessorAsync(accessor, data => {
-                    this._traverseNode(skin.skeleton, (node, index, parent) => this._updateBone(node, parent, skin, <Float32Array>data));
-                });
-            }
-
-            return true;
-        }
-
-        private _updateBone(node: IGLTFNode, parentNode: IGLTFNode, skin: IGLTFSkin, inverseBindMatrixData: Float32Array): boolean {
-            var jointIndex = skin.joints.indexOf(node.index);
-            if (jointIndex === -1) {
-                this._createBone(node, skin);
-            }
-
-            var babylonBone = node.babylonSkinToBones[skin.index];
-
-            // TODO: explain the math
-            var matrix = jointIndex === -1 ? Matrix.Identity() : Matrix.FromArray(inverseBindMatrixData, jointIndex * 16);
-            matrix.invertToRef(matrix);
-            if (parentNode) {
-                babylonBone.setParent(parentNode.babylonSkinToBones[skin.index], false);
-                matrix.multiplyToRef(babylonBone.getParent().getInvertedAbsoluteTransform(), matrix);
-            }
-
-            babylonBone.updateMatrix(matrix);
-            return true;
-        }
-
-        private _createBone(node: IGLTFNode, skin: IGLTFSkin): Bone {
-            var babylonBone = new Bone(node.name || "bone" + node.index, skin.babylonSkeleton);
-
-            node.babylonSkinToBones = node.babylonSkinToBones || {};
-            node.babylonSkinToBones[skin.index] = babylonBone;
-
-            node.babylonAnimationTargets = node.babylonAnimationTargets || [];
-            node.babylonAnimationTargets.push(babylonBone);
-
-            return babylonBone;
-        }
-
-        private _loadMesh(node: IGLTFNode): boolean {
-            var babylonMesh = new Mesh(node.name || "mesh" + node.index, this._babylonScene);
-            babylonMesh.isVisible = false;
-
-            this._loadTransform(node, babylonMesh);
+            this._loadTransform(node);
 
             if (node.mesh !== undefined) {
                 var mesh = this._gltf.meshes[node.mesh];
-                this._loadMeshData(node, mesh, babylonMesh);
+                this._loadMesh(node, mesh);
             }
 
-            babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
-            node.babylonMesh = babylonMesh;
+            node.babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
 
             node.babylonAnimationTargets = node.babylonAnimationTargets || [];
             node.babylonAnimationTargets.push(node.babylonMesh);
 
             if (node.skin !== undefined) {
                 var skin = this._gltf.skins[node.skin];
-                babylonMesh.skeleton = skin.babylonSkeleton;
+                skin.index = node.skin;
+                node.babylonMesh.skeleton = this._loadSkin(skin);
             }
 
             if (node.camera !== undefined) {
@@ -381,13 +318,13 @@ module BABYLON.GLTF2 {
             return true;
         }
 
-        private _loadMeshData(node: IGLTFNode, mesh: IGLTFMesh, babylonMesh: Mesh): void {
-            babylonMesh.name = mesh.name || babylonMesh.name;
+        private _loadMesh(node: IGLTFNode, mesh: IGLTFMesh): void {
+            node.babylonMesh.name = mesh.name || node.babylonMesh.name;
 
-            var babylonMultiMaterial = new MultiMaterial(babylonMesh.name, this._babylonScene);
-            babylonMesh.material = babylonMultiMaterial;
+            var babylonMultiMaterial = new MultiMaterial(node.babylonMesh.name, this._babylonScene);
+            node.babylonMesh.material = babylonMultiMaterial;
 
-            var geometry = new Geometry(babylonMesh.name, this._babylonScene, null, false, babylonMesh);
+            var geometry = new Geometry(node.babylonMesh.name, this._babylonScene, null, false, node.babylonMesh);
             var vertexData = new VertexData();
             vertexData.positions = [];
             vertexData.indices = [];
@@ -403,10 +340,10 @@ module BABYLON.GLTF2 {
                     throw new Error("Not implemented");
                 }
 
-                this._createMorphTargets(node, mesh, primitive, babylonMesh);
+                this._createMorphTargets(node, mesh, primitive, node.babylonMesh);
 
                 this._loadVertexDataAsync(primitive, subVertexData => {
-                    this._loadMorphTargetsData(mesh, primitive, subVertexData, babylonMesh);
+                    this._loadMorphTargetsData(mesh, primitive, subVertexData, node.babylonMesh);
 
                     subMeshInfos.push({
                         materialIndex: i,
@@ -427,7 +364,7 @@ module BABYLON.GLTF2 {
                                     
                                     if (this._parent.onBeforeMaterialReadyAsync) {
                                         this.addLoaderPendingData(material);
-                                        this._parent.onBeforeMaterialReadyAsync(babylonMaterial, babylonMesh, babylonMultiMaterial.subMaterials[i] != null, () => {
+                                        this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, babylonMultiMaterial.subMaterials[i] != null, () => {
                                             babylonMultiMaterial.subMaterials[i] = babylonMaterial;
                                             this.removeLoaderPendingData(material);
                                         });
@@ -448,8 +385,8 @@ module BABYLON.GLTF2 {
 
                         // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
                         // Sub meshes must be cleared and created after setting vertex data because of mesh._createGlobalSubMesh.
-                        babylonMesh.subMeshes = [];
-                        subMeshInfos.forEach(info => new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, babylonMesh));
+                        node.babylonMesh.subMeshes = [];
+                        subMeshInfos.forEach(info => new SubMesh(info.materialIndex, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, node.babylonMesh));
                     }
                 });
             }
@@ -582,7 +519,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _loadTransform(node: IGLTFNode, babylonMesh: Mesh): void {
+        private _loadTransform(node: IGLTFNode): void {
             var position: Vector3 = Vector3.Zero();
             var rotation: Quaternion = Quaternion.Identity();
             var scaling: Vector3 = Vector3.One();
@@ -597,9 +534,80 @@ module BABYLON.GLTF2 {
                 if (node.scale) scaling = Vector3.FromArray(node.scale);
             }
 
-            babylonMesh.position = position;
-            babylonMesh.rotationQuaternion = rotation;
-            babylonMesh.scaling = scaling;
+            node.babylonMesh.position = position;
+            node.babylonMesh.rotationQuaternion = rotation;
+            node.babylonMesh.scaling = scaling;
+        }
+
+        private _loadSkin(skin: IGLTFSkin): Skeleton {
+            var skeletonId = "skeleton" + skin.index;
+            skin.babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
+
+            if (skin.inverseBindMatrices === undefined) {
+                this._loadBones(skin, null);
+            }
+            else {
+                var accessor = this._gltf.accessors[skin.inverseBindMatrices];
+                this._loadAccessorAsync(accessor, data => {
+                    this._loadBones(skin, <Float32Array>data);
+                });
+            }
+
+            return skin.babylonSkeleton;
+        }
+
+        private _createBone(node: IGLTFNode, skin: IGLTFSkin, parent: Bone, localMatrix: Matrix, baseMatrix: Matrix, index: number): Bone {
+            var babylonBone = new Bone(node.name || "bone" + node.index, skin.babylonSkeleton, parent, localMatrix, null, baseMatrix, index);
+
+            node.babylonBones = node.babylonBones || {};
+            node.babylonBones[skin.index] = babylonBone;
+
+            node.babylonAnimationTargets = node.babylonAnimationTargets || [];
+            node.babylonAnimationTargets.push(babylonBone);
+
+            return babylonBone;
+        }
+
+        private _loadBones(skin: IGLTFSkin, inverseBindMatrixData: Float32Array): void {
+            var babylonBones: { [index: number]: Bone } = {};
+            for (var i = 0; i < skin.joints.length; i++) {
+                var node = this._gltf.nodes[skin.joints[i]];
+                this._loadBone(node, skin, inverseBindMatrixData, babylonBones);
+            }
+        }
+
+        private _loadBone(node: IGLTFNode, skin: IGLTFSkin, inverseBindMatrixData: Float32Array, babylonBones: { [index: number]: Bone }): Bone {
+            var babylonBone = babylonBones[node.index];
+            if (babylonBone) {
+                return babylonBone;
+            }
+
+            var boneIndex = skin.joints.indexOf(node.index);
+
+            var baseMatrix = Matrix.Identity();
+            if (inverseBindMatrixData && boneIndex !== -1) {
+                baseMatrix = Matrix.FromArray(inverseBindMatrixData, boneIndex * 16);
+                baseMatrix.invertToRef(baseMatrix);
+            }
+
+            var babylonParentBone: Bone;
+            if (node.index != skin.skeleton && node.parent) {
+                babylonParentBone = this._loadBone(node.parent, skin, inverseBindMatrixData, babylonBones);
+                baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
+            }
+
+            babylonBone = this._createBone(node, skin, babylonParentBone, this._getNodeMatrix(node), baseMatrix, boneIndex);
+            babylonBones[node.index] = babylonBone;
+            return babylonBone;
+        }
+
+        private _getNodeMatrix(node: IGLTFNode): Matrix {
+            return node.matrix ?
+                Matrix.FromArray(node.matrix) :
+                Matrix.Compose(
+                    node.scale ? Vector3.FromArray(node.scale) : Vector3.One(),
+                    node.rotation ? Quaternion.FromArray(node.rotation) : Quaternion.Identity(),
+                    node.translation ? Vector3.FromArray(node.translation) : Vector3.Zero());
         }
 
         private _traverseNodes(indices: number[], action: (node: IGLTFNode, index: number, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode = null): void {
@@ -1002,7 +1010,7 @@ module BABYLON.GLTF2 {
             if (this._blockPendingTracking) {
                 this.addLoaderNonBlockingPendingData(data);
                 return;
-            }            
+            }
             this._loaderPendingCount++;
         }
 
@@ -1100,8 +1108,8 @@ module BABYLON.GLTF2 {
 
             if (material.normalTexture) {
                 babylonMaterial.bumpTexture = this.loadTexture(material.normalTexture);
-                babylonMaterial.invertNormalMapX = true;
-                babylonMaterial.invertNormalMapY = false;
+                babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
+                babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
                 if (material.normalTexture.scale !== undefined) {
                     babylonMaterial.bumpTexture.level = material.normalTexture.scale;
                 }
