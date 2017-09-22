@@ -1,12 +1,25 @@
 var gutil = require('gulp-util');
 var through = require('through2');
 
-module.exports = function (varName) {
+module.exports = function (varName, moduleName, subModule, extendsRoot) {
     return through.obj(function (file, enc, cb) {
 
+        let exportText = "BABYLON";
+        if (subModule && !extendsRoot) {
+            exportText += '.' + varName;
+        }
+
         var moduleExportsAddition =
- //           '\nexport as namespace ' + varName + ';\n' +
-            '\nexport = ' + varName + ';\n';
+            `${subModule ? '/// <reference types="babylonjs"/>' : ''}
+
+declare module '${moduleName}' { 
+    export = ${exportText}; 
+}
+`;
+
+        //'export = ' + (subModule ? 'BABYLON.' : '') + varName + ';\n';// +
+        //'export as namespace ' + varName + ';\n\n';
+
 
         if (file.isNull()) {
             cb(null, file);
@@ -19,7 +32,7 @@ module.exports = function (varName) {
         }
 
         try {
-            file.contents = new Buffer(String(file.contents) + moduleExportsAddition);
+            file.contents = new Buffer(moduleExportsAddition + String(file.contents));
             this.push(file);
 
         } catch (err) {

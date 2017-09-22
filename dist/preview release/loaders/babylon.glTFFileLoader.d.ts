@@ -709,9 +709,9 @@ declare module BABYLON.GLTF2 {
         indices?: number;
         material?: number;
         mode?: EMeshPrimitiveMode;
-        targets?: [{
+        targets?: {
             [name: string]: number;
-        }];
+        }[];
     }
     interface IGLTFMesh extends IGLTFChildRootProperty {
         primitives: IGLTFMeshPrimitive[];
@@ -730,7 +730,7 @@ declare module BABYLON.GLTF2 {
         index?: number;
         parent?: IGLTFNode;
         babylonMesh?: Mesh;
-        babylonSkinToBones?: {
+        babylonBones?: {
             [skin: number]: Bone;
         };
         babylonAnimationTargets?: Node[];
@@ -826,15 +826,17 @@ declare module BABYLON.GLTF2 {
         private _showMeshes();
         private _startAnimations();
         private _loadScene(nodeNames);
-        private _loadSkin(node);
-        private _updateBone(node, parentNode, skin, inverseBindMatrixData);
-        private _createBone(node, skin);
-        private _loadMesh(node);
-        private _loadMeshData(node, mesh, babylonMesh);
+        private _loadNode(node);
+        private _loadMesh(node, mesh);
         private _loadVertexDataAsync(primitive, onSuccess);
         private _createMorphTargets(node, mesh, primitive, babylonMesh);
         private _loadMorphTargetsData(mesh, primitive, vertexData, babylonMesh);
-        private _loadTransform(node, babylonMesh);
+        private _loadTransform(node);
+        private _loadSkin(skin);
+        private _createBone(node, skin, parent, localMatrix, baseMatrix, index);
+        private _loadBones(skin, inverseBindMatrixData);
+        private _loadBone(node, skin, inverseBindMatrixData, babylonBones);
+        private _getNodeMatrix(node);
         private _traverseNodes(indices, action, parentNode?);
         private _traverseNode(index, action, parentNode?);
         private _loadAnimations();

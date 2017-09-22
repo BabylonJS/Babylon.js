@@ -5,14 +5,29 @@
         private _runtimeAnimations = new Array<RuntimeAnimation>();
         private _paused = false;
         private _scene: Scene;
+        private _speedRatio = 1;
 
         public animationStarted = false;
 
-        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any) {
+        public get speedRatio(): number {
+            return this._speedRatio;
+        }
+
+        public set speedRatio(value: number) {
+            for (var index = 0; index < this._runtimeAnimations.length; index++) {
+                var animation = this._runtimeAnimations[index];
+
+                animation._prepareForSpeedRatioChange(value);
+            }
+            this._speedRatio = value;
+        }
+
+        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, speedRatio: number = 1.0, public onAnimationEnd?, animations?: any) {
             if (animations) {
                 this.appendAnimations(target, animations);
             }
 
+            this._speedRatio = speedRatio;
             this._scene = scene;
             scene._activeAnimatables.push(this);
         }
@@ -180,7 +195,7 @@
 
             for (index = 0; index < runtimeAnimations.length; index++) {
                 var animation = runtimeAnimations[index];
-                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
+                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this._speedRatio);
                 running = running || isRunning;
             }
 

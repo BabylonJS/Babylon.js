@@ -186,8 +186,11 @@
                             this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
                                 this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
                                     if (baseName) {
-                                        this._vertexSourceCode = "#define SHADER_NAME vertex:" + baseName + "\n" + migratedVertexCode;
-                                        this._fragmentSourceCode = "#define SHADER_NAME fragment:" + baseName + "\n" + migratedFragmentCode;
+                                        var vertex = baseName.vertexElement || baseName.vertex || baseName;
+                                        var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+                            
+                                        this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
+                                        this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
                                     } else {
                                         this._vertexSourceCode = migratedVertexCode;
                                         this._fragmentSourceCode = migratedFragmentCode;
@@ -395,14 +398,14 @@
             result = result.replace(/[ \t]attribute/g, " in");
             
             if (isFragment) {
-                result = result.replace(/texture2DLodEXT\(/g, "textureLod(");
-                result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
-                result = result.replace(/texture2D\(/g, "texture(");
-                result = result.replace(/textureCube\(/g, "texture(");
+                result = result.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
+                result = result.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
+                result = result.replace(/texture2D\s*\(/g, "texture(");
+                result = result.replace(/textureCube\s*\(/g, "texture(");
                 result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
                 result = result.replace(/gl_FragColor/g, "glFragColor");
                 result = result.replace(/gl_FragData/g, "glFragData");
-                result = result.replace(/void\s+?main\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
+                result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
             }
             
             callback(result);

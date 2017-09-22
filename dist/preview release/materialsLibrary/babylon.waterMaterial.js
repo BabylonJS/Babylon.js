@@ -41,7 +41,6 @@ var BABYLON;
             _this.FRESNELSEPARATE = false;
             _this.BUMPSUPERIMPOSE = false;
             _this.BUMPAFFECTSREFLECTION = false;
-            _this.USERIGHTHANDEDSYSTEM = false;
             _this.rebuild();
             return _this;
         }

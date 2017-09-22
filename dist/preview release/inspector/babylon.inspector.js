@@ -1700,6 +1700,7 @@ var INSPECTOR;
                 this._valueDiv.addEventListener('click', this._displayInputHandler);
                 this._input.addEventListener('keypress', this._validateInputHandler);
                 this._input.addEventListener('keydown', this._escapeInputHandler);
+                this._input.addEventListener('focusout', this._focusOutInputHandler);
             }
             // Add this property to the scheduler
             INSPECTOR.Scheduler.getInstance().add(this);
@@ -1717,6 +1718,10 @@ var INSPECTOR;
             this._displayInputHandler = this._displayInput.bind(this);
             this._validateInputHandler = this._validateInput.bind(this);
             this._escapeInputHandler = this._escapeInput.bind(this);
+            this._focusOutInputHandler = this.update.bind(this);
+            this._onMouseDownHandler = this._onMouseDown.bind(this);
+            this._onMouseDragHandler = this._onMouseDrag.bind(this);
+            this._onMouseUpHandler = this._onMouseUp.bind(this);
         };
         /**
          * On enter : validates the new value and removes the input
@@ -1724,29 +1729,32 @@ var INSPECTOR;
          */
         PropertyLine.prototype._validateInput = function (e) {
             if (e.keyCode == 13) {
-                // Enter : validate the new value
-                var newValue = this._input.value;
-                this.updateObject();
-                if (typeof this._property.value === 'number') {
-                    this._property.value = parseFloat(newValue);
-                }
-                else {
-                    this._property.value = newValue;
-                }
-                // Remove input
-                this.update();
-                // resume scheduler
-                INSPECTOR.Scheduler.getInstance().pause = false;
+                this.validateInput(this._input.value);
             }
             else if (e.keyCode == 27) {
                 // Esc : remove input
                 this.update();
             }
         };
+        PropertyLine.prototype.validateInput = function (value) {
+            this.updateObject();
+            if (typeof this._property.value === 'number') {
+                this._property.value = parseFloat(value);
+            }
+            else {
+                this._property.value = value;
+            }
+            // Remove input
+            this.update();
+            // resume scheduler
+            INSPECTOR.Scheduler.getInstance().pause = false;
+        };
         /**
          * On escape : removes the input
          */
         PropertyLine.prototype._escapeInput = function (e) {
+            // Remove focus out handler
+            this._input.removeEventListener('focusout', this._focusOutInputHandler);
             if (e.keyCode == 27) {
                 // Esc : remove input
                 this.update();
@@ -1772,6 +1780,11 @@ var INSPECTOR;
             this._valueDiv.textContent = "";
             this._input.value = valueTxt;
             this._valueDiv.appendChild(this._input);
+            this._input.focus();
+            if (typeof this.value === 'number') {
+                this._input.addEventListener('mousedown', this._onMouseDownHandler);
+            }
+            this._input.addEventListener('focusout', this._focusOutInputHandler);
             // Pause the scheduler
             INSPECTOR.Scheduler.getInstance().pause = true;
         };
@@ -1817,8 +1830,8 @@ var INSPECTOR;
         PropertyLine.prototype._createElements = function () {
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
-                console.log('color', new INSPECTOR.ColorPickerElement(this.value));
-                this._elements.push(new INSPECTOR.ColorElement(this.value));
+                this._elements.push(new INSPECTOR.ColorPickerElement(this.value, this));
+                //this._elements.push(new ColorElement(this.value));
             }
             // Texture
             if (this.type == 'Texture') {
@@ -1952,6 +1965,33 @@ var INSPECTOR;
                 }
             }
         };
+        /**
+         * Refresh mouse position on y axis
+         * @param e
+         */
+        PropertyLine.prototype._onMouseDrag = function (e) {
+            var diff = this._prevY - e.clientY;
+            this._input.value = (this._preValue + diff).toString();
+        };
+        /**
+         * Save new value from slider
+         * @param e
+         */
+        PropertyLine.prototype._onMouseUp = function (e) {
+            window.removeEventListener('mousemove', this._onMouseDragHandler);
+            window.removeEventListener('mouseup', this._onMouseUpHandler);
+            this._prevY = e.clientY;
+        };
+        /**
+         * Start record mouse position
+         * @param e
+         */
+        PropertyLine.prototype._onMouseDown = function (e) {
+            this._prevY = e.clientY;
+            this._preValue = this.value;
+            window.addEventListener('mousemove', this._onMouseDragHandler);
+            window.addEventListener('mouseup', this._onMouseUpHandler);
+        };
         // Array representing the simple type. All others are considered 'complex'
         PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
         // The number of pixel at each children step
@@ -2012,23 +2052,53 @@ var INSPECTOR;
     INSPECTOR.ColorElement = ColorElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
      * Represents a html div element.
      * The div is built when an instance of BasicElement is created.
      */
-    var ColorPickerElement = (function () {
-        function ColorPickerElement(color) {
-            this._input = INSPECTOR.Helpers.CreateInput();
-            this._input.type = 'color';
-            this._input.value = this._toRgba(color);
+    var ColorPickerElement = (function (_super) {
+        __extends(ColorPickerElement, _super);
+        function ColorPickerElement(color, propertyLine) {
+            var _this = _super.call(this) || this;
+            var scheduler = INSPECTOR.Scheduler.getInstance();
+            _this._div.className = 'color-element';
+            _this._div.style.backgroundColor = _this._toRgba(color);
+            _this._div.style.top = "5px";
+            _this.pline = propertyLine;
+            _this._input = INSPECTOR.Helpers.CreateInput();
+            _this._input.type = 'color';
+            _this._input.style.opacity = "0";
+            _this._input.style.width = '10px';
+            _this._input.style.height = '15px';
+            _this._input.value = color.toHexString();
+            _this._input.addEventListener('input', function (e) {
+                console.log('Color', _this._input.value, _this.pline);
+                _this.pline.validateInput(BABYLON.Color3.FromHexString(_this._input.value));
+                scheduler.pause = false;
+            });
+            _this._div.appendChild(_this._input);
+            _this._input.addEventListener('click', function (e) {
+                scheduler.pause = true;
+            });
+            return _this;
         }
-        /**
-         * Returns the input element
-         */
-        ColorPickerElement.prototype.toHtml = function () {
-            return this._input;
+        ColorPickerElement.prototype.update = function (color) {
+            if (color) {
+                this._div.style.backgroundColor = this._toRgba(color);
+                this._input.value = color.toHexString();
+            }
         };
         ColorPickerElement.prototype._toRgba = function (color) {
             if (color) {
@@ -2046,7 +2116,7 @@ var INSPECTOR;
             }
         };
         return ColorPickerElement;
-    }());
+    }(INSPECTOR.BasicElement));
     INSPECTOR.ColorPickerElement = ColorPickerElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
