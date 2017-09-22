@@ -59,7 +59,7 @@ namespace BabylonExport.Entities
         public float occlusionStrength { get; set; }
 
         [DataMember]
-        public BabylonTexture occlusionTexture { get; set; }
+        public BabylonTexture occlusionTexture { get; set; } // ignored
 
         [DataMember]
         public float alphaCutOff { get; set; }
@@ -68,7 +68,7 @@ namespace BabylonExport.Entities
         public int transparencyMode { get; set; }
 
         [DataMember]
-        public bool doubleSided { get; set; }
+        public bool doubleSided { get; set; } // ignored
 
         public BabylonPBRMetallicRoughnessMaterial() : base()
         {
