@@ -13,7 +13,6 @@ module INSPECTOR {
             let scheduler = Scheduler.getInstance();
             this._div.className = 'color-element';
             this._div.style.backgroundColor = this._toRgba(color);
-            this._div.style.top = "5px";
             this.pline = propertyLine;
 
             this._input = Helpers.CreateInput();  
