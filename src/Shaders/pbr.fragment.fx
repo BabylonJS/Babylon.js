@@ -234,8 +234,7 @@ void main(void) {
 		faceNormal = gl_FrontFacing ? faceNormal : -faceNormal;
 	#endif
 
-	float comp = sign(dot(normalW, faceNormal));
-    normalW *= -comp;
+	normalW *= sign(dot(normalW, faceNormal));
 #endif
 
 #if defined(TWOSIDEDLIGHTING) && defined(NORMAL)

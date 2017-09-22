@@ -3,15 +3,6 @@ module INSPECTOR {
     export class LightAdapter 
         extends Adapter 
         implements IToolVisible{
-
-        private static _PROPERTIES = [
-            'position',
-            'diffuse', 
-            'intensity', 
-            'radius', 
-            'range', 
-            'specular'
-        ];
         
         constructor(obj:BABYLON.Light) {
             super(obj);
@@ -33,13 +24,7 @@ module INSPECTOR {
         
         /** Returns the list of properties to be displayed for this adapter */
         public getProperties() : Array<PropertyLine> {
-           let propertiesLines : Array<PropertyLine> = [];
-                
-            for (let dirty of LightAdapter._PROPERTIES) {
-                let infos = new Property(dirty, this._obj);
-                propertiesLines.push(new PropertyLine(infos));
-            }
-            return propertiesLines; 
+            return Helpers.GetAllLinesProperties(this._obj);
         }
         
         public getTools() : Array<AbstractTreeTool> {

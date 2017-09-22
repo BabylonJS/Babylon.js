@@ -3,8 +3,10 @@
 module BABYLON.GUI {
     export class InputText extends Control implements IFocusableControl {
         private _text = "";
+        private _placeholderText = "";
         private _background = "black";   
         private _focusedBackground = "black";   
+        private _placeholderColor = "gray";   
         private _thickness = 1;
         private _margin = new ValueAndUnit(10, ValueAndUnit.UNITMODE_PIXEL);
         private _autoStretchWidth = true;        
@@ -99,7 +101,32 @@ module BABYLON.GUI {
 
             this._background = value;
             this._markAsDirty();
+        }  
+
+        public get placeholderColor(): string {
+            return this._placeholderColor;
+        }
+
+        public set placeholderColor(value: string) {
+            if (this._placeholderColor === value) {
+                return;
+            }
+
+            this._placeholderColor = value;
+            this._markAsDirty();
         }          
+        
+        public get placeholderText(): string {
+            return this._placeholderText;
+        }
+
+        public set placeholderText(value: string) {
+            if (this._placeholderText === value) {
+                return;
+            }
+            this._placeholderText = value;
+            this._markAsDirty();
+        }        
 
         public get text(): string {
             return this._text;
@@ -256,7 +283,17 @@ module BABYLON.GUI {
                     context.fillStyle = this.color;
                 }
 
-                let textWidth = context.measureText(this._text).width;   
+                let text = this._text;
+
+                if (!this._isFocused && !this._text && this._placeholderText) {  
+                    text = this._placeholderText;
+
+                    if (this._placeholderColor) {
+                        context.fillStyle = this._placeholderColor;
+                    }
+                }
+
+                let textWidth = context.measureText(text).width;   
                 let marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
                 if (this._autoStretchWidth) {
                     this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), textWidth + marginWidth) + "px";
@@ -278,7 +315,7 @@ module BABYLON.GUI {
                     this._scrollLeft = clipTextLeft;
                 }
 
-                context.fillText(this._text, this._scrollLeft, this._currentMeasure.top + rootY);
+                context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
 
                 // Cursor
                 if (this._isFocused) {         
