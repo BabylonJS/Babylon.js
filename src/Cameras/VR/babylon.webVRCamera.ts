@@ -113,7 +113,8 @@ module BABYLON {
                 }
             });
 
-            this._frameData = new VRFrameData();
+            if (typeof(VRFrameData) !== "undefined")
+                this._frameData = new VRFrameData();
 
             /**
              * The idea behind the following lines:
