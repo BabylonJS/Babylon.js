@@ -42,7 +42,7 @@ or individual classes using:
 import { Scene, Engine } from 'babylonjs';
 ```
 
-Don't forget to add 'babylonjs' to 'types' in tsconfig.json:
+If using TypeScript, don't forget to add 'babylonjs' to 'types' in tsconfig.json:
 
 ```
     ....
