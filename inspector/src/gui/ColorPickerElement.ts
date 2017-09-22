@@ -13,7 +13,6 @@ module INSPECTOR {
             let scheduler = Scheduler.getInstance();
             this._div.className = 'color-element';
             this._div.style.backgroundColor = this._toRgba(color);
-            this._div.style.top = "5px";
             this.pline = propertyLine;
 
             this._input = Helpers.CreateInput();  
@@ -24,8 +23,11 @@ module INSPECTOR {
             this._input.value = color.toHexString();
             
             this._input.addEventListener('input', (e) => {
-                console.log('Color', this._input.value, this.pline)
-                this.pline.validateInput(BABYLON.Color3.FromHexString(this._input.value));
+                let color = BABYLON.Color3.FromHexString(this._input.value);
+                color.r = parseFloat(color.r.toPrecision(2));
+                color.g = parseFloat(color.g.toPrecision(2));
+                color.b = parseFloat(color.b.toPrecision(2));
+                this.pline.validateInput(color);
                 scheduler.pause = false;
             });
             
