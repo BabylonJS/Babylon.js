@@ -67202,7 +67202,8 @@ var BABYLON;
                     _this.getEngine().enableVR();
                 }
             });
-            _this._frameData = new VRFrameData();
+            if (typeof (VRFrameData) !== "undefined")
+                _this._frameData = new VRFrameData();
             /**
              * The idea behind the following lines:
              * objects that have the camera as parent should actually have the rig cameras as a parent.
