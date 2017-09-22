@@ -111,6 +111,7 @@
   // The div displaying a color
   .color-element {
       @extend .element-viewer;
+      top: 2px;
   }
 
   // The div displaying a texture element
