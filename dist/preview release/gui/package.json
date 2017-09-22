@@ -15,6 +15,7 @@
         "babylon.gui.min.js",
         "babylon.gui.d.ts",
         "babylon.gui.module.d.ts",
+        "readme.md",
         "package.json"
     ],
     "typings": "babylon.gui.module.d.ts",
