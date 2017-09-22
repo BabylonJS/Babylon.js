@@ -353,12 +353,14 @@ namespace Max2Babylon
                 // --- Global ---
 
                 // Base color
+                // TODO - Unclear if alpha must be retreived from 'alpha' property of BABYLON.Material
+                // or from alpha channel of 'baseColor' of BABYLON.PBRMetallicRoughnessMaterial
                 gltfPbrMetallicRoughness.baseColorFactor = new float[4]
                 {
                     babylonPBRMetallicRoughnessMaterial.baseColor[0],
                     babylonPBRMetallicRoughnessMaterial.baseColor[1],
                     babylonPBRMetallicRoughnessMaterial.baseColor[2],
-                    1.0f // TODO - alpha
+                    babylonPBRMetallicRoughnessMaterial.alpha
                 };
                 gltfPbrMetallicRoughness.baseColorTexture = ExportTexture(babylonPBRMetallicRoughnessMaterial.baseTexture, gltf);
 
