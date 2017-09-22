@@ -14,6 +14,7 @@
         "babylonjs.serializers.js",
         "babylonjs.serializers.min.js",
         "babylonjs.serializers.module.d.ts",
+        "readme.md",
         "package.json"
     ],
     "typings": "babylonjs.serializers.module.d.ts",
