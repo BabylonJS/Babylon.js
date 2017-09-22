@@ -214,9 +214,20 @@ namespace Max2Babylon
 
                 // --- Global ---
 
-                babylonMaterial.alpha = 1.0f - materialNode.MaxMaterial.GetXParency(0, false);
+                // Alpha
+                // ---
+                // TODO - Unclear if alpha must be stored within 'alpha' property of BABYLON.Material
+                // or within alpha channel of 'baseColor' of BABYLON.PBRMetallicRoughnessMaterial
+                // ---
+                // TODO - XParency seems computed from several parameters
+                // 'Transparency' property is one of them
+                // Which value to use?
+                var alphaFromXParency = 1.0f - materialNode.MaxMaterial.GetXParency(0, false);
+                var alphaFromPropertyContainer = 1.0f - propertyContainer.GetFloatProperty(17);
+                RaiseMessage("alphaFromXParency=" + alphaFromXParency, 2);
+                RaiseMessage("alphaFromPropertyContainer=" + alphaFromPropertyContainer, 2);
+                babylonMaterial.alpha = alphaFromXParency;
 
-                // TODO - Add alpha
                 babylonMaterial.baseColor = materialNode.MaxMaterial.GetDiffuse(0, false).ToArray();
 
                 babylonMaterial.metallic = propertyContainer.GetFloatProperty(6);
@@ -233,22 +244,17 @@ namespace Max2Babylon
                                                 ? materialNode.MaxMaterial.GetSelfIllumColor(0, false).ToArray()
                                                 : materialNode.MaxMaterial.GetDiffuse(0, false).Scale(materialNode.MaxMaterial.GetSelfIllum(0, false));
 
-                // TODO - occlusionStrength - use default? ignored?
-
-                // TODO - alphaCutOff - use default?
-
-                // TODO - transparencyMode - private or public ?
-
-                // TODO - doubleSided - use default?
-
                 // --- Textures ---
+                
+                babylonMaterial.baseTexture = ExportBaseColorAlphaTexture(materialNode, babylonScene, name);
 
-                // TODO - Add alpha
-                babylonMaterial.baseTexture = ExportPBRTexture(materialNode, 1, babylonScene);
+                if (babylonMaterial.alpha != 1.0f || (babylonMaterial.baseTexture != null && babylonMaterial.baseTexture.hasAlpha))
+                {
+                    babylonMaterial.transparencyMode = (int)BabylonPBRMetallicRoughnessMaterial.TransparencyMode.ALPHABLEND;
+                }
 
                 babylonMaterial.metallicRoughnessTexture = ExportMetallicRoughnessTexture(materialNode, babylonMaterial.metallic, babylonMaterial.roughness, babylonScene, name);
-
-                // TODO - environmentTexture - as simple as that?
+                
                 babylonMaterial.environmentTexture = ExportPBRTexture(materialNode, 3, babylonScene);
 
                 var normalMapAmount = propertyContainer.GetFloatProperty(91);
@@ -256,8 +262,16 @@ namespace Max2Babylon
                 
                 babylonMaterial.emissiveTexture = ExportPBRTexture(materialNode, 17, babylonScene);
                 
-                // TODO - occlusionTexture - ignored?
+                // Constraints
+                if (babylonMaterial.baseTexture != null)
+                {
+                    babylonMaterial.baseColor = new[] { 1.0f, 1.0f, 1.0f };
+                }
 
+                if (babylonMaterial.emissiveTexture != null)
+                {
+                    babylonMaterial.emissiveColor = new float[] { 0, 0, 0 };
+                }
 
                 babylonScene.MaterialsList.Add(babylonMaterial);
             }

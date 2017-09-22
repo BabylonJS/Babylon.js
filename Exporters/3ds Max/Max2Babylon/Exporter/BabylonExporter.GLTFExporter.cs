@@ -17,7 +17,7 @@ namespace Max2Babylon
 
         private List<BabylonNode> babylonNodes;
 
-        public void ExportGltf(BabylonScene babylonScene, string outputFile, bool generateBinary, bool exportGltfImagesAsBinary)
+        public void ExportGltf(BabylonScene babylonScene, string outputFile, bool generateBinary)
         {
             RaiseMessage("GLTFExporter | Export outputFile=" + outputFile + " generateBinary=" + generateBinary);
             RaiseMessage("GLTFExporter | Exportation started", Color.Blue);
@@ -73,10 +73,8 @@ namespace Max2Babylon
                 ReportProgressChanged((int)progression);
                 CheckCancelled();
             });
-
-            // TODO - Choose between this method and the reverse of X axis
+            
             // Switch from left to right handed coordinate system
-            RaiseMessage("GLTFExporter | Exporting root node");
             var tmpNodesList = new List<int>(scene.NodesList);
             var rootNode = new BabylonMesh
             {
@@ -85,7 +83,7 @@ namespace Max2Babylon
                 scaling = new float[] { 1, 1, -1 },
                 idGroupInstance = -1
             };
-            scene.NodesList.Clear();
+            scene.NodesList.Clear(); // Only root node is listed in node list
             GLTFNode gltfRootNode = ExportAbstractMesh(rootNode, gltf, null);
             gltfRootNode.ChildrenList.AddRange(tmpNodesList);
 
@@ -97,11 +95,6 @@ namespace Max2Babylon
                 CheckCancelled();
             };
             RaiseMessage(string.Format("GLTFExporter | Nb materials exported: {0}", gltf.MaterialsList.Count), Color.Gray, 1);
-            
-            if (exportGltfImagesAsBinary)
-            {
-                SwitchImagesFromUriToBinary(gltf);
-            }
 
             // Cast lists to arrays
             gltf.Prepare();
@@ -145,27 +138,17 @@ namespace Max2Babylon
                 {
                     gltfBuffer.uri = null;
                 }
-                // Switch images to binary if not already done
-                // TODO - make it optional
-                if (!exportGltfImagesAsBinary)
+                // Switch images to binary
+                var imageBufferViews = SwitchImagesFromUriToBinary(gltf);
+                imageBufferViews.ForEach(imageBufferView =>
                 {
-                    var imageBufferViews = SwitchImagesFromUriToBinary(gltf);
-                    imageBufferViews.ForEach(imageBufferView =>
-                    {
-                        imageBufferView.Buffer.bytesList.AddRange(imageBufferView.bytesList);
-                    });
-                }
+                    imageBufferView.Buffer.bytesList.AddRange(imageBufferView.bytesList);
+                });
                 gltf.Prepare();
                 // Serialize gltf data to JSON string then convert it to bytes
                 byte[] chunkDataJson = Encoding.ASCII.GetBytes(gltfToJson(gltf));
                 // JSON chunk must be padded with trailing Space chars (0x20) to satisfy alignment requirements 
-                var nbSpaceToAdd = chunkDataJson.Length % 4 == 0 ? 0 : (4 - chunkDataJson.Length % 4);
-                var chunkDataJsonList = new List<byte>(chunkDataJson);
-                for (int i = 0; i < nbSpaceToAdd; i++)
-                {
-                    chunkDataJsonList.Add(0x20);
-                }
-                chunkDataJson = chunkDataJsonList.ToArray();
+                chunkDataJson = padChunk(chunkDataJson, 4, 0x20);
                 UInt32 chunkLengthJson = (UInt32)chunkDataJson.Length;
                 length += chunkLengthJson + 8; // 8 = JSON chunk header length
                 
@@ -352,14 +335,8 @@ namespace Max2Babylon
                         image.Save(m, imageFormat);
                         byte[] imageBytes = m.ToArray();
 
-                        // JSON chunk must be padded with trailing Space chars (0x20) to satisfy alignment requirements 
-                        var nbSpaceToAdd = imageBytes.Length % 4 == 0 ? 0 : (4 - imageBytes.Length % 4);
-                        var imageBytesList = new List<byte>(imageBytes);
-                        for (int i = 0; i < nbSpaceToAdd; i++)
-                        {
-                            imageBytesList.Add(0x00);
-                        }
-                        imageBytes = imageBytesList.ToArray();
+                        // Chunk must be padded with trailing zeros (0x00) to satisfy alignment requirements
+                        imageBytes = padChunk(imageBytes, 4, 0x00);
 
                         // BufferView - Image
                         var buffer = gltf.buffer;
@@ -386,6 +363,18 @@ namespace Max2Babylon
                 }
             }
             return imageBufferViews;
+        }
+
+        private byte[] padChunk(byte[] chunk, int padding, byte trailingChar)
+        {
+            var chunkModuloPadding = chunk.Length % padding;
+            var nbCharacterToAdd = chunkModuloPadding == 0 ? 0 : (padding - chunkModuloPadding);
+            var chunkList = new List<byte>(chunk);
+            for (int i = 0; i < nbCharacterToAdd; i++)
+            {
+                chunkList.Add(trailingChar);
+            }
+            return chunkList.ToArray();
         }
     }
 }
