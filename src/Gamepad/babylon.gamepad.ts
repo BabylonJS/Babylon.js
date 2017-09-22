@@ -94,7 +94,10 @@
     export class GenericPad extends Gamepad {
         private _buttons: Array<number>;
         private _onbuttondown: (buttonPressed: number) => void;
-        private _onbuttonup: (buttonReleased: number) => void;
+        private _onbuttonup: (buttonReleased: number) => void;        
+
+        public onButtonDownObservable = new Observable<number>();
+        public onButtonUpObservable = new Observable<number>();
 
         public onbuttondown(callback: (buttonPressed: number) => void) {
             this._onbuttondown = callback;
@@ -111,11 +114,19 @@
 
         private _setButtonValue(newValue: number, currentValue: number, buttonIndex: number): number {
             if (newValue !== currentValue) {
-                if (this._onbuttondown && newValue === 1) {
-                    this._onbuttondown(buttonIndex);
+                if (newValue === 1) {
+                    if (this._onbuttondown) {
+                        this._onbuttondown(buttonIndex);
+                    }
+
+                    this.onButtonDownObservable.notifyObservers(buttonIndex);
                 }
-                if (this._onbuttonup && newValue === 0) {
-                    this._onbuttonup(buttonIndex);
+                if (newValue === 0) {
+                    if (this._onbuttonup) {
+                        this._onbuttonup(buttonIndex);
+                    }
+
+                    this.onButtonUpObservable.notifyObservers(buttonIndex);
                 }
             }
             return newValue;

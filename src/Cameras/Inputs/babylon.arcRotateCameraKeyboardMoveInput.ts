@@ -16,12 +16,19 @@ module BABYLON {
         public keysRight = [39];
 
         @serialize()
-        public keysReset = [111];        
+        public keysReset = [220];
 
         @serialize()
-        public panningSensibility: number = 50.0;        
+        public panningSensibility: number = 50.0;
+
+        @serialize()
+        public zoomingSensibility: number = 25.0;
+
+        @serialize()
+        public useAltToZoom: boolean = true;
 
         private _ctrlPressed: boolean;
+        private _altPressed: boolean;
         private _onCanvasBlurObserver: Observer<Engine>;
         private _onKeyboardObserver: Observer<KeyboardInfo>;
         private _engine: Engine;
@@ -44,7 +51,8 @@ module BABYLON {
 
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
                     this._ctrlPressed = evt.ctrlKey;
-                    
+                    this._altPressed = evt.altKey;
+
                     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -62,7 +70,8 @@ module BABYLON {
                             }
                         }
                     }
-                } else {
+                }
+                else {
                     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -110,19 +119,27 @@ module BABYLON {
                     } else if (this.keysUp.indexOf(keyCode) !== -1) {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                             camera.inertialPanningY += 1 / this.panningSensibility;
-                        } else {
+                        }
+                        else if (this._altPressed && this.useAltToZoom) {
+                            camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
+                        }
+                        else {
                             camera.inertialBetaOffset -= 0.01;
                         }
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                             camera.inertialPanningX += 1 / this.panningSensibility;
-                        } else {                        
+                        } else {
                             camera.inertialAlphaOffset += 0.01;
                         }
                     } else if (this.keysDown.indexOf(keyCode) !== -1) {
                         if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                             camera.inertialPanningY -= 1 / this.panningSensibility;
-                        } else {
+                        }
+                        else if (this._altPressed && this.useAltToZoom) {
+                            camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
+                        }
+                        else {
                             camera.inertialBetaOffset += 0.01;
                         }
                     } else if (this.keysReset.indexOf(keyCode) !== -1) {

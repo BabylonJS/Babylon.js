@@ -125,8 +125,8 @@
         public _skipRendering = false;
         public _alternateCamera: Camera;
 
-        public customRenderTargets = new Array<RenderTargetTexture>();    
-        
+        public customRenderTargets = new Array<RenderTargetTexture>();
+
         // Observables
         public onViewMatrixChangedObservable = new Observable<Camera>();
         public onProjectionMatrixChangedObservable = new Observable<Camera>();
@@ -424,7 +424,7 @@
             this.updateCache();
             this._computedViewMatrix = this._getViewMatrix();
             this._currentRenderId = this.getScene().getRenderId();
-            
+
             this._refreshFrustumPlanes = true;
 
             if (!this.parent || !this.parent.getWorldMatrix) {
@@ -474,7 +474,7 @@
             this._cache.mode = this.mode;
             this._cache.minZ = this.minZ;
             this._cache.maxZ = this.maxZ;
-        
+
             // Matrix
             this._refreshFrustumPlanes = true;
 
@@ -484,7 +484,7 @@
                 this._cache.fov = this.fov;
                 this._cache.fovMode = this.fovMode;
                 this._cache.aspectRatio = engine.getAspectRatio(this);
-                
+
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
@@ -530,7 +530,7 @@
                 this._cache.orthoBottom = this.orthoBottom;
                 this._cache.orthoTop = this.orthoTop;
                 this._cache.renderWidth = engine.getRenderWidth();
-                this._cache.renderHeight = engine.getRenderHeight();                    
+                this._cache.renderHeight = engine.getRenderHeight();
             }
 
             this.onProjectionMatrixChangedObservable.notifyObservers(this);
@@ -585,7 +585,7 @@
             var direction = BABYLON.Vector3.Normalize(forwardWorld);
 
             return new Ray(origin, direction, length);
-        } 
+        }
 
         public dispose(): void {
             // Observables
@@ -609,9 +609,19 @@
             }
 
             // Postprocesses
-            var i = this._postProcesses.length;
-            while (--i >= 0) {
-                this._postProcesses[i].dispose(this);
+            if (this._rigPostProcess) {
+                this._rigPostProcess.dispose(this);
+                this._rigPostProcess = null;
+                this._postProcesses = [];
+            }
+            else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                this._rigPostProcess = null;
+                this._postProcesses = [];
+            } else {
+                var i = this._postProcesses.length;
+                while (--i >= 0) {
+                    this._postProcesses[i].dispose(this);
+                }
             }
 
             // Render targets
@@ -638,25 +648,29 @@
         public get rightCamera(): FreeCamera {
             if (this._rigCameras.length < 2) {
                 return undefined;
-            }            
+            }
             return (<FreeCamera>this._rigCameras[1]);
         }
 
         public getLeftTarget(): Vector3 {
             if (this._rigCameras.length < 1) {
                 return undefined;
-            }             
+            }
             return (<TargetCamera>this._rigCameras[0]).getTarget();
         }
 
         public getRightTarget(): Vector3 {
             if (this._rigCameras.length < 2) {
                 return undefined;
-            }             
+            }
             return (<TargetCamera>this._rigCameras[1]).getTarget();
         }
 
         public setCameraRigMode(mode: number, rigParams: any): void {
+            if (this.cameraRigMode === mode) {
+                return;
+            }
+
             while (this._rigCameras.length > 0) {
                 this._rigCameras.pop().dispose();
             }
@@ -718,6 +732,7 @@
                         //Left eye
                         this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
                         this._rigCameras[0].setCameraRigParameter("left", true);
+                        //leaving this for future reference
                         this._rigCameras[0].setCameraRigParameter("specs", rigParams.specs);
                         this._rigCameras[0].setCameraRigParameter("eyeParameters", leftEye);
                         this._rigCameras[0].setCameraRigParameter("frameData", rigParams.frameData);

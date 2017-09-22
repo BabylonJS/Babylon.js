@@ -26,6 +26,7 @@
       cursor: ew-resize; }
   .insp-wrapper .insp-right-panel {
     width: 750px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     flex-shrink: 0; }
@@ -84,7 +85,8 @@
     .insp-wrapper .treeTool.active {
       color: #5db0d7; }
   .insp-wrapper .tab-panel {
-    height: 100%; }
+    height: 100%;
+    overflow-y: auto; }
     .insp-wrapper .tab-panel.searchable {
       height: calc(100% - 30px - 10px); }
     .insp-wrapper .tab-panel .texture-image {

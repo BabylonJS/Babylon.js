@@ -331,7 +331,18 @@ module BABYLON {
          * Prepare the list of defines associated to the shader.
          * @param defines the list of defines to complete
          */
-        public prepareDefines(defines: IImageProcessingConfigurationDefines): void {
+        public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess: boolean = false): void {
+            if (forPostProcess !== this.applyByPostProcess) {
+                defines.VIGNETTE = false;
+                defines.TONEMAPPING = false;
+                defines.CONTRAST = false;
+                defines.EXPOSURE = false;
+                defines.COLORCURVES = false;
+                defines.COLORGRADING = false;  
+                defines.IMAGEPROCESSING = false;              
+                defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
+                return;
+            }
             defines.VIGNETTE = this.vignetteEnabled;
             defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;

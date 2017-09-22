@@ -29,6 +29,7 @@ module BABYLON {
             this._loadingDiv.id = "babylonjsLoadingDiv";
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.style.transition = "opacity 1.5s ease";
+            this._loadingDiv.style.pointerEvents = "none";
 
             // Loading text
             this._loadingTextDiv = document.createElement("div");
