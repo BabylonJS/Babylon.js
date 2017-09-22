@@ -22,6 +22,39 @@ For preview release you can use the following ones:
 
 Additional references can be found on https://preview.babylonjs.com/xxx where xxx is the folder structure you can find in the /dist/preview release folder like https://preview.babylonjs.com/gui/babylon.gui.min.js
 
+## NPM
+
+BabylonJS and its modules are published on NPM with full typing support. To install use
+
+```
+npm install babylonjs --save
+```
+
+This will allow you to import BabylonJS entirely using:
+
+```
+import * as BABYLON from 'babylonjs';
+```
+
+or individual classes using:
+
+```
+import { Scene, Engine } from 'babylonjs';
+```
+
+If using TypeScript, don't forget to add 'babylonjs' to 'types' in tsconfig.json:
+
+```
+    ....
+    "types": [
+        "babylonjs",
+        "anotherAwesomeDependency"
+    ],
+    ....
+```
+
+To add a module install the respected package. A list of extra packages and their installation instructions can be found on [babylonjs' user at npm](https://www.npmjs.com/~babylonjs).
+
 ## Preview release
 
 **3.1-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
