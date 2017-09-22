@@ -36,8 +36,6 @@ namespace Max2Babylon
 
             // Transform
             gltfNode.translation = babylonLight.position;
-            // Switch from left to right handed coordinate system
-            //gltfNode.translation[0] *= -1;
             // No rotation defined for babylon light. Use identity instead.
             gltfNode.rotation = new float[4] { 0, 0, 0, 1 };
             // No scaling defined for babylon light. Use identity instead.
