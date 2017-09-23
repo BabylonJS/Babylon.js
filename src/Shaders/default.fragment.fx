@@ -180,19 +180,19 @@ void main(void) {
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
 
-#ifdef ALPHATEST
-	if (baseColor.a < 0.4)
-		discard;
-#endif
+	#ifdef ALPHATEST
+		if (baseColor.a < 0.4)
+			discard;
+	#endif
 
-#include<depthPrePass>
-
-#ifdef ALPHAFROMDIFFUSE
-	alpha *= baseColor.a;
-#endif
+	#ifdef ALPHAFROMDIFFUSE
+		alpha *= baseColor.a;
+	#endif
 
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
+
+#include<depthPrePass>
 
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
