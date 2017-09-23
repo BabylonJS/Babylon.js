@@ -17784,6 +17784,9 @@ var BABYLON;
                 }
             };
             this._onPointerUp = function (evt) {
+                if (!_this._isButtonPressed) {
+                    return;
+                }
                 _this._isButtonPressed = false;
                 _this._pickedUpMesh = null;
                 _this._meshPickProceed = false;
@@ -17911,7 +17914,7 @@ var BABYLON;
                 canvas.addEventListener(eventPrefix + "down", this._onPointerDown, false);
             }
             if (attachUp) {
-                canvas.addEventListener(eventPrefix + "up", this._onPointerUp, false);
+                window.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             }
             canvas.tabIndex = 1;
         };
@@ -17921,7 +17924,7 @@ var BABYLON;
             var canvas = engine.getRenderingCanvas();
             canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
             canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
-            canvas.removeEventListener(eventPrefix + "up", this._onPointerUp);
+            window.removeEventListener(eventPrefix + "up", this._onPointerUp);
             engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
             engine.onCanvasFocusObservable.remove(this._onCanvasFocusObserver);
             // Wheel

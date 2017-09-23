@@ -1484,9 +1484,10 @@
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
-		if (!this._isButtonPressed) {
-			return;
-		}
+                if (!this._isButtonPressed) {   // We are attaching the pointer up to windows because of a bug in FF                    
+                    return;                     // So we need to test it the pointer down was pressed before.
+                }
+
                 this._isButtonPressed = false;
                 this._pickedUpMesh = null;
                 this._meshPickProceed = false;
