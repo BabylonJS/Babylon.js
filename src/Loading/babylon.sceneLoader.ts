@@ -189,6 +189,82 @@
             }
         }
 
+        private static _CleanMatricesIndices(meshes:AbstractMesh[], skeletons:Skeleton[]): void {
+            if (!SceneLoader._CleanBoneMatrixWeights) {
+                return;
+            }
+            for (var i = 0; i < skeletons.length; i++) {
+                var skeleton = skeletons[i];
+                var noInfluenceBone = new Bone("noInfluence", skeleton, null, Matrix.Identity(), Matrix.Identity());
+            }
+            for (var i = 0; i < meshes.length; i++) {
+                var mesh = meshes[i];
+                if (mesh.skeleton) {
+                    var matricesWeights: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
+                    var matricesWeightsExtra: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesWeightsExtraKind);
+                    var matricesIndices: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                    var matricesIndicesExtra: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
+                    var noinfluenceBoneIndex = mesh.skeleton.bones.length - 1;
+    
+                    if (matricesWeights) {
+                        SceneLoader._CleanMatricesWeights(matricesWeights, matricesIndices, matricesWeightsExtra, matricesIndicesExtra, noinfluenceBoneIndex,mesh.numBoneInfluencers);
+                        mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
+                        if (matricesIndicesExtra) {
+                            mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, matricesWeightsExtra);
+                            mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);    
+                        }                    
+                    }    
+                }
+            }
+        }
+
+        private static _CleanMatricesWeights(matricesWeights: number[] | Float32Array, matricesIndices: number[] | Float32Array, matricesWeightsExtra: number[] | Float32Array, matricesIndicesExtra: number[] | Float32Array, noinfluenceBoneIndex: number, influencers: number): void {
+            let size = matricesWeights.length;
+            for (var i = 0; i < size; i += 4) {
+                let weight = 0.0;
+                let firstZeroWeight = -1;
+                for (var j = 0; j < 4; j++) {
+                    let w = matricesWeights[i + j];
+                    weight += w;
+                    if (w < 1e-3 && firstZeroWeight < 0) {
+                        firstZeroWeight = j;
+                    }
+                }
+                if (matricesWeightsExtra) {
+                    for (var j = 0; j < 4; j++) {
+                        let w = matricesWeightsExtra[i + j];
+                        weight += w;
+                        if (w < 1e-3 && firstZeroWeight < 0) {
+                            firstZeroWeight = j + 4;
+                        }
+                    }
+                }
+                if (firstZeroWeight < 0  || firstZeroWeight > (influencers-1)) {
+                    firstZeroWeight = influencers-1;
+                }
+                if (weight > 1e-3) {
+                    let mweight = 1.0/weight;
+                    for (var j = 0; j < 4; j++) {
+                        matricesWeights[i + j] *= mweight;
+                    }
+                    if (matricesWeightsExtra) {
+                        for (var j = 0; j < 4; j++) {
+                            matricesWeightsExtra[i + j] *= mweight;
+                        }    
+                    }
+                } else {
+                    if (firstZeroWeight>=4) {
+                        matricesWeightsExtra[i+firstZeroWeight-4] = 1.0 - weight;
+                        matricesIndicesExtra[i+firstZeroWeight-4] = noinfluenceBoneIndex;    
+                    } else {
+                        matricesWeights[i+firstZeroWeight] = 1.0 - weight;
+                        matricesIndices[i+firstZeroWeight] = noinfluenceBoneIndex;    
+                    }
+                }
+            }
+        }
+
         // Public functions
         public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
             return SceneLoader._getPluginForExtension(extension).plugin;
@@ -257,6 +333,7 @@
 
                     if (onSuccess) {
                         scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                        SceneLoader._CleanMatricesIndices(meshes,skeletons);
                         onSuccess(meshes, particleSystems, skeletons);
                         scene._removePendingData(loadingToken);
                     }
@@ -266,6 +343,7 @@
                     asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
                         if (onSuccess) {
                             scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                            SceneLoader._CleanMatricesIndices(meshes,skeletons);
                             onSuccess(meshes, particleSystems, skeletons);
                             scene._removePendingData(loadingToken);
                         }
@@ -331,6 +409,7 @@
                     }
 
                     if (onSuccess) {
+                        SceneLoader._CleanMatricesIndices(scene.meshes,scene.skeletons);
                         onSuccess(scene);
                     }
 
@@ -340,6 +419,7 @@
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin.loadAsync(scene, data, rootUrl, () => {
                         if (onSuccess) {
+                            SceneLoader._CleanMatricesIndices(scene.meshes,scene.skeletons);
                             onSuccess(scene);
                         }
                         
