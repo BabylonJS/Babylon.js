@@ -996,6 +996,9 @@ var BABYLON;
             if (!loaderData) {
                 return;
             }
+            if (this.onParsed) {
+                this.onParsed(loaderData);
+            }
             var loader = this._getLoader(loaderData, onError);
             if (!loader) {
                 return;
@@ -1006,6 +1009,9 @@ var BABYLON;
             var loaderData = GLTFFileLoader._parse(data, onError);
             if (!loaderData) {
                 return;
+            }
+            if (this.onParsed) {
+                this.onParsed(loaderData);
             }
             var loader = this._getLoader(loaderData, onError);
             if (!loader) {
