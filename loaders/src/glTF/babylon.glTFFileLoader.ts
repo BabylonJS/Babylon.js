@@ -27,6 +27,9 @@ module BABYLON {
         public static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         public static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
 
+        // Common options
+        public onParsed: (data: IGLTFLoaderData) => void;
+
         // V1 options
         public static HomogeneousCoordinates: boolean = false;
         public static IncrementalLoading: boolean = true;
@@ -61,6 +64,10 @@ module BABYLON {
                 return;
             }
 
+            if (this.onParsed) {
+                this.onParsed(loaderData);
+            }
+
             var loader = this._getLoader(loaderData, onError);
             if (!loader) {
                 return;
@@ -73,6 +80,10 @@ module BABYLON {
             var loaderData = GLTFFileLoader._parse(data, onError);
             if (!loaderData) {
                 return;
+            }
+
+            if (this.onParsed) {
+                this.onParsed(loaderData);
             }
 
             var loader = this._getLoader(loaderData, onError);
