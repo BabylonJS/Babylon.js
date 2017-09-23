@@ -1403,7 +1403,7 @@
          * @param normal  {BABYLON.Vector3}  direction of the normal.
          * @return {number} the angle between vector0 and vector1.
          */
-        public static BetweenTwoVectors(vector0: Vector3, vector1: Vector3, normal: Vector3):number {
+        public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3):number {
             var v0:Vector3 = vector0.clone().normalize();
             var v1:Vector3 = vector1.clone().normalize();
             var dot:number = Vector3.Dot(v0, v1);
