@@ -1397,6 +1397,24 @@
         }
 
         /**
+         * Get angle between two vectors.
+         * @param vector0 {BABYLON.Vector3}
+         * @param vector1 {BABYLON.Vector3}
+         * @param normal  {BABYLON.Vector3}  direction of the normal.
+         * @return {number} the angle between vector0 and vector1.
+         */
+        public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3):number {
+            var v0:Vector3 = vector0.clone().normalize();
+            var v1:Vector3 = vector1.clone().normalize();
+            var dot:number = Vector3.Dot(v0, v1);
+            var n = Vector3.Cross(v0, v1);
+            if (Vector3.Dot(n, normal) > 0) {
+                return Math.acos(dot);
+            }
+            return -Math.acos(dot);
+        }
+
+        /**
          * Returns a new Vector3 set from the index "offset" of the passed array.
          */
         public static FromArray(array: ArrayLike<number>, offset?: number): Vector3 {
