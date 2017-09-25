@@ -37,6 +37,12 @@ module BABYLON {
         public gridRatio = 1.0;
 
         /**
+         * Allows setting an offset for the grid lines.
+         */
+        @serializeAsColor3()
+        public gridOffset = Vector3.Zero();
+
+        /**
          * The frequency of thicker lines.
          */
         @serialize()
@@ -126,7 +132,7 @@ module BABYLON {
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect("grid",
                     attribs,
-                    ["projection", "worldView", "mainColor", "lineColor", "gridControl", "vFogInfos", "vFogColor", "world", "view"],
+                    ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"],
                     [],
                     join,
                     null,
@@ -166,6 +172,8 @@ module BABYLON {
                 this._activeEffect.setColor3("mainColor", this.mainColor);
                 this._activeEffect.setColor3("lineColor", this.lineColor);
 
+                this._activeEffect.setVector3("gridOffset", this.gridOffset);
+
                 this._gridControl.x = this.gridRatio;
                 this._gridControl.y = Math.round(this.majorUnitFrequency);
                 this._gridControl.z = this.minorUnitVisibility;
@@ -194,7 +202,7 @@ module BABYLON {
 
         public getClassName(): string {
             return "GridMaterial";
-        }             
+        }
 
         public static Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {
             return SerializationHelper.Parse(() => new GridMaterial(source.name, scene), source, scene, rootUrl);
