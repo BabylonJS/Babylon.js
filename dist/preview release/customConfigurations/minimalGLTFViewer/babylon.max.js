@@ -46726,6 +46726,7 @@ var BABYLON;
             else {
                 this._texture = this.getScene().getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
+            this._size = size;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
