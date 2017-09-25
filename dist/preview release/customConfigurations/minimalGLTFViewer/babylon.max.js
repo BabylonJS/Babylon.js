@@ -17785,7 +17785,7 @@ var BABYLON;
             };
             this._onPointerUp = function (evt) {
                 if (!_this._isButtonPressed) {
-                    return;
+                    return; // So we need to test it the pointer down was pressed before.
                 }
                 _this._isButtonPressed = false;
                 _this._pickedUpMesh = null;
