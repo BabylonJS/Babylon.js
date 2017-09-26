@@ -559,6 +559,11 @@
          */
         public onCanvasPointerOutObservable = new Observable<Engine>();
 
+        /**
+         * Observable event triggered before each texture is initialized
+         */
+        public onBeforeTextureInitObservable = new Observable<Texture>();
+
         //WebVR
 
         private _vrDisplay: any = undefined;
