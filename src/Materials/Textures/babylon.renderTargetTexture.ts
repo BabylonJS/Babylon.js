@@ -269,6 +269,8 @@
             } else {
                 this._texture = this.getScene().getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
+
+            this._size = size;
         }
 
         public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {

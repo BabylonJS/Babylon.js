@@ -117,6 +117,8 @@
 
             scene = this.getScene();
 
+            scene.getEngine().onBeforeTextureInitObservable.notifyObservers(this);
+
             let load = () => {
                 if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
@@ -130,17 +132,17 @@
                 }
             }
 
-            if (!url) {
+            if (!this.url) {
                 this._delayedOnLoad = load;
                 this._delayedOnError = onError;
                 return;
             }
 
-            this._texture = this._getFromCache(url, noMipmap, samplingMode);
+            this._texture = this._getFromCache(this.url, noMipmap, samplingMode);
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer, null, this._format);
+                    this._texture = scene.getEngine().createTexture(this.url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer, null, this._format);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
