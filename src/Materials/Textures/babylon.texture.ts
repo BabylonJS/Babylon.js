@@ -117,6 +117,8 @@
 
             scene = this.getScene();
 
+            scene.getEngine().onBeforeTextureInitObservable.notifyObservers(this);
+
             let load = () => {
                 if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
@@ -157,6 +159,8 @@
                     this._texture.onLoadedObservable.add(load);
                 }
             }
+
+            scene.getEngine().onAfterTextureInitObservable.notifyObservers(this);
         }
 
         public updateURL(url: string): void {
