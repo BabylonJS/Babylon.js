@@ -55,6 +55,9 @@ namespace Max2Babylon
                 gltfNode.mesh = gltfMesh.index;
             }
 
+            // Animations
+            ExportNodeAnimation(babylonAbstractMesh, gltf, gltfNode);
+
             return gltfNode;
         }
     }

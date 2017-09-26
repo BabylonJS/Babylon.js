@@ -42,6 +42,10 @@
   <ItemGroup>
     <Compile Include="GLTF.cs" />
     <Compile Include="GLTFAccessor.cs" />
+    <Compile Include="GLTFAnimationSampler.cs" />
+    <Compile Include="GLTFAnimation.cs" />
+    <Compile Include="GLTFChannelTarget.cs" />
+    <Compile Include="GLTFChannel.cs" />
     <Compile Include="GLTFBufferView.cs" />
     <Compile Include="GLTFBuffer.cs" />
     <Compile Include="GLTFCameraPerspective.cs" />
