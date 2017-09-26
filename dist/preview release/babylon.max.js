@@ -7654,6 +7654,10 @@ var BABYLON;
              * Observable event triggered each time the canvas receives pointerout event
              */
             this.onCanvasPointerOutObservable = new BABYLON.Observable();
+            /**
+             * Observable event triggered before each texture is initialized
+             */
+            this.onBeforeTextureInitObservable = new BABYLON.Observable();
             //WebVR
             this._vrDisplay = undefined;
             this._vrSupported = false;
@@ -21015,6 +21019,7 @@ var BABYLON;
             _this._deleteBuffer = deleteBuffer;
             _this._format = format;
             scene = _this.getScene();
+            scene.getEngine().onBeforeTextureInitObservable.notifyObservers(_this);
             var load = function () {
                 if (_this._onLoadObservable && _this._onLoadObservable.hasObservers()) {
                     _this.onLoadObservable.notifyObservers(_this);
@@ -21026,15 +21031,15 @@ var BABYLON;
                     scene.resetCachedMaterial();
                 }
             };
-            if (!url) {
+            if (!_this.url) {
                 _this._delayedOnLoad = load;
                 _this._delayedOnError = onError;
                 return _this;
             }
-            _this._texture = _this._getFromCache(url, noMipmap, samplingMode);
+            _this._texture = _this._getFromCache(_this.url, noMipmap, samplingMode);
             if (!_this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    _this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, _this._samplingMode, load, onError, _this._buffer, null, _this._format);
+                    _this._texture = scene.getEngine().createTexture(_this.url, noMipmap, invertY, scene, _this._samplingMode, load, onError, _this._buffer, null, _this._format);
                     if (deleteBuffer) {
                         delete _this._buffer;
                     }
