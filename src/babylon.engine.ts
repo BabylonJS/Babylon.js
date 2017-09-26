@@ -562,12 +562,7 @@
         /**
          * Observable event triggered before each texture is initialized
          */
-        public onBeforeTextureInitObservable = new Observable<Texture>();  
-
-        /**
-         * Observable event triggered after each texture is initialized
-         */
-        public onAfterTextureInitObservable = new Observable<Texture>();  
+        public onBeforeTextureInitObservable = new Observable<Texture>();
 
         //WebVR
 
