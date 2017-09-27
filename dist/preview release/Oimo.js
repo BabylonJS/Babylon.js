@@ -1882,12 +1882,12 @@ OIMO.Mat33.prototype = {
     },
     mul: function (m1, m2) {
         var te = this.elements, tm1 = m1.elements, tm2 = m2.elements,
-        a0 = tm1[0], a3 = tm1[3], a6 = tm1[6],
-        a1 = tm1[1], a4 = tm1[4], a7 = tm1[7],
-        a2 = tm1[2], a5 = tm1[5], a8 = tm1[8],
-        b0 = tm2[0], b3 = tm2[3], b6 = tm2[6],
-        b1 = tm2[1], b4 = tm2[4], b7 = tm2[7],
-        b2 = tm2[2], b5 = tm2[5], b8 = tm2[8];
+            a0 = tm1[0], a3 = tm1[3], a6 = tm1[6],
+            a1 = tm1[1], a4 = tm1[4], a7 = tm1[7],
+            a2 = tm1[2], a5 = tm1[5], a8 = tm1[8],
+            b0 = tm2[0], b3 = tm2[3], b6 = tm2[6],
+            b1 = tm2[1], b4 = tm2[4], b7 = tm2[7],
+            b2 = tm2[2], b5 = tm2[5], b8 = tm2[8];
         te[0] = a0 * b0 + a1 * b3 + a2 * b6;
         te[1] = a0 * b1 + a1 * b4 + a2 * b7;
         te[2] = a0 * b2 + a1 * b5 + a2 * b8;
@@ -1968,10 +1968,10 @@ OIMO.Mat33.prototype = {
     },
     setQuat: function (q) {
         var te = this.elements,
-        x2 = 2 * q.x, y2 = 2 * q.y, z2 = 2 * q.z,
-        xx = q.x * x2, yy = q.y * y2, zz = q.z * z2,
-        xy = q.x * y2, yz = q.y * z2, xz = q.x * z2,
-        sx = q.s * x2, sy = q.s * y2, sz = q.s * z2;
+            x2 = 2 * q.x, y2 = 2 * q.y, z2 = 2 * q.z,
+            xx = q.x * x2, yy = q.y * y2, zz = q.z * z2,
+            xy = q.x * y2, yz = q.y * z2, xz = q.x * z2,
+            sx = q.s * x2, sy = q.s * y2, sz = q.s * z2;
 
         te[0] = 1 - yy - zz;
         te[1] = xy - sz;
@@ -1986,13 +1986,13 @@ OIMO.Mat33.prototype = {
     },
     invert: function (m) {
         var te = this.elements, tm = m.elements,
-        a0 = tm[0], a3 = tm[3], a6 = tm[6],
-        a1 = tm[1], a4 = tm[4], a7 = tm[7],
-        a2 = tm[2], a5 = tm[5], a8 = tm[8],
-        b01 = a4 * a8 - a7 * a5,
-        b11 = a7 * a2 - a1 * a8,
-        b21 = a1 * a5 - a4 * a2,
-        dt = a0 * (b01) + a3 * (b11) + a6 * (b21);
+            a0 = tm[0], a3 = tm[3], a6 = tm[6],
+            a1 = tm[1], a4 = tm[4], a7 = tm[7],
+            a2 = tm[2], a5 = tm[5], a8 = tm[8],
+            b01 = a4 * a8 - a7 * a5,
+            b11 = a7 * a2 - a1 * a8,
+            b21 = a1 * a5 - a4 * a2,
+            dt = a0 * (b01) + a3 * (b11) + a6 * (b21);
 
         if (dt != 0) { dt = 1.0 / dt; }
         te[0] = dt * b01;//(a4*a8 - a5*a7);
@@ -2051,9 +2051,9 @@ OIMO.Mat33.prototype = {
     toString: function () {
         var te = this.elements;
         var text =
-        "Mat33|" + te[0].toFixed(4) + ", " + te[1].toFixed(4) + ", " + te[2].toFixed(4) + "|\n" +
-        "     |" + te[3].toFixed(4) + ", " + te[4].toFixed(4) + ", " + te[5].toFixed(4) + "|\n" +
-        "     |" + te[6].toFixed(4) + ", " + te[7].toFixed(4) + ", " + te[8].toFixed(4) + "|";
+            "Mat33|" + te[0].toFixed(4) + ", " + te[1].toFixed(4) + ", " + te[2].toFixed(4) + "|\n" +
+            "     |" + te[3].toFixed(4) + ", " + te[4].toFixed(4) + ", " + te[5].toFixed(4) + "|\n" +
+            "     |" + te[6].toFixed(4) + ", " + te[7].toFixed(4) + ", " + te[8].toFixed(4) + "|";
         return text;
     },
 
@@ -2203,7 +2203,7 @@ OIMO.Quat.prototype = {
     },
     mul: function (q1, q2) {
         var ax = q1.x, ay = q1.y, az = q1.z, as = q1.s,
-        bx = q2.x, by = q2.y, bz = q2.z, bs = q2.s;
+            bx = q2.x, by = q2.y, bz = q2.z, bs = q2.s;
         this.x = ax * bs + as * bx + ay * bz - az * by;
         this.y = ay * bs + as * by + az * bx - ax * bz;
         this.z = az * bs + as * bz + ax * by - ay * bx;
@@ -2424,7 +2424,7 @@ OIMO.Vec3.prototype = {
     },*/
     cross: function (v1, v2) {
         var ax = v1.x, ay = v1.y, az = v1.z,
-        bx = v2.x, by = v2.y, bz = v2.z;
+            bx = v2.x, by = v2.y, bz = v2.z;
         this.x = ay * bz - az * by;
         this.y = az * bx - ax * bz;
         this.z = ax * by - ay * bx;
@@ -3766,7 +3766,7 @@ OIMO.SliderJoint.prototype.preSolve = function (timeStep, invTimeStep) {
         nx * (angAxis1Y * angAxis2Z - angAxis1Z * angAxis2Y) +
         ny * (angAxis1Z * angAxis2X - angAxis1X * angAxis2Z) +
         nz * (angAxis1X * angAxis2Y - angAxis1Y * angAxis2X) < 0
-        ) {
+    ) {
         this.rotationalLimitMotor.angle = -this.acosClamp(angAxis1X * angAxis2X + angAxis1Y * angAxis2Y + angAxis1Z * angAxis2Z);
     } else {
         this.rotationalLimitMotor.angle = this.acosClamp(angAxis1X * angAxis2X + angAxis1Y * angAxis2Y + angAxis1Z * angAxis2Z);
@@ -4654,9 +4654,9 @@ OIMO.Rotational3Constraint.prototype = {
         this.k22 += this.cfm3;
 
         var inv = 1 / (
-        this.k00 * (this.k11 * this.k22 - this.k21 * this.k12) +
-        this.k10 * (this.k21 * this.k02 - this.k01 * this.k22) +
-        this.k20 * (this.k01 * this.k12 - this.k11 * this.k02)
+            this.k00 * (this.k11 * this.k22 - this.k21 * this.k12) +
+            this.k10 * (this.k21 * this.k02 - this.k01 * this.k22) +
+            this.k20 * (this.k01 * this.k12 - this.k11 * this.k02)
         );
         this.d00 = (this.k11 * this.k22 - this.k12 * this.k21) * inv;
         this.d01 = (this.k02 * this.k21 - this.k01 * this.k22) * inv;
@@ -5580,9 +5580,9 @@ OIMO.Translational3Constraint.prototype = {
         this.k22 += this.cfm3;
 
         var inv = 1 / (
-        this.k00 * (this.k11 * this.k22 - this.k21 * this.k12) +
-        this.k10 * (this.k21 * this.k02 - this.k01 * this.k22) +
-        this.k20 * (this.k01 * this.k12 - this.k11 * this.k02)
+            this.k00 * (this.k11 * this.k22 - this.k21 * this.k12) +
+            this.k10 * (this.k21 * this.k02 - this.k01 * this.k22) +
+            this.k20 * (this.k01 * this.k12 - this.k11 * this.k02)
         );
         this.d00 = (this.k11 * this.k22 - this.k12 * this.k21) * inv;
         this.d01 = (this.k02 * this.k21 - this.k01 * this.k22) * inv;
@@ -5956,7 +5956,7 @@ OIMO.TranslationalConstraint.prototype = {
         this.a2y = this.t2x * this.i2e10 + this.t2y * this.i2e11 + this.t2z * this.i2e12;
         this.a2z = this.t2x * this.i2e20 + this.t2y * this.i2e21 + this.t2z * this.i2e22;
         this.motorDenom =
-        this.m1 + this.m2 +
+            this.m1 + this.m2 +
             this.ax * (this.a1y * this.r1z - this.a1z * this.r1y + this.a2y * this.r2z - this.a2z * this.r2y) +
             this.ay * (this.a1z * this.r1x - this.a1x * this.r1z + this.a2z * this.r2x - this.a2x * this.r2z) +
             this.az * (this.a1x * this.r1y - this.a1y * this.r1x + this.a2x * this.r2y - this.a2y * this.r2x);
@@ -6613,18 +6613,18 @@ OIMO.ContactConstraint.prototype.solve = function () {
         var rvY = lv2y - lv1y;
         var rvZ = lv2z - lv1z;
         rvn =
-        rvX * c.tanX + rvY * c.tanY + rvZ * c.tanZ +
-        av2x * c.tanT2X + av2y * c.tanT2Y + av2z * c.tanT2Z -
-        av1x * c.tanT1X - av1y * c.tanT1Y - av1z * c.tanT1Z
-        ;
+            rvX * c.tanX + rvY * c.tanY + rvZ * c.tanZ +
+            av2x * c.tanT2X + av2y * c.tanT2Y + av2z * c.tanT2Z -
+            av1x * c.tanT1X - av1y * c.tanT1Y - av1z * c.tanT1Z
+            ;
         oldImp1 = tanImp;
         newImp1 = rvn * c.tanDen;
         tanImp += newImp1;
         rvn =
-        rvX * c.binX + rvY * c.binY + rvZ * c.binZ +
-        av2x * c.binT2X + av2y * c.binT2Y + av2z * c.binT2Z -
-        av1x * c.binT1X - av1y * c.binT1Y - av1z * c.binT1Z
-        ;
+            rvX * c.binX + rvY * c.binY + rvZ * c.binZ +
+            av2x * c.binT2X + av2y * c.binT2Y + av2z * c.binT2Z -
+            av1x * c.binT1X - av1y * c.binT1Y - av1z * c.binT1Z
+            ;
         oldImp2 = binImp;
         newImp2 = rvn * c.binDen;
         binImp += newImp2;
@@ -6654,9 +6654,9 @@ OIMO.ContactConstraint.prototype.solve = function () {
 
         // restitution part
         rvn =
-        (lv2x - lv1x) * c.norX + (lv2y - lv1y) * c.norY + (lv2z - lv1z) * c.norZ +
-        av2x * c.norT2X + av2y * c.norT2Y + av2z * c.norT2Z -
-        av1x * c.norT1X - av1y * c.norT1Y - av1z * c.norT1Z;
+            (lv2x - lv1x) * c.norX + (lv2y - lv1y) * c.norY + (lv2z - lv1z) * c.norZ +
+            av2x * c.norT2X + av2y * c.norT2Y + av2z * c.norT2Z -
+            av1x * c.norT1X - av1y * c.norT1Y - av1z * c.norT1Z;
 
         oldImp1 = norImp;
         newImp1 = (rvn - c.norTar) * c.norDen;
@@ -7329,10 +7329,10 @@ OIMO.TetraShape = function (config, p1, p2, p3, p4) {
     // Vertices and faces of tetra
     this.verts = [p1, p2, p3, p4];
     this.faces = [
-      mtri(0, 1, 2),
-      mtri(1, 2, 3),
-      mtri(2, 3, 4),
-      mtri(4, 0, 1),
+        mtri(0, 1, 2),
+        mtri(1, 2, 3),
+        mtri(2, 3, 4),
+        mtri(4, 0, 1),
     ];
 };
 OIMO.TetraShape.prototype = Object.create(OIMO.Shape.prototype);
@@ -9207,14 +9207,14 @@ OIMO.BoxCylinderCollisionDetector.prototype.getSep = function (c1, c2, sep, pos,
                 return false;
             }
             if (
-            (v4y * v1z - v4z * v1y) * v0x +
-            (v4z * v1x - v4x * v1z) * v0y +
-            (v4x * v1y - v4y * v1x) * v0z < 0
+                (v4y * v1z - v4z * v1y) * v0x +
+                (v4z * v1x - v4x * v1z) * v0y +
+                (v4x * v1y - v4y * v1x) * v0z < 0
             ) {
                 if (
-                (v4y * v2z - v4z * v2y) * v0x +
-                (v4z * v2x - v4x * v2z) * v0y +
-                (v4x * v2y - v4y * v2x) * v0z < 0
+                    (v4y * v2z - v4z * v2y) * v0x +
+                    (v4z * v2x - v4x * v2z) * v0y +
+                    (v4x * v2y - v4y * v2x) * v0z < 0
                 ) {
                     v1x = v4x;
                     v1y = v4y;
@@ -9238,9 +9238,9 @@ OIMO.BoxCylinderCollisionDetector.prototype.getSep = function (c1, c2, sep, pos,
                 }
             } else {
                 if (
-                (v4y * v3z - v4z * v3y) * v0x +
-                (v4z * v3x - v4x * v3z) * v0y +
-                (v4x * v3y - v4y * v3x) * v0z < 0
+                    (v4y * v3z - v4z * v3y) * v0x +
+                    (v4z * v3x - v4x * v3z) * v0y +
+                    (v4x * v3y - v4y * v3x) * v0z < 0
                 ) {
                     v2x = v4x;
                     v2y = v4y;
@@ -10239,14 +10239,14 @@ OIMO.CylinderCylinderCollisionDetector.prototype.getSep = function (c1, c2, sep,
                 return false;
             }
             if (
-            (v4y * v1z - v4z * v1y) * v0x +
-            (v4z * v1x - v4x * v1z) * v0y +
-            (v4x * v1y - v4y * v1x) * v0z < 0
+                (v4y * v1z - v4z * v1y) * v0x +
+                (v4z * v1x - v4x * v1z) * v0y +
+                (v4x * v1y - v4y * v1x) * v0z < 0
             ) {
                 if (
-                (v4y * v2z - v4z * v2y) * v0x +
-                (v4z * v2x - v4x * v2z) * v0y +
-                (v4x * v2y - v4y * v2x) * v0z < 0
+                    (v4y * v2z - v4z * v2y) * v0x +
+                    (v4z * v2x - v4x * v2z) * v0y +
+                    (v4x * v2y - v4y * v2x) * v0z < 0
                 ) {
                     v1x = v4x;
                     v1y = v4y;
@@ -10270,9 +10270,9 @@ OIMO.CylinderCylinderCollisionDetector.prototype.getSep = function (c1, c2, sep,
                 }
             } else {
                 if (
-                (v4y * v3z - v4z * v3y) * v0x +
-                (v4z * v3x - v4x * v3z) * v0y +
-                (v4x * v3y - v4y * v3x) * v0z < 0
+                    (v4y * v3z - v4z * v3y) * v0x +
+                    (v4z * v3x - v4x * v3z) * v0y +
+                    (v4x * v3y - v4y * v3x) * v0z < 0
                 ) {
                     v2x = v4x;
                     v2y = v4y;
@@ -10932,9 +10932,9 @@ OIMO.TetraTetraCollisionDetector.prototype.detectCollision = function (tet1, tet
             j3 = vs2[fs[i].c];
 
             if (
-              tricheck(pt(vec.x, vec.y), pt(j1.x, j1.y), pt(j2.x, j2.y), pt(j3.x, j3.y)) &&
-              tricheck(pt(vec.x, vec.z), pt(j1.x, j1.z), pt(j2.x, j2.z), pt(j3.x, j3.z)) &&
-              tricheck(pt(vec.z, vec.y), pt(j1.z, j1.y), pt(j2.z, j2.y), pt(j3.z, j3.y))
+                tricheck(pt(vec.x, vec.y), pt(j1.x, j1.y), pt(j2.x, j2.y), pt(j3.x, j3.y)) &&
+                tricheck(pt(vec.x, vec.z), pt(j1.x, j1.z), pt(j2.x, j2.z), pt(j3.x, j3.z)) &&
+                tricheck(pt(vec.z, vec.y), pt(j1.z, j1.y), pt(j2.z, j2.y), pt(j3.z, j3.y))
             )
                 ts++;
 
@@ -11518,15 +11518,15 @@ OIMO.SAPBroadPhase = function () {
     this.numElementsS = 0;
     // dynamic proxies
     this.axesD = [
-       new OIMO.SAPAxis(),
-       new OIMO.SAPAxis(),
-       new OIMO.SAPAxis()
+        new OIMO.SAPAxis(),
+        new OIMO.SAPAxis(),
+        new OIMO.SAPAxis()
     ];
     // static or sleeping proxies
     this.axesS = [
-       new OIMO.SAPAxis(),
-       new OIMO.SAPAxis(),
-       new OIMO.SAPAxis()
+        new OIMO.SAPAxis(),
+        new OIMO.SAPAxis(),
+        new OIMO.SAPAxis()
     ];
 
     this.index1 = 0;
@@ -12510,3 +12510,20 @@ OIMO.World.prototype.add = function (obj) {
     }
 }
 
+//UMD simplified
+
+var root = this;
+
+if (!root['OIMO']) {
+    if (typeof exports === 'object' && typeof module === 'object')
+        module.exports = OIMO;
+    else if (typeof define === 'function' && define.amd)
+        define([], function () {
+            return OIMO;
+        });
+    else if (typeof exports === 'object')
+        exports["OIMO"] = OIMO;
+    else {
+        root["OIMO"] = OIMO;
+    }
+}
