@@ -56892,8 +56892,19 @@ var BABYLON;
             }
             // Pick the scene configuration if needed.
             if (!configuration) {
+                var scene = null;
+                var engine = this.getEngine();
                 var camera = this.getCamera();
-                var scene = camera ? camera.getScene() : BABYLON.Engine.LastCreatedScene;
+                if (camera) {
+                    scene = camera.getScene();
+                }
+                else if (engine && engine.scenes) {
+                    var scenes = engine.scenes;
+                    scene = scenes[scenes.length - 1];
+                }
+                else {
+                    scene = BABYLON.Engine.LastCreatedScene;
+                }
                 this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
             }
             else {
@@ -62809,8 +62820,9 @@ var BABYLON;
             this.name = "CannonJSPlugin";
             this._physicsMaterials = [];
             this._fixedTimeStep = 1 / 60;
-            //See https://github.com/schteppe/cannon.js/blob/gh-pages/demos/collisionFilter.html
+            //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
             this._currentCollisionGroup = 2;
+            this.BJSCANNON = typeof CANNON !== 'undefined' ? CANNON : (typeof require !== 'undefined' ? require('cannon') : undefined);
             this._minus90X = new BABYLON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
             this._plus90X = new BABYLON.Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
             this._tmpPosition = BABYLON.Vector3.Zero();
@@ -62822,8 +62834,8 @@ var BABYLON;
                 BABYLON.Tools.Error("CannonJS is not available. Please make sure you included the js file.");
                 return;
             }
-            this.world = new CANNON.World();
-            this.world.broadphase = new CANNON.NaiveBroadphase();
+            this.world = new this.BJSCANNON.World();
+            this.world.broadphase = new this.BJSCANNON.NaiveBroadphase();
             this.world.solver.iterations = iterations;
         }
         CannonJSPlugin.prototype.setGravity = function (gravity) {
@@ -62840,13 +62852,13 @@ var BABYLON;
             this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
         };
         CannonJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
-            var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
-            var impulse = new CANNON.Vec3(force.x, force.y, force.z);
+            var worldPoint = new this.BJSCANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
+            var impulse = new this.BJSCANNON.Vec3(force.x, force.y, force.z);
             impostor.physicsBody.applyImpulse(impulse, worldPoint);
         };
         CannonJSPlugin.prototype.applyForce = function (impostor, force, contactPoint) {
-            var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
-            var impulse = new CANNON.Vec3(force.x, force.y, force.z);
+            var worldPoint = new this.BJSCANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
+            var impulse = new this.BJSCANNON.Vec3(force.x, force.y, force.z);
             impostor.physicsBody.applyForce(impulse, worldPoint);
         };
         CannonJSPlugin.prototype.generatePhysicsBody = function (impostor) {
@@ -62880,7 +62892,7 @@ var BABYLON;
                         bodyCreationObject[key] = nativeOptions[key];
                     }
                 }
-                impostor.physicsBody = new CANNON.Body(bodyCreationObject);
+                impostor.physicsBody = new this.BJSCANNON.Body(bodyCreationObject);
                 impostor.physicsBody.addEventListener("collide", impostor.onCollide);
                 this.world.addEventListener("preStep", impostor.beforeStep);
                 this.world.addEventListener("postStep", impostor.afterStep);
@@ -62900,28 +62912,31 @@ var BABYLON;
         };
         CannonJSPlugin.prototype._processChildMeshes = function (mainImpostor) {
             var _this = this;
-            var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes() : [];
+            var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes(true) : [];
+            var currentRotation = mainImpostor.object.rotationQuaternion;
             if (meshChildren.length) {
                 var processMesh = function (localPosition, mesh) {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position;
+                            var pPosition = mesh.getAbsolutePosition().subtract(mainImpostor.object.getAbsolutePosition());
+                            var localRotation = mesh.rotationQuaternion.multiply(BABYLON.Quaternion.Inverse(currentRotation));
                             if (childImpostor.physicsBody) {
                                 _this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
                             }
                             childImpostor.parent = mainImpostor;
                             childImpostor.resetUpdateFlags();
-                            mainImpostor.physicsBody.addShape(_this._createShape(childImpostor), new CANNON.Vec3(localPosition.x, localPosition.y, localPosition.z));
+                            mainImpostor.physicsBody.addShape(_this._createShape(childImpostor), new _this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z), new _this.BJSCANNON.Quaternion(localRotation.x, localRotation.y, localRotation.z, localRotation.w));
                             //Add the mass of the children.
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes().forEach(processMesh.bind(_this, mesh.position));
+                    currentRotation.multiplyInPlace(mesh.rotationQuaternion);
+                    mesh.getChildMeshes(true).forEach(processMesh.bind(_this, mesh.getAbsolutePosition()));
                 };
-                meshChildren.forEach(processMesh.bind(this, BABYLON.Vector3.Zero()));
+                meshChildren.forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
             }
         };
         CannonJSPlugin.prototype.removePhysicsBody = function (impostor) {
@@ -62938,26 +62953,26 @@ var BABYLON;
             }
             var constraint;
             var jointData = impostorJoint.joint.jointData;
-            //TODO - https://github.com/schteppe/cannon.js/blob/gh-pages/demos/collisionFilter.html
+            //TODO - https://github.com/schteppe/this.BJSCANNON.js/blob/gh-pages/demos/collisionFilter.html
             var constraintData = {
-                pivotA: jointData.mainPivot ? new CANNON.Vec3().copy(jointData.mainPivot) : null,
-                pivotB: jointData.connectedPivot ? new CANNON.Vec3().copy(jointData.connectedPivot) : null,
-                axisA: jointData.mainAxis ? new CANNON.Vec3().copy(jointData.mainAxis) : null,
-                axisB: jointData.connectedAxis ? new CANNON.Vec3().copy(jointData.connectedAxis) : null,
+                pivotA: jointData.mainPivot ? new this.BJSCANNON.Vec3().copy(jointData.mainPivot) : null,
+                pivotB: jointData.connectedPivot ? new this.BJSCANNON.Vec3().copy(jointData.connectedPivot) : null,
+                axisA: jointData.mainAxis ? new this.BJSCANNON.Vec3().copy(jointData.mainAxis) : null,
+                axisB: jointData.connectedAxis ? new this.BJSCANNON.Vec3().copy(jointData.connectedAxis) : null,
                 maxForce: jointData.nativeParams.maxForce,
                 collideConnected: !!jointData.collision
             };
             switch (impostorJoint.joint.type) {
                 case BABYLON.PhysicsJoint.HingeJoint:
                 case BABYLON.PhysicsJoint.Hinge2Joint:
-                    constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
+                    constraint = new this.BJSCANNON.HingeConstraint(mainBody, connectedBody, constraintData);
                     break;
                 case BABYLON.PhysicsJoint.DistanceJoint:
-                    constraint = new CANNON.DistanceConstraint(mainBody, connectedBody, jointData.maxDistance || 2);
+                    constraint = new this.BJSCANNON.DistanceConstraint(mainBody, connectedBody, jointData.maxDistance || 2);
                     break;
                 case BABYLON.PhysicsJoint.SpringJoint:
                     var springData = jointData;
-                    constraint = new CANNON.Spring(mainBody, connectedBody, {
+                    constraint = new this.BJSCANNON.Spring(mainBody, connectedBody, {
                         restLength: springData.length,
                         stiffness: springData.stiffness,
                         damping: springData.damping,
@@ -62966,12 +62981,12 @@ var BABYLON;
                     });
                     break;
                 case BABYLON.PhysicsJoint.LockJoint:
-                    constraint = new CANNON.LockConstraint(mainBody, connectedBody, constraintData);
+                    constraint = new this.BJSCANNON.LockConstraint(mainBody, connectedBody, constraintData);
                     break;
                 case BABYLON.PhysicsJoint.PointToPointJoint:
                 case BABYLON.PhysicsJoint.BallAndSocketJoint:
                 default:
-                    constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
+                    constraint = new this.BJSCANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
                     break;
             }
             //set the collideConnected flag after the creation, since DistanceJoint ignores it.
@@ -62999,7 +63014,7 @@ var BABYLON;
                     return mat;
                 }
             }
-            var currentMat = new CANNON.Material(name);
+            var currentMat = new this.BJSCANNON.Material(name);
             currentMat.friction = friction;
             currentMat.restitution = restitution;
             this._physicsMaterials.push(currentMat);
@@ -63017,31 +63032,31 @@ var BABYLON;
                     var radiusX = extendSize.x;
                     var radiusY = extendSize.y;
                     var radiusZ = extendSize.z;
-                    returnValue = new CANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
+                    returnValue = new this.BJSCANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
                     break;
                 //TMP also for cylinder - TODO Cannon supports cylinder natively.
                 case BABYLON.PhysicsImpostor.CylinderImpostor:
-                    returnValue = new CANNON.Cylinder(this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.y), 16);
+                    returnValue = new this.BJSCANNON.Cylinder(this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.y), 16);
                     break;
                 case BABYLON.PhysicsImpostor.BoxImpostor:
                     var box = extendSize.scale(0.5);
-                    returnValue = new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
+                    returnValue = new this.BJSCANNON.Box(new this.BJSCANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
                     break;
                 case BABYLON.PhysicsImpostor.PlaneImpostor:
                     BABYLON.Tools.Warn("Attention, PlaneImposter might not behave as you expect. Consider using BoxImposter instead");
-                    returnValue = new CANNON.Plane();
+                    returnValue = new this.BJSCANNON.Plane();
                     break;
                 case BABYLON.PhysicsImpostor.MeshImpostor:
                     var rawVerts = object.getVerticesData ? object.getVerticesData(BABYLON.VertexBuffer.PositionKind) : [];
                     var rawFaces = object.getIndices ? object.getIndices() : [];
                     BABYLON.Tools.Warn("MeshImpostor only collides against spheres.");
-                    returnValue = new CANNON.Trimesh(rawVerts, rawFaces);
+                    returnValue = new this.BJSCANNON.Trimesh(rawVerts, rawFaces);
                     break;
                 case BABYLON.PhysicsImpostor.HeightmapImpostor:
                     returnValue = this._createHeightmap(object);
                     break;
                 case BABYLON.PhysicsImpostor.ParticleImpostor:
-                    returnValue = new CANNON.Particle();
+                    returnValue = new this.BJSCANNON.Particle();
                     break;
             }
             return returnValue;
@@ -63087,7 +63102,7 @@ var BABYLON;
                     }
                 }
             }
-            var shape = new CANNON.Heightfield(matrix, {
+            var shape = new this.BJSCANNON.Heightfield(matrix, {
                 elementSize: elementSize
             });
             //For future reference, needed for body transformation
@@ -63123,7 +63138,7 @@ var BABYLON;
                 var oldPivot = mesh.getPivotMatrix() || BABYLON.Matrix.Translation(0, 0, 0);
                 //rotation is back
                 mesh.rotationQuaternion = rotationQuaternion;
-                //calculate the new center using a pivot (since Cannon.js doesn't center height maps)
+                //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
                 var p = BABYLON.Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSizeWorld.x, 0, -mesh.getBoundingInfo().boundingBox.extendSizeWorld.z);
                 mesh.setPivotMatrix(p);
                 mesh.computeWorldMatrix(true);
@@ -63154,7 +63169,7 @@ var BABYLON;
             impostor.physicsBody.quaternion.copy(newRotation);
         };
         CannonJSPlugin.prototype.isSupported = function () {
-            return window.CANNON !== undefined;
+            return this.BJSCANNON !== undefined;
         };
         CannonJSPlugin.prototype.setLinearVelocity = function (impostor, velocity) {
             impostor.physicsBody.velocity.copy(velocity);
@@ -63261,7 +63276,8 @@ var BABYLON;
             this.name = "OimoJSPlugin";
             this._tmpImpostorsArray = [];
             this._tmpPositionVector = BABYLON.Vector3.Zero();
-            this.world = new OIMO.World(1 / 60, 2, iterations, true);
+            this.BJSOIMO = typeof OIMO !== 'undefined' ? OIMO : (typeof require !== 'undefined' ? require('./Oimo') : undefined);
+            this.world = new this.BJSOIMO.World(1 / 60, 2, iterations, true);
             this.world.worldscale(1);
             this.world.clear();
             //making sure no stats are calculated
@@ -63308,7 +63324,7 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
             var mass = impostor.physicsBody.massInfo.mass;
-            impostor.physicsBody.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * mass));
+            impostor.physicsBody.applyImpulse(contactPoint.scale(this.BJSOIMO.INV_SCALE), force.scale(this.BJSOIMO.INV_SCALE * mass));
         };
         OimoJSPlugin.prototype.applyForce = function (impostor, force, contactPoint) {
             BABYLON.Tools.Warn("Oimo doesn't support applying force. Using impule instead.");
@@ -63345,7 +63361,7 @@ var BABYLON;
                     parent.getChildMeshes().forEach(function (m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
-                            m.physicsImpostor._init();
+                            //m.physicsImpostor._init();
                         }
                     });
                 };
@@ -63356,7 +63372,7 @@ var BABYLON;
                 impostors.forEach(function (i) {
                     //get the correct bounding box
                     var oldQuaternion = i.object.rotationQuaternion;
-                    var rot = new OIMO.Euler().setFromQuaternion({
+                    var rot = new _this.BJSOIMO.Euler().setFromQuaternion({
                         x: impostor.object.rotationQuaternion.x,
                         y: impostor.object.rotationQuaternion.y,
                         z: impostor.object.rotationQuaternion.z,
@@ -63371,15 +63387,16 @@ var BABYLON;
                         bodyConfig.pos.push(center.y);
                         bodyConfig.pos.push(center.z);
                         //tmp solution
-                        bodyConfig.rot.push(rot.x / (OIMO.degtorad || OIMO.TO_RAD));
-                        bodyConfig.rot.push(rot.y / (OIMO.degtorad || OIMO.TO_RAD));
-                        bodyConfig.rot.push(rot.z / (OIMO.degtorad || OIMO.TO_RAD));
+                        bodyConfig.rot.push(rot.x / (_this.BJSOIMO.degtorad || _this.BJSOIMO.TO_RAD));
+                        bodyConfig.rot.push(rot.y / (_this.BJSOIMO.degtorad || _this.BJSOIMO.TO_RAD));
+                        bodyConfig.rot.push(rot.z / (_this.BJSOIMO.degtorad || _this.BJSOIMO.TO_RAD));
                     }
                     else {
-                        bodyConfig.pos.push(i.object.position.x);
-                        bodyConfig.pos.push(i.object.position.y);
-                        bodyConfig.pos.push(i.object.position.z);
-                        //tmp solution until https://github.com/lo-th/Oimo.js/pull/37 is merged
+                        var localPosition = i.object.getAbsolutePosition().subtract(impostor.object.getAbsolutePosition());
+                        bodyConfig.pos.push(localPosition.x);
+                        bodyConfig.pos.push(localPosition.y);
+                        bodyConfig.pos.push(localPosition.z);
+                        //tmp solution until https://github.com/lo-th/OIMO.js/pull/37 is merged
                         bodyConfig.rot.push(0);
                         bodyConfig.rot.push(0);
                         bodyConfig.rot.push(0);
@@ -63387,7 +63404,7 @@ var BABYLON;
                     // register mesh
                     switch (i.type) {
                         case BABYLON.PhysicsImpostor.ParticleImpostor:
-                            BABYLON.Tools.Warn("No Particle support in Oimo.js. using SphereImpostor instead");
+                            BABYLON.Tools.Warn("No Particle support in this.BJSOIMO.js. using SphereImpostor instead");
                         case BABYLON.PhysicsImpostor.SphereImpostor:
                             var radiusX = extendSize.x;
                             var radiusY = extendSize.y;
@@ -63423,7 +63440,7 @@ var BABYLON;
                     //actually not needed, but hey...
                     i.object.rotationQuaternion = oldQuaternion;
                 });
-                impostor.physicsBody = new OIMO.Body(bodyConfig).body; //this.world.add(bodyConfig);
+                impostor.physicsBody = new this.BJSOIMO.Body(bodyConfig).body; //this.world.add(bodyConfig);
             }
             else {
                 this._tmpPositionVector.copyFromFloats(0, 0, 0);
@@ -63465,7 +63482,7 @@ var BABYLON;
                     type = "jointBall";
                     break;
                 case BABYLON.PhysicsJoint.SpringJoint:
-                    BABYLON.Tools.Warn("Oimo.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
+                    BABYLON.Tools.Warn("this.BJSOIMO.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
                     var springData = jointData;
                     nativeJointData.min = springData.length || nativeJointData.min;
                     //Max should also be set, just make sure it is at least min
@@ -63489,7 +63506,7 @@ var BABYLON;
                     break;
             }
             nativeJointData.type = type;
-            impostorJoint.joint.physicsJoint = new OIMO.Link(nativeJointData).joint; //this.world.add(nativeJointData);
+            impostorJoint.joint.physicsJoint = new this.BJSOIMO.Link(nativeJointData).joint; //this.world.add(nativeJointData);
         };
         OimoJSPlugin.prototype.removeJoint = function (impostorJoint) {
             //Bug in Oimo prevents us from disposing a joint in the playground
@@ -63503,16 +63520,16 @@ var BABYLON;
             }
         };
         OimoJSPlugin.prototype.isSupported = function () {
-            return OIMO !== undefined;
+            return this.BJSOIMO !== undefined;
         };
         OimoJSPlugin.prototype.setTransformationFromPhysicsBody = function (impostor) {
             if (!impostor.physicsBody.sleeping) {
                 //TODO check that
                 if (impostor.physicsBody.shapes.next) {
                     var parentShape = this._getLastShape(impostor.physicsBody);
-                    impostor.object.position.x = parentShape.position.x * OIMO.WORLD_SCALE;
-                    impostor.object.position.y = parentShape.position.y * OIMO.WORLD_SCALE;
-                    impostor.object.position.z = parentShape.position.z * OIMO.WORLD_SCALE;
+                    impostor.object.position.x = parentShape.position.x * this.BJSOIMO.WORLD_SCALE;
+                    impostor.object.position.y = parentShape.position.y * this.BJSOIMO.WORLD_SCALE;
+                    impostor.object.position.z = parentShape.position.z * this.BJSOIMO.WORLD_SCALE;
                 }
                 else {
                     impostor.object.position.copyFrom(impostor.physicsBody.getPosition());
@@ -63523,7 +63540,7 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
             var body = impostor.physicsBody;
-            body.position.init(newPosition.x * OIMO.INV_SCALE, newPosition.y * OIMO.INV_SCALE, newPosition.z * OIMO.INV_SCALE);
+            body.position.init(newPosition.x * this.BJSOIMO.INV_SCALE, newPosition.y * this.BJSOIMO.INV_SCALE, newPosition.z * this.BJSOIMO.INV_SCALE);
             body.orientation.init(newRotation.w, newRotation.x, newRotation.y, newRotation.z);
             body.syncShapes();
             body.awake();
@@ -67248,7 +67265,7 @@ var BABYLON;
                 _this._vrDevice = event.vrDisplay;
                 //reset the rig parameters.
                 _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { parentCamera: _this, vrDisplay: _this._vrDevice, frameData: _this._frameData, specs: _this._specsVersion });
-                if (_this._attached && _this._vrDevice) {
+                if (_this._attached) {
                     _this.getEngine().enableVR();
                 }
             });
@@ -72119,9 +72136,9 @@ var BABYLON;
          */
         TextureTools.CreateResizedCopy = function (texture, width, height, useBilinearMode) {
             if (useBilinearMode === void 0) { useBilinearMode = true; }
-            var rtt = new BABYLON.RenderTargetTexture('resized' + texture.name, { width: width, height: height }, scene, !texture.noMipmap, true, texture._texture.type, false, texture._samplingMode, false);
             var scene = texture.getScene();
             var engine = scene.getEngine();
+            var rtt = new BABYLON.RenderTargetTexture('resized' + texture.name, { width: width, height: height }, scene, !texture.noMipmap, true, texture._texture.type, false, texture._samplingMode, false);
             rtt.wrapU = texture.wrapU;
             rtt.wrapV = texture.wrapV;
             rtt.uOffset = texture.uOffset;
