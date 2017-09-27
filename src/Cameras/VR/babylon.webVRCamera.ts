@@ -108,7 +108,7 @@ module BABYLON {
                 //reset the rig parameters.
                 this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
 
-                if (this._attached && this._vrDevice) {
+                if (this._attached) {
                     this.getEngine().enableVR();
                 }
             });
