@@ -19,10 +19,10 @@ module BABYLON {
         public keysReset = [220];
 
         @serialize()
-        public panningSensibility: number = 300.0;
+        public panningSensibility: number = 50.0;
 
         @serialize()
-        public zoomingSensibility: number = 50.0;
+        public zoomingSensibility: number = 25.0;
 
         @serialize()
         public useAltToZoom: boolean = true;
@@ -121,7 +121,7 @@ module BABYLON {
                             camera.inertialPanningY += 1 / this.panningSensibility;
                         }
                         else if (this._altPressed && this.useAltToZoom) {
-                            camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
+                            camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
                         }
                         else {
                             camera.inertialBetaOffset -= 0.01;
@@ -137,7 +137,7 @@ module BABYLON {
                             camera.inertialPanningY -= 1 / this.panningSensibility;
                         }
                         else if (this._altPressed && this.useAltToZoom) {
-                            camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
+                            camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
                         }
                         else {
                             camera.inertialBetaOffset += 0.01;

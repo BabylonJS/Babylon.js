@@ -42,6 +42,25 @@ window.prepareGrid = function() {
 	}, function() {
 		return grid.gridRatio;
 	});
+
+	registerRangeUI("grid", "OffsetX", 0, 2, function(value) {
+		grid.gridOffset.x = value;
+	}, function() {
+		return grid.gridOffset.x;
+	});
+    
+  registerRangeUI("grid", "OffsetY", 0, 2, function(value) {
+		grid.gridOffset.y = value;
+	}, function() {
+		return grid.gridOffset.y;
+	});
+    
+  registerRangeUI("grid", "OffsetZ", 0, 2, function(value) {
+		grid.gridOffset.z = value;
+	}, function() {
+		return grid.gridOffset.z;
+	});
+    
     
   registerRangeUI("grid", "MajorUnitFrequency", 1, 10, function(value) {
 		grid.majorUnitFrequency = value;

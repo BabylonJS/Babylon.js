@@ -6,6 +6,10 @@
   color:$color;
   font-family: $font;
 
+  .details {
+      padding-left: 5px;
+  }
+
   // Common defintion between header row and detail row
   .base-row {      
     display:flex;
@@ -107,6 +111,7 @@
   // The div displaying a color
   .color-element {
       @extend .element-viewer;
+      top: 2px;
   }
 
   // The div displaying a texture element

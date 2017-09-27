@@ -47,29 +47,118 @@ namespace Max2Babylon
             return null;
         }
 
+        private BabylonTexture ExportBaseColorAlphaTexture(IIGameMaterial materialNode, BabylonScene babylonScene, string materialName)
+        {
+            ITexmap baseColorTexMap = _getTexMap(materialNode, 1);
+            ITexmap alphaTexMap = _getTexMap(materialNode, 9); // Transparency weight map
+
+            // --- Babylon texture ---
+
+            var baseColorTexture = _getBitmapTex(baseColorTexMap);
+            var alphaTexture = _getBitmapTex(alphaTexMap);
+
+            // Use one as a reference for UVs parameters
+            var texture = baseColorTexture != null ? baseColorTexture : alphaTexture;
+            if (texture == null)
+            {
+                return null;
+            }
+
+            var hasAlpha = alphaTexMap != null || (baseColorTexture != null && baseColorTexture.AlphaSource == 0); // Alpha source is 'Image Alpha'
+            
+            var babylonTexture = new BabylonTexture
+            {
+                name = materialName + "_baseColor" + (hasAlpha ? ".png" : ".jpg") // TODO - unsafe name, may conflict with another texture name
+            };
+
+            // Level
+            babylonTexture.level = 1.0f;
+
+            // Alpha
+            babylonTexture.hasAlpha = hasAlpha;
+            babylonTexture.getAlphaFromRGB = false;
+
+            // UVs
+            var uvGen = _exportUV(texture, babylonTexture);
+
+            // Is cube
+            _exportIsCube(texture, babylonTexture, false);
+
+
+            // --- Merge baseColor and alpha maps ---
+
+            // Load bitmaps
+            var baseColorBitmap = _loadTexture(baseColorTexMap);
+            var alphaBitmap = _loadTexture(alphaTexMap);
+
+            // Retreive dimensions
+            int width = 0;
+            int height = 0;
+            var haveSameDimensions = _getMinimalBitmapDimensions(out width, out height, baseColorBitmap, alphaBitmap);
+            if (!haveSameDimensions)
+            {
+                RaiseWarning("Base color and transparency color maps should have same dimensions", 2);
+            }
+
+            var getAlphaFromRGB = false;
+            if (alphaTexture != null)
+            {
+                getAlphaFromRGB = (alphaTexture.AlphaSource == 2) || (alphaTexture.AlphaSource == 3); // 'RGB intensity' or 'None (Opaque)'
+            }
+
+            // Create baseColor+alpha map
+            Bitmap baseColorAlphaBitmap = new Bitmap(width, height);
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    var baseColor = baseColorBitmap != null ? baseColorBitmap.GetPixel(x, y) : Color.FromArgb(255, 255, 255);
+
+                    Color baseColorAlpha;
+                    if (babylonTexture.hasAlpha)
+                    {
+                        if (alphaBitmap != null)
+                        {
+                            // Retreive alpha from alpha texture
+                            var alphaColor = alphaBitmap.GetPixel(x, y);
+                            var alpha = getAlphaFromRGB ? alphaColor.R : alphaColor.A;
+                            baseColorAlpha = Color.FromArgb(alpha, baseColor);
+                        }
+                        else
+                        {
+                            // Use all channels from base color
+                            baseColorAlpha = baseColor;
+                        }
+                    }
+                    else
+                    {
+                        // Only use RGB channels from base color
+                        baseColorAlpha = Color.FromArgb(baseColor.R, baseColor.G, baseColor.B);
+                    }
+                    baseColorAlphaBitmap.SetPixel(x, y, baseColorAlpha);
+                }
+            }
+
+            // Write bitmap
+            var absolutePath = Path.Combine(babylonScene.OutputPath, babylonTexture.name);
+            RaiseMessage($"Texture | write image '{babylonTexture.name}'", 2);
+            baseColorAlphaBitmap.Save(absolutePath);
+
+            return babylonTexture;
+        }
+
         private BabylonTexture ExportMetallicRoughnessTexture(IIGameMaterial materialNode, float metallic, float roughness, BabylonScene babylonScene, string materialName)
         {
             ITexmap metallicTexMap = _getTexMap(materialNode, 5);
             ITexmap roughnessTexMap = _getTexMap(materialNode, 4);
 
-            if (metallicTexMap == null && roughnessTexMap == null)
-            {
-                return null;
-            }
+            // --- Babylon texture ---
+            
+            var metallicTexture = _getBitmapTex(metallicTexMap);
+            var roughnessTexture = _getBitmapTex(roughnessTexMap);
 
             // Use one as a reference for UVs parameters
-            var referenceTexMap = metallicTexMap != null ? metallicTexMap : roughnessTexMap;
-
-
-            // --- Babylon texture ---
-
-            if (referenceTexMap.GetParamBlock(0) == null || referenceTexMap.GetParamBlock(0).Owner == null)
-            {
-                return null;
-            }
-
-            var texture = referenceTexMap.GetParamBlock(0).Owner as IBitmapTex;
-
+            var texture = metallicTexture != null ? metallicTexture : roughnessTexture;
             if (texture == null)
             {
                 return null;
@@ -170,12 +259,12 @@ namespace Max2Babylon
             if (forceAlpha)
             {
                 babylonTexture.hasAlpha = true;
-                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2) || (texture.AlphaSource == 3);
+                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2) || (texture.AlphaSource == 3); // 'RGB intensity' or 'None (Opaque)'
             }
             else
             {
-                babylonTexture.hasAlpha = (texture.AlphaSource != 3);
-                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2);
+                babylonTexture.hasAlpha = (texture.AlphaSource != 3); // Not 'None (Opaque)'
+                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2); // 'RGB intensity'
             }
 
             // UVs
@@ -407,6 +496,16 @@ namespace Max2Babylon
         // -------------------------
         // --------- Utils ---------
         // -------------------------
+
+        private IBitmapTex _getBitmapTex(ITexmap texMap)
+        {
+            if (texMap == null || texMap.GetParamBlock(0) == null || texMap.GetParamBlock(0).Owner == null)
+            {
+                return null;
+            }
+
+            return texMap.GetParamBlock(0).Owner as IBitmapTex;
+        }
 
         private ITexmap _getTexMap(IIGameMaterial materialNode, int index)
         {

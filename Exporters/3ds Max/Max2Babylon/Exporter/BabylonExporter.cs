@@ -77,7 +77,7 @@ namespace Max2Babylon
             }
         }
 
-        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, bool generateBinary, bool exportGltf, bool exportGltfImagesAsBinary, Form callerForm)
+        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, bool generateBinary, bool exportGltf, Form callerForm)
         {
             var gameConversionManger = Loader.Global.ConversionManager;
             gameConversionManger.CoordSystem = Autodesk.Max.IGameConversionManager.CoordSystem.D3d;
@@ -298,7 +298,7 @@ namespace Max2Babylon
             // Export glTF
             if (exportGltf)
             {
-                ExportGltf(babylonScene, outputFile, generateBinary, exportGltfImagesAsBinary);
+                ExportGltf(babylonScene, outputFile, generateBinary);
             }
 
             watch.Stop();
