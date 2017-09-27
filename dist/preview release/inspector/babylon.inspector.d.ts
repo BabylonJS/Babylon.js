@@ -399,7 +399,6 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     class LightAdapter extends Adapter implements IToolVisible {
-        private static _PROPERTIES;
         constructor(obj: BABYLON.Light);
         /** Returns the name displayed in the tree */
         id(): string;
@@ -541,6 +540,16 @@ declare module INSPECTOR {
         private _validateInputHandler;
         /** Handler used to validate the input by pressing 'esc' */
         private _escapeInputHandler;
+        /** Handler used on focus out */
+        private _focusOutInputHandler;
+        /** Handler used to get mouse position */
+        private _onMouseDownHandler;
+        private _onMouseDragHandler;
+        private _onMouseUpHandler;
+        /** Save previous Y mouse position */
+        private _prevY;
+        /**Save value while slider is on */
+        private _preValue;
         constructor(prop: Property, parent?: PropertyLine, level?: number);
         /**
          * Init the input element and al its handler :
@@ -553,6 +562,7 @@ declare module INSPECTOR {
          * On escape : removes the input
          */
         private _validateInput(e);
+        validateInput(value: any): void;
         /**
          * On escape : removes the input
          */
@@ -605,6 +615,21 @@ declare module INSPECTOR {
          * Add sub properties in case of a complex type
          */
         private _addDetails();
+        /**
+         * Refresh mouse position on y axis
+         * @param e
+         */
+        private _onMouseDrag(e);
+        /**
+         * Save new value from slider
+         * @param e
+         */
+        private _onMouseUp(e);
+        /**
+         * Start record mouse position
+         * @param e
+         */
+        private _onMouseDown(e);
     }
 }
 
@@ -614,6 +639,20 @@ declare module INSPECTOR {
     */
     class ColorElement extends BasicElement {
         constructor(color: BABYLON.Color4 | BABYLON.Color3);
+        update(color?: BABYLON.Color4 | BABYLON.Color3): void;
+        private _toRgba(color);
+    }
+}
+
+declare module INSPECTOR {
+    /**
+     * Represents a html div element.
+     * The div is built when an instance of BasicElement is created.
+     */
+    class ColorPickerElement extends BasicElement {
+        protected _input: HTMLInputElement;
+        private pline;
+        constructor(color: BABYLON.Color4 | BABYLON.Color3, propertyLine: PropertyLine);
         update(color?: BABYLON.Color4 | BABYLON.Color3): void;
         private _toRgba(color);
     }
@@ -733,6 +772,10 @@ declare module INSPECTOR {
          * Useful function used to create a div
          */
         static CreateDiv(className?: string, parent?: HTMLElement): HTMLElement;
+        /**
+         * Useful function used to create a input
+         */
+        static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement;
         static CreateElement(element: string, className?: string, parent?: HTMLElement): HTMLElement;
         /**
          * Removes all children of the given div.
@@ -744,6 +787,11 @@ declare module INSPECTOR {
         static Css(elem: HTMLElement, cssAttribute: string): string;
         static LoadScript(): void;
         static IsSystemName(name: string): boolean;
+        /**
+         * Return an array of PropertyLine for an obj
+         * @param obj
+         */
+        static GetAllLinesProperties(obj: any): Array<PropertyLine>;
     }
 }
 

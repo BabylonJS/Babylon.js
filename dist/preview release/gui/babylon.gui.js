@@ -1,14 +1,22 @@
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
+var BABYLON = BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+            var extendStatics = Object.setPrototypeOf ||
+                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+                function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            return function (d, b) {
+                extendStatics(d, b);
+                function __() { this.constructor = d; }
+                d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+            };
+        })();
+        /// <reference path="../../dist/preview release/babylon.d.ts"/>
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -309,7 +317,7 @@ var BABYLON;
                     var y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
                     _this._shouldBlockPointer = false;
                     _this._doPicking(x, y, pi.type);
-                    pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
+                    pi.skipOnPointerObservable = _this._shouldBlockPointer;
                 });
                 this._attachToOnPointerOut(scene);
             };
@@ -1639,16 +1647,7 @@ var BABYLON;
 //# sourceMappingURL=control.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -1819,16 +1818,7 @@ var BABYLON;
 //# sourceMappingURL=container.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -1970,16 +1960,7 @@ var BABYLON;
 //# sourceMappingURL=stackPanel.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -2095,16 +2076,7 @@ var BABYLON;
 //# sourceMappingURL=rectangle.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -2170,16 +2142,7 @@ var BABYLON;
 //# sourceMappingURL=ellipse.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -2379,16 +2342,7 @@ var BABYLON;
 //# sourceMappingURL=line.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -2583,16 +2537,7 @@ var BABYLON;
 //# sourceMappingURL=slider.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -2708,16 +2653,7 @@ var BABYLON;
 //# sourceMappingURL=checkBox.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -2854,16 +2790,7 @@ var BABYLON;
 //# sourceMappingURL=radioButton.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -3040,16 +2967,7 @@ var BABYLON;
 //# sourceMappingURL=textBlock.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var DOMImage = Image;
 var BABYLON;
 (function (BABYLON) {
@@ -3292,16 +3210,7 @@ var BABYLON;
 //# sourceMappingURL=image.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -3417,16 +3326,7 @@ var BABYLON;
 //# sourceMappingURL=button.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -3772,16 +3672,7 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -3793,8 +3684,10 @@ var BABYLON;
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._text = "";
+                _this._placeholderText = "";
                 _this._background = "black";
                 _this._focusedBackground = "black";
+                _this._placeholderColor = "gray";
                 _this._thickness = 1;
                 _this._margin = new GUI.ValueAndUnit(10, GUI.ValueAndUnit.UNITMODE_PIXEL);
                 _this._autoStretchWidth = true;
@@ -3890,6 +3783,34 @@ var BABYLON;
                         return;
                     }
                     this._background = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "placeholderColor", {
+                get: function () {
+                    return this._placeholderColor;
+                },
+                set: function (value) {
+                    if (this._placeholderColor === value) {
+                        return;
+                    }
+                    this._placeholderColor = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "placeholderText", {
+                get: function () {
+                    return this._placeholderText;
+                },
+                set: function (value) {
+                    if (this._placeholderText === value) {
+                        return;
+                    }
+                    this._placeholderText = value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -4031,7 +3952,14 @@ var BABYLON;
                     if (this.color) {
                         context.fillStyle = this.color;
                     }
-                    var textWidth = context.measureText(this._text).width;
+                    var text = this._text;
+                    if (!this._isFocused && !this._text && this._placeholderText) {
+                        text = this._placeholderText;
+                        if (this._placeholderColor) {
+                            context.fillStyle = this._placeholderColor;
+                        }
+                    }
+                    var textWidth = context.measureText(text).width;
                     var marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
                     if (this._autoStretchWidth) {
                         this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), textWidth + marginWidth) + "px";
@@ -4051,7 +3979,7 @@ var BABYLON;
                     else {
                         this._scrollLeft = clipTextLeft;
                     }
-                    context.fillText(this._text, this._scrollLeft, this._currentMeasure.top + rootY);
+                    context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
                     // Cursor
                     if (this._isFocused) {
                         if (!this._blinkIsEven) {
@@ -4111,16 +4039,7 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -4234,3 +4153,21 @@ var BABYLON;
         GUI.VirtualKeyboard = VirtualKeyboard;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
+
+
+(function universalModuleDefinition(root, factory) {
+                if (root && root["BABYLON"]) {
+                    return;
+                }
+    if(typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if(typeof define === 'function' && define.amd)
+        define([], factory);
+    else if(typeof exports === 'object')
+        exports["GUI"] = factory();
+    else {
+        root["BABYLON"]["GUI"] = factory();
+    }
+})(this, function() {
+    return BABYLON.GUI;
+});

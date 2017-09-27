@@ -602,8 +602,10 @@ declare module BABYLON.GUI {
     class InputText extends Control implements IFocusableControl {
         name: string;
         private _text;
+        private _placeholderText;
         private _background;
         private _focusedBackground;
+        private _placeholderColor;
         private _thickness;
         private _margin;
         private _autoStretchWidth;
@@ -623,6 +625,8 @@ declare module BABYLON.GUI {
         thickness: number;
         focusedBackground: string;
         background: string;
+        placeholderColor: string;
+        placeholderText: string;
         text: string;
         constructor(name?: string, text?: string);
         onBlur(): void;

@@ -5,6 +5,14 @@ namespace BabylonExport.Entities
     [DataContract]
     public class BabylonPBRMetallicRoughnessMaterial : BabylonMaterial
     {
+        public enum TransparencyMode
+        {
+            OPAQUE = 0,
+            ALPHATEST = 1,
+            ALPHABLEND = 2,
+            ALPHATESTANDBLEND = 3
+        }
+
         [DataMember]
         public string customType { get; private set; }
 
@@ -51,7 +59,7 @@ namespace BabylonExport.Entities
         public float occlusionStrength { get; set; }
 
         [DataMember]
-        public BabylonTexture occlusionTexture { get; set; }
+        public BabylonTexture occlusionTexture { get; set; } // ignored
 
         [DataMember]
         public float alphaCutOff { get; set; }
@@ -60,7 +68,7 @@ namespace BabylonExport.Entities
         public int transparencyMode { get; set; }
 
         [DataMember]
-        public bool doubleSided { get; set; }
+        public bool doubleSided { get; set; } // ignored
 
         public BabylonPBRMetallicRoughnessMaterial() : base()
         {
@@ -70,7 +78,7 @@ namespace BabylonExport.Entities
             emissiveColor = new[] { 0f, 0f, 0f };
             occlusionStrength = 1.0f;
             alphaCutOff = 0.4f;
-            transparencyMode = 0;
+            transparencyMode = (int)TransparencyMode.OPAQUE;
         }
     }
 }

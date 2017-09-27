@@ -98,6 +98,13 @@ module INSPECTOR {
             return Helpers.CreateElement('div', className, parent);
         }
 
+        /**
+         * Useful function used to create a input
+         */
+        public static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement {
+            return <HTMLInputElement>Helpers.CreateElement('input', className, parent);
+        }
+
         public static CreateElement(element: string, className?: string, parent?: HTMLElement): HTMLElement {
             let elem = Inspector.DOCUMENT.createElement(element);
 
@@ -162,6 +169,25 @@ module INSPECTOR {
                 return false;
             }
             return name.indexOf("###") === 0 && name.lastIndexOf("###") === (name.length - 3);
+        }
+
+        /**
+         * Return an array of PropertyLine for an obj
+         * @param obj 
+         */
+        public static GetAllLinesProperties(obj: any): Array<PropertyLine> {
+            let propertiesLines: Array<PropertyLine> = [];
+            
+            for (let prop in obj) {
+                /**
+                 * No private and no function
+                 */
+                if(prop.substring(0, 1) !== '_' && typeof obj[prop] !== 'function') {
+                    let infos = new Property(prop, obj);
+                    propertiesLines.push(new PropertyLine(infos));
+                }
+            }
+            return propertiesLines;
         }
     }
 }

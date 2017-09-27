@@ -23,6 +23,7 @@
   // The panel containing the two subpanel : tree and details
   .insp-right-panel {
     width: 750px;
+    overflow-y: auto;
 
     &.popupmode {
       width:100% !important;
