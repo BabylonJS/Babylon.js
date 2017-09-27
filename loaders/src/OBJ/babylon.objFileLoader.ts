@@ -45,7 +45,7 @@ module BABYLON {
                 key = key.toLowerCase();
 
                 //Get the data following the key
-                var value: any = (pos >= 0) ? line.substring(pos + 1).trim() : "";
+                var value: string = (pos >= 0) ? line.substring(pos + 1).trim() : "";
 
                 //This mtl keyword will create the new material
                 if (key === "newmtl") {
@@ -62,7 +62,7 @@ module BABYLON {
                     // Diffuse color (color under white light) using RGB values
 
                     //value  = "r g b"
-                    color = <number[]>value.split(delimiter_pattern, 3);
+                    color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                     //color = [r,g,b]
                     //Set tghe color into the material
                     material.diffuseColor = BABYLON.Color3.FromArray(color);
@@ -70,7 +70,7 @@ module BABYLON {
                     // Ambient color (color under shadow) using RGB values
 
                     //value = "r g b"
-                    color = <number[]>value.split(delimiter_pattern, 3);
+                    color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                     //color = [r,g,b]
                     //Set tghe color into the material
                     material.ambientColor = BABYLON.Color3.FromArray(color);
@@ -78,21 +78,21 @@ module BABYLON {
                     // Specular color (color when light is reflected from shiny surface) using RGB values
 
                     //value = "r g b"
-                    color = <number[]>value.split(delimiter_pattern, 3);
+                    color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                     //color = [r,g,b]
                     //Set the color into the material
                     material.specularColor = BABYLON.Color3.FromArray(color);
                 } else if (key === "ke") {
                     // Emissive color using RGB values
-                    color = value.split(delimiter_pattern, 3);
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
                     material.emissiveColor = BABYLON.Color3.FromArray(color);
                 } else if (key === "ns") {
 
                     //value = "Integer"
-                    material.specularPower = value;
+                    material.specularPower = parseFloat(value);
                 } else if (key === "d") {
                     //d is dissolve for current material. It mean alpha for BABYLON
-                    material.alpha = value;
+                    material.alpha = parseFloat(value);
 
                     //Texture
                     //This part can be improved by adding the possible options of texture
@@ -237,11 +237,11 @@ module BABYLON {
             var pathOfFile = BABYLON.Tools.BaseUrl + rootUrl + url;
 
             // Loads through the babylon tools to allow fileInput search.
-            BABYLON.Tools.LoadFile(pathOfFile, 
-                onSuccess, 
-                null, 
-                null, 
-                false, 
+            BABYLON.Tools.LoadFile(pathOfFile,
+                onSuccess,
+                null,
+                null,
+                false,
                 () => { console.warn("Error - Unable to load " + pathOfFile); });
         }
 
