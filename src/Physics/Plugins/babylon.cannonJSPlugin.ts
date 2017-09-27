@@ -113,28 +113,31 @@
         }
 
         private _processChildMeshes(mainImpostor: PhysicsImpostor) {
-            var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes() : [];
+            var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes(true) : [];
+            let currentRotation: Quaternion = mainImpostor.object.rotationQuaternion;
             if (meshChildren.length) {
                 var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position;
+                            var pPosition = mesh.getAbsolutePosition().subtract(mainImpostor.object.getAbsolutePosition());
+                            let localRotation = mesh.rotationQuaternion.multiply(Quaternion.Inverse(currentRotation));
                             if (childImpostor.physicsBody) {
                                 this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
                             }
                             childImpostor.parent = mainImpostor;
                             childImpostor.resetUpdateFlags();
-                            mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(localPosition.x, localPosition.y, localPosition.z));
+                            mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z), new this.BJSCANNON.Quaternion(localRotation.x, localRotation.y, localRotation.z, localRotation.w));
                             //Add the mass of the children.
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes().forEach(processMesh.bind(this, mesh.position));
+                    currentRotation.multiplyInPlace(mesh.rotationQuaternion);
+                    mesh.getChildMeshes(true).forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
                 }
-                meshChildren.forEach(processMesh.bind(this, Vector3.Zero()));
+                meshChildren.forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
             }
         }
 

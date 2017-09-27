@@ -109,7 +109,7 @@ module BABYLON {
                     parent.getChildMeshes().forEach(function (m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
-                            m.physicsImpostor._init();
+                            //m.physicsImpostor._init();
                         }
                     });
                 }
@@ -148,11 +148,12 @@ module BABYLON {
                         bodyConfig.rot.push(rot.y / (this.BJSOIMO.degtorad || this.BJSOIMO.TO_RAD));
                         bodyConfig.rot.push(rot.z / (this.BJSOIMO.degtorad || this.BJSOIMO.TO_RAD));
                     } else {
-                        bodyConfig.pos.push(i.object.position.x);
-                        bodyConfig.pos.push(i.object.position.y);
-                        bodyConfig.pos.push(i.object.position.z);
+                        let localPosition = i.object.getAbsolutePosition().subtract(impostor.object.getAbsolutePosition());
+                        bodyConfig.pos.push(localPosition.x);
+                        bodyConfig.pos.push(localPosition.y);
+                        bodyConfig.pos.push(localPosition.z);
 
-                        //tmp solution until https://github.com/lo-th/this.BJSOIMO.js/pull/37 is merged
+                        //tmp solution until https://github.com/lo-th/OIMO.js/pull/37 is merged
                         bodyConfig.rot.push(0);
                         bodyConfig.rot.push(0);
                         bodyConfig.rot.push(0);
