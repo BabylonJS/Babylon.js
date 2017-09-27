@@ -67242,7 +67242,7 @@ var BABYLON;
             } };
             engine.onVRRequestPresentComplete.add(_this._onVREnabled);
             engine.initWebVR().add(function (event) {
-                if (!_this._vrDevice || _this._vrDevice === event.vrDisplay) {
+                if (!event.vrDisplay || _this._vrDevice === event.vrDisplay) {
                     return;
                 }
                 _this._vrDevice = event.vrDisplay;
