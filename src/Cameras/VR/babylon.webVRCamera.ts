@@ -99,7 +99,7 @@ module BABYLON {
             this._onVREnabled = (success: boolean) => { if (success) { this.initControllers(); } };
             engine.onVRRequestPresentComplete.add(this._onVREnabled);
             engine.initWebVR().add((event: IDisplayChangedEventArgs) => {
-                if (!this._vrDevice || this._vrDevice === event.vrDisplay) {
+                if (!event.vrDisplay || this._vrDevice === event.vrDisplay) {
                     return;
                 }
 
