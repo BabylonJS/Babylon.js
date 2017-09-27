@@ -17785,7 +17785,7 @@ var BABYLON;
             };
             this._onPointerUp = function (evt) {
                 if (!_this._isButtonPressed) {
-                    return;
+                    return; // So we need to test it the pointer down was pressed before.
                 }
                 _this._isButtonPressed = false;
                 _this._pickedUpMesh = null;
@@ -67228,7 +67228,7 @@ var BABYLON;
             } };
             engine.onVRRequestPresentComplete.add(_this._onVREnabled);
             engine.initWebVR().add(function (event) {
-                if (_this._vrDevice === event.vrDisplay) {
+                if (!_this._vrDevice || _this._vrDevice === event.vrDisplay) {
                     return;
                 }
                 _this._vrDevice = event.vrDisplay;
