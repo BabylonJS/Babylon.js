@@ -16,10 +16,11 @@ module BABYLON {
         getBoundingInfo?(): BoundingInfo;
         computeWorldMatrix?(force: boolean): void;
         getWorldMatrix?(): Matrix;
-        getChildMeshes?(): Array<AbstractMesh>;
+        getChildMeshes?(directDecendantsOnly?: boolean): Array<AbstractMesh>;
         getVerticesData?(kind: string): Array<number> | Float32Array;
         getIndices?(): IndicesArray;
         getScene?(): Scene;
+        getAbsolutePosition(): Vector3;
     }
 
     export class PhysicsImpostor {
@@ -49,31 +50,31 @@ module BABYLON {
         private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         private static _tmpQuat: Quaternion = Quaternion.Identity();
 
-        get isDisposed():boolean{
+        get isDisposed(): boolean {
             return this._isDisposed;
         }
 
-        get mass():number{
+        get mass(): number {
             return this._physicsEngine.getPhysicsPlugin().getBodyMass(this);
         }
 
-        set mass(value:number){
+        set mass(value: number) {
             this.setMass(value);
         }
 
-        get friction():number{
+        get friction(): number {
             return this._physicsEngine.getPhysicsPlugin().getBodyFriction(this);
         }
 
-        set friction(value:number){
+        set friction(value: number) {
             this._physicsEngine.getPhysicsPlugin().setBodyFriction(this, value);
         }
 
-        get restitution():number {
+        get restitution(): number {
             return this._physicsEngine.getPhysicsPlugin().getBodyRestitution(this);
         }
 
-        set restitution(value:number){
+        set restitution(value: number) {
             this._physicsEngine.getPhysicsPlugin().setBodyRestitution(this, value);
         }
 
@@ -485,11 +486,11 @@ module BABYLON {
             this._deltaRotationConjugated = this._deltaRotation.conjugate();
         }
 
-        public getBoxSizeToRef(result:Vector3){
+        public getBoxSizeToRef(result: Vector3) {
             this._physicsEngine.getPhysicsPlugin().getBoxSizeToRef(this, result);
         }
 
-        public getRadius():number{
+        public getRadius(): number {
             return this._physicsEngine.getPhysicsPlugin().getRadius(this);
         }
 
@@ -501,16 +502,16 @@ module BABYLON {
          * @param distToJoint Optional distance from the impostor to the joint.
          * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
          */
-        public syncBoneWithImpostor(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, distToJoint?:number, adjustRotation?:Quaternion){
+        public syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion) {
 
             var tempVec = PhysicsImpostor._tmpVecs[0];
             var mesh = <AbstractMesh>this.object;
 
-            if(adjustRotation){
+            if (adjustRotation) {
                 var tempQuat = PhysicsImpostor._tmpQuat;
                 mesh.rotationQuaternion.multiplyToRef(adjustRotation, tempQuat);
                 bone.setRotationQuaternion(tempQuat, Space.WORLD, boneMesh);
-            }else{
+            } else {
                 bone.setRotationQuaternion(mesh.rotationQuaternion, Space.WORLD, boneMesh);
             }
 
@@ -518,27 +519,27 @@ module BABYLON {
             tempVec.y = 0;
             tempVec.z = 0;
 
-            if(jointPivot){
+            if (jointPivot) {
                 tempVec.x = jointPivot.x;
                 tempVec.y = jointPivot.y;
                 tempVec.z = jointPivot.z;
 
                 bone.getDirectionToRef(tempVec, boneMesh, tempVec);
 
-                if(distToJoint === undefined || distToJoint === null){
+                if (distToJoint === undefined || distToJoint === null) {
                     distToJoint = jointPivot.length();
                 }
-                
+
                 tempVec.x *= distToJoint;
                 tempVec.y *= distToJoint;
                 tempVec.z *= distToJoint;
             }
 
-            if(bone.getParent()){
+            if (bone.getParent()) {
                 tempVec.addInPlace(mesh.getAbsolutePosition());
-                bone.setAbsolutePosition(tempVec, boneMesh);  
-            }else{
-                boneMesh.setAbsolutePosition(mesh.getAbsolutePosition());               
+                bone.setAbsolutePosition(tempVec, boneMesh);
+            } else {
+                boneMesh.setAbsolutePosition(mesh.getAbsolutePosition());
                 boneMesh.position.x -= tempVec.x;
                 boneMesh.position.y -= tempVec.y;
                 boneMesh.position.z -= tempVec.z;
@@ -555,43 +556,43 @@ module BABYLON {
          * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
          * @param boneAxis Optional vector3 axis the bone is aligned with
          */
-        public syncImpostorWithBone(bone:Bone, boneMesh:AbstractMesh, jointPivot:Vector3, distToJoint?:number, adjustRotation?:Quaternion, boneAxis?:Vector3){
+        public syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3) {
 
             var mesh = <AbstractMesh>this.object;
 
-            if(adjustRotation){
+            if (adjustRotation) {
                 var tempQuat = PhysicsImpostor._tmpQuat;
                 bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, tempQuat);
                 tempQuat.multiplyToRef(adjustRotation, mesh.rotationQuaternion);
-            }else{
+            } else {
                 bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, mesh.rotationQuaternion);
             }
 
             var pos = PhysicsImpostor._tmpVecs[0];
             var boneDir = PhysicsImpostor._tmpVecs[1];
-            
-            if(!boneAxis){
+
+            if (!boneAxis) {
                 boneAxis = PhysicsImpostor._tmpVecs[2];
-                boneAxis.x = 0; 
-                boneAxis.y = 1; 
+                boneAxis.x = 0;
+                boneAxis.y = 1;
                 boneAxis.z = 0;
             }
 
             bone.getDirectionToRef(boneAxis, boneMesh, boneDir);
             bone.getAbsolutePositionToRef(boneMesh, pos);
 
-            if((distToJoint === undefined || distToJoint === null) && jointPivot){
+            if ((distToJoint === undefined || distToJoint === null) && jointPivot) {
                 distToJoint = jointPivot.length();
             }
 
-            if(distToJoint !== undefined && distToJoint !== null){
+            if (distToJoint !== undefined && distToJoint !== null) {
                 pos.x += boneDir.x * distToJoint;
                 pos.y += boneDir.y * distToJoint;
                 pos.z += boneDir.z * distToJoint;
             }
 
             mesh.setAbsolutePosition(pos);
-            
+
         }
 
         //Impostor types

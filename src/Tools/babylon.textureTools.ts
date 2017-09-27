@@ -8,6 +8,10 @@
 		 * @return Generated texture
 		 */
 		public static CreateResizedCopy(texture: BABYLON.Texture, width: number, height: number, useBilinearMode: boolean = true): BABYLON.Texture {
+			
+			var scene = texture.getScene();
+			var engine = scene.getEngine();
+			
 			let rtt = new BABYLON.RenderTargetTexture(
 				'resized' + texture.name,
 				{ width: width, height: height },
@@ -19,9 +23,6 @@
 				texture._samplingMode,
 				false
 			);
-
-            var scene = texture.getScene();
-			var engine = scene.getEngine();
 
 			rtt.wrapU = texture.wrapU;
 			rtt.wrapV = texture.wrapV;
