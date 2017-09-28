@@ -27161,7 +27161,7 @@ var BABYLON;
                 return this._mergeElement(source, new Float32Array(source.length));
             }
             if (!source) {
-                return this._mergeElement(new Float32Array(other.length), other);
+                return other;
             }
             var len = other.length + source.length;
             var isSrcTypedArray = source instanceof Float32Array;
