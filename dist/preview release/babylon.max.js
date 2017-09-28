@@ -27154,10 +27154,15 @@ var BABYLON;
             return this;
         };
         VertexData.prototype._mergeElement = function (source, other) {
-            if (!other)
-                return source;
-            if (!source)
-                return other;
+            if (!other && !source) {
+                return null;
+            }
+            if (!other) {
+                return this._mergeElement(source, new Float32Array(source.length));
+            }
+            if (!source) {
+                return this._mergeElement(new Float32Array(other.length), other);
+            }
             var len = other.length + source.length;
             var isSrcTypedArray = source instanceof Float32Array;
             var isOthTypedArray = other instanceof Float32Array;
