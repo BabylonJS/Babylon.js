@@ -334,7 +334,7 @@
             }
 
             if (!source) {
-                return this._mergeElement(new Float32Array(other.length), other);
+                return other;
             }
 
             var len = other.length + source.length;
