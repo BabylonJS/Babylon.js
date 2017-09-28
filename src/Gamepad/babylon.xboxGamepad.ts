@@ -56,7 +56,7 @@
         private _isXboxOnePad: boolean = false;
 
         constructor(id: string, index: number, gamepad: any, xboxOne: boolean = false) {
-            super(id, index, gamepad, 0, 1, (xboxOne ? 3 : 2), (xboxOne ? 4 : 3));
+            super(id, index, gamepad, 0, 1, 2, 3);
             this.type = Gamepad.XBOX;
             this._isXboxOnePad = xboxOne;
         }
