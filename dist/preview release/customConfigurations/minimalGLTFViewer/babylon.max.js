@@ -27154,10 +27154,15 @@ var BABYLON;
             return this;
         };
         VertexData.prototype._mergeElement = function (source, other) {
-            if (!other)
-                return source;
-            if (!source)
+            if (!other && !source) {
+                return null;
+            }
+            if (!other) {
+                return this._mergeElement(source, new Float32Array(source.length));
+            }
+            if (!source) {
                 return other;
+            }
             var len = other.length + source.length;
             var isSrcTypedArray = source instanceof Float32Array;
             var isOthTypedArray = other instanceof Float32Array;
@@ -75669,7 +75674,9 @@ var BABYLON;
                 this.removePendingData(this);
             };
             GLTFLoader.prototype._onError = function (message) {
-                this._errorCallback(message);
+                if (this._errorCallback) {
+                    this._errorCallback(message);
+                }
                 this.dispose();
             };
             GLTFLoader.prototype._onProgress = function (event) {

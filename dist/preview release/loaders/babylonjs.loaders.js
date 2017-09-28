@@ -3520,7 +3520,9 @@ var BABYLON;
                 this.removePendingData(this);
             };
             GLTFLoader.prototype._onError = function (message) {
-                this._errorCallback(message);
+                if (this._errorCallback) {
+                    this._errorCallback(message);
+                }
                 this.dispose();
             };
             GLTFLoader.prototype._onProgress = function (event) {
