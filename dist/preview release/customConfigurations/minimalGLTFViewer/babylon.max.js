@@ -52193,7 +52193,7 @@ var BABYLON;
         __extends(Xbox360Pad, _super);
         function Xbox360Pad(id, index, gamepad, xboxOne) {
             if (xboxOne === void 0) { xboxOne = false; }
-            var _this = _super.call(this, id, index, gamepad, 0, 1, (xboxOne ? 3 : 2), (xboxOne ? 4 : 3)) || this;
+            var _this = _super.call(this, id, index, gamepad, 0, 1, 2, 3) || this;
             _this._leftTrigger = 0;
             _this._rightTrigger = 0;
             _this.onButtonDownObservable = new BABYLON.Observable();
