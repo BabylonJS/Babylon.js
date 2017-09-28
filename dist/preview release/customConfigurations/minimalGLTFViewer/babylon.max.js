@@ -35615,6 +35615,9 @@ var BABYLON;
                     previousMultiTouchPanPosition.isPinching = false;
                     twoFingerActivityCount = 0;
                     initialDistance = 0;
+                    if (p.event.pointerType !== "touch") {
+                        pointB = undefined; // Mouse and pen are mono pointer
+                    }
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
