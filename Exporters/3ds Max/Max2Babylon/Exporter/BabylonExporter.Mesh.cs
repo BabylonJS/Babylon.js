@@ -306,64 +306,8 @@ namespace Max2Babylon
                 var optimizeVertices = meshNode.MaxNode.GetBoolProperty("babylonjs_optimizevertices");
 
                 // Compute normals
-                List<GlobalVertex>[] verticesAlreadyExported = null;
-
-                if (optimizeVertices)
-                {
-                    verticesAlreadyExported = new List<GlobalVertex>[unskinnedMesh.NumberOfVerts];
-                }
-
                 var subMeshes = new List<BabylonSubMesh>();
-                var indexStart = 0;
-
-
-                for (int i = 0; i < multiMatsCount; ++i)
-                {
-                    int materialId = meshNode.NodeMaterial?.GetMaterialID(i) ?? 0;
-                    var indexCount = 0;
-                    var minVertexIndex = int.MaxValue;
-                    var maxVertexIndex = int.MinValue;
-                    var subMesh = new BabylonSubMesh { indexStart = indexStart, materialIndex = i };
-
-                    if (multiMatsCount == 1)
-                    {
-                        for (int j = 0; j < unskinnedMesh.NumberOfFaces; ++j)
-                        {
-                            var face = unskinnedMesh.GetFace(j);
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
-                        }
-                    }
-                    else
-                    {
-                        ITab<IFaceEx> materialFaces = unskinnedMesh.GetFacesFromMatID(materialId);
-                        for (int j = 0; j < materialFaces.Count; ++j)
-                        {
-#if MAX2017
-                            var faceIndexer = j;
-#else
-                            var faceIndexer = new IntPtr(j);
-#endif
-                            var face = materialFaces[faceIndexer];
-
-#if !MAX2017
-                            Marshal.FreeHGlobal(faceIndexer);
-#endif
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
-                        }
-                    }
-
-                    if (indexCount != 0)
-                    {
-
-                        subMesh.indexCount = indexCount;
-                        subMesh.verticesStart = minVertexIndex;
-                        subMesh.verticesCount = maxVertexIndex - minVertexIndex + 1;
-
-                        indexStart += indexCount;
-
-                        subMeshes.Add(subMesh);
-                    }
-                }
+                ExtractGeometry(vertices, indices, subMeshes, boneIds, skin, unskinnedMesh, hasUV, hasUV2, hasColor, hasAlpha, optimizeVertices, multiMatsCount, meshNode);
 
                 if (vertices.Count >= 65536)
                 {
@@ -417,6 +361,67 @@ namespace Max2Babylon
             babylonScene.MeshesList.Add(babylonMesh);
 
             return babylonMesh;
+        }
+
+        private void ExtractGeometry(List<GlobalVertex> vertices, List<int> indices, List<BabylonSubMesh> subMeshes, List<int> boneIds, IIGameSkin skin, IIGameMesh unskinnedMesh, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, bool optimizeVertices, int multiMatsCount, IIGameNode meshNode)
+        {
+            List<GlobalVertex>[] verticesAlreadyExported = null;
+
+            if (optimizeVertices)
+            {
+                verticesAlreadyExported = new List<GlobalVertex>[unskinnedMesh.NumberOfVerts];
+            }
+
+            var indexStart = 0;
+
+
+            for (int i = 0; i < multiMatsCount; ++i)
+            {
+                int materialId = meshNode.NodeMaterial?.GetMaterialID(i) ?? 0;
+                var indexCount = 0;
+                var minVertexIndex = int.MaxValue;
+                var maxVertexIndex = int.MinValue;
+                var subMesh = new BabylonSubMesh { indexStart = indexStart, materialIndex = i };
+
+                if (multiMatsCount == 1)
+                {
+                    for (int j = 0; j < unskinnedMesh.NumberOfFaces; ++j)
+                    {
+                        var face = unskinnedMesh.GetFace(j);
+                        ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
+                    }
+                }
+                else
+                {
+                    ITab<IFaceEx> materialFaces = unskinnedMesh.GetFacesFromMatID(materialId);
+                    for (int j = 0; j < materialFaces.Count; ++j)
+                    {
+#if MAX2017
+                        var faceIndexer = j;
+#else
+                            var faceIndexer = new IntPtr(j);
+#endif
+                        var face = materialFaces[faceIndexer];
+
+#if !MAX2017
+                            Marshal.FreeHGlobal(faceIndexer);
+#endif
+                        ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
+                    }
+                }
+
+                if (indexCount != 0)
+                {
+
+                    subMesh.indexCount = indexCount;
+                    subMesh.verticesStart = minVertexIndex;
+                    subMesh.verticesCount = maxVertexIndex - minVertexIndex + 1;
+
+                    indexStart += indexCount;
+
+                    subMeshes.Add(subMesh);
+                }
+            }
         }
 
         private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face, List<int> boneIds)
