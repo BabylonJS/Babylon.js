@@ -440,13 +440,15 @@ module INSPECTOR {
         }
 
         private _checkboxInput() {
-            this._input_checkbox = Helpers.CreateInput('checkbox-element', this._valueDiv);
-            this._input_checkbox.type = 'checkbox'
-            this._input_checkbox.checked = this.value;
-            this._input_checkbox.addEventListener('change', () => {
-                Scheduler.getInstance().pause = true;
-                this.validateInput(!this.value)
-            })
+            if(this._valueDiv.childElementCount < 1) { // Prevent display two checkbox
+                this._input_checkbox = Helpers.CreateInput('checkbox-element', this._valueDiv);
+                this._input_checkbox.type = 'checkbox'
+                this._input_checkbox.checked = this.value;
+                this._input_checkbox.addEventListener('change', () => {
+                    Scheduler.getInstance().pause = true;
+                    this.validateInput(!this.value)
+                })
+            }            
         }
     }
 }
