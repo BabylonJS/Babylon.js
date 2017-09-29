@@ -14,6 +14,7 @@
         "babylonjs.materials.js",
         "babylonjs.materials.min.js",
         "babylonjs.materials.module.d.ts",
+        "readme.md",
         "package.json"
     ],
     "typings": "babylonjs.materials.module.d.ts",

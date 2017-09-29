@@ -18,6 +18,10 @@ declare module BABYLON {
          */
         gridRatio: number;
         /**
+         * Allows setting an offset for the grid lines.
+         */
+        gridOffset: Vector3;
+        /**
          * The frequency of thicker lines.
          */
         majorUnitFrequency: number;

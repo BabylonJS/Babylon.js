@@ -282,6 +282,8 @@
     overflow-x: auto;
     color: #ccc;
     font-family: "Inconsolata", sans-serif; }
+    .insp-wrapper .insp-details .details {
+      padding-left: 5px; }
     .insp-wrapper .insp-details .base-row, .insp-wrapper .insp-details .row, .insp-wrapper .insp-details .header-row {
       display: flex;
       width: 100%; }
@@ -328,6 +330,8 @@
       height: 10px;
       display: inline-block;
       margin-left: 5px; }
+    .insp-wrapper .insp-details .color-element {
+      top: 2px; }
     .insp-wrapper .insp-details .texture-element {
       color: #f29766;
       margin-left: 10px; }

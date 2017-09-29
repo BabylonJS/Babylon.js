@@ -2075,7 +2075,6 @@ var INSPECTOR;
             var scheduler = INSPECTOR.Scheduler.getInstance();
             _this._div.className = 'color-element';
             _this._div.style.backgroundColor = _this._toRgba(color);
-            _this._div.style.top = "5px";
             _this.pline = propertyLine;
             _this._input = INSPECTOR.Helpers.CreateInput();
             _this._input.type = 'color';
@@ -2084,8 +2083,11 @@ var INSPECTOR;
             _this._input.style.height = '15px';
             _this._input.value = color.toHexString();
             _this._input.addEventListener('input', function (e) {
-                console.log('Color', _this._input.value, _this.pline);
-                _this.pline.validateInput(BABYLON.Color3.FromHexString(_this._input.value));
+                var color = BABYLON.Color3.FromHexString(_this._input.value);
+                color.r = parseFloat(color.r.toPrecision(2));
+                color.g = parseFloat(color.g.toPrecision(2));
+                color.b = parseFloat(color.b.toPrecision(2));
+                _this.pline.validateInput(color);
                 scheduler.pause = false;
             });
             _this._div.appendChild(_this._input);
@@ -3108,7 +3110,7 @@ var INSPECTOR;
                 screenShotTexture.onBeforeRenderObservable = texture.onBeforeRenderObservable;
                 // To display the texture after rendering
                 screenShotTexture.onAfterRenderObservable.add(function (faceIndex) {
-                    BABYLON.Tools.DumpFramebuffer(size_1.width, size_1.height, engine_1, function (data) { return imgs[faceIndex].src = data; }, "image/png");
+                    BABYLON.Tools.DumpFramebuffer(size_1.width, size_1.height, engine_1, function (data) { return imgs[faceIndex].src = data; });
                 });
                 // Render the texture
                 scene.incrementRenderId();
@@ -3117,22 +3119,48 @@ var INSPECTOR;
                 screenShotTexture.dispose();
             }
             else if (texture instanceof BABYLON.CubeTexture) {
+                // Cannot open correctly DDS File
                 // Display all textures of the CubeTexture
-                var i = 0;
-                for (var _i = 0, _a = texture['_files']; _i < _a.length; _i++) {
-                    var filename = _a[_i];
-                    imgs[i].src = filename;
-                    i++;
-                }
-            }
-            else if (texture.url) {
-                // If an url is present, the texture is an image
-                img.src = texture.url;
+                var pixels = texture.readPixels();
+                var canvas = document.createElement('canvas');
+                canvas.id = "MyCanvas";
+                img.parentElement.appendChild(canvas);
+                var ctx = canvas.getContext('2d');
+                var size = texture.getSize();
+                var tmp = pixels.buffer.slice(0, size.height * size.width * 4);
+                var u = new Uint8ClampedArray(tmp);
+                var colors = new ImageData(size.width * 6, size.height);
+                colors.data.set(u);
+                var imgData = ctx.createImageData(size.width * 6, size.height);
+                imgData.data.set(u);
+                // let data = imgData.data;
+                // for(let i = 0, len = size.height * size.width; i < len; i++) {
+                //     data[i] = pixels[i];
+                // }
+                ctx.putImageData(imgData, 0, 0);
+                // let i: number = 0;
+                // for(let filename of (texture as BABYLON.CubeTexture)['_files']){
+                //     imgs[i].src = filename;
+                //     i++;
+                // }
             }
             else if (texture['_canvas']) {
                 // Dynamic texture
                 var base64Image = texture['_canvas'].toDataURL("image/png");
                 img.src = base64Image;
+            }
+            else if (texture.url) {
+                var pixels = texture.readPixels();
+                var canvas = document.createElement('canvas');
+                canvas.id = "MyCanvas";
+                img.parentElement.appendChild(canvas);
+                var ctx = canvas.getContext('2d');
+                var size = texture.getSize();
+                var imgData = ctx.createImageData(size.width, size.height);
+                imgData.data.set(pixels);
+                ctx.putImageData(imgData, 0, 0);
+                // If an url is present, the texture is an image
+                // img.src = texture.url;
             }
         };
         /** Select an item in the tree */

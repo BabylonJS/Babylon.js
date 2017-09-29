@@ -285,10 +285,28 @@
         public alphaMode = Engine.ALPHA_COMBINE;
 
         @serialize()
-        public needDepthPrePass = false;
+        private _needDepthPrePass = false;
+        public set needDepthPrePass(value : boolean) {
+            if (this._needDepthPrePass === value) {
+                return;
+            }
+            this._needDepthPrePass = value;
+            if (this._needDepthPrePass) {
+                this.checkReadyOnEveryCall = true;
+            }
+        }
+        public get needDepthPrePass(): boolean {
+            return this._needDepthPrePass;
+        }   
 
         @serialize()
         public disableDepthWrite = false;
+
+        @serialize()
+        public forceDepthWrite = false;
+
+        @serialize()
+        public separateCullingPass = false;
 
         @serialize("fogEnabled")
         private _fogEnabled = true;
@@ -433,13 +451,16 @@
             this._wasPreviouslyReady = false;
         }
 
-        public _preBind(effect?: Effect): void {
+        public _preBind(effect?: Effect, overrideOrientation? : number): boolean {
             var engine = this._scene.getEngine();
 
-            var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
+            var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
+            var reverse = orientation === Material.ClockWiseSideOrientation;
 
             engine.enableEffect(effect ? effect : this._effect);
             engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
+
+            return reverse;
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {

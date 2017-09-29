@@ -16,6 +16,7 @@ declare module BABYLON {
     class GLTFFileLoader implements ISceneLoaderPluginAsync {
         static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
+        onParsed: (data: IGLTFLoaderData) => void;
         static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;

@@ -8,6 +8,7 @@ precision highp float;
 uniform vec3 mainColor;
 uniform vec3 lineColor;
 uniform vec4 gridControl;
+uniform vec3 gridOffset;
 
 // Varying
 #ifdef TRANSPARENT
@@ -70,7 +71,7 @@ void main(void) {
     
     // Scale position to the requested ratio.
     float gridRatio = gridControl.x;
-    vec3 gridPos = vPosition / gridRatio;
+    vec3 gridPos = (vPosition + gridOffset) / gridRatio;
     
     // Find the contribution of each coords.
     float x = contributionOnAxis(gridPos.x);

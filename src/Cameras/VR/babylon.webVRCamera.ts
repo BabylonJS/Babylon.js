@@ -99,7 +99,7 @@ module BABYLON {
             this._onVREnabled = (success: boolean) => { if (success) { this.initControllers(); } };
             engine.onVRRequestPresentComplete.add(this._onVREnabled);
             engine.initWebVR().add((event: IDisplayChangedEventArgs) => {
-                if (this._vrDevice === event.vrDisplay) {
+                if (!event.vrDisplay || this._vrDevice === event.vrDisplay) {
                     return;
                 }
 
@@ -108,12 +108,13 @@ module BABYLON {
                 //reset the rig parameters.
                 this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
 
-                if (this._attached && this._vrDevice) {
+                if (this._attached) {
                     this.getEngine().enableVR();
                 }
             });
 
-            this._frameData = new VRFrameData();
+            if (typeof(VRFrameData) !== "undefined")
+                this._frameData = new VRFrameData();
 
             /**
              * The idea behind the following lines:
