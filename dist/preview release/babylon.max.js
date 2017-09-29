@@ -21461,7 +21461,9 @@ var BABYLON;
             _this._renderIdForInstances = new Array();
             _this._batchCache = new _InstancesBatch();
             _this._instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
-            _this._sideOrientation = Mesh._DEFAULTSIDE;
+            // Use by builder only to know what orientation were the mesh build in.
+            _this._originalBuilderSideOrientation = Mesh._DEFAULTSIDE;
+            _this.overrideMaterialSideOrientation = null;
             _this._areNormalsFrozen = false; // Will be used by ribbons mainly
             // Will be used to save a source mesh reference, If any
             _this._source = null;
@@ -21916,20 +21918,6 @@ var BABYLON;
             }
             return _super.prototype.isReady.call(this);
         };
-        Object.defineProperty(Mesh.prototype, "sideOrientation", {
-            get: function () {
-                return this._sideOrientation;
-            },
-            /**
-             * Sets the mesh side orientation : BABYLON.Mesh.FRONTSIDE, BABYLON.Mesh.BACKSIDE, BABYLON.Mesh.DOUBLESIDE or BABYLON.Mesh.DEFAULTSIDE
-             * tuto : http://doc.babylonjs.com/tutorials/Discover_Basic_Elements#side-orientation
-             */
-            set: function (sideO) {
-                this._sideOrientation = sideO;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Mesh.prototype, "areNormalsFrozen", {
             /**
              * Boolean : true if the normals aren't to be recomputed on next mesh `positions` array update.
@@ -22494,7 +22482,7 @@ var BABYLON;
             else {
                 effect = this._effectiveMaterial.getEffect();
             }
-            this._effectiveMaterial._preBind(effect);
+            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
             }
@@ -22511,7 +22499,6 @@ var BABYLON;
                 this._effectiveMaterial.bind(world, this);
             }
             if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
-                var reverse = this.sideOrientation === BABYLON.Material.ClockWiseSideOrientation;
                 engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse);
                 this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
                 engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
@@ -26048,11 +26035,13 @@ var BABYLON;
         Material.prototype.markDirty = function () {
             this._wasPreviouslyReady = false;
         };
-        Material.prototype._preBind = function (effect) {
+        Material.prototype._preBind = function (effect, overrideOrientation) {
             var engine = this._scene.getEngine();
-            var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
+            var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
+            var reverse = orientation === Material.ClockWiseSideOrientation;
             engine.enableEffect(effect ? effect : this._effect);
             engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
+            return reverse;
         };
         Material.prototype.bind = function (world, mesh) {
         };
@@ -27138,30 +27127,35 @@ var BABYLON;
                 }
             }
             this.positions = this._mergeElement(this.positions, other.positions);
-            this.normals = this._mergeElement(this.normals, other.normals);
-            this.tangents = this._mergeElement(this.tangents, other.tangents);
-            this.uvs = this._mergeElement(this.uvs, other.uvs);
-            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2);
-            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3);
-            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4);
-            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5);
-            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6);
-            this.colors = this._mergeElement(this.colors, other.colors);
-            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices);
-            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
-            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
-            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
+            var count = this.positions.length / 3;
+            this.normals = this._mergeElement(this.normals, other.normals, count * 3);
+            this.tangents = this._mergeElement(this.tangents, other.tangents, count * 4);
+            this.uvs = this._mergeElement(this.uvs, other.uvs, count * 2);
+            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2, count * 2);
+            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3, count * 2);
+            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4, count * 2);
+            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5, count * 2);
+            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6, count * 2);
+            this.colors = this._mergeElement(this.colors, other.colors, count * 4);
+            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices, count * 4);
+            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights, count * 4);
+            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra, count * 4);
+            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra, count * 4);
             return this;
         };
-        VertexData.prototype._mergeElement = function (source, other) {
+        VertexData.prototype._mergeElement = function (source, other, length) {
+            if (length === void 0) { length = 0; }
             if (!other && !source) {
                 return null;
             }
             if (!other) {
-                return this._mergeElement(source, new Float32Array(source.length));
+                return this._mergeElement(source, new Float32Array(source.length), length);
             }
             if (!source) {
-                return other;
+                if (length === other.length) {
+                    return other;
+                }
+                return this._mergeElement(new Float32Array(length - other.length), other, length);
             }
             var len = other.length + source.length;
             var isSrcTypedArray = source instanceof Float32Array;
@@ -44231,7 +44225,7 @@ var BABYLON;
         MeshBuilder.CreateBox = function (name, options, scene) {
             var box = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            box.sideOrientation = options.sideOrientation;
+            box._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateBox(options);
             vertexData.applyToMesh(box, options.updatable);
             return box;
@@ -44252,7 +44246,7 @@ var BABYLON;
         MeshBuilder.CreateSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            sphere.sideOrientation = options.sideOrientation;
+            sphere._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -44271,7 +44265,7 @@ var BABYLON;
         MeshBuilder.CreateDisc = function (name, options, scene) {
             var disc = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            disc.sideOrientation = options.sideOrientation;
+            disc._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateDisc(options);
             vertexData.applyToMesh(disc, options.updatable);
             return disc;
@@ -44291,7 +44285,7 @@ var BABYLON;
         MeshBuilder.CreateIcoSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            sphere.sideOrientation = options.sideOrientation;
+            sphere._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateIcoSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -44335,7 +44329,7 @@ var BABYLON;
                 var positionFunction = function (positions) {
                     var minlg = pathArray[0].length;
                     var i = 0;
-                    var ns = (instance.sideOrientation === BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = (instance._originalBuilderSideOrientation === BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -44431,7 +44425,7 @@ var BABYLON;
             }
             else {
                 var ribbon = new BABYLON.Mesh(name, scene);
-                ribbon.sideOrientation = sideOrientation;
+                ribbon._originalBuilderSideOrientation = sideOrientation;
                 var vertexData = BABYLON.VertexData.CreateRibbon(options);
                 if (closePath) {
                     ribbon._idx = vertexData._idx;
@@ -44469,7 +44463,7 @@ var BABYLON;
         MeshBuilder.CreateCylinder = function (name, options, scene) {
             var cylinder = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            cylinder.sideOrientation = options.sideOrientation;
+            cylinder._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateCylinder(options);
             vertexData.applyToMesh(cylinder, options.updatable);
             return cylinder;
@@ -44488,7 +44482,7 @@ var BABYLON;
         MeshBuilder.CreateTorus = function (name, options, scene) {
             var torus = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            torus.sideOrientation = options.sideOrientation;
+            torus._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateTorus(options);
             vertexData.applyToMesh(torus, options.updatable);
             return torus;
@@ -44508,7 +44502,7 @@ var BABYLON;
         MeshBuilder.CreateTorusKnot = function (name, options, scene) {
             var torusKnot = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            torusKnot.sideOrientation = options.sideOrientation;
+            torusKnot._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateTorusKnot(options);
             vertexData.applyToMesh(torusKnot, options.updatable);
             return torusKnot;
@@ -44787,7 +44781,7 @@ var BABYLON;
         MeshBuilder.CreatePlane = function (name, options, scene) {
             var plane = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            plane.sideOrientation = options.sideOrientation;
+            plane._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePlane(options);
             vertexData.applyToMesh(plane, options.updatable);
             if (options.sourcePlane) {
@@ -44935,7 +44929,7 @@ var BABYLON;
                 polygonTriangulation.addHole(hole);
             }
             var polygon = polygonTriangulation.build(options.updatable, depth);
-            polygon.sideOrientation = options.sideOrientation;
+            polygon._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
             vertexData.applyToMesh(polygon, options.updatable);
             return polygon;
@@ -45100,7 +45094,7 @@ var BABYLON;
         MeshBuilder.CreatePolyhedron = function (name, options, scene) {
             var polyhedron = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            polyhedron.sideOrientation = options.sideOrientation;
+            polyhedron._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePolyhedron(options);
             vertexData.applyToMesh(polyhedron, options.updatable);
             return polyhedron;
