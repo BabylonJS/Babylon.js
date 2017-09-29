@@ -80,6 +80,9 @@ module BABYLON {
                 serializationObject.tangents = Array.prototype.slice.call(this.getTangents());
             }
 
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+
             return serializationObject;
         }
 
@@ -94,6 +97,15 @@ module BABYLON {
             }
             if (serializationObject.tangents) {
                 result.setTangents(serializationObject.tangents);
+            }
+
+            // Animations
+            if (serializationObject.animations) {
+                for (var animationIndex = 0; animationIndex < serializationObject.animations.length; animationIndex++) {
+                    var parsedAnimation = serializationObject.animations[animationIndex];
+
+                    result.animations.push(Animation.Parse(parsedAnimation));
+                }
             }
 
             return result;
