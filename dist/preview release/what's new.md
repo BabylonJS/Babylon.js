@@ -13,10 +13,12 @@
 - New InputText for Babylon.GUI. [Doc here](http://doc.babylonjs.com/overviews/gui#inputtext) ([deltakosh](https://github.com/deltakosh))
 - New VirtualKeyboard for Babylon.GUI. [Doc here](http://doc.babylonjs.com/overviews/gui#virtualkeyboard) ([deltakosh](https://github.com/deltakosh) / [adam](https://github.com/abow))
 - Added support for depth pre-pass rendering. [Doc here](http://doc.babylonjs.com/tutorials/transparency_and_how_meshes_are_rendered#depth-pre-pass-meshes) ([deltakosh](https://github.com/deltakosh))
+- Added support for `material.separateCullingPass`. [Doc here](http://doc.babylonjs.com/tutorials/transparency_and_how_meshes_are_rendered#things-to-do-and-not-to-do) ([sebavan](https://github.com/sebavan))
 - Added support for Windows Motion Controllers ([Lewis Weaver](https://github.com/leweaver))
-- Added support for Particle animation in ParticleSystem ([Ibraheem Osama](https://github.com/IbraheemOsama))
+- Added support for Particle animation in ParticleSystem. [Doc here](http://doc.babylonjs.com/tutorials/particles#particle-animation) ([Ibraheem Osama](https://github.com/IbraheemOsama))
 
 ## Updates
+- Several inspector improvments ([temechon](https://github.com/temechon))
 - New observables for actions: `onBeforeExecuteObservable` for all actions and `onInterpolationDoneObservable` for `InterpolateValueAction` ([deltakosh](https://github.com/deltakosh))
 - New observables for gamepads: `onButtonDownObservable`, `onButtonUpObservable`, `onPadDownObservable`, `onPadUpObservable` ([deltakosh](https://github.com/deltakosh))
 - New `camera.storeState()` and `camera.restoreState()` functions to store / restore cameras position / rotation / fov. (Doc here)[http://doc.babylonjs.com/tutorials/cameras#state] ([deltakosh](https://github.com/deltakosh))
