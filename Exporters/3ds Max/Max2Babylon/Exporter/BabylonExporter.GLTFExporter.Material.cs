@@ -353,12 +353,14 @@ namespace Max2Babylon
                 // --- Global ---
 
                 // Base color
+                // TODO - Unclear if alpha must be retreived from 'alpha' property of BABYLON.Material
+                // or from alpha channel of 'baseColor' of BABYLON.PBRMetallicRoughnessMaterial
                 gltfPbrMetallicRoughness.baseColorFactor = new float[4]
                 {
                     babylonPBRMetallicRoughnessMaterial.baseColor[0],
                     babylonPBRMetallicRoughnessMaterial.baseColor[1],
                     babylonPBRMetallicRoughnessMaterial.baseColor[2],
-                    1.0f // TODO - alpha
+                    babylonPBRMetallicRoughnessMaterial.alpha
                 };
                 gltfPbrMetallicRoughness.baseColorTexture = ExportTexture(babylonPBRMetallicRoughnessMaterial.baseTexture, gltf);
 
@@ -375,33 +377,44 @@ namespace Max2Babylon
 
         private void getAlphaMode(BabylonStandardMaterial babylonMaterial, out string alphaMode, out float? alphaCutoff)
         {
-            if ((babylonMaterial.diffuseTexture != null && babylonMaterial.diffuseTexture.hasAlpha) ||
+            if (babylonMaterial.alpha != 1.0f ||
+                (babylonMaterial.diffuseTexture != null && babylonMaterial.diffuseTexture.hasAlpha) ||
                  babylonMaterial.opacityTexture != null)
             {
-                // TODO - Babylon standard material is assumed to useAlphaFromDiffuseTexture. If not, the alpha mode is a mask.
+                // Babylon standard material is assumed to useAlphaFromDiffuseTexture. If not, the alpha mode is a mask.
                 alphaMode = GLTFMaterial.AlphaMode.BLEND.ToString();
             }
             else
             {
-                // glTF alpha mode default value is "OPAQUE"
-                alphaMode = null; // GLTFMaterial.AlphaMode.OPAQUE.ToString();
+                alphaMode = null;  // glTF alpha mode default value is "OPAQUE"
             }
             alphaCutoff = null;
         }
 
         private void getAlphaMode(BabylonPBRMetallicRoughnessMaterial babylonMaterial, out string alphaMode, out float? alphaCutoff)
         {
-            if (babylonMaterial.baseTexture != null && babylonMaterial.baseTexture.hasAlpha)
-            {
-                // TODO - Babylon standard material is assumed to useAlphaFromDiffuseTexture. If not, the alpha mode is a mask.
-                alphaMode = GLTFMaterial.AlphaMode.BLEND.ToString();
-            }
-            else
-            {
-                // glTF alpha mode default value is "OPAQUE"
-                alphaMode = null; // GLTFMaterial.AlphaMode.OPAQUE.ToString();
-            }
+            alphaMode = null;
             alphaCutoff = null;
+            switch (babylonMaterial.transparencyMode)
+            {
+                case (int)BabylonPBRMetallicRoughnessMaterial.TransparencyMode.OPAQUE:
+                    alphaMode = null; // glTF alpha mode default value is "OPAQUE"
+                    break;
+                case (int)BabylonPBRMetallicRoughnessMaterial.TransparencyMode.ALPHABLEND:
+                    alphaMode = GLTFMaterial.AlphaMode.BLEND.ToString();
+                    break;
+                case (int)BabylonPBRMetallicRoughnessMaterial.TransparencyMode.ALPHATEST:
+                    alphaCutoff = babylonMaterial.alphaCutOff;
+                    alphaMode = GLTFMaterial.AlphaMode.MASK.ToString();
+                    break;
+                case (int)BabylonPBRMetallicRoughnessMaterial.TransparencyMode.ALPHATESTANDBLEND:
+                    RaiseWarning("GLTFExporter.Material | Alpha test and blend mode is not supported in glTF. Alpha blend is used instead.", 3);
+                    alphaMode = GLTFMaterial.AlphaMode.BLEND.ToString();
+                    break;
+                default:
+                    RaiseWarning("GLTFExporter.Material | Unsupported transparency mode: " + babylonMaterial.transparencyMode, 3);
+                    break;
+            }
         }
 
         BabylonColor3 dielectricSpecular = new BabylonColor3(0.04f, 0.04f, 0.04f);

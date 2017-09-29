@@ -43,8 +43,21 @@
 
             // Pick the scene configuration if needed.
             if (!configuration) {
+                var scene = null;
+                var engine = this.getEngine();
                 var camera = this.getCamera();
-                var scene = camera ? camera.getScene() : BABYLON.Engine.LastCreatedScene;
+
+                if (camera) {
+                    scene = camera.getScene();
+                }
+                else if (engine && engine.scenes) {
+                    var scenes = engine.scenes;
+                    scene = scenes[scenes.length - 1];
+                }
+                else {
+                    scene = BABYLON.Engine.LastCreatedScene;
+                }
+
                 this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
             }
             else {

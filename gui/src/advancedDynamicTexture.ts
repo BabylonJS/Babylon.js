@@ -348,7 +348,7 @@ module BABYLON.GUI {
                 this._shouldBlockPointer = false;
                 this._doPicking(x, y, pi.type);
 
-                pi.skipOnPointerObservable = this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
+                pi.skipOnPointerObservable = this._shouldBlockPointer;
             });
 
             this._attachToOnPointerOut(scene);

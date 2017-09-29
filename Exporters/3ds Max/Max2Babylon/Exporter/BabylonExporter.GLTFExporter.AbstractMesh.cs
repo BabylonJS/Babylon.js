@@ -31,9 +31,6 @@ namespace Max2Babylon
 
             // Transform
             gltfNode.translation = babylonAbstractMesh.position;
-            // TODO - Choose between this method and the extra root node
-            // Switch from left to right handed coordinate system
-            //gltfNode.translation[0] *= -1;
             if (babylonAbstractMesh.rotationQuaternion != null)
             {
                 gltfNode.rotation = babylonAbstractMesh.rotationQuaternion;

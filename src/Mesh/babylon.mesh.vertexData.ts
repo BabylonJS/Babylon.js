@@ -308,25 +308,41 @@
             }
 
             this.positions = this._mergeElement(this.positions, other.positions);
-            this.normals = this._mergeElement(this.normals, other.normals);
-            this.tangents = this._mergeElement(this.tangents, other.tangents);
-            this.uvs = this._mergeElement(this.uvs, other.uvs);
-            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2);
-            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3);
-            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4);
-            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5);
-            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6);
-            this.colors = this._mergeElement(this.colors, other.colors);
-            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices);
-            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
-            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
-            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
+
+            var count = this.positions.length / 3;
+
+            this.normals = this._mergeElement(this.normals, other.normals, count * 3);
+            this.tangents = this._mergeElement(this.tangents, other.tangents, count * 4);
+            this.uvs = this._mergeElement(this.uvs, other.uvs, count * 2);
+            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2, count * 2);
+            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3, count * 2);
+            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4, count * 2);
+            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5, count * 2);
+            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6, count * 2);
+            this.colors = this._mergeElement(this.colors, other.colors, count * 4);
+            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices, count * 4);
+            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights, count * 4);
+            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra, count * 4);
+            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra, count * 4);
             return this;
         }
 
-        private _mergeElement(source: number[] | Float32Array, other: number[] | Float32Array): number[] | Float32Array {
-            if (!other) return source;
-            if (!source) return other;
+        private _mergeElement(source: number[] | Float32Array, other: number[] | Float32Array, length = 0): number[] | Float32Array {
+            if (!other && !source) {
+                return null;
+            }
+
+            if (!other) {
+                return this._mergeElement(source, new Float32Array(source.length), length);
+            }
+
+            if (!source) {
+                if (length === other.length) {
+                    return other;
+                }
+
+                return this._mergeElement(new Float32Array(length - other.length), other, length);
+            }
 
             var len = other.length + source.length;
             var isSrcTypedArray = source instanceof Float32Array;

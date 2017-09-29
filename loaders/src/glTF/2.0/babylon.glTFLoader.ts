@@ -114,7 +114,9 @@ module BABYLON.GLTF2 {
         }
 
         private _onError(message: string): void {
-            this._errorCallback(message);
+            if (this._errorCallback) {
+                this._errorCallback(message);
+            }
             this.dispose();
         }
 

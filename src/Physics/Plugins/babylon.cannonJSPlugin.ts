@@ -1,22 +1,26 @@
 ﻿module BABYLON {
+    declare var require;
     declare var CANNON;
 
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
-        public world: any; //CANNON.World
+        public world: any; //this.BJSCANNON.World
         public name: string = "CannonJSPlugin";
         private _physicsMaterials = [];
         private _fixedTimeStep: number = 1 / 60;
-        //See https://github.com/schteppe/cannon.js/blob/gh-pages/demos/collisionFilter.html
+        //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
         private _currentCollisionGroup = 2;
+        public BJSCANNON = typeof CANNON !== 'undefined' ? CANNON : (typeof require !== 'undefined' ? require('cannon') : undefined);
+
+
 
         public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
             if (!this.isSupported()) {
                 Tools.Error("CannonJS is not available. Please make sure you included the js file.");
                 return;
             }
-            this.world = new CANNON.World();
-            this.world.broadphase = new CANNON.NaiveBroadphase();
+            this.world = new this.BJSCANNON.World();
+            this.world.broadphase = new this.BJSCANNON.NaiveBroadphase();
             this.world.solver.iterations = iterations;
         }
 
@@ -29,7 +33,7 @@
         }
 
         public getTimeStep(): number {
-          return this._fixedTimeStep;
+            return this._fixedTimeStep;
         }
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
@@ -38,15 +42,15 @@
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-            var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
-            var impulse = new CANNON.Vec3(force.x, force.y, force.z);
+            var worldPoint = new this.BJSCANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
+            var impulse = new this.BJSCANNON.Vec3(force.x, force.y, force.z);
 
             impostor.physicsBody.applyImpulse(impulse, worldPoint);
         }
 
         public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-            var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
-            var impulse = new CANNON.Vec3(force.x, force.y, force.z);
+            var worldPoint = new this.BJSCANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
+            var impulse = new this.BJSCANNON.Vec3(force.x, force.y, force.z);
 
             impostor.physicsBody.applyForce(impulse, worldPoint);
         }
@@ -87,7 +91,7 @@
                         bodyCreationObject[key] = nativeOptions[key];
                     }
                 }
-                impostor.physicsBody = new CANNON.Body(bodyCreationObject);
+                impostor.physicsBody = new this.BJSCANNON.Body(bodyCreationObject);
                 impostor.physicsBody.addEventListener("collide", impostor.onCollide);
                 this.world.addEventListener("preStep", impostor.beforeStep);
                 this.world.addEventListener("postStep", impostor.afterStep);
@@ -109,28 +113,31 @@
         }
 
         private _processChildMeshes(mainImpostor: PhysicsImpostor) {
-            var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes() : [];
+            var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes(true) : [];
+            let currentRotation: Quaternion = mainImpostor.object.rotationQuaternion;
             if (meshChildren.length) {
                 var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position;
+                            var pPosition = mesh.getAbsolutePosition().subtract(mainImpostor.object.getAbsolutePosition());
+                            let localRotation = mesh.rotationQuaternion.multiply(Quaternion.Inverse(currentRotation));
                             if (childImpostor.physicsBody) {
                                 this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
                             }
                             childImpostor.parent = mainImpostor;
                             childImpostor.resetUpdateFlags();
-                            mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new CANNON.Vec3(localPosition.x, localPosition.y, localPosition.z));
+                            mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z), new this.BJSCANNON.Quaternion(localRotation.x, localRotation.y, localRotation.z, localRotation.w));
                             //Add the mass of the children.
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes().forEach(processMesh.bind(this, mesh.position));
+                    currentRotation.multiplyInPlace(mesh.rotationQuaternion);
+                    mesh.getChildMeshes(true).forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
                 }
-                meshChildren.forEach(processMesh.bind(this, Vector3.Zero()));
+                meshChildren.forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
             }
         }
 
@@ -149,26 +156,26 @@
             }
             var constraint;
             var jointData = impostorJoint.joint.jointData;
-            //TODO - https://github.com/schteppe/cannon.js/blob/gh-pages/demos/collisionFilter.html
+            //TODO - https://github.com/schteppe/this.BJSCANNON.js/blob/gh-pages/demos/collisionFilter.html
             var constraintData = {
-                pivotA: jointData.mainPivot ? new CANNON.Vec3().copy(jointData.mainPivot) : null,
-                pivotB: jointData.connectedPivot ? new CANNON.Vec3().copy(jointData.connectedPivot) : null,
-                axisA: jointData.mainAxis ? new CANNON.Vec3().copy(jointData.mainAxis) : null,
-                axisB: jointData.connectedAxis ? new CANNON.Vec3().copy(jointData.connectedAxis) : null,
+                pivotA: jointData.mainPivot ? new this.BJSCANNON.Vec3().copy(jointData.mainPivot) : null,
+                pivotB: jointData.connectedPivot ? new this.BJSCANNON.Vec3().copy(jointData.connectedPivot) : null,
+                axisA: jointData.mainAxis ? new this.BJSCANNON.Vec3().copy(jointData.mainAxis) : null,
+                axisB: jointData.connectedAxis ? new this.BJSCANNON.Vec3().copy(jointData.connectedAxis) : null,
                 maxForce: jointData.nativeParams.maxForce,
                 collideConnected: !!jointData.collision
             };
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.HingeJoint:
                 case PhysicsJoint.Hinge2Joint:
-                    constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
+                    constraint = new this.BJSCANNON.HingeConstraint(mainBody, connectedBody, constraintData);
                     break;
                 case PhysicsJoint.DistanceJoint:
-                    constraint = new CANNON.DistanceConstraint(mainBody, connectedBody, (<DistanceJointData>jointData).maxDistance || 2)
+                    constraint = new this.BJSCANNON.DistanceConstraint(mainBody, connectedBody, (<DistanceJointData>jointData).maxDistance || 2)
                     break;
                 case PhysicsJoint.SpringJoint:
                     var springData = <SpringJointData>jointData;
-                    constraint = new CANNON.Spring(mainBody, connectedBody, {
+                    constraint = new this.BJSCANNON.Spring(mainBody, connectedBody, {
                         restLength: springData.length,
                         stiffness: springData.stiffness,
                         damping: springData.damping,
@@ -177,12 +184,12 @@
                     });
                     break;
                 case PhysicsJoint.LockJoint:
-                    constraint = new CANNON.LockConstraint(mainBody, connectedBody, constraintData);
+                    constraint = new this.BJSCANNON.LockConstraint(mainBody, connectedBody, constraintData);
                     break;
                 case PhysicsJoint.PointToPointJoint:
                 case PhysicsJoint.BallAndSocketJoint:
                 default:
-                    constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
+                    constraint = new this.BJSCANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
                     break;
             }
             //set the collideConnected flag after the creation, since DistanceJoint ignores it.
@@ -214,7 +221,7 @@
                 }
             }
 
-            var currentMat = new CANNON.Material(name);
+            var currentMat = new this.BJSCANNON.Material(name);
             currentMat.friction = friction;
             currentMat.restitution = restitution;
 
@@ -237,32 +244,32 @@
                     var radiusY = extendSize.y;
                     var radiusZ = extendSize.z;
 
-                    returnValue = new CANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
+                    returnValue = new this.BJSCANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
 
                     break;
                 //TMP also for cylinder - TODO Cannon supports cylinder natively.
                 case PhysicsImpostor.CylinderImpostor:
-                    returnValue = new CANNON.Cylinder(this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.y), 16);
+                    returnValue = new this.BJSCANNON.Cylinder(this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.y), 16);
                     break;
                 case PhysicsImpostor.BoxImpostor:
                     var box = extendSize.scale(0.5);
-                    returnValue = new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
+                    returnValue = new this.BJSCANNON.Box(new this.BJSCANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
                     break;
                 case PhysicsImpostor.PlaneImpostor:
                     Tools.Warn("Attention, PlaneImposter might not behave as you expect. Consider using BoxImposter instead");
-                    returnValue = new CANNON.Plane();
+                    returnValue = new this.BJSCANNON.Plane();
                     break;
                 case PhysicsImpostor.MeshImpostor:
                     var rawVerts = object.getVerticesData ? object.getVerticesData(VertexBuffer.PositionKind) : [];
                     var rawFaces = object.getIndices ? object.getIndices() : [];
                     Tools.Warn("MeshImpostor only collides against spheres.");
-                    returnValue = new CANNON.Trimesh(rawVerts, rawFaces);
+                    returnValue = new this.BJSCANNON.Trimesh(<number[]>rawVerts, <number[]>rawFaces);
                     break;
                 case PhysicsImpostor.HeightmapImpostor:
                     returnValue = this._createHeightmap(object);
                     break;
                 case PhysicsImpostor.ParticleImpostor:
-                    returnValue = new CANNON.Particle();
+                    returnValue = new this.BJSCANNON.Particle();
                     break;
             }
 
@@ -319,7 +326,7 @@
                 }
             }
 
-            var shape = new CANNON.Heightfield(matrix, {
+            var shape = new this.BJSCANNON.Heightfield(matrix, {
                 elementSize: elementSize
             });
 
@@ -371,7 +378,7 @@
                 //rotation is back
                 mesh.rotationQuaternion = rotationQuaternion;
 
-                //calculate the new center using a pivot (since Cannon.js doesn't center height maps)
+                //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
                 var p = Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSizeWorld.x, 0, -mesh.getBoundingInfo().boundingBox.extendSizeWorld.z);
                 mesh.setPivotMatrix(p);
                 mesh.computeWorldMatrix(true);
@@ -408,7 +415,7 @@
         }
 
         public isSupported(): boolean {
-            return window.CANNON !== undefined;
+            return this.BJSCANNON !== undefined;
         }
 
         public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
