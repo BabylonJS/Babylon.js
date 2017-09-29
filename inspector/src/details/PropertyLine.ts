@@ -83,6 +83,8 @@ module INSPECTOR {
         private _escapeInputHandler: EventListener;
         /** Handler used on focus out */
         private _focusOutInputHandler: EventListener;
+
+        private _input_checkbox: HTMLInputElement;
         /** Handler used to get mouse position */
         private _onMouseDownHandler: EventListener;
         private _onMouseDragHandler: EventListener;
@@ -106,7 +108,10 @@ module INSPECTOR {
 
             // Value
             this._valueDiv = Helpers.CreateDiv('prop-value', this._div);
-            this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+
+            if (typeof this.value !== 'boolean') {
+                this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+            }
 
             this._createElements();
 
@@ -117,7 +122,10 @@ module INSPECTOR {
             this._updateValue();
 
             // If the property type is not simple, add click event to unfold its children
-            if (!this._isSimple()) {
+            if (typeof this.value === 'boolean') {
+                // do nothing
+                this._checkboxInput();
+            } else if (!this._isSimple()) {
                 this._valueDiv.classList.add('clickable');
                 this._valueDiv.addEventListener('click', this._addDetails.bind(this));
             } else {
@@ -127,7 +135,6 @@ module INSPECTOR {
                 this._input.addEventListener('keydown', this._escapeInputHandler);
                 this._input.addEventListener('focusout', this._focusOutInputHandler);
             }
-
             // Add this property to the scheduler
             Scheduler.getInstance().add(this);
         }
@@ -169,9 +176,9 @@ module INSPECTOR {
         public validateInput(value: any): void {
             this.updateObject();
 
-            if(typeof this._property.value === 'number'){
+            if (typeof this._property.value === 'number') {
                 this._property.value = parseFloat(value);
-            }else{
+            } else {
                 this._property.value = value;
             }
             // Remove input
@@ -195,7 +202,9 @@ module INSPECTOR {
         /** Removes the input without validating the new value */
         private _removeInputWithoutValidating() {
             Helpers.CleanDiv(this._valueDiv);
-            this._valueDiv.textContent = "-";
+            if (typeof this.value !== 'boolean') {
+                this._valueDiv.textContent = "-";
+            } 
             // restore elements
             for (let elem of this._elements) {
                 this._valueDiv.appendChild(elem.toHtml());
@@ -215,10 +224,11 @@ module INSPECTOR {
             this._valueDiv.appendChild(this._input);
             this._input.focus();
 
-            if(typeof this.value === 'number') {
+            if (typeof this.value === 'number') {
                 this._input.addEventListener('mousedown', this._onMouseDownHandler);
             }
             this._input.addEventListener('focusout', this._focusOutInputHandler);
+
             // Pause the scheduler
             Scheduler.getInstance().pause = true;
         }
@@ -283,12 +293,12 @@ module INSPECTOR {
             if (typeof value === 'number') {
                 return Helpers.Trunc(value);
             }
+
             // If it's a string or a boolean, display its value
             if (typeof value === 'string' || typeof value === 'boolean') {
                 return value;
             }
             return PROPERTIES.format(value);
-
         }
 
         /** Delete properly this property line. 
@@ -317,7 +327,11 @@ module INSPECTOR {
             this.updateObject();
             // Then update its value
             // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
-            this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            if (typeof this.value === 'boolean') {
+                 this._checkboxInput();
+            } else {
+                this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            }
             for (let elem of this._elements) {
                 elem.update(this.value);
             }
@@ -399,7 +413,7 @@ module INSPECTOR {
          * Refresh mouse position on y axis
          * @param e 
          */
-        private _onMouseDrag(e: MouseEvent): void {      
+        private _onMouseDrag(e: MouseEvent): void {
             const diff = this._prevY - e.clientY;
             this._input.value = (this._preValue + diff).toString();
         }
@@ -413,7 +427,7 @@ module INSPECTOR {
             window.removeEventListener('mouseup', this._onMouseUpHandler);
             this._prevY = e.clientY;
         }
-      
+
         /**
          * Start record mouse position
          * @param e 
@@ -423,6 +437,16 @@ module INSPECTOR {
             this._preValue = this.value;
             window.addEventListener('mousemove', this._onMouseDragHandler);
             window.addEventListener('mouseup', this._onMouseUpHandler);
+        }
+
+        private _checkboxInput() {
+            this._input_checkbox = Helpers.CreateInput('checkbox-element', this._valueDiv);
+            this._input_checkbox.type = 'checkbox'
+            this._input_checkbox.checked = this.value;
+            this._input_checkbox.addEventListener('change', () => {
+                Scheduler.getInstance().pause = true;
+                this.validateInput(!this.value)
+            })
         }
     }
 }
