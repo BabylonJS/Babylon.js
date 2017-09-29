@@ -749,41 +749,59 @@ namespace Max2Babylon
 
         public void GenerateCoordinatesAnimations(IIGameNode meshNode, List<BabylonAnimation> animations)
         {
-            ExportVector3Animation("position", animations, key =>
+            if (meshNode.IGameControl.IsAnimated(IGameControlType.Pos) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.PosX) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.PosY) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.PosZ))
             {
-                var worldMatrix = meshNode.GetObjectTM(key);
-                if (meshNode.NodeParent != null)
+                ExportVector3Animation("position", animations, key =>
                 {
-                    var parentWorld = meshNode.NodeParent.GetObjectTM(key);
-                    worldMatrix.MultiplyBy(parentWorld.Inverse);
-                }
-                var trans = worldMatrix.Translation;
-                return new[] { trans.X, trans.Y, trans.Z };
-            });
+                    var worldMatrix = meshNode.GetObjectTM(key);
+                    if (meshNode.NodeParent != null)
+                    {
+                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                        worldMatrix.MultiplyBy(parentWorld.Inverse);
+                    }
+                    var trans = worldMatrix.Translation;
+                    return new[] { trans.X, trans.Y, trans.Z };
+                });
+            }
 
-            ExportQuaternionAnimation("rotationQuaternion", animations, key =>
+            if (meshNode.IGameControl.IsAnimated(IGameControlType.Rot) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.EulerX) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.EulerY) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.EulerZ))
             {
-                var worldMatrix = meshNode.GetObjectTM(key);
-                if (meshNode.NodeParent != null)
+                ExportQuaternionAnimation("rotationQuaternion", animations, key =>
                 {
-                    var parentWorld = meshNode.NodeParent.GetObjectTM(key);
-                    worldMatrix.MultiplyBy(parentWorld.Inverse);
-                }
-                var rot = worldMatrix.Rotation;
-                return new[] { rot.X, rot.Y, rot.Z, -rot.W };
-            });
+                    var worldMatrix = meshNode.GetObjectTM(key);
+                    if (meshNode.NodeParent != null)
+                    {
+                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                        worldMatrix.MultiplyBy(parentWorld.Inverse);
+                    }
 
-            ExportVector3Animation("scaling", animations, key =>
+
+                    var rot = worldMatrix.Rotation;
+                    return new[] { rot.X, rot.Y, rot.Z, -rot.W };
+                });
+            }
+
+            if (meshNode.IGameControl.IsAnimated(IGameControlType.Scale))
             {
-                var worldMatrix = meshNode.GetObjectTM(key);
-                if (meshNode.NodeParent != null)
+                ExportVector3Animation("scaling", animations, key =>
                 {
-                    var parentWorld = meshNode.NodeParent.GetObjectTM(key);
-                    worldMatrix.MultiplyBy(parentWorld.Inverse);
-                }
-                var scale = worldMatrix.Scaling;
-                return new[] { scale.X, scale.Y, scale.Z };
-            });
+                    var worldMatrix = meshNode.GetObjectTM(key);
+                    if (meshNode.NodeParent != null)
+                    {
+                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                        worldMatrix.MultiplyBy(parentWorld.Inverse);
+                    }
+                    var scale = worldMatrix.Scaling;
+
+                    return new[] { scale.X, scale.Y, scale.Z };
+                });
+            }
         }
     }
 }
