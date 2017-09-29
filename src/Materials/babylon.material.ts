@@ -451,13 +451,16 @@
             this._wasPreviouslyReady = false;
         }
 
-        public _preBind(effect?: Effect): void {
+        public _preBind(effect?: Effect, overrideOrientation? : number): boolean {
             var engine = this._scene.getEngine();
 
-            var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
+            var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
+            var reverse = orientation === Material.ClockWiseSideOrientation;
 
             engine.enableEffect(effect ? effect : this._effect);
             engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
+
+            return reverse;
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {
