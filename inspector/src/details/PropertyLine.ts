@@ -83,7 +83,6 @@ module INSPECTOR {
         private _escapeInputHandler: EventListener;
         /** Handler used on focus out */
         private _focusOutInputHandler: EventListener;
-
         private _input_checkbox: HTMLInputElement;
         /** Handler used to get mouse position */
         private _onMouseDownHandler: EventListener;
@@ -123,7 +122,6 @@ module INSPECTOR {
 
             // If the property type is not simple, add click event to unfold its children
             if (typeof this.value === 'boolean') {
-                // do nothing
                 this._checkboxInput();
             } else if (!this._isSimple()) {
                 this._valueDiv.classList.add('clickable');
@@ -131,9 +129,9 @@ module INSPECTOR {
             } else {
                 this._initInput();
                 this._valueDiv.addEventListener('click', this._displayInputHandler);
-                this._input.addEventListener('keypress', this._validateInputHandler);
-                this._input.addEventListener('keydown', this._escapeInputHandler);
                 this._input.addEventListener('focusout', this._focusOutInputHandler);
+                this._input.addEventListener('keydown', this._validateInputHandler);
+                this._input.addEventListener('keydown', this._escapeInputHandler);
             }
             // Add this property to the scheduler
             Scheduler.getInstance().add(this);
@@ -165,7 +163,11 @@ module INSPECTOR {
          * On escape : removes the input
          */
         private _validateInput(e: KeyboardEvent) {
-            if (e.keyCode == 13) {
+            if (e.keyCode == 13) { // Enter
+                this.validateInput(this._input.value);
+            } else if (e.keyCode == 9) { // Tab
+                e.preventDefault();
+                this._input.removeEventListener('focusout', this._focusOutInputHandler);
                 this.validateInput(this._input.value);
             } else if (e.keyCode == 27) {
                 // Esc : remove input
@@ -439,6 +441,9 @@ module INSPECTOR {
             window.addEventListener('mouseup', this._onMouseUpHandler);
         }
 
+        /**
+         * Create input entry
+         */
         private _checkboxInput() {
             if(this._valueDiv.childElementCount < 1) { // Prevent display two checkbox
                 this._input_checkbox = Helpers.CreateInput('checkbox-element', this._valueDiv);
