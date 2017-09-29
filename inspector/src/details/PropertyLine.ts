@@ -163,11 +163,11 @@ module INSPECTOR {
          * On escape : removes the input
          */
         private _validateInput(e: KeyboardEvent) {
+            this._input.removeEventListener('focusout', this._focusOutInputHandler);
             if (e.keyCode == 13) { // Enter
                 this.validateInput(this._input.value);
             } else if (e.keyCode == 9) { // Tab
                 e.preventDefault();
-                this._input.removeEventListener('focusout', this._focusOutInputHandler);
                 this.validateInput(this._input.value);
             } else if (e.keyCode == 27) {
                 // Esc : remove input
@@ -219,6 +219,8 @@ module INSPECTOR {
             // Remove the displayInput event listener
             this._valueDiv.removeEventListener('click', this._displayInputHandler);
 
+            
+
             // Set input value
             let valueTxt = this._valueDiv.textContent;
             this._valueDiv.textContent = "";
@@ -227,6 +229,11 @@ module INSPECTOR {
             this._input.focus();
 
             if (typeof this.value === 'number') {
+                // Slider
+                // let slider = Helpers.CreateDiv('slider-number', this._valueDiv);
+                // slider.style.background = '#303030';
+                // slider.style.cursor = 'ew-resize';
+                // slider.innerHTML = 'HELLO'
                 this._input.addEventListener('mousedown', this._onMouseDownHandler);
             }
             this._input.addEventListener('focusout', this._focusOutInputHandler);
@@ -409,7 +416,6 @@ module INSPECTOR {
                 }
             }
         }
-
 
         /**
          * Refresh mouse position on y axis
