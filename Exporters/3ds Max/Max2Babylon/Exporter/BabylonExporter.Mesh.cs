@@ -356,11 +356,104 @@ namespace Max2Babylon
 
                 // Buffers - Indices
                 babylonMesh.indices = indices.ToArray();
+
+                // ------------------------
+                // ---- Morph targets -----
+                // ------------------------
+
+                // Retreive modifiers with morpher flag
+                List<IIGameModifier> modifiers = new List<IIGameModifier>();
+                for (int i = 0; i < meshNode.IGameObject.NumModifiers; i++)
+                {
+                    var modifier = meshNode.IGameObject.GetIGameModifier(i);
+                    if (modifier.ModifierType == Autodesk.Max.IGameModifier.ModType.Morpher)
+                    {
+                        modifiers.Add(modifier);
+                    }
+                }
+
+                // Cast modifiers to morphers
+                List<IIGameMorpher> morphers = modifiers.ConvertAll(new Converter<IIGameModifier, IIGameMorpher>(modifier => modifier.AsGameMorpher()));
+
+                var hasMorphTarget = false;
+                morphers.ForEach(morpher =>
+                {
+                    if (morpher.NumberOfMorphTargets > 0)
+                    {
+                        hasMorphTarget = true;
+                    }
+                });
+
+                if (hasMorphTarget)
+                {
+                    RaiseMessage("Export morph targets", 2);
+
+                    // Morph Target Manager
+                    var babylonMorphTargetManager = new BabylonMorphTargetManager();
+                    babylonScene.MorphTargetManagersList.Add(babylonMorphTargetManager);
+                    babylonMesh.morphTargetManagerId = babylonMorphTargetManager.id;
+
+                    // Morph Targets
+                    var babylonMorphTargets = new List<BabylonMorphTarget>();
+                    // All morphers are considered identical
+                    // Their targets are concatenated
+                    morphers.ForEach(morpher =>
+                    {
+                        for (int i = 0; i < morpher.NumberOfMorphTargets; i++)
+                        {
+                            // Morph target
+                            var maxMorphTarget = morpher.GetMorphTarget(i);
+                            var babylonMorphTarget = new BabylonMorphTarget
+                            {
+                                name = maxMorphTarget.Name
+                            };
+                            babylonMorphTargets.Add(babylonMorphTarget);
+
+                            // TODO - Influence
+                            babylonMorphTarget.influence = 0f;
+
+                            // Target geometry
+                            var targetVertices = ExtractVertices(maxMorphTarget, optimizeVertices);
+                            babylonMorphTarget.positions = targetVertices.SelectMany(v => new[] { v.Position.X, v.Position.Y, v.Position.Z }).ToArray();
+                            babylonMorphTarget.normals = targetVertices.SelectMany(v => new[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToArray();
+
+                            // Animations
+                            var animations = new List<BabylonAnimation>();
+                            var morphWeight = morpher.GetMorphWeight(i);
+                            ExportFloatGameController(morphWeight, "influence", animations);
+                            if (animations.Count > 0)
+                            {
+                                babylonMorphTarget.animations = animations.ToArray();
+                            }
+                        }
+                    });
+
+                    babylonMorphTargetManager.targets = babylonMorphTargets.ToArray();
+                }
             }
 
             babylonScene.MeshesList.Add(babylonMesh);
 
             return babylonMesh;
+        }
+
+        private List<GlobalVertex> ExtractVertices(IIGameNode maxMorphTarget, bool optimizeVertices)
+        {
+            var gameMesh = maxMorphTarget.IGameObject.AsGameMesh();
+            bool initialized = gameMesh.InitializeData; // needed, the property is in fact a method initializing the exporter that has wrongly been auto 
+                                                        // translated into a property because it has no parameters
+
+            var mtl = maxMorphTarget.NodeMaterial;
+            var multiMatsCount = 1;
+
+            if (mtl != null)
+            {
+                multiMatsCount = Math.Max(mtl.SubMaterialCount, 1);
+            }
+
+            var vertices = new List<GlobalVertex>();
+            ExtractGeometry(vertices, new List<int>(), new List<BabylonSubMesh>(), null, null, gameMesh, false, false, false, false, optimizeVertices, multiMatsCount, maxMorphTarget);
+            return vertices;
         }
 
         private void ExtractGeometry(List<GlobalVertex> vertices, List<int> indices, List<BabylonSubMesh> subMeshes, List<int> boneIds, IIGameSkin skin, IIGameMesh unskinnedMesh, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, bool optimizeVertices, int multiMatsCount, IIGameNode meshNode)
