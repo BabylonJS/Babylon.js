@@ -28,7 +28,7 @@
             var box = new Mesh(name, scene);
 
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            box.sideOrientation = options.sideOrientation;
+            box._originalBuilderSideOrientation = options.sideOrientation;
             
             var vertexData = VertexData.CreateBox(options);
 
@@ -54,7 +54,7 @@
             var sphere = new Mesh(name, scene);
 
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            sphere.sideOrientation = options.sideOrientation;
+            sphere._originalBuilderSideOrientation = options.sideOrientation;
             
             var vertexData = VertexData.CreateSphere(options);
 
@@ -78,7 +78,7 @@
             var disc = new Mesh(name, scene);
 
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            disc.sideOrientation = options.sideOrientation;
+            disc._originalBuilderSideOrientation = options.sideOrientation;
             
             var vertexData = VertexData.CreateDisc(options);
 
@@ -103,7 +103,7 @@
             var sphere = new Mesh(name, scene);
 
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            sphere.sideOrientation = options.sideOrientation;
+            sphere._originalBuilderSideOrientation = options.sideOrientation;
             
             var vertexData = VertexData.CreateIcoSphere(options);
 
@@ -151,7 +151,7 @@
                 var positionFunction = positions => {
                     var minlg = pathArray[0].length;
                     var i = 0;
-                    var ns = (instance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = (instance._originalBuilderSideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -250,7 +250,7 @@
             else {  // new ribbon creation
 
                 var ribbon = new Mesh(name, scene);
-                ribbon.sideOrientation = sideOrientation;
+                ribbon._originalBuilderSideOrientation = sideOrientation;
 
                 var vertexData = VertexData.CreateRibbon(options);
                 if (closePath) {
@@ -293,7 +293,7 @@
             var cylinder = new Mesh(name, scene);
             
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            cylinder.sideOrientation = options.sideOrientation;
+            cylinder._originalBuilderSideOrientation = options.sideOrientation;
             
             var vertexData = VertexData.CreateCylinder(options);
 
@@ -317,7 +317,7 @@
             var torus = new Mesh(name, scene);
 
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            torus.sideOrientation = options.sideOrientation;
+            torus._originalBuilderSideOrientation = options.sideOrientation;
             
             var vertexData = VertexData.CreateTorus(options);
 
@@ -342,7 +342,7 @@
             var torusKnot = new Mesh(name, scene);
 
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            torusKnot.sideOrientation = options.sideOrientation;
+            torusKnot._originalBuilderSideOrientation = options.sideOrientation;
             
             var vertexData = VertexData.CreateTorusKnot(options);
 
@@ -637,7 +637,7 @@
             var plane = new Mesh(name, scene);
 
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            plane.sideOrientation = options.sideOrientation;
+            plane._originalBuilderSideOrientation = options.sideOrientation;
             
             var vertexData = VertexData.CreatePlane(options);
 
@@ -814,7 +814,7 @@
 				polygonTriangulation.addHole(hole);
 			}
 			var polygon = polygonTriangulation.build(options.updatable, depth);
-            polygon.sideOrientation = options.sideOrientation;
+            polygon._originalBuilderSideOrientation = options.sideOrientation;
 			var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
             vertexData.applyToMesh(polygon, options.updatable);			
 			
@@ -989,7 +989,7 @@
             var polyhedron = new Mesh(name, scene);
 
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            polyhedron.sideOrientation = options.sideOrientation;
+            polyhedron._originalBuilderSideOrientation = options.sideOrientation;
             
             var vertexData = VertexData.CreatePolyhedron(options);
 
