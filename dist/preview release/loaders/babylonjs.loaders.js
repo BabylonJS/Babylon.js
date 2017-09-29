@@ -237,7 +237,7 @@ var BABYLON;
                     else if (key === "kd") {
                         // Diffuse color (color under white light) using RGB values
                         //value  = "r g b"
-                        color = value.split(delimiter_pattern, 3);
+                        color = value.split(delimiter_pattern, 3).map(parseFloat);
                         //color = [r,g,b]
                         //Set tghe color into the material
                         material.diffuseColor = BABYLON.Color3.FromArray(color);
@@ -245,7 +245,7 @@ var BABYLON;
                     else if (key === "ka") {
                         // Ambient color (color under shadow) using RGB values
                         //value = "r g b"
-                        color = value.split(delimiter_pattern, 3);
+                        color = value.split(delimiter_pattern, 3).map(parseFloat);
                         //color = [r,g,b]
                         //Set tghe color into the material
                         material.ambientColor = BABYLON.Color3.FromArray(color);
@@ -253,23 +253,23 @@ var BABYLON;
                     else if (key === "ks") {
                         // Specular color (color when light is reflected from shiny surface) using RGB values
                         //value = "r g b"
-                        color = value.split(delimiter_pattern, 3);
+                        color = value.split(delimiter_pattern, 3).map(parseFloat);
                         //color = [r,g,b]
                         //Set the color into the material
                         material.specularColor = BABYLON.Color3.FromArray(color);
                     }
                     else if (key === "ke") {
                         // Emissive color using RGB values
-                        color = value.split(delimiter_pattern, 3);
+                        color = value.split(delimiter_pattern, 3).map(parseFloat);
                         material.emissiveColor = BABYLON.Color3.FromArray(color);
                     }
                     else if (key === "ns") {
                         //value = "Integer"
-                        material.specularPower = value;
+                        material.specularPower = parseFloat(value);
                     }
                     else if (key === "d") {
                         //d is dissolve for current material. It mean alpha for BABYLON
-                        material.alpha = value;
+                        material.alpha = parseFloat(value);
                         //Texture
                         //This part can be improved by adding the possible options of texture
                     }
@@ -996,6 +996,9 @@ var BABYLON;
             if (!loaderData) {
                 return;
             }
+            if (this.onParsed) {
+                this.onParsed(loaderData);
+            }
             var loader = this._getLoader(loaderData, onError);
             if (!loader) {
                 return;
@@ -1006,6 +1009,9 @@ var BABYLON;
             var loaderData = GLTFFileLoader._parse(data, onError);
             if (!loaderData) {
                 return;
+            }
+            if (this.onParsed) {
+                this.onParsed(loaderData);
             }
             var loader = this._getLoader(loaderData, onError);
             if (!loader) {
@@ -3514,7 +3520,9 @@ var BABYLON;
                 this.removePendingData(this);
             };
             GLTFLoader.prototype._onError = function (message) {
-                this._errorCallback(message);
+                if (this._errorCallback) {
+                    this._errorCallback(message);
+                }
                 this.dispose();
             };
             GLTFLoader.prototype._onProgress = function (event) {

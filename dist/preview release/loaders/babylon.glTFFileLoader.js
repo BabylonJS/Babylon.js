@@ -26,6 +26,9 @@ var BABYLON;
             if (!loaderData) {
                 return;
             }
+            if (this.onParsed) {
+                this.onParsed(loaderData);
+            }
             var loader = this._getLoader(loaderData, onError);
             if (!loader) {
                 return;
@@ -36,6 +39,9 @@ var BABYLON;
             var loaderData = GLTFFileLoader._parse(data, onError);
             if (!loaderData) {
                 return;
+            }
+            if (this.onParsed) {
+                this.onParsed(loaderData);
             }
             var loader = this._getLoader(loaderData, onError);
             if (!loader) {
@@ -2562,7 +2568,9 @@ var BABYLON;
                 this.removePendingData(this);
             };
             GLTFLoader.prototype._onError = function (message) {
-                this._errorCallback(message);
+                if (this._errorCallback) {
+                    this._errorCallback(message);
+                }
                 this.dispose();
             };
             GLTFLoader.prototype._onProgress = function (event) {
