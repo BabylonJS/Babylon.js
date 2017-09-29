@@ -136,7 +136,7 @@
         // Use by builder only to know what orientation were the mesh build in.
         public _originalBuilderSideOrientation: number = Mesh._DEFAULTSIDE;
 
-        public overrrideMaterialSideOrientation: number = null;
+        public overrideMaterialSideOrientation: number = null;
 
         private _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
 
@@ -1178,7 +1178,7 @@
                 effect = this._effectiveMaterial.getEffect();
             }
 
-            var reverse = this._effectiveMaterial._preBind(effect, this.overrrideMaterialSideOrientation);
+            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
 
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
