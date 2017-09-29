@@ -7,6 +7,10 @@ module INSPECTOR {
          * uses getClassName. If nothing is returned, used the type of the constructor
          */
         public static GET_TYPE(obj: any): string {
+            if(typeof obj === 'boolean') {
+                return 'boolean';
+            }
+
             if (obj != null && obj != undefined) {
                 let classname = BABYLON.Tools.GetClassName(obj);
                 if (!classname || classname === 'object') {
@@ -20,8 +24,10 @@ module INSPECTOR {
                 if (!this._CheckIfTypeExists(classname)) {
                     return this._GetTypeFor(obj);
                 }
+                
                 return classname;
             } else {
+                
                 return 'type_not_defined';
             }
         }
