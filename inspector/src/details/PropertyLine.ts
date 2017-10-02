@@ -385,6 +385,16 @@ module INSPECTOR {
             return this._div;
         }
 
+        public closeDetails() {
+            if (this._div.classList.contains('unfolded')) {
+                // Remove class unfolded
+                this._div.classList.remove('unfolded');
+                // remove html children
+                for (let child of this._children) {
+                    this._div.parentNode.removeChild(child.toHtml());
+                }
+            }
+        }
         /**
          * Add sub properties in case of a complex type
          */
@@ -401,7 +411,7 @@ module INSPECTOR {
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
                     let objToDetail = this.value;
-                    let propToDisplay = PROPERTIES[Helpers.GET_TYPE(objToDetail)].properties.reverse();
+                    let propToDisplay = PROPERTIES[Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
                     let propertyLine = null;
 
                     for (let prop of propToDisplay) {
