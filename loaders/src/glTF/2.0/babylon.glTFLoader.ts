@@ -1,10 +1,28 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
+    class GLTFLoaderTracker {
+        private _pendingCount = 0;
+        private _callback: () => void;
+
+        constructor(onComplete: () => void) {
+            this._callback = onComplete;
+        }
+
+        public _addPendingData(data: any): void {
+            this._pendingCount++;
+        }
+
+        public _removePendingData(data: any): void {
+            if (--this._pendingCount === 0) {
+                this._callback();
+            }
+        }
+   }
+
     export class GLTFLoader implements IGLTFLoader, IDisposable {
         public _gltf: IGLTF;
         public _babylonScene: Scene;
-        public _blockPendingTracking = false;
 
         private _parent: GLTFFileLoader;
         private _rootUrl: string;
@@ -14,17 +32,16 @@ module BABYLON.GLTF2 {
         private _errorCallback: (message: string) => void;
         private _renderReady = false;
         private _disposed = false;
-        private _nonBlockingData: Array<any>;
-        private _rootMesh: Mesh;
 
-        // Observable with boolean indicating success or error.
         private _renderReadyObservable = new Observable<GLTFLoader>();
 
         // Count of pending work that needs to complete before the asset is rendered.
-        private _renderPendingCount: number = 0;
+        private _renderPendingCount = 0;
 
-        // Count of pending work that needs to complete before the loader is cleared.
-        private _loaderPendingCount: number = 0;
+        // Count of pending work that needs to complete before the loader is disposed.
+        private _loaderPendingCount = 0;
+
+        private _loaderTrackers = new Array<GLTFLoaderTracker>();
 
         public static Extensions: { [name: string]: GLTFLoaderExtension } = {};
 
@@ -101,14 +118,17 @@ module BABYLON.GLTF2 {
             if (this._errorCallback) {
                 this._errorCallback(message);
             }
+
             this.dispose();
         }
 
         private _onProgress(event: ProgressEvent): void {
-            this._progressCallback(event);
+            if (this._progressCallback) {
+                this._progressCallback(event);
+            }
         }
 
-        public _executeWhenRenderReady(func: () => void) {
+        public _executeWhenRenderReady(func: () => void): void {
             if (this._renderReady) {
                 func();
             }
@@ -118,39 +138,24 @@ module BABYLON.GLTF2 {
         }
 
         private _onRenderReady(): void {
-            switch (this._parent.coordinateSystemMode) {
-                case GLTFLoaderCoordinateSystemMode.AUTO:
-                    if (!this._babylonScene.useRightHandedSystem) {
-                        this._addRightHandToLeftHandRootTransform();
-                    }
-                    break;
-                case GLTFLoaderCoordinateSystemMode.PASS_THROUGH:
-                    // do nothing
-                    break;
-                case GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED:
-                    this._babylonScene.useRightHandedSystem = true;
-                    break;
-                default:
-                    Tools.Error("Invalid coordinate system mode (" + this._parent.coordinateSystemMode + ")");
-                    break;
-            }
+            var rootNode = this._gltf.nodes[this._gltf.nodes.length - 1];
+            rootNode.babylonMesh.setEnabled(true);
 
-            this._showMeshes();
             this._startAnimations();
             this._successCallback();
             this._renderReadyObservable.notifyObservers(this);
+
+            if (this._parent.onReady) {
+                this._parent.onReady();
+            }
         }
 
-        private _onLoaderComplete(): void {
+        private _onComplete(): void {
             if (this._parent.onComplete) {
                 this._parent.onComplete();
             }
-        }
 
-        private _onLoaderFirstLODComplete(): void {
-            if (this._parent.onFirstLODComplete) {
-                this._parent.onFirstLODComplete();
-            }
+            this.dispose();
         }
 
         private _loadData(data: IGLTFLoaderData): void {
@@ -176,29 +181,8 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _addRightHandToLeftHandRootTransform(): void {
-            this._rootMesh = new Mesh("root", this._babylonScene);
-            this._rootMesh.isVisible = false;
-            this._rootMesh.scaling = new Vector3(1, 1, -1);
-            this._rootMesh.rotation.y = Math.PI;
-
-            var nodes = this._gltf.nodes;
-            if (nodes) {
-                for (var i = 0; i < nodes.length; i++) {
-                    var mesh = nodes[i].babylonMesh;
-                    if (mesh && !mesh.parent) {
-                        mesh.parent = this._rootMesh;
-                    }
-                }
-            }
-        }
-
         private _getMeshes(): Mesh[] {
             var meshes = [];
-
-            if (this._rootMesh) {
-                meshes.push(this._rootMesh);
-            }
 
             var nodes = this._gltf.nodes;
             if (nodes) {
@@ -240,16 +224,38 @@ module BABYLON.GLTF2 {
             return targets;
         }
 
-        private _showMeshes(): void {
-            this._getMeshes().forEach(mesh => mesh.isVisible = true);
-        }
-
         private _startAnimations(): void {
             this._getAnimationTargets().forEach(target => this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true));
         }
 
         private _loadScene(nodeNames: any): void {
             var scene = this._gltf.scenes[this._gltf.scene || 0];
+
+            var rootNode = { name: "root", children: scene.nodes } as IGLTFNode;
+
+            switch (this._parent.coordinateSystemMode) {
+                case GLTFLoaderCoordinateSystemMode.AUTO:
+                    if (!this._babylonScene.useRightHandedSystem) {
+                        rootNode.rotation = [0, 1, 0, 0];
+                        rootNode.scale = [1, 1, -1];
+                    }
+                    break;
+                case GLTFLoaderCoordinateSystemMode.PASS_THROUGH:
+                    // do nothing
+                    break;
+                case GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED:
+                    this._babylonScene.useRightHandedSystem = true;
+                    break;
+                default:
+                    Tools.Error("Invalid coordinate system mode (" + this._parent.coordinateSystemMode + ")");
+                    break;
+            }
+
+            // Inject a root node into the scene.
+            this._gltf.nodes = this._gltf.nodes || [];
+            scene.nodes = [this._gltf.nodes.length];
+            this._gltf.nodes.push(rootNode);
+
             var nodeIndices = scene.nodes;
 
             this._traverseNodes(nodeIndices, (node, index, parentNode) => {
@@ -270,23 +276,31 @@ module BABYLON.GLTF2 {
 
                 var filteredNodeIndices = new Array<number>();
                 this._traverseNodes(nodeIndices, node => {
-                    if (nodeNames.indexOf(node.name) === -1) {
-                        return true;
+                    if (nodeNames.indexOf(node.name) !== -1) {
+                        filteredNodeIndices.push(node.index);
+                        return false;
                     }
 
-                    filteredNodeIndices.push(node.index);
-                    return false;
+                    return true;
                 });
 
                 nodeIndices = filteredNodeIndices;
             }
 
-            this._traverseNodes(nodeIndices, node => this._loadNode(node));
+            for (var i = 0; i < nodeIndices.length; i++) {
+                this._loadNode(this._gltf.nodes[nodeIndices[i]]);
+            }
+
+            // Disable the root mesh until the asset is ready to render.
+            rootNode.babylonMesh.setEnabled(false);
         }
 
-        private _loadNode(node: IGLTFNode): boolean {
+        public _loadNode(node: IGLTFNode): void {
+            if (GLTFLoaderExtension.LoadNode(this, node)) {
+                return;
+            }
+
             node.babylonMesh = new Mesh(node.name || "mesh" + node.index, this._babylonScene);
-            node.babylonMesh.isVisible = false;
 
             this._loadTransform(node);
 
@@ -310,7 +324,11 @@ module BABYLON.GLTF2 {
                 // TODO: handle cameras
             }
 
-            return true;
+            if (node.children) {
+                for (var i = 0; i < node.children.length; i++) {
+                    this._loadNode(this._gltf.nodes[node.children[i]]);
+                }
+            }
         }
 
         private _loadMesh(node: IGLTFNode, mesh: IGLTFMesh): void {
@@ -349,25 +367,25 @@ module BABYLON.GLTF2 {
                         loadMaterial: () => {
                             if (primitive.material === undefined) {
                                 babylonMultiMaterial.subMaterials[i] = this._getDefaultMaterial();
+                                return;
                             }
-                            else {
-                                var material = this._gltf.materials[primitive.material];
-                                this._loadMaterial(material, (babylonMaterial, isNew) => {
-                                    if (isNew && this._parent.onMaterialLoaded) {
-                                        this._parent.onMaterialLoaded(babylonMaterial);
-                                    }
-                                    
-                                    if (this._parent.onBeforeMaterialReadyAsync) {
-                                        this._addLoaderPendingData(material);
-                                        this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, babylonMultiMaterial.subMaterials[i] != null, () => {
-                                            babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                            this._removeLoaderPendingData(material);
-                                        });
-                                    } else {
+
+                            var material = this._gltf.materials[primitive.material];
+                            this._loadMaterial(material, (babylonMaterial, isNew) => {
+                                if (isNew && this._parent.onMaterialLoaded) {
+                                    this._parent.onMaterialLoaded(babylonMaterial);
+                                }
+
+                                if (this._parent.onBeforeMaterialReadyAsync) {
+                                    this._addLoaderPendingData(material);
+                                    this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, babylonMultiMaterial.subMaterials[i] != null, () => {
                                         babylonMultiMaterial.subMaterials[i] = babylonMaterial;
-                                    }
-                                });
-                            }
+                                        this._removeLoaderPendingData(material);
+                                    });
+                                } else {
+                                    babylonMultiMaterial.subMaterials[i] = babylonMaterial;
+                                }
+                            });
                         }
                     });
 
@@ -449,7 +467,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _createMorphTargets(node: IGLTFNode, mesh: IGLTFMesh, primitive: IGLTFMeshPrimitive, babylonMesh: Mesh) {
+        private _createMorphTargets(node: IGLTFNode, mesh: IGLTFMesh, primitive: IGLTFMeshPrimitive, babylonMesh: Mesh): void {
             var targets = primitive.targets;
             if (!targets) {
                 return;
@@ -611,17 +629,18 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _traverseNode(index: number, action: (node: IGLTFNode, index: number, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode = null): void {
-            var node = this._gltf.nodes[index];
+        public _traverseNode(index: number, action: (node: IGLTFNode, index: number, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode = null): void {
+            if (GLTFLoaderExtension.TraverseNode(this, index, action, parentNode)) {
+                return;
+            }
 
+            var node = this._gltf.nodes[index];
             if (!action(node, index, parentNode)) {
                 return;
             }
 
             if (node.children) {
-                for (var i = 0; i < node.children.length; i++) {
-                    this._traverseNode(node.children[i], action, node);
-                }
+                this._traverseNodes(node.children, action, node);
             }
         }
 
@@ -754,14 +773,12 @@ module BABYLON.GLTF2 {
                 }
             };
 
-            this._loadAccessorAsync(this._gltf.accessors[sampler.input], data =>
-            {
+            this._loadAccessorAsync(this._gltf.accessors[sampler.input], data => {
                 inputData = <Float32Array>data;
                 checkSuccess();
             });
 
-            this._loadAccessorAsync(this._gltf.accessors[sampler.output], data =>
-            {
+            this._loadAccessorAsync(this._gltf.accessors[sampler.output], data => {
                 outputData = <Float32Array>data;
                 checkSuccess();
             });
@@ -825,7 +842,7 @@ module BABYLON.GLTF2 {
 
             this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
 
-            return targetBuffer;              
+            return targetBuffer;
         }
 
         private _buildUint8ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Uint8Array {
@@ -838,8 +855,8 @@ module BABYLON.GLTF2 {
 
             this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride, targetBuffer.length);
 
-            return targetBuffer;              
-        }        
+            return targetBuffer;
+        }
 
         private _buildInt16ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Int16Array {
             if (!byteStride) {
@@ -851,8 +868,8 @@ module BABYLON.GLTF2 {
 
             this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
 
-            return targetBuffer;             
-        }   
+            return targetBuffer;
+        }
 
         private _buildUint16ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Uint16Array {
             if (!byteStride) {
@@ -864,9 +881,9 @@ module BABYLON.GLTF2 {
 
             this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 2, targetBuffer.length);
 
-            return targetBuffer;             
-        }          
-        
+            return targetBuffer;
+        }
+
         private _buildUint32ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Uint32Array {
             if (!byteStride) {
                 return new Uint32Array(buffer, byteOffset, byteLength);
@@ -877,9 +894,9 @@ module BABYLON.GLTF2 {
 
             this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 4, targetBuffer.length);
 
-            return targetBuffer;            
-        }     
-        
+            return targetBuffer;
+        }
+
         private _buildFloat32ArrayBuffer(buffer: ArrayBuffer, byteOffset: number, byteLength: number, byteStride: number, bytePerComponent: number): Float32Array {
             if (!byteStride) {
                 return new Float32Array(buffer, byteOffset, byteLength);
@@ -891,11 +908,11 @@ module BABYLON.GLTF2 {
             this._extractInterleavedData(sourceBuffer, targetBuffer, bytePerComponent, byteStride / 4, targetBuffer.length);
 
             return targetBuffer;
-        }    
-        
+        }
+
         private _extractInterleavedData(sourceBuffer: ArrayBufferView, targetBuffer: ArrayBufferView, bytePerComponent: number, stride: number, length: number): void {
             let tempIndex = 0;
-            let sourceIndex = 0;            
+            let sourceIndex = 0;
             let storageSize = bytePerComponent;
 
             while (tempIndex < length) {
@@ -971,7 +988,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public _addPendingData(data: any) {
+        public _addPendingData(data: any): void {
             if (!this._renderReady) {
                 this._renderPendingCount++;
             }
@@ -979,7 +996,7 @@ module BABYLON.GLTF2 {
             this._addLoaderPendingData(data);
         }
 
-        public _removePendingData(data: any) {
+        public _removePendingData(data: any): void {
             if (!this._renderReady) {
                 if (--this._renderPendingCount === 0) {
                     this._renderReady = true;
@@ -990,33 +1007,33 @@ module BABYLON.GLTF2 {
             this._removeLoaderPendingData(data);
         }
 
-        public _addLoaderNonBlockingPendingData(data: any): void {
-            if (!this._nonBlockingData) {
-                this._nonBlockingData = new Array<any>();
-            }
-            this._nonBlockingData.push(data);
-        }
-
-        public _addLoaderPendingData(data: any) {
-            if (this._blockPendingTracking) {
-                this._addLoaderNonBlockingPendingData(data);
-                return;
-            }
+        public _addLoaderPendingData(data: any): void {
             this._loaderPendingCount++;
+
+            this._loaderTrackers.forEach(tracker => tracker._addPendingData(data));
         }
 
-        public _removeLoaderPendingData(data: any) {
-            var indexInPending = this._nonBlockingData ? this._nonBlockingData.indexOf(data) : -1;
-            if (indexInPending !== -1) {
-                this._nonBlockingData.splice(indexInPending, 1);
-            } else if (--this._loaderPendingCount === 0) {
-                this._onLoaderFirstLODComplete();
-            }
+        public _removeLoaderPendingData(data: any): void {
+            this._loaderTrackers.forEach(tracker => tracker._removePendingData(data));
 
-            if ((!this._nonBlockingData || this._nonBlockingData.length === 0) && this._loaderPendingCount === 0) {
-                this._onLoaderComplete();
-                this.dispose();
+            if (--this._loaderPendingCount === 0) {
+                this._onComplete();
             }
+        }
+
+        public _whenAction(action: () => void, onComplete: () => void): void {
+            var tracker = new GLTFLoaderTracker(() => {
+                this._loaderTrackers.splice(this._loaderTrackers.indexOf(tracker));
+                onComplete();
+            });
+
+            this._loaderTrackers.push(tracker);
+
+            this._addLoaderPendingData(tracker);
+
+            action();
+
+            this._removeLoaderPendingData(tracker);
         }
 
         private _getDefaultMaterial(): Material {
