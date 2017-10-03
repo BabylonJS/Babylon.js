@@ -69,7 +69,7 @@ module BABYLON {
          * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
          * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
          */
-        constructor(url: string, scene: Scene, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false, onLoad: () => void = null, onError: () => void = null) {
+        constructor(url: string, scene: Scene, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false, onLoad: () => void = null, onError: (message?: string, exception?: any) => void = null) {
             super(scene);
 
             if (!url) {
@@ -436,7 +436,7 @@ module BABYLON {
             serializationObject.customType = "BABYLON.HDRCubeTexture";
             serializationObject.noMipmap = this._noMipmap;
             serializationObject.isBlocking = this._isBlocking;
-            
+
             return serializationObject;
         }
 
