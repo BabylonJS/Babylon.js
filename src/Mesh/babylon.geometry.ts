@@ -959,13 +959,15 @@
                 }
 
                 if (parsedGeometry.matricesWeights) {
-                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeights, parsedGeometry.numBoneInfluencers);
+                    var matricesIndices: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                    var matricesIndicesExtra: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
+                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeights,matricesIndex,parsedGeometry.matricesWeightsExtra,matricesIndicesExtra,parsedGeometry.numBoneInfluencers);
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
-                }
-
-                if (parsedGeometry.matricesWeightsExtra) {                    
-                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeightsExtra, parsedGeometry.numBoneInfluencers);
-                    mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
+                    mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
+                    if (parsedGeometry.matricesWeightsExtra) {       
+                        mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
+                    }
                 }
 
                 mesh.setIndices(parsedGeometry.indices);
@@ -996,25 +998,52 @@
             }
         }
 
-        private static _CleanMatricesWeights(matricesWeights: number[], influencers: number): void {
+        private static _CleanMatricesWeights(matricesWeights: number[] | Float32Array, matricesIndices: number[] | Float32Array, matricesWeightsExtra: number[] | Float32Array, matricesIndicesExtra: number[] | Float32Array, influencers: number): void {
             if (!SceneLoader.CleanBoneMatrixWeights) {
                 return;
             }
             let size = matricesWeights.length;
-            for (var i = 0; i < size; i += influencers) {
-                let weight = 0;
-                let biggerIndex = i;
-                let biggerWeight = 0;
-                for (var j = 0; j < influencers - 1; j++) {
-                    weight += matricesWeights[i + j];
-
-                    if (matricesWeights[i + j] > biggerWeight) {
-                        biggerWeight = matricesWeights[i + j];
-                        biggerIndex = i + j;
+            for (var i = 0; i < size; i += 4) {
+                let weight = 0.0;
+                let firstZeroWeight = -1;
+                for (var j = 0; j < 4; j++) {
+                    let w = matricesWeights[i + j];
+                    weight += w;
+                    if (w < 1e-3 && firstZeroWeight < 0) {
+                        firstZeroWeight = j;
                     }
                 }
-
-                matricesWeights[biggerIndex] += Math.max(0, 1.0 - weight);
+                if (matricesWeightsExtra) {
+                    for (var j = 0; j < 4; j++) {
+                        let w = matricesWeightsExtra[i + j];
+                        weight += w;
+                        if (w < 1e-3 && firstZeroWeight < 0) {
+                            firstZeroWeight = j + 4;
+                        }
+                    }
+                }
+                if (firstZeroWeight < 0  || firstZeroWeight > (influencers-1)) {
+                    firstZeroWeight = influencers-1;
+                }
+                if (weight > 1e-3) {
+                    let mweight = 1.0/weight;
+                    for (var j = 0; j < 4; j++) {
+                        matricesWeights[i + j] *= mweight;
+                    }
+                    if (matricesWeightsExtra) {
+                        for (var j = 0; j < 4; j++) {
+                            matricesWeightsExtra[i + j] *= mweight;
+                        }    
+                    }
+                } else {
+                    if (firstZeroWeight>=4) {
+                        matricesWeightsExtra[i+firstZeroWeight-4] = 1.0 - weight;
+                        matricesIndicesExtra[i+firstZeroWeight-4] = -1.0;
+                    } else {
+                        matricesWeights[i+firstZeroWeight] = 1.0 - weight;
+                        matricesIndices[i+firstZeroWeight] = -1.0;    
+                    }
+                }
             }
         }
 
