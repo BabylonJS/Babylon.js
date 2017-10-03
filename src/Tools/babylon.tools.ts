@@ -31,7 +31,7 @@
          * Use this object to register external classes like custom textures or material 
          * to allow the laoders to instantiate them
          */
-        public static RegisteredExternalClasses:{ [key: string]: Object } = {};
+        public static RegisteredExternalClasses: { [key: string]: Object } = {};
 
         // Used in case of a texture loading problem 
         private static fallbackTexture = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";;
@@ -43,9 +43,9 @@
 		 * @param alpha The interpolation-factor
 		 * @return The mixed value
 		 */
-		public static Mix(a: number, b: number, alpha: number): number {
-			return a * (1 - alpha) + b * alpha;
-		}
+        public static Mix(a: number, b: number, alpha: number): number {
+            return a * (1 - alpha) + b * alpha;
+        }
 
         public static Instantiate(className: string): any {
             if (Tools.RegisteredExternalClasses && Tools.RegisteredExternalClasses[className]) {
@@ -89,41 +89,41 @@
 		 * @param x Number to start search from.
 		 * @return Next highest power of two.
 		 */
-		public static CeilingPOT(x: number): number {
-			x--;
-			x |= x >> 1;
-			x |= x >> 2;
-			x |= x >> 4;
-			x |= x >> 8;
-			x |= x >> 16;
-			x++;
-			return x;
-		}
+        public static CeilingPOT(x: number): number {
+            x--;
+            x |= x >> 1;
+            x |= x >> 2;
+            x |= x >> 4;
+            x |= x >> 8;
+            x |= x >> 16;
+            x++;
+            return x;
+        }
 
 		/**
 		 * Find the next lowest power of two.
 		 * @param x Number to start search from.
 		 * @return Next lowest power of two.
 		 */
-		public static FloorPOT(x: number): number {
-			x = x | (x >> 1);
-			x = x | (x >> 2);
-			x = x | (x >> 4);
-			x = x | (x >> 8);
-			x = x | (x >> 16);
-			return x - (x >> 1);
-		}
+        public static FloorPOT(x: number): number {
+            x = x | (x >> 1);
+            x = x | (x >> 2);
+            x = x | (x >> 4);
+            x = x | (x >> 8);
+            x = x | (x >> 16);
+            return x - (x >> 1);
+        }
 
 		/**
 		 * Find the nearest power of two.
 		 * @param x Number to start search from.
 		 * @return Next nearest power of two.
 		 */
-		public static NearestPOT(x: number): number {
-			var c = Tools.CeilingPOT(x);
-			var f = Tools.FloorPOT(x);
-			return (c - x) > (x - f) ? f : c;
-		}        
+        public static NearestPOT(x: number): number {
+            var c = Tools.CeilingPOT(x);
+            var f = Tools.FloorPOT(x);
+            return (c - x) > (x - f) ? f : c;
+        }
 
         public static GetExponentOfTwo(value: number, max: number, mode = Engine.SCALEMODE_NEAREST): number {
             let pot;
@@ -131,16 +131,16 @@
             switch (mode) {
                 case Engine.SCALEMODE_FLOOR:
                     pot = Tools.FloorPOT(value);
-                break;
+                    break;
                 case Engine.SCALEMODE_NEAREST:
                     pot = Tools.NearestPOT(value);
-                break;
+                    break;
                 case Engine.SCALEMODE_CEILING:
                     pot = Tools.CeilingPOT(value);
-                break;
+                    break;
             }
 
-            return  Math.min(pot, max);
+            return Math.min(pot, max);
         }
 
         public static GetFilename(path: string): string {
@@ -470,7 +470,7 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest) => void): void {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest, exception?: any) => void): void {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
@@ -494,11 +494,11 @@
                         if (request.status >= 200 && request.status < 300 || (navigator.isCocoonJS && (request.status === 0))) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else { // Failed
+                            let e = new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
                             if (onError) {
-                                onError(request);
+                                onError(request, e);
                             } else {
-
-                                throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
+                                throw e;
                             }
                         }
                     }
@@ -517,7 +517,13 @@
                     Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
                 }
                 else {
-                    Tools.Error("File: " + fileName + " not found. Did you forget to provide it?");
+                    let errorMessage = "File: " + fileName + " not found. Did you forget to provide it?";
+                    if (onError) {
+                        let e = new Error(errorMessage);
+                        onError(undefined, e);
+                    } else {
+                        Tools.Error(errorMessage);
+                    }
                 }
             }
             else {
@@ -535,7 +541,7 @@
          * Load a script (identified by an url). When the url returns, the 
          * content of this file is added into a new script element, attached to the DOM (body element)
          */
-        public static LoadScript(scriptUrl:string, onSuccess: () => void, onError?: () => void) {
+        public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: () => void) {
             var head = document.getElementsByTagName('head')[0];
             var script = document.createElement('script');
             script.type = 'text/javascript';
@@ -801,7 +807,7 @@
             if (!screenshotCanvas) {
                 screenshotCanvas = document.createElement('canvas');
             }
-            
+
             screenshotCanvas.width = width;
             screenshotCanvas.height = height;
 
@@ -1360,7 +1366,7 @@
             if (!PerfCounter.Enabled) {
                 return;
             }
-                        
+
             if (newFrame) {
                 this.fetchNewFrame();
             }
