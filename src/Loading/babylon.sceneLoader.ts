@@ -189,6 +189,37 @@
             }
         }
 
+        private static _CleanMatricesIndices(meshes:AbstractMesh[]): void {
+            if (!SceneLoader._CleanBoneMatrixWeights) {
+                return;
+            }
+            for (var i = 0; i < meshes.length; i++) {
+                var mesh = meshes[i];
+                if (mesh.skeleton) {
+                    var noinfluenceBoneIndex = mesh.skeleton.bones.length;
+                    var matricesIndices: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                    var matricesIndicesExtra: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);    
+                    if (matricesIndices) {
+                        let size = matricesIndices.length;
+                        for (var j = 0; j < size; j++) {
+                            if (matricesIndices[j] < 0) {
+                                matricesIndices[j] = noinfluenceBoneIndex;
+                            }
+                        }
+                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
+                        if (matricesIndicesExtra) {
+                            for (var j = 0; j < size; j++) {
+                                if (matricesIndicesExtra[j] < 0.0) {
+                                    matricesIndicesExtra[j] = noinfluenceBoneIndex;
+                                }
+                            }
+                            mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
+                        }                    
+                    }    
+                }
+            }
+        }
+
         // Public functions
         public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
             return SceneLoader._getPluginForExtension(extension).plugin;
@@ -258,7 +289,9 @@
                     if (!syncedPlugin.importMesh(meshNames, scene, data, rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;
                     }
-
+                    
+                    SceneLoader._CleanMatricesIndices(meshes);
+                    
                     if (onSuccess) {
                         // wrap onSuccess with try-catch to know if something went wrong.
                         try {
@@ -274,6 +307,9 @@
                 else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
+
+                        SceneLoader._CleanMatricesIndices(meshes);
+
                         if (onSuccess) {
                             try {
                                 scene.importedMeshesFiles.push(rootUrl + sceneFilename);
@@ -362,6 +398,7 @@
                 } else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin.loadAsync(scene, data, rootUrl, () => {
+                        SceneLoader._CleanMatricesIndices(scene.meshes);
                         if (onSuccess) {
                             onSuccess(scene);
                         }
