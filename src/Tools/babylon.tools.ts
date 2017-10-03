@@ -394,7 +394,7 @@
             return url;
         }
 
-        public static LoadImage(url: any, onload, onerror, database): HTMLImageElement {
+        public static LoadImage(url: any, onLoad, onError: (message?: string, eception?: any) => void, database): HTMLImageElement {
             if (url instanceof ArrayBuffer) {
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
@@ -410,7 +410,7 @@
             }
 
             img.onload = () => {
-                onload(img);
+                onLoad(img);
             };
 
             img.onerror = err => {
@@ -418,9 +418,9 @@
 
                 if (Tools.UseFallbackTexture) {
                     img.src = Tools.fallbackTexture;
-                    onload(img);
+                    onLoad(img);
                 } else {
-                    onerror();
+                    onError("Error while trying to load image: " + url, err);
                 }
             };
 
@@ -541,7 +541,7 @@
          * Load a script (identified by an url). When the url returns, the 
          * content of this file is added into a new script element, attached to the DOM (body element)
          */
-        public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: () => void) {
+        public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void) {
             var head = document.getElementsByTagName('head')[0];
             var script = document.createElement('script');
             script.type = 'text/javascript';
@@ -554,9 +554,9 @@
                 }
             };
 
-            script.onerror = () => {
+            script.onerror = (e) => {
                 if (onError) {
-                    onError();
+                    onError("Unable to load script", e);
                 }
             };
 

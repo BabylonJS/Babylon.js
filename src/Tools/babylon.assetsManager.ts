@@ -153,7 +153,7 @@
 
     export class TextureAssetTask implements ITextureAssetTask {
         public onSuccess: (task: ITextureAssetTask) => void;
-        public onError: (task: ITextureAssetTask) => void;
+        public onError: (task: ITextureAssetTask, message?: string, exception?: any) => void;
 
         public isCompleted = false;
         public texture: Texture;
@@ -161,7 +161,7 @@
         constructor(public name: string, public url: string, public noMipmap?: boolean, public invertY?: boolean, public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
 
             var onload = () => {
                 this.isCompleted = true;
@@ -173,12 +173,12 @@
                 onSuccess();
             };
 
-            var onerror = () => {
+            var onerror = (msg, exception) => {
                 if (this.onError) {
-                    this.onError(this);
+                    this.onError(this, msg, exception);
                 }
 
-                onError();
+                onError(msg, exception);
             };
 
             this.texture = new Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onerror);
@@ -187,7 +187,7 @@
 
     export class CubeTextureAssetTask implements IAssetTask {
         public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
 
         public isCompleted = false;
         public texture: CubeTexture;
@@ -195,7 +195,7 @@
         constructor(public name: string, public url: string, public extensions?: string[], public noMipmap?: boolean, public files?: string[]) {
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
 
             var onload = () => {
                 this.isCompleted = true;
@@ -207,12 +207,12 @@
                 onSuccess();
             };
 
-            var onerror = () => {
+            var onerror = (msg, exception) => {
                 if (this.onError) {
-                    this.onError(this);
+                    this.onError(this, msg, exception);
                 }
 
-                onError();
+                onError(msg, exception);
             };
 
             this.texture = new CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
@@ -221,7 +221,7 @@
 
     export class HDRCubeTextureAssetTask implements IAssetTask {
         public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
 
         public isCompleted = false;
         public texture: HDRCubeTexture;
@@ -229,7 +229,7 @@
         constructor(public name: string, public url: string, public size?: number, public noMipmap = false, public generateHarmonics = true, public useInGammaSpace = false, public usePMREMGenerator = false) {
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
 
             var onload = () => {
                 this.isCompleted = true;
@@ -241,12 +241,12 @@
                 onSuccess();
             };
 
-            var onerror = () => {
+            var onerror = (message?: string, exception?: any) => {
                 if (this.onError) {
-                    this.onError(this);
+                    this.onError(this, message, exception);
                 }
 
-                onError();
+                onError(message, exception);
             };
 
             this.texture = new HDRCubeTexture(this.url, scene, this.size, this.noMipmap, this.generateHarmonics, this.useInGammaSpace, this.usePMREMGenerator, onload, onerror);
