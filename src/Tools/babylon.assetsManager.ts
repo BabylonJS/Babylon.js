@@ -1,10 +1,10 @@
 ﻿module BABYLON {
     export interface IAssetTask {
         onSuccess: (task: IAssetTask) => void;
-        onError: (task: IAssetTask) => void;
+        onError: (task: IAssetTask, message?: string, exception?: any) => void;
         isCompleted: boolean;
 
-        run(scene: Scene, onSuccess: () => void, onError: () => void);
+        run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void);
     }
 
     export class MeshAssetTask implements IAssetTask {
@@ -13,14 +13,14 @@
         public loadedSkeletons: Array<Skeleton>;
 
         public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
 
         public isCompleted = false;
 
         constructor(public name: string, public meshesNames: any, public rootUrl: string, public sceneFilename: string) {
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             SceneLoader.ImportMesh(this.meshesNames, this.rootUrl, this.sceneFilename, scene,
                 (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => {
                     this.loadedMeshes = meshes;
@@ -34,20 +34,20 @@
                     }
 
                     onSuccess();
-                }, null, () => {
+                }, null, (scene, message, exception) => {
                     if (this.onError) {
-                        this.onError(this);
+                        this.onError(this, message, exception);
                     }
 
-                    onError();
+                    onError(message, exception);
                 }
-                );
+            );
         }
     }
 
     export class TextFileAssetTask implements IAssetTask {
         public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
 
         public isCompleted = false;
         public text: string;
@@ -55,7 +55,7 @@
         constructor(public name: string, public url: string) {
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             Tools.LoadFile(this.url, (data) => {
 
                 this.text = data;
@@ -66,19 +66,19 @@
                 }
 
                 onSuccess();
-            }, null, scene.database, false, () => {
-                    if (this.onError) {
-                        this.onError(this);
-                    }
+            }, null, scene.database, false, (request, exception) => {
+                if (this.onError) {
+                    this.onError(this, request.status + " " + request.statusText, exception);
+                }
 
-                    onError();
-                });
+                onError(request.status + " " + request.statusText, exception);
+            });
         }
     }
 
     export class BinaryFileAssetTask implements IAssetTask {
         public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
 
         public isCompleted = false;
         public data: ArrayBuffer;
@@ -86,7 +86,7 @@
         constructor(public name: string, public url: string) {
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             Tools.LoadFile(this.url, (data) => {
 
                 this.data = data;
@@ -97,19 +97,19 @@
                 }
 
                 onSuccess();
-            }, null, scene.database, true, () => {
-                    if (this.onError) {
-                        this.onError(this);
-                    }
+            }, null, scene.database, true, (request, exception) => {
+                if (this.onError) {
+                    this.onError(this, request.status + " " + request.statusText, exception);
+                }
 
-                    onError();
-                });
+                onError(request.status + " " + request.statusText, exception);
+            });
         }
     }
 
     export class ImageAssetTask implements IAssetTask {
         public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
 
         public isCompleted = false;
         public image: HTMLImageElement;
@@ -117,7 +117,7 @@
         constructor(public name: string, public url: string) {
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             var img = new Image();
 
             Tools.SetCorsBehavior(this.url, img);
@@ -133,12 +133,12 @@
                 onSuccess();
             };
 
-            img.onerror = () => {
+            img.onerror = (err: ErrorEvent): any => {
                 if (this.onError) {
-                    this.onError(this);
+                    this.onError(this, "Error loading image", err);
                 }
 
-                onError();
+                onError("Error loading image", err);
             };
 
             img.src = this.url;
@@ -147,7 +147,7 @@
 
     export interface ITextureAssetTask extends IAssetTask {
         onSuccess: (task: ITextureAssetTask) => void;
-        onError: (task: ITextureAssetTask) => void;
+        onError: (task: ITextureAssetTask, ) => void;
         texture: Texture;
     }
 
@@ -219,7 +219,7 @@
         }
     }
 
-      export class HDRCubeTextureAssetTask implements IAssetTask {
+    export class HDRCubeTextureAssetTask implements IAssetTask {
         public onSuccess: (task: IAssetTask) => void;
         public onError: (task: IAssetTask) => void;
 
@@ -318,7 +318,7 @@
 
             return task;
         }
-        
+
         private _decreaseWaitingTasksCount(): void {
             this.waitingTasksCount--;
 
@@ -338,11 +338,11 @@
                 }
                 this._decreaseWaitingTasksCount();
             }, () => {
-                    if (this.onTaskError) {
-                        this.onTaskError(task);
-                    }
-                    this._decreaseWaitingTasksCount();
-                });
+                if (this.onTaskError) {
+                    this.onTaskError(task);
+                }
+                this._decreaseWaitingTasksCount();
+            });
         }
 
         public reset(): AssetsManager {
@@ -370,6 +370,6 @@
             }
 
             return this;
-        }     
+        }
     }
 } 
