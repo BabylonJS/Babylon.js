@@ -263,6 +263,12 @@
         public onTaskSuccess: (task: IAssetTask) => void;
         public onTaskError: (task: IAssetTask) => void;
 
+        //Observables
+
+        public onTaskSuccessObservable = new Observable<IAssetTask>();
+        public onTaskErrorObservable = new Observable<IAssetTask>();
+        public onTasksDoneObservable = new Observable<IAssetTask[]>();
+
         public useDefaultLoadingScreen = true;
 
         constructor(scene: Scene) {
@@ -336,11 +342,13 @@
                 if (this.onTaskSuccess) {
                     this.onTaskSuccess(task);
                 }
+                this.onTaskSuccessObservable.notifyObservers(task);
                 this._decreaseWaitingTasksCount();
             }, () => {
                 if (this.onTaskError) {
                     this.onTaskError(task);
                 }
+                this.onTaskErrorObservable.notifyObservers(task);
                 this._decreaseWaitingTasksCount();
             });
         }
@@ -357,6 +365,7 @@
                 if (this.onFinish) {
                     this.onFinish(this.tasks);
                 }
+                this.onTasksDoneObservable.notifyObservers(this.tasks);
                 return this;
             }
 
