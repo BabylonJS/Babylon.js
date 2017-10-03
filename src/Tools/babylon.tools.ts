@@ -394,7 +394,7 @@
             return url;
         }
 
-        public static LoadImage(url: any, onLoad, onError: (message?: string, eception?: any) => void, database): HTMLImageElement {
+        public static LoadImage(url: any, onLoad, onError: (message?: string, exception?: any) => void, database): HTMLImageElement {
             if (url instanceof ArrayBuffer) {
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
