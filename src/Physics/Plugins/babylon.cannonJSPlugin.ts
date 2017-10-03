@@ -135,9 +135,9 @@
                         }
                     }
                     currentRotation.multiplyInPlace(mesh.rotationQuaternion);
-                    mesh.getChildMeshes(true).forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
+                    mesh.getChildMeshes(true).filter(m => !!m.physicsImpostor).forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
                 }
-                meshChildren.forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
+                meshChildren.filter(m => !!m.physicsImpostor).forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
             }
         }
 
