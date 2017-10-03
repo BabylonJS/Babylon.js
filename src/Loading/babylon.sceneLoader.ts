@@ -289,9 +289,7 @@
                     if (!syncedPlugin.importMesh(meshNames, scene, data, rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;
                     }
-                    
                     SceneLoader._CleanMatricesIndices(meshes);
-                    
                     if (onSuccess) {
                         // wrap onSuccess with try-catch to know if something went wrong.
                         try {
@@ -307,9 +305,7 @@
                 else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
-
                         SceneLoader._CleanMatricesIndices(meshes);
-
                         if (onSuccess) {
                             try {
                                 scene.importedMeshesFiles.push(rootUrl + sceneFilename);
