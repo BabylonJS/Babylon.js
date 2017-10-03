@@ -14,21 +14,13 @@ module BABYLON.GLTF2.Extensions {
             return "KHR_materials_pbrSpecularGlossiness";
         }
 
-        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
-            if (!material.extensions) {
-                return false;
-            }
-
-            var properties = material.extensions[this.name] as IKHRMaterialsPbrSpecularGlossiness;
-            if (!properties) {
-                return false;
-            }
-
-            loader.createPbrMaterial(material);
-            loader.loadMaterialBaseProperties(material);
-            this._loadSpecularGlossinessProperties(loader, material, properties);
-            assign(material.babylonMaterial, true);
-            return true;
+        protected _loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
+            return this._loadExtension<IKHRMaterialsPbrSpecularGlossiness>(material, (extension, onComplete) => {
+                loader._createPbrMaterial(material);
+                loader._loadMaterialBaseProperties(material);
+                this._loadSpecularGlossinessProperties(loader, material, extension);
+                assign(material.babylonMaterial, true);
+            });
         }
 
         private _loadSpecularGlossinessProperties(loader: GLTFLoader, material: IGLTFMaterial, properties: IKHRMaterialsPbrSpecularGlossiness): void {
@@ -39,16 +31,16 @@ module BABYLON.GLTF2.Extensions {
             babylonMaterial.microSurface = properties.glossinessFactor === undefined ? 1 : properties.glossinessFactor;
 
             if (properties.diffuseTexture) {
-                babylonMaterial.albedoTexture = loader.loadTexture(properties.diffuseTexture);
+                babylonMaterial.albedoTexture = loader._loadTexture(properties.diffuseTexture);
             }
 
             if (properties.specularGlossinessTexture) {
-                babylonMaterial.reflectivityTexture = loader.loadTexture(properties.specularGlossinessTexture);
+                babylonMaterial.reflectivityTexture = loader._loadTexture(properties.specularGlossinessTexture);
                 babylonMaterial.reflectivityTexture.hasAlpha = true;
                 babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
             }
 
-            loader.loadMaterialAlphaProperties(material, properties.diffuseFactor);
+            loader._loadMaterialAlphaProperties(material, properties.diffuseFactor);
         }
     }
 
