@@ -959,12 +959,10 @@
                 }
 
                 if (parsedGeometry.matricesWeights) {
-                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeights, parsedGeometry.numBoneInfluencers);
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
                 }
 
                 if (parsedGeometry.matricesWeightsExtra) {                    
-                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeightsExtra, parsedGeometry.numBoneInfluencers);
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
 
@@ -993,28 +991,6 @@
             // Octree
             if (scene['_selectionOctree']) {
                 scene['_selectionOctree'].addMesh(mesh);
-            }
-        }
-
-        private static _CleanMatricesWeights(matricesWeights: number[], influencers: number): void {
-            if (!SceneLoader.CleanBoneMatrixWeights) {
-                return;
-            }
-            let size = matricesWeights.length;
-            for (var i = 0; i < size; i += influencers) {
-                let weight = 0;
-                let biggerIndex = i;
-                let biggerWeight = 0;
-                for (var j = 0; j < influencers - 1; j++) {
-                    weight += matricesWeights[i + j];
-
-                    if (matricesWeights[i + j] > biggerWeight) {
-                        biggerWeight = matricesWeights[i + j];
-                        biggerIndex = i + j;
-                    }
-                }
-
-                matricesWeights[biggerIndex] += Math.max(0, 1.0 - weight);
             }
         }
 
