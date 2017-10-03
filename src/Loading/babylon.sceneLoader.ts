@@ -233,8 +233,12 @@
             scene._addPendingData(loadingToken);
 
             var errorHandler = (message?: string, exception?: any) => {
+                let errorMessage = "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : "");
                 if (onError) {
-                    onError(scene, "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : ""), exception);
+                    onError(scene, errorMessage, exception);
+                } else {
+                    Tools.Error(errorMessage);
+                    // should the exception be thrown?
                 }
                 scene._removePendingData(loadingToken);
             };
@@ -256,18 +260,29 @@
                     }
 
                     if (onSuccess) {
-                        scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                        onSuccess(meshes, particleSystems, skeletons);
-                        scene._removePendingData(loadingToken);
+                        // wrap onSuccess with try-catch to know if something went wrong.
+                        try {
+                            scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                            onSuccess(meshes, particleSystems, skeletons);
+                            scene._removePendingData(loadingToken);
+                        } catch (e) {
+                            let message = 'Error in onSuccess callback.';
+                            errorHandler(message, e);
+                        }
                     }
                 }
                 else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
                         if (onSuccess) {
-                            scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                            onSuccess(meshes, particleSystems, skeletons);
-                            scene._removePendingData(loadingToken);
+                            try {
+                                scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                                onSuccess(meshes, particleSystems, skeletons);
+                                scene._removePendingData(loadingToken);
+                            } catch (e) {
+                                let message = 'Error in onSuccess callback.';
+                                errorHandler(message, e);
+                            }
                         }
                     }, progressHandler, errorHandler);
                 }
@@ -310,8 +325,12 @@
             scene._addPendingData(loadingToken);
 
             var errorHandler = (message?: string, exception?: any) => {
+                let errorMessage = "Unable to load from " + rootUrl + sceneFilename + (message ? ": " + message : "");
                 if (onError) {
-                    onError(scene, "Unable to load from " + rootUrl + sceneFilename + (message ? ": " + message : ""), exception);
+                    onError(scene, errorMessage, exception);
+                } else {
+                    Tools.Error(errorMessage);
+                    // should the exception be thrown?
                 }
                 scene._removePendingData(loadingToken);
                 scene.getEngine().hideLoadingUI();
@@ -331,7 +350,11 @@
                     }
 
                     if (onSuccess) {
-                        onSuccess(scene);
+                        try {
+                            onSuccess(scene);
+                        } catch (e) {
+                            errorHandler("Error in onSuccess callback", e);
+                        }
                     }
 
                     scene.loadingPluginName = plugin.name;
