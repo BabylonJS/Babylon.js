@@ -80,7 +80,7 @@
 
         public static set CleanBoneMatrixWeights(value: boolean) {
             SceneLoader._CleanBoneMatrixWeights = value;
-        }        
+        }
 
         // Members
         public static OnPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>();
@@ -234,7 +234,7 @@
 
             var errorHandler = (message?: string, exception?: any) => {
                 if (onError) {
-                    onError(scene, "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : ""));
+                    onError(scene, "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : ""), exception);
                 }
                 scene._removePendingData(loadingToken);
             };
@@ -342,7 +342,7 @@
                         if (onSuccess) {
                             onSuccess(scene);
                         }
-                        
+
                         scene.loadingPluginName = plugin.name;
                         scene._removePendingData(loadingToken);
                     }, progressHandler, errorHandler);
