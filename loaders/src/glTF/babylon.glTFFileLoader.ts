@@ -106,11 +106,11 @@ module BABYLON {
         }
 
         private static _parse(data: string | ArrayBuffer, onError: (message: string) => void): IGLTFLoaderData {
-            if (data instanceof ArrayBuffer) {
-                return GLTFFileLoader._parseBinary(data, onError);
-            }
-
             try {
+                if (data instanceof ArrayBuffer) {
+                    return GLTFFileLoader._parseBinary(data, onError);
+                }
+
                 return {
                     json: JSON.parse(data),
                     bin: null
