@@ -324,71 +324,71 @@ var BABYLON;
         TerrainMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new TerrainMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serializeAsTexture("mixTexture")
-        ], TerrainMaterial.prototype, "_mixTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], TerrainMaterial.prototype, "mixTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture1")
-        ], TerrainMaterial.prototype, "_diffuseTexture1", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], TerrainMaterial.prototype, "diffuseTexture1", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture2")
-        ], TerrainMaterial.prototype, "_diffuseTexture2", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], TerrainMaterial.prototype, "diffuseTexture2", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture3")
-        ], TerrainMaterial.prototype, "_diffuseTexture3", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], TerrainMaterial.prototype, "diffuseTexture3", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("bumpTexture1")
-        ], TerrainMaterial.prototype, "_bumpTexture1", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], TerrainMaterial.prototype, "bumpTexture1", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("bumpTexture2")
-        ], TerrainMaterial.prototype, "_bumpTexture2", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], TerrainMaterial.prototype, "bumpTexture2", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("bumpTexture3")
-        ], TerrainMaterial.prototype, "_bumpTexture3", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], TerrainMaterial.prototype, "bumpTexture3", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], TerrainMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], TerrainMaterial.prototype, "specularColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], TerrainMaterial.prototype, "specularPower", void 0);
-        __decorate([
-            BABYLON.serialize("disableLighting")
-        ], TerrainMaterial.prototype, "_disableLighting", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], TerrainMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
-        ], TerrainMaterial.prototype, "_maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], TerrainMaterial.prototype, "maxSimultaneousLights", void 0);
         return TerrainMaterial;
     }(BABYLON.PushMaterial));
+    __decorate([
+        BABYLON.serializeAsTexture("mixTexture")
+    ], TerrainMaterial.prototype, "_mixTexture", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], TerrainMaterial.prototype, "mixTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture("diffuseTexture1")
+    ], TerrainMaterial.prototype, "_diffuseTexture1", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], TerrainMaterial.prototype, "diffuseTexture1", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture("diffuseTexture2")
+    ], TerrainMaterial.prototype, "_diffuseTexture2", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], TerrainMaterial.prototype, "diffuseTexture2", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture("diffuseTexture3")
+    ], TerrainMaterial.prototype, "_diffuseTexture3", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], TerrainMaterial.prototype, "diffuseTexture3", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture("bumpTexture1")
+    ], TerrainMaterial.prototype, "_bumpTexture1", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], TerrainMaterial.prototype, "bumpTexture1", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture("bumpTexture2")
+    ], TerrainMaterial.prototype, "_bumpTexture2", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], TerrainMaterial.prototype, "bumpTexture2", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture("bumpTexture3")
+    ], TerrainMaterial.prototype, "_bumpTexture3", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], TerrainMaterial.prototype, "bumpTexture3", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], TerrainMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], TerrainMaterial.prototype, "specularColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], TerrainMaterial.prototype, "specularPower", void 0);
+    __decorate([
+        BABYLON.serialize("disableLighting")
+    ], TerrainMaterial.prototype, "_disableLighting", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+    ], TerrainMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize("maxSimultaneousLights")
+    ], TerrainMaterial.prototype, "_maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+    ], TerrainMaterial.prototype, "maxSimultaneousLights", void 0);
     BABYLON.TerrainMaterial = TerrainMaterial;
 })(BABYLON || (BABYLON = {}));
 

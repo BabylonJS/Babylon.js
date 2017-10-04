@@ -251,35 +251,35 @@ var BABYLON;
         GradientMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new GradientMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
-        ], GradientMaterial.prototype, "_maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], GradientMaterial.prototype, "maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GradientMaterial.prototype, "topColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "topColorAlpha", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GradientMaterial.prototype, "bottomColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "bottomColorAlpha", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "offset", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "smoothness", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "disableLighting", void 0);
         return GradientMaterial;
     }(BABYLON.PushMaterial));
+    __decorate([
+        BABYLON.serialize("maxSimultaneousLights")
+    ], GradientMaterial.prototype, "_maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+    ], GradientMaterial.prototype, "maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], GradientMaterial.prototype, "topColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "topColorAlpha", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], GradientMaterial.prototype, "bottomColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "bottomColorAlpha", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "offset", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "smoothness", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "disableLighting", void 0);
     BABYLON.GradientMaterial = GradientMaterial;
 })(BABYLON || (BABYLON = {}));
 
