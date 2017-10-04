@@ -17,7 +17,10 @@ module BABYLON.GLTF2.Extensions {
         }
 
         protected _traverseNode(loader: GLTFLoader, index: number, action: (node: IGLTFNode, index: number, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean {
-            var node = loader._gltf.nodes[index];
+            var node = loader._getArrayItem(loader._gltf.nodes, index, "Node");
+            if (!node) {
+                return true;
+            }
 
             return this._loadExtension<IMSFTLOD>(node, (extension, onComplete) => {
                 for (var i = extension.ids.length - 1; i >= 0; i--) {

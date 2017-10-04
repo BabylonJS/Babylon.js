@@ -1,4 +1,6 @@
-﻿if (BABYLON.Engine.isSupported()) {
+﻿/// <reference path="../dist/preview release/babylon.d.ts" />
+
+if (BABYLON.Engine.isSupported()) {
     var canvas = document.getElementById("renderCanvas");
     var engine = new BABYLON.Engine(canvas, true);
     var divFps = document.getElementById("fps");
@@ -60,16 +62,21 @@
             enableDebugLayer = false;
             currentScene.debugLayer.hide();
         };
+
         if (enableDebugLayer) {
             hideDebugLayerAndLogs();
         }
+
+        // Clear the error
+        document.getElementById("errorZone").style.display = 'none';
+
         currentScene = babylonScene;
         document.title = "BabylonJS - " + sceneFile.name;
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
         // Attach camera to canvas inputs
-        if (!currentScene.activeCamera || currentScene.lights.length === 0) {     
+        if (!currentScene.activeCamera || currentScene.lights.length === 0) {
             currentScene.createDefaultCameraOrLight(true);
             // Enable camera's behaviors
             currentScene.activeCamera.useBouncingBehavior = true;
@@ -80,7 +87,7 @@
             framingBehavior.elevationReturnTime = -1;
 
             var bouncingBehavior = currentScene.activeCamera.getBehaviorByName("Bouncing");
-            bouncingBehavior.autoTransitionRange = true;        
+            bouncingBehavior.autoTransitionRange = true;
 
             if (currentScene.meshes.length) {
                 var worldExtends = currentScene.getWorldExtends();
@@ -120,7 +127,23 @@
         }
     };
 
-    filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded);
+    var sceneError = function (sceneFile, babylonScene, message) {
+        document.title = "BabylonJS - " + sceneFile.name;
+        document.getElementById("logo").className = "";
+        canvas.style.opacity = 0;
+
+        var errorContent = '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>' + message.replace("file:[object File]", "'" + sceneFile.name + "'") + '</div>';
+
+        document.getElementById("errorZone").style.display = 'block';
+        document.getElementById("errorZone").innerHTML = errorContent;
+
+        // Close button error
+        document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
+            document.getElementById("errorZone").style.display = 'none';
+        });
+    };
+
+    filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
     filesInput.onProcessFileCallback = (function (file, name, extension) {
         if (extension === "dds") {
             BABYLON.FilesInput.FilesToLoad[name] = file;
