@@ -564,15 +564,15 @@ var BABYLON;
                     Matrix2D._TempCompose1.multiplyToRef(Matrix2D._TempPostTranslationMatrix, result);
                 }
             };
-            Matrix2D._TempPreTranslationMatrix = Matrix2D.Identity();
-            Matrix2D._TempPostTranslationMatrix = Matrix2D.Identity();
-            Matrix2D._TempRotationMatrix = Matrix2D.Identity();
-            Matrix2D._TempScalingMatrix = Matrix2D.Identity();
-            Matrix2D._TempCompose0 = Matrix2D.Identity();
-            Matrix2D._TempCompose1 = Matrix2D.Identity();
-            Matrix2D._TempCompose2 = Matrix2D.Identity();
             return Matrix2D;
         }());
+        Matrix2D._TempPreTranslationMatrix = Matrix2D.Identity();
+        Matrix2D._TempPostTranslationMatrix = Matrix2D.Identity();
+        Matrix2D._TempRotationMatrix = Matrix2D.Identity();
+        Matrix2D._TempScalingMatrix = Matrix2D.Identity();
+        Matrix2D._TempCompose0 = Matrix2D.Identity();
+        Matrix2D._TempCompose1 = Matrix2D.Identity();
+        Matrix2D._TempCompose2 = Matrix2D.Identity();
         GUI.Matrix2D = Matrix2D;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
@@ -685,12 +685,12 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            // Static
-            ValueAndUnit._Regex = /(^-?\d*(\.\d+)?)(%|px)?/;
-            ValueAndUnit._UNITMODE_PERCENTAGE = 0;
-            ValueAndUnit._UNITMODE_PIXEL = 1;
             return ValueAndUnit;
         }());
+        // Static
+        ValueAndUnit._Regex = /(^-?\d*(\.\d+)?)(%|px)?/;
+        ValueAndUnit._UNITMODE_PERCENTAGE = 0;
+        ValueAndUnit._UNITMODE_PIXEL = 1;
         GUI.ValueAndUnit = ValueAndUnit;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
@@ -1630,16 +1630,16 @@ var BABYLON;
                 context.scale(1 / width, 1 / height);
                 context.translate(-x, -y);
             };
-            // Statics
-            Control._HORIZONTAL_ALIGNMENT_LEFT = 0;
-            Control._HORIZONTAL_ALIGNMENT_RIGHT = 1;
-            Control._HORIZONTAL_ALIGNMENT_CENTER = 2;
-            Control._VERTICAL_ALIGNMENT_TOP = 0;
-            Control._VERTICAL_ALIGNMENT_BOTTOM = 1;
-            Control._VERTICAL_ALIGNMENT_CENTER = 2;
-            Control._FontHeightSizes = {};
             return Control;
         }());
+        // Statics
+        Control._HORIZONTAL_ALIGNMENT_LEFT = 0;
+        Control._HORIZONTAL_ALIGNMENT_RIGHT = 1;
+        Control._HORIZONTAL_ALIGNMENT_CENTER = 2;
+        Control._VERTICAL_ALIGNMENT_TOP = 0;
+        Control._VERTICAL_ALIGNMENT_BOTTOM = 1;
+        Control._VERTICAL_ALIGNMENT_CENTER = 2;
+        Control._FontHeightSizes = {};
         GUI.Control = Control;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
@@ -3196,13 +3196,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            // Static
-            Image._STRETCH_NONE = 0;
-            Image._STRETCH_FILL = 1;
-            Image._STRETCH_UNIFORM = 2;
-            Image._STRETCH_EXTEND = 3;
             return Image;
         }(GUI.Control));
+        // Static
+        Image._STRETCH_NONE = 0;
+        Image._STRETCH_FILL = 1;
+        Image._STRETCH_UNIFORM = 2;
+        Image._STRETCH_EXTEND = 3;
         GUI.Image = Image;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
@@ -3858,7 +3858,7 @@ var BABYLON;
             InputText.prototype.processKey = function (keyCode, key) {
                 // Specific cases
                 switch (keyCode) {
-                    case 8:// BACKSPACE
+                    case 8:
                         if (this._text && this._text.length > 0) {
                             if (this._cursorOffset === 0) {
                                 this.text = this._text.substr(0, this._text.length - 1);
@@ -3871,27 +3871,27 @@ var BABYLON;
                             }
                         }
                         return;
-                    case 46:// DELETE
+                    case 46:
                         if (this._text && this._text.length > 0) {
                             var deletePosition = this._text.length - this._cursorOffset;
                             this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
                             this._cursorOffset--;
                         }
                         return;
-                    case 13:// RETURN
+                    case 13:
                         this._host.focusedControl = null;
                         return;
-                    case 35:// END
+                    case 35:
                         this._cursorOffset = 0;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
-                    case 36:// HOME
+                    case 36:
                         this._cursorOffset = this._text.length;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
-                    case 37:// LEFT
+                    case 37:
                         this._cursorOffset++;
                         if (this._cursorOffset > this._text.length) {
                             this._cursorOffset = this._text.length;
@@ -3899,7 +3899,7 @@ var BABYLON;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
-                    case 39:// RIGHT
+                    case 39:
                         this._cursorOffset--;
                         if (this._cursorOffset < 0) {
                             this._cursorOffset = 0;

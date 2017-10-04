@@ -795,6 +795,7 @@ declare module BABYLON.GLTF2 {
         private _parent;
         private _rootUrl;
         private _defaultMaterial;
+        private _rootNode;
         private _successCallback;
         private _progressCallback;
         private _errorCallback;
@@ -813,7 +814,7 @@ declare module BABYLON.GLTF2 {
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         private _loadAsync(nodeNames, scene, data, rootUrl, onSuccess, onProgress, onError);
-        private _onError(message);
+        _onError(message: string): void;
         private _onProgress(event);
         _executeWhenRenderReady(func: () => void): void;
         private _onRenderReady();
@@ -839,7 +840,8 @@ declare module BABYLON.GLTF2 {
         _traverseNode(index: number, action: (node: IGLTFNode, index: number, parentNode: IGLTFNode) => boolean, parentNode?: IGLTFNode): void;
         private _loadAnimations();
         private _loadAnimationChannel(animation, animationIndex, channelIndex);
-        private _loadBufferAsync(index, onSuccess);
+        private _validateUri(uri);
+        private _loadBufferAsync(buffer, onSuccess);
         private _buildInt8ArrayBuffer(buffer, byteOffset, byteLength, byteStride, bytePerComponent);
         private _buildUint8ArrayBuffer(buffer, byteOffset, byteLength, byteStride, bytePerComponent);
         private _buildInt16ArrayBuffer(buffer, byteOffset, byteLength, byteStride, bytePerComponent);
@@ -862,6 +864,7 @@ declare module BABYLON.GLTF2 {
         _loadMaterialBaseProperties(material: IGLTFMaterial): void;
         _loadMaterialAlphaProperties(material: IGLTFMaterial, colorFactor?: number[]): void;
         _loadTexture(textureInfo: IGLTFTextureInfo): Texture;
+        _getArrayItem<T>(array: ArrayLike<T>, index: number, name: string): T;
     }
 }
 

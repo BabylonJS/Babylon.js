@@ -53,10 +53,10 @@ var BABYLON;
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         };
         GLTFFileLoader._parse = function (data, onError) {
-            if (data instanceof ArrayBuffer) {
-                return GLTFFileLoader._parseBinary(data, onError);
-            }
             try {
+                if (data instanceof ArrayBuffer) {
+                    return GLTFFileLoader._parseBinary(data, onError);
+                }
                 return {
                     json: JSON.parse(data),
                     bin: null
@@ -223,11 +223,11 @@ var BABYLON;
             }
             return result;
         };
-        // V1 options
-        GLTFFileLoader.HomogeneousCoordinates = false;
-        GLTFFileLoader.IncrementalLoading = true;
         return GLTFFileLoader;
     }());
+    // V1 options
+    GLTFFileLoader.HomogeneousCoordinates = false;
+    GLTFFileLoader.IncrementalLoading = true;
     BABYLON.GLTFFileLoader = GLTFFileLoader;
     var BinaryReader = (function () {
         function BinaryReader(arrayBuffer) {
@@ -1789,9 +1789,9 @@ var BABYLON;
                     }
                 }
             };
-            GLTFLoader.Extensions = {};
             return GLTFLoader;
         }());
+        GLTFLoader.Extensions = {};
         GLTF1.GLTFLoader = GLTFLoader;
         ;
         BABYLON.GLTFFileLoader.CreateGLTFLoaderV1 = function () { return new GLTFLoader(); };
@@ -2043,10 +2043,10 @@ var BABYLON;
                 }
                 return GLTFUtils._DefaultMaterial;
             };
-            // The GLTF default material
-            GLTFUtils._DefaultMaterial = null;
             return GLTFUtils;
         }());
+        // The GLTF default material
+        GLTFUtils._DefaultMaterial = null;
         GLTF1.GLTFUtils = GLTFUtils;
     })(GLTF1 = BABYLON.GLTF1 || (BABYLON.GLTF1 = {}));
 })(BABYLON || (BABYLON = {}));

@@ -402,65 +402,65 @@ var BABYLON;
             sourceMesh.material._meshes = meshes;
             return meshes;
         };
-        __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture")
-        ], FurMaterial.prototype, "_diffuseTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], FurMaterial.prototype, "diffuseTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("heightTexture")
-        ], FurMaterial.prototype, "_heightTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], FurMaterial.prototype, "heightTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], FurMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furLength", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furAngle", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], FurMaterial.prototype, "furColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furOffset", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furSpacing", void 0);
-        __decorate([
-            BABYLON.serializeAsVector3()
-        ], FurMaterial.prototype, "furGravity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furSpeed", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furDensity", void 0);
-        __decorate([
-            BABYLON.serialize("disableLighting")
-        ], FurMaterial.prototype, "_disableLighting", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], FurMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
-        ], FurMaterial.prototype, "_maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], FurMaterial.prototype, "maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "highLevelFur", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furTime", null);
         return FurMaterial;
     }(BABYLON.PushMaterial));
+    __decorate([
+        BABYLON.serializeAsTexture("diffuseTexture")
+    ], FurMaterial.prototype, "_diffuseTexture", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], FurMaterial.prototype, "diffuseTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture("heightTexture")
+    ], FurMaterial.prototype, "_heightTexture", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], FurMaterial.prototype, "heightTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], FurMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furLength", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furAngle", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], FurMaterial.prototype, "furColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furOffset", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furSpacing", void 0);
+    __decorate([
+        BABYLON.serializeAsVector3()
+    ], FurMaterial.prototype, "furGravity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furSpeed", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furDensity", void 0);
+    __decorate([
+        BABYLON.serialize("disableLighting")
+    ], FurMaterial.prototype, "_disableLighting", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+    ], FurMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize("maxSimultaneousLights")
+    ], FurMaterial.prototype, "_maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+    ], FurMaterial.prototype, "maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "highLevelFur", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furTime", null);
     BABYLON.FurMaterial = FurMaterial;
 })(BABYLON || (BABYLON = {}));
 
