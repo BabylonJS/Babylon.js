@@ -185,38 +185,38 @@ var BABYLON;
         SkyMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new SkyMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serialize()
-        ], SkyMaterial.prototype, "luminance", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SkyMaterial.prototype, "turbidity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SkyMaterial.prototype, "rayleigh", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SkyMaterial.prototype, "mieCoefficient", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SkyMaterial.prototype, "mieDirectionalG", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SkyMaterial.prototype, "distance", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SkyMaterial.prototype, "inclination", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SkyMaterial.prototype, "azimuth", void 0);
-        __decorate([
-            BABYLON.serializeAsVector3()
-        ], SkyMaterial.prototype, "sunPosition", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SkyMaterial.prototype, "useSunPosition", void 0);
         return SkyMaterial;
     }(BABYLON.PushMaterial));
+    __decorate([
+        BABYLON.serialize()
+    ], SkyMaterial.prototype, "luminance", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SkyMaterial.prototype, "turbidity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SkyMaterial.prototype, "rayleigh", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SkyMaterial.prototype, "mieCoefficient", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SkyMaterial.prototype, "mieDirectionalG", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SkyMaterial.prototype, "distance", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SkyMaterial.prototype, "inclination", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SkyMaterial.prototype, "azimuth", void 0);
+    __decorate([
+        BABYLON.serializeAsVector3()
+    ], SkyMaterial.prototype, "sunPosition", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SkyMaterial.prototype, "useSunPosition", void 0);
     BABYLON.SkyMaterial = SkyMaterial;
 })(BABYLON || (BABYLON = {}));
 

@@ -12,13 +12,14 @@
         private _textureLoadingCallback: (remaining: number) => void;
         private _startingProcessingFilesCallback: () => void;
         private _onReloadCallback: (sceneFile: File) => void;
+        private _errorCallback: (sceneFile: File, scene: Scene, message: string) => void;
         private _elementToMonitor: HTMLElement;
 
         private _sceneFileToLoad: File;
         private _filesToLoad: File[];
 
         constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: ProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, 
-                    textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: () => void, onReloadCallback: (sceneFile: File) => void) {
+                    textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: () => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void) {
             this._engine = engine;
             this._currentScene = scene;
 
@@ -28,6 +29,7 @@
             this._textureLoadingCallback = textureLoadingCallback;
             this._startingProcessingFilesCallback = startingProcessingFilesCallback;
             this._onReloadCallback = onReloadCallback;
+            this._errorCallback = errorCallback;
         }
 
         private _dragEnterHandler: (any) => void;
@@ -229,15 +231,22 @@
                     }
 
                     // Wait for textures and shaders to be ready
-                    this._currentScene.executeWhenReady(() => {                       
-                        this._engine.runRenderLoop(() => { 
-                            this.renderFunction(); });
+                    this._currentScene.executeWhenReady(() => {
+                        this._engine.runRenderLoop(() => {
+                            this.renderFunction();
                         });
-                }, progress => {
-                        if (this._progressCallback) {
-                            this._progressCallback(progress);
-                        }
                     });
+                }, progress => {
+                    if (this._progressCallback) {
+                        this._progressCallback(progress);
+                    }
+                }, (scene, message) => {
+                    this._currentScene = scene;
+
+                    if (this._errorCallback) {
+                        this._errorCallback(this._sceneFileToLoad, this._currentScene, message);
+                    }
+                });
             }
             else {
                 Tools.Error("Please provide a valid .babylon file.");

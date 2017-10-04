@@ -312,47 +312,47 @@ var BABYLON;
         LavaMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new LavaMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture")
-        ], LavaMaterial.prototype, "_diffuseTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], LavaMaterial.prototype, "diffuseTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], LavaMaterial.prototype, "noiseTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], LavaMaterial.prototype, "fogColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LavaMaterial.prototype, "speed", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LavaMaterial.prototype, "movingSpeed", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LavaMaterial.prototype, "lowFrequencySpeed", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], LavaMaterial.prototype, "fogDensity", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], LavaMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serialize("disableLighting")
-        ], LavaMaterial.prototype, "_disableLighting", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], LavaMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
-        ], LavaMaterial.prototype, "_maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], LavaMaterial.prototype, "maxSimultaneousLights", void 0);
         return LavaMaterial;
     }(BABYLON.PushMaterial));
+    __decorate([
+        BABYLON.serializeAsTexture("diffuseTexture")
+    ], LavaMaterial.prototype, "_diffuseTexture", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], LavaMaterial.prototype, "diffuseTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], LavaMaterial.prototype, "noiseTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], LavaMaterial.prototype, "fogColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LavaMaterial.prototype, "speed", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LavaMaterial.prototype, "movingSpeed", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LavaMaterial.prototype, "lowFrequencySpeed", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], LavaMaterial.prototype, "fogDensity", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], LavaMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serialize("disableLighting")
+    ], LavaMaterial.prototype, "_disableLighting", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+    ], LavaMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize("maxSimultaneousLights")
+    ], LavaMaterial.prototype, "_maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+    ], LavaMaterial.prototype, "maxSimultaneousLights", void 0);
     BABYLON.LavaMaterial = LavaMaterial;
 })(BABYLON || (BABYLON = {}));
 

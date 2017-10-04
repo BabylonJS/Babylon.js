@@ -924,10 +924,10 @@ var INSPECTOR;
             enumerable: true,
             configurable: true
         });
-        // a unique name for this adapter, to retrieve its own key in the local storage
-        Adapter._name = BABYLON.Geometry.RandomId();
         return Adapter;
     }());
+    // a unique name for this adapter, to retrieve its own key in the local storage
+    Adapter._name = BABYLON.Geometry.RandomId();
     INSPECTOR.Adapter = Adapter;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -2029,12 +2029,12 @@ var INSPECTOR;
                 });
             }
         };
-        // Array representing the simple type. All others are considered 'complex'
-        PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
-        // The number of pixel at each children step
-        PropertyLine._MARGIN_LEFT = 15;
         return PropertyLine;
     }());
+    // Array representing the simple type. All others are considered 'complex'
+    PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
+    // The number of pixel at each children step
+    PropertyLine._MARGIN_LEFT = 15;
     INSPECTOR.PropertyLine = PropertyLine;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -2657,10 +2657,10 @@ var INSPECTOR;
                 }
             }
         };
-        /** All properties are refreshed every 250ms */
-        Scheduler.REFRESH_TIME = 250;
         return Scheduler;
     }());
+    /** All properties are refreshed every 250ms */
+    Scheduler.REFRESH_TIME = 250;
     INSPECTOR.Scheduler = Scheduler;
 })(INSPECTOR || (INSPECTOR = {}));
 

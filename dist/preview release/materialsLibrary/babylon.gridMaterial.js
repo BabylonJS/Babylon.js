@@ -172,32 +172,32 @@ var BABYLON;
         GridMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new GridMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GridMaterial.prototype, "mainColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GridMaterial.prototype, "lineColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GridMaterial.prototype, "gridRatio", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GridMaterial.prototype, "gridOffset", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GridMaterial.prototype, "majorUnitFrequency", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GridMaterial.prototype, "minorUnitVisibility", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GridMaterial.prototype, "opacity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GridMaterial.prototype, "preMultiplyAlpha", void 0);
         return GridMaterial;
     }(BABYLON.PushMaterial));
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], GridMaterial.prototype, "mainColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], GridMaterial.prototype, "lineColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GridMaterial.prototype, "gridRatio", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], GridMaterial.prototype, "gridOffset", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GridMaterial.prototype, "majorUnitFrequency", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GridMaterial.prototype, "minorUnitVisibility", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GridMaterial.prototype, "opacity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GridMaterial.prototype, "preMultiplyAlpha", void 0);
     BABYLON.GridMaterial = GridMaterial;
 })(BABYLON || (BABYLON = {}));
 
