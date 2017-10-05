@@ -105,7 +105,7 @@
     }
 
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
-        onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: () => void = null) => {
+        onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: (message?: string, exception?: any) => void = null) => {
 
         var img: HTMLImageElement;
 
@@ -122,13 +122,13 @@
             }
         };
 
-        var onerror = () => {
+        var onerror = (message?: string, exception?: any) => {
             if (scene) {
                 scene._removePendingData(img);
             }
 
             if (onErrorCallBack) {
-                onErrorCallBack();
+                onErrorCallBack(message, exception);
             }
         };
 
@@ -139,7 +139,7 @@
     }
 
     var cascadeLoad = (rootUrl: string, scene,
-        onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: () => void = null) => {
+        onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: (message?: string, exception?: any) => void = null) => {
 
         var loadedImages: any = [];
         loadedImages._internalCount = 0;
@@ -552,7 +552,7 @@
         /**
          * Observable event triggered each time the canvas gains focus
          */
-        public onCanvasFocusObservable = new Observable<Engine>();        
+        public onCanvasFocusObservable = new Observable<Engine>();
 
         /**
          * Observable event triggered each time the canvas receives pointerout event
@@ -605,14 +605,14 @@
 
         public static audioEngine: AudioEngine;
 
-        
+
         // Focus
         private _onFocus: () => void;
-        private _onBlur: () => void;       
+        private _onBlur: () => void;
         private _onCanvasPointerOut: () => void;
         private _onCanvasBlur: () => void;
         private _onCanvasFocus: () => void;
-        
+
         private _onFullscreenChange: () => void;
         private _onPointerLockChange: () => void;
 
@@ -821,18 +821,18 @@
                 if (!this._gl) {
                     throw new Error("WebGL not supported");
                 }
-    
+
                 this._onCanvasFocus = () => {
                     this.onCanvasFocusObservable.notifyObservers(this);
                 }
-    
+
                 this._onCanvasBlur = () => {
                     this.onCanvasBlurObservable.notifyObservers(this);
                 }
-    
+
                 canvas.addEventListener("focus", this._onCanvasFocus);
                 canvas.addEventListener("blur", this._onCanvasBlur);
-    
+
                 this._onBlur = () => {
                     if (this.disablePerformanceMonitorInBackground) {
                         this._performanceMonitor.disable();
@@ -868,7 +868,7 @@
 
                     this._onContextRestored = (evt: Event) => {
                         // Adding a timeout to avoid race condition at browser level
-                        setTimeout(()=> {
+                        setTimeout(() => {
                             // Rebuild gl context
                             this._initGLContext();
 
@@ -894,7 +894,7 @@
 
                     canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                     canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
-                }                
+                }
             } else {
                 this._gl = <WebGLRenderingContext>canvasOrContext;
                 this._renderingCanvas = this._gl.canvas
@@ -1106,7 +1106,7 @@
                     this._caps.drawBuffersExtension = true;
                     this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL.bind(drawBuffersExtension);
                     this._gl.DRAW_FRAMEBUFFER = this._gl.FRAMEBUFFER;
-                    
+
                     for (var i = 0; i < 16; i++) {
                         this._gl["COLOR_ATTACHMENT" + i + "_WEBGL"] = drawBuffersExtension["COLOR_ATTACHMENT" + i + "_WEBGL"];
                     }
@@ -1408,7 +1408,7 @@
 
                     // Present
                     this.endFrame();
-                }  
+                }
             }
 
             if (this._activeRenderLoops.length > 0) {
@@ -1595,15 +1595,15 @@
         }
 
         // WebVR functions
-        public isVRDevicePresent() : boolean {
+        public isVRDevicePresent(): boolean {
             return !!this._vrDisplay;
         }
 
-        public getVRDevice() : any {
+        public getVRDevice(): any {
             return this._vrDisplay;
         }
 
-        public initWebVR(): Observable<{vrDisplay: any, vrSupported: any}> {
+        public initWebVR(): Observable<{ vrDisplay: any, vrSupported: any }> {
             var notifyObservers = () => {
                 var eventArgs = {
                     vrDisplay: this._vrDisplay,
@@ -1623,14 +1623,14 @@
                     this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
                     notifyObservers();
                 };
-                this._onVrDisplayPresentChange = () => {                    
+                this._onVrDisplayPresentChange = () => {
                     this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
                 }
                 window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
                 window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
                 window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
             }
-            
+
             this._getVRDisplays(notifyObservers);
 
             return this.onVRDisplayChangedObservable;
@@ -1645,7 +1645,7 @@
                 var onRejected = () => {
                     this.onVRRequestPresentComplete.notifyObservers(false);
                 };
-                
+
                 this.onVRRequestPresentStart.notifyObservers(this);
                 this._vrDisplay.requestPresent([{ source: this.getRenderingCanvas() }]).then(onResolved).catch(onRejected);
             }
@@ -3268,7 +3268,7 @@
 
             var width = size.width || size;
             var height = size.height || size;
-            
+
             var textures = [];
             var attachments = []
 
@@ -3295,7 +3295,7 @@
 
                 var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
                 var attachment = gl[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
-                
+
                 textures.push(texture);
                 attachments.push(attachment);
 
@@ -3548,7 +3548,7 @@
             return texture;
         }
 
-        public createPrefilteredCubeTexture(rootUrl: string, scene: Scene, scale: number, offset: number, onLoad: (internalTexture: InternalTexture) => void, onError: () => void = null, format?: number, forcedExtension = null): InternalTexture {
+        public createPrefilteredCubeTexture(rootUrl: string, scene: Scene, scale: number, offset: number, onLoad: (internalTexture: InternalTexture) => void, onError: (message?: string, exception?: any) => void = null, format?: number, forcedExtension = null): InternalTexture {
             var callback = (loadData) => {
                 if (!loadData) {
                     if (onLoad) {
@@ -3633,7 +3633,7 @@
             return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension);
         }
 
-        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: (data?: any) => void = null, onError: () => void = null, format?: number, forcedExtension = null): InternalTexture {
+        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: (data?: any) => void = null, onError: (message?: string, exception?: any) => void = null, format?: number, forcedExtension = null): InternalTexture {
             var gl = this._gl;
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
@@ -3656,6 +3656,12 @@
                 isKTX = true;
             } else {
                 isDDS = (extension === ".dds");
+            }
+
+            let onerror = (request, exception) => {
+                if (onError) {
+                    onError(request.status + " " + request.statusText, exception)
+                }
             }
 
             if (isKTX) {
@@ -3681,7 +3687,7 @@
                     texture.width = ktx.pixelWidth;
                     texture.height = ktx.pixelHeight;
                     texture.isReady = true;
-                }, null, null, true, onError);
+                }, null, null, true, onerror);
             } else if (isDDS) {
                 Tools.LoadFile(rootUrl, data => {
                     var info = Internals.DDSTools.GetDDSInfo(data);
@@ -3714,7 +3720,7 @@
                     if (onLoad) {
                         onLoad({ isDDS: true, width: info.width, info, data, texture });
                     }
-                }, null, null, true, onError);
+                }, null, null, true, onerror);
             } else {
                 cascadeLoad(rootUrl, scene, imgs => {
                     var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
@@ -3889,7 +3895,7 @@
             callback: (ArrayBuffer: ArrayBuffer) => ArrayBufferView[],
             mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][]),
             onLoad: () => void = null,
-            onError: () => void = null,
+            onError: (message?: string, exception?: any) => void = null,
             samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
             invertY = false): InternalTexture {
 
@@ -3899,10 +3905,10 @@
             texture.url = url;
             this._internalTexturesCache.push(texture);
 
-            var onerror = () => {
+            var onerror = (request, exception) => {
                 scene._removePendingData(texture);
                 if (onError) {
-                    onError();
+                    onError(request.status + " " + request.statusText, exception);
                 }
             };
 
@@ -3956,7 +3962,7 @@
 
             Tools.LoadFile(url, data => {
                 internalCallback(data);
-            }, onerror, scene.database, true);
+            }, undefined, scene.database, true, onerror);
 
             return texture;
         };
@@ -4208,7 +4214,7 @@
 
                 if (internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
-                    
+
                     switch (texture.wrapU) {
                         case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
@@ -4270,7 +4276,7 @@
             var value = texture.anisotropicFilteringLevel;
 
 
-            if (internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPNEAREST 
+            if (internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPNEAREST
                 && internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPLINEAR
                 && internalTexture.samplingMode !== Texture.LINEAR_LINEAR) {
                 value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
@@ -4429,7 +4435,7 @@
             window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
             window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
             this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);            
+            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
             this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
 
             if (!this._doNotHandleContextLost) {
@@ -4444,13 +4450,13 @@
             document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
             document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
             document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
-            
+
             if (this._onVrDisplayConnect) {
                 window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
                 window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
                 window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
                 this._onVrDisplayConnect = undefined;
-                this._onVrDisplayDisconnect = undefined;                
+                this._onVrDisplayDisconnect = undefined;
             }
 
             // Remove from Instances
