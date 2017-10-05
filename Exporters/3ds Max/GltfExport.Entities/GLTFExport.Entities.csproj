@@ -51,6 +51,7 @@
     <Compile Include="GLTFCameraPerspective.cs" />
     <Compile Include="GLTFCameraOrthographic.cs" />
     <Compile Include="GLTFCamera.cs" />
+    <Compile Include="GLTFMorphTarget.cs" />
     <Compile Include="GLTFSampler.cs" />
     <Compile Include="GLTFIndexedChildRootProperty.cs" />
     <Compile Include="GLTFImage.cs" />

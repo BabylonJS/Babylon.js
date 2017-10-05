@@ -5,7 +5,7 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private GLTFNode ExportAbstractMesh(BabylonAbstractMesh babylonAbstractMesh, GLTF gltf, GLTFNode gltfParentNode)
+        private GLTFNode ExportAbstractMesh(BabylonAbstractMesh babylonAbstractMesh, GLTF gltf, GLTFNode gltfParentNode, BabylonScene babylonScene)
         {
             RaiseMessage("GLTFExporter.AbstractMesh | Export abstract mesh named: " + babylonAbstractMesh.name, 1);
 
@@ -56,7 +56,7 @@ namespace Max2Babylon
             }
 
             // Animations
-            ExportNodeAnimation(babylonAbstractMesh, gltf, gltfNode);
+            ExportNodeAnimation(babylonAbstractMesh, gltf, gltfNode, babylonScene);
 
             return gltfNode;
         }

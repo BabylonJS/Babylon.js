@@ -84,7 +84,7 @@ namespace Max2Babylon
                 idGroupInstance = -1
             };
             scene.NodesList.Clear(); // Only root node is listed in node list
-            GLTFNode gltfRootNode = ExportAbstractMesh(rootNode, gltf, null);
+            GLTFNode gltfRootNode = ExportAbstractMesh(rootNode, gltf, null, null);
             gltfRootNode.ChildrenList.AddRange(tmpNodesList);
 
             // Materials
@@ -254,7 +254,7 @@ namespace Max2Babylon
             if (type == typeof(BabylonAbstractMesh) ||
                 type.IsSubclassOf(typeof(BabylonAbstractMesh)))
             {
-                gltfNode = ExportAbstractMesh(babylonNode as BabylonAbstractMesh, gltf, gltfParentNode);
+                gltfNode = ExportAbstractMesh(babylonNode as BabylonAbstractMesh, gltf, gltfParentNode, babylonScene);
             }
             else if (type == typeof(BabylonCamera))
             {

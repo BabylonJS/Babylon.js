@@ -259,10 +259,140 @@ namespace Max2Babylon
                     uvs2.ForEach(n => accessorUV2s.bytesList.AddRange(BitConverter.GetBytes(n)));
                     accessorUV2s.count = globalVerticesSubMesh.Count;
                 }
+
+                // Morph targets
+                var babylonMorphTargetManager = GetBabylonMorphTargetManager(babylonScene, babylonMesh);
+                if (babylonMorphTargetManager != null)
+                {
+                    _exportMorphTargets(babylonMesh, babylonMorphTargetManager, gltf, buffer, meshPrimitive, weights);
+                }
             }
             gltfMesh.primitives = meshPrimitives.ToArray();
+            if (weights.Count > 0)
+            {
+                gltfMesh.weights = weights.ToArray();
+            }
 
             return gltfMesh;
+        }
+
+        private BabylonMorphTargetManager GetBabylonMorphTargetManager(BabylonScene babylonScene, BabylonMesh babylonMesh)
+        {
+            if (babylonMesh.morphTargetManagerId.HasValue)
+            {
+                if (babylonScene.morphTargetManagers == null)
+                {
+                    RaiseWarning("GLTFExporter.Mesh | morphTargetManagers is not defined", 3);
+                }
+                else
+                {
+                    var babylonMorphTargetManager = babylonScene.morphTargetManagers.ElementAtOrDefault(babylonMesh.morphTargetManagerId.Value);
+
+                    if (babylonMorphTargetManager == null)
+                    {
+                        RaiseWarning($"GLTFExporter.Mesh | morphTargetManager with index {babylonMesh.morphTargetManagerId.Value} not found", 3);
+                    }
+                    return babylonMorphTargetManager;
+                }
+            }
+            return null;
+        }
+
+        private void _exportMorphTargets(BabylonMesh babylonMesh, BabylonMorphTargetManager babylonMorphTargetManager, GLTF gltf, GLTFBuffer buffer, GLTFMeshPrimitive meshPrimitive, List<float> weights)
+        {
+            var gltfMorphTargets = new List<GLTFMorphTarget>();
+            foreach (var babylonMorphTarget in babylonMorphTargetManager.targets)
+            {
+                var gltfMorphTarget = new GLTFMorphTarget();
+
+                // Positions
+                if (babylonMorphTarget.positions != null)
+                {
+                    var accessorTargetPositions = GLTFBufferService.Instance.CreateAccessor(
+                        gltf,
+                        GLTFBufferService.Instance.GetBufferViewFloatVec3(gltf, buffer),
+                        "accessorTargetPositions",
+                        GLTFAccessor.ComponentType.FLOAT,
+                        GLTFAccessor.TypeEnum.VEC3
+                    );
+                    gltfMorphTarget.Add(GLTFMorphTarget.Attribute.POSITION.ToString(), accessorTargetPositions.index);
+                    // Populate accessor
+                    accessorTargetPositions.min = new float[] { float.MaxValue, float.MaxValue, float.MaxValue };
+                    accessorTargetPositions.max = new float[] { float.MinValue, float.MinValue, float.MinValue };
+                    for (int indexPosition = 0; indexPosition < babylonMorphTarget.positions.Length; indexPosition += 3)
+                    {
+                        var positionTarget = _subArray(babylonMorphTarget.positions, indexPosition, 3);
+
+                        // Babylon stores morph target information as final data while glTF expects deltas from mesh primitive
+                        var positionMesh = _subArray(babylonMesh.positions, indexPosition, 3);
+                        for (int indexCoordinate = 0; indexCoordinate < positionTarget.Length; indexCoordinate++)
+                        {
+                            positionTarget[indexCoordinate] = positionTarget[indexCoordinate] - positionMesh[indexCoordinate];
+                        }
+
+                        // Store values as bytes
+                        foreach (var coordinate in positionTarget)
+                        {
+                            accessorTargetPositions.bytesList.AddRange(BitConverter.GetBytes(coordinate));
+                        }
+                        // Update min and max values
+                        GLTFBufferService.UpdateMinMaxAccessor(accessorTargetPositions, positionTarget);
+                    }
+                    accessorTargetPositions.count = babylonMorphTarget.positions.Length / 3;
+                }
+
+                // Normals
+                if (babylonMorphTarget.normals != null)
+                {
+                    var accessorTargetNormals = GLTFBufferService.Instance.CreateAccessor(
+                        gltf,
+                        GLTFBufferService.Instance.GetBufferViewFloatVec3(gltf, buffer),
+                        "accessorTargetNormals",
+                        GLTFAccessor.ComponentType.FLOAT,
+                        GLTFAccessor.TypeEnum.VEC3
+                    );
+                    gltfMorphTarget.Add(GLTFMorphTarget.Attribute.NORMAL.ToString(), accessorTargetNormals.index);
+                    // Populate accessor
+                    for (int indexNormal = 0; indexNormal < babylonMorphTarget.positions.Length; indexNormal += 3)
+                    {
+                        var normalTarget = _subArray(babylonMorphTarget.normals, indexNormal, 3);
+
+                        // Babylon stores morph target information as final data while glTF expects deltas from mesh primitive
+                        var normalMesh = _subArray(babylonMesh.normals, indexNormal, 3);
+                        for (int indexCoordinate = 0; indexCoordinate < normalTarget.Length; indexCoordinate++)
+                        {
+                            normalTarget[indexCoordinate] = normalTarget[indexCoordinate] - normalMesh[indexCoordinate];
+                        }
+
+                        // Store values as bytes
+                        foreach (var coordinate in normalTarget)
+                        {
+                            accessorTargetNormals.bytesList.AddRange(BitConverter.GetBytes(coordinate));
+                        }
+                    }
+                    accessorTargetNormals.count = babylonMorphTarget.normals.Length / 3;
+                }
+
+                if (gltfMorphTarget.Count > 0)
+                {
+                    gltfMorphTargets.Add(gltfMorphTarget);
+                    weights.Add(babylonMorphTarget.influence);
+                }
+            }
+            if (gltfMorphTargets.Count > 0)
+            {
+                meshPrimitive.targets = gltfMorphTargets.ToArray();
+            }
+        }
+
+        private float[] _subArray(float[] array, int startIndex, int count)
+        {
+            var result = new float[count];
+            for (int i = 0; i < count; i++)
+            {
+                result[i] = array[startIndex + i];
+            }
+            return result;
         }
 
         private IPoint2 createIPoint2(float[] array, int index)

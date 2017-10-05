@@ -43,6 +43,9 @@ namespace Max2Babylon
             // Position / rotation / scaling / hierarchy
             exportNode(babylonMesh, meshNode, scene, babylonScene);
 
+            // Animations
+            exportAnimation(babylonMesh, meshNode);
+
             babylonScene.MeshesList.Add(babylonMesh);
 
             return babylonMesh;
