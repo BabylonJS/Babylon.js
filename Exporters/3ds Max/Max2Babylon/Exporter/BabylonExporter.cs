@@ -167,6 +167,8 @@ namespace Max2Babylon
             var progression = 10.0f;
             ReportProgressChanged((int)progression);
             referencedMaterials.Clear();
+            // Reseting is optionnal. It makes each morph target manager export starts from id = 0.
+            BabylonMorphTargetManager.Reset();
             foreach (var maxRootNode in maxRootNodes)
             {
                 exportNodeRec(maxRootNode, babylonScene, gameScene);

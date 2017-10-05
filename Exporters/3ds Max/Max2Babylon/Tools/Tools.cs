@@ -13,6 +13,11 @@ namespace Max2Babylon
 {
     public static class Tools
     {
+        public static float Lerp(float min, float max, float t)
+        {
+            return min + (max - min) * t;
+        }
+
         // -------------------------
         // -- IIPropertyContainer --
         // -------------------------
