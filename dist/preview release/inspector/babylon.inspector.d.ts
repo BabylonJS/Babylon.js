@@ -542,6 +542,7 @@ declare module INSPECTOR {
         private _escapeInputHandler;
         /** Handler used on focus out */
         private _focusOutInputHandler;
+        private _input_checkbox;
         /** Handler used to get mouse position */
         private _onMouseDownHandler;
         private _onMouseDragHandler;
@@ -630,6 +631,10 @@ declare module INSPECTOR {
          * @param e
          */
         private _onMouseDown(e);
+        /**
+         * Create input entry
+         */
+        private _checkboxInput();
     }
 }
 

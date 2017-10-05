@@ -924,10 +924,10 @@ var INSPECTOR;
             enumerable: true,
             configurable: true
         });
-        // a unique name for this adapter, to retrieve its own key in the local storage
-        Adapter._name = BABYLON.Geometry.RandomId();
         return Adapter;
     }());
+    // a unique name for this adapter, to retrieve its own key in the local storage
+    Adapter._name = BABYLON.Geometry.RandomId();
     INSPECTOR.Adapter = Adapter;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -1683,7 +1683,9 @@ var INSPECTOR;
             propName.textContent = "" + this.name;
             // Value
             this._valueDiv = INSPECTOR.Helpers.CreateDiv('prop-value', this._div);
-            this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+            if (typeof this.value !== 'boolean') {
+                this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+            }
             this._createElements();
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
@@ -1691,16 +1693,19 @@ var INSPECTOR;
             }
             this._updateValue();
             // If the property type is not simple, add click event to unfold its children
-            if (!this._isSimple()) {
+            if (typeof this.value === 'boolean') {
+                this._checkboxInput();
+            }
+            else if (!this._isSimple()) {
                 this._valueDiv.classList.add('clickable');
                 this._valueDiv.addEventListener('click', this._addDetails.bind(this));
             }
             else {
                 this._initInput();
                 this._valueDiv.addEventListener('click', this._displayInputHandler);
-                this._input.addEventListener('keypress', this._validateInputHandler);
-                this._input.addEventListener('keydown', this._escapeInputHandler);
                 this._input.addEventListener('focusout', this._focusOutInputHandler);
+                this._input.addEventListener('keydown', this._validateInputHandler);
+                this._input.addEventListener('keydown', this._escapeInputHandler);
             }
             // Add this property to the scheduler
             INSPECTOR.Scheduler.getInstance().add(this);
@@ -1728,7 +1733,12 @@ var INSPECTOR;
          * On escape : removes the input
          */
         PropertyLine.prototype._validateInput = function (e) {
+            this._input.removeEventListener('focusout', this._focusOutInputHandler);
             if (e.keyCode == 13) {
+                this.validateInput(this._input.value);
+            }
+            else if (e.keyCode == 9) {
+                e.preventDefault();
                 this.validateInput(this._input.value);
             }
             else if (e.keyCode == 27) {
@@ -1763,7 +1773,9 @@ var INSPECTOR;
         /** Removes the input without validating the new value */
         PropertyLine.prototype._removeInputWithoutValidating = function () {
             INSPECTOR.Helpers.CleanDiv(this._valueDiv);
-            this._valueDiv.textContent = "-";
+            if (typeof this.value !== 'boolean') {
+                this._valueDiv.textContent = "-";
+            }
             // restore elements
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
@@ -1782,6 +1794,11 @@ var INSPECTOR;
             this._valueDiv.appendChild(this._input);
             this._input.focus();
             if (typeof this.value === 'number') {
+                // Slider
+                // let slider = Helpers.CreateDiv('slider-number', this._valueDiv);
+                // slider.style.background = '#303030';
+                // slider.style.cursor = 'ew-resize';
+                // slider.innerHTML = 'HELLO'
                 this._input.addEventListener('mousedown', this._onMouseDownHandler);
             }
             this._input.addEventListener('focusout', this._focusOutInputHandler);
@@ -1888,7 +1905,12 @@ var INSPECTOR;
             this.updateObject();
             // Then update its value
             // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
-            this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            if (typeof this.value === 'boolean') {
+                this._checkboxInput();
+            }
+            else {
+                this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            }
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
                 elem.update(this.value);
@@ -1992,12 +2014,27 @@ var INSPECTOR;
             window.addEventListener('mousemove', this._onMouseDragHandler);
             window.addEventListener('mouseup', this._onMouseUpHandler);
         };
-        // Array representing the simple type. All others are considered 'complex'
-        PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
-        // The number of pixel at each children step
-        PropertyLine._MARGIN_LEFT = 15;
+        /**
+         * Create input entry
+         */
+        PropertyLine.prototype._checkboxInput = function () {
+            var _this = this;
+            if (this._valueDiv.childElementCount < 1) {
+                this._input_checkbox = INSPECTOR.Helpers.CreateInput('checkbox-element', this._valueDiv);
+                this._input_checkbox.type = 'checkbox';
+                this._input_checkbox.checked = this.value;
+                this._input_checkbox.addEventListener('change', function () {
+                    INSPECTOR.Scheduler.getInstance().pause = true;
+                    _this.validateInput(!_this.value);
+                });
+            }
+        };
         return PropertyLine;
     }());
+    // Array representing the simple type. All others are considered 'complex'
+    PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
+    // The number of pixel at each children step
+    PropertyLine._MARGIN_LEFT = 15;
     INSPECTOR.PropertyLine = PropertyLine;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -2410,6 +2447,9 @@ var INSPECTOR;
          * uses getClassName. If nothing is returned, used the type of the constructor
          */
         Helpers.GET_TYPE = function (obj) {
+            if (typeof obj === 'boolean') {
+                return 'boolean';
+            }
             if (obj != null && obj != undefined) {
                 var classname = BABYLON.Tools.GetClassName(obj);
                 if (!classname || classname === 'object') {
@@ -2617,10 +2657,10 @@ var INSPECTOR;
                 }
             }
         };
-        /** All properties are refreshed every 250ms */
-        Scheduler.REFRESH_TIME = 250;
         return Scheduler;
     }());
+    /** All properties are refreshed every 250ms */
+    Scheduler.REFRESH_TIME = 250;
     INSPECTOR.Scheduler = Scheduler;
 })(INSPECTOR || (INSPECTOR = {}));
 

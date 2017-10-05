@@ -516,86 +516,86 @@ var BABYLON;
             var mesh = BABYLON.Mesh.CreateGround(name, 512, 512, 32, scene, false);
             return mesh;
         };
-        __decorate([
-            BABYLON.serializeAsTexture("bumpTexture")
-        ], WaterMaterial.prototype, "_bumpTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], WaterMaterial.prototype, "bumpTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], WaterMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], WaterMaterial.prototype, "specularColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "specularPower", void 0);
-        __decorate([
-            BABYLON.serialize("disableLighting")
-        ], WaterMaterial.prototype, "_disableLighting", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], WaterMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
-        ], WaterMaterial.prototype, "_maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], WaterMaterial.prototype, "maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "windForce", void 0);
-        __decorate([
-            BABYLON.serializeAsVector2()
-        ], WaterMaterial.prototype, "windDirection", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "waveHeight", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "bumpHeight", void 0);
-        __decorate([
-            BABYLON.serialize("bumpSuperimpose")
-        ], WaterMaterial.prototype, "_bumpSuperimpose", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
-        ], WaterMaterial.prototype, "bumpSuperimpose", void 0);
-        __decorate([
-            BABYLON.serialize("fresnelSeparate")
-        ], WaterMaterial.prototype, "_fresnelSeparate", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
-        ], WaterMaterial.prototype, "fresnelSeparate", void 0);
-        __decorate([
-            BABYLON.serialize("bumpAffectsReflection")
-        ], WaterMaterial.prototype, "_bumpAffectsReflection", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
-        ], WaterMaterial.prototype, "bumpAffectsReflection", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], WaterMaterial.prototype, "waterColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "colorBlendFactor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], WaterMaterial.prototype, "waterColor2", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "colorBlendFactor2", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "waveLength", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "waveSpeed", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "useLogarithmicDepth", null);
         return WaterMaterial;
     }(BABYLON.PushMaterial));
+    __decorate([
+        BABYLON.serializeAsTexture("bumpTexture")
+    ], WaterMaterial.prototype, "_bumpTexture", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    ], WaterMaterial.prototype, "bumpTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], WaterMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], WaterMaterial.prototype, "specularColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "specularPower", void 0);
+    __decorate([
+        BABYLON.serialize("disableLighting")
+    ], WaterMaterial.prototype, "_disableLighting", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+    ], WaterMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize("maxSimultaneousLights")
+    ], WaterMaterial.prototype, "_maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+    ], WaterMaterial.prototype, "maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "windForce", void 0);
+    __decorate([
+        BABYLON.serializeAsVector2()
+    ], WaterMaterial.prototype, "windDirection", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "waveHeight", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "bumpHeight", void 0);
+    __decorate([
+        BABYLON.serialize("bumpSuperimpose")
+    ], WaterMaterial.prototype, "_bumpSuperimpose", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
+    ], WaterMaterial.prototype, "bumpSuperimpose", void 0);
+    __decorate([
+        BABYLON.serialize("fresnelSeparate")
+    ], WaterMaterial.prototype, "_fresnelSeparate", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
+    ], WaterMaterial.prototype, "fresnelSeparate", void 0);
+    __decorate([
+        BABYLON.serialize("bumpAffectsReflection")
+    ], WaterMaterial.prototype, "_bumpAffectsReflection", void 0);
+    __decorate([
+        BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
+    ], WaterMaterial.prototype, "bumpAffectsReflection", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], WaterMaterial.prototype, "waterColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "colorBlendFactor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], WaterMaterial.prototype, "waterColor2", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "colorBlendFactor2", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "waveLength", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "waveSpeed", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "useLogarithmicDepth", null);
     BABYLON.WaterMaterial = WaterMaterial;
 })(BABYLON || (BABYLON = {}));
 

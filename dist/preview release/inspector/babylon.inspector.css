@@ -85,14 +85,14 @@
     .insp-wrapper .treeTool.active {
       color: #5db0d7; }
   .insp-wrapper .tab-panel {
-    height: 100%;
-    overflow-y: auto; }
+    height: 100%; }
     .insp-wrapper .tab-panel.searchable {
       height: calc(100% - 30px - 10px); }
     .insp-wrapper .tab-panel .texture-image {
       max-height: 400px; }
     .insp-wrapper .tab-panel .scene-actions {
-      overflow-y: auto; }
+      overflow-y: auto;
+      padding-left: 5px; }
       .insp-wrapper .tab-panel .scene-actions .actions-title {
         font-size: 1.1em;
         padding-bottom: 10px;
