@@ -217,9 +217,7 @@ module INSPECTOR {
         /** Replaces the default display with an input */
         private _displayInput(e) {
             // Remove the displayInput event listener
-            this._valueDiv.removeEventListener('click', this._displayInputHandler);
-
-            
+            this._valueDiv.removeEventListener('click', this._displayInputHandler);           
 
             // Set input value
             let valueTxt = this._valueDiv.textContent;
@@ -256,6 +254,10 @@ module INSPECTOR {
 
         // Returns the property name
         public get name(): string {
+            // let arrayName = Helpers.Capitalize(this._property.name).match(/[A-Z][a-z]+|[0-9]+/g)
+            // if (arrayName) {
+            //     return arrayName.join(" ");
+            // }
             return this._property.name;
         }
 
