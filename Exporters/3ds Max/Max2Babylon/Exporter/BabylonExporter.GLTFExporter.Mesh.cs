@@ -81,6 +81,7 @@ namespace Max2Babylon
             gltfMesh.index = gltf.MeshesList.Count;
             gltf.MeshesList.Add(gltfMesh);
             gltfMesh.idGroupInstance = babylonMesh.idGroupInstance;
+            var weights = new List<float>();
 
             // --------------------------
             // ---- glTF primitives -----
