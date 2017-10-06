@@ -1349,20 +1349,32 @@ var BABYLON;
                         // default is opaque
                         break;
                     case "MASK":
+                        babylonMaterial.alphaCutOff = (material.alphaCutoff == null ? 0.5 : material.alphaCutoff);
+                        if (colorFactor) {
+                            if (colorFactor[3] == 0) {
+                                babylonMaterial.alphaCutOff = 1;
+                            }
+                            else {
+                                babylonMaterial.alphaCutOff /= colorFactor[3];
+                            }
+                        }
+                        if (babylonMaterial.albedoTexture) {
+                            babylonMaterial.albedoTexture.hasAlpha = true;
+                        }
+                        break;
                     case "BLEND":
                         if (colorFactor) {
                             babylonMaterial.alpha = colorFactor[3];
                         }
                         if (babylonMaterial.albedoTexture) {
                             babylonMaterial.albedoTexture.hasAlpha = true;
-                            babylonMaterial.useAlphaFromAlbedoTexture = (alphaMode === "BLEND");
+                            babylonMaterial.useAlphaFromAlbedoTexture = true;
                         }
                         break;
                     default:
                         this._onError("Invalid alpha mode '" + material.alphaMode + "'");
                         return;
                 }
-                babylonMaterial.alphaCutOff = material.alphaCutoff == null ? 0.5 : material.alphaCutoff;
             };
             GLTFLoader.prototype._loadTexture = function (textureInfo) {
                 var _this = this;
