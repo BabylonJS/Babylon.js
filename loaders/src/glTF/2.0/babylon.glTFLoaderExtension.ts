@@ -6,11 +6,11 @@ module BABYLON.GLTF2 {
 
         public abstract get name(): string;
 
-        protected _traverseNode(loader: GLTFLoader, index: number, action: (node: IGLTFNode, index: number, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean { return false; }
+        protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean { return false; }
 
-        protected _loadNode(loader: GLTFLoader, node: IGLTFNode): boolean { return false; }
+        protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean { return false; }
 
-        protected _loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean { return false; }
+        protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean { return false; }
 
         protected _loadExtension<T>(property: IGLTFProperty, action: (extension: T, onComplete: () => void) => void): boolean {
             if (!property.extensions) {
@@ -39,16 +39,16 @@ module BABYLON.GLTF2 {
 
         public static _Extensions: GLTFLoaderExtension[] = [];
 
-        public static TraverseNode(loader: GLTFLoader, index: number, action: (node: IGLTFNode, index: number, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean {
-            return this._ApplyExtensions(extension => extension._traverseNode(loader, index, action, parentNode));
+        public static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean {
+            return this._ApplyExtensions(extension => extension._traverseNode(loader, context, node, action, parentNode));
         }
 
-        public static LoadNode(loader: GLTFLoader, node: IGLTFNode): boolean {
-            return this._ApplyExtensions(extension => extension._loadNode(loader, node));
+        public static LoadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean {
+            return this._ApplyExtensions(extension => extension._loadNode(loader, context, node));
         }
 
-        public static LoadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
-            return this._ApplyExtensions(extension => extension._loadMaterial(loader, material, assign));
+        public static LoadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
+            return this._ApplyExtensions(extension => extension._loadMaterial(loader, context, material, assign));
         }
 
         private static _ApplyExtensions(action: (extension: GLTFLoaderExtension) => boolean) {
