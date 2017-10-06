@@ -64,7 +64,7 @@
          * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
          * @param scope optional scope for the callback to be called from
          */
-        public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope = null): Observer<T> {
+        public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope: any = null): Observer<T> {
             if (!callback) {
                 return null;
             }
