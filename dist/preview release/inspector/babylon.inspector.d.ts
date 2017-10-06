@@ -86,6 +86,45 @@ declare module INSPECTOR {
             type: typeof BABYLON.Color3;
             properties: string[];
             format: (color: BABYLON.Color3) => string;
+            slider: {
+                r: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+                g: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+                b: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+            };
+        };
+        'Color4': {
+            type: typeof BABYLON.Color4;
+            properties: string[];
+            format: (color: BABYLON.Color4) => string;
+            slider: {
+                r: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+                g: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+                b: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+            };
         };
         'Quaternion': {
             type: typeof BABYLON.Quaternion;
@@ -129,6 +168,13 @@ declare module INSPECTOR {
         'ArcRotateCamera': {
             type: typeof BABYLON.ArcRotateCamera;
             properties: string[];
+            slider: {
+                alpha: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+            };
         };
         'FreeCamera': {
             type: typeof BABYLON.FreeCamera;
@@ -147,6 +193,13 @@ declare module INSPECTOR {
             type: typeof BABYLON.StandardMaterial;
             properties: string[];
             format: (mat: BABYLON.StandardMaterial) => string;
+            slider: {
+                alpha: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+            };
         };
         'PrimitiveAlignment': {
             type: typeof BABYLON.PrimitiveAlignment;
@@ -171,6 +224,13 @@ declare module INSPECTOR {
         'PBRMaterial': {
             type: typeof BABYLON.PBRMaterial;
             properties: string[];
+            slider: {
+                alpha: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+            };
         };
         'Canvas2D': {
             type: typeof BABYLON.Canvas2D;
@@ -542,11 +602,11 @@ declare module INSPECTOR {
         private _escapeInputHandler;
         /** Handler used on focus out */
         private _focusOutInputHandler;
-        private _input_checkbox;
         /** Handler used to get mouse position */
         private _onMouseDownHandler;
         private _onMouseDragHandler;
         private _onMouseUpHandler;
+        private _textValue;
         /** Save previous Y mouse position */
         private _prevY;
         /**Save value while slider is on */
@@ -563,7 +623,7 @@ declare module INSPECTOR {
          * On escape : removes the input
          */
         private _validateInput(e);
-        validateInput(value: any): void;
+        validateInput(value: any, forceupdate?: boolean): void;
         /**
          * On escape : removes the input
          */
@@ -612,6 +672,7 @@ declare module INSPECTOR {
          */
         private _isSimple();
         toHtml(): HTMLElement;
+        closeDetails(): void;
         /**
          * Add sub properties in case of a complex type
          */
@@ -635,6 +696,10 @@ declare module INSPECTOR {
          * Create input entry
          */
         private _checkboxInput();
+        private _rangeInput();
+        private _rangeHandler();
+        private _isSliderType();
+        private _getSliderProperty();
     }
 }
 
@@ -797,6 +862,7 @@ declare module INSPECTOR {
          * @param obj
          */
         static GetAllLinesProperties(obj: any): Array<PropertyLine>;
+        static Capitalize(str: string): string;
     }
 }
 
@@ -1210,6 +1276,7 @@ declare module INSPECTOR {
         private _isFolded();
         /** Set this item as active (background lighter) in the tree panel */
         active(b: boolean): void;
+        getDiv(): HTMLElement;
     }
 }
 

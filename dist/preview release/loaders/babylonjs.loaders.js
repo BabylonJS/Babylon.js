@@ -956,9 +956,9 @@ var BABYLON;
             //Return an array with all BABYLON.Mesh
             return babylonMeshesArray;
         };
+        OBJFileLoader.OPTIMIZE_WITH_UV = false;
         return OBJFileLoader;
     }());
-    OBJFileLoader.OPTIMIZE_WITH_UV = false;
     BABYLON.OBJFileLoader = OBJFileLoader;
     if (BABYLON.SceneLoader) {
         //Add this loader into the register plugin
@@ -1193,11 +1193,11 @@ var BABYLON;
             }
             return result;
         };
+        // V1 options
+        GLTFFileLoader.HomogeneousCoordinates = false;
+        GLTFFileLoader.IncrementalLoading = true;
         return GLTFFileLoader;
     }());
-    // V1 options
-    GLTFFileLoader.HomogeneousCoordinates = false;
-    GLTFFileLoader.IncrementalLoading = true;
     BABYLON.GLTFFileLoader = GLTFFileLoader;
     var BinaryReader = (function () {
         function BinaryReader(arrayBuffer) {
@@ -2759,9 +2759,9 @@ var BABYLON;
                     }
                 }
             };
+            GLTFLoader.Extensions = {};
             return GLTFLoader;
         }());
-        GLTFLoader.Extensions = {};
         GLTF1.GLTFLoader = GLTFLoader;
         ;
         BABYLON.GLTFFileLoader.CreateGLTFLoaderV1 = function () { return new GLTFLoader(); };
@@ -3013,10 +3013,10 @@ var BABYLON;
                 }
                 return GLTFUtils._DefaultMaterial;
             };
+            // The GLTF default material
+            GLTFUtils._DefaultMaterial = null;
             return GLTFUtils;
         }());
-        // The GLTF default material
-        GLTFUtils._DefaultMaterial = null;
         GLTF1.GLTFUtils = GLTFUtils;
     })(GLTF1 = BABYLON.GLTF1 || (BABYLON.GLTF1 = {}));
 })(BABYLON || (BABYLON = {}));
@@ -4565,9 +4565,9 @@ var BABYLON;
                 }
                 return array[index];
             };
+            GLTFLoader.Extensions = {};
             return GLTFLoader;
         }());
-        GLTFLoader.Extensions = {};
         GLTF2.GLTFLoader = GLTFLoader;
         BABYLON.GLTFFileLoader.CreateGLTFLoaderV2 = function (parent) { return new GLTFLoader(parent); };
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
@@ -4728,12 +4728,12 @@ var BABYLON;
                 }
                 return false;
             };
+            //
+            // Utilities
+            //
+            GLTFLoaderExtension._Extensions = [];
             return GLTFLoaderExtension;
         }());
-        //
-        // Utilities
-        //
-        GLTFLoaderExtension._Extensions = [];
         GLTF2.GLTFLoaderExtension = GLTFLoaderExtension;
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
@@ -4834,12 +4834,12 @@ var BABYLON;
                         });
                     });
                 };
+                /**
+                 * Specify the minimal delay between LODs in ms (default = 250)
+                 */
+                MSFTLOD.MinimalLODDelay = 250;
                 return MSFTLOD;
             }(GLTF2.GLTFLoaderExtension));
-            /**
-             * Specify the minimal delay between LODs in ms (default = 250)
-             */
-            MSFTLOD.MinimalLODDelay = 250;
             Extensions.MSFTLOD = MSFTLOD;
             GLTF2.GLTFLoader.RegisterExtension(new MSFTLOD());
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
