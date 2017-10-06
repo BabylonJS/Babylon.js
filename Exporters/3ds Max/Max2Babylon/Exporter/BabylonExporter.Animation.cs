@@ -2,12 +2,108 @@
 using System.Collections.Generic;
 using Autodesk.Max;
 using BabylonExport.Entities;
+using System.Runtime.InteropServices;
 
 namespace Max2Babylon
 {
     partial class BabylonExporter
     {
         const int Ticks = 160;
+
+        private static bool ExportBabylonKeys(List<BabylonAnimationKey> keys, string property, List<BabylonAnimation> animations, BabylonAnimation.DataType dataType, BabylonAnimation.LoopBehavior loopBehavior)
+        {
+            if (keys.Count == 0)
+            {
+                return false;
+            }
+
+            var end = Loader.Core.AnimRange.End;
+            if (keys[keys.Count - 1].frame != end / Ticks)
+            {
+                keys.Add(new BabylonAnimationKey()
+                {
+                    frame = end / Ticks,
+                    values = keys[keys.Count - 1].values
+                });
+            }
+
+            var babylonAnimation = new BabylonAnimation
+            {
+                dataType = (int)dataType,
+                name = property + " animation",
+                keys = keys.ToArray(),
+                framePerSecond = Loader.Global.FrameRate,
+                loopBehavior = (int)loopBehavior,
+                property = property
+            };
+
+            animations.Add(babylonAnimation);
+
+            return true;
+        }
+
+        // -----------------------
+        // -- From GameControl ---
+        // -----------------------
+
+        private bool ExportFloatGameController(IIGameControl control, string property, List<BabylonAnimation> animations)
+        {
+            return ExportGameController(control, property, animations, IGameControlType.Float, BabylonAnimation.DataType.Float, gameKey => new float[] { gameKey.SampleKey.Fval / 100.0f });
+        }
+
+        private bool ExportGameController(IIGameControl control, string property, List<BabylonAnimation> animations, IGameControlType type, BabylonAnimation.DataType dataType, Func<IIGameKey, float[]> extractValueFunc)
+        {
+            var keys = ExportBabylonKeysFromGameController(control, type, extractValueFunc);
+
+            if (keys == null)
+            {
+                return false;
+            }
+
+            var loopBehavior = BabylonAnimation.LoopBehavior.Cycle;
+            return ExportBabylonKeys(keys, property, animations, dataType, loopBehavior);
+        }
+
+        private List<BabylonAnimationKey> ExportBabylonKeysFromGameController(IIGameControl control, IGameControlType type, Func<IIGameKey, float[]> extractValueFunc)
+        {
+            if (control == null)
+            {
+                return null;
+            }
+
+            ITab<IIGameKey> gameKeyTab = GlobalInterface.Instance.Tab.Create<IIGameKey>();
+            control.GetQuickSampledKeys(gameKeyTab, type);
+
+            if (gameKeyTab == null)
+            {
+                return null;
+            }
+
+            var keys = new List<BabylonAnimationKey>();
+            for (int indexKey = 0; indexKey < gameKeyTab.Count; indexKey++)
+            {
+#if MAX2017
+                var indexer = indexKey;
+#else
+                    var indexer = new IntPtr(indexKey);
+                    Marshal.FreeHGlobal(indexer);
+#endif
+                var gameKey = gameKeyTab[indexer];
+
+                var key = new BabylonAnimationKey()
+                {
+                    frame = gameKey.T / Ticks,
+                    values = extractValueFunc(gameKey)
+                };
+                keys.Add(key);
+            }
+
+            return keys;
+        }
+
+        // -----------------------
+        // ---- From Control -----
+        // -----------------------
 
         private static BabylonAnimationKey GenerateFloatFunc(int index, IIKeyControl keyControl)
         {
@@ -119,9 +215,7 @@ namespace Max2Babylon
                 return false;
             }
 
-            var keys = new List<BabylonAnimationKey>();
             BabylonAnimation.LoopBehavior loopBehavior;
-
             switch (control.GetORT(2))
             {
                 case 2:
@@ -132,40 +226,18 @@ namespace Max2Babylon
                     break;
             }
 
+            var keys = new List<BabylonAnimationKey>();
             for (var index = 0; index < keyControl.NumKeys; index++)
             {
                 keys.Add(generateFunc(index, keyControl));
             }
 
-            if (keys.Count == 0)
-            {
-                return false;
-            }
-
-            var end = Loader.Core.AnimRange.End;
-            if (keys[keys.Count - 1].frame != end / Ticks)
-            {
-                keys.Add(new BabylonAnimationKey()
-                {
-                    frame = end / Ticks,
-                    values = keys[keys.Count - 1].values
-                });
-            }
-
-            var babylonAnimation = new BabylonAnimation
-            {
-                dataType = (int)dataType,
-                name = property + " animation",
-                keys = keys.ToArray(),
-                framePerSecond = Loader.Global.FrameRate,
-                loopBehavior = (int)loopBehavior,
-                property = property
-            };
-
-            animations.Add(babylonAnimation);
-
-            return true;
+            return ExportBabylonKeys(keys, property, animations, dataType, loopBehavior);
         }
+
+        // -----------------------
+        // ---- From ext func ----
+        // -----------------------
 
         private static void ExportColor3Animation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)

@@ -41,7 +41,7 @@ namespace GLTFExport.Entities
         [DataMember(EmitDefaultValue = false)]
         public int? material { get; set; }
 
-        //[DataMember]
-        //public Dictionary<string, int>[] targets { get; set; }
+        [DataMember(EmitDefaultValue = false)]
+        public GLTFMorphTarget[] targets { get; set; }
     }
 }

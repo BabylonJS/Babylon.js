@@ -13,6 +13,11 @@ namespace Max2Babylon
 {
     public static class Tools
     {
+        public static float Lerp(float min, float max, float t)
+        {
+            return min + (max - min) * t;
+        }
+
         // -------------------------
         // -- IIPropertyContainer --
         // -------------------------
@@ -105,6 +110,18 @@ namespace Max2Babylon
             }
         }
 
+        public static IIGameMorpher AsGameMorpher(this IIGameModifier obj)
+        {
+            var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameMorpher");
+            var constructor = type.GetConstructors()[0];
+            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
+            unsafe
+            {
+                var voidPtr = obj.GetNativeHandle().ToPointer();
+                return (IIGameMorpher)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
+            }
+        }
+
         public const float Epsilon = 0.001f;
 
         public static IPoint3 XAxis { get { return Loader.Global.Point3.Create(1, 0, 0); } }
@@ -118,7 +135,7 @@ namespace Max2Babylon
         }
 
         public static IMatrix3 Identity { get { return Loader.Global.Matrix3.Create(XAxis, YAxis, ZAxis, Origin); } }
-        
+
         public static Vector3 ToEulerAngles(this IQuat q)
         {
             // Store the Euler angles in radians
