@@ -167,6 +167,8 @@ namespace Max2Babylon
             var progression = 10.0f;
             ReportProgressChanged((int)progression);
             referencedMaterials.Clear();
+            // Reseting is optionnal. It makes each morph target manager export starts from id = 0.
+            BabylonMorphTargetManager.Reset();
             foreach (var maxRootNode in maxRootNodes)
             {
                 exportNodeRec(maxRootNode, babylonScene, gameScene);
@@ -319,6 +321,11 @@ namespace Max2Babylon
                     break;
                 case Autodesk.Max.IGameObject.ObjectTypes.Light:
                     babylonNode = ExportLight(maxGameScene, maxGameNode, babylonScene);
+                    break;
+                case Autodesk.Max.IGameObject.ObjectTypes.Unknown:
+                    // Create a dummy (empty mesh) when type is unknown
+                    // An example of unknown type object is the target of target light or camera
+                    babylonNode = ExportDummy(maxGameScene, maxGameNode, babylonScene);
                     break;
                 default:
                     // The type of node is not exportable (helper, spline, xref...)

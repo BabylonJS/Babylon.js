@@ -84,6 +84,10 @@
                 return typeof(s) === 'string' || s instanceof String;
             };
 
+            this._detailRows.forEach((property) => {
+                property.closeDetails();
+            })
+
             this._detailRows.sort((detail1, detail2) : number => {
                 let str1 = String(detail1[property]);
                 let str2 = String(detail2[property]);

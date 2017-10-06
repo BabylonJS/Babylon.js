@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace GLTFExport.Entities
@@ -55,6 +56,8 @@ namespace GLTFExport.Entities
         public string sparse { get; set; } // TODO
 
         public GLTFBufferView BufferView;
+
+        public List<byte> bytesList = new List<byte>();
 
         public int getByteLength()
         {

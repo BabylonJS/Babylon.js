@@ -110,6 +110,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public string tags { get; set; }
 
+        [DataMember(EmitDefaultValue = false)]
+        public int? morphTargetManagerId { get; set; }
+
         public bool isDummy = false;
 
         public BabylonMesh()

@@ -1,143 +1,160 @@
 ﻿module BABYLON {
+
+    export enum AssetTaskState {
+        INIT,
+        RUNNING,
+        DONE,
+        ERROR
+    }
+
     export interface IAssetTask {
         onSuccess: (task: IAssetTask) => void;
         onError: (task: IAssetTask, message?: string, exception?: any) => void;
         isCompleted: boolean;
 
-        run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void);
+        taskState: AssetTaskState;
+        errorObject: {
+            message?: string;
+            exception?: any;
+        }
+
+        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void);
     }
 
-    export class MeshAssetTask implements IAssetTask {
+    export abstract class AbstractAssetTask implements IAssetTask {
+
+        constructor() {
+            this.taskState = AssetTaskState.INIT;
+        }
+
+        onSuccess: (task: IAssetTask) => void;
+        onError: (task: IAssetTask, message?: string, exception?: any) => void;
+
+        isCompleted: boolean = false;
+        taskState: AssetTaskState;
+        errorObject: { message?: string; exception?: any; };
+
+        run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+            this.taskState = AssetTaskState.RUNNING;
+            this.runTask(scene, () => {
+                this.onDoneCallback(onSuccess, onError);
+            }, (msg, exception) => {
+                this.onErrorCallback(onError, msg, exception);
+            });
+        }
+
+        public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+            throw new Error("runTask is not implemented");
+        }
+
+        private onErrorCallback(onError: (message?: string, exception?: any) => void, message?: string, exception?: any) {
+            this.taskState = AssetTaskState.ERROR;
+
+            this.errorObject = {
+                message: message,
+                exception: exception
+            }
+
+            if (this.onError) {
+                this.onError(this, message, exception);
+            }
+
+            onError();
+        }
+
+        private onDoneCallback(onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+            try {
+                this.taskState = AssetTaskState.DONE;
+                this.isCompleted = true;
+
+                if (this.onSuccess) {
+                    this.onSuccess(this);
+                }
+
+                onSuccess();
+            } catch (e) {
+                this.onErrorCallback(onError, "Task is done, error executing success callback(s)", e);
+            }
+        }
+
+    }
+
+    export class MeshAssetTask extends AbstractAssetTask implements IAssetTask {
         public loadedMeshes: Array<AbstractMesh>;
         public loadedParticleSystems: Array<ParticleSystem>;
         public loadedSkeletons: Array<Skeleton>;
 
-        public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
-
-        public isCompleted = false;
-
         constructor(public name: string, public meshesNames: any, public rootUrl: string, public sceneFilename: string) {
+            super();
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             SceneLoader.ImportMesh(this.meshesNames, this.rootUrl, this.sceneFilename, scene,
                 (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => {
                     this.loadedMeshes = meshes;
                     this.loadedParticleSystems = particleSystems;
                     this.loadedSkeletons = skeletons;
-
-                    this.isCompleted = true;
-
-                    if (this.onSuccess) {
-                        this.onSuccess(this);
-                    }
-
                     onSuccess();
                 }, null, (scene, message, exception) => {
-                    if (this.onError) {
-                        this.onError(this, message, exception);
-                    }
-
                     onError(message, exception);
                 }
             );
         }
     }
 
-    export class TextFileAssetTask implements IAssetTask {
-        public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
-
-        public isCompleted = false;
+    export class TextFileAssetTask extends AbstractAssetTask implements IAssetTask {
         public text: string;
 
         constructor(public name: string, public url: string) {
+            super();
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             Tools.LoadFile(this.url, (data) => {
-
                 this.text = data;
-                this.isCompleted = true;
-
-                if (this.onSuccess) {
-                    this.onSuccess(this);
-                }
-
                 onSuccess();
             }, null, scene.database, false, (request, exception) => {
-                if (this.onError) {
-                    this.onError(this, request.status + " " + request.statusText, exception);
-                }
-
                 onError(request.status + " " + request.statusText, exception);
             });
         }
     }
 
-    export class BinaryFileAssetTask implements IAssetTask {
-        public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
-
-        public isCompleted = false;
+    export class BinaryFileAssetTask extends AbstractAssetTask implements IAssetTask {
         public data: ArrayBuffer;
 
         constructor(public name: string, public url: string) {
+            super();
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             Tools.LoadFile(this.url, (data) => {
 
                 this.data = data;
-                this.isCompleted = true;
-
-                if (this.onSuccess) {
-                    this.onSuccess(this);
-                }
-
                 onSuccess();
             }, null, scene.database, true, (request, exception) => {
-                if (this.onError) {
-                    this.onError(this, request.status + " " + request.statusText, exception);
-                }
-
                 onError(request.status + " " + request.statusText, exception);
             });
         }
     }
 
-    export class ImageAssetTask implements IAssetTask {
-        public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
-
-        public isCompleted = false;
+    export class ImageAssetTask extends AbstractAssetTask implements IAssetTask {
         public image: HTMLImageElement;
 
         constructor(public name: string, public url: string) {
+            super();
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             var img = new Image();
 
             Tools.SetCorsBehavior(this.url, img);
 
             img.onload = () => {
                 this.image = img;
-                this.isCompleted = true;
-
-                if (this.onSuccess) {
-                    this.onSuccess(this);
-                }
-
                 onSuccess();
             };
 
             img.onerror = (err: ErrorEvent): any => {
-                if (this.onError) {
-                    this.onError(this, "Error loading image", err);
-                }
-
                 onError("Error loading image", err);
             };
 
@@ -151,33 +168,20 @@
         texture: Texture;
     }
 
-    export class TextureAssetTask implements ITextureAssetTask {
-        public onSuccess: (task: ITextureAssetTask) => void;
-        public onError: (task: ITextureAssetTask, message?: string, exception?: any) => void;
-
-        public isCompleted = false;
+    export class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask {
         public texture: Texture;
 
         constructor(public name: string, public url: string, public noMipmap?: boolean, public invertY?: boolean, public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+            super();
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
 
             var onload = () => {
-                this.isCompleted = true;
-
-                if (this.onSuccess) {
-                    this.onSuccess(this);
-                }
-
                 onSuccess();
             };
 
             var onerror = (msg, exception) => {
-                if (this.onError) {
-                    this.onError(this, msg, exception);
-                }
-
                 onError(msg, exception);
             };
 
@@ -185,33 +189,20 @@
         }
     }
 
-    export class CubeTextureAssetTask implements IAssetTask {
-        public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
-
-        public isCompleted = false;
+    export class CubeTextureAssetTask extends AbstractAssetTask implements IAssetTask {
         public texture: CubeTexture;
 
         constructor(public name: string, public url: string, public extensions?: string[], public noMipmap?: boolean, public files?: string[]) {
+            super();
         }
 
-        public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
 
             var onload = () => {
-                this.isCompleted = true;
-
-                if (this.onSuccess) {
-                    this.onSuccess(this);
-                }
-
                 onSuccess();
             };
 
             var onerror = (msg, exception) => {
-                if (this.onError) {
-                    this.onError(this, msg, exception);
-                }
-
                 onError(msg, exception);
             };
 
@@ -219,33 +210,20 @@
         }
     }
 
-    export class HDRCubeTextureAssetTask implements IAssetTask {
-        public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask, message?: string, exception?: any) => void;
-
-        public isCompleted = false;
+    export class HDRCubeTextureAssetTask extends AbstractAssetTask implements IAssetTask {
         public texture: HDRCubeTexture;
 
         constructor(public name: string, public url: string, public size?: number, public noMipmap = false, public generateHarmonics = true, public useInGammaSpace = false, public usePMREMGenerator = false) {
+            super();
         }
 
         public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
 
             var onload = () => {
-                this.isCompleted = true;
-
-                if (this.onSuccess) {
-                    this.onSuccess(this);
-                }
-
                 onSuccess();
             };
 
             var onerror = (message?: string, exception?: any) => {
-                if (this.onError) {
-                    this.onError(this, message, exception);
-                }
-
                 onError(message, exception);
             };
 
@@ -256,7 +234,7 @@
     export class AssetsManager {
         private _scene: Scene;
 
-        protected tasks = new Array<IAssetTask>();
+        protected tasks = new Array<AbstractAssetTask>();
         protected waitingTasksCount = 0;
 
         public onFinish: (tasks: IAssetTask[]) => void;
@@ -329,32 +307,53 @@
             this.waitingTasksCount--;
 
             if (this.waitingTasksCount === 0) {
-                if (this.onFinish) {
-                    this.onFinish(this.tasks);
+                try {
+                    if (this.onFinish) {
+                        this.onFinish(this.tasks);
+                    }
+
+                    this.onTasksDoneObservable.notifyObservers(this.tasks);
+                } catch (e) {
+                    Tools.Error("Error running tasks-done callbacks.");
+                    console.log(e);
                 }
 
                 this._scene.getEngine().hideLoadingUI();
             }
         }
 
-        private _runTask(task: IAssetTask): void {
-            task.run(this._scene, () => {
-                if (this.onTaskSuccess) {
-                    this.onTaskSuccess(task);
+        private _runTask(task: AbstractAssetTask): void {
+
+            let done = () => {
+                try {
+                    if (this.onTaskSuccess) {
+                        this.onTaskSuccess(task);
+                    }
+                    this.onTaskSuccessObservable.notifyObservers(task);
+                    this._decreaseWaitingTasksCount();
+                } catch (e) {
+                    error("Error executing task success callbacks", e);
                 }
-                this.onTaskSuccessObservable.notifyObservers(task);
-                this._decreaseWaitingTasksCount();
-            }, () => {
+
+            }
+
+            let error = (message?: string, exception?: any) => {
+                task.errorObject = task.errorObject || {
+                    message: message,
+                    exception: exception
+                }
                 if (this.onTaskError) {
                     this.onTaskError(task);
                 }
                 this.onTaskErrorObservable.notifyObservers(task);
                 this._decreaseWaitingTasksCount();
-            });
+            }
+
+            task.run(this._scene, done, error);
         }
 
         public reset(): AssetsManager {
-            this.tasks = new Array<IAssetTask>();
+            this.tasks = new Array<AbstractAssetTask>();
             return this;
         }
 
