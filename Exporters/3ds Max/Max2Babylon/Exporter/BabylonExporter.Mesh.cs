@@ -43,6 +43,9 @@ namespace Max2Babylon
             // Position / rotation / scaling / hierarchy
             exportNode(babylonMesh, meshNode, scene, babylonScene);
 
+            // Animations
+            exportAnimation(babylonMesh, meshNode);
+
             babylonScene.MeshesList.Add(babylonMesh);
 
             return babylonMesh;
@@ -306,64 +309,8 @@ namespace Max2Babylon
                 var optimizeVertices = meshNode.MaxNode.GetBoolProperty("babylonjs_optimizevertices");
 
                 // Compute normals
-                List<GlobalVertex>[] verticesAlreadyExported = null;
-
-                if (optimizeVertices)
-                {
-                    verticesAlreadyExported = new List<GlobalVertex>[unskinnedMesh.NumberOfVerts];
-                }
-
                 var subMeshes = new List<BabylonSubMesh>();
-                var indexStart = 0;
-
-
-                for (int i = 0; i < multiMatsCount; ++i)
-                {
-                    int materialId = meshNode.NodeMaterial?.GetMaterialID(i) ?? 0;
-                    var indexCount = 0;
-                    var minVertexIndex = int.MaxValue;
-                    var maxVertexIndex = int.MinValue;
-                    var subMesh = new BabylonSubMesh { indexStart = indexStart, materialIndex = i };
-
-                    if (multiMatsCount == 1)
-                    {
-                        for (int j = 0; j < unskinnedMesh.NumberOfFaces; ++j)
-                        {
-                            var face = unskinnedMesh.GetFace(j);
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
-                        }
-                    }
-                    else
-                    {
-                        ITab<IFaceEx> materialFaces = unskinnedMesh.GetFacesFromMatID(materialId);
-                        for (int j = 0; j < materialFaces.Count; ++j)
-                        {
-#if MAX2017
-                            var faceIndexer = j;
-#else
-                            var faceIndexer = new IntPtr(j);
-#endif
-                            var face = materialFaces[faceIndexer];
-
-#if !MAX2017
-                            Marshal.FreeHGlobal(faceIndexer);
-#endif
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
-                        }
-                    }
-
-                    if (indexCount != 0)
-                    {
-
-                        subMesh.indexCount = indexCount;
-                        subMesh.verticesStart = minVertexIndex;
-                        subMesh.verticesCount = maxVertexIndex - minVertexIndex + 1;
-
-                        indexStart += indexCount;
-
-                        subMeshes.Add(subMesh);
-                    }
-                }
+                ExtractGeometry(vertices, indices, subMeshes, boneIds, skin, unskinnedMesh, hasUV, hasUV2, hasColor, hasAlpha, optimizeVertices, multiMatsCount, meshNode);
 
                 if (vertices.Count >= 65536)
                 {
@@ -412,11 +359,165 @@ namespace Max2Babylon
 
                 // Buffers - Indices
                 babylonMesh.indices = indices.ToArray();
+
+                // ------------------------
+                // ---- Morph targets -----
+                // ------------------------
+
+                // Retreive modifiers with morpher flag
+                List<IIGameModifier> modifiers = new List<IIGameModifier>();
+                for (int i = 0; i < meshNode.IGameObject.NumModifiers; i++)
+                {
+                    var modifier = meshNode.IGameObject.GetIGameModifier(i);
+                    if (modifier.ModifierType == Autodesk.Max.IGameModifier.ModType.Morpher)
+                    {
+                        modifiers.Add(modifier);
+                    }
+                }
+
+                // Cast modifiers to morphers
+                List<IIGameMorpher> morphers = modifiers.ConvertAll(new Converter<IIGameModifier, IIGameMorpher>(modifier => modifier.AsGameMorpher()));
+
+                var hasMorphTarget = false;
+                morphers.ForEach(morpher =>
+                {
+                    if (morpher.NumberOfMorphTargets > 0)
+                    {
+                        hasMorphTarget = true;
+                    }
+                });
+
+                if (hasMorphTarget)
+                {
+                    RaiseMessage("Export morph targets", 2);
+
+                    // Morph Target Manager
+                    var babylonMorphTargetManager = new BabylonMorphTargetManager();
+                    babylonScene.MorphTargetManagersList.Add(babylonMorphTargetManager);
+                    babylonMesh.morphTargetManagerId = babylonMorphTargetManager.id;
+
+                    // Morph Targets
+                    var babylonMorphTargets = new List<BabylonMorphTarget>();
+                    // All morphers are considered identical
+                    // Their targets are concatenated
+                    morphers.ForEach(morpher =>
+                    {
+                        for (int i = 0; i < morpher.NumberOfMorphTargets; i++)
+                        {
+                            // Morph target
+                            var maxMorphTarget = morpher.GetMorphTarget(i);
+                            var babylonMorphTarget = new BabylonMorphTarget
+                            {
+                                name = maxMorphTarget.Name
+                            };
+                            babylonMorphTargets.Add(babylonMorphTarget);
+
+                            // TODO - Influence
+                            babylonMorphTarget.influence = 0f;
+
+                            // Target geometry
+                            var targetVertices = ExtractVertices(maxMorphTarget, optimizeVertices);
+                            babylonMorphTarget.positions = targetVertices.SelectMany(v => new[] { v.Position.X, v.Position.Y, v.Position.Z }).ToArray();
+                            babylonMorphTarget.normals = targetVertices.SelectMany(v => new[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToArray();
+
+                            // Animations
+                            var animations = new List<BabylonAnimation>();
+                            var morphWeight = morpher.GetMorphWeight(i);
+                            ExportFloatGameController(morphWeight, "influence", animations);
+                            if (animations.Count > 0)
+                            {
+                                babylonMorphTarget.animations = animations.ToArray();
+                            }
+                        }
+                    });
+
+                    babylonMorphTargetManager.targets = babylonMorphTargets.ToArray();
+                }
             }
 
             babylonScene.MeshesList.Add(babylonMesh);
 
             return babylonMesh;
+        }
+
+        private List<GlobalVertex> ExtractVertices(IIGameNode maxMorphTarget, bool optimizeVertices)
+        {
+            var gameMesh = maxMorphTarget.IGameObject.AsGameMesh();
+            bool initialized = gameMesh.InitializeData; // needed, the property is in fact a method initializing the exporter that has wrongly been auto 
+                                                        // translated into a property because it has no parameters
+
+            var mtl = maxMorphTarget.NodeMaterial;
+            var multiMatsCount = 1;
+
+            if (mtl != null)
+            {
+                multiMatsCount = Math.Max(mtl.SubMaterialCount, 1);
+            }
+
+            var vertices = new List<GlobalVertex>();
+            ExtractGeometry(vertices, new List<int>(), new List<BabylonSubMesh>(), null, null, gameMesh, false, false, false, false, optimizeVertices, multiMatsCount, maxMorphTarget);
+            return vertices;
+        }
+
+        private void ExtractGeometry(List<GlobalVertex> vertices, List<int> indices, List<BabylonSubMesh> subMeshes, List<int> boneIds, IIGameSkin skin, IIGameMesh unskinnedMesh, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, bool optimizeVertices, int multiMatsCount, IIGameNode meshNode)
+        {
+            List<GlobalVertex>[] verticesAlreadyExported = null;
+
+            if (optimizeVertices)
+            {
+                verticesAlreadyExported = new List<GlobalVertex>[unskinnedMesh.NumberOfVerts];
+            }
+
+            var indexStart = 0;
+
+
+            for (int i = 0; i < multiMatsCount; ++i)
+            {
+                int materialId = meshNode.NodeMaterial?.GetMaterialID(i) ?? 0;
+                var indexCount = 0;
+                var minVertexIndex = int.MaxValue;
+                var maxVertexIndex = int.MinValue;
+                var subMesh = new BabylonSubMesh { indexStart = indexStart, materialIndex = i };
+
+                if (multiMatsCount == 1)
+                {
+                    for (int j = 0; j < unskinnedMesh.NumberOfFaces; ++j)
+                    {
+                        var face = unskinnedMesh.GetFace(j);
+                        ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
+                    }
+                }
+                else
+                {
+                    ITab<IFaceEx> materialFaces = unskinnedMesh.GetFacesFromMatID(materialId);
+                    for (int j = 0; j < materialFaces.Count; ++j)
+                    {
+#if MAX2017
+                        var faceIndexer = j;
+#else
+                            var faceIndexer = new IntPtr(j);
+#endif
+                        var face = materialFaces[faceIndexer];
+
+#if !MAX2017
+                            Marshal.FreeHGlobal(faceIndexer);
+#endif
+                        ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
+                    }
+                }
+
+                if (indexCount != 0)
+                {
+
+                    subMesh.indexCount = indexCount;
+                    subMesh.verticesStart = minVertexIndex;
+                    subMesh.verticesCount = maxVertexIndex - minVertexIndex + 1;
+
+                    indexStart += indexCount;
+
+                    subMeshes.Add(subMesh);
+                }
+            }
         }
 
         private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face, List<int> boneIds)
@@ -749,41 +850,59 @@ namespace Max2Babylon
 
         public void GenerateCoordinatesAnimations(IIGameNode meshNode, List<BabylonAnimation> animations)
         {
-            ExportVector3Animation("position", animations, key =>
+            if (meshNode.IGameControl.IsAnimated(IGameControlType.Pos) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.PosX) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.PosY) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.PosZ))
             {
-                var worldMatrix = meshNode.GetObjectTM(key);
-                if (meshNode.NodeParent != null)
+                ExportVector3Animation("position", animations, key =>
                 {
-                    var parentWorld = meshNode.NodeParent.GetObjectTM(key);
-                    worldMatrix.MultiplyBy(parentWorld.Inverse);
-                }
-                var trans = worldMatrix.Translation;
-                return new[] { trans.X, trans.Y, trans.Z };
-            });
+                    var worldMatrix = meshNode.GetObjectTM(key);
+                    if (meshNode.NodeParent != null)
+                    {
+                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                        worldMatrix.MultiplyBy(parentWorld.Inverse);
+                    }
+                    var trans = worldMatrix.Translation;
+                    return new[] { trans.X, trans.Y, trans.Z };
+                });
+            }
 
-            ExportQuaternionAnimation("rotationQuaternion", animations, key =>
+            if (meshNode.IGameControl.IsAnimated(IGameControlType.Rot) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.EulerX) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.EulerY) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.EulerZ))
             {
-                var worldMatrix = meshNode.GetObjectTM(key);
-                if (meshNode.NodeParent != null)
+                ExportQuaternionAnimation("rotationQuaternion", animations, key =>
                 {
-                    var parentWorld = meshNode.NodeParent.GetObjectTM(key);
-                    worldMatrix.MultiplyBy(parentWorld.Inverse);
-                }
-                var rot = worldMatrix.Rotation;
-                return new[] { rot.X, rot.Y, rot.Z, -rot.W };
-            });
+                    var worldMatrix = meshNode.GetObjectTM(key);
+                    if (meshNode.NodeParent != null)
+                    {
+                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                        worldMatrix.MultiplyBy(parentWorld.Inverse);
+                    }
 
-            ExportVector3Animation("scaling", animations, key =>
+
+                    var rot = worldMatrix.Rotation;
+                    return new[] { rot.X, rot.Y, rot.Z, -rot.W };
+                });
+            }
+
+            if (meshNode.IGameControl.IsAnimated(IGameControlType.Scale))
             {
-                var worldMatrix = meshNode.GetObjectTM(key);
-                if (meshNode.NodeParent != null)
+                ExportVector3Animation("scaling", animations, key =>
                 {
-                    var parentWorld = meshNode.NodeParent.GetObjectTM(key);
-                    worldMatrix.MultiplyBy(parentWorld.Inverse);
-                }
-                var scale = worldMatrix.Scaling;
-                return new[] { scale.X, scale.Y, scale.Z };
-            });
+                    var worldMatrix = meshNode.GetObjectTM(key);
+                    if (meshNode.NodeParent != null)
+                    {
+                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                        worldMatrix.MultiplyBy(parentWorld.Inverse);
+                    }
+                    var scale = worldMatrix.Scaling;
+
+                    return new[] { scale.X, scale.Y, scale.Z };
+                });
+            }
         }
     }
 }
