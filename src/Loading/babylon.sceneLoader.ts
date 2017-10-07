@@ -274,7 +274,6 @@
                 else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
-
                         if (onSuccess) {
                             try {
                                 scene.importedMeshesFiles.push(rootUrl + sceneFilename);
@@ -363,7 +362,6 @@
                 } else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin.loadAsync(scene, data, rootUrl, () => {
-
                         if (onSuccess) {
                             onSuccess(scene);
                         }
