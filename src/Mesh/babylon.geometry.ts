@@ -959,9 +959,8 @@
                 }
 
                 if (parsedGeometry.matricesWeights) {
-                    var smesh: any; smesh = mesh;
-                    if (smesh.skeletonId > -1) {
-                        var skeleton = scene.getLastSkeletonByID(smesh.skeletonId);
+                    if (parsedGeometry.skeletonId > -1) {
+                        var skeleton = scene.getLastSkeletonByID(parsedGeometry.skeletonId);
                         var noinfluenceBoneIndex = skeleton.bones.length;
                         var matricesIndices: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
                         var matricesIndicesExtra: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
