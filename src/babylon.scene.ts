@@ -96,6 +96,8 @@
         private static _FOGMODE_EXP2 = 2;
         private static _FOGMODE_LINEAR = 3;
 
+        private static _uniqueIdCounter = 0;        
+
         public static MinDeltaTime = 1.0;
         public static MaxDeltaTime = 1000.0;
 
@@ -794,8 +796,6 @@
 
         private _depthRenderer: DepthRenderer;
         private _geometryBufferRenderer: GeometryBufferRenderer;
-
-        private _uniqueIdCounter = 0;
 
         private _pickedDownMesh: AbstractMesh;
         private _pickedUpMesh: AbstractMesh;
@@ -1957,13 +1957,12 @@
         // Methods
 
         public getUniqueId() {
-            var result = this._uniqueIdCounter;
-            this._uniqueIdCounter++;
+            var result = Scene._uniqueIdCounter;
+            Scene._uniqueIdCounter++;
             return result;
         }
 
         public addMesh(newMesh: AbstractMesh) {
-            newMesh.uniqueId = this.getUniqueId();
             var position = this.meshes.push(newMesh);
 
             //notify the collision coordinator
@@ -2046,7 +2045,6 @@
         }
 
         public addLight(newLight: Light) {
-            newLight.uniqueId = this.getUniqueId();
             this.lights.push(newLight);
             this.sortLightsByPriority();
 
@@ -2060,7 +2058,6 @@
         }
 
         public addCamera(newCamera: Camera) {
-            newCamera.uniqueId = this.getUniqueId();
             var position = this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
