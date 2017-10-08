@@ -10,6 +10,15 @@ module BABYLON.GUI {
 
         private _lines: any[];
         private _totalHeight: number;
+        private _resizeToFit: boolean = false;
+
+        get resizeToFit(): boolean {
+            return this._resizeToFit;
+        }
+
+        set resizeToFit(value: boolean) {
+            this._resizeToFit = value;
+        }
 
         public get textWrapping(): boolean {
             return this._textWrapping;
@@ -175,8 +184,10 @@ module BABYLON.GUI {
                 if (line.width > maxLineWidth) maxLineWidth = line.width;
             }
 
-            this.width = maxLineWidth + 'px';
-            this.height = rootY + this._fontOffset.height + 'px'; //TODO: need to actually measure height
+            if (this._resizeToFit) {
+                this.width = maxLineWidth + 'px';
+                this.height = this._fontOffset.height * this._lines.length + 'px';
+            }
 
             //console.log('width', maxLineWidth);
             //console.log('height', rootY, this._fontOffset.height);
