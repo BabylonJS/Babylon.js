@@ -959,7 +959,7 @@
                 }
 
                 if (parsedGeometry.matricesWeights) {
-                    Geometry._CleanMatricesWeights(parsedGeometry,mesh);
+                    Geometry._CleanMatricesWeights(parsedGeometry, mesh);
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
                 }
 
