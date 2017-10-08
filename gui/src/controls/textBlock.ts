@@ -115,7 +115,7 @@ module BABYLON.GUI {
             this._lines = [];
             var _lines = this.text.split("\n");
 
-            if (this._textWrapping) {
+            if (this._textWrapping && !this._resizeToFit) {
                 for(var _line of _lines) {
                     this._lines.push(this._parseLineWithTextWrapping(_line, context));
                 }
