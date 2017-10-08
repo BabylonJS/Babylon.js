@@ -95,7 +95,7 @@ module BABYLON {
             this.name = name;
             this.id = name;
             this._scene = scene || Engine.LastCreatedScene;
-            this.uniqueId = scene.getUniqueId();
+            this.uniqueId = this._scene.getUniqueId();
             this._initCache();
         }
 
