@@ -959,19 +959,12 @@
                 }
 
                 if (parsedGeometry.matricesWeights) {
-                    if (parsedGeometry.skeletonId > -1) {
-                        var skeleton = scene.getLastSkeletonByID(parsedGeometry.skeletonId);
-                        var noinfluenceBoneIndex = skeleton.bones.length;
-                        var matricesIndices: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
-                        var matricesIndicesExtra: number[] | Float32Array = mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
-                        Geometry._CleanMatricesWeights(parsedGeometry.matricesWeights,matricesIndex,parsedGeometry.matricesWeightsExtra,matricesIndicesExtra,noinfluenceBoneIndex,parsedGeometry.numBoneInfluencers);
-                        mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
-                        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
-                        if (parsedGeometry.matricesWeightsExtra) {       
-                            mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
-                            mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
-                        }
-                    }
+                    Geometry._CleanMatricesWeights(parsedGeometry,mesh);
+                    mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
+                }
+
+                if (parsedGeometry.matricesWeightsExtra) {       
+                    mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
 
                 mesh.setIndices(parsedGeometry.indices);
@@ -1002,18 +995,32 @@
             }
         }
 
-        private static _CleanMatricesWeights(matricesWeights: number[] | Float32Array, matricesIndices: number[] | Float32Array, matricesWeightsExtra: number[] | Float32Array, matricesIndicesExtra: number[] | Float32Array, noinfluenceBoneIndex:number, influencers: number): void {
+        private static _CleanMatricesWeights(parsedGeometry:any, mesh:Mesh): void {
+            const epsilon: number = 1e-3;
             if (!SceneLoader.CleanBoneMatrixWeights) {
                 return;
             }
+            let noInfluenceBoneIndex = 0.0;
+            if (parsedGeometry.skeletonId > -1) {
+                let skeleton = mesh.getScene().getLastSkeletonByID(parsedGeometry.skeletonId);
+                noInfluenceBoneIndex = skeleton.bones.length;
+            } else {
+                return;
+            }
+            let matricesIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+            let matricesIndicesExtra = mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
+            let matricesWeights = parsedGeometry.matricesWeights;
+            let matricesWeightsExtra = parsedGeometry.matricesWeightsExtra;
+            let influencers = parsedGeometry.numBoneInfluencer;
             let size = matricesWeights.length;
+
             for (var i = 0; i < size; i += 4) {
                 let weight = 0.0;
                 let firstZeroWeight = -1;
                 for (var j = 0; j < 4; j++) {
                     let w = matricesWeights[i + j];
                     weight += w;
-                    if (w < 1e-3 && firstZeroWeight < 0) {
+                    if (w < epsilon && firstZeroWeight < 0) {
                         firstZeroWeight = j;
                     }
                 }
@@ -1021,16 +1028,16 @@
                     for (var j = 0; j < 4; j++) {
                         let w = matricesWeightsExtra[i + j];
                         weight += w;
-                        if (w < 1e-3 && firstZeroWeight < 0) {
+                        if (w < epsilon && firstZeroWeight < 0) {
                             firstZeroWeight = j + 4;
                         }
                     }
                 }
-                if (firstZeroWeight < 0  || firstZeroWeight > (influencers-1)) {
-                    firstZeroWeight = influencers-1;
+                if (firstZeroWeight < 0  || firstZeroWeight > (influencers - 1)) {
+                    firstZeroWeight = influencers - 1;
                 }
-                if (weight > 1e-3) {
-                    let mweight = 1.0/weight;
+                if (weight > epsilon) {
+                    let mweight = 1.0 / weight;
                     for (var j = 0; j < 4; j++) {
                         matricesWeights[i + j] *= mweight;
                     }
@@ -1040,14 +1047,19 @@
                         }    
                     }
                 } else {
-                    if (firstZeroWeight>=4) {
-                        matricesWeightsExtra[i+firstZeroWeight-4] = 1.0 - weight;
-                        matricesIndicesExtra[i+firstZeroWeight-4] = noinfluenceBoneIndex;
+                    if (firstZeroWeight >= 4) {
+                        matricesWeightsExtra[i + firstZeroWeight - 4] = 1.0 - weight;
+                        matricesIndicesExtra[i + firstZeroWeight - 4] = noInfluenceBoneIndex;
                     } else {
-                        matricesWeights[i+firstZeroWeight] = 1.0 - weight;
-                        matricesIndices[i+firstZeroWeight] = noinfluenceBoneIndex;    
+                        matricesWeights[i + firstZeroWeight] = 1.0 - weight;
+                        matricesIndices[i + firstZeroWeight] = noInfluenceBoneIndex;
                     }
                 }
+            }
+
+            mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
+            if (parsedGeometry.matricesWeightsExtra) {       
+                mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
             }
         }
 
