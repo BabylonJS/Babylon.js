@@ -86,6 +86,7 @@ module BABYLON.GUI {
                     break;
             }
 
+
             context.fillText(text, this._currentMeasure.left + x, y);
         }
 
@@ -165,10 +166,20 @@ module BABYLON.GUI {
 
             rootY += this._currentMeasure.top;
 
+            var maxLineWidth: number = 0;
+
             for (var line of this._lines) {
                 this._drawText(line.text, line.width, rootY, context);
                 rootY += this._fontOffset.height;
+
+                if (line.width > maxLineWidth) maxLineWidth = line.width;
             }
+
+            this.width = maxLineWidth + 'px';
+            this.height = rootY + this._fontOffset.height + 'px'; //TODO: need to actually measure height
+
+            //console.log('width', maxLineWidth);
+            //console.log('height', rootY, this._fontOffset.height);
         }
     }
 }
