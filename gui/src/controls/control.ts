@@ -442,6 +442,15 @@ module BABYLON.GUI {
             return this;
         }
 
+        public getParentLocalCoordinates(globalCoordinates: Vector2): Vector2 {
+            var result = Vector2.Zero();
+
+            result.x = globalCoordinates.x - this._cachedParentMeasure.left;
+            result.y = globalCoordinates.y - this._cachedParentMeasure.top;
+
+            return result;
+        }
+        
         public moveToVector3(position: Vector3, scene: Scene): void {
             if (!this._host || this._root !== this._host._rootContainer) {
                 Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
