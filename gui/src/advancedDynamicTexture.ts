@@ -102,10 +102,12 @@ module BABYLON.GUI {
                 return;
             }
 
-            if (!this._focusedControl) {
-                control.onFocus();
-            } else {
+            if (this._focusedControl) {
                 this._focusedControl.onBlur();
+            }
+
+            if (control) {
+                control.onFocus();
             }
 
             this._focusedControl = control;
