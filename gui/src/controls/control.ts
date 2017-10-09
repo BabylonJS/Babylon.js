@@ -890,6 +890,11 @@ module BABYLON.GUI {
             this.onPointerMoveObservable.clear();
             this.onPointerOutObservable.clear();
             this.onPointerUpObservable.clear();
+
+            if (this._root) {
+                this._root.removeControl(this);
+                this._root = null;
+            }
         }
 
         // Statics
@@ -994,7 +999,6 @@ module BABYLON.GUI {
         }
 
         protected static drawEllipse(x:number, y:number, width:number, height:number, context:CanvasRenderingContext2D):void{
-
             context.translate(x, y);
             context.scale(width, height);
 
@@ -1003,8 +1007,7 @@ module BABYLON.GUI {
             context.closePath();
 
             context.scale(1/width, 1/height);
-            context.translate(-x, -y);
-            
+            context.translate(-x, -y);            
         }
     }    
 }

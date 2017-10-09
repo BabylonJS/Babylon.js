@@ -1550,6 +1550,10 @@ var BABYLON;
                 this.onPointerMoveObservable.clear();
                 this.onPointerOutObservable.clear();
                 this.onPointerUpObservable.clear();
+                if (this._root) {
+                    this._root.removeControl(this);
+                    this._root = null;
+                }
             };
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
                 get: function () {
