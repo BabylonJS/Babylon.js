@@ -12352,6 +12352,7 @@ var BABYLON;
             _this._collisionsScalingMatrix = BABYLON.Matrix.Zero();
             _this._isDirty = false;
             _this._pivotMatrix = BABYLON.Matrix.Identity();
+            _this._postMultiplyPivotMatrix = false;
             _this._isDisposed = false;
             _this._renderId = 0;
             _this._intersectionsInProgress = new Array();
@@ -13287,9 +13288,14 @@ var BABYLON;
          * Sets a new pivot matrix to the mesh.
          * Returns the AbstractMesh.
          */
-        AbstractMesh.prototype.setPivotMatrix = function (matrix) {
+        AbstractMesh.prototype.setPivotMatrix = function (matrix, postMultiplyPivotMatrix) {
+            if (postMultiplyPivotMatrix === void 0) { postMultiplyPivotMatrix = false; }
             this._pivotMatrix = matrix;
             this._cache.pivotMatrixUpdated = true;
+            this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
+            if (this._postMultiplyPivotMatrix) {
+                this._pivotMatrixInverse = BABYLON.Matrix.Invert(matrix);
+            }
             return this;
         };
         /**
@@ -13524,6 +13530,10 @@ var BABYLON;
             }
             else {
                 this._worldMatrix.copyFrom(this._localWorld);
+            }
+            // Post multiply inverse of pivotMatrix
+            if (this._postMultiplyPivotMatrix) {
+                this._worldMatrix.multiplyToRef(this._pivotMatrixInverse, this._worldMatrix);
             }
             // Bounding info
             this._updateBoundingInfo();
