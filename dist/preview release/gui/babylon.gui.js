@@ -1554,6 +1554,10 @@ var BABYLON;
                     this._root.removeControl(this);
                     this._root = null;
                 }
+                var index = this._host._linkedControls.indexOf(this);
+                if (index > -1) {
+                    this.linkWithMesh(null);
+                }
             };
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
                 get: function () {
