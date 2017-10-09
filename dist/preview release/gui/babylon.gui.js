@@ -280,7 +280,7 @@ var BABYLON;
                 var measure = new GUI.Measure(0, 0, renderWidth, renderHeight);
                 this._rootContainer._draw(measure, context);
             };
-            AdvancedDynamicTexture.prototype._doPicking = function (x, y, type) {
+            AdvancedDynamicTexture.prototype._doPicking = function (x, y, type, buttonIndex) {
                 var scene = this.getScene();
                 var engine = scene.getEngine();
                 var textureSize = this.getSize();
@@ -289,10 +289,10 @@ var BABYLON;
                     y = y * (textureSize.height / engine.getRenderHeight());
                 }
                 if (this._capturingControl) {
-                    this._capturingControl._processObservables(type, x, y);
+                    this._capturingControl._processObservables(type, x, y, buttonIndex);
                     return;
                 }
-                if (!this._rootContainer._processPicking(x, y, type)) {
+                if (!this._rootContainer._processPicking(x, y, type, buttonIndex)) {
                     if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (this._lastControlOver) {
                             this._lastControlOver._onPointerOut();
@@ -317,7 +317,7 @@ var BABYLON;
                     var x = (scene.pointerX / engine.getHardwareScalingLevel() - viewport.x * engine.getRenderWidth()) / viewport.width;
                     var y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
                     _this._shouldBlockPointer = false;
-                    _this._doPicking(x, y, pi.type);
+                    _this._doPicking(x, y, pi.type, pi.event.button);
                     pi.skipOnPointerObservable = _this._shouldBlockPointer;
                 });
                 this._attachToOnPointerOut(scene);
@@ -335,7 +335,7 @@ var BABYLON;
                     if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                         var uv = pi.pickInfo.getTextureCoordinates();
                         var size = _this.getSize();
-                        _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type);
+                        _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pi.event.button);
                     }
                     else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
                         if (_this._lastControlDown) {
@@ -470,10 +470,22 @@ var BABYLON;
 //# sourceMappingURL=measure.js.map
 
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        var Vector2WithInfo = (function (_super) {
+            __extends(Vector2WithInfo, _super);
+            function Vector2WithInfo(source, buttonIndex) {
+                if (buttonIndex === void 0) { buttonIndex = 0; }
+                var _this = _super.call(this, source.x, source.y) || this;
+                _this.buttonIndex = buttonIndex;
+                return _this;
+            }
+            return Vector2WithInfo;
+        }(BABYLON.Vector2));
+        GUI.Vector2WithInfo = Vector2WithInfo;
         var Matrix2D = (function () {
             function Matrix2D(m00, m01, m10, m11, m20, m21) {
                 this.m = new Float32Array(6);
@@ -1445,14 +1457,14 @@ var BABYLON;
                 }
                 return true;
             };
-            Control.prototype._processPicking = function (x, y, type) {
+            Control.prototype._processPicking = function (x, y, type, buttonIndex) {
                 if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
                     return false;
                 }
                 if (!this.contains(x, y)) {
                     return false;
                 }
-                this._processObservables(type, x, y);
+                this._processObservables(type, x, y, buttonIndex);
                 return true;
             };
             Control.prototype._onPointerMove = function (coordinates) {
@@ -1476,26 +1488,26 @@ var BABYLON;
                     this.onPointerOutObservable.notifyObservers(this);
                 }
             };
-            Control.prototype._onPointerDown = function (coordinates) {
+            Control.prototype._onPointerDown = function (coordinates, buttonIndex) {
                 if (this._downCount !== 0) {
                     return false;
                 }
                 this._downCount++;
                 if (this.onPointerDownObservable.hasObservers()) {
-                    this.onPointerDownObservable.notifyObservers(coordinates);
+                    this.onPointerDownObservable.notifyObservers(new GUI.Vector2WithInfo(coordinates, buttonIndex));
                 }
                 return true;
             };
-            Control.prototype._onPointerUp = function (coordinates) {
+            Control.prototype._onPointerUp = function (coordinates, buttonIndex) {
                 this._downCount = 0;
                 if (this.onPointerUpObservable.hasObservers()) {
-                    this.onPointerUpObservable.notifyObservers(coordinates);
+                    this.onPointerUpObservable.notifyObservers(new GUI.Vector2WithInfo(coordinates, buttonIndex));
                 }
             };
             Control.prototype.forcePointerUp = function () {
-                this._onPointerUp(BABYLON.Vector2.Zero());
+                this._onPointerUp(BABYLON.Vector2.Zero(), 0);
             };
-            Control.prototype._processObservables = function (type, x, y) {
+            Control.prototype._processObservables = function (type, x, y, buttonIndex) {
                 this._dummyVector2.copyFromFloats(x, y);
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                     this._onPointerMove(this._dummyVector2);
@@ -1510,14 +1522,14 @@ var BABYLON;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                    this._onPointerDown(this._dummyVector2);
+                    this._onPointerDown(this._dummyVector2, buttonIndex);
                     this._host._lastControlDown = this;
                     this._host._lastPickedControl = this;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERUP) {
                     if (this._host._lastControlDown) {
-                        this._host._lastControlDown._onPointerUp(this._dummyVector2);
+                        this._host._lastControlDown._onPointerUp(this._dummyVector2, buttonIndex);
                     }
                     this._host._lastControlDown = null;
                     return true;
@@ -1796,7 +1808,7 @@ var BABYLON;
                 }
                 context.restore();
             };
-            Container.prototype._processPicking = function (x, y, type) {
+            Container.prototype._processPicking = function (x, y, type, buttonIndex) {
                 if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                     return false;
                 }
@@ -1806,11 +1818,11 @@ var BABYLON;
                 // Checking backwards to pick closest first
                 for (var index = this._children.length - 1; index >= 0; index--) {
                     var child = this._children[index];
-                    if (child._processPicking(x, y, type)) {
+                    if (child._processPicking(x, y, type, buttonIndex)) {
                         return true;
                     }
                 }
-                return this._processObservables(type, x, y);
+                return this._processObservables(type, x, y, buttonIndex);
             };
             Container.prototype._clipForChildren = function (context) {
                 // DO nothing
@@ -2526,8 +2538,8 @@ var BABYLON;
             Slider.prototype._updateValueFromPointer = function (x) {
                 this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
             };
-            Slider.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            Slider.prototype._onPointerDown = function (coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates, buttonIndex)) {
                     return false;
                 }
                 this._pointerIsDown = true;
@@ -2540,10 +2552,10 @@ var BABYLON;
                     this._updateValueFromPointer(coordinates.x);
                 }
             };
-            Slider.prototype._onPointerUp = function (coordinates) {
+            Slider.prototype._onPointerUp = function (coordinates, buttonIndex) {
                 this._pointerIsDown = false;
                 this._host._capturingControl = null;
-                _super.prototype._onPointerUp.call(this, coordinates);
+                _super.prototype._onPointerUp.call(this, coordinates, buttonIndex);
             };
             return Slider;
         }(GUI.Control));
@@ -2654,8 +2666,8 @@ var BABYLON;
                 context.restore();
             };
             // Events
-            Checkbox.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            Checkbox.prototype._onPointerDown = function (coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates, buttonIndex)) {
                     return false;
                 }
                 this.isChecked = !this.isChecked;
@@ -2791,8 +2803,8 @@ var BABYLON;
                 context.restore();
             };
             // Events
-            RadioButton.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            RadioButton.prototype._onPointerDown = function (coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates, buttonIndex)) {
                     return false;
                 }
                 this.isChecked = !this.isChecked;
@@ -3259,14 +3271,14 @@ var BABYLON;
                 return "Button";
             };
             // While being a container, the button behaves like a control.
-            Button.prototype._processPicking = function (x, y, type) {
+            Button.prototype._processPicking = function (x, y, type, buttonIndex) {
                 if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                     return false;
                 }
                 if (!_super.prototype.contains.call(this, x, y)) {
                     return false;
                 }
-                this._processObservables(type, x, y);
+                this._processObservables(type, x, y, buttonIndex);
                 return true;
             };
             Button.prototype._onPointerEnter = function () {
@@ -3284,8 +3296,8 @@ var BABYLON;
                 }
                 _super.prototype._onPointerOut.call(this);
             };
-            Button.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            Button.prototype._onPointerDown = function (coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates, buttonIndex)) {
                     return false;
                 }
                 if (this.pointerDownAnimation) {
@@ -3293,11 +3305,11 @@ var BABYLON;
                 }
                 return true;
             };
-            Button.prototype._onPointerUp = function (coordinates) {
+            Button.prototype._onPointerUp = function (coordinates, buttonIndex) {
                 if (this.pointerUpAnimation) {
                     this.pointerUpAnimation();
                 }
-                _super.prototype._onPointerUp.call(this, coordinates);
+                _super.prototype._onPointerUp.call(this, coordinates, buttonIndex);
             };
             // Statics
             Button.CreateImageButton = function (name, text, imageUrl) {
@@ -3654,8 +3666,8 @@ var BABYLON;
                 }
                 return false;
             };
-            ColorPicker.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            ColorPicker.prototype._onPointerDown = function (coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates, buttonIndex)) {
                     return false;
                 }
                 this._pointerIsDown = true;
@@ -3677,10 +3689,10 @@ var BABYLON;
                 }
                 _super.prototype._onPointerMove.call(this, coordinates);
             };
-            ColorPicker.prototype._onPointerUp = function (coordinates) {
+            ColorPicker.prototype._onPointerUp = function (coordinates, buttonIndex) {
                 this._pointerIsDown = false;
                 this._host._capturingControl = null;
-                _super.prototype._onPointerUp.call(this, coordinates);
+                _super.prototype._onPointerUp.call(this, coordinates, buttonIndex);
             };
             return ColorPicker;
         }(GUI.Control));
@@ -4036,15 +4048,15 @@ var BABYLON;
                 }
                 context.restore();
             };
-            InputText.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            InputText.prototype._onPointerDown = function (coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, coordinates, buttonIndex)) {
                     return false;
                 }
                 this._host.focusedControl = this;
                 return true;
             };
-            InputText.prototype._onPointerUp = function (coordinates) {
-                _super.prototype._onPointerUp.call(this, coordinates);
+            InputText.prototype._onPointerUp = function (coordinates, buttonIndex) {
+                _super.prototype._onPointerUp.call(this, coordinates, buttonIndex);
             };
             InputText.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);

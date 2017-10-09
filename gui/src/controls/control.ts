@@ -75,13 +75,13 @@ module BABYLON.GUI {
         * An event triggered when the pointer taps the control
         * @type {BABYLON.Observable}
         */
-        public onPointerDownObservable = new Observable<Vector2>();     
+        public onPointerDownObservable = new Observable<Vector2WithInfo>();     
 
         /**
         * An event triggered when pointer up
         * @type {BABYLON.Observable}
         */
-        public onPointerUpObservable = new Observable<Vector2>();     
+        public onPointerUpObservable = new Observable<Vector2WithInfo>();     
 
         /**
         * An event triggered when pointer enters the control
@@ -773,7 +773,7 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _processPicking(x: number, y: number, type: number): boolean {
+        public _processPicking(x: number, y: number, type: number, buttonIndex: number): boolean {
             if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
                 return false;
             }
@@ -782,7 +782,7 @@ module BABYLON.GUI {
                 return false;
             }
 
-            this._processObservables(type, x, y);
+            this._processObservables(type, x, y, buttonIndex);
 
             return true;
         }
@@ -813,31 +813,31 @@ module BABYLON.GUI {
             }
         }
 
-        protected _onPointerDown(coordinates: Vector2): boolean {
+        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
             if (this._downCount !== 0) {
                 return false;
             }
 
             this._downCount++;            
             if (this.onPointerDownObservable.hasObservers()) {
-                this.onPointerDownObservable.notifyObservers(coordinates);
+                this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex));
             }
 
             return true;
         }
 
-        protected _onPointerUp(coordinates: Vector2): void {
+        protected _onPointerUp(coordinates: Vector2, buttonIndex: number): void {
             this._downCount = 0;
             if (this.onPointerUpObservable.hasObservers()) {
-                this.onPointerUpObservable.notifyObservers(coordinates);
-            }
+                this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex));
+            }           
         }
 
         public forcePointerUp() {
-            this._onPointerUp(Vector2.Zero());
+            this._onPointerUp(Vector2.Zero(), 0);
         }
 
-        public _processObservables(type: number, x: number, y: number): boolean {
+        public _processObservables(type: number, x: number, y: number, buttonIndex: number): boolean {
             this._dummyVector2.copyFromFloats(x, y);
             if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                 this._onPointerMove(this._dummyVector2);
@@ -856,7 +856,7 @@ module BABYLON.GUI {
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                this._onPointerDown(this._dummyVector2);
+                this._onPointerDown(this._dummyVector2, buttonIndex);
                 this._host._lastControlDown = this;
                 this._host._lastPickedControl = this;
                 return true;
@@ -864,7 +864,7 @@ module BABYLON.GUI {
 
             if (type === BABYLON.PointerEventTypes.POINTERUP) {
                 if (this._host._lastControlDown) {
-                    this._host._lastControlDown._onPointerUp(this._dummyVector2);
+                    this._host._lastControlDown._onPointerUp(this._dummyVector2, buttonIndex);
                 }
                 this._host._lastControlDown = null;
                 return true;
