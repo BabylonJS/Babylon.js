@@ -168,7 +168,11 @@ module BABYLON.GUI {
             this.onFocusObservable.notifyObservers(this);
 
             if (navigator.userAgent.indexOf("Mobile") !== -1) {
-                this.text = prompt(this.promptMessage);
+                let value = prompt(this.promptMessage);
+
+                if (value !== null) {
+                    this.text = value;
+                }
                 this._host.focusedControl = null;
                 return;
             }
