@@ -14,41 +14,43 @@ module BABYLON.GLTF2.Extensions {
             return "KHR_materials_pbrSpecularGlossiness";
         }
 
-        protected loadMaterial(loader: GLTFLoader, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
-            if (!material.extensions) {
-                return false;
-            }
-
-            var properties = material.extensions[this.name] as IKHRMaterialsPbrSpecularGlossiness;
-            if (!properties) {
-                return false;
-            }
-
-            loader.createPbrMaterial(material);
-            loader.loadMaterialBaseProperties(material);
-            this._loadSpecularGlossinessProperties(loader, material, properties);
-            assign(material.babylonMaterial, true);
-            return true;
+        protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
+            return this._loadExtension<IKHRMaterialsPbrSpecularGlossiness>(material, (extension, onComplete) => {
+                loader._createPbrMaterial(material);
+                loader._loadMaterialBaseProperties(context, material);
+                this._loadSpecularGlossinessProperties(loader, context, material, extension);
+                assign(material.babylonMaterial, true);
+            });
         }
 
-        private _loadSpecularGlossinessProperties(loader: GLTFLoader, material: IGLTFMaterial, properties: IKHRMaterialsPbrSpecularGlossiness): void {
+        private _loadSpecularGlossinessProperties(loader: GLTFLoader, context: string, material: IGLTFMaterial, properties: IKHRMaterialsPbrSpecularGlossiness): void {
             var babylonMaterial = material.babylonMaterial as PBRMaterial;
 
             babylonMaterial.albedoColor = properties.diffuseFactor ? Color3.FromArray(properties.diffuseFactor) : new Color3(1, 1, 1);
             babylonMaterial.reflectivityColor = properties.specularFactor ? Color3.FromArray(properties.specularFactor) : new Color3(1, 1, 1);
-            babylonMaterial.microSurface = properties.glossinessFactor === undefined ? 1 : properties.glossinessFactor;
+            babylonMaterial.microSurface = properties.glossinessFactor == null ? 1 : properties.glossinessFactor;
 
             if (properties.diffuseTexture) {
-                babylonMaterial.albedoTexture = loader.loadTexture(properties.diffuseTexture);
+                var texture = GLTFUtils.GetArrayItem(loader._gltf.textures, properties.diffuseTexture.index);
+                if (!texture) {
+                    throw new Error(context + ": Failed to find diffuse texture " + properties.diffuseTexture.index);
+                }
+
+                babylonMaterial.albedoTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.diffuseTexture.texCoord);
             }
 
             if (properties.specularGlossinessTexture) {
-                babylonMaterial.reflectivityTexture = loader.loadTexture(properties.specularGlossinessTexture);
+                var texture = GLTFUtils.GetArrayItem(loader._gltf.textures, properties.specularGlossinessTexture.index);
+                if (!texture) {
+                    throw new Error(context + ": Failed to find diffuse texture " + properties.specularGlossinessTexture.index);
+                }
+
+                babylonMaterial.reflectivityTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.specularGlossinessTexture.texCoord);
                 babylonMaterial.reflectivityTexture.hasAlpha = true;
                 babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
             }
 
-            loader.loadMaterialAlphaProperties(material, properties.diffuseFactor);
+            loader._loadMaterialAlphaProperties(context, material, properties.diffuseFactor);
         }
     }
 

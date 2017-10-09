@@ -84,7 +84,7 @@ namespace Max2Babylon
                 idGroupInstance = -1
             };
             scene.NodesList.Clear(); // Only root node is listed in node list
-            GLTFNode gltfRootNode = ExportAbstractMesh(rootNode, gltf, null);
+            GLTFNode gltfRootNode = ExportAbstractMesh(rootNode, gltf, null, null);
             gltfRootNode.ChildrenList.AddRange(tmpNodesList);
 
             // Materials
@@ -96,27 +96,47 @@ namespace Max2Babylon
             };
             RaiseMessage(string.Format("GLTFExporter | Nb materials exported: {0}", gltf.MaterialsList.Count), Color.Gray, 1);
 
+            // Prepare buffers
+            gltf.BuffersList.ForEach(buffer =>
+            {
+                buffer.BufferViews.ForEach(bufferView =>
+                {
+                    bufferView.Accessors.ForEach(accessor =>
+                    {
+                        // Chunk must be padded with trailing zeros (0x00) to satisfy alignment requirements
+                        accessor.bytesList = new List<byte>(padChunk(accessor.bytesList.ToArray(), 4, 0x00));
+
+                        // Update byte properties
+                        accessor.byteOffset = bufferView.byteLength;
+                        bufferView.byteLength += accessor.bytesList.Count;
+                        // Merge bytes
+                        bufferView.bytesList.AddRange(accessor.bytesList);
+                    });
+                    // Update byte properties
+                    bufferView.byteOffset = buffer.byteLength;
+                    buffer.byteLength += bufferView.bytesList.Count;
+                    // Merge bytes
+                    buffer.bytesList.AddRange(bufferView.bytesList);
+                });
+            });
+
             // Cast lists to arrays
             gltf.Prepare();
 
             // Output
             RaiseMessage("GLTFExporter | Saving to output file");
             
+            // Write .gltf file
             string outputGltfFile = Path.ChangeExtension(outputFile, "gltf");
             File.WriteAllText(outputGltfFile, gltfToJson(gltf));
 
-            // Write data to binary file
+            // Write .bin file
             string outputBinaryFile = Path.ChangeExtension(outputFile, "bin");
             using (BinaryWriter writer = new BinaryWriter(File.Open(outputBinaryFile, FileMode.Create)))
             {
                 gltf.BuffersList.ForEach(buffer =>
                 {
-                    buffer.bytesList = new List<byte>();
-                    gltf.BufferViewsList.FindAll(bufferView => bufferView.buffer == buffer.index).ForEach(bufferView =>
-                    {
-                        bufferView.bytesList.ForEach(b => writer.Write(b));
-                        buffer.bytesList.AddRange(bufferView.bytesList);
-                    });
+                    buffer.bytesList.ForEach(b => writer.Write(b));
                 });
             }
 
@@ -234,7 +254,7 @@ namespace Max2Babylon
             if (type == typeof(BabylonAbstractMesh) ||
                 type.IsSubclassOf(typeof(BabylonAbstractMesh)))
             {
-                gltfNode = ExportAbstractMesh(babylonNode as BabylonAbstractMesh, gltf, gltfParentNode);
+                gltfNode = ExportAbstractMesh(babylonNode as BabylonAbstractMesh, gltf, gltfParentNode, babylonScene);
             }
             else if (type == typeof(BabylonCamera))
             {
