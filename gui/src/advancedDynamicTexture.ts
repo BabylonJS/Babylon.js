@@ -30,6 +30,7 @@ module BABYLON.GUI {
         private _idealHeight = 0;
         private _renderAtIdealSize = false;
         private _focusedControl: IFocusableControl;
+        private _blockNextFocusCheck = false;
 
         public get background(): string {
             return this._background;
@@ -102,10 +103,12 @@ module BABYLON.GUI {
                 return;
             }
 
-            if (!this._focusedControl) {
-                control.onFocus();
-            } else {
+            if (this._focusedControl) {
                 this._focusedControl.onBlur();
+            }
+
+            if (control) {
+                control.onFocus();
             }
 
             this._focusedControl = control;
@@ -385,8 +388,20 @@ module BABYLON.GUI {
             mesh.enablePointerMoveEvents = supportPointerMove;
             this._attachToOnPointerOut(scene);
         }
-
+        
+        public moveFocusToControl(control: IFocusableControl): void {
+            this.focusedControl = control;
+            this._lastPickedControl = <any>control;
+            this._blockNextFocusCheck = true;
+        }
+        
         private _manageFocus(): void {
+            if (this._blockNextFocusCheck) {
+                this._blockNextFocusCheck = false;
+                this._lastPickedControl = <any>this._focusedControl;
+                return;
+            }
+
             // Focus management
             if (this._focusedControl) {
                 if (this._focusedControl !== (<any>this._lastPickedControl)) {

@@ -11556,6 +11556,7 @@ var BABYLON;
             this.name = name;
             this.id = name;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
+            this.uniqueId = this._scene.getUniqueId();
             this._initCache();
         }
         Object.defineProperty(Node.prototype, "parent", {
@@ -16869,7 +16870,6 @@ var BABYLON;
             this._useAlternateCameraConfiguration = false;
             this._alternateRendering = false;
             this.requireLightSorting = false;
-            this._uniqueIdCounter = 0;
             this._activeMeshesFrozen = false;
             this._engine = engine || BABYLON.Engine.LastCreatedEngine;
             this._engine.scenes.push(this);
@@ -18212,12 +18212,11 @@ var BABYLON;
         };
         // Methods
         Scene.prototype.getUniqueId = function () {
-            var result = this._uniqueIdCounter;
-            this._uniqueIdCounter++;
+            var result = Scene._uniqueIdCounter;
+            Scene._uniqueIdCounter++;
             return result;
         };
         Scene.prototype.addMesh = function (newMesh) {
-            newMesh.uniqueId = this.getUniqueId();
             var position = this.meshes.push(newMesh);
             //notify the collision coordinator
             if (this.collisionCoordinator) {
@@ -18289,7 +18288,6 @@ var BABYLON;
             return index;
         };
         Scene.prototype.addLight = function (newLight) {
-            newLight.uniqueId = this.getUniqueId();
             this.lights.push(newLight);
             this.sortLightsByPriority();
             this.onNewLightAddedObservable.notifyObservers(newLight);
@@ -18300,7 +18298,6 @@ var BABYLON;
             }
         };
         Scene.prototype.addCamera = function (newCamera) {
-            newCamera.uniqueId = this.getUniqueId();
             var position = this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         };
@@ -20104,6 +20101,7 @@ var BABYLON;
         Scene._FOGMODE_EXP = 1;
         Scene._FOGMODE_EXP2 = 2;
         Scene._FOGMODE_LINEAR = 3;
+        Scene._uniqueIdCounter = 0;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         /** The distance in pixel that you have to move to prevent some events */
@@ -33950,7 +33948,10 @@ var BABYLON;
         };
         PBRMaterial.prototype.clone = function (name) {
             var _this = this;
-            return BABYLON.SerializationHelper.Clone(function () { return new PBRMaterial(name, _this.getScene()); }, this);
+            var clone = BABYLON.SerializationHelper.Clone(function () { return new PBRMaterial(name, _this.getScene()); }, this);
+            clone.id = name;
+            clone.name = name;
+            return clone;
         };
         PBRMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
@@ -34254,7 +34255,10 @@ var BABYLON;
         };
         PBRMetallicRoughnessMaterial.prototype.clone = function (name) {
             var _this = this;
-            return BABYLON.SerializationHelper.Clone(function () { return new PBRMetallicRoughnessMaterial(name, _this.getScene()); }, this);
+            var clone = BABYLON.SerializationHelper.Clone(function () { return new PBRMetallicRoughnessMaterial(name, _this.getScene()); }, this);
+            clone.id = name;
+            clone.name = name;
+            return clone;
         };
         /**
          * Serialize the material to a parsable JSON object.
@@ -34357,7 +34361,10 @@ var BABYLON;
         };
         PBRSpecularGlossinessMaterial.prototype.clone = function (name) {
             var _this = this;
-            return BABYLON.SerializationHelper.Clone(function () { return new PBRSpecularGlossinessMaterial(name, _this.getScene()); }, this);
+            var clone = BABYLON.SerializationHelper.Clone(function () { return new PBRSpecularGlossinessMaterial(name, _this.getScene()); }, this);
+            clone.id = name;
+            clone.name = name;
+            return clone;
         };
         /**
          * Serialize the material to a parsable JSON object.
@@ -35631,6 +35638,9 @@ var BABYLON;
                     previousMultiTouchPanPosition.isPinching = false;
                     twoFingerActivityCount = 0;
                     initialDistance = 0;
+                    if (p.event.pointerType !== "touch") {
+                        pointB = undefined; // Mouse and pen are mono pointer
+                    }
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
@@ -49931,28 +49941,29 @@ var BABYLON;
             eventDrop.preventDefault();
             this.loadFiles(eventDrop);
         };
-        FilesInput.prototype._handleFolderDrop = function (entry, files, callback) {
-            var reader = entry.createReader(), relativePath = entry.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
-            reader.readEntries(function (fileEntries) {
-                var remaining = fileEntries.length;
-                for (var _i = 0, fileEntries_1 = fileEntries; _i < fileEntries_1.length; _i++) {
-                    var fileEntry = fileEntries_1[_i];
-                    if (fileEntry.isFile) {
-                        fileEntry.file(function (file) {
+        FilesInput.prototype._traverseFolder = function (folder, files, remaining, callback) {
+            var _this = this;
+            var reader = folder.createReader();
+            var relativePath = folder.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
+            reader.readEntries(function (entries) {
+                remaining.count += entries.length;
+                for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
+                    var entry = entries_1[_i];
+                    if (entry.isFile) {
+                        entry.file(function (file) {
                             file.correctName = relativePath + file.name;
                             files.push(file);
-                            remaining--;
-                            if (remaining === 0) {
+                            if (--remaining.count === 0) {
                                 callback();
                             }
                         });
                     }
-                    else {
-                        remaining--;
-                        if (remaining === 0) {
-                            callback();
-                        }
+                    else if (entry.isDirectory) {
+                        _this._traverseFolder(entry, files, remaining, callback);
                     }
+                }
+                if (--remaining.count) {
+                    callback();
                 }
             });
         };
@@ -50027,15 +50038,11 @@ var BABYLON;
                     this._processFiles(files_1);
                 }
                 else {
-                    var remaining = folders.length;
-                    // Extract folder content
+                    var remaining = { count: folders.length };
                     for (var _i = 0, folders_1 = folders; _i < folders_1.length; _i++) {
                         var folder = folders_1[_i];
-                        this._handleFolderDrop(folder, files_1, function () {
-                            remaining--;
-                            if (remaining === 0) {
-                                _this._processFiles(files_1);
-                            }
+                        this._traverseFolder(folder, files_1, remaining, function () {
+                            _this._processFiles(files_1);
                         });
                     }
                 }

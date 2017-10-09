@@ -648,7 +648,12 @@
         }         
 
         public clone(name: string): PBRMaterial {
-            return SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
+            var clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
+
+            clone.id = name;
+            clone.name = name;
+
+            return clone;
         }
 
         public serialize(): any {

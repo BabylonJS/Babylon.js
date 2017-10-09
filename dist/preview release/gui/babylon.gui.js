@@ -37,6 +37,7 @@ var BABYLON;
                 _this._idealWidth = 0;
                 _this._idealHeight = 0;
                 _this._renderAtIdealSize = false;
+                _this._blockNextFocusCheck = false;
                 _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
                 _this._preKeyboardObserver = _this.getScene().onPreKeyboardObservable.add(function (info) {
                     if (!_this._focusedControl) {
@@ -136,11 +137,11 @@ var BABYLON;
                     if (this._focusedControl == control) {
                         return;
                     }
-                    if (!this._focusedControl) {
-                        control.onFocus();
-                    }
-                    else {
+                    if (this._focusedControl) {
                         this._focusedControl.onBlur();
+                    }
+                    if (control) {
+                        control.onFocus();
                     }
                     this._focusedControl = control;
                 },
@@ -353,7 +354,17 @@ var BABYLON;
                 mesh.enablePointerMoveEvents = supportPointerMove;
                 this._attachToOnPointerOut(scene);
             };
+            AdvancedDynamicTexture.prototype.moveFocusToControl = function (control) {
+                this.focusedControl = control;
+                this._lastPickedControl = control;
+                this._blockNextFocusCheck = true;
+            };
             AdvancedDynamicTexture.prototype._manageFocus = function () {
+                if (this._blockNextFocusCheck) {
+                    this._blockNextFocusCheck = false;
+                    this._lastPickedControl = this._focusedControl;
+                    return;
+                }
                 // Focus management
                 if (this._focusedControl) {
                     if (this._focusedControl !== this._lastPickedControl) {
@@ -1164,6 +1175,12 @@ var BABYLON;
                 result.x = globalCoordinates.x - this._currentMeasure.left;
                 result.y = globalCoordinates.y - this._currentMeasure.top;
                 return this;
+            };
+            Control.prototype.getParentLocalCoordinates = function (globalCoordinates) {
+                var result = BABYLON.Vector2.Zero();
+                result.x = globalCoordinates.x - this._cachedParentMeasure.left;
+                result.y = globalCoordinates.y - this._cachedParentMeasure.top;
+                return result;
             };
             Control.prototype.moveToVector3 = function (position, scene) {
                 if (!this._host || this._root !== this._host._rootContainer) {
@@ -3847,7 +3864,10 @@ var BABYLON;
                 this._markAsDirty();
                 this.onFocusObservable.notifyObservers(this);
                 if (navigator.userAgent.indexOf("Mobile") !== -1) {
-                    this.text = prompt(this.promptMessage);
+                    var value = prompt(this.promptMessage);
+                    if (value !== null) {
+                        this.text = value;
+                    }
                     this._host.focusedControl = null;
                     return;
                 }

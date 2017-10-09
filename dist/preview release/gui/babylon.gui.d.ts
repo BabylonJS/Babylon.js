@@ -28,6 +28,7 @@ declare module BABYLON.GUI {
         private _idealHeight;
         private _renderAtIdealSize;
         private _focusedControl;
+        private _blockNextFocusCheck;
         background: string;
         idealWidth: number;
         idealHeight: number;
@@ -48,6 +49,7 @@ declare module BABYLON.GUI {
         private _doPicking(x, y, type);
         attach(): void;
         attachToMesh(mesh: AbstractMesh, supportPointerMove?: boolean): void;
+        moveFocusToControl(control: IFocusableControl): void;
         private _manageFocus();
         private _attachToOnPointerOut(scene);
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean): AdvancedDynamicTexture;
@@ -236,6 +238,7 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         getLocalCoordinates(globalCoordinates: Vector2): Vector2;
         getLocalCoordinatesToRef(globalCoordinates: Vector2, result: Vector2): Control;
+        getParentLocalCoordinates(globalCoordinates: Vector2): Vector2;
         moveToVector3(position: Vector3, scene: Scene): void;
         linkWithMesh(mesh: AbstractMesh): void;
         _moveToProjectedPosition(projectedPosition: Vector3): void;
