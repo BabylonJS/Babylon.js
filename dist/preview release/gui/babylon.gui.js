@@ -37,6 +37,7 @@ var BABYLON;
                 _this._idealWidth = 0;
                 _this._idealHeight = 0;
                 _this._renderAtIdealSize = false;
+                _this._blockNextFocusCheck = false;
                 _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
                 _this._preKeyboardObserver = _this.getScene().onPreKeyboardObservable.add(function (info) {
                     if (!_this._focusedControl) {
@@ -353,7 +354,17 @@ var BABYLON;
                 mesh.enablePointerMoveEvents = supportPointerMove;
                 this._attachToOnPointerOut(scene);
             };
+            AdvancedDynamicTexture.prototype.moveFocusToControl = function (control) {
+                this.focusedControl = control;
+                this._lastPickedControl = control;
+                this._blockNextFocusCheck = true;
+            };
             AdvancedDynamicTexture.prototype._manageFocus = function () {
+                if (this._blockNextFocusCheck) {
+                    this._blockNextFocusCheck = false;
+                    this._lastPickedControl = this._focusedControl;
+                    return;
+                }
                 // Focus management
                 if (this._focusedControl) {
                     if (this._focusedControl !== this._lastPickedControl) {
