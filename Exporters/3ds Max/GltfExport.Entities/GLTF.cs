@@ -46,6 +46,9 @@ namespace GLTFExport.Entities
         [DataMember(EmitDefaultValue = false)]
         public GLTFSampler[] samplers { get; set; }
 
+        [DataMember(EmitDefaultValue = false)]
+        public GLTFAnimation[] animations { get; set; }
+
         public string OutputFolder { get; private set; }
         public string OutputFile { get; private set; }
 
@@ -59,6 +62,7 @@ namespace GLTFExport.Entities
         public List<GLTFTexture> TexturesList { get; private set; }
         public List<GLTFImage> ImagesList { get; private set; }
         public List<GLTFSampler> SamplersList { get; private set; }
+        public List<GLTFAnimation> AnimationsList { get; private set; }
 
         public GLTFBuffer buffer;
         public GLTFBufferView bufferViewScalar;
@@ -66,6 +70,9 @@ namespace GLTFExport.Entities
         public GLTFBufferView bufferViewFloatVec4;
         public GLTFBufferView bufferViewFloatVec2;
         public GLTFBufferView bufferViewImage;
+        public GLTFBufferView bufferViewAnimationFloatScalar;
+        public GLTFBufferView bufferViewAnimationFloatVec3;
+        public GLTFBufferView bufferViewAnimationFloatVec4;
 
         public GLTF(string outputPath)
         {
@@ -82,6 +89,7 @@ namespace GLTFExport.Entities
             TexturesList = new List<GLTFTexture>();
             ImagesList = new List<GLTFImage>();
             SamplersList = new List<GLTFSampler>();
+            AnimationsList = new List<GLTFAnimation>();
         }
 
         public void Prepare()
@@ -129,6 +137,10 @@ namespace GLTFExport.Entities
             if (SamplersList.Count > 0)
             {
                 samplers = SamplersList.ToArray();
+            }
+            if (AnimationsList.Count > 0)
+            {
+                animations = AnimationsList.ToArray();
             }
         }
     }

@@ -132,7 +132,12 @@
 
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
-        private _sideOrientation: number = Mesh._DEFAULTSIDE;
+
+        // Use by builder only to know what orientation were the mesh build in.
+        public _originalBuilderSideOrientation: number = Mesh._DEFAULTSIDE;
+
+        public overrideMaterialSideOrientation: number = null;
+
         private _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
 
         private _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
@@ -529,18 +534,6 @@
             }
 
             return super.isReady();
-        }
-
-        public get sideOrientation(): number {
-            return this._sideOrientation;
-        }
-
-        /**
-         * Sets the mesh side orientation : BABYLON.Mesh.FRONTSIDE, BABYLON.Mesh.BACKSIDE, BABYLON.Mesh.DOUBLESIDE or BABYLON.Mesh.DEFAULTSIDE
-         * tuto : http://doc.babylonjs.com/tutorials/Discover_Basic_Elements#side-orientation
-         */
-        public set sideOrientation(sideO: number) {
-            this._sideOrientation = sideO;
         }
 
         /**
@@ -1185,7 +1178,7 @@
                 effect = this._effectiveMaterial.getEffect();
             }
 
-            this._effectiveMaterial._preBind(effect);
+            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
 
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
@@ -1207,7 +1200,6 @@
             }
 
             if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
-                var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
                 engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse);
                 this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
                 engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);

@@ -362,7 +362,22 @@ var INSPECTOR;
         'Color3': {
             type: BABYLON.Color3,
             properties: ['r', 'g', 'b'],
-            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; }
+            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            slider: {
+                r: { min: 0, max: 1, step: 0.01 },
+                g: { min: 0, max: 1, step: 0.01 },
+                b: { min: 0, max: 1, step: 0.01 }
+            }
+        },
+        'Color4': {
+            type: BABYLON.Color4,
+            properties: ['r', 'g', 'b'],
+            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            slider: {
+                r: { min: 0, max: 1, step: 0.01 },
+                g: { min: 0, max: 1, step: 0.01 },
+                b: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'Quaternion': {
             type: BABYLON.Quaternion,
@@ -449,7 +464,10 @@ var INSPECTOR;
                 'wheelPrecision',
                 'allowUpsideDown',
                 'checkCollisions'
-            ]
+            ],
+            slider: {
+                alpha: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'FreeCamera': {
             type: BABYLON.FreeCamera,
@@ -575,7 +593,10 @@ var INSPECTOR;
                 'reflectionTexture',
                 'refractionTexture'
             ],
-            format: function (mat) { return mat.name; }
+            format: function (mat) { return mat.name; },
+            slider: {
+                alpha: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'PrimitiveAlignment': {
             type: BABYLON.PrimitiveAlignment,
@@ -633,7 +654,10 @@ var INSPECTOR;
                 'cameraContrast',
                 'cameraColorGradingTexture',
                 'cameraColorCurves'
-            ]
+            ],
+            slider: {
+                alpha: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'Canvas2D': {
             type: BABYLON.Canvas2D
@@ -1491,6 +1515,9 @@ var INSPECTOR;
             var isString = function (s) {
                 return typeof (s) === 'string' || s instanceof String;
             };
+            this._detailRows.forEach(function (property) {
+                property.closeDetails();
+            });
             this._detailRows.sort(function (detail1, detail2) {
                 var str1 = String(detail1[property]);
                 var str2 = String(detail2[property]);
@@ -1683,7 +1710,9 @@ var INSPECTOR;
             propName.textContent = "" + this.name;
             // Value
             this._valueDiv = INSPECTOR.Helpers.CreateDiv('prop-value', this._div);
-            this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+            }
             this._createElements();
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
@@ -1691,16 +1720,22 @@ var INSPECTOR;
             }
             this._updateValue();
             // If the property type is not simple, add click event to unfold its children
-            if (!this._isSimple()) {
+            if (typeof this.value === 'boolean') {
+                this._checkboxInput();
+            }
+            else if (this._isSliderType()) {
+                this._rangeInput();
+            }
+            else if (!this._isSimple()) {
                 this._valueDiv.classList.add('clickable');
                 this._valueDiv.addEventListener('click', this._addDetails.bind(this));
             }
             else {
                 this._initInput();
                 this._valueDiv.addEventListener('click', this._displayInputHandler);
-                this._input.addEventListener('keypress', this._validateInputHandler);
-                this._input.addEventListener('keydown', this._escapeInputHandler);
                 this._input.addEventListener('focusout', this._focusOutInputHandler);
+                this._input.addEventListener('keydown', this._validateInputHandler);
+                this._input.addEventListener('keydown', this._escapeInputHandler);
             }
             // Add this property to the scheduler
             INSPECTOR.Scheduler.getInstance().add(this);
@@ -1728,7 +1763,12 @@ var INSPECTOR;
          * On escape : removes the input
          */
         PropertyLine.prototype._validateInput = function (e) {
+            this._input.removeEventListener('focusout', this._focusOutInputHandler);
             if (e.keyCode == 13) {
+                this.validateInput(this._input.value);
+            }
+            else if (e.keyCode == 9) {
+                e.preventDefault();
                 this.validateInput(this._input.value);
             }
             else if (e.keyCode == 27) {
@@ -1736,7 +1776,8 @@ var INSPECTOR;
                 this.update();
             }
         };
-        PropertyLine.prototype.validateInput = function (value) {
+        PropertyLine.prototype.validateInput = function (value, forceupdate) {
+            if (forceupdate === void 0) { forceupdate = true; }
             this.updateObject();
             if (typeof this._property.value === 'number') {
                 this._property.value = parseFloat(value);
@@ -1745,9 +1786,11 @@ var INSPECTOR;
                 this._property.value = value;
             }
             // Remove input
-            this.update();
-            // resume scheduler
-            INSPECTOR.Scheduler.getInstance().pause = false;
+            if (forceupdate) {
+                this.update();
+                // resume scheduler
+                INSPECTOR.Scheduler.getInstance().pause = false;
+            }
         };
         /**
          * On escape : removes the input
@@ -1763,13 +1806,17 @@ var INSPECTOR;
         /** Removes the input without validating the new value */
         PropertyLine.prototype._removeInputWithoutValidating = function () {
             INSPECTOR.Helpers.CleanDiv(this._valueDiv);
-            this._valueDiv.textContent = "-";
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.textContent = "-";
+            }
             // restore elements
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
                 this._valueDiv.appendChild(elem.toHtml());
             }
-            this._valueDiv.addEventListener('click', this._displayInputHandler);
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.addEventListener('click', this._displayInputHandler);
+            }
         };
         /** Replaces the default display with an input */
         PropertyLine.prototype._displayInput = function (e) {
@@ -1781,10 +1828,12 @@ var INSPECTOR;
             this._input.value = valueTxt;
             this._valueDiv.appendChild(this._input);
             this._input.focus();
-            if (typeof this.value === 'number') {
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._input.addEventListener('focusout', this._focusOutInputHandler);
+            }
+            else if (typeof this.value === 'number') {
                 this._input.addEventListener('mousedown', this._onMouseDownHandler);
             }
-            this._input.addEventListener('focusout', this._focusOutInputHandler);
             // Pause the scheduler
             INSPECTOR.Scheduler.getInstance().pause = true;
         };
@@ -1802,6 +1851,10 @@ var INSPECTOR;
         Object.defineProperty(PropertyLine.prototype, "name", {
             // Returns the property name
             get: function () {
+                // let arrayName = Helpers.Capitalize(this._property.name).match(/[A-Z][a-z]+|[0-9]+/g)
+                // if (arrayName) {
+                //     return arrayName.join(" ");
+                // }
                 return this._property.name;
             },
             enumerable: true,
@@ -1888,7 +1941,15 @@ var INSPECTOR;
             this.updateObject();
             // Then update its value
             // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
-            this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            if (typeof this.value === 'boolean') {
+                this._checkboxInput();
+            }
+            else if (this._isSliderType()) {
+                this._rangeInput();
+            }
+            else {
+                this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            }
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
                 elem.update(this.value);
@@ -1931,6 +1992,17 @@ var INSPECTOR;
         PropertyLine.prototype.toHtml = function () {
             return this._div;
         };
+        PropertyLine.prototype.closeDetails = function () {
+            if (this._div.classList.contains('unfolded')) {
+                // Remove class unfolded
+                this._div.classList.remove('unfolded');
+                // remove html children
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    this._div.parentNode.removeChild(child.toHtml());
+                }
+            }
+        };
         /**
          * Add sub properties in case of a complex type
          */
@@ -1949,7 +2021,7 @@ var INSPECTOR;
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
                     var objToDetail = this.value;
-                    var propToDisplay = INSPECTOR.PROPERTIES[INSPECTOR.Helpers.GET_TYPE(objToDetail)].properties.reverse();
+                    var propToDisplay = INSPECTOR.PROPERTIES[INSPECTOR.Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
                     var propertyLine = null;
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
@@ -1991,6 +2063,55 @@ var INSPECTOR;
             this._preValue = this.value;
             window.addEventListener('mousemove', this._onMouseDragHandler);
             window.addEventListener('mouseup', this._onMouseUpHandler);
+        };
+        /**
+         * Create input entry
+         */
+        PropertyLine.prototype._checkboxInput = function () {
+            var _this = this;
+            if (this._valueDiv.childElementCount < 1) {
+                this._input = INSPECTOR.Helpers.CreateInput('checkbox-element', this._valueDiv);
+                this._input.type = 'checkbox';
+                this._input.checked = this.value;
+                this._input.addEventListener('change', function () {
+                    INSPECTOR.Scheduler.getInstance().pause = true;
+                    _this.validateInput(!_this.value);
+                });
+            }
+        };
+        PropertyLine.prototype._rangeInput = function () {
+            if (this._valueDiv.childElementCount < 1) {
+                this._input = INSPECTOR.Helpers.CreateInput('slider-element', this._valueDiv);
+                this._input.type = 'range';
+                this._input.style.display = 'inline-block';
+                this._input.min = this._getSliderProperty().min;
+                this._input.max = this._getSliderProperty().max;
+                this._input.step = this._getSliderProperty().step;
+                this._input.value = this.value;
+                this._validateInputHandler = this._rangeHandler.bind(this);
+                this._input.addEventListener('input', this._validateInputHandler);
+                this._input.addEventListener('change', function () {
+                    INSPECTOR.Scheduler.getInstance().pause = false;
+                });
+                this._textValue = INSPECTOR.Helpers.CreateDiv('value-text', this._valueDiv);
+                this._textValue.innerText = this.value;
+                this._textValue.style.paddingLeft = '10px';
+                this._textValue.style.display = 'inline-block';
+            }
+        };
+        PropertyLine.prototype._rangeHandler = function () {
+            INSPECTOR.Scheduler.getInstance().pause = true;
+            this._textValue.innerText = this._input.value;
+            this.validateInput(this._input.value, false);
+        };
+        PropertyLine.prototype._isSliderType = function () {
+            return this._property &&
+                INSPECTOR.PROPERTIES.hasOwnProperty(this._property.obj.constructor.name) &&
+                INSPECTOR.PROPERTIES[this._property.obj.constructor.name].hasOwnProperty('slider') &&
+                INSPECTOR.PROPERTIES[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
+        };
+        PropertyLine.prototype._getSliderProperty = function () {
+            return INSPECTOR.PROPERTIES[this._property.obj.constructor.name].slider[this.name];
         };
         // Array representing the simple type. All others are considered 'complex'
         PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
@@ -2410,6 +2531,9 @@ var INSPECTOR;
          * uses getClassName. If nothing is returned, used the type of the constructor
          */
         Helpers.GET_TYPE = function (obj) {
+            if (typeof obj === 'boolean') {
+                return 'boolean';
+            }
             if (obj != null && obj != undefined) {
                 var classname = BABYLON.Tools.GetClassName(obj);
                 if (!classname || classname === 'object') {
@@ -2575,6 +2699,9 @@ var INSPECTOR;
                 }
             }
             return propertiesLines;
+        };
+        Helpers.Capitalize = function (str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
         };
         return Helpers;
     }());
@@ -2790,6 +2917,7 @@ var INSPECTOR;
                     node.active(false);
                 }
             }
+            item.getDiv().scrollIntoView();
             item.active(true);
         };
         /** Returns the treeitem corersponding to the given obj, null if not found */
@@ -4689,6 +4817,9 @@ var INSPECTOR;
             if (b) {
                 this._div.classList.add('active');
             }
+        };
+        TreeItem.prototype.getDiv = function () {
+            return this._div;
         };
         return TreeItem;
     }(INSPECTOR.BasicElement));

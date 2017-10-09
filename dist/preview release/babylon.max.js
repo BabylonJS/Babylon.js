@@ -5332,9 +5332,11 @@ var BABYLON;
      * Represent an Observer registered to a given Observable object.
      */
     var Observer = (function () {
-        function Observer(callback, mask) {
+        function Observer(callback, mask, scope) {
+            if (scope === void 0) { scope = null; }
             this.callback = callback;
             this.mask = mask;
+            this.scope = scope;
         }
         return Observer;
     }());
@@ -5357,14 +5359,16 @@ var BABYLON;
          * @param callback the callback that will be executed for that Observer
          * @param mask the mask used to filter observers
          * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
+         * @param scope optional scope for the callback to be called from
          */
-        Observable.prototype.add = function (callback, mask, insertFirst) {
+        Observable.prototype.add = function (callback, mask, insertFirst, scope) {
             if (mask === void 0) { mask = -1; }
             if (insertFirst === void 0) { insertFirst = false; }
+            if (scope === void 0) { scope = null; }
             if (!callback) {
                 return null;
             }
-            var observer = new Observer(callback, mask);
+            var observer = new Observer(callback, mask, scope);
             if (insertFirst) {
                 this._observers.unshift(observer);
             }
@@ -5415,7 +5419,12 @@ var BABYLON;
             for (var _i = 0, _a = this._observers; _i < _a.length; _i++) {
                 var obs = _a[_i];
                 if (obs.mask & mask) {
-                    obs.callback(eventData, state);
+                    if (obs.scope) {
+                        obs.callback.apply(obs.scope, [eventData, state]);
+                    }
+                    else {
+                        obs.callback(eventData, state);
+                    }
                 }
                 if (state.skipNextObservers) {
                     return false;
@@ -5892,7 +5901,7 @@ var BABYLON;
             url = url.replace(/#/mg, "%23");
             return url;
         };
-        Tools.LoadImage = function (url, onload, onerror, database) {
+        Tools.LoadImage = function (url, onLoad, onError, database) {
             if (url instanceof ArrayBuffer) {
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
@@ -5903,16 +5912,16 @@ var BABYLON;
                 Tools.SetCorsBehavior(url, img);
             }
             img.onload = function () {
-                onload(img);
+                onLoad(img);
             };
             img.onerror = function (err) {
                 Tools.Error("Error while trying to load image: " + url);
                 if (Tools.UseFallbackTexture) {
                     img.src = Tools.fallbackTexture;
-                    onload(img);
+                    onLoad(img);
                 }
                 else {
-                    onerror();
+                    onError("Error while trying to load image: " + url, err);
                 }
             };
             var noIndexedDB = function () {
@@ -5975,11 +5984,12 @@ var BABYLON;
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         }
                         else {
+                            var e = new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
                             if (onError) {
-                                onError(request);
+                                onError(request, e);
                             }
                             else {
-                                throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
+                                throw e;
                             }
                         }
                     }
@@ -5995,7 +6005,14 @@ var BABYLON;
                     Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
                 }
                 else {
-                    Tools.Error("File: " + fileName + " not found. Did you forget to provide it?");
+                    var errorMessage = "File: " + fileName + " not found. Did you forget to provide it?";
+                    if (onError) {
+                        var e = new Error(errorMessage);
+                        onError(undefined, e);
+                    }
+                    else {
+                        Tools.Error(errorMessage);
+                    }
                 }
             }
             else {
@@ -6023,9 +6040,9 @@ var BABYLON;
                     onSuccess();
                 }
             };
-            script.onerror = function () {
+            script.onerror = function (e) {
                 if (onError) {
-                    onError();
+                    onError("Unable to load script", e);
                 }
             };
             head.appendChild(script);
@@ -7563,12 +7580,12 @@ var BABYLON;
                 onfinish(loadedImages);
             }
         };
-        var onerror = function () {
+        var onerror = function (message, exception) {
             if (scene) {
                 scene._removePendingData(img);
             }
             if (onErrorCallBack) {
-                onErrorCallBack();
+                onErrorCallBack(message, exception);
             }
         };
         img = BABYLON.Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
@@ -10563,6 +10580,11 @@ var BABYLON;
             else {
                 isDDS = (extension === ".dds");
             }
+            var onerror = function (request, exception) {
+                if (onError) {
+                    onError(request.status + " " + request.statusText, exception);
+                }
+            };
             if (isKTX) {
                 BABYLON.Tools.LoadFile(rootUrl, function (data) {
                     var ktx = new BABYLON.Internals.KhronosTextureContainer(data, 6);
@@ -10579,7 +10601,7 @@ var BABYLON;
                     texture.width = ktx.pixelWidth;
                     texture.height = ktx.pixelHeight;
                     texture.isReady = true;
-                }, null, null, true, onError);
+                }, null, null, true, onerror);
             }
             else if (isDDS) {
                 BABYLON.Tools.LoadFile(rootUrl, function (data) {
@@ -10604,7 +10626,7 @@ var BABYLON;
                     if (onLoad) {
                         onLoad({ isDDS: true, width: info.width, info: info, data: data, texture: texture });
                     }
-                }, null, null, true, onError);
+                }, null, null, true, onerror);
             }
             else {
                 cascadeLoad(rootUrl, scene, function (imgs) {
@@ -10756,10 +10778,10 @@ var BABYLON;
             scene._addPendingData(texture);
             texture.url = url;
             this._internalTexturesCache.push(texture);
-            var onerror = function () {
+            var onerror = function (request, exception) {
                 scene._removePendingData(texture);
                 if (onError) {
-                    onError();
+                    onError(request.status + " " + request.statusText, exception);
                 }
             };
             var internalCallback = function (data) {
@@ -10803,7 +10825,7 @@ var BABYLON;
             };
             BABYLON.Tools.LoadFile(url, function (data) {
                 internalCallback(data);
-            }, onerror, scene.database, true);
+            }, undefined, scene.database, true, onerror);
             return texture;
         };
         ;
@@ -21461,7 +21483,9 @@ var BABYLON;
             _this._renderIdForInstances = new Array();
             _this._batchCache = new _InstancesBatch();
             _this._instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
-            _this._sideOrientation = Mesh._DEFAULTSIDE;
+            // Use by builder only to know what orientation were the mesh build in.
+            _this._originalBuilderSideOrientation = Mesh._DEFAULTSIDE;
+            _this.overrideMaterialSideOrientation = null;
             _this._areNormalsFrozen = false; // Will be used by ribbons mainly
             // Will be used to save a source mesh reference, If any
             _this._source = null;
@@ -21916,20 +21940,6 @@ var BABYLON;
             }
             return _super.prototype.isReady.call(this);
         };
-        Object.defineProperty(Mesh.prototype, "sideOrientation", {
-            get: function () {
-                return this._sideOrientation;
-            },
-            /**
-             * Sets the mesh side orientation : BABYLON.Mesh.FRONTSIDE, BABYLON.Mesh.BACKSIDE, BABYLON.Mesh.DOUBLESIDE or BABYLON.Mesh.DEFAULTSIDE
-             * tuto : http://doc.babylonjs.com/tutorials/Discover_Basic_Elements#side-orientation
-             */
-            set: function (sideO) {
-                this._sideOrientation = sideO;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Mesh.prototype, "areNormalsFrozen", {
             /**
              * Boolean : true if the normals aren't to be recomputed on next mesh `positions` array update.
@@ -22494,7 +22504,7 @@ var BABYLON;
             else {
                 effect = this._effectiveMaterial.getEffect();
             }
-            this._effectiveMaterial._preBind(effect);
+            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
             }
@@ -22511,7 +22521,6 @@ var BABYLON;
                 this._effectiveMaterial.bind(world, this);
             }
             if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
-                var reverse = this.sideOrientation === BABYLON.Material.ClockWiseSideOrientation;
                 engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse);
                 this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
                 engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
@@ -26048,11 +26057,13 @@ var BABYLON;
         Material.prototype.markDirty = function () {
             this._wasPreviouslyReady = false;
         };
-        Material.prototype._preBind = function (effect) {
+        Material.prototype._preBind = function (effect, overrideOrientation) {
             var engine = this._scene.getEngine();
-            var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
+            var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
+            var reverse = orientation === Material.ClockWiseSideOrientation;
             engine.enableEffect(effect ? effect : this._effect);
             engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
+            return reverse;
         };
         Material.prototype.bind = function (world, mesh) {
         };
@@ -27138,30 +27149,35 @@ var BABYLON;
                 }
             }
             this.positions = this._mergeElement(this.positions, other.positions);
-            this.normals = this._mergeElement(this.normals, other.normals);
-            this.tangents = this._mergeElement(this.tangents, other.tangents);
-            this.uvs = this._mergeElement(this.uvs, other.uvs);
-            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2);
-            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3);
-            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4);
-            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5);
-            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6);
-            this.colors = this._mergeElement(this.colors, other.colors);
-            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices);
-            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
-            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
-            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
+            var count = this.positions.length / 3;
+            this.normals = this._mergeElement(this.normals, other.normals, count * 3);
+            this.tangents = this._mergeElement(this.tangents, other.tangents, count * 4);
+            this.uvs = this._mergeElement(this.uvs, other.uvs, count * 2);
+            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2, count * 2);
+            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3, count * 2);
+            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4, count * 2);
+            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5, count * 2);
+            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6, count * 2);
+            this.colors = this._mergeElement(this.colors, other.colors, count * 4);
+            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices, count * 4);
+            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights, count * 4);
+            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra, count * 4);
+            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra, count * 4);
             return this;
         };
-        VertexData.prototype._mergeElement = function (source, other) {
+        VertexData.prototype._mergeElement = function (source, other, length) {
+            if (length === void 0) { length = 0; }
             if (!other && !source) {
                 return null;
             }
             if (!other) {
-                return this._mergeElement(source, new Float32Array(source.length));
+                return this._mergeElement(source, new Float32Array(source.length), length);
             }
             if (!source) {
-                return other;
+                if (length === other.length) {
+                    return other;
+                }
+                return this._mergeElement(new Float32Array(length - other.length), other, length);
             }
             var len = other.length + source.length;
             var isSrcTypedArray = source instanceof Float32Array;
@@ -44234,7 +44250,7 @@ var BABYLON;
         MeshBuilder.CreateBox = function (name, options, scene) {
             var box = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            box.sideOrientation = options.sideOrientation;
+            box._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateBox(options);
             vertexData.applyToMesh(box, options.updatable);
             return box;
@@ -44255,7 +44271,7 @@ var BABYLON;
         MeshBuilder.CreateSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            sphere.sideOrientation = options.sideOrientation;
+            sphere._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -44274,7 +44290,7 @@ var BABYLON;
         MeshBuilder.CreateDisc = function (name, options, scene) {
             var disc = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            disc.sideOrientation = options.sideOrientation;
+            disc._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateDisc(options);
             vertexData.applyToMesh(disc, options.updatable);
             return disc;
@@ -44294,7 +44310,7 @@ var BABYLON;
         MeshBuilder.CreateIcoSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            sphere.sideOrientation = options.sideOrientation;
+            sphere._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateIcoSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -44338,7 +44354,7 @@ var BABYLON;
                 var positionFunction = function (positions) {
                     var minlg = pathArray[0].length;
                     var i = 0;
-                    var ns = (instance.sideOrientation === BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = (instance._originalBuilderSideOrientation === BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -44434,7 +44450,7 @@ var BABYLON;
             }
             else {
                 var ribbon = new BABYLON.Mesh(name, scene);
-                ribbon.sideOrientation = sideOrientation;
+                ribbon._originalBuilderSideOrientation = sideOrientation;
                 var vertexData = BABYLON.VertexData.CreateRibbon(options);
                 if (closePath) {
                     ribbon._idx = vertexData._idx;
@@ -44472,7 +44488,7 @@ var BABYLON;
         MeshBuilder.CreateCylinder = function (name, options, scene) {
             var cylinder = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            cylinder.sideOrientation = options.sideOrientation;
+            cylinder._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateCylinder(options);
             vertexData.applyToMesh(cylinder, options.updatable);
             return cylinder;
@@ -44491,7 +44507,7 @@ var BABYLON;
         MeshBuilder.CreateTorus = function (name, options, scene) {
             var torus = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            torus.sideOrientation = options.sideOrientation;
+            torus._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateTorus(options);
             vertexData.applyToMesh(torus, options.updatable);
             return torus;
@@ -44511,7 +44527,7 @@ var BABYLON;
         MeshBuilder.CreateTorusKnot = function (name, options, scene) {
             var torusKnot = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            torusKnot.sideOrientation = options.sideOrientation;
+            torusKnot._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateTorusKnot(options);
             vertexData.applyToMesh(torusKnot, options.updatable);
             return torusKnot;
@@ -44790,7 +44806,7 @@ var BABYLON;
         MeshBuilder.CreatePlane = function (name, options, scene) {
             var plane = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            plane.sideOrientation = options.sideOrientation;
+            plane._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePlane(options);
             vertexData.applyToMesh(plane, options.updatable);
             if (options.sourcePlane) {
@@ -44938,7 +44954,7 @@ var BABYLON;
                 polygonTriangulation.addHole(hole);
             }
             var polygon = polygonTriangulation.build(options.updatable, depth);
-            polygon.sideOrientation = options.sideOrientation;
+            polygon._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
             vertexData.applyToMesh(polygon, options.updatable);
             return polygon;
@@ -45103,7 +45119,7 @@ var BABYLON;
         MeshBuilder.CreatePolyhedron = function (name, options, scene) {
             var polyhedron = new BABYLON.Mesh(name, scene);
             options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            polyhedron.sideOrientation = options.sideOrientation;
+            polyhedron._originalBuilderSideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePolyhedron(options);
             vertexData.applyToMesh(polyhedron, options.updatable);
             return polyhedron;
@@ -49138,8 +49154,13 @@ var BABYLON;
             var loadingToken = {};
             scene._addPendingData(loadingToken);
             var errorHandler = function (message, exception) {
+                var errorMessage = "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : "");
                 if (onError) {
-                    onError(scene, "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : ""));
+                    onError(scene, errorMessage, exception);
+                }
+                else {
+                    BABYLON.Tools.Error(errorMessage);
+                    // should the exception be thrown?
                 }
                 scene._removePendingData(loadingToken);
             };
@@ -49158,18 +49179,31 @@ var BABYLON;
                         return;
                     }
                     if (onSuccess) {
-                        scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                        onSuccess(meshes, particleSystems, skeletons);
-                        scene._removePendingData(loadingToken);
+                        // wrap onSuccess with try-catch to know if something went wrong.
+                        try {
+                            scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                            onSuccess(meshes, particleSystems, skeletons);
+                            scene._removePendingData(loadingToken);
+                        }
+                        catch (e) {
+                            var message = 'Error in onSuccess callback.';
+                            errorHandler(message, e);
+                        }
                     }
                 }
                 else {
                     var asyncedPlugin = plugin;
                     asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, function (meshes, particleSystems, skeletons) {
                         if (onSuccess) {
-                            scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                            onSuccess(meshes, particleSystems, skeletons);
-                            scene._removePendingData(loadingToken);
+                            try {
+                                scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                                onSuccess(meshes, particleSystems, skeletons);
+                                scene._removePendingData(loadingToken);
+                            }
+                            catch (e) {
+                                var message = 'Error in onSuccess callback.';
+                                errorHandler(message, e);
+                            }
                         }
                     }, progressHandler, errorHandler);
                 }
@@ -49207,8 +49241,13 @@ var BABYLON;
             var loadingToken = {};
             scene._addPendingData(loadingToken);
             var errorHandler = function (message, exception) {
+                var errorMessage = "Unable to load from " + rootUrl + sceneFilename + (message ? ": " + message : "");
                 if (onError) {
-                    onError(scene, "Unable to load from " + rootUrl + sceneFilename + (message ? ": " + message : ""));
+                    onError(scene, errorMessage, exception);
+                }
+                else {
+                    BABYLON.Tools.Error(errorMessage);
+                    // should the exception be thrown?
                 }
                 scene._removePendingData(loadingToken);
                 scene.getEngine().hideLoadingUI();
@@ -49225,7 +49264,12 @@ var BABYLON;
                         return;
                     }
                     if (onSuccess) {
-                        onSuccess(scene);
+                        try {
+                            onSuccess(scene);
+                        }
+                        catch (e) {
+                            errorHandler("Error in onSuccess callback", e);
+                        }
                     }
                     scene.loadingPluginName = plugin.name;
                     scene._removePendingData(loadingToken);
@@ -49301,7 +49345,7 @@ var BABYLON;
                 }
                 return false;
             },
-            importMesh: function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
+            importMesh: function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons, onError) {
                 // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
                 // when SceneLoader.debugLogging = true (default), or exception encountered.
                 // Everything stored in var log instead of writing separate lines to support only writing in exception,
@@ -49464,9 +49508,15 @@ var BABYLON;
                     return true;
                 }
                 catch (err) {
-                    BABYLON.Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + log);
-                    log = null;
-                    throw err;
+                    var msg = logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + log;
+                    if (onError) {
+                        onError(msg, err);
+                    }
+                    else {
+                        BABYLON.Tools.Log(msg);
+                        log = null;
+                        throw err;
+                    }
                 }
                 finally {
                     if (log !== null && BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.NO_LOGGING) {
@@ -49474,7 +49524,7 @@ var BABYLON;
                     }
                 }
             },
-            load: function (scene, data, rootUrl) {
+            load: function (scene, data, rootUrl, onError) {
                 // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
                 // when SceneLoader.debugLogging = true (default), or exception encountered.
                 // Everything stored in var log instead of writing separate lines to support only writing in exception,
@@ -49804,9 +49854,15 @@ var BABYLON;
                     return true;
                 }
                 catch (err) {
-                    BABYLON.Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + log);
-                    log = null;
-                    throw err;
+                    var msg = logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + log;
+                    if (onError) {
+                        onError(msg, err);
+                    }
+                    else {
+                        BABYLON.Tools.Log(msg);
+                        log = null;
+                        throw err;
+                    }
                 }
                 finally {
                     if (log !== null && BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.NO_LOGGING) {
@@ -49823,7 +49879,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var FilesInput = (function () {
-        function FilesInput(engine, scene, sceneLoadedCallback, progressCallback, additionalRenderLoopLogicCallback, textureLoadingCallback, startingProcessingFilesCallback, onReloadCallback) {
+        function FilesInput(engine, scene, sceneLoadedCallback, progressCallback, additionalRenderLoopLogicCallback, textureLoadingCallback, startingProcessingFilesCallback, onReloadCallback, errorCallback) {
             this.onProcessFileCallback = function () { return true; };
             this._engine = engine;
             this._currentScene = scene;
@@ -49833,6 +49889,7 @@ var BABYLON;
             this._textureLoadingCallback = textureLoadingCallback;
             this._startingProcessingFilesCallback = startingProcessingFilesCallback;
             this._onReloadCallback = onReloadCallback;
+            this._errorCallback = errorCallback;
         }
         FilesInput.prototype.monitorElementForDragNDrop = function (elementToMonitor) {
             var _this = this;
@@ -49877,28 +49934,29 @@ var BABYLON;
             eventDrop.preventDefault();
             this.loadFiles(eventDrop);
         };
-        FilesInput.prototype._handleFolderDrop = function (entry, files, callback) {
-            var reader = entry.createReader(), relativePath = entry.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
-            reader.readEntries(function (fileEntries) {
-                var remaining = fileEntries.length;
-                for (var _i = 0, fileEntries_1 = fileEntries; _i < fileEntries_1.length; _i++) {
-                    var fileEntry = fileEntries_1[_i];
-                    if (fileEntry.isFile) {
-                        fileEntry.file(function (file) {
+        FilesInput.prototype._traverseFolder = function (folder, files, remaining, callback) {
+            var _this = this;
+            var reader = folder.createReader();
+            var relativePath = folder.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
+            reader.readEntries(function (entries) {
+                remaining.count += entries.length;
+                for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
+                    var entry = entries_1[_i];
+                    if (entry.isFile) {
+                        entry.file(function (file) {
                             file.correctName = relativePath + file.name;
                             files.push(file);
-                            remaining--;
-                            if (remaining === 0) {
+                            if (--remaining.count === 0) {
                                 callback();
                             }
                         });
                     }
-                    else {
-                        remaining--;
-                        if (remaining === 0) {
-                            callback();
-                        }
+                    else if (entry.isDirectory) {
+                        _this._traverseFolder(entry, files, remaining, callback);
                     }
+                }
+                if (--remaining.count) {
+                    callback();
                 }
             });
         };
@@ -49973,15 +50031,11 @@ var BABYLON;
                     this._processFiles(files_1);
                 }
                 else {
-                    var remaining = folders.length;
-                    // Extract folder content
+                    var remaining = { count: folders.length };
                     for (var _i = 0, folders_1 = folders; _i < folders_1.length; _i++) {
                         var folder = folders_1[_i];
-                        this._handleFolderDrop(folder, files_1, function () {
-                            remaining--;
-                            if (remaining === 0) {
-                                _this._processFiles(files_1);
-                            }
+                        this._traverseFolder(folder, files_1, remaining, function () {
+                            _this._processFiles(files_1);
                         });
                     }
                 }
@@ -50013,6 +50067,11 @@ var BABYLON;
                 }, function (progress) {
                     if (_this._progressCallback) {
                         _this._progressCallback(progress);
+                    }
+                }, function (scene, message) {
+                    _this._currentScene = scene;
+                    if (_this._errorCallback) {
+                        _this._errorCallback(_this._sceneFileToLoad, _this._currentScene, message);
                     }
                 });
             }
@@ -56536,7 +56595,13 @@ var BABYLON;
             this._volumetricLightScatteringRTT.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._volumetricLightScatteringRTT.renderList = null;
             this._volumetricLightScatteringRTT.renderParticles = false;
-            scene.customRenderTargets.push(this._volumetricLightScatteringRTT);
+            var camera = this.getCamera();
+            if (camera) {
+                camera.customRenderTargets.push(this._volumetricLightScatteringRTT);
+            }
+            else {
+                scene.customRenderTargets.push(this._volumetricLightScatteringRTT);
+            }
             // Custom render function for submeshes
             var renderSubMesh = function (subMesh) {
                 var mesh = subMesh.getRenderingMesh();
@@ -62942,9 +63007,9 @@ var BABYLON;
                         }
                     }
                     currentRotation.multiplyInPlace(mesh.rotationQuaternion);
-                    mesh.getChildMeshes(true).forEach(processMesh.bind(_this, mesh.getAbsolutePosition()));
+                    mesh.getChildMeshes(true).filter(function (m) { return !!m.physicsImpostor; }).forEach(processMesh.bind(_this, mesh.getAbsolutePosition()));
                 };
-                meshChildren.forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
+                meshChildren.filter(function (m) { return !!m.physicsImpostor; }).forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
             }
         };
         CannonJSPlugin.prototype.removePhysicsBody = function (impostor) {
@@ -65542,6 +65607,8 @@ var BABYLON;
             if (this.hasTangents) {
                 serializationObject.tangents = Array.prototype.slice.call(this.getTangents());
             }
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             return serializationObject;
         };
         // Statics
@@ -65553,6 +65620,13 @@ var BABYLON;
             }
             if (serializationObject.tangents) {
                 result.setTangents(serializationObject.tangents);
+            }
+            // Animations
+            if (serializationObject.animations) {
+                for (var animationIndex = 0; animationIndex < serializationObject.animations.length; animationIndex++) {
+                    var parsedAnimation = serializationObject.animations[animationIndex];
+                    result.animations.push(BABYLON.Animation.Parse(parsedAnimation));
+                }
             }
             return result;
         };
@@ -70419,214 +70493,232 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.highlightlayer.js.map
 
+
 var BABYLON;
 (function (BABYLON) {
-    var MeshAssetTask = (function () {
-        function MeshAssetTask(name, meshesNames, rootUrl, sceneFilename) {
-            this.name = name;
-            this.meshesNames = meshesNames;
-            this.rootUrl = rootUrl;
-            this.sceneFilename = sceneFilename;
+    var AssetTaskState;
+    (function (AssetTaskState) {
+        AssetTaskState[AssetTaskState["INIT"] = 0] = "INIT";
+        AssetTaskState[AssetTaskState["RUNNING"] = 1] = "RUNNING";
+        AssetTaskState[AssetTaskState["DONE"] = 2] = "DONE";
+        AssetTaskState[AssetTaskState["ERROR"] = 3] = "ERROR";
+    })(AssetTaskState = BABYLON.AssetTaskState || (BABYLON.AssetTaskState = {}));
+    var AbstractAssetTask = (function () {
+        function AbstractAssetTask() {
             this.isCompleted = false;
+            this.taskState = AssetTaskState.INIT;
         }
-        MeshAssetTask.prototype.run = function (scene, onSuccess, onError) {
+        AbstractAssetTask.prototype.run = function (scene, onSuccess, onError) {
+            var _this = this;
+            this.taskState = AssetTaskState.RUNNING;
+            this.runTask(scene, function () {
+                _this.onDoneCallback(onSuccess, onError);
+            }, function (msg, exception) {
+                _this.onErrorCallback(onError, msg, exception);
+            });
+        };
+        AbstractAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
+            throw new Error("runTask is not implemented");
+        };
+        AbstractAssetTask.prototype.onErrorCallback = function (onError, message, exception) {
+            this.taskState = AssetTaskState.ERROR;
+            this.errorObject = {
+                message: message,
+                exception: exception
+            };
+            if (this.onError) {
+                this.onError(this, message, exception);
+            }
+            onError();
+        };
+        AbstractAssetTask.prototype.onDoneCallback = function (onSuccess, onError) {
+            try {
+                this.taskState = AssetTaskState.DONE;
+                this.isCompleted = true;
+                if (this.onSuccess) {
+                    this.onSuccess(this);
+                }
+                onSuccess();
+            }
+            catch (e) {
+                this.onErrorCallback(onError, "Task is done, error executing success callback(s)", e);
+            }
+        };
+        return AbstractAssetTask;
+    }());
+    BABYLON.AbstractAssetTask = AbstractAssetTask;
+    var MeshAssetTask = (function (_super) {
+        __extends(MeshAssetTask, _super);
+        function MeshAssetTask(name, meshesNames, rootUrl, sceneFilename) {
+            var _this = _super.call(this) || this;
+            _this.name = name;
+            _this.meshesNames = meshesNames;
+            _this.rootUrl = rootUrl;
+            _this.sceneFilename = sceneFilename;
+            return _this;
+        }
+        MeshAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
             BABYLON.SceneLoader.ImportMesh(this.meshesNames, this.rootUrl, this.sceneFilename, scene, function (meshes, particleSystems, skeletons) {
                 _this.loadedMeshes = meshes;
                 _this.loadedParticleSystems = particleSystems;
                 _this.loadedSkeletons = skeletons;
-                _this.isCompleted = true;
-                if (_this.onSuccess) {
-                    _this.onSuccess(_this);
-                }
                 onSuccess();
-            }, null, function () {
-                if (_this.onError) {
-                    _this.onError(_this);
-                }
-                onError();
+            }, null, function (scene, message, exception) {
+                onError(message, exception);
             });
         };
         return MeshAssetTask;
-    }());
+    }(AbstractAssetTask));
     BABYLON.MeshAssetTask = MeshAssetTask;
-    var TextFileAssetTask = (function () {
+    var TextFileAssetTask = (function (_super) {
+        __extends(TextFileAssetTask, _super);
         function TextFileAssetTask(name, url) {
-            this.name = name;
-            this.url = url;
-            this.isCompleted = false;
+            var _this = _super.call(this) || this;
+            _this.name = name;
+            _this.url = url;
+            return _this;
         }
-        TextFileAssetTask.prototype.run = function (scene, onSuccess, onError) {
+        TextFileAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
             BABYLON.Tools.LoadFile(this.url, function (data) {
                 _this.text = data;
-                _this.isCompleted = true;
-                if (_this.onSuccess) {
-                    _this.onSuccess(_this);
-                }
                 onSuccess();
-            }, null, scene.database, false, function () {
-                if (_this.onError) {
-                    _this.onError(_this);
-                }
-                onError();
+            }, null, scene.database, false, function (request, exception) {
+                onError(request.status + " " + request.statusText, exception);
             });
         };
         return TextFileAssetTask;
-    }());
+    }(AbstractAssetTask));
     BABYLON.TextFileAssetTask = TextFileAssetTask;
-    var BinaryFileAssetTask = (function () {
+    var BinaryFileAssetTask = (function (_super) {
+        __extends(BinaryFileAssetTask, _super);
         function BinaryFileAssetTask(name, url) {
-            this.name = name;
-            this.url = url;
-            this.isCompleted = false;
+            var _this = _super.call(this) || this;
+            _this.name = name;
+            _this.url = url;
+            return _this;
         }
-        BinaryFileAssetTask.prototype.run = function (scene, onSuccess, onError) {
+        BinaryFileAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
             BABYLON.Tools.LoadFile(this.url, function (data) {
                 _this.data = data;
-                _this.isCompleted = true;
-                if (_this.onSuccess) {
-                    _this.onSuccess(_this);
-                }
                 onSuccess();
-            }, null, scene.database, true, function () {
-                if (_this.onError) {
-                    _this.onError(_this);
-                }
-                onError();
+            }, null, scene.database, true, function (request, exception) {
+                onError(request.status + " " + request.statusText, exception);
             });
         };
         return BinaryFileAssetTask;
-    }());
+    }(AbstractAssetTask));
     BABYLON.BinaryFileAssetTask = BinaryFileAssetTask;
-    var ImageAssetTask = (function () {
+    var ImageAssetTask = (function (_super) {
+        __extends(ImageAssetTask, _super);
         function ImageAssetTask(name, url) {
-            this.name = name;
-            this.url = url;
-            this.isCompleted = false;
+            var _this = _super.call(this) || this;
+            _this.name = name;
+            _this.url = url;
+            return _this;
         }
-        ImageAssetTask.prototype.run = function (scene, onSuccess, onError) {
+        ImageAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
             var img = new Image();
             BABYLON.Tools.SetCorsBehavior(this.url, img);
             img.onload = function () {
                 _this.image = img;
-                _this.isCompleted = true;
-                if (_this.onSuccess) {
-                    _this.onSuccess(_this);
-                }
                 onSuccess();
             };
-            img.onerror = function () {
-                if (_this.onError) {
-                    _this.onError(_this);
-                }
-                onError();
+            img.onerror = function (err) {
+                onError("Error loading image", err);
             };
             img.src = this.url;
         };
         return ImageAssetTask;
-    }());
+    }(AbstractAssetTask));
     BABYLON.ImageAssetTask = ImageAssetTask;
-    var TextureAssetTask = (function () {
+    var TextureAssetTask = (function (_super) {
+        __extends(TextureAssetTask, _super);
         function TextureAssetTask(name, url, noMipmap, invertY, samplingMode) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-            this.name = name;
-            this.url = url;
-            this.noMipmap = noMipmap;
-            this.invertY = invertY;
-            this.samplingMode = samplingMode;
-            this.isCompleted = false;
+            var _this = _super.call(this) || this;
+            _this.name = name;
+            _this.url = url;
+            _this.noMipmap = noMipmap;
+            _this.invertY = invertY;
+            _this.samplingMode = samplingMode;
+            return _this;
         }
-        TextureAssetTask.prototype.run = function (scene, onSuccess, onError) {
-            var _this = this;
+        TextureAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var onload = function () {
-                _this.isCompleted = true;
-                if (_this.onSuccess) {
-                    _this.onSuccess(_this);
-                }
                 onSuccess();
             };
-            var onerror = function () {
-                if (_this.onError) {
-                    _this.onError(_this);
-                }
-                onError();
+            var onerror = function (msg, exception) {
+                onError(msg, exception);
             };
             this.texture = new BABYLON.Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onerror);
         };
         return TextureAssetTask;
-    }());
+    }(AbstractAssetTask));
     BABYLON.TextureAssetTask = TextureAssetTask;
-    var CubeTextureAssetTask = (function () {
+    var CubeTextureAssetTask = (function (_super) {
+        __extends(CubeTextureAssetTask, _super);
         function CubeTextureAssetTask(name, url, extensions, noMipmap, files) {
-            this.name = name;
-            this.url = url;
-            this.extensions = extensions;
-            this.noMipmap = noMipmap;
-            this.files = files;
-            this.isCompleted = false;
+            var _this = _super.call(this) || this;
+            _this.name = name;
+            _this.url = url;
+            _this.extensions = extensions;
+            _this.noMipmap = noMipmap;
+            _this.files = files;
+            return _this;
         }
-        CubeTextureAssetTask.prototype.run = function (scene, onSuccess, onError) {
-            var _this = this;
+        CubeTextureAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var onload = function () {
-                _this.isCompleted = true;
-                if (_this.onSuccess) {
-                    _this.onSuccess(_this);
-                }
                 onSuccess();
             };
-            var onerror = function () {
-                if (_this.onError) {
-                    _this.onError(_this);
-                }
-                onError();
+            var onerror = function (msg, exception) {
+                onError(msg, exception);
             };
             this.texture = new BABYLON.CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
         };
         return CubeTextureAssetTask;
-    }());
+    }(AbstractAssetTask));
     BABYLON.CubeTextureAssetTask = CubeTextureAssetTask;
-    var HDRCubeTextureAssetTask = (function () {
+    var HDRCubeTextureAssetTask = (function (_super) {
+        __extends(HDRCubeTextureAssetTask, _super);
         function HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
             if (noMipmap === void 0) { noMipmap = false; }
             if (generateHarmonics === void 0) { generateHarmonics = true; }
             if (useInGammaSpace === void 0) { useInGammaSpace = false; }
             if (usePMREMGenerator === void 0) { usePMREMGenerator = false; }
-            this.name = name;
-            this.url = url;
-            this.size = size;
-            this.noMipmap = noMipmap;
-            this.generateHarmonics = generateHarmonics;
-            this.useInGammaSpace = useInGammaSpace;
-            this.usePMREMGenerator = usePMREMGenerator;
-            this.isCompleted = false;
+            var _this = _super.call(this) || this;
+            _this.name = name;
+            _this.url = url;
+            _this.size = size;
+            _this.noMipmap = noMipmap;
+            _this.generateHarmonics = generateHarmonics;
+            _this.useInGammaSpace = useInGammaSpace;
+            _this.usePMREMGenerator = usePMREMGenerator;
+            return _this;
         }
         HDRCubeTextureAssetTask.prototype.run = function (scene, onSuccess, onError) {
-            var _this = this;
             var onload = function () {
-                _this.isCompleted = true;
-                if (_this.onSuccess) {
-                    _this.onSuccess(_this);
-                }
                 onSuccess();
             };
-            var onerror = function () {
-                if (_this.onError) {
-                    _this.onError(_this);
-                }
-                onError();
+            var onerror = function (message, exception) {
+                onError(message, exception);
             };
             this.texture = new BABYLON.HDRCubeTexture(this.url, scene, this.size, this.noMipmap, this.generateHarmonics, this.useInGammaSpace, this.usePMREMGenerator, onload, onerror);
         };
         return HDRCubeTextureAssetTask;
-    }());
+    }(AbstractAssetTask));
     BABYLON.HDRCubeTextureAssetTask = HDRCubeTextureAssetTask;
     var AssetsManager = (function () {
         function AssetsManager(scene) {
             this.tasks = new Array();
             this.waitingTasksCount = 0;
+            //Observables
+            this.onTaskSuccessObservable = new BABYLON.Observable();
+            this.onTaskErrorObservable = new BABYLON.Observable();
+            this.onTasksDoneObservable = new BABYLON.Observable();
             this.useDefaultLoadingScreen = true;
             this._scene = scene;
         }
@@ -70673,25 +70765,45 @@ var BABYLON;
         AssetsManager.prototype._decreaseWaitingTasksCount = function () {
             this.waitingTasksCount--;
             if (this.waitingTasksCount === 0) {
-                if (this.onFinish) {
-                    this.onFinish(this.tasks);
+                try {
+                    if (this.onFinish) {
+                        this.onFinish(this.tasks);
+                    }
+                    this.onTasksDoneObservable.notifyObservers(this.tasks);
+                }
+                catch (e) {
+                    BABYLON.Tools.Error("Error running tasks-done callbacks.");
+                    console.log(e);
                 }
                 this._scene.getEngine().hideLoadingUI();
             }
         };
         AssetsManager.prototype._runTask = function (task) {
             var _this = this;
-            task.run(this._scene, function () {
-                if (_this.onTaskSuccess) {
-                    _this.onTaskSuccess(task);
+            var done = function () {
+                try {
+                    if (_this.onTaskSuccess) {
+                        _this.onTaskSuccess(task);
+                    }
+                    _this.onTaskSuccessObservable.notifyObservers(task);
+                    _this._decreaseWaitingTasksCount();
                 }
-                _this._decreaseWaitingTasksCount();
-            }, function () {
+                catch (e) {
+                    error("Error executing task success callbacks", e);
+                }
+            };
+            var error = function (message, exception) {
+                task.errorObject = task.errorObject || {
+                    message: message,
+                    exception: exception
+                };
                 if (_this.onTaskError) {
                     _this.onTaskError(task);
                 }
+                _this.onTaskErrorObservable.notifyObservers(task);
                 _this._decreaseWaitingTasksCount();
-            });
+            };
+            task.run(this._scene, done, error);
         };
         AssetsManager.prototype.reset = function () {
             this.tasks = new Array();
@@ -70703,6 +70815,7 @@ var BABYLON;
                 if (this.onFinish) {
                     this.onFinish(this.tasks);
                 }
+                this.onTasksDoneObservable.notifyObservers(this.tasks);
                 return this;
             }
             if (this.useDefaultLoadingScreen) {

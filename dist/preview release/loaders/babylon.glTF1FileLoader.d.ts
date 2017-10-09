@@ -27,13 +27,17 @@ declare module BABYLON {
          */
         onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
         /**
-         * Raised when all LODs are complete (or if there is no LOD and model is complete)
+         * Raised when the visible components (geometry, materials, textures, etc.) are first ready to be rendered.
+         * For assets with LODs, raised when the first LOD is complete.
+         * For assets without LODs, raised when the model is complete just before onComplete.
+         */
+        onReady: () => void;
+        /**
+         * Raised when the asset is completely loaded, just before the loader is disposed.
+         * For assets with LODs, raised when all of the LODs are complete.
+         * For assets without LODs, raised when the model is complete just after onReady.
          */
         onComplete: () => void;
-        /**
-         * Raised when first LOD complete (or if there is no LOD and model is complete)
-         */
-        onFirstLODComplete: () => void;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;

@@ -252,7 +252,13 @@
             this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._volumetricLightScatteringRTT.renderList = null;
             this._volumetricLightScatteringRTT.renderParticles = false;
-            scene.customRenderTargets.push(this._volumetricLightScatteringRTT);
+
+            var camera = this.getCamera();
+            if (camera) {
+                camera.customRenderTargets.push(this._volumetricLightScatteringRTT);
+            } else {
+                scene.customRenderTargets.push(this._volumetricLightScatteringRTT);
+            }
 
             // Custom render function for submeshes
             var renderSubMesh = (subMesh: SubMesh): void => {

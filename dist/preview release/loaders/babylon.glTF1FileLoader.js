@@ -53,10 +53,10 @@ var BABYLON;
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         };
         GLTFFileLoader._parse = function (data, onError) {
-            if (data instanceof ArrayBuffer) {
-                return GLTFFileLoader._parseBinary(data, onError);
-            }
             try {
+                if (data instanceof ArrayBuffer) {
+                    return GLTFFileLoader._parseBinary(data, onError);
+                }
                 return {
                     json: JSON.parse(data),
                     bin: null
