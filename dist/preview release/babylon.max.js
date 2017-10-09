@@ -11556,6 +11556,7 @@ var BABYLON;
             this.name = name;
             this.id = name;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
+            this.uniqueId = this._scene.getUniqueId();
             this._initCache();
         }
         Object.defineProperty(Node.prototype, "parent", {
@@ -16869,7 +16870,6 @@ var BABYLON;
             this._useAlternateCameraConfiguration = false;
             this._alternateRendering = false;
             this.requireLightSorting = false;
-            this._uniqueIdCounter = 0;
             this._activeMeshesFrozen = false;
             this._engine = engine || BABYLON.Engine.LastCreatedEngine;
             this._engine.scenes.push(this);
@@ -18212,12 +18212,11 @@ var BABYLON;
         };
         // Methods
         Scene.prototype.getUniqueId = function () {
-            var result = this._uniqueIdCounter;
-            this._uniqueIdCounter++;
+            var result = Scene._uniqueIdCounter;
+            Scene._uniqueIdCounter++;
             return result;
         };
         Scene.prototype.addMesh = function (newMesh) {
-            newMesh.uniqueId = this.getUniqueId();
             var position = this.meshes.push(newMesh);
             //notify the collision coordinator
             if (this.collisionCoordinator) {
@@ -18289,7 +18288,6 @@ var BABYLON;
             return index;
         };
         Scene.prototype.addLight = function (newLight) {
-            newLight.uniqueId = this.getUniqueId();
             this.lights.push(newLight);
             this.sortLightsByPriority();
             this.onNewLightAddedObservable.notifyObservers(newLight);
@@ -18300,7 +18298,6 @@ var BABYLON;
             }
         };
         Scene.prototype.addCamera = function (newCamera) {
-            newCamera.uniqueId = this.getUniqueId();
             var position = this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         };
@@ -20104,6 +20101,7 @@ var BABYLON;
         Scene._FOGMODE_EXP = 1;
         Scene._FOGMODE_EXP2 = 2;
         Scene._FOGMODE_LINEAR = 3;
+        Scene._uniqueIdCounter = 0;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         /** The distance in pixel that you have to move to prevent some events */
@@ -33950,7 +33948,10 @@ var BABYLON;
         };
         PBRMaterial.prototype.clone = function (name) {
             var _this = this;
-            return BABYLON.SerializationHelper.Clone(function () { return new PBRMaterial(name, _this.getScene()); }, this);
+            var clone = BABYLON.SerializationHelper.Clone(function () { return new PBRMaterial(name, _this.getScene()); }, this);
+            clone.id = name;
+            clone.name = name;
+            return clone;
         };
         PBRMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
@@ -34254,7 +34255,10 @@ var BABYLON;
         };
         PBRMetallicRoughnessMaterial.prototype.clone = function (name) {
             var _this = this;
-            return BABYLON.SerializationHelper.Clone(function () { return new PBRMetallicRoughnessMaterial(name, _this.getScene()); }, this);
+            var clone = BABYLON.SerializationHelper.Clone(function () { return new PBRMetallicRoughnessMaterial(name, _this.getScene()); }, this);
+            clone.id = name;
+            clone.name = name;
+            return clone;
         };
         /**
          * Serialize the material to a parsable JSON object.
@@ -34357,7 +34361,10 @@ var BABYLON;
         };
         PBRSpecularGlossinessMaterial.prototype.clone = function (name) {
             var _this = this;
-            return BABYLON.SerializationHelper.Clone(function () { return new PBRSpecularGlossinessMaterial(name, _this.getScene()); }, this);
+            var clone = BABYLON.SerializationHelper.Clone(function () { return new PBRSpecularGlossinessMaterial(name, _this.getScene()); }, this);
+            clone.id = name;
+            clone.name = name;
+            return clone;
         };
         /**
          * Serialize the material to a parsable JSON object.

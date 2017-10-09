@@ -136,11 +136,11 @@ var BABYLON;
                     if (this._focusedControl == control) {
                         return;
                     }
-                    if (!this._focusedControl) {
-                        control.onFocus();
-                    }
-                    else {
+                    if (this._focusedControl) {
                         this._focusedControl.onBlur();
+                    }
+                    if (control) {
+                        control.onFocus();
                     }
                     this._focusedControl = control;
                 },
@@ -1164,6 +1164,12 @@ var BABYLON;
                 result.x = globalCoordinates.x - this._currentMeasure.left;
                 result.y = globalCoordinates.y - this._currentMeasure.top;
                 return this;
+            };
+            Control.prototype.getParentLocalCoordinates = function (globalCoordinates) {
+                var result = BABYLON.Vector2.Zero();
+                result.x = globalCoordinates.x - this._cachedParentMeasure.left;
+                result.y = globalCoordinates.y - this._cachedParentMeasure.top;
+                return result;
             };
             Control.prototype.moveToVector3 = function (position, scene) {
                 if (!this._host || this._root !== this._host._rootContainer) {
@@ -3847,7 +3853,10 @@ var BABYLON;
                 this._markAsDirty();
                 this.onFocusObservable.notifyObservers(this);
                 if (navigator.userAgent.indexOf("Mobile") !== -1) {
-                    this.text = prompt(this.promptMessage);
+                    var value = prompt(this.promptMessage);
+                    if (value !== null) {
+                        this.text = value;
+                    }
                     this._host.focusedControl = null;
                     return;
                 }
