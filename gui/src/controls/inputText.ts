@@ -363,8 +363,8 @@ module BABYLON.GUI {
             context.restore();
         }
 
-        protected _onPointerDown(coordinates: Vector2): boolean {
-            if (!super._onPointerDown(coordinates)) {
+        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
+            if (!super._onPointerDown(coordinates, buttonIndex)) {
                 return false;
             }
 
@@ -373,8 +373,8 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerUp(coordinates: Vector2): void {
-            super._onPointerUp(coordinates);
+        protected _onPointerUp(coordinates: Vector2, buttonIndex: number): void {
+            super._onPointerUp(coordinates, buttonIndex);
         }  
 
         public dispose() {
