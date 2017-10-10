@@ -941,6 +941,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "widthInPixels", {
+                get: function () {
+                    return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "height", {
                 get: function () {
                     return this._height.toString(this._host);
@@ -952,6 +959,13 @@ var BABYLON;
                     if (this._height.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "heightInPixels", {
+                get: function () {
+                    return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
                 enumerable: true,
                 configurable: true
@@ -980,6 +994,13 @@ var BABYLON;
                     }
                     this._fontStyle = value;
                     this._fontSet = true;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "fontSizeInPixels", {
+                get: function () {
+                    return this._fontSize.getValueInPixel(this._host, 100);
                 },
                 enumerable: true,
                 configurable: true
@@ -1077,6 +1098,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "paddingLeftInPixels", {
+                get: function () {
+                    return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "paddingRight", {
                 get: function () {
                     return this._paddingRight.toString(this._host);
@@ -1085,6 +1113,13 @@ var BABYLON;
                     if (this._paddingRight.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "paddingRightInPixels", {
+                get: function () {
+                    return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
                 enumerable: true,
                 configurable: true
@@ -1101,6 +1136,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "paddingTopInPixels", {
+                get: function () {
+                    return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "paddingBottom", {
                 get: function () {
                     return this._paddingBottom.toString(this._host);
@@ -1109,6 +1151,13 @@ var BABYLON;
                     if (this._paddingBottom.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "paddingBottomInPixels", {
+                get: function () {
+                    return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
                 enumerable: true,
                 configurable: true
@@ -1125,6 +1174,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "leftInPixels", {
+                get: function () {
+                    return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "top", {
                 get: function () {
                     return this._top.toString(this._host);
@@ -1133,6 +1189,13 @@ var BABYLON;
                     if (this._top.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "topInPixels", {
+                get: function () {
+                    return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
                 enumerable: true,
                 configurable: true
@@ -1149,6 +1212,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "linkOffsetXInPixels", {
+                get: function () {
+                    return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "linkOffsetY", {
                 get: function () {
                     return this._linkOffsetY.toString(this._host);
@@ -1157,6 +1227,13 @@ var BABYLON;
                     if (this._linkOffsetY.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "linkOffsetYInPixels", {
+                get: function () {
+                    return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
                 enumerable: true,
                 configurable: true
