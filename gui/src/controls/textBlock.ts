@@ -131,9 +131,11 @@ module BABYLON.GUI {
 
             this._fontSize.ignoreAdaptiveScaling = false;
             
+            var _lines = this.text.split("\n");
+            
             var maxLineWidth: number = 0;
 
-            var _lines = this.text.split("\n").forEach(_line => {
+            _lines.forEach(_line => {
                 //can't get context here? if so, have 2 calculations in _additionalProcessing instead? one for with idealWidth and one without
                 var lineWidth: number = this._parseLine(_line, context).width;
 
@@ -148,7 +150,7 @@ module BABYLON.GUI {
 
             return {
                 width: maxLineWidth,
-                height: this._fontOffset.height * this._lines.length + 'px'
+                height: this._fontOffset.height * _lines.length + 'px'
             }
         }
 
