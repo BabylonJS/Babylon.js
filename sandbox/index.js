@@ -94,7 +94,7 @@ if (BABYLON.Engine.isSupported()) {
                 framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
             }
 
-            currentScene.activeCamera.pinchPrecision = currentScene.activeCamera.radius / 100;
+            currentScene.activeCamera.pinchPrecision = 100 / currentScene.activeCamera.radius;
         }
 
         currentScene.activeCamera.attachControl(canvas); 
