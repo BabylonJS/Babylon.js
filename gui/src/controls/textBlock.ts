@@ -136,7 +136,7 @@ module BABYLON.GUI {
             var maxLineWidth: number = 0;
 
             _lines.forEach(_line => {
-                //can't get context here? if so, have 2 calculations in _additionalProcessing instead? one for with idealWidth and one without
+                //can't get context here? if so, have 2 calculations in _additionalProcessing instead? one with idealWidth and one without
                 var lineWidth: number = this._parseLine(_line, context).width;
 
                 if (lineWidth > maxLineWidth) maxLineWidth = lineWidth;
