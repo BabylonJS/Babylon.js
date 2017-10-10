@@ -18,6 +18,8 @@ module BABYLON.GUI {
 
         set resizeToFit(value: boolean) {
             this._resizeToFit = value;
+            this._width.ignoreAdaptiveScaling = true;
+            this._height.ignoreAdaptiveScaling = true;
         }
 
         public get textWrapping(): boolean {
@@ -126,7 +128,7 @@ module BABYLON.GUI {
             }
         }
 
-        public getRawFontSize(): object {
+        /*public getRawFontSize(): object {
             var ignoreAdaptiveScaling: boolean = this._fontSize.ignoreAdaptiveScaling;
 
             this._fontSize.ignoreAdaptiveScaling = false;
@@ -152,7 +154,7 @@ module BABYLON.GUI {
                 width: maxLineWidth,
                 height: this._fontOffset.height * _lines.length + 'px'
             }
-        }
+        }*/
 
         protected _parseLine(line: string='', context: CanvasRenderingContext2D): object {
           return {text: line, width: context.measureText(line).width};
@@ -213,12 +215,12 @@ module BABYLON.GUI {
             }
 
             if (this._resizeToFit) {
-                this.width = maxLineWidth + 'px';
+                this.width = 100 + 'px'; //maxLineWidth + 'px';
                 this.height = this._fontOffset.height * this._lines.length + 'px';
             }
 
-            //console.log('width', maxLineWidth);
-            //console.log('height', rootY, this._fontOffset.height);
+            console.log('width', maxLineWidth);
+            console.log('height', this._fontOffset.height * this._lines.length);
         }
     }
 }
