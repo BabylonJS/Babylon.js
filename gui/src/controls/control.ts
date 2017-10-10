@@ -20,7 +20,7 @@ module BABYLON.GUI {
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
-        private _cachedParentMeasure = Measure.Empty();
+        protected _cachedParentMeasure = Measure.Empty();
         private _paddingLeft = new ValueAndUnit(0);
         private _paddingRight = new ValueAndUnit(0);
         private _paddingTop = new ValueAndUnit(0);

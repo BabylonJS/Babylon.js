@@ -2522,6 +2522,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Slider.prototype, "barOffsetInPixels", {
+                get: function () {
+                    return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Slider.prototype, "thumbWidth", {
                 get: function () {
                     return this._thumbWidth.toString(this._host);
@@ -2533,6 +2540,13 @@ var BABYLON;
                     if (this._thumbWidth.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Slider.prototype, "thumbWidthInPixels", {
+                get: function () {
+                    return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
                 enumerable: true,
                 configurable: true
@@ -3831,6 +3845,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "maxWidthInPixels", {
+                get: function () {
+                    return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(InputText.prototype, "margin", {
                 get: function () {
                     return this._margin.toString(this._host);
@@ -3842,6 +3863,13 @@ var BABYLON;
                     if (this._margin.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "marginInPixels", {
+                get: function () {
+                    return this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
                 enumerable: true,
                 configurable: true

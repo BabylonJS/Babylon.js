@@ -27,6 +27,10 @@ module BABYLON.GUI {
             return this._maxWidth.toString(this._host);
         }
 
+        public get maxWidthInPixels(): number  {
+            return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }             
+
         public set maxWidth(value: string | number ) {
             if (this._maxWidth.toString(this._host) === value) {
                 return;
@@ -40,6 +44,10 @@ module BABYLON.GUI {
         public get margin(): string {
             return this._margin.toString(this._host);
         }
+
+        public get marginInPixels(): number  {
+            return this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }            
 
         public set margin(value: string) {
             if (this._margin.toString(this._host) === value) {
