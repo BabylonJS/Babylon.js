@@ -79,15 +79,11 @@ if (BABYLON.Engine.isSupported()) {
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {
             currentScene.createDefaultCameraOrLight(true);
             // Enable camera's behaviors
-            currentScene.activeCamera.useBouncingBehavior = true;
             currentScene.activeCamera.useFramingBehavior = true;
 
             var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
             framingBehavior.framingTime = 0;
             framingBehavior.elevationReturnTime = -1;
-
-            var bouncingBehavior = currentScene.activeCamera.getBehaviorByName("Bouncing");
-            bouncingBehavior.autoTransitionRange = true;
 
             if (currentScene.meshes.length) {
                 var worldExtends = currentScene.getWorldExtends();
