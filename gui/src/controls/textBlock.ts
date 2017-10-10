@@ -126,6 +126,32 @@ module BABYLON.GUI {
             }
         }
 
+        public getRawFontSize(): object {
+            var ignoreAdaptiveScaling: boolean = this._fontSize.ignoreAdaptiveScaling;
+
+            this._fontSize.ignoreAdaptiveScaling = false;
+            
+            var maxLineWidth: number = 0;
+
+            var _lines = this.text.split("\n").forEach(_line => {
+                //can't get context here? if so, have 2 calculations in _additionalProcessing instead? one for with idealWidth and one without
+                var lineWidth: number = this._parseLine(_line, context).width;
+
+                if (lineWidth > maxLineWidth) maxLineWidth = lineWidth;
+            });
+
+            this._prepareFont();
+
+            this._fontSize.ignoreAdaptiveScaling = ignoreAdaptiveScaling;
+
+            this._prepareFont();
+
+            return {
+                width: maxLineWidth,
+                height: this._fontOffset.height * this._lines.length + 'px'
+            }
+        }
+
         protected _parseLine(line: string='', context: CanvasRenderingContext2D): object {
           return {text: line, width: context.measureText(line).width};
         }
