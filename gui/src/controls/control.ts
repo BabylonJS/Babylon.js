@@ -10,7 +10,7 @@ module BABYLON.GUI {
         public _currentMeasure = Measure.Empty();
         private _fontFamily = "Arial";
         private _fontStyle = "";
-        protected _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
+        private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
         private _font: string;
         public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
@@ -917,7 +917,7 @@ module BABYLON.GUI {
             return false;
         }
 
-        protected _prepareFont() {
+        private _prepareFont() {
             if (!this._font && !this._fontSet) {
                 return;
             }
