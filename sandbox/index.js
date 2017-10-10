@@ -204,4 +204,19 @@ if (BABYLON.Engine.isSupported()) {
             }, 5000);
         }, 5000);
     }
+
+    sizeScene();
+
+    window.onresize = function () {
+        sizeScene();
+    }
+}
+
+function sizeScene () {
+    let divInspWrapper = document.getElementsByClassName('insp-wrapper')[0];
+    if (divInspWrapper) {
+        let divFooter = document.getElementsByClassName('footer')[0];
+        divInspWrapper.style.height = (document.body.clientHeight - divFooter.clientHeight) + "px";
+        divInspWrapper.style['max-width'] = document.body.clientWidth + "px";
+    }
 }
