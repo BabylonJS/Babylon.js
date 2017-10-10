@@ -215,12 +215,15 @@ module BABYLON.GUI {
             }
 
             if (this._resizeToFit) {
-                this.width = 100 + 'px'; //maxLineWidth + 'px';
+                this.width = maxLineWidth + 'px';
                 this.height = this._fontOffset.height * this._lines.length + 'px';
             }
 
-            console.log('width', maxLineWidth);
-            console.log('height', this._fontOffset.height * this._lines.length);
+            console.log('width', this.width);
+            console.log('height', this.height);
+
+            /*console.log('width', maxLineWidth);
+            console.log('height', this._fontOffset.height * this._lines.length);*/
         }
     }
 }
