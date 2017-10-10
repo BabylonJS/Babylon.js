@@ -10,6 +10,17 @@ module BABYLON.GUI {
 
         private _lines: any[];
         private _totalHeight: number;
+        private _resizeToFit: boolean = false;
+
+        get resizeToFit(): boolean {
+            return this._resizeToFit;
+        }
+
+        set resizeToFit(value: boolean) {
+            this._resizeToFit = value;
+            this._width.ignoreAdaptiveScaling = true;
+            this._height.ignoreAdaptiveScaling = true;
+        }
 
         public get textWrapping(): boolean {
             return this._textWrapping;
@@ -86,6 +97,7 @@ module BABYLON.GUI {
                     break;
             }
 
+
             context.fillText(text, this._currentMeasure.left + x, y);
         }
 
@@ -105,7 +117,7 @@ module BABYLON.GUI {
             this._lines = [];
             var _lines = this.text.split("\n");
 
-            if (this._textWrapping) {
+            if (this._textWrapping && !this._resizeToFit) {
                 for(var _line of _lines) {
                     this._lines.push(this._parseLineWithTextWrapping(_line, context));
                 }
@@ -115,6 +127,34 @@ module BABYLON.GUI {
                 }
             }
         }
+
+        /*public getRawFontSize(): object {
+            var ignoreAdaptiveScaling: boolean = this._fontSize.ignoreAdaptiveScaling;
+
+            this._fontSize.ignoreAdaptiveScaling = false;
+            
+            var _lines = this.text.split("\n");
+            
+            var maxLineWidth: number = 0;
+
+            _lines.forEach(_line => {
+                //can't get context here? if so, have 2 calculations in _additionalProcessing instead? one with idealWidth and one without
+                var lineWidth: number = this._parseLine(_line, context).width;
+
+                if (lineWidth > maxLineWidth) maxLineWidth = lineWidth;
+            });
+
+            this._prepareFont();
+
+            this._fontSize.ignoreAdaptiveScaling = ignoreAdaptiveScaling;
+
+            this._prepareFont();
+
+            return {
+                width: maxLineWidth,
+                height: this._fontOffset.height * _lines.length + 'px'
+            }
+        }*/
 
         protected _parseLine(line: string='', context: CanvasRenderingContext2D): object {
           return {text: line, width: context.measureText(line).width};
@@ -165,10 +205,25 @@ module BABYLON.GUI {
 
             rootY += this._currentMeasure.top;
 
+            var maxLineWidth: number = 0;
+
             for (var line of this._lines) {
                 this._drawText(line.text, line.width, rootY, context);
                 rootY += this._fontOffset.height;
+
+                if (line.width > maxLineWidth) maxLineWidth = line.width;
             }
+
+            if (this._resizeToFit) {
+                this.width = maxLineWidth + 'px';
+                this.height = this._fontOffset.height * this._lines.length + 'px';
+            }
+
+            console.log('width', this.width);
+            console.log('height', this.height);
+
+            /*console.log('width', maxLineWidth);
+            console.log('height', this._fontOffset.height * this._lines.length);*/
         }
     }
 }
