@@ -42,6 +42,10 @@ module BABYLON.GUI {
             return this._barOffset.toString(this._host);
         }
 
+        public get barOffsetInPixels(): number  {
+            return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }            
+
         public set barOffset(value: string | number ) {
             if (this._barOffset.toString(this._host) === value) {
                 return;
@@ -55,6 +59,10 @@ module BABYLON.GUI {
         public get thumbWidth(): string | number  {
             return this._thumbWidth.toString(this._host);
         }
+
+        public get thumbWidthInPixels(): number  {
+            return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }          
 
         public set thumbWidth(value: string | number ) {
             if (this._thumbWidth.toString(this._host) === value) {
