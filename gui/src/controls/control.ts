@@ -208,6 +208,10 @@ module BABYLON.GUI {
             return this._width.toString(this._host);
         }
 
+        public get widthInPixels(): number  {
+            return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }
+
         public set width(value: string | number ) {
             if (this._width.toString(this._host) === value) {
                 return;
@@ -220,6 +224,10 @@ module BABYLON.GUI {
 
         public get height(): string | number  {
             return this._height.toString(this._host);
+        }
+
+        public get heightInPixels(): number  {
+            return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
         }
 
         public set height(value: string | number ) {
@@ -256,7 +264,11 @@ module BABYLON.GUI {
 
             this._fontStyle = value;
             this._fontSet = true;
-        }        
+        }     
+        
+        public get fontSizeInPixels(): number  {
+            return this._fontSize.getValueInPixel(this._host, 100);
+        }
 
         public get fontSize(): string | number  {
             return this._fontSize.toString(this._host);
@@ -336,6 +348,10 @@ module BABYLON.GUI {
             return this._paddingLeft.toString(this._host);
         }
 
+        public get paddingLeftInPixels(): number  {
+            return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }             
+
         public set paddingLeft(value: string | number ) {
             if (this._paddingLeft.fromString(value)) {
                 this._markAsDirty();
@@ -345,6 +361,10 @@ module BABYLON.GUI {
         public get paddingRight(): string | number  {
             return this._paddingRight.toString(this._host);
         }
+
+        public get paddingRightInPixels(): number  {
+            return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }         
 
         public set paddingRight(value: string | number ) {
             if (this._paddingRight.fromString(value)) {
@@ -356,6 +376,10 @@ module BABYLON.GUI {
             return this._paddingTop.toString(this._host);
         }
 
+        public get paddingTopInPixels(): number  {
+            return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        }         
+
         public set paddingTop(value: string | number ) {
             if (this._paddingTop.fromString(value)) {
                 this._markAsDirty();
@@ -365,6 +389,10 @@ module BABYLON.GUI {
         public get paddingBottom(): string | number  {
             return this._paddingBottom.toString(this._host);
         }
+
+        public get paddingBottomInPixels(): number  {
+            return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        }                 
 
         public set paddingBottom(value: string | number ) {
             if (this._paddingBottom.fromString(value)) {
@@ -376,6 +404,10 @@ module BABYLON.GUI {
             return this._left.toString(this._host);
         }
 
+        public get leftInPixels(): number  {
+            return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }          
+
         public set left(value: string | number ) {
             if (this._left.fromString(value)) {
                 this._markAsDirty();
@@ -385,6 +417,10 @@ module BABYLON.GUI {
         public get top(): string | number  {
             return this._top.toString(this._host);
         }
+
+        public get topInPixels(): number  {
+            return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        }        
 
         public set top(value: string | number ) {
             if (this._top.fromString(value)) {
@@ -396,6 +432,10 @@ module BABYLON.GUI {
             return this._linkOffsetX.toString(this._host);
         }
 
+        public get linkOffsetXInPixels(): number  {
+            return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }        
+
         public set linkOffsetX(value: string | number ) {
             if (this._linkOffsetX.fromString(value)) {
                 this._markAsDirty();
@@ -405,6 +445,10 @@ module BABYLON.GUI {
         public get linkOffsetY(): string | number  {
             return this._linkOffsetY.toString(this._host);
         }
+
+        public get linkOffsetYInPixels(): number  {
+            return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        }        
 
         public set linkOffsetY(value: string | number ) {
             if (this._linkOffsetY.fromString(value)) {

@@ -16730,7 +16730,7 @@ var BABYLON;
             this._previousHasSwiped = false;
             this._currentPickResult = null;
             this._previousPickResult = null;
-            this._isButtonPressed = false;
+            this._totalPointersPressed = 0;
             this._doubleClickOccured = false;
             /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
             this.cameraToUseForPointers = null;
@@ -17530,7 +17530,7 @@ var BABYLON;
                             var _this = this;
                             var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger) && mesh == _this._pickedDownMesh; }, false, this.cameraToUseForPointers);
                             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                                if (this._isButtonPressed &&
+                                if (this._totalPointersPressed !== 0 &&
                                     ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                     (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
                                         Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
@@ -17774,7 +17774,7 @@ var BABYLON;
                 _this._processPointerMove(pickResult, evt);
             };
             this._onPointerDown = function (evt) {
-                _this._isButtonPressed = true;
+                _this._totalPointersPressed++;
                 _this._pickedDownMesh = null;
                 _this._meshPickProceed = false;
                 _this._updatePointerPosition(evt);
@@ -17828,10 +17828,10 @@ var BABYLON;
                 }
             };
             this._onPointerUp = function (evt) {
-                if (!_this._isButtonPressed) {
+                if (_this._totalPointersPressed === 0) {
                     return; // So we need to test it the pointer down was pressed before.
                 }
-                _this._isButtonPressed = false;
+                _this._totalPointersPressed--;
                 _this._pickedUpMesh = null;
                 _this._meshPickProceed = false;
                 _this._updatePointerPosition(evt);
