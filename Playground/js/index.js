@@ -30,6 +30,7 @@
         tabSize: "auto",
         insertSpaces: "auto",
         roundedSelection: true,
+        automaticLayout: true,
         scrollBeyondLastLine: false,
         readOnly: false,
         theme: "vs",
