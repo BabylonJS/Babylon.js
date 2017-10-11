@@ -1916,6 +1916,12 @@
                 Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
 
+            if (this.activeCamera._alternateCamera) {
+                let otherCamera = this.activeCamera._alternateCamera;
+                otherCamera.getViewMatrix().multiplyToRef(otherCamera.getProjectionMatrix(), Tmp.Matrix[0]);
+                Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
+            }
+
             if (this._sceneUbo.useUbo) {
                 this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
                 this._sceneUbo.updateMatrix("view", this._viewMatrix);
