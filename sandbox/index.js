@@ -94,7 +94,8 @@ if (BABYLON.Engine.isSupported()) {
             currentScene.activeCamera.pinchPrecision = 200 / currentScene.activeCamera.radius;
             currentScene.activeCamera.upperRadiusLimit = 5 * currentScene.activeCamera.radius;
 
-            currentScene.activeCamera.wheelPrecisionPercentage = 0.01;
+            currentScene.activeCamera.wheelDeltaPercentage = 0.01;
+            currentScene.activeCamera.pinchDeltaPercentage = 0.01;
         }
 
         currentScene.activeCamera.attachControl(canvas); 
