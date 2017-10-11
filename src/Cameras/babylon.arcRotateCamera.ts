@@ -108,6 +108,19 @@ module BABYLON {
             }
         }
 
+        public get pinchDeltaPercentage(): number {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.pinchDeltaPercentage;
+        }
+
+        public set pinchDeltaPercentage(value: number) {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers) {
+                pointers.pinchDeltaPercentage = value;
+            }
+        }        
+
         public get panningSensibility(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
