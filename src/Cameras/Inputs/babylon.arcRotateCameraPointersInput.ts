@@ -18,7 +18,7 @@ module BABYLON {
 
         /**
          * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0. 
-         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
          */        
         @serialize()
         public pinchDeltaPercentage = 0;
