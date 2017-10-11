@@ -149,7 +149,7 @@ module BABYLON.GUI {
             context.restore();
         }
 
-        public _processPicking(x: number, y: number, type: number): boolean {
+        public _processPicking(x: number, y: number, type: number, buttonIndex: number): boolean {
             if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                 return false;
             }
@@ -161,12 +161,12 @@ module BABYLON.GUI {
             // Checking backwards to pick closest first
             for (var index = this._children.length - 1; index >= 0; index--) {
                 var child = this._children[index];
-                if (child._processPicking(x, y, type)) {
+                if (child._processPicking(x, y, type, buttonIndex)) {
                     return true;
                 }
             }
 
-            return this._processObservables(type, x, y);
+            return this._processObservables(type, x, y, buttonIndex);
         }
 
         protected _clipForChildren(context: CanvasRenderingContext2D): void {

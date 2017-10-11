@@ -466,7 +466,9 @@ var INSPECTOR;
                 'checkCollisions'
             ],
             slider: {
-                alpha: { min: 0, max: 1, step: 0.01 }
+                alpha: { min: 0, max: 2 * Math.PI, step: 0.01 },
+                beta: { min: -Math.PI, max: Math.PI, step: 0.01 },
+                fov: { min: 0, max: 180, step: 1 }
             }
         },
         'FreeCamera': {
@@ -497,7 +499,10 @@ var INSPECTOR;
                 'orthoTop',
                 'orthoLeft',
                 'orthoRight'
-            ]
+            ],
+            slider: {
+                fov: { min: 0, max: 180, step: 1 }
+            }
         },
         'Scene': {
             type: BABYLON.Scene,
@@ -559,7 +564,10 @@ var INSPECTOR;
                 'checkCollisions',
                 'hasLODLevels'
             ],
-            format: function (m) { return m.name; }
+            format: function (m) { return m.name; },
+            slider: {
+                visibility: { min: 0, max: 1, step: 0.1 }
+            }
         },
         'StandardMaterial': {
             type: BABYLON.StandardMaterial,
@@ -2094,13 +2102,14 @@ var INSPECTOR;
                     INSPECTOR.Scheduler.getInstance().pause = false;
                 });
                 this._textValue = INSPECTOR.Helpers.CreateDiv('value-text', this._valueDiv);
-                this._textValue.innerText = this.value;
+                this._textValue.innerText = INSPECTOR.Helpers.Trunc(this.value).toString();
                 this._textValue.style.paddingLeft = '10px';
                 this._textValue.style.display = 'inline-block';
             }
         };
         PropertyLine.prototype._rangeHandler = function () {
             INSPECTOR.Scheduler.getInstance().pause = true;
+            //this._input.style.backgroundSize = ((parseFloat(this._input.value) - parseFloat(this._input.min)) * 100 / ( parseFloat(this._input.max) - parseFloat(this._input.min))) + '% 100%'
             this._textValue.innerText = this._input.value;
             this.validateInput(this._input.value, false);
         };

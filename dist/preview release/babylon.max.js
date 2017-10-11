@@ -12352,6 +12352,7 @@ var BABYLON;
             _this._collisionsScalingMatrix = BABYLON.Matrix.Zero();
             _this._isDirty = false;
             _this._pivotMatrix = BABYLON.Matrix.Identity();
+            _this._postMultiplyPivotMatrix = false;
             _this._isDisposed = false;
             _this._renderId = 0;
             _this._intersectionsInProgress = new Array();
@@ -13287,9 +13288,14 @@ var BABYLON;
          * Sets a new pivot matrix to the mesh.
          * Returns the AbstractMesh.
          */
-        AbstractMesh.prototype.setPivotMatrix = function (matrix) {
-            this._pivotMatrix = matrix;
+        AbstractMesh.prototype.setPivotMatrix = function (matrix, postMultiplyPivotMatrix) {
+            if (postMultiplyPivotMatrix === void 0) { postMultiplyPivotMatrix = false; }
+            this._pivotMatrix = matrix.clone();
             this._cache.pivotMatrixUpdated = true;
+            this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
+            if (this._postMultiplyPivotMatrix) {
+                this._pivotMatrixInverse = BABYLON.Matrix.Invert(matrix);
+            }
             return this;
         };
         /**
@@ -13524,6 +13530,10 @@ var BABYLON;
             }
             else {
                 this._worldMatrix.copyFrom(this._localWorld);
+            }
+            // Post multiply inverse of pivotMatrix
+            if (this._postMultiplyPivotMatrix) {
+                this._worldMatrix.multiplyToRef(this._pivotMatrixInverse, this._worldMatrix);
             }
             // Bounding info
             this._updateBoundingInfo();
@@ -16720,7 +16730,7 @@ var BABYLON;
             this._previousHasSwiped = false;
             this._currentPickResult = null;
             this._previousPickResult = null;
-            this._isButtonPressed = false;
+            this._totalPointersPressed = 0;
             this._doubleClickOccured = false;
             /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
             this.cameraToUseForPointers = null;
@@ -17520,7 +17530,7 @@ var BABYLON;
                             var _this = this;
                             var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger) && mesh == _this._pickedDownMesh; }, false, this.cameraToUseForPointers);
                             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                                if (this._isButtonPressed &&
+                                if (this._totalPointersPressed !== 0 &&
                                     ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                     (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
                                         Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
@@ -17764,7 +17774,7 @@ var BABYLON;
                 _this._processPointerMove(pickResult, evt);
             };
             this._onPointerDown = function (evt) {
-                _this._isButtonPressed = true;
+                _this._totalPointersPressed++;
                 _this._pickedDownMesh = null;
                 _this._meshPickProceed = false;
                 _this._updatePointerPosition(evt);
@@ -17818,10 +17828,10 @@ var BABYLON;
                 }
             };
             this._onPointerUp = function (evt) {
-                if (!_this._isButtonPressed) {
+                if (_this._totalPointersPressed === 0) {
                     return; // So we need to test it the pointer down was pressed before.
                 }
-                _this._isButtonPressed = false;
+                _this._totalPointersPressed--;
                 _this._pickedUpMesh = null;
                 _this._meshPickProceed = false;
                 _this._updatePointerPosition(evt);
@@ -29856,11 +29866,10 @@ var BABYLON;
                     }
                 }
                 if (parsedGeometry.matricesWeights) {
-                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeights, parsedGeometry.numBoneInfluencers);
+                    Geometry._CleanMatricesWeights(parsedGeometry, mesh);
                     mesh.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
                 }
                 if (parsedGeometry.matricesWeightsExtra) {
-                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeightsExtra, parsedGeometry.numBoneInfluencers);
                     mesh.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
                 mesh.setIndices(parsedGeometry.indices);
@@ -29885,23 +29894,72 @@ var BABYLON;
                 scene['_selectionOctree'].addMesh(mesh);
             }
         };
-        Geometry._CleanMatricesWeights = function (matricesWeights, influencers) {
+        Geometry._CleanMatricesWeights = function (parsedGeometry, mesh) {
+            var epsilon = 1e-3;
             if (!BABYLON.SceneLoader.CleanBoneMatrixWeights) {
                 return;
             }
+            var noInfluenceBoneIndex = 0.0;
+            if (parsedGeometry.skeletonId > -1) {
+                var skeleton = mesh.getScene().getLastSkeletonByID(parsedGeometry.skeletonId);
+                noInfluenceBoneIndex = skeleton.bones.length;
+            }
+            else {
+                return;
+            }
+            var matricesIndices = mesh.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+            var matricesIndicesExtra = mesh.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind);
+            var matricesWeights = parsedGeometry.matricesWeights;
+            var matricesWeightsExtra = parsedGeometry.matricesWeightsExtra;
+            var influencers = parsedGeometry.numBoneInfluencer;
             var size = matricesWeights.length;
-            for (var i = 0; i < size; i += influencers) {
-                var weight = 0;
-                var biggerIndex = i;
-                var biggerWeight = 0;
-                for (var j = 0; j < influencers - 1; j++) {
-                    weight += matricesWeights[i + j];
-                    if (matricesWeights[i + j] > biggerWeight) {
-                        biggerWeight = matricesWeights[i + j];
-                        biggerIndex = i + j;
+            for (var i = 0; i < size; i += 4) {
+                var weight = 0.0;
+                var firstZeroWeight = -1;
+                for (var j = 0; j < 4; j++) {
+                    var w = matricesWeights[i + j];
+                    weight += w;
+                    if (w < epsilon && firstZeroWeight < 0) {
+                        firstZeroWeight = j;
                     }
                 }
-                matricesWeights[biggerIndex] += Math.max(0, 1.0 - weight);
+                if (matricesWeightsExtra) {
+                    for (var j = 0; j < 4; j++) {
+                        var w = matricesWeightsExtra[i + j];
+                        weight += w;
+                        if (w < epsilon && firstZeroWeight < 0) {
+                            firstZeroWeight = j + 4;
+                        }
+                    }
+                }
+                if (firstZeroWeight < 0 || firstZeroWeight > (influencers - 1)) {
+                    firstZeroWeight = influencers - 1;
+                }
+                if (weight > epsilon) {
+                    var mweight = 1.0 / weight;
+                    for (var j = 0; j < 4; j++) {
+                        matricesWeights[i + j] *= mweight;
+                    }
+                    if (matricesWeightsExtra) {
+                        for (var j = 0; j < 4; j++) {
+                            matricesWeightsExtra[i + j] *= mweight;
+                        }
+                    }
+                }
+                else {
+                    if (firstZeroWeight >= 4) {
+                        matricesWeightsExtra[i + firstZeroWeight - 4] = 1.0 - weight;
+                        matricesIndicesExtra[i + firstZeroWeight - 4] = noInfluenceBoneIndex;
+                    }
+                    else {
+                        matricesWeights[i + firstZeroWeight] = 1.0 - weight;
+                        matricesIndices[i + firstZeroWeight] = noInfluenceBoneIndex;
+                    }
+                }
+            }
+            mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, matricesIndices);
+            if (parsedGeometry.matricesWeightsExtra) {
+                mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
             }
         };
         Geometry.Parse = function (parsedVertexData, scene, rootUrl) {
@@ -33949,7 +34007,10 @@ var BABYLON;
         };
         PBRMaterial.prototype.clone = function (name) {
             var _this = this;
-            return BABYLON.SerializationHelper.Clone(function () { return new PBRMaterial(name, _this.getScene()); }, this);
+            var clone = BABYLON.SerializationHelper.Clone(function () { return new PBRMaterial(name, _this.getScene()); }, this);
+            clone.id = name;
+            clone.name = name;
+            return clone;
         };
         PBRMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
@@ -34253,7 +34314,10 @@ var BABYLON;
         };
         PBRMetallicRoughnessMaterial.prototype.clone = function (name) {
             var _this = this;
-            return BABYLON.SerializationHelper.Clone(function () { return new PBRMetallicRoughnessMaterial(name, _this.getScene()); }, this);
+            var clone = BABYLON.SerializationHelper.Clone(function () { return new PBRMetallicRoughnessMaterial(name, _this.getScene()); }, this);
+            clone.id = name;
+            clone.name = name;
+            return clone;
         };
         /**
          * Serialize the material to a parsable JSON object.
@@ -34356,7 +34420,10 @@ var BABYLON;
         };
         PBRSpecularGlossinessMaterial.prototype.clone = function (name) {
             var _this = this;
-            return BABYLON.SerializationHelper.Clone(function () { return new PBRSpecularGlossinessMaterial(name, _this.getScene()); }, this);
+            var clone = BABYLON.SerializationHelper.Clone(function () { return new PBRSpecularGlossinessMaterial(name, _this.getScene()); }, this);
+            clone.id = name;
+            clone.name = name;
+            return clone;
         };
         /**
          * Serialize the material to a parsable JSON object.
@@ -35510,6 +35577,11 @@ var BABYLON;
     var ArcRotateCameraMouseWheelInput = (function () {
         function ArcRotateCameraMouseWheelInput() {
             this.wheelPrecision = 3.0;
+            /**
+             * wheelPrecisionPercentage will be used instead of whellPrecision if different from 0.
+             * It defines the percentage of current camera.radius to use as delta when wheel is used.
+             */
+            this.wheelPrecisionPercentage = 0;
         }
         ArcRotateCameraMouseWheelInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -35520,7 +35592,7 @@ var BABYLON;
                 var event = p.event;
                 var delta = 0;
                 if (event.wheelDelta) {
-                    delta = event.wheelDelta / (_this.wheelPrecision * 40);
+                    delta = _this.wheelPrecisionPercentage ? (event.wheelDelta * 0.01) * _this.camera.radius * _this.wheelPrecisionPercentage : event.wheelDelta / (_this.wheelPrecision * 40);
                 }
                 else if (event.detail) {
                     delta = -event.detail / _this.wheelPrecision;
@@ -35551,6 +35623,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecisionPercentage", void 0);
         return ArcRotateCameraMouseWheelInput;
     }());
     BABYLON.ArcRotateCameraMouseWheelInput = ArcRotateCameraMouseWheelInput;
@@ -35630,6 +35705,9 @@ var BABYLON;
                     previousMultiTouchPanPosition.isPinching = false;
                     twoFingerActivityCount = 0;
                     initialDistance = 0;
+                    if (p.event.pointerType !== "touch") {
+                        pointB = undefined; // Mouse and pen are mono pointer
+                    }
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
@@ -36081,6 +36159,20 @@ var BABYLON;
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
                     mousewheel.wheelPrecision = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArcRotateCamera.prototype, "wheelPrecisionPercentage", {
+            get: function () {
+                var mousewheel = this.inputs.attached["mousewheel"];
+                if (mousewheel)
+                    return mousewheel.wheelPrecisionPercentage;
+            },
+            set: function (value) {
+                var mousewheel = this.inputs.attached["mousewheel"];
+                if (mousewheel)
+                    mousewheel.wheelPrecisionPercentage = value;
             },
             enumerable: true,
             configurable: true
@@ -49107,7 +49199,13 @@ var BABYLON;
                 }
             }
             else {
-                BABYLON.Tools.ReadFile(sceneFilename, dataCallback, onProgress, useArrayBuffer);
+                if (BABYLON.FilesInput.FilesToLoad[sceneFilename]) {
+                    BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[sceneFilename], dataCallback, onProgress, useArrayBuffer);
+                }
+                else {
+                    onError("Unable to find file named " + sceneFilename);
+                    return;
+                }
             }
         };
         // Public functions

@@ -42,6 +42,10 @@ module BABYLON.GUI {
             return this._barOffset.toString(this._host);
         }
 
+        public get barOffsetInPixels(): number  {
+            return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }            
+
         public set barOffset(value: string | number ) {
             if (this._barOffset.toString(this._host) === value) {
                 return;
@@ -55,6 +59,10 @@ module BABYLON.GUI {
         public get thumbWidth(): string | number  {
             return this._thumbWidth.toString(this._host);
         }
+
+        public get thumbWidthInPixels(): number  {
+            return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }          
 
         public set thumbWidth(value: string | number ) {
             if (this._thumbWidth.toString(this._host) === value) {
@@ -171,8 +179,8 @@ module BABYLON.GUI {
             this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
 
-        protected _onPointerDown(coordinates: Vector2): boolean {
-            if (!super._onPointerDown(coordinates)) {
+        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
+            if (!super._onPointerDown(coordinates, buttonIndex)) {
                 return false;
             }
 
@@ -190,11 +198,11 @@ module BABYLON.GUI {
             }
         }
 
-        protected _onPointerUp (coordinates: Vector2): void {
+        protected _onPointerUp (coordinates: Vector2, buttonIndex: number): void {
             this._pointerIsDown = false;
             
             this._host._capturingControl = null;
-            super._onPointerUp(coordinates);
+            super._onPointerUp(coordinates, buttonIndex);
         }         
     }    
 }
