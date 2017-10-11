@@ -16,6 +16,13 @@ module BABYLON {
         @serialize()
         public pinchPrecision = 12.0;
 
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0. 
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */        
+        @serialize()
+        public pinchDeltaPercentage = 0;
+
         @serialize()
         public panningSensibility: number = 1000.0;
 
@@ -171,12 +178,15 @@ module BABYLON {
                         }
 
                         if (this.multiTouchPanAndZoom) {
-                            this.camera
-                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                            if (this.pinchDeltaPercentage) {
+                                this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) * this.camera.radius * this.pinchDeltaPercentage; 
+                            } else {
+                                this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (this.pinchPrecision *
                                     ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
                                     direction);
-                            
+                                }
+
                             if (this.panningSensibility !== 0) {
                                 var pointersCenterX = (pointA.x + pointB.x) / 2;
                                 var pointersCenterY = (pointA.y + pointB.y) / 2;
@@ -194,11 +204,14 @@ module BABYLON {
                             twoFingerActivityCount++;
 
                             if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > this.camera.pinchToPanMaxDistance)) {                   
-                                this.camera
-                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
-                                (this.pinchPrecision *
-                                    ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
-                                    direction);
+                                if (this.pinchDeltaPercentage) {
+                                    this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) * this.camera.radius * this.pinchDeltaPercentage;
+                                } else {
+                                    this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                                    (this.pinchPrecision *
+                                        ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
+                                        direction);
+                                }
                                 previousMultiTouchPanPosition.isPaning = false;
                                 previousMultiTouchPanPosition.isPinching = true;
                             }
