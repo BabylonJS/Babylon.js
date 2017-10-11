@@ -88,6 +88,9 @@ module INSPECTOR {
         private _onMouseDragHandler: EventListener;
         private _onMouseUpHandler: EventListener;
 
+        private _sliderfill: HTMLElement;
+        private _slidertrack: HTMLElement;
+
         private _textValue: HTMLElement;
         /** Save previous Y mouse position */
         private _prevY: number;
@@ -495,7 +498,7 @@ module INSPECTOR {
                 })
 
                 this._textValue = Helpers.CreateDiv('value-text', this._valueDiv);
-                this._textValue.innerText = this.value;
+                this._textValue.innerText = Helpers.Trunc(this.value).toString();
                 this._textValue.style.paddingLeft = '10px';
                 this._textValue.style.display = 'inline-block';
             }
@@ -503,6 +506,7 @@ module INSPECTOR {
 
         private _rangeHandler() {
             Scheduler.getInstance().pause = true;
+            //this._input.style.backgroundSize = ((parseFloat(this._input.value) - parseFloat(this._input.min)) * 100 / ( parseFloat(this._input.max) - parseFloat(this._input.min))) + '% 100%'
             this._textValue.innerText = this._input.value;
             this.validateInput(this._input.value, false);
         }

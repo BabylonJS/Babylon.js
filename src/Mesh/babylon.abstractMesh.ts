@@ -1090,7 +1090,7 @@
          * Returns the AbstractMesh.
          */
         public setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix = false): AbstractMesh {
-            this._pivotMatrix = matrix;
+            this._pivotMatrix = matrix.clone();
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
 
