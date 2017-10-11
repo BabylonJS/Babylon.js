@@ -563,7 +563,7 @@
             head.appendChild(script);
         }
 
-        public static ReadFileAsDataURL(fileToLoad, callback, progressCallback): void {
+        public static ReadFileAsDataURL(fileToLoad: Blob, callback, progressCallback): void {
             var reader = new FileReader();
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
@@ -573,7 +573,7 @@
             reader.readAsDataURL(fileToLoad);
         }
 
-        public static ReadFile(fileToLoad, callback, progressCallBack, useArrayBuffer?: boolean): void {
+        public static ReadFile(fileToLoad: File, callback, progressCallBack, useArrayBuffer?: boolean): void {
             var reader = new FileReader();
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
