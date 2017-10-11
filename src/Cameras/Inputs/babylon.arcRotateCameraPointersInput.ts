@@ -179,7 +179,7 @@ module BABYLON {
 
                         if (this.multiTouchPanAndZoom) {
                             if (this.pinchDeltaPercentage) {
-                                this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) * this.camera.radius * this.pinchDeltaPercentage; 
+                                this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001)* this.camera.radius * this.pinchDeltaPercentage; 
                             } else {
                                 this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                 (this.pinchPrecision *
@@ -205,7 +205,7 @@ module BABYLON {
 
                             if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > this.camera.pinchToPanMaxDistance)) {                   
                                 if (this.pinchDeltaPercentage) {
-                                    this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) * this.camera.radius * this.pinchDeltaPercentage;
+                                    this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001) * this.camera.radius * this.pinchDeltaPercentage;
                                 } else {
                                     this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                     (this.pinchPrecision *
