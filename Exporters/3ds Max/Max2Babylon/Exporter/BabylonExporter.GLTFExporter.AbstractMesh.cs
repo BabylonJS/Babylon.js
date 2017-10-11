@@ -20,6 +20,7 @@ namespace Max2Babylon
             {
                 RaiseMessage("GLTFExporter.AbstractMesh | Add " + babylonAbstractMesh.name + " as child to " + gltfParentNode.name, 2);
                 gltfParentNode.ChildrenList.Add(gltfNode.index);
+                gltfNode.parent = gltfParentNode;
             }
             else
             {
@@ -53,6 +54,16 @@ namespace Max2Babylon
             if (gltfMesh != null)
             {
                 gltfNode.mesh = gltfMesh.index;
+                
+                // Skin
+                if (gltfMesh.idBabylonSkeleton.HasValue)
+                {
+                    var babylonSkeleton = babylonScene.skeletons[gltfMesh.idBabylonSkeleton.Value];
+                    // Export a new skin and a new skeleton
+                    // TODO - Use the skeleton if already exported and only create a new skin
+                    var gltfSkin = ExportSkin(babylonSkeleton, gltf, gltfNode);
+                    gltfNode.skin = gltfSkin.index;
+                }
             }
 
             // Animations

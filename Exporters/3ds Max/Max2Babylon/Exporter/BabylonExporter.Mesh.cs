@@ -124,9 +124,6 @@ namespace Max2Babylon
             
             // Position / rotation / scaling / hierarchy
             exportNode(babylonMesh, meshNode, scene, babylonScene);
-
-            // Animations
-            exportAnimation(babylonMesh, meshNode);
             
             // Sounds
             var soundName = meshNode.MaxNode.GetStringProperty("babylonjs_sound_filename", "");
@@ -434,6 +431,10 @@ namespace Max2Babylon
                     babylonMorphTargetManager.targets = babylonMorphTargets.ToArray();
                 }
             }
+
+            // Animations
+			// Done last to avoid '0 vertex found' error (unkown cause)
+            exportAnimation(babylonMesh, meshNode);
 
             babylonScene.MeshesList.Add(babylonMesh);
 

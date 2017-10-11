@@ -29,38 +29,55 @@ namespace Max2Babylon
             bool hasUV = babylonMesh.uvs != null && babylonMesh.uvs.Length > 0;
             bool hasUV2 = babylonMesh.uvs2 != null && babylonMesh.uvs2.Length > 0;
             bool hasColor = babylonMesh.colors != null && babylonMesh.colors.Length > 0;
+            bool hasBones = babylonMesh.matricesIndices != null && babylonMesh.matricesIndices.Length > 0;
 
             RaiseMessage("GLTFExporter.Mesh | nbVertices=" + nbVertices, 3);
             RaiseMessage("GLTFExporter.Mesh | hasUV=" + hasUV, 3);
             RaiseMessage("GLTFExporter.Mesh | hasUV2=" + hasUV2, 3);
             RaiseMessage("GLTFExporter.Mesh | hasColor=" + hasColor, 3);
+            RaiseMessage("GLTFExporter.Mesh | hasBones=" + hasBones, 3);
 
             // Retreive vertices data from babylon mesh
             List<GLTFGlobalVertex> globalVertices = new List<GLTFGlobalVertex>();
             for (int indexVertex = 0; indexVertex < nbVertices; indexVertex++)
             {
                 GLTFGlobalVertex globalVertex = new GLTFGlobalVertex();
-                globalVertex.Position = createIPoint3(babylonMesh.positions, indexVertex);
-                // Switch from left to right handed coordinate system
-                //globalVertex.Position.X *= -1;
-                globalVertex.Normal = createIPoint3(babylonMesh.normals, indexVertex);
+                globalVertex.Position = Tools.CreateIPoint3FromArray(babylonMesh.positions, indexVertex);
+                globalVertex.Normal = Tools.CreateIPoint3FromArray(babylonMesh.normals, indexVertex);
                 if (hasUV)
                 {
-                    globalVertex.UV = createIPoint2(babylonMesh.uvs, indexVertex);
+                    globalVertex.UV = Tools.CreateIPoint2FromArray(babylonMesh.uvs, indexVertex);
                     // For glTF, the origin of the UV coordinates (0, 0) corresponds to the upper left corner of a texture image
                     // While for Babylon, it corresponds to the lower left corner of a texture image
                     globalVertex.UV.Y = 1 - globalVertex.UV.Y;
                 }
                 if (hasUV2)
                 {
-                    globalVertex.UV2 = createIPoint2(babylonMesh.uvs2, indexVertex);
+                    globalVertex.UV2 = Tools.CreateIPoint2FromArray(babylonMesh.uvs2, indexVertex);
                     // For glTF, the origin of the UV coordinates (0, 0) corresponds to the upper left corner of a texture image
                     // While for Babylon, it corresponds to the lower left corner of a texture image
                     globalVertex.UV2.Y = 1 - globalVertex.UV2.Y;
                 }
                 if (hasColor)
                 {
-                    globalVertex.Color = createIPoint4(babylonMesh.colors, indexVertex).ToArray();
+                    globalVertex.Color = Tools.CreateIPoint4FromArray(babylonMesh.colors, indexVertex).ToArray();
+                }
+                if (hasBones)
+                {
+					// In babylon, the 4 bones indices are stored in a single int
+					// Each bone index is a byte thus 8-bit offset from the next
+                    int bonesIndicesMerged = babylonMesh.matricesIndices[indexVertex];
+                    int bone3 = bonesIndicesMerged >> 24;
+                    bonesIndicesMerged -= bone3 << 24;
+                    int bone2 = bonesIndicesMerged >> 16;
+                    bonesIndicesMerged -= bone2 << 16;
+                    int bone1 = bonesIndicesMerged >> 8;
+                    bonesIndicesMerged -= bone1 << 8;
+                    int bone0 = bonesIndicesMerged >> 0;
+                    bonesIndicesMerged -= bone0 << 0;
+                    var bonesIndicesArray = new byte[] { (byte)bone0, (byte)bone1, (byte)bone2, (byte)bone3 };
+                    globalVertex.BonesIndices = bonesIndicesArray;
+                    globalVertex.BonesWeights = Tools.CreateIPoint4FromArray(babylonMesh.matricesWeights, indexVertex).ToArray();
                 }
 
                 globalVertices.Add(globalVertex);
@@ -81,7 +98,10 @@ namespace Max2Babylon
             gltfMesh.index = gltf.MeshesList.Count;
             gltf.MeshesList.Add(gltfMesh);
             gltfMesh.idGroupInstance = babylonMesh.idGroupInstance;
-            var weights = new List<float>();
+            if (hasBones)
+            {
+                gltfMesh.idBabylonSkeleton = babylonMesh.skeletonId;
+            }
 
             // --------------------------
             // ---- glTF primitives -----
@@ -89,7 +109,7 @@ namespace Max2Babylon
 
             RaiseMessage("GLTFExporter.Mesh | glTF primitives", 2);
             var meshPrimitives = new List<GLTFMeshPrimitive>();
-            
+            var weights = new List<float>();
             foreach (BabylonSubMesh babylonSubMesh in babylonMesh.subMeshes)
             {
                 // --------------------------
@@ -260,6 +280,38 @@ namespace Max2Babylon
                     accessorUV2s.count = globalVerticesSubMesh.Count;
                 }
 
+                // --- Bones ---
+                if (hasBones)
+                {
+                    // --- Joints ---
+                    var accessorJoints = GLTFBufferService.Instance.CreateAccessor(
+                        gltf,
+                        GLTFBufferService.Instance.GetBufferViewUnsignedShortVec4(gltf, buffer),
+                        "accessorJoints",
+                        GLTFAccessor.ComponentType.UNSIGNED_SHORT,
+                        GLTFAccessor.TypeEnum.VEC4
+                    );
+                    meshPrimitive.attributes.Add(GLTFMeshPrimitive.Attribute.JOINTS_0.ToString(), accessorJoints.index);
+                    // Populate accessor
+                    List<byte> joints = globalVerticesSubMesh.SelectMany(v => new[] { v.BonesIndices[0], v.BonesIndices[1], v.BonesIndices[2], v.BonesIndices[3] }).ToList();
+                    joints.ForEach(n => accessorJoints.bytesList.Add(n));
+                    accessorJoints.count = globalVerticesSubMesh.Count;
+
+                    // --- Weights ---
+                    var accessorWeights = GLTFBufferService.Instance.CreateAccessor(
+                        gltf,
+                        GLTFBufferService.Instance.GetBufferViewFloatVec4(gltf, buffer),
+                        "accessorWeights",
+                        GLTFAccessor.ComponentType.FLOAT,
+                        GLTFAccessor.TypeEnum.VEC4
+                    );
+                    meshPrimitive.attributes.Add(GLTFMeshPrimitive.Attribute.WEIGHTS_0.ToString(), accessorWeights.index);
+                    // Populate accessor
+                    List<float> weightBones = globalVerticesSubMesh.SelectMany(v => new[] { v.BonesWeights[0], v.BonesWeights[1], v.BonesWeights[2], v.BonesWeights[3] }).ToList();
+                    weightBones.ForEach(n => accessorWeights.bytesList.AddRange(BitConverter.GetBytes(n)));
+                    accessorWeights.count = globalVerticesSubMesh.Count;
+                }
+
                 // Morph targets
                 var babylonMorphTargetManager = GetBabylonMorphTargetManager(babylonScene, babylonMesh);
                 if (babylonMorphTargetManager != null)
@@ -321,10 +373,10 @@ namespace Max2Babylon
                     accessorTargetPositions.max = new float[] { float.MinValue, float.MinValue, float.MinValue };
                     for (int indexPosition = 0; indexPosition < babylonMorphTarget.positions.Length; indexPosition += 3)
                     {
-                        var positionTarget = _subArray(babylonMorphTarget.positions, indexPosition, 3);
+                        var positionTarget = Tools.SubArray(babylonMorphTarget.positions, indexPosition, 3);
 
                         // Babylon stores morph target information as final data while glTF expects deltas from mesh primitive
-                        var positionMesh = _subArray(babylonMesh.positions, indexPosition, 3);
+                        var positionMesh = Tools.SubArray(babylonMesh.positions, indexPosition, 3);
                         for (int indexCoordinate = 0; indexCoordinate < positionTarget.Length; indexCoordinate++)
                         {
                             positionTarget[indexCoordinate] = positionTarget[indexCoordinate] - positionMesh[indexCoordinate];
@@ -355,10 +407,10 @@ namespace Max2Babylon
                     // Populate accessor
                     for (int indexNormal = 0; indexNormal < babylonMorphTarget.positions.Length; indexNormal += 3)
                     {
-                        var normalTarget = _subArray(babylonMorphTarget.normals, indexNormal, 3);
+                        var normalTarget = Tools.SubArray(babylonMorphTarget.normals, indexNormal, 3);
 
                         // Babylon stores morph target information as final data while glTF expects deltas from mesh primitive
-                        var normalMesh = _subArray(babylonMesh.normals, indexNormal, 3);
+                        var normalMesh = Tools.SubArray(babylonMesh.normals, indexNormal, 3);
                         for (int indexCoordinate = 0; indexCoordinate < normalTarget.Length; indexCoordinate++)
                         {
                             normalTarget[indexCoordinate] = normalTarget[indexCoordinate] - normalMesh[indexCoordinate];
@@ -383,34 +435,6 @@ namespace Max2Babylon
             {
                 meshPrimitive.targets = gltfMorphTargets.ToArray();
             }
-        }
-
-        private float[] _subArray(float[] array, int startIndex, int count)
-        {
-            var result = new float[count];
-            for (int i = 0; i < count; i++)
-            {
-                result[i] = array[startIndex + i];
-            }
-            return result;
-        }
-
-        private IPoint2 createIPoint2(float[] array, int index)
-        {
-            var startIndex = index * 2;
-            return Loader.Global.Point2.Create(array[startIndex], array[startIndex + 1]);
-        }
-
-        private IPoint3 createIPoint3(float[] array, int index)
-        {
-            var startIndex = index * 3;
-            return Loader.Global.Point3.Create(array[startIndex], array[startIndex + 1], array[startIndex + 2]);
-        }
-
-        private IPoint4 createIPoint4(float[] array, int index)
-        {
-            var startIndex = index * 4;
-            return Loader.Global.Point4.Create(array[startIndex], array[startIndex + 1], array[startIndex + 2], array[startIndex + 3]);
         }
     }
 }
