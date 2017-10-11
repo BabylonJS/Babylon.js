@@ -25,7 +25,11 @@ module BABYLON {
         private _onVrDisplayPresentChange: any;
         private _onVRDisplayChanged: (eventArgs:IDisplayChangedEventArgs) => void;
         private _onVRRequestPresentStart: () => void;
-        private _onVRRequestPresentComplete: (success: boolean) => void
+        private _onVRRequestPresentComplete: (success: boolean) => void;
+        
+        public onEnteringVR: () => void;
+        public onExitingVR: () => void;
+        public onControllerMeshLoaded: (WebVRController) => void;
                 
         constructor(scene: Scene, private webVROptions: WebVROptions = {}) {
             this._scene = scene;
@@ -71,11 +75,16 @@ module BABYLON {
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
 
-                if (this._fullscreenVRpresenting) {
+                if (this._fullscreenVRpresenting && this._webVRready) {
                     this.exitVR();
                 }
             });
-            
+
+            document.addEventListener("fullscreenchange", () => { this._onFullscreenChange() }, false);
+            document.addEventListener("mozfullscreenchange", () => { this._onFullscreenChange() }, false);
+            document.addEventListener("webkitfullscreenchange", () => { this._onFullscreenChange() }, false);
+            document.addEventListener("msfullscreenchange", () => { this._onFullscreenChange() }, false);
+
             document.body.appendChild(this._btnVR);
 
             // Exiting VR mode using 'ESC' key on desktop
@@ -90,6 +99,9 @@ module BABYLON {
             this._scene.onPrePointerObservable.add( (pointerInfo, eventState) => {
                 if (this.isInVRMode()) {
                     this.exitVR();
+                    if (this._fullscreenVRpresenting) {
+                        this._scene.getEngine().switchFullscreen(true);
+                    }
                 }
             }, BABYLON.PointerEventTypes.POINTERDOUBLETAP, false);
             
@@ -112,9 +124,33 @@ module BABYLON {
 
             // Create the cameras
             this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);            
-            this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene);
+            this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
+            this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
             
             this.updateButtonVisibility();
+        }
+
+        private _onDefaultMeshLoaded(webVRController: WebVRController) {
+            if (this.onControllerMeshLoaded) {
+                this.onControllerMeshLoaded(webVRController);
+            }
+        }
+
+        private _onFullscreenChange() {
+            if (document.fullscreen !== undefined) {
+                this._fullscreenVRpresenting = document.fullscreen;
+            } else if (document.mozFullScreen !== undefined) {
+                this._fullscreenVRpresenting = document.mozFullScreen;
+            } else if (document.webkitIsFullScreen !== undefined) {
+                this._fullscreenVRpresenting = document.webkitIsFullScreen;
+            } else if (document.msIsFullScreen !== undefined) {
+                this._fullscreenVRpresenting = document.msIsFullScreen;
+            }
+            if (!this._fullscreenVRpresenting) {
+                this.exitVR();
+                this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
+                this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+            }
         }
 
         private isInVRMode() {
@@ -165,6 +201,9 @@ module BABYLON {
          * Otherwise, will use the fullscreen API.
          */
         public enterVR() {
+            if (this.onEnteringVR) {
+                this.onEnteringVR();
+            }
             if (this._webVRrequesting)
                 return;
 
@@ -179,7 +218,6 @@ module BABYLON {
                 this._vrDeviceOrientationCamera.position = this._position;
                 this._scene.activeCamera = this._vrDeviceOrientationCamera;
                 this._scene.getEngine().switchFullscreen(true);
-                this._fullscreenVRpresenting = true;
                 this.updateButtonVisibility();
             }
             
@@ -190,6 +228,9 @@ module BABYLON {
          * Attempt to exit VR, or fullscreen.
          */
         public exitVR() {
+            if (this.onExitingVR) {
+                this.onExitingVR();
+            }
             if (this._webVRpresenting) {
                 this._scene.getEngine().disableVR();
             }
@@ -199,8 +240,7 @@ module BABYLON {
             this._deviceOrientationCamera.position = this._position;
             this._scene.activeCamera = this._deviceOrientationCamera;
             this._scene.activeCamera.attachControl(this._canvas);
-            
-            this._fullscreenVRpresenting = false;
+
             this.updateButtonVisibility();
         }
 
