@@ -232,7 +232,10 @@ module INSPECTOR {
                 'checkCollisions',
                 'hasLODLevels'
             ],
-            format: (m: BABYLON.Mesh): string => { return m.name; }
+            format: (m: BABYLON.Mesh): string => { return m.name; },
+            slider: {
+                visibility: {min: 0, max: 1, step: 0.1}
+            }
         },
         'StandardMaterial': {
             type: BABYLON.StandardMaterial,
