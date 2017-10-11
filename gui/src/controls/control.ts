@@ -96,10 +96,10 @@ module BABYLON.GUI {
         public onDirtyObservable = new Observable<Control>();         
         
          /**
-        * An event triggered when the control is drawn
+        * An event triggered after the control is drawn
         * @type {BABYLON.Observable}
         */
-        public onDrawObservable = new Observable<Control>();    
+        public onAfterDrawObservable = new Observable<Control>();    
 
         public get alpha(): number {
             return this._alpha;

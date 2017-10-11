@@ -144,16 +144,16 @@ module BABYLON.GUI {
                     if (child.isVisible && !child.notRenderable) {
                         child._draw(this._measureForChildren, context);
 
-                        if (child.onDrawObservable.hasObservers()) {
-                            child.onDrawObservable.notifyObservers(child);
+                        if (child.onAfterDrawObservable.hasObservers()) {
+                            child.onAfterDrawObservable.notifyObservers(child);
                         }
                     }
                 }
             }
             context.restore();
 
-            if (this.onDrawObservable.hasObservers()) {
-                this.onDrawObservable.notifyObservers(this);
+            if (this.onAfterDrawObservable.hasObservers()) {
+                this.onAfterDrawObservable.notifyObservers(this);
             }
         }
 
