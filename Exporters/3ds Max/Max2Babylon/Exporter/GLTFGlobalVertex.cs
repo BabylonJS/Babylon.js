@@ -9,7 +9,7 @@ namespace Max2Babylon
         public IPoint2 UV { get; set; }
         public IPoint2 UV2 { get; set; }
         public float[] Color { get; set; }
-        public byte[] BonesIndices { get; set; }
+        public ushort[] BonesIndices { get; set; }
         public float[] BonesWeights { get; set; }
     }
 }

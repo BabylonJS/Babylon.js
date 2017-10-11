@@ -65,7 +65,7 @@ namespace Max2Babylon
                 if (hasBones)
                 {
 					// In babylon, the 4 bones indices are stored in a single int
-					// Each bone index is a byte thus 8-bit offset from the next
+					// Each bone index is 8-bit offset from the next
                     int bonesIndicesMerged = babylonMesh.matricesIndices[indexVertex];
                     int bone3 = bonesIndicesMerged >> 24;
                     bonesIndicesMerged -= bone3 << 24;
@@ -75,7 +75,7 @@ namespace Max2Babylon
                     bonesIndicesMerged -= bone1 << 8;
                     int bone0 = bonesIndicesMerged >> 0;
                     bonesIndicesMerged -= bone0 << 0;
-                    var bonesIndicesArray = new byte[] { (byte)bone0, (byte)bone1, (byte)bone2, (byte)bone3 };
+                    var bonesIndicesArray = new ushort[] { (ushort)bone0, (ushort)bone1, (ushort)bone2, (ushort)bone3 };
                     globalVertex.BonesIndices = bonesIndicesArray;
                     globalVertex.BonesWeights = Tools.CreateIPoint4FromArray(babylonMesh.matricesWeights, indexVertex).ToArray();
                 }
@@ -293,8 +293,8 @@ namespace Max2Babylon
                     );
                     meshPrimitive.attributes.Add(GLTFMeshPrimitive.Attribute.JOINTS_0.ToString(), accessorJoints.index);
                     // Populate accessor
-                    List<byte> joints = globalVerticesSubMesh.SelectMany(v => new[] { v.BonesIndices[0], v.BonesIndices[1], v.BonesIndices[2], v.BonesIndices[3] }).ToList();
-                    joints.ForEach(n => accessorJoints.bytesList.Add(n));
+                    List<ushort> joints = globalVerticesSubMesh.SelectMany(v => new[] { v.BonesIndices[0], v.BonesIndices[1], v.BonesIndices[2], v.BonesIndices[3] }).ToList();
+                    joints.ForEach(n => accessorJoints.bytesList.AddRange(BitConverter.GetBytes(n)));
                     accessorJoints.count = globalVerticesSubMesh.Count;
 
                     // --- Weights ---
