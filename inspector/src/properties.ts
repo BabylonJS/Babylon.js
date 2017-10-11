@@ -134,7 +134,9 @@ module INSPECTOR {
                 'checkCollisions'
             ],
             slider: {
-                alpha: {min: 0, max: 1, step: 0.01}
+                alpha: {min: 0, max: 2*Math.PI, step: 0.01},
+                beta: {min: -Math.PI, max: Math.PI, step: 0.01},
+                fov: {min: 0, max: 180, step: 1}
             }
         },
         'FreeCamera': {
@@ -165,7 +167,10 @@ module INSPECTOR {
                 'orthoTop',
                 'orthoLeft',
                 'orthoRight'
-            ]
+            ],
+            slider: {
+                fov: {min: 0, max: 180, step: 1}
+            }
         },
         'Scene': {
             type: BABYLON.Scene,
