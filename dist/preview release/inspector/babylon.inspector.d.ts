@@ -174,11 +174,28 @@ declare module INSPECTOR {
                     max: number;
                     step: number;
                 };
+                beta: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+                fov: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
             };
         };
         'FreeCamera': {
             type: typeof BABYLON.FreeCamera;
             properties: string[];
+            slider: {
+                fov: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+            };
         };
         'Scene': {
             type: typeof BABYLON.Scene;
@@ -188,6 +205,13 @@ declare module INSPECTOR {
             type: typeof BABYLON.Mesh;
             properties: string[];
             format: (m: BABYLON.Mesh) => string;
+            slider: {
+                visibility: {
+                    min: number;
+                    max: number;
+                    step: number;
+                };
+            };
         };
         'StandardMaterial': {
             type: typeof BABYLON.StandardMaterial;
@@ -606,6 +630,8 @@ declare module INSPECTOR {
         private _onMouseDownHandler;
         private _onMouseDragHandler;
         private _onMouseUpHandler;
+        private _sliderfill;
+        private _slidertrack;
         private _textValue;
         /** Save previous Y mouse position */
         private _prevY;

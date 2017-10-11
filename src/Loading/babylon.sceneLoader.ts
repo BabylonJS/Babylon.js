@@ -185,7 +185,12 @@
             }
             // Loading file from disk via input file or drag'n'drop
             else {
-                Tools.ReadFile(sceneFilename, dataCallback, onProgress, useArrayBuffer);
+                if (FilesInput.FilesToLoad[sceneFilename]) {
+                    Tools.ReadFile(FilesInput.FilesToLoad[sceneFilename], dataCallback, onProgress, useArrayBuffer);
+                } else {
+                    onError("Unable to find file named " + sceneFilename);
+                    return;
+                }
             }
         }
 
