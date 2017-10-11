@@ -193,12 +193,6 @@ module BABYLON.GUI {
                 this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
                 this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
             }
-
-            console.log('width', this.width);
-            console.log('height', this.height);
-
-            /*console.log('width', maxLineWidth);
-            console.log('height', this._fontOffset.height * this._lines.length);*/
         }
     }
 }
