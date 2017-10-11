@@ -10,6 +10,20 @@ module BABYLON.GUI {
 
         private _lines: any[];
         private _totalHeight: number;
+        private _resizeToFit: boolean = false;
+
+        get resizeToFit(): boolean {
+            return this._resizeToFit;
+        }
+
+        set resizeToFit(value: boolean) {
+            this._resizeToFit = value;
+
+            if (this._resizeToFit) {
+                this._width.ignoreAdaptiveScaling = true;
+                this._height.ignoreAdaptiveScaling = true;
+            }
+        }
 
         public get textWrapping(): boolean {
             return this._textWrapping;
@@ -86,6 +100,7 @@ module BABYLON.GUI {
                     break;
             }
 
+
             context.fillText(text, this._currentMeasure.left + x, y);
         }
 
@@ -105,7 +120,7 @@ module BABYLON.GUI {
             this._lines = [];
             var _lines = this.text.split("\n");
 
-            if (this._textWrapping) {
+            if (this._textWrapping && !this._resizeToFit) {
                 for(var _line of _lines) {
                     this._lines.push(this._parseLineWithTextWrapping(_line, context));
                 }
@@ -165,10 +180,25 @@ module BABYLON.GUI {
 
             rootY += this._currentMeasure.top;
 
+            var maxLineWidth: number = 0;
+
             for (var line of this._lines) {
                 this._drawText(line.text, line.width, rootY, context);
                 rootY += this._fontOffset.height;
+
+                if (line.width > maxLineWidth) maxLineWidth = line.width;
             }
+
+            if (this._resizeToFit) {
+                this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
+                this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
+            }
+
+            console.log('width', this.width);
+            console.log('height', this.height);
+
+            /*console.log('width', maxLineWidth);
+            console.log('height', this._fontOffset.height * this._lines.length);*/
         }
     }
 }
