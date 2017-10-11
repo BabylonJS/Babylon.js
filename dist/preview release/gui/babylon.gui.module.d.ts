@@ -241,6 +241,7 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         getLocalCoordinates(globalCoordinates: Vector2): Vector2;
         getLocalCoordinatesToRef(globalCoordinates: Vector2, result: Vector2): Control;
+        getParentLocalCoordinates(globalCoordinates: Vector2): Vector2;
         moveToVector3(position: Vector3, scene: Scene): void;
         linkWithMesh(mesh: AbstractMesh): void;
         _moveToProjectedPosition(projectedPosition: Vector3): void;
