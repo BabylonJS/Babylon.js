@@ -362,8 +362,8 @@ module BABYLON.GUI {
             return false;
         }
 
-        protected _onPointerDown(coordinates: Vector2): boolean {
-            if (!super._onPointerDown(coordinates)) {
+        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
+            if (!super._onPointerDown(coordinates, buttonIndex)) {
                 return false;
             }            
 
@@ -392,11 +392,11 @@ module BABYLON.GUI {
             super._onPointerMove(coordinates);
         }
 
-        protected _onPointerUp (coordinates: Vector2): void {
+        protected _onPointerUp (coordinates: Vector2, buttonIndex: number): void {
             this._pointerIsDown = false;
             
             this._host._capturingControl = null;
-            super._onPointerUp(coordinates);
+            super._onPointerUp(coordinates, buttonIndex);
         }     
     }    
 }

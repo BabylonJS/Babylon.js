@@ -384,6 +384,8 @@
 
         public _boundingInfo: BoundingInfo;
         private _pivotMatrix = Matrix.Identity();
+        private _pivotMatrixInverse: Matrix;
+        private _postMultiplyPivotMatrix = false;
         public _isDisposed = false;
         public _renderId = 0;
 
@@ -1087,9 +1089,14 @@
          * Sets a new pivot matrix to the mesh.  
          * Returns the AbstractMesh.
          */
-        public setPivotMatrix(matrix: Matrix): AbstractMesh {
-            this._pivotMatrix = matrix;
+        public setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix = false): AbstractMesh {
+            this._pivotMatrix = matrix.clone();
             this._cache.pivotMatrixUpdated = true;
+            this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
+
+            if (this._postMultiplyPivotMatrix) {
+                this._pivotMatrixInverse = Matrix.Invert(matrix);
+            }
             return this;
         }
 
@@ -1363,6 +1370,11 @@
                 this._markSyncedWithParent();
             } else {
                 this._worldMatrix.copyFrom(this._localWorld);
+            }
+
+            // Post multiply inverse of pivotMatrix
+            if (this._postMultiplyPivotMatrix) {
+                this._worldMatrix.multiplyToRef(this._pivotMatrixInverse, this._worldMatrix);
             }
 
             // Bounding info

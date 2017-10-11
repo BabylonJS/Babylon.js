@@ -95,7 +95,12 @@
         }
 
         public clone(name: string): PBRSpecularGlossinessMaterial {
-            return SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
+            var clone = SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
+
+            clone.id = name;
+            clone.name = name;
+
+            return clone;            
         }
 
         /**

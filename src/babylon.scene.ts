@@ -403,7 +403,7 @@
         private _previousHasSwiped = false;
         private _currentPickResult = null;
         private _previousPickResult = null;
-        private _isButtonPressed = false;
+        private _totalPointersPressed = 0;
         private _doubleClickOccured = false;
 
         /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
@@ -1149,7 +1149,7 @@
                                 false, this.cameraToUseForPointers);
 
                             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                                if (this._isButtonPressed &&
+                                if (this._totalPointersPressed !== 0 &&
                                     ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                     (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
                                         Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
@@ -1420,7 +1420,7 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
-                this._isButtonPressed = true;
+                this._totalPointersPressed++;
                 this._pickedDownMesh = null;
                 this._meshPickProceed = false;
 
@@ -1484,11 +1484,11 @@
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
-                if (!this._isButtonPressed) {   // We are attaching the pointer up to windows because of a bug in FF                    
-                    return;                     // So we need to test it the pointer down was pressed before.
+                if (this._totalPointersPressed === 0) {  // We are attaching the pointer up to windows because of a bug in FF                    
+                    return;                             // So we need to test it the pointer down was pressed before.
                 }
 
-                this._isButtonPressed = false;
+                this._totalPointersPressed--;
                 this._pickedUpMesh = null;
                 this._meshPickProceed = false;
 

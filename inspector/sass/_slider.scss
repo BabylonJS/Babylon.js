@@ -1,118 +1,74 @@
-$track-color: #3ca9f1 !default;
-$thumb-color: $color-bot !default;
+$thumb-height: 15px;
 
-$thumb-radius: 0px !default;
-$thumb-height: 14px !default;
-$thumb-width: 7px !default;
-$thumb-shadow-size: 1px !default;
-$thumb-shadow-blur: 1px !default;
-$thumb-shadow-color: rgba(0, 0, 0, .2) !default;
-$thumb-border-width: 1px !default;
-$thumb-border-color: $color-bot !default;
-
-$track-width: 50% !default;
-$track-height: 5px !default;
-$track-shadow-size: 1px !default;
-$track-shadow-blur: 1px !default;
-$track-shadow-color: rgba(0, 0, 0, .2) !default;
-$track-border-width: 1px !default;
-$track-border-color: $color-bot !default;
-
-$track-radius: 5px !default;
-$contrast: 5% !default;
-
-@mixin shadow($shadow-size, $shadow-blur, $shadow-color) {
-  box-shadow: $shadow-size $shadow-size $shadow-blur $shadow-color, 0 0 $shadow-size lighten($shadow-color, 5%);
-}
-
-@mixin track {
-  cursor: pointer;
-  height: $track-height;
-  transition: all .2s ease;
-  width: $track-width;
-}
-
-@mixin thumb {
-  @include shadow($thumb-shadow-size, $thumb-shadow-blur, $thumb-shadow-color);
-  background: $thumb-color;
-  border: $thumb-border-width solid $thumb-border-color;
-  border-radius: $thumb-radius;
-  cursor: pointer;
-  height: $thumb-height;
-  width: $thumb-width;
-}
-
-[type='range'] {
+input[type="range"] { 
+  margin: auto;
   -webkit-appearance: none;
-  margin: $thumb-height / 2 0;
-  width: $track-width;
+  position: relative;
+  overflow: hidden;
+  height: $thumb-height;
+  width: 50%;
+  cursor: pointer;
+  border-radius: 0; /* iOS */
+}
 
-  &:focus {
-    outline: 0;
+::-webkit-slider-runnable-track {
+  background: #ddd;
+}
 
-    &::-webkit-slider-runnable-track {
-      background: lighten($track-color, $contrast);
-    }
+/*
+* 1. Set to 0 height and width, and remove border for a slider without a thumb
+*/
+::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; /* 1 */
+  height: $thumb-height; /* 1 */
+  background: #fff;
+  box-shadow: -100vw 0 0 100vw dodgerblue;
+  border: 0px solid #999; /* 1 */
+}
 
-    &::-ms-fill-lower {
-      background: $track-color;
-    }
+::-moz-range-track {
+  height: $thumb-height;
+  background: #ddd;
+}
 
-    &::-ms-fill-upper {
-      background: lighten($track-color, $contrast);
-    }
-  }
+::-moz-range-thumb {
+  background: #fff;
+  height: $thumb-height;
+  width: 20px;
+  border: 0px solid #999;
+  border-radius: 0 !important;
+  box-shadow: -100vw 0 0 100vw dodgerblue;
+  box-sizing: border-box;
+}
 
-  &::-webkit-slider-runnable-track {
-    @include track;
-    @include shadow($track-shadow-size, $track-shadow-blur, $track-shadow-color);
-    background: $track-color;
-    border: $track-border-width solid $track-border-color;
-    border-radius: $track-radius;
-  }
+::-ms-fill-lower { 
+  background: dodgerblue;
+}
 
-  &::-webkit-slider-thumb {
-    @include thumb;
-    -webkit-appearance: none;
-    margin-top: ((-$track-border-width * 2 + $track-height) / 2) - ($thumb-height / 2);
-  }
+::-ms-thumb { 
+  background: #fff;
+  border: 0px solid #999;
+  height: $thumb-height;
+  width: 20px;
+  box-sizing: border-box;
+}
 
-  &::-moz-range-track {
-    @include track;
-    @include shadow($track-shadow-size, $track-shadow-blur, $track-shadow-color);
-    background: $track-color;
-    border: $track-border-width solid $track-border-color;
-    border-radius: $track-radius;
-  }
+::-ms-ticks-after { 
+  display: none; 
+}
 
-  &::-moz-range-thumb {
-    @include thumb;
-  }
+::-ms-ticks-before { 
+  display: none; 
+}
 
-  &::-ms-track {
-    @include track;
-    background: transparent;
-    border-color: transparent;
-    border-width: ($thumb-height / 2) 0;
-    color: transparent;
-  }
+::-ms-track { 
+  background: #ddd;
+  color: transparent;
+  height: $thumb-height;
+  border: none;
+}
 
-  &::-ms-fill-lower {
-    @include shadow($track-shadow-size, $track-shadow-blur, $track-shadow-color);
-    background: darken($track-color, $contrast);
-    border: $track-border-width solid $track-border-color;
-    border-radius: $track-radius * 2;
-  }
-
-  &::-ms-fill-upper {
-    @include shadow($track-shadow-size, $track-shadow-blur, $track-shadow-color);
-    background: $track-color;
-    border: $track-border-width solid $track-border-color;
-    border-radius: $track-radius * 2;
-  }
-
-  &::-ms-thumb {
-    @include thumb;
-    margin-top: 0;
-  }
+::-ms-tooltip { 
+  display: none;
 }

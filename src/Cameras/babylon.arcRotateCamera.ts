@@ -69,117 +69,142 @@ module BABYLON {
         public panningInertia = 0.9;
 
         //-- begin properties for backward compatibility for inputs
-        public get angularSensibilityX() {
+        public get angularSensibilityX(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityX;
         }
 
-        public set angularSensibilityX(value) {
+        public set angularSensibilityX(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.angularSensibilityX = value;
             }
         }
 
-        public get angularSensibilityY() {
+        public get angularSensibilityY(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityY;
         }
 
-        public set angularSensibilityY(value) {
+        public set angularSensibilityY(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.angularSensibilityY = value;
             }
         }
 
-        public get pinchPrecision() {
+        public get pinchPrecision(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.pinchPrecision;
         }
 
-        public set pinchPrecision(value) {
+        public set pinchPrecision(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.pinchPrecision = value;
             }
         }
 
-        public get panningSensibility() {
+        public get pinchDeltaPercentage(): number {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.pinchDeltaPercentage;
+        }
+
+        public set pinchDeltaPercentage(value: number) {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers) {
+                pointers.pinchDeltaPercentage = value;
+            }
+        }        
+
+        public get panningSensibility(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.panningSensibility;
         }
 
-        public set panningSensibility(value) {
+        public set panningSensibility(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.panningSensibility = value;
             }
         }
 
-        public get keysUp() {
+        public get keysUp(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysUp;
         }
 
-        public set keysUp(value) {
+        public set keysUp(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysUp = value;
         }
 
-        public get keysDown() {
+        public get keysDown(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysDown;
         }
 
-        public set keysDown(value) {
+        public set keysDown(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysDown = value;
         }
 
-        public get keysLeft() {
+        public get keysLeft(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysLeft;
         }
 
-        public set keysLeft(value) {
+        public set keysLeft(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysLeft = value;
         }
 
-        public get keysRight() {
+        public get keysRight(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysRight;
         }
 
-        public set keysRight(value) {
+        public set keysRight(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysRight = value;
         }
 
-        public get wheelPrecision() {
+        public get wheelPrecision(): number {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 return mousewheel.wheelPrecision;
         }
 
-        public set wheelPrecision(value) {
+        public set wheelPrecision(value: number) {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 mousewheel.wheelPrecision = value;
         }
+
+        public get wheelPrecisionPercentage(): number {
+            var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+            if (mousewheel)
+                return mousewheel.wheelPrecisionPercentage;
+        }
+
+        public set wheelPrecisionPercentage(value: number) {
+            var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+            if (mousewheel)
+                mousewheel.wheelPrecisionPercentage = value;
+        }        
 
         //-- end properties for backward compatibility for inputs
 
