@@ -4121,8 +4121,8 @@
             return hdrSkybox;
         }
 
-        public createDefaultVRExperience() {
-            this.VRHelper = new BABYLON.VRExperienceHelper(this, null);
+        public createDefaultVRExperience(webVROptions: WebVROptions = {}) {
+            this.VRHelper = new BABYLON.VRExperienceHelper(this, webVROptions);
         }
 
         // Tags
