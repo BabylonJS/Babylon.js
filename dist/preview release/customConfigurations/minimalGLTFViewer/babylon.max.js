@@ -13649,13 +13649,25 @@ var BABYLON;
         /**
          * True if the mesh intersects another mesh or a SolidParticle object.
          * Unless the parameter `precise` is set to `true` the intersection is computed according to Axis Aligned Bounding Boxes (AABB), else according to OBB (Oriented BBoxes)
+         * includeDescendants can be set to true to test if the mesh defined in parameters intersects with the current mesh or any child meshes
          * Returns a boolean.
          */
-        AbstractMesh.prototype.intersectsMesh = function (mesh, precise) {
+        AbstractMesh.prototype.intersectsMesh = function (mesh, precise, includeDescendants) {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;
             }
-            return this._boundingInfo.intersects(mesh._boundingInfo, precise);
+            if (this._boundingInfo.intersects(mesh._boundingInfo, precise)) {
+                return true;
+            }
+            if (includeDescendants) {
+                for (var _i = 0, _a = this.getChildMeshes(); _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (child.intersectsMesh(mesh, precise, true)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         };
         /**
          * Returns true if the passed point (Vector3) is inside the mesh bounding box.
@@ -48483,6 +48495,39 @@ var BABYLON;
                 return this._shadowMap2;
             }
             return this._shadowMap;
+        };
+        /**
+         * Helper function to add a mesh and its descendants to the list of shadow casters
+         * @param mesh Mesh to add
+         * @param includeDescendants boolean indicating if the descendants should be added. Default to true
+         */
+        ShadowGenerator.prototype.addShadowCaster = function (mesh, includeDescendants) {
+            if (includeDescendants === void 0) { includeDescendants = true; }
+            this._shadowMap.renderList.push(mesh);
+            if (includeDescendants) {
+                (_a = this._shadowMap.renderList).push.apply(_a, mesh.getChildMeshes());
+            }
+            return this;
+            var _a;
+        };
+        /**
+         * Helper function to remove a mesh and its descendants from the list of shadow casters
+         * @param mesh Mesh to remove
+         * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
+         */
+        ShadowGenerator.prototype.removeShadowCaster = function (mesh, includeDescendants) {
+            if (includeDescendants === void 0) { includeDescendants = true; }
+            var index = this._shadowMap.renderList.indexOf(mesh);
+            if (index !== -1) {
+                this._shadowMap.renderList.splice(index, 1);
+            }
+            if (includeDescendants) {
+                for (var _i = 0, _a = mesh.getChildren(); _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    this.removeShadowCaster(child);
+                }
+            }
+            return this;
         };
         /**
          * Returns the associated light object.
