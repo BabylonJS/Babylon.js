@@ -35578,10 +35578,10 @@ var BABYLON;
         function ArcRotateCameraMouseWheelInput() {
             this.wheelPrecision = 3.0;
             /**
-             * wheelPrecisionPercentage will be used instead of whellPrecision if different from 0.
+             * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
              * It defines the percentage of current camera.radius to use as delta when wheel is used.
              */
-            this.wheelPrecisionPercentage = 0;
+            this.wheelDeltaPercentage = 0;
         }
         ArcRotateCameraMouseWheelInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -35592,7 +35592,7 @@ var BABYLON;
                 var event = p.event;
                 var delta = 0;
                 if (event.wheelDelta) {
-                    delta = _this.wheelPrecisionPercentage ? (event.wheelDelta * 0.01) * _this.camera.radius * _this.wheelPrecisionPercentage : event.wheelDelta / (_this.wheelPrecision * 40);
+                    delta = _this.wheelDeltaPercentage ? (event.wheelDelta * 0.01) * _this.camera.radius * _this.wheelDeltaPercentage : event.wheelDelta / (_this.wheelPrecision * 40);
                 }
                 else if (event.detail) {
                     delta = -event.detail / _this.wheelPrecision;
@@ -35625,7 +35625,7 @@ var BABYLON;
         ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecision", void 0);
         __decorate([
             BABYLON.serialize()
-        ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecisionPercentage", void 0);
+        ], ArcRotateCameraMouseWheelInput.prototype, "wheelDeltaPercentage", void 0);
         return ArcRotateCameraMouseWheelInput;
     }());
     BABYLON.ArcRotateCameraMouseWheelInput = ArcRotateCameraMouseWheelInput;
@@ -35644,6 +35644,11 @@ var BABYLON;
             this.angularSensibilityX = 1000.0;
             this.angularSensibilityY = 1000.0;
             this.pinchPrecision = 12.0;
+            /**
+             * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
+             * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+             */
+            this.pinchDeltaPercentage = 0;
             this.panningSensibility = 1000.0;
             this.multiTouchPanning = true;
             this.multiTouchPanAndZoom = true;
@@ -35773,11 +35778,15 @@ var BABYLON;
                             return;
                         }
                         if (_this.multiTouchPanAndZoom) {
-                            _this.camera
-                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
-                                (_this.pinchPrecision *
-                                    ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
-                                    direction);
+                            if (_this.pinchDeltaPercentage) {
+                                _this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001) * _this.camera.radius * _this.pinchDeltaPercentage;
+                            }
+                            else {
+                                _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                                    (_this.pinchPrecision *
+                                        ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
+                                        direction);
+                            }
                             if (_this.panningSensibility !== 0) {
                                 var pointersCenterX = (pointA.x + pointB.x) / 2;
                                 var pointersCenterY = (pointA.y + pointB.y) / 2;
@@ -35792,11 +35801,15 @@ var BABYLON;
                         else {
                             twoFingerActivityCount++;
                             if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > _this.camera.pinchToPanMaxDistance)) {
-                                _this.camera
-                                    .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
-                                    (_this.pinchPrecision *
-                                        ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
-                                        direction);
+                                if (_this.pinchDeltaPercentage) {
+                                    _this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001) * _this.camera.radius * _this.pinchDeltaPercentage;
+                                }
+                                else {
+                                    _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                                        (_this.pinchPrecision *
+                                            ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
+                                            direction);
+                                }
                                 previousMultiTouchPanPosition.isPaning = false;
                                 previousMultiTouchPanPosition.isPinching = true;
                             }
@@ -35916,6 +35929,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "pinchPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "pinchDeltaPercentage", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "panningSensibility", void 0);
@@ -36078,6 +36094,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ArcRotateCamera.prototype, "pinchDeltaPercentage", {
+            get: function () {
+                var pointers = this.inputs.attached["pointers"];
+                if (pointers)
+                    return pointers.pinchDeltaPercentage;
+            },
+            set: function (value) {
+                var pointers = this.inputs.attached["pointers"];
+                if (pointers) {
+                    pointers.pinchDeltaPercentage = value;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ArcRotateCamera.prototype, "panningSensibility", {
             get: function () {
                 var pointers = this.inputs.attached["pointers"];
@@ -36163,16 +36194,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ArcRotateCamera.prototype, "wheelPrecisionPercentage", {
+        Object.defineProperty(ArcRotateCamera.prototype, "wheelDeltaPercentage", {
             get: function () {
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
-                    return mousewheel.wheelPrecisionPercentage;
+                    return mousewheel.wheelDeltaPercentage;
             },
             set: function (value) {
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
-                    mousewheel.wheelPrecisionPercentage = value;
+                    mousewheel.wheelDeltaPercentage = value;
             },
             enumerable: true,
             configurable: true
@@ -49199,7 +49230,11 @@ var BABYLON;
                 }
             }
             else {
-                if (BABYLON.FilesInput.FilesToLoad[sceneFilename]) {
+                var fileOrString = sceneFilename;
+                if (fileOrString.name) {
+                    BABYLON.Tools.ReadFile(fileOrString, dataCallback, onProgress, useArrayBuffer);
+                }
+                else if (BABYLON.FilesInput.FilesToLoad[sceneFilename]) {
                     BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[sceneFilename], dataCallback, onProgress, useArrayBuffer);
                 }
                 else {
