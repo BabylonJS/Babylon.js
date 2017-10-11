@@ -13290,7 +13290,7 @@ var BABYLON;
          */
         AbstractMesh.prototype.setPivotMatrix = function (matrix, postMultiplyPivotMatrix) {
             if (postMultiplyPivotMatrix === void 0) { postMultiplyPivotMatrix = false; }
-            this._pivotMatrix = matrix;
+            this._pivotMatrix = matrix.clone();
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
             if (this._postMultiplyPivotMatrix) {
@@ -35576,6 +35576,11 @@ var BABYLON;
     var ArcRotateCameraMouseWheelInput = (function () {
         function ArcRotateCameraMouseWheelInput() {
             this.wheelPrecision = 3.0;
+            /**
+             * wheelPrecisionPercentage will be used instead of whellPrecision if different from 0.
+             * It defines the percentage of current camera.radius to use as delta when wheel is used.
+             */
+            this.wheelPrecisionPercentage = 0;
         }
         ArcRotateCameraMouseWheelInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -35586,7 +35591,7 @@ var BABYLON;
                 var event = p.event;
                 var delta = 0;
                 if (event.wheelDelta) {
-                    delta = event.wheelDelta / (_this.wheelPrecision * 40);
+                    delta = _this.wheelPrecisionPercentage ? (event.wheelDelta * 0.01) * _this.camera.radius * _this.wheelPrecisionPercentage : event.wheelDelta / (_this.wheelPrecision * 40);
                 }
                 else if (event.detail) {
                     delta = -event.detail / _this.wheelPrecision;
@@ -35617,6 +35622,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecisionPercentage", void 0);
         return ArcRotateCameraMouseWheelInput;
     }());
     BABYLON.ArcRotateCameraMouseWheelInput = ArcRotateCameraMouseWheelInput;
@@ -36150,6 +36158,20 @@ var BABYLON;
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
                     mousewheel.wheelPrecision = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArcRotateCamera.prototype, "wheelPrecisionPercentage", {
+            get: function () {
+                var mousewheel = this.inputs.attached["mousewheel"];
+                if (mousewheel)
+                    return mousewheel.wheelPrecisionPercentage;
+            },
+            set: function (value) {
+                var mousewheel = this.inputs.attached["mousewheel"];
+                if (mousewheel)
+                    mousewheel.wheelPrecisionPercentage = value;
             },
             enumerable: true,
             configurable: true
@@ -49176,7 +49198,13 @@ var BABYLON;
                 }
             }
             else {
-                BABYLON.Tools.ReadFile(sceneFilename, dataCallback, onProgress, useArrayBuffer);
+                if (BABYLON.FilesInput.FilesToLoad[sceneFilename]) {
+                    BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[sceneFilename], dataCallback, onProgress, useArrayBuffer);
+                }
+                else {
+                    onError("Unable to find file named " + sceneFilename);
+                    return;
+                }
             }
         };
         // Public functions

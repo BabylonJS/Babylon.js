@@ -154,7 +154,7 @@ declare module BABYLON.GUI {
         protected _horizontalAlignment: number;
         protected _verticalAlignment: number;
         private _isDirty;
-        private _cachedParentMeasure;
+        protected _cachedParentMeasure: Measure;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -438,7 +438,9 @@ declare module BABYLON.GUI {
         borderColor: string;
         background: string;
         barOffset: string | number;
+        readonly barOffsetInPixels: number;
         thumbWidth: string | number;
+        readonly thumbWidthInPixels: number;
         minimum: number;
         maximum: number;
         value: number;
@@ -643,7 +645,9 @@ declare module BABYLON.GUI {
         onFocusObservable: Observable<InputText>;
         onBlurObservable: Observable<InputText>;
         maxWidth: string | number;
+        readonly maxWidthInPixels: number;
         margin: string;
+        readonly marginInPixels: number;
         autoStretchWidth: boolean;
         thickness: number;
         focusedBackground: string;
