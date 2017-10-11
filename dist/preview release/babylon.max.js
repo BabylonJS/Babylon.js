@@ -4184,46 +4184,64 @@ var BABYLON;
             Frustum.GetPlanesToRef(transform, frustumPlanes);
             return frustumPlanes;
         };
+        Frustum.GetNearPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] + transform.m[2];
+            frustumPlane.normal.y = transform.m[7] + transform.m[6];
+            frustumPlane.normal.z = transform.m[11] + transform.m[10];
+            frustumPlane.d = transform.m[15] + transform.m[14];
+            frustumPlane.normalize();
+        };
+        Frustum.GetFarPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] - transform.m[2];
+            frustumPlane.normal.y = transform.m[7] - transform.m[6];
+            frustumPlane.normal.z = transform.m[11] - transform.m[10];
+            frustumPlane.d = transform.m[15] - transform.m[14];
+            frustumPlane.normalize();
+        };
+        Frustum.GetLeftPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] + transform.m[0];
+            frustumPlane.normal.y = transform.m[7] + transform.m[4];
+            frustumPlane.normal.z = transform.m[11] + transform.m[8];
+            frustumPlane.d = transform.m[15] + transform.m[12];
+            frustumPlane.normalize();
+        };
+        Frustum.GetRightPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] - transform.m[0];
+            frustumPlane.normal.y = transform.m[7] - transform.m[4];
+            frustumPlane.normal.z = transform.m[11] - transform.m[8];
+            frustumPlane.d = transform.m[15] - transform.m[12];
+            frustumPlane.normalize();
+        };
+        Frustum.GetTopPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] - transform.m[1];
+            frustumPlane.normal.y = transform.m[7] - transform.m[5];
+            frustumPlane.normal.z = transform.m[11] - transform.m[9];
+            frustumPlane.d = transform.m[15] - transform.m[13];
+            frustumPlane.normalize();
+        };
+        Frustum.GetBottomPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] + transform.m[1];
+            frustumPlane.normal.y = transform.m[7] + transform.m[5];
+            frustumPlane.normal.z = transform.m[11] + transform.m[9];
+            frustumPlane.d = transform.m[15] + transform.m[13];
+            frustumPlane.normalize();
+        };
         /**
          * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.
          */
         Frustum.GetPlanesToRef = function (transform, frustumPlanes) {
             // Near
-            frustumPlanes[0].normal.x = transform.m[3] + transform.m[2];
-            frustumPlanes[0].normal.y = transform.m[7] + transform.m[6];
-            frustumPlanes[0].normal.z = transform.m[11] + transform.m[10];
-            frustumPlanes[0].d = transform.m[15] + transform.m[14];
-            frustumPlanes[0].normalize();
+            Frustum.GetNearPlaneToRef(transform, frustumPlanes[0]);
             // Far
-            frustumPlanes[1].normal.x = transform.m[3] - transform.m[2];
-            frustumPlanes[1].normal.y = transform.m[7] - transform.m[6];
-            frustumPlanes[1].normal.z = transform.m[11] - transform.m[10];
-            frustumPlanes[1].d = transform.m[15] - transform.m[14];
-            frustumPlanes[1].normalize();
+            Frustum.GetFarPlaneToRef(transform, frustumPlanes[1]);
             // Left
-            frustumPlanes[2].normal.x = transform.m[3] + transform.m[0];
-            frustumPlanes[2].normal.y = transform.m[7] + transform.m[4];
-            frustumPlanes[2].normal.z = transform.m[11] + transform.m[8];
-            frustumPlanes[2].d = transform.m[15] + transform.m[12];
-            frustumPlanes[2].normalize();
+            Frustum.GetLeftPlaneToRef(transform, frustumPlanes[2]);
             // Right
-            frustumPlanes[3].normal.x = transform.m[3] - transform.m[0];
-            frustumPlanes[3].normal.y = transform.m[7] - transform.m[4];
-            frustumPlanes[3].normal.z = transform.m[11] - transform.m[8];
-            frustumPlanes[3].d = transform.m[15] - transform.m[12];
-            frustumPlanes[3].normalize();
+            Frustum.GetRightPlaneToRef(transform, frustumPlanes[3]);
             // Top
-            frustumPlanes[4].normal.x = transform.m[3] - transform.m[1];
-            frustumPlanes[4].normal.y = transform.m[7] - transform.m[5];
-            frustumPlanes[4].normal.z = transform.m[11] - transform.m[9];
-            frustumPlanes[4].d = transform.m[15] - transform.m[13];
-            frustumPlanes[4].normalize();
+            Frustum.GetTopPlaneToRef(transform, frustumPlanes[4]);
             // Bottom
-            frustumPlanes[5].normal.x = transform.m[3] + transform.m[1];
-            frustumPlanes[5].normal.y = transform.m[7] + transform.m[5];
-            frustumPlanes[5].normal.z = transform.m[11] + transform.m[9];
-            frustumPlanes[5].d = transform.m[15] + transform.m[13];
-            frustumPlanes[5].normalize();
+            Frustum.GetBottomPlaneToRef(transform, frustumPlanes[5]);
         };
         return Frustum;
     }());
@@ -5341,6 +5359,34 @@ var BABYLON;
         return Observer;
     }());
     BABYLON.Observer = Observer;
+    /**
+     * Represent a list of observers registered to multiple Observables object.
+     */
+    var MultiObserver = (function () {
+        function MultiObserver() {
+        }
+        MultiObserver.prototype.dispose = function () {
+            for (var index = 0; index < this._observers.length; index++) {
+                this._observables[index].remove(this._observers[index]);
+            }
+            this._observers = null;
+            this._observables = null;
+        };
+        MultiObserver.Watch = function (observables, callback, mask, scope) {
+            if (mask === void 0) { mask = -1; }
+            if (scope === void 0) { scope = null; }
+            var result = new MultiObserver();
+            result._observers = new Array();
+            result._observables = observables;
+            for (var _i = 0, observables_1 = observables; _i < observables_1.length; _i++) {
+                var observable = observables_1[_i];
+                result._observers.push(observable.add(callback, mask, false, scope));
+            }
+            return result;
+        };
+        return MultiObserver;
+    }());
+    BABYLON.MultiObserver = MultiObserver;
     /**
      * The Observable class is a simple implementation of the Observable pattern.
      * There's one slight particularity though: a given Observable can notify its observer using a particular mask value, only the Observers registered with this mask value will be notified.
@@ -18201,6 +18247,11 @@ var BABYLON;
             }
             else {
                 BABYLON.Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+            }
+            if (this.activeCamera._alternateCamera) {
+                var otherCamera = this.activeCamera._alternateCamera;
+                otherCamera.getViewMatrix().multiplyToRef(otherCamera.getProjectionMatrix(), BABYLON.Tmp.Matrix[0]);
+                BABYLON.Frustum.GetRightPlaneToRef(BABYLON.Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
             }
             if (this._sceneUbo.useUbo) {
                 this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);

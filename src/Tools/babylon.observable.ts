@@ -38,6 +38,36 @@
     }
 
     /**
+     * Represent a list of observers registered to multiple Observables object.
+     */
+    export class MultiObserver<T> {
+        private _observers: Observer<T>[];
+        private _observables: Observable<T>[];
+        
+        public dispose(): void {
+            for (var index = 0; index < this._observers.length; index++) {
+                this._observables[index].remove(this._observers[index]);
+            }
+
+            this._observers = null;
+            this._observables = null;
+        }
+
+        public static Watch<T>(observables: Observable<T>[], callback: (eventData: T, eventState: EventState) => void, mask: number = -1, scope: any = null): MultiObserver<T> {
+            let result = new MultiObserver<T>();
+
+            result._observers = new Array<Observer<T>>();
+            result._observables = observables;            
+
+            for (var observable of observables) {
+                result._observers.push(observable.add(callback, mask, false, scope));
+            }
+
+            return result;
+        }
+    }
+
+    /**
      * The Observable class is a simple implementation of the Observable pattern.
      * There's one slight particularity though: a given Observable can notify its observer using a particular mask value, only the Observers registered with this mask value will be notified.
      * This enable a more fine grained execution without having to rely on multiple different Observable objects.
