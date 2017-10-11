@@ -2933,9 +2933,24 @@ var BABYLON;
                 _this._textWrapping = false;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+                _this._resizeToFit = false;
                 _this.text = text;
                 return _this;
             }
+            Object.defineProperty(TextBlock.prototype, "resizeToFit", {
+                get: function () {
+                    return this._resizeToFit;
+                },
+                set: function (value) {
+                    this._resizeToFit = value;
+                    if (this._resizeToFit) {
+                        this._width.ignoreAdaptiveScaling = true;
+                        this._height.ignoreAdaptiveScaling = true;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(TextBlock.prototype, "textWrapping", {
                 get: function () {
                     return this._textWrapping;
@@ -3023,7 +3038,7 @@ var BABYLON;
             TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
                 this._lines = [];
                 var _lines = this.text.split("\n");
-                if (this._textWrapping) {
+                if (this._textWrapping && !this._resizeToFit) {
                     for (var _i = 0, _lines_1 = _lines; _i < _lines_1.length; _i++) {
                         var _line = _lines_1[_i];
                         this._lines.push(this._parseLineWithTextWrapping(_line, context));
@@ -3080,10 +3095,17 @@ var BABYLON;
                         break;
                 }
                 rootY += this._currentMeasure.top;
+                var maxLineWidth = 0;
                 for (var _i = 0, _a = this._lines; _i < _a.length; _i++) {
                     var line = _a[_i];
                     this._drawText(line.text, line.width, rootY, context);
                     rootY += this._fontOffset.height;
+                    if (line.width > maxLineWidth)
+                        maxLineWidth = line.width;
+                }
+                if (this._resizeToFit) {
+                    this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
+                    this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
                 }
             };
             return TextBlock;

@@ -502,6 +502,8 @@ declare module BABYLON.GUI {
         private _textVerticalAlignment;
         private _lines;
         private _totalHeight;
+        private _resizeToFit;
+        resizeToFit: boolean;
         textWrapping: boolean;
         text: string;
         textHorizontalAlignment: number;
