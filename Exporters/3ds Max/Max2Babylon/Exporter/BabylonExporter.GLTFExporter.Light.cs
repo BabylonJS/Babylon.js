@@ -41,6 +41,9 @@ namespace Max2Babylon
             // No scaling defined for babylon light. Use identity instead.
             gltfNode.scale = new float[3] { 1, 1, 1 };
 
+            // Animations
+            ExportNodeAnimation(babylonLight, gltf, gltfNode);
+
             return gltfNode;
         }
     }

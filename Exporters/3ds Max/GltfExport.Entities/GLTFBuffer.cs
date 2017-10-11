@@ -12,6 +12,7 @@ namespace GLTFExport.Entities
         [DataMember(IsRequired = true)]
         public int byteLength { get; set; }
 
-        public List<byte> bytesList;
+        public List<byte> bytesList = new List<byte>();
+        public List<GLTFBufferView> BufferViews = new List<GLTFBufferView>();
     }
 }

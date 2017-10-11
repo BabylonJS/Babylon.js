@@ -89,6 +89,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool workerCollisions { get; set; }
 
+        [DataMember]
+        public BabylonMorphTargetManager[] morphTargetManagers { get; set; }
+
         public BabylonVector3 MaxVector { get; set; }
         public BabylonVector3 MinVector { get; set; }
 
@@ -102,6 +105,7 @@ namespace BabylonExport.Entities
         public List<BabylonMultiMaterial> MultiMaterialsList { get; private set; }
         public List<BabylonShadowGenerator> ShadowGeneratorsList { get; private set; }
         public List<BabylonSkeleton> SkeletonsList { get; private set; }
+        public List<BabylonMorphTargetManager> MorphTargetManagersList { get; private set; }
 
         readonly List<string> exportedTextures = new List<string>();
 
@@ -117,6 +121,7 @@ namespace BabylonExport.Entities
             ShadowGeneratorsList = new List<BabylonShadowGenerator>();
             SkeletonsList = new List<BabylonSkeleton>();
             SoundsList = new List<BabylonSound>();
+            MorphTargetManagersList = new List<BabylonMorphTargetManager>();
 
             // Default values
             autoClear = true;
@@ -137,6 +142,10 @@ namespace BabylonExport.Entities
             multiMaterials = MultiMaterialsList.ToArray();
             shadowGenerators = ShadowGeneratorsList.ToArray();
             skeletons = SkeletonsList.ToArray();
+            if (MorphTargetManagersList.Count > 0)
+            {
+                morphTargetManagers = MorphTargetManagersList.ToArray();
+            }
 
             if (CamerasList.Count == 0 && generateDefaultCamera)
             {

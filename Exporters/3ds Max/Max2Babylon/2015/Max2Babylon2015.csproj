@@ -218,6 +218,12 @@
     <Compile Include="..\Tools\WebServer.cs">
       <Link>Tools\WebServer.cs</Link>
     </Compile>
+    <Compile Include="..\Exporter\GLTFBufferService.cs">
+      <Link>Exporter\GLTFBufferService.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.Animation.cs">
+      <Link>Exporter\BabylonExporter.GLTFExporter.Animation.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

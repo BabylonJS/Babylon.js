@@ -89,30 +89,29 @@
             this.loadFiles(eventDrop);
         }
 
-        private _handleFolderDrop(entry: any, files: Array<any>, callback: () => void): void {
-            var reader = entry.createReader(),
- 			relativePath = entry.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
- 			reader.readEntries((fileEntries) => {
-                var remaining = fileEntries.length;
-                for (let fileEntry of fileEntries) {
-                    if (fileEntry.isFile) { // We only support one level
-                        fileEntry.file(function(file) {
+        private _traverseFolder(folder: any, files: Array<any>, remaining: { count: number }, callback: () => void) {
+            var reader = folder.createReader();
+            var relativePath = folder.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
+            reader.readEntries(entries => {
+                remaining.count += entries.length;
+                for (let entry of entries) {
+                    if (entry.isFile) {
+                        entry.file(file => {
                             file.correctName = relativePath + file.name;
                             files.push(file);
-            
-                            remaining--;
 
-                            if (remaining === 0) {
+                            if (--remaining.count === 0) {
                                 callback();
                             }
                         });
-                    } else {
-                        remaining--;
-
-                        if (remaining === 0) {
-                            callback();
-                        }
                     }
+                    else if (entry.isDirectory) {
+                        this._traverseFolder(entry, files, remaining, callback);
+                    }
+                }
+
+                if (--remaining.count) {
+                    callback();
                 }
             });
         }
@@ -159,7 +158,6 @@
             }
 
             if (this._filesToLoad && this._filesToLoad.length > 0) {
-        
                 let files = [];
                 let folders = [];
                 var items = event.dataTransfer ? event.dataTransfer.items : null;
@@ -171,17 +169,17 @@
                     let entry;
 
                     fileToLoad.correctName = name;
-                    
+
                     if (items) {
                         let item = items[i];
                         if (item.getAsEntry) {
                             entry = item.getAsEntry();
                         } else if (item.webkitGetAsEntry) {
                             entry = item.webkitGetAsEntry();
-                        }                     
+                        }
                     }
 
-                    if (!entry) {    
+                    if (!entry) {
                         files.push(fileToLoad);
                     } else {
                         if (entry.isDirectory) {
@@ -195,16 +193,10 @@
                 if (folders.length === 0) {
                     this._processFiles(files);
                 } else {
-                    var remaining = folders.length;
-
-                    // Extract folder content
+                    var remaining = { count: folders.length };
                     for (var folder of folders) {
-                        this._handleFolderDrop(folder, files, () => {
-                            remaining--;
-
-                            if (remaining === 0) {
-                                this._processFiles(files);
-                            }
+                        this._traverseFolder(folder, files, remaining, () => {
+                            this._processFiles(files);
                         });
                     }
                 }
