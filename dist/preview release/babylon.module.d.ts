@@ -2277,345 +2277,6 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
-    class Action {
-        triggerOptions: any;
-        trigger: number;
-        _actionManager: ActionManager;
-        private _nextActiveAction;
-        private _child;
-        private _condition;
-        private _triggerParameter;
-        onBeforeExecuteObservable: Observable<Action>;
-        constructor(triggerOptions: any, condition?: Condition);
-        _prepare(): void;
-        getTriggerParameter(): any;
-        _executeCurrent(evt: ActionEvent): void;
-        execute(evt: ActionEvent): void;
-        skipToNextActiveAction(): void;
-        then(action: Action): Action;
-        _getProperty(propertyPath: string): string;
-        _getEffectiveTarget(target: any, propertyPath: string): any;
-        serialize(parent: any): any;
-        protected _serialize(serializedAction: any, parent?: any): any;
-        static _SerializeValueAsString: (value: any) => string;
-        static _GetTargetProperty: (target: Scene | Node) => {
-            name: string;
-            targetType: string;
-            value: string;
-        };
-    }
-}
-
-declare module BABYLON {
-    /**
-     * ActionEvent is the event beint sent when an action is triggered.
-     */
-    class ActionEvent {
-        source: any;
-        pointerX: number;
-        pointerY: number;
-        meshUnderPointer: AbstractMesh;
-        sourceEvent: any;
-        additionalData: any;
-        /**
-         * @param source The mesh or sprite that triggered the action.
-         * @param pointerX The X mouse cursor position at the time of the event
-         * @param pointerY The Y mouse cursor position at the time of the event
-         * @param meshUnderPointer The mesh that is currently pointed at (can be null)
-         * @param sourceEvent the original (browser) event that triggered the ActionEvent
-         */
-        constructor(source: any, pointerX: number, pointerY: number, meshUnderPointer: AbstractMesh, sourceEvent?: any, additionalData?: any);
-        /**
-         * Helper function to auto-create an ActionEvent from a source mesh.
-         * @param source The source mesh that triggered the event
-         * @param evt {Event} The original (browser) event
-         */
-        static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent;
-        /**
-         * Helper function to auto-create an ActionEvent from a source mesh.
-         * @param source The source sprite that triggered the event
-         * @param scene Scene associated with the sprite
-         * @param evt {Event} The original (browser) event
-         */
-        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: Event, additionalData?: any): ActionEvent;
-        /**
-         * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
-         * @param scene the scene where the event occurred
-         * @param evt {Event} The original (browser) event
-         */
-        static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent;
-        static CreateNewFromPrimitive(prim: any, pointerPos: Vector2, evt?: Event, additionalData?: any): ActionEvent;
-    }
-    /**
-     * Action Manager manages all events to be triggered on a given mesh or the global scene.
-     * A single scene can have many Action Managers to handle predefined actions on specific meshes.
-     */
-    class ActionManager {
-        private static _NothingTrigger;
-        private static _OnPickTrigger;
-        private static _OnLeftPickTrigger;
-        private static _OnRightPickTrigger;
-        private static _OnCenterPickTrigger;
-        private static _OnPickDownTrigger;
-        private static _OnDoublePickTrigger;
-        private static _OnPickUpTrigger;
-        private static _OnLongPressTrigger;
-        private static _OnPointerOverTrigger;
-        private static _OnPointerOutTrigger;
-        private static _OnEveryFrameTrigger;
-        private static _OnIntersectionEnterTrigger;
-        private static _OnIntersectionExitTrigger;
-        private static _OnKeyDownTrigger;
-        private static _OnKeyUpTrigger;
-        private static _OnPickOutTrigger;
-        static readonly NothingTrigger: number;
-        static readonly OnPickTrigger: number;
-        static readonly OnLeftPickTrigger: number;
-        static readonly OnRightPickTrigger: number;
-        static readonly OnCenterPickTrigger: number;
-        static readonly OnPickDownTrigger: number;
-        static readonly OnDoublePickTrigger: number;
-        static readonly OnPickUpTrigger: number;
-        static readonly OnPickOutTrigger: number;
-        static readonly OnLongPressTrigger: number;
-        static readonly OnPointerOverTrigger: number;
-        static readonly OnPointerOutTrigger: number;
-        static readonly OnEveryFrameTrigger: number;
-        static readonly OnIntersectionEnterTrigger: number;
-        static readonly OnIntersectionExitTrigger: number;
-        static readonly OnKeyDownTrigger: number;
-        static readonly OnKeyUpTrigger: number;
-        static Triggers: {};
-        actions: Action[];
-        hoverCursor: string;
-        private _scene;
-        constructor(scene: Scene);
-        dispose(): void;
-        getScene(): Scene;
-        /**
-         * Does this action manager handles actions of any of the given triggers
-         * @param {number[]} triggers - the triggers to be tested
-         * @return {boolean} whether one (or more) of the triggers is handeled
-         */
-        hasSpecificTriggers(triggers: number[]): boolean;
-        /**
-         * Does this action manager handles actions of a given trigger
-         * @param {number} trigger - the trigger to be tested
-         * @return {boolean} whether the trigger is handeled
-         */
-        hasSpecificTrigger(trigger: number): boolean;
-        /**
-         * Does this action manager has pointer triggers
-         * @return {boolean} whether or not it has pointer triggers
-         */
-        readonly hasPointerTriggers: boolean;
-        /**
-         * Does this action manager has pick triggers
-         * @return {boolean} whether or not it has pick triggers
-         */
-        readonly hasPickTriggers: boolean;
-        /**
-         * Does exist one action manager with at least one trigger
-         * @return {boolean} whether or not it exists one action manager with one trigger
-        **/
-        static readonly HasTriggers: boolean;
-        /**
-         * Does exist one action manager with at least one pick trigger
-         * @return {boolean} whether or not it exists one action manager with one pick trigger
-        **/
-        static readonly HasPickTriggers: boolean;
-        /**
-         * Does exist one action manager that handles actions of a given trigger
-         * @param {number} trigger - the trigger to be tested
-         * @return {boolean} whether the trigger is handeled by at least one action manager
-        **/
-        static HasSpecificTrigger(trigger: number): boolean;
-        /**
-         * Registers an action to this action manager
-         * @param {BABYLON.Action} action - the action to be registered
-         * @return {BABYLON.Action} the action amended (prepared) after registration
-         */
-        registerAction(action: Action): Action;
-        /**
-         * Process a specific trigger
-         * @param {number} trigger - the trigger to process
-         * @param evt {BABYLON.ActionEvent} the event details to be processed
-         */
-        processTrigger(trigger: number, evt: ActionEvent): void;
-        _getEffectiveTarget(target: any, propertyPath: string): any;
-        _getProperty(propertyPath: string): string;
-        serialize(name: string): any;
-        static Parse(parsedActions: any, object: AbstractMesh, scene: Scene): void;
-        static GetTriggerName(trigger: number): string;
-    }
-}
-
-declare module BABYLON {
-    class Condition {
-        _actionManager: ActionManager;
-        _evaluationId: number;
-        _currentResult: boolean;
-        constructor(actionManager: ActionManager);
-        isValid(): boolean;
-        _getProperty(propertyPath: string): string;
-        _getEffectiveTarget(target: any, propertyPath: string): any;
-        serialize(): any;
-        protected _serialize(serializedCondition: any): any;
-    }
-    class ValueCondition extends Condition {
-        propertyPath: string;
-        value: any;
-        operator: number;
-        private static _IsEqual;
-        private static _IsDifferent;
-        private static _IsGreater;
-        private static _IsLesser;
-        static readonly IsEqual: number;
-        static readonly IsDifferent: number;
-        static readonly IsGreater: number;
-        static readonly IsLesser: number;
-        _actionManager: ActionManager;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        constructor(actionManager: ActionManager, target: any, propertyPath: string, value: any, operator?: number);
-        isValid(): boolean;
-        serialize(): any;
-        static GetOperatorName(operator: number): string;
-    }
-    class PredicateCondition extends Condition {
-        predicate: () => boolean;
-        _actionManager: ActionManager;
-        constructor(actionManager: ActionManager, predicate: () => boolean);
-        isValid(): boolean;
-    }
-    class StateCondition extends Condition {
-        value: string;
-        _actionManager: ActionManager;
-        private _target;
-        constructor(actionManager: ActionManager, target: any, value: string);
-        isValid(): boolean;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    class SwitchBooleanAction extends Action {
-        propertyPath: string;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        constructor(triggerOptions: any, target: any, propertyPath: string, condition?: Condition);
-        _prepare(): void;
-        execute(): void;
-        serialize(parent: any): any;
-    }
-    class SetStateAction extends Action {
-        value: string;
-        private _target;
-        constructor(triggerOptions: any, target: any, value: string, condition?: Condition);
-        execute(): void;
-        serialize(parent: any): any;
-    }
-    class SetValueAction extends Action {
-        propertyPath: string;
-        value: any;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
-        _prepare(): void;
-        execute(): void;
-        serialize(parent: any): any;
-    }
-    class IncrementValueAction extends Action {
-        propertyPath: string;
-        value: any;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
-        _prepare(): void;
-        execute(): void;
-        serialize(parent: any): any;
-    }
-    class PlayAnimationAction extends Action {
-        from: number;
-        to: number;
-        loop: boolean;
-        private _target;
-        constructor(triggerOptions: any, target: any, from: number, to: number, loop?: boolean, condition?: Condition);
-        _prepare(): void;
-        execute(): void;
-        serialize(parent: any): any;
-    }
-    class StopAnimationAction extends Action {
-        private _target;
-        constructor(triggerOptions: any, target: any, condition?: Condition);
-        _prepare(): void;
-        execute(): void;
-        serialize(parent: any): any;
-    }
-    class DoNothingAction extends Action {
-        constructor(triggerOptions?: any, condition?: Condition);
-        execute(): void;
-        serialize(parent: any): any;
-    }
-    class CombineAction extends Action {
-        children: Action[];
-        constructor(triggerOptions: any, children: Action[], condition?: Condition);
-        _prepare(): void;
-        execute(evt: ActionEvent): void;
-        serialize(parent: any): any;
-    }
-    class ExecuteCodeAction extends Action {
-        func: (evt: ActionEvent) => void;
-        constructor(triggerOptions: any, func: (evt: ActionEvent) => void, condition?: Condition);
-        execute(evt: ActionEvent): void;
-    }
-    class SetParentAction extends Action {
-        private _parent;
-        private _target;
-        constructor(triggerOptions: any, target: any, parent: any, condition?: Condition);
-        _prepare(): void;
-        execute(): void;
-        serialize(parent: any): any;
-    }
-    class PlaySoundAction extends Action {
-        private _sound;
-        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
-        _prepare(): void;
-        execute(): void;
-        serialize(parent: any): any;
-    }
-    class StopSoundAction extends Action {
-        private _sound;
-        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
-        _prepare(): void;
-        execute(): void;
-        serialize(parent: any): any;
-    }
-}
-
-declare module BABYLON {
-    class InterpolateValueAction extends Action {
-        propertyPath: string;
-        value: any;
-        duration: number;
-        stopOtherAnimations: boolean;
-        onInterpolationDone: () => void;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        onInterpolationDoneObservable: Observable<InterpolateValueAction>;
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration?: number, condition?: Condition, stopOtherAnimations?: boolean, onInterpolationDone?: () => void);
-        _prepare(): void;
-        execute(): void;
-        serialize(parent: any): any;
-    }
-}
-
-declare module BABYLON {
     class Analyser {
         SMOOTHING: number;
         FFT_SIZE: number;
@@ -3069,6 +2730,345 @@ declare module BABYLON {
         private _previousDelay;
         private _previousRatio;
         animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend?: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Action {
+        triggerOptions: any;
+        trigger: number;
+        _actionManager: ActionManager;
+        private _nextActiveAction;
+        private _child;
+        private _condition;
+        private _triggerParameter;
+        onBeforeExecuteObservable: Observable<Action>;
+        constructor(triggerOptions: any, condition?: Condition);
+        _prepare(): void;
+        getTriggerParameter(): any;
+        _executeCurrent(evt: ActionEvent): void;
+        execute(evt: ActionEvent): void;
+        skipToNextActiveAction(): void;
+        then(action: Action): Action;
+        _getProperty(propertyPath: string): string;
+        _getEffectiveTarget(target: any, propertyPath: string): any;
+        serialize(parent: any): any;
+        protected _serialize(serializedAction: any, parent?: any): any;
+        static _SerializeValueAsString: (value: any) => string;
+        static _GetTargetProperty: (target: Scene | Node) => {
+            name: string;
+            targetType: string;
+            value: string;
+        };
+    }
+}
+
+declare module BABYLON {
+    /**
+     * ActionEvent is the event beint sent when an action is triggered.
+     */
+    class ActionEvent {
+        source: any;
+        pointerX: number;
+        pointerY: number;
+        meshUnderPointer: AbstractMesh;
+        sourceEvent: any;
+        additionalData: any;
+        /**
+         * @param source The mesh or sprite that triggered the action.
+         * @param pointerX The X mouse cursor position at the time of the event
+         * @param pointerY The Y mouse cursor position at the time of the event
+         * @param meshUnderPointer The mesh that is currently pointed at (can be null)
+         * @param sourceEvent the original (browser) event that triggered the ActionEvent
+         */
+        constructor(source: any, pointerX: number, pointerY: number, meshUnderPointer: AbstractMesh, sourceEvent?: any, additionalData?: any);
+        /**
+         * Helper function to auto-create an ActionEvent from a source mesh.
+         * @param source The source mesh that triggered the event
+         * @param evt {Event} The original (browser) event
+         */
+        static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent;
+        /**
+         * Helper function to auto-create an ActionEvent from a source mesh.
+         * @param source The source sprite that triggered the event
+         * @param scene Scene associated with the sprite
+         * @param evt {Event} The original (browser) event
+         */
+        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: Event, additionalData?: any): ActionEvent;
+        /**
+         * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
+         * @param scene the scene where the event occurred
+         * @param evt {Event} The original (browser) event
+         */
+        static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent;
+        static CreateNewFromPrimitive(prim: any, pointerPos: Vector2, evt?: Event, additionalData?: any): ActionEvent;
+    }
+    /**
+     * Action Manager manages all events to be triggered on a given mesh or the global scene.
+     * A single scene can have many Action Managers to handle predefined actions on specific meshes.
+     */
+    class ActionManager {
+        private static _NothingTrigger;
+        private static _OnPickTrigger;
+        private static _OnLeftPickTrigger;
+        private static _OnRightPickTrigger;
+        private static _OnCenterPickTrigger;
+        private static _OnPickDownTrigger;
+        private static _OnDoublePickTrigger;
+        private static _OnPickUpTrigger;
+        private static _OnLongPressTrigger;
+        private static _OnPointerOverTrigger;
+        private static _OnPointerOutTrigger;
+        private static _OnEveryFrameTrigger;
+        private static _OnIntersectionEnterTrigger;
+        private static _OnIntersectionExitTrigger;
+        private static _OnKeyDownTrigger;
+        private static _OnKeyUpTrigger;
+        private static _OnPickOutTrigger;
+        static readonly NothingTrigger: number;
+        static readonly OnPickTrigger: number;
+        static readonly OnLeftPickTrigger: number;
+        static readonly OnRightPickTrigger: number;
+        static readonly OnCenterPickTrigger: number;
+        static readonly OnPickDownTrigger: number;
+        static readonly OnDoublePickTrigger: number;
+        static readonly OnPickUpTrigger: number;
+        static readonly OnPickOutTrigger: number;
+        static readonly OnLongPressTrigger: number;
+        static readonly OnPointerOverTrigger: number;
+        static readonly OnPointerOutTrigger: number;
+        static readonly OnEveryFrameTrigger: number;
+        static readonly OnIntersectionEnterTrigger: number;
+        static readonly OnIntersectionExitTrigger: number;
+        static readonly OnKeyDownTrigger: number;
+        static readonly OnKeyUpTrigger: number;
+        static Triggers: {};
+        actions: Action[];
+        hoverCursor: string;
+        private _scene;
+        constructor(scene: Scene);
+        dispose(): void;
+        getScene(): Scene;
+        /**
+         * Does this action manager handles actions of any of the given triggers
+         * @param {number[]} triggers - the triggers to be tested
+         * @return {boolean} whether one (or more) of the triggers is handeled
+         */
+        hasSpecificTriggers(triggers: number[]): boolean;
+        /**
+         * Does this action manager handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled
+         */
+        hasSpecificTrigger(trigger: number): boolean;
+        /**
+         * Does this action manager has pointer triggers
+         * @return {boolean} whether or not it has pointer triggers
+         */
+        readonly hasPointerTriggers: boolean;
+        /**
+         * Does this action manager has pick triggers
+         * @return {boolean} whether or not it has pick triggers
+         */
+        readonly hasPickTriggers: boolean;
+        /**
+         * Does exist one action manager with at least one trigger
+         * @return {boolean} whether or not it exists one action manager with one trigger
+        **/
+        static readonly HasTriggers: boolean;
+        /**
+         * Does exist one action manager with at least one pick trigger
+         * @return {boolean} whether or not it exists one action manager with one pick trigger
+        **/
+        static readonly HasPickTriggers: boolean;
+        /**
+         * Does exist one action manager that handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled by at least one action manager
+        **/
+        static HasSpecificTrigger(trigger: number): boolean;
+        /**
+         * Registers an action to this action manager
+         * @param {BABYLON.Action} action - the action to be registered
+         * @return {BABYLON.Action} the action amended (prepared) after registration
+         */
+        registerAction(action: Action): Action;
+        /**
+         * Process a specific trigger
+         * @param {number} trigger - the trigger to process
+         * @param evt {BABYLON.ActionEvent} the event details to be processed
+         */
+        processTrigger(trigger: number, evt: ActionEvent): void;
+        _getEffectiveTarget(target: any, propertyPath: string): any;
+        _getProperty(propertyPath: string): string;
+        serialize(name: string): any;
+        static Parse(parsedActions: any, object: AbstractMesh, scene: Scene): void;
+        static GetTriggerName(trigger: number): string;
+    }
+}
+
+declare module BABYLON {
+    class Condition {
+        _actionManager: ActionManager;
+        _evaluationId: number;
+        _currentResult: boolean;
+        constructor(actionManager: ActionManager);
+        isValid(): boolean;
+        _getProperty(propertyPath: string): string;
+        _getEffectiveTarget(target: any, propertyPath: string): any;
+        serialize(): any;
+        protected _serialize(serializedCondition: any): any;
+    }
+    class ValueCondition extends Condition {
+        propertyPath: string;
+        value: any;
+        operator: number;
+        private static _IsEqual;
+        private static _IsDifferent;
+        private static _IsGreater;
+        private static _IsLesser;
+        static readonly IsEqual: number;
+        static readonly IsDifferent: number;
+        static readonly IsGreater: number;
+        static readonly IsLesser: number;
+        _actionManager: ActionManager;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        constructor(actionManager: ActionManager, target: any, propertyPath: string, value: any, operator?: number);
+        isValid(): boolean;
+        serialize(): any;
+        static GetOperatorName(operator: number): string;
+    }
+    class PredicateCondition extends Condition {
+        predicate: () => boolean;
+        _actionManager: ActionManager;
+        constructor(actionManager: ActionManager, predicate: () => boolean);
+        isValid(): boolean;
+    }
+    class StateCondition extends Condition {
+        value: string;
+        _actionManager: ActionManager;
+        private _target;
+        constructor(actionManager: ActionManager, target: any, value: string);
+        isValid(): boolean;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    class SwitchBooleanAction extends Action {
+        propertyPath: string;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        constructor(triggerOptions: any, target: any, propertyPath: string, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+        serialize(parent: any): any;
+    }
+    class SetStateAction extends Action {
+        value: string;
+        private _target;
+        constructor(triggerOptions: any, target: any, value: string, condition?: Condition);
+        execute(): void;
+        serialize(parent: any): any;
+    }
+    class SetValueAction extends Action {
+        propertyPath: string;
+        value: any;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+        serialize(parent: any): any;
+    }
+    class IncrementValueAction extends Action {
+        propertyPath: string;
+        value: any;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+        serialize(parent: any): any;
+    }
+    class PlayAnimationAction extends Action {
+        from: number;
+        to: number;
+        loop: boolean;
+        private _target;
+        constructor(triggerOptions: any, target: any, from: number, to: number, loop?: boolean, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+        serialize(parent: any): any;
+    }
+    class StopAnimationAction extends Action {
+        private _target;
+        constructor(triggerOptions: any, target: any, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+        serialize(parent: any): any;
+    }
+    class DoNothingAction extends Action {
+        constructor(triggerOptions?: any, condition?: Condition);
+        execute(): void;
+        serialize(parent: any): any;
+    }
+    class CombineAction extends Action {
+        children: Action[];
+        constructor(triggerOptions: any, children: Action[], condition?: Condition);
+        _prepare(): void;
+        execute(evt: ActionEvent): void;
+        serialize(parent: any): any;
+    }
+    class ExecuteCodeAction extends Action {
+        func: (evt: ActionEvent) => void;
+        constructor(triggerOptions: any, func: (evt: ActionEvent) => void, condition?: Condition);
+        execute(evt: ActionEvent): void;
+    }
+    class SetParentAction extends Action {
+        private _parent;
+        private _target;
+        constructor(triggerOptions: any, target: any, parent: any, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+        serialize(parent: any): any;
+    }
+    class PlaySoundAction extends Action {
+        private _sound;
+        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+        serialize(parent: any): any;
+    }
+    class StopSoundAction extends Action {
+        private _sound;
+        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+        serialize(parent: any): any;
+    }
+}
+
+declare module BABYLON {
+    class InterpolateValueAction extends Action {
+        propertyPath: string;
+        value: any;
+        duration: number;
+        stopOtherAnimations: boolean;
+        onInterpolationDone: () => void;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        onInterpolationDoneObservable: Observable<InterpolateValueAction>;
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration?: number, condition?: Condition, stopOtherAnimations?: boolean, onInterpolationDone?: () => void);
+        _prepare(): void;
+        execute(): void;
+        serialize(parent: any): any;
     }
 }
 
@@ -3558,6 +3558,124 @@ declare module BABYLON {
         getPoseMatrix(): Matrix;
         sortBones(): void;
         private _sortBones(index, bones, visited);
+    }
+}
+
+declare module BABYLON {
+    class BoundingBox implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        private _rayHelper;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
+        intersectsPlane(plane: Plane): number;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo(pickingInfoA, pickingInfoB);
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
     }
 }
 
@@ -4088,124 +4206,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class BoundingBox implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        private _rayHelper;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
-        intersectsPlane(plane: Plane): number;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo(pickingInfoA, pickingInfoB);
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
-declare module BABYLON {
     class Collider {
         radius: Vector3;
         retry: number;
@@ -4573,69 +4573,6 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength(bones, meshMat);
         update(): void;
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: any, localY: any);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: PickingInfo;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: PickingInfo);
     }
 }
 
@@ -5052,6 +4989,69 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: any, localY: any);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: PickingInfo;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: PickingInfo);
+    }
+}
+
+declare module BABYLON {
     class LensFlare {
         size: number;
         position: number;
@@ -5093,6 +5093,105 @@ declare module BABYLON {
         dispose(): void;
         static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
         serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPlugin {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPluginAsync {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string, exception?: any) => void) => void;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        static CleanBoneMatrixWeights: boolean;
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
     }
 }
 
@@ -5626,105 +5725,6 @@ declare module BABYLON {
          * Return the SpotLight.
          */
         transferToEffect(effect: Effect, lightIndex: string): SpotLight;
-    }
-}
-
-declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPlugin {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPluginAsync {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string, exception?: any) => void) => void;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        static CleanBoneMatrixWeights: boolean;
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void;
     }
 }
 
@@ -16220,6 +16220,53 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    }
+}
+
+declare module BABYLON {
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        readonly capacity: number;
+        readonly minPoint: Vector3;
+        readonly maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArray<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArray<T>): void;
+        createInnerBlocks(): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Gamepad;
@@ -16627,53 +16674,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        readonly capacity: number;
-        readonly minPoint: Vector3;
-        readonly maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArray<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArray<T>): void;
-        createInnerBlocks(): void;
-    }
-}
-
-declare module BABYLON {
     class GenericController extends WebVRController {
         static readonly MODEL_BASE_URL: string;
         static readonly MODEL_FILENAME: string;
@@ -16837,6 +16837,9 @@ declare module BABYLON {
         getForwardRay(length?: number): Ray;
         dispose(): void;
     }
+}
+
+declare module BABYLON.Internals {
 }
 
 declare module BABYLON {
@@ -17007,9 +17010,6 @@ declare module BABYLON {
          */
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
-}
-
-declare module BABYLON.Internals {
 }
 
 declare module BABYLON {

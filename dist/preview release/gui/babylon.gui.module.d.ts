@@ -642,6 +642,8 @@ declare module BABYLON.GUI {
         private _blinkIsEven;
         private _cursorOffset;
         private _scrollLeft;
+        private _textWidth;
+        private _clickedCoordinate;
         promptMessage: string;
         onTextChangedObservable: Observable<InputText>;
         onFocusObservable: Observable<InputText>;

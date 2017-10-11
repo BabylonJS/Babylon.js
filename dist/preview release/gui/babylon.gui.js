@@ -3835,8 +3835,8 @@ var BABYLON;
                 _this.name = name;
                 _this._text = "";
                 _this._placeholderText = "";
-                _this._background = "black";
-                _this._focusedBackground = "black";
+                _this._background = "#222222";
+                _this._focusedBackground = "#000000";
                 _this._placeholderColor = "gray";
                 _this._thickness = 1;
                 _this._margin = new GUI.ValueAndUnit(10, GUI.ValueAndUnit.UNITMODE_PIXEL);
@@ -4126,10 +4126,10 @@ var BABYLON;
                             context.fillStyle = this._placeholderColor;
                         }
                     }
-                    var textWidth = context.measureText(text).width;
+                    this._textWidth = context.measureText(text).width;
                     var marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
                     if (this._autoStretchWidth) {
-                        this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), textWidth + marginWidth) + "px";
+                        this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), this._textWidth + marginWidth) + "px";
                     }
                     var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
                     var availableWidth = this._width.getValueInPixel(this._host, parentMeasure.width) - marginWidth;
@@ -4137,8 +4137,8 @@ var BABYLON;
                     context.beginPath();
                     context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
                     context.clip();
-                    if (this._isFocused && textWidth > availableWidth) {
-                        var textLeft = clipTextLeft - textWidth + availableWidth;
+                    if (this._isFocused && this._textWidth > availableWidth) {
+                        var textLeft = clipTextLeft - this._textWidth + availableWidth;
                         if (!this._scrollLeft) {
                             this._scrollLeft = textLeft;
                         }
@@ -4149,10 +4149,32 @@ var BABYLON;
                     context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
                     // Cursor
                     if (this._isFocused) {
+                        // Need to move cursor
+                        if (this._clickedCoordinate) {
+                            var rightPosition = this._scrollLeft + this._textWidth;
+                            var absoluteCursorPosition = rightPosition - this._clickedCoordinate;
+                            var currentSize = 0;
+                            this._cursorOffset = 0;
+                            var previousDist = 0;
+                            do {
+                                if (this._cursorOffset) {
+                                    previousDist = Math.abs(absoluteCursorPosition - currentSize);
+                                }
+                                this._cursorOffset++;
+                                currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
+                            } while (currentSize < absoluteCursorPosition);
+                            // Find closest move
+                            if (Math.abs(absoluteCursorPosition - currentSize) > previousDist) {
+                                this._cursorOffset--;
+                            }
+                            this._blinkIsEven = false;
+                            this._clickedCoordinate = null;
+                        }
+                        // Render cursor
                         if (!this._blinkIsEven) {
                             var cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
                             var cursorOffsetWidth = context.measureText(cursorOffsetText).width;
-                            var cursorLeft = this._scrollLeft + textWidth - cursorOffsetWidth;
+                            var cursorLeft = this._scrollLeft + this._textWidth - cursorOffsetWidth;
                             if (cursorLeft < clipTextLeft) {
                                 this._scrollLeft += (clipTextLeft - cursorLeft);
                                 cursorLeft = clipTextLeft;
@@ -4186,6 +4208,13 @@ var BABYLON;
             InputText.prototype._onPointerDown = function (coordinates, buttonIndex) {
                 if (!_super.prototype._onPointerDown.call(this, coordinates, buttonIndex)) {
                     return false;
+                }
+                this._clickedCoordinate = coordinates.x;
+                if (this._host.focusedControl === this) {
+                    // Move cursor
+                    clearTimeout(this._blinkTimeout);
+                    this._markAsDirty();
+                    return true;
                 }
                 this._host.focusedControl = this;
                 return true;
