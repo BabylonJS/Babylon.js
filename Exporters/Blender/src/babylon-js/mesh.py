@@ -58,17 +58,21 @@ class Mesh(FCurveAnimatable):
         if len(object.vertex_groups) > 0 and not object.data.ignoreSkeleton:
             objArmature = object.find_armature()
             if objArmature != None:
-                hasSkeleton = True
                 # used to get bone index, since could be skipping IK bones
                 skeleton = exporter.get_skeleton(objArmature.name)
-                i = 0
-                for obj in scene.objects:
-                    if obj.type == "ARMATURE":
-                        if obj == objArmature:
-                            self.skeletonId = i
-                            break
-                        else:
-                            i += 1
+                hasSkeleton = skeleton is not None
+                
+                if not hasSkeleton:
+                    Logger.warn('No skeleton with name "' + objArmature.name + '" found skeleton ignored.')
+                else:
+                    i = 0
+                    for obj in scene.objects:
+                        if obj.type == "ARMATURE":
+                            if obj == objArmature:
+                                self.skeletonId = i
+                                break
+                            else:
+                                i += 1
 
         # determine Position, rotation, & scaling
         if forcedParent is None:
@@ -627,7 +631,7 @@ class Mesh(FCurveAnimatable):
             write_float(file_handler, 'physicsRestitution', self.physicsRestitution)
 
         # Geometry
-        if hasattr(self, 'skeletonId'):
+        if self.hasSkeleton:
             write_int(file_handler, 'skeletonId', self.skeletonId)
             write_int(file_handler, 'numBoneInfluencers', self.numBoneInfluencers)
 

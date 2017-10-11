@@ -103,7 +103,12 @@
         }        
 
         public clone(name: string): PBRMetallicRoughnessMaterial {
-            return SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
+            var clone = SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
+            
+            clone.id = name;
+            clone.name = name;
+
+            return clone;
         }
 
         /**
