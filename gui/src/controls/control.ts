@@ -93,7 +93,13 @@ module BABYLON.GUI {
         * An event triggered when the control is marked as dirty
         * @type {BABYLON.Observable}
         */
-        public onDirtyObservable = new Observable<Control>();           
+        public onDirtyObservable = new Observable<Control>();         
+        
+         /**
+        * An event triggered after the control is drawn
+        * @type {BABYLON.Observable}
+        */
+        public onAfterDrawObservable = new Observable<Control>();    
 
         public get alpha(): number {
             return this._alpha;
