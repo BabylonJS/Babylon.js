@@ -143,10 +143,18 @@ module BABYLON.GUI {
                 for (var child of this._children) {
                     if (child.isVisible && !child.notRenderable) {
                         child._draw(this._measureForChildren, context);
+
+                        if (child.onAfterDrawObservable.hasObservers()) {
+                            child.onAfterDrawObservable.notifyObservers(child);
+                        }
                     }
                 }
             }
             context.restore();
+
+            if (this.onAfterDrawObservable.hasObservers()) {
+                this.onAfterDrawObservable.notifyObservers(this);
+            }
         }
 
         public _processPicking(x: number, y: number, type: number, buttonIndex: number): boolean {
