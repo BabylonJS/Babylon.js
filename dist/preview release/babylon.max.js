@@ -5876,7 +5876,7 @@ var BABYLON;
         Tools.GetPointerPrefix = function () {
             var eventPrefix = "pointer";
             // Check if pointer events are supported
-            if (!window.PointerEvent && !navigator.pointerEnabled) {
+            if (Tools.IsWindowObjectExist() && !window.PointerEvent && !navigator.pointerEnabled) {
                 eventPrefix = "mouse";
             }
             return eventPrefix;
@@ -5886,7 +5886,12 @@ var BABYLON;
          * @param requester - the object that will request the next frame. Falls back to window.
          */
         Tools.QueueNewFrame = function (func, requester) {
-            if (requester === void 0) { requester = window; }
+            if (!Tools.IsWindowObjectExist()) {
+                return setTimeout(func, 16);
+            }
+            if (!requester) {
+                requester = window;
+            }
             if (requester.requestAnimationFrame) {
                 return requester.requestAnimationFrame(func);
             }
@@ -6026,7 +6031,7 @@ var BABYLON;
                     // In case of undefined state in some browsers.
                     if (request.readyState === (XMLHttpRequest.DONE || 4)) {
                         request.onreadystatechange = null; //some browsers have issues where onreadystatechange can be called multiple times with the same value
-                        if (request.status >= 200 && request.status < 300 || (navigator.isCocoonJS && (request.status === 0))) {
+                        if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         }
                         else {
@@ -6542,6 +6547,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Tools.IsWindowObjectExist = function () {
+            return (typeof window) !== "undefined";
+        };
         Object.defineProperty(Tools, "PerformanceNoneLogLevel", {
             get: function () {
                 return Tools._PerformanceNoneLogLevel;
@@ -6587,6 +6595,12 @@ var BABYLON;
         };
         Tools._StartUserMark = function (counterName, condition) {
             if (condition === void 0) { condition = true; }
+            if (!Tools._performance) {
+                if (!Tools.IsWindowObjectExist()) {
+                    return;
+                }
+                Tools._performance = window.performance;
+            }
             if (!condition || !Tools._performance.mark) {
                 return;
             }
@@ -6622,7 +6636,7 @@ var BABYLON;
         };
         Object.defineProperty(Tools, "Now", {
             get: function () {
-                if (window.performance && window.performance.now) {
+                if (Tools.IsWindowObjectExist() && window.performance && window.performance.now) {
                     return window.performance.now();
                 }
                 return new Date().getTime();
@@ -6753,7 +6767,6 @@ var BABYLON;
         Tools._PerformanceNoneLogLevel = 0;
         Tools._PerformanceUserMarkLogLevel = 1;
         Tools._PerformanceConsoleLogLevel = 2;
-        Tools._performance = window.performance;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
@@ -7793,6 +7806,9 @@ var BABYLON;
             };
             var canvas;
             Engine.Instances.push(this);
+            if (!canvasOrContext) {
+                return;
+            }
             options = options || {};
             if (canvasOrContext.getContext) {
                 canvas = canvasOrContext;
@@ -8766,7 +8782,7 @@ var BABYLON;
             }
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                var requester = window;
+                var requester = null;
                 if (this._vrDisplay && this._vrDisplay.isPresenting)
                     requester = this._vrDisplay;
                 this._frameHandler = BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction, requester);
@@ -16947,7 +16963,9 @@ var BABYLON;
             if (BABYLON.OutlineRenderer) {
                 this._outlineRenderer = new BABYLON.OutlineRenderer(this);
             }
-            this.attachControl();
+            if (BABYLON.Tools.IsWindowObjectExist()) {
+                this.attachControl();
+            }
             //simplification queue
             if (BABYLON.SimplificationQueue) {
                 this.simplificationQueue = new BABYLON.SimplificationQueue();
@@ -24812,11 +24830,13 @@ var BABYLON;
             });
         };
         Effect.prototype._loadVertexShader = function (vertex, callback) {
-            // DOM element ?
-            if (vertex instanceof HTMLElement) {
-                var vertexCode = BABYLON.Tools.GetDOMTextContent(vertex);
-                callback(vertexCode);
-                return;
+            if (BABYLON.Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (vertex instanceof HTMLElement) {
+                    var vertexCode = BABYLON.Tools.GetDOMTextContent(vertex);
+                    callback(vertexCode);
+                    return;
+                }
             }
             // Base64 encoded ?
             if (vertex.substr(0, 7) === "base64:") {
@@ -24840,11 +24860,13 @@ var BABYLON;
             BABYLON.Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
         };
         Effect.prototype._loadFragmentShader = function (fragment, callback) {
-            // DOM element ?
-            if (fragment instanceof HTMLElement) {
-                var fragmentCode = BABYLON.Tools.GetDOMTextContent(fragment);
-                callback(fragmentCode);
-                return;
+            if (BABYLON.Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (fragment instanceof HTMLElement) {
+                    var fragmentCode = BABYLON.Tools.GetDOMTextContent(fragment);
+                    callback(fragmentCode);
+                    return;
+                }
             }
             // Base64 encoded ?
             if (fragment.substr(0, 7) === "base64:") {
@@ -65490,8 +65512,7 @@ var BABYLON;
                 this._createInspector(config);
             }
         };
-        // Get protocol used - http or https
-        DebugLayer.InspectorURL = window.location.href.split('/')[0] + '//preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
+        DebugLayer.InspectorURL = 'https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
         return DebugLayer;
     }());
     BABYLON.DebugLayer = DebugLayer;
@@ -73304,15 +73325,211 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var NullEngineOptions = (function () {
+        function NullEngineOptions() {
+            this.renderWidth = 512;
+            this.renderHeight = 256;
+            this.textureSize = 512;
+        }
+        return NullEngineOptions;
+    }());
+    BABYLON.NullEngineOptions = NullEngineOptions;
     /**
      * The null engine class provides support for headless version of babylon.js.
      * This can be used in server side scenario or for testing purposes
      */
     var NullEngine = (function (_super) {
         __extends(NullEngine, _super);
-        function NullEngine() {
-            return _super.call(this, null) || this;
+        function NullEngine(options) {
+            if (options === void 0) { options = new NullEngineOptions(); }
+            var _this = _super.call(this, null) || this;
+            _this._options = options;
+            // Init caps
+            // We consider we are on a webgl1 capable device
+            _this._caps = new BABYLON.EngineCapabilities();
+            _this._caps.maxTexturesImageUnits = 16;
+            _this._caps.maxVertexTextureImageUnits = 16;
+            _this._caps.maxTextureSize = 512;
+            _this._caps.maxCubemapTextureSize = 512;
+            _this._caps.maxRenderTextureSize = 512;
+            _this._caps.maxVertexAttribs = 16;
+            _this._caps.maxVaryingVectors = 16;
+            _this._caps.maxFragmentUniformVectors = 16;
+            _this._caps.maxVertexUniformVectors = 16;
+            // Extensions
+            _this._caps.standardDerivatives = false;
+            _this._caps.astc = null;
+            _this._caps.s3tc = null;
+            _this._caps.pvrtc = null;
+            _this._caps.etc1 = null;
+            _this._caps.etc2 = null;
+            _this._caps.textureAnisotropicFilterExtension = null;
+            _this._caps.maxAnisotropy = 0;
+            _this._caps.uintIndices = false;
+            _this._caps.fragmentDepthSupported = false;
+            _this._caps.highPrecisionShaderSupported = true;
+            _this._caps.colorBufferFloat = false;
+            _this._caps.textureFloat = false;
+            _this._caps.textureFloatLinearFiltering = false;
+            _this._caps.textureFloatRender = false;
+            _this._caps.textureHalfFloat = false;
+            _this._caps.textureHalfFloatLinearFiltering = false;
+            _this._caps.textureHalfFloatRender = false;
+            _this._caps.textureLOD = false;
+            _this._caps.drawBuffersExtension = false;
+            _this._caps.depthTextureExtension = false;
+            _this._caps.vertexArrayObject = false;
+            _this._caps.instancedArrays = false;
+            BABYLON.Tools.Log("Babylon.js null engine (v" + BABYLON.Engine.Version + ") launched");
+            return _this;
         }
+        NullEngine.prototype.createVertexBuffer = function (vertices) {
+            return {
+                capacity: 0,
+                references: 1,
+                is32Bits: false
+            };
+        };
+        NullEngine.prototype.createIndexBuffer = function (indices) {
+            return {
+                capacity: 0,
+                references: 1,
+                is32Bits: false
+            };
+        };
+        NullEngine.prototype.clear = function (color, backBuffer, depth, stencil) {
+            if (stencil === void 0) { stencil = false; }
+        };
+        NullEngine.prototype.getRenderWidth = function (useScreen) {
+            if (useScreen === void 0) { useScreen = false; }
+            if (!useScreen && this._currentRenderTarget) {
+                return this._currentRenderTarget.width;
+            }
+            return this._options.renderWidth;
+        };
+        NullEngine.prototype.getRenderHeight = function (useScreen) {
+            if (useScreen === void 0) { useScreen = false; }
+            if (!useScreen && this._currentRenderTarget) {
+                return this._currentRenderTarget.height;
+            }
+            return this._options.renderHeight;
+        };
+        NullEngine.prototype.setViewport = function (viewport, requiredWidth, requiredHeight) {
+            var width = requiredWidth || this.getRenderWidth();
+            var height = requiredHeight || this.getRenderHeight();
+            var x = viewport.x || 0;
+            var y = viewport.y || 0;
+            this._cachedViewport = viewport;
+        };
+        NullEngine.prototype.createShaderProgram = function (vertexCode, fragmentCode, defines, context) {
+            return {};
+        };
+        NullEngine.prototype.getUniforms = function (shaderProgram, uniformsNames) {
+            return [];
+        };
+        NullEngine.prototype.getAttributes = function (shaderProgram, attributesNames) {
+            return [];
+        };
+        NullEngine.prototype.bindSamplers = function (effect) {
+            this._currentEffect = null;
+        };
+        NullEngine.prototype.enableEffect = function (effect) {
+            this._currentEffect = effect;
+            if (effect.onBind) {
+                effect.onBind(effect);
+            }
+            effect.onBindObservable.notifyObservers(effect);
+        };
+        NullEngine.prototype.setState = function (culling, zOffset, force, reverseSide) {
+            if (zOffset === void 0) { zOffset = 0; }
+            if (reverseSide === void 0) { reverseSide = false; }
+        };
+        NullEngine.prototype.setIntArray = function (uniform, array) {
+        };
+        NullEngine.prototype.setIntArray2 = function (uniform, array) {
+        };
+        NullEngine.prototype.setIntArray3 = function (uniform, array) {
+        };
+        NullEngine.prototype.setIntArray4 = function (uniform, array) {
+        };
+        NullEngine.prototype.setFloatArray = function (uniform, array) {
+        };
+        NullEngine.prototype.setFloatArray2 = function (uniform, array) {
+        };
+        NullEngine.prototype.setFloatArray3 = function (uniform, array) {
+        };
+        NullEngine.prototype.setFloatArray4 = function (uniform, array) {
+        };
+        NullEngine.prototype.setArray = function (uniform, array) {
+        };
+        NullEngine.prototype.setArray2 = function (uniform, array) {
+        };
+        NullEngine.prototype.setArray3 = function (uniform, array) {
+        };
+        NullEngine.prototype.setArray4 = function (uniform, array) {
+        };
+        NullEngine.prototype.setMatrices = function (uniform, matrices) {
+        };
+        NullEngine.prototype.setMatrix = function (uniform, matrix) {
+        };
+        NullEngine.prototype.setMatrix3x3 = function (uniform, matrix) {
+        };
+        NullEngine.prototype.setMatrix2x2 = function (uniform, matrix) {
+        };
+        NullEngine.prototype.setFloat = function (uniform, value) {
+        };
+        NullEngine.prototype.setFloat2 = function (uniform, x, y) {
+        };
+        NullEngine.prototype.setFloat3 = function (uniform, x, y, z) {
+        };
+        NullEngine.prototype.setBool = function (uniform, bool) {
+        };
+        NullEngine.prototype.setFloat4 = function (uniform, x, y, z, w) {
+        };
+        NullEngine.prototype.setColor3 = function (uniform, color3) {
+        };
+        NullEngine.prototype.setColor4 = function (uniform, color3, alpha) {
+        };
+        NullEngine.prototype.setAlphaMode = function (mode, noDepthWriteChange) {
+            if (noDepthWriteChange === void 0) { noDepthWriteChange = false; }
+            if (this._alphaMode === mode) {
+                return;
+            }
+            this._alphaState.alphaBlend = (mode !== BABYLON.Engine.ALPHA_DISABLE);
+            if (!noDepthWriteChange) {
+                this.setDepthWrite(mode === BABYLON.Engine.ALPHA_DISABLE);
+            }
+            this._alphaMode = mode;
+        };
+        NullEngine.prototype.bindBuffers = function (vertexBuffers, indexBuffer, effect) {
+        };
+        NullEngine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
+        };
+        NullEngine.prototype._createTexture = function () {
+            return {};
+        };
+        NullEngine.prototype.createTexture = function (urlArg, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer, fallBack, format) {
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            if (onLoad === void 0) { onLoad = null; }
+            if (onError === void 0) { onError = null; }
+            if (buffer === void 0) { buffer = null; }
+            var texture = new BABYLON.InternalTexture(this, BABYLON.InternalTexture.DATASOURCE_URL);
+            var url = String(urlArg);
+            texture.url = url;
+            texture.generateMipMaps = !noMipmap;
+            texture.samplingMode = samplingMode;
+            texture.invertY = invertY;
+            texture.baseWidth = this._options.textureSize;
+            texture.baseHeight = this._options.textureSize;
+            texture.width = this._options.textureSize;
+            texture.height = this._options.textureSize;
+            texture.format = format;
+            texture.isReady = true;
+            if (onLoad) {
+                onLoad();
+            }
+            return texture;
+        };
         return NullEngine;
     }(BABYLON.Engine));
     BABYLON.NullEngine = NullEngine;
