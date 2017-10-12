@@ -513,7 +513,7 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     class MeshAdapter extends Adapter implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
         /** Keep track of the axis of the actual object */
-        private _axis;
+        private _axesViewer;
         constructor(obj: BABYLON.AbstractMesh);
         /** Returns the name displayed in the tree */
         id(): string;
