@@ -270,6 +270,42 @@
         }
 
         /**
+         * Helper function to add a mesh and its descendants to the list of shadow casters
+         * @param mesh Mesh to add
+         * @param includeDescendants boolean indicating if the descendants should be added. Default to true
+         */
+        public addShadowCaster(mesh: AbstractMesh, includeDescendants = true): ShadowGenerator {
+            this._shadowMap.renderList.push(mesh);
+
+            if (includeDescendants) {
+                this._shadowMap.renderList.push(...mesh.getChildMeshes());
+            }
+
+            return this;
+        }
+
+        /**
+         * Helper function to remove a mesh and its descendants from the list of shadow casters
+         * @param mesh Mesh to remove
+         * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
+         */
+        public removeShadowCaster(mesh: AbstractMesh, includeDescendants = true): ShadowGenerator {
+            var index = this._shadowMap.renderList.indexOf(mesh);
+
+            if (index !== -1) {
+                this._shadowMap.renderList.splice(index, 1);
+            }
+
+            if (includeDescendants) {
+                for (var child of mesh.getChildren()) {
+                    this.removeShadowCaster(<any>child);
+                }
+            }
+
+            return this;
+        }
+
+        /**
 		 * Controls the extent to which the shadows fade out at the edge of the frustum
          * Used only by directionals and spots
 		 */
