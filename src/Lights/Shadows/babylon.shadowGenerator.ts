@@ -893,7 +893,7 @@
             else if (parsedShadowGenerator.useCloseExponentialShadowMap) {
                 shadowGenerator.useCloseExponentialShadowMap = true;
             }
-            else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
+            else if (parsedShadowGenerator.useBlurCloseExponentialShadowMap) {
                 shadowGenerator.useBlurCloseExponentialShadowMap = true;
             }
 
