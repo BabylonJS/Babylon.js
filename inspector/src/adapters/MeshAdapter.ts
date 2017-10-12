@@ -5,7 +5,7 @@ module INSPECTOR {
         implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
 
         /** Keep track of the axis of the actual object */
-        private _axis: Array<BABYLON.Mesh> = [];
+        private _axesViewer: BABYLON.Debug.AxesViewer;
 
         constructor(obj: BABYLON.AbstractMesh) {
             super(obj);
@@ -58,12 +58,13 @@ module INSPECTOR {
 
         public debug(b: boolean) {
             // Draw axis the first time
-            if (this._axis.length == 0) {
-                this._drawAxis();
+            if (!this._axesViewer) {
+                 this._drawAxis();
             }
             // Display or hide axis
-            for (let ax of this._axis) {
-                ax.setEnabled(b);
+            if (!b && this._axesViewer) {
+                this._axesViewer.dispose();
+                this._axesViewer = null;
             }
         }
 
@@ -83,39 +84,9 @@ module INSPECTOR {
             var x = new BABYLON.Vector3(8 / (this._obj as BABYLON.AbstractMesh).scaling.x, 0, 0);
             var y = new BABYLON.Vector3(0, 8 / (this._obj as BABYLON.AbstractMesh).scaling.y, 0);
             var z = new BABYLON.Vector3(0, 0, 8 / (this._obj as BABYLON.AbstractMesh).scaling.z);
-            
-            // Draw an axis of the given color
-            let _drawAxis = (color, start, end): BABYLON.LinesMesh => {
-                let axis = BABYLON.Mesh.CreateLines("###axis###", [
-                    start,
-                    end
-                ], this._obj.getScene());
-                axis.color = color;
-                axis.renderingGroupId = 1;
-                return axis;
-            };
 
-            // X axis
-            let xAxis = _drawAxis(
-                BABYLON.Color3.Red(),
-                BABYLON.Vector3.Zero(),
-                x);
-            xAxis.parent = this._obj;
-            this._axis.push(xAxis);
-            // Y axis        
-            let yAxis = _drawAxis(
-                BABYLON.Color3.Green(),
-                BABYLON.Vector3.Zero(),
-                y);
-            yAxis.parent = this._obj;
-            this._axis.push(yAxis);
-            // Z axis
-            let zAxis = _drawAxis(
-                BABYLON.Color3.Blue(),
-                BABYLON.Vector3.Zero(),
-                z);
-            zAxis.parent = this._obj;
-            this._axis.push(zAxis);
+            this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
+            this._axesViewer.update(this._obj.position, x, y, z);
         }
     }
 }
