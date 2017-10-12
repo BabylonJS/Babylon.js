@@ -75,7 +75,8 @@
             "probes",
             "layer",
             "textureTools",
-            "cameraBehaviors"
+            "cameraBehaviors",
+            "nullEngine"
         ],
         "minimal": [
             "standardMaterial",
@@ -175,7 +176,7 @@
                 "../../src/States/babylon.alphaCullingState.js",
                 "../../src/States/babylon.depthCullingState.js",
                 "../../src/States/babylon.stencilState.js",
-                "../../src/babylon.engine.js",
+                "../../src/Engine/babylon.engine.js",
                 "../../src/babylon.node.js",
                 "../../src/Culling/babylon.boundingSphere.js",
                 "../../src/Culling/babylon.boundingBox.js",
@@ -220,6 +221,14 @@
                 "particles.fragment"
             ]
         },
+        "nullEngine": {
+            "files": [
+                "../../src/Engine/babylon.nullEngine.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },        
         "cameraBehaviors": {
             "files": [
                 "../../src/Behaviors/Cameras/babylon.framingBehavior.js",
