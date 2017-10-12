@@ -1,5 +1,5 @@
-//var LOADERS = require("../../dist/preview release/loaders/babylonjs.loaders");
 var BABYLON = require("../../dist/preview release/babylon.max");
+var LOADERS = require("../../dist/preview release/loaders/babylonjs.loaders");
 global.XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 var engine = new BABYLON.NullEngine();
