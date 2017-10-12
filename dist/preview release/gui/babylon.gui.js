@@ -799,6 +799,11 @@ var BABYLON;
                 * @type {BABYLON.Observable}
                 */
                 this.onDirtyObservable = new BABYLON.Observable();
+                /**
+               * An event triggered after the control is drawn
+               * @type {BABYLON.Observable}
+               */
+                this.onAfterDrawObservable = new BABYLON.Observable();
             }
             Object.defineProperty(Control.prototype, "typeName", {
                 // Properties
@@ -1888,10 +1893,16 @@ var BABYLON;
                         var child = _a[_i];
                         if (child.isVisible && !child.notRenderable) {
                             child._draw(this._measureForChildren, context);
+                            if (child.onAfterDrawObservable.hasObservers()) {
+                                child.onAfterDrawObservable.notifyObservers(child);
+                            }
                         }
                     }
                 }
                 context.restore();
+                if (this.onAfterDrawObservable.hasObservers()) {
+                    this.onAfterDrawObservable.notifyObservers(this);
+                }
             };
             Container.prototype._processPicking = function (x, y, type, buttonIndex) {
                 if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {

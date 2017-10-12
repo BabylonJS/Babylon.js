@@ -215,6 +215,11 @@ declare module BABYLON.GUI {
         * @type {BABYLON.Observable}
         */
         onDirtyObservable: Observable<Control>;
+        /**
+       * An event triggered after the control is drawn
+       * @type {BABYLON.Observable}
+       */
+        onAfterDrawObservable: Observable<Control>;
         alpha: number;
         scaleX: number;
         scaleY: number;

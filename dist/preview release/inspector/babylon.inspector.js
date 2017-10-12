@@ -1338,10 +1338,7 @@ var INSPECTOR;
     var MeshAdapter = (function (_super) {
         __extends(MeshAdapter, _super);
         function MeshAdapter(obj) {
-            var _this = _super.call(this, obj) || this;
-            /** Keep track of the axis of the actual object */
-            _this._axis = [];
-            return _this;
+            return _super.call(this, obj) || this;
         }
         /** Returns the name displayed in the tree */
         MeshAdapter.prototype.id = function () {
@@ -1384,13 +1381,13 @@ var INSPECTOR;
         };
         MeshAdapter.prototype.debug = function (b) {
             // Draw axis the first time
-            if (this._axis.length == 0) {
+            if (!this._axesViewer) {
                 this._drawAxis();
             }
             // Display or hide axis
-            for (var _i = 0, _a = this._axis; _i < _a.length; _i++) {
-                var ax = _a[_i];
-                ax.setEnabled(b);
+            if (!b && this._axesViewer) {
+                this._axesViewer.dispose();
+                this._axesViewer = null;
             }
         };
         /** Returns some information about this mesh */
@@ -1401,35 +1398,14 @@ var INSPECTOR;
          * Should be called only one time as it will fill this._axis
          */
         MeshAdapter.prototype._drawAxis = function () {
-            var _this = this;
             this._obj.computeWorldMatrix();
             var m = this._obj.getWorldMatrix();
             // Axis
             var x = new BABYLON.Vector3(8 / this._obj.scaling.x, 0, 0);
             var y = new BABYLON.Vector3(0, 8 / this._obj.scaling.y, 0);
             var z = new BABYLON.Vector3(0, 0, 8 / this._obj.scaling.z);
-            // Draw an axis of the given color
-            var _drawAxis = function (color, start, end) {
-                var axis = BABYLON.Mesh.CreateLines("###axis###", [
-                    start,
-                    end
-                ], _this._obj.getScene());
-                axis.color = color;
-                axis.renderingGroupId = 1;
-                return axis;
-            };
-            // X axis
-            var xAxis = _drawAxis(BABYLON.Color3.Red(), BABYLON.Vector3.Zero(), x);
-            xAxis.parent = this._obj;
-            this._axis.push(xAxis);
-            // Y axis        
-            var yAxis = _drawAxis(BABYLON.Color3.Green(), BABYLON.Vector3.Zero(), y);
-            yAxis.parent = this._obj;
-            this._axis.push(yAxis);
-            // Z axis
-            var zAxis = _drawAxis(BABYLON.Color3.Blue(), BABYLON.Vector3.Zero(), z);
-            zAxis.parent = this._obj;
-            this._axis.push(zAxis);
+            this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
+            this._axesViewer.update(this._obj.position, x, y, z);
         };
         return MeshAdapter;
     }(INSPECTOR.Adapter));
