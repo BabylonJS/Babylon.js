@@ -108,6 +108,19 @@ module BABYLON {
             }
         }
 
+        public get pinchDeltaPercentage(): number {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.pinchDeltaPercentage;
+        }
+
+        public set pinchDeltaPercentage(value: number) {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers) {
+                pointers.pinchDeltaPercentage = value;
+            }
+        }        
+
         public get panningSensibility(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
@@ -181,16 +194,16 @@ module BABYLON {
                 mousewheel.wheelPrecision = value;
         }
 
-        public get wheelPrecisionPercentage(): number {
+        public get wheelDeltaPercentage(): number {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
-                return mousewheel.wheelPrecisionPercentage;
+                return mousewheel.wheelDeltaPercentage;
         }
 
-        public set wheelPrecisionPercentage(value: number) {
+        public set wheelDeltaPercentage(value: number) {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
-                mousewheel.wheelPrecisionPercentage = value;
+                mousewheel.wheelDeltaPercentage = value;
         }        
 
         //-- end properties for backward compatibility for inputs

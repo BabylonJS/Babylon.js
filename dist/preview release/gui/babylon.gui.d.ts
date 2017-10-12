@@ -502,6 +502,8 @@ declare module BABYLON.GUI {
         private _textVerticalAlignment;
         private _lines;
         private _totalHeight;
+        private _resizeToFit;
+        resizeToFit: boolean;
         textWrapping: boolean;
         text: string;
         textHorizontalAlignment: number;
@@ -635,6 +637,8 @@ declare module BABYLON.GUI {
         private _blinkIsEven;
         private _cursorOffset;
         private _scrollLeft;
+        private _textWidth;
+        private _clickedCoordinate;
         promptMessage: string;
         onTextChangedObservable: Observable<InputText>;
         onFocusObservable: Observable<InputText>;

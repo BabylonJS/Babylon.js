@@ -4184,46 +4184,64 @@ var BABYLON;
             Frustum.GetPlanesToRef(transform, frustumPlanes);
             return frustumPlanes;
         };
+        Frustum.GetNearPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] + transform.m[2];
+            frustumPlane.normal.y = transform.m[7] + transform.m[6];
+            frustumPlane.normal.z = transform.m[11] + transform.m[10];
+            frustumPlane.d = transform.m[15] + transform.m[14];
+            frustumPlane.normalize();
+        };
+        Frustum.GetFarPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] - transform.m[2];
+            frustumPlane.normal.y = transform.m[7] - transform.m[6];
+            frustumPlane.normal.z = transform.m[11] - transform.m[10];
+            frustumPlane.d = transform.m[15] - transform.m[14];
+            frustumPlane.normalize();
+        };
+        Frustum.GetLeftPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] + transform.m[0];
+            frustumPlane.normal.y = transform.m[7] + transform.m[4];
+            frustumPlane.normal.z = transform.m[11] + transform.m[8];
+            frustumPlane.d = transform.m[15] + transform.m[12];
+            frustumPlane.normalize();
+        };
+        Frustum.GetRightPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] - transform.m[0];
+            frustumPlane.normal.y = transform.m[7] - transform.m[4];
+            frustumPlane.normal.z = transform.m[11] - transform.m[8];
+            frustumPlane.d = transform.m[15] - transform.m[12];
+            frustumPlane.normalize();
+        };
+        Frustum.GetTopPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] - transform.m[1];
+            frustumPlane.normal.y = transform.m[7] - transform.m[5];
+            frustumPlane.normal.z = transform.m[11] - transform.m[9];
+            frustumPlane.d = transform.m[15] - transform.m[13];
+            frustumPlane.normalize();
+        };
+        Frustum.GetBottomPlaneToRef = function (transform, frustumPlane) {
+            frustumPlane.normal.x = transform.m[3] + transform.m[1];
+            frustumPlane.normal.y = transform.m[7] + transform.m[5];
+            frustumPlane.normal.z = transform.m[11] + transform.m[9];
+            frustumPlane.d = transform.m[15] + transform.m[13];
+            frustumPlane.normalize();
+        };
         /**
          * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.
          */
         Frustum.GetPlanesToRef = function (transform, frustumPlanes) {
             // Near
-            frustumPlanes[0].normal.x = transform.m[3] + transform.m[2];
-            frustumPlanes[0].normal.y = transform.m[7] + transform.m[6];
-            frustumPlanes[0].normal.z = transform.m[11] + transform.m[10];
-            frustumPlanes[0].d = transform.m[15] + transform.m[14];
-            frustumPlanes[0].normalize();
+            Frustum.GetNearPlaneToRef(transform, frustumPlanes[0]);
             // Far
-            frustumPlanes[1].normal.x = transform.m[3] - transform.m[2];
-            frustumPlanes[1].normal.y = transform.m[7] - transform.m[6];
-            frustumPlanes[1].normal.z = transform.m[11] - transform.m[10];
-            frustumPlanes[1].d = transform.m[15] - transform.m[14];
-            frustumPlanes[1].normalize();
+            Frustum.GetFarPlaneToRef(transform, frustumPlanes[1]);
             // Left
-            frustumPlanes[2].normal.x = transform.m[3] + transform.m[0];
-            frustumPlanes[2].normal.y = transform.m[7] + transform.m[4];
-            frustumPlanes[2].normal.z = transform.m[11] + transform.m[8];
-            frustumPlanes[2].d = transform.m[15] + transform.m[12];
-            frustumPlanes[2].normalize();
+            Frustum.GetLeftPlaneToRef(transform, frustumPlanes[2]);
             // Right
-            frustumPlanes[3].normal.x = transform.m[3] - transform.m[0];
-            frustumPlanes[3].normal.y = transform.m[7] - transform.m[4];
-            frustumPlanes[3].normal.z = transform.m[11] - transform.m[8];
-            frustumPlanes[3].d = transform.m[15] - transform.m[12];
-            frustumPlanes[3].normalize();
+            Frustum.GetRightPlaneToRef(transform, frustumPlanes[3]);
             // Top
-            frustumPlanes[4].normal.x = transform.m[3] - transform.m[1];
-            frustumPlanes[4].normal.y = transform.m[7] - transform.m[5];
-            frustumPlanes[4].normal.z = transform.m[11] - transform.m[9];
-            frustumPlanes[4].d = transform.m[15] - transform.m[13];
-            frustumPlanes[4].normalize();
+            Frustum.GetTopPlaneToRef(transform, frustumPlanes[4]);
             // Bottom
-            frustumPlanes[5].normal.x = transform.m[3] + transform.m[1];
-            frustumPlanes[5].normal.y = transform.m[7] + transform.m[5];
-            frustumPlanes[5].normal.z = transform.m[11] + transform.m[9];
-            frustumPlanes[5].d = transform.m[15] + transform.m[13];
-            frustumPlanes[5].normalize();
+            Frustum.GetBottomPlaneToRef(transform, frustumPlanes[5]);
         };
         return Frustum;
     }());
@@ -5341,6 +5359,34 @@ var BABYLON;
         return Observer;
     }());
     BABYLON.Observer = Observer;
+    /**
+     * Represent a list of observers registered to multiple Observables object.
+     */
+    var MultiObserver = (function () {
+        function MultiObserver() {
+        }
+        MultiObserver.prototype.dispose = function () {
+            for (var index = 0; index < this._observers.length; index++) {
+                this._observables[index].remove(this._observers[index]);
+            }
+            this._observers = null;
+            this._observables = null;
+        };
+        MultiObserver.Watch = function (observables, callback, mask, scope) {
+            if (mask === void 0) { mask = -1; }
+            if (scope === void 0) { scope = null; }
+            var result = new MultiObserver();
+            result._observers = new Array();
+            result._observables = observables;
+            for (var _i = 0, observables_1 = observables; _i < observables_1.length; _i++) {
+                var observable = observables_1[_i];
+                result._observers.push(observable.add(callback, mask, false, scope));
+            }
+            return result;
+        };
+        return MultiObserver;
+    }());
+    BABYLON.MultiObserver = MultiObserver;
     /**
      * The Observable class is a simple implementation of the Observable pattern.
      * There's one slight particularity though: a given Observable can notify its observer using a particular mask value, only the Observers registered with this mask value will be notified.
@@ -13290,7 +13336,7 @@ var BABYLON;
          */
         AbstractMesh.prototype.setPivotMatrix = function (matrix, postMultiplyPivotMatrix) {
             if (postMultiplyPivotMatrix === void 0) { postMultiplyPivotMatrix = false; }
-            this._pivotMatrix = matrix;
+            this._pivotMatrix = matrix.clone();
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
             if (this._postMultiplyPivotMatrix) {
@@ -13649,13 +13695,25 @@ var BABYLON;
         /**
          * True if the mesh intersects another mesh or a SolidParticle object.
          * Unless the parameter `precise` is set to `true` the intersection is computed according to Axis Aligned Bounding Boxes (AABB), else according to OBB (Oriented BBoxes)
+         * includeDescendants can be set to true to test if the mesh defined in parameters intersects with the current mesh or any child meshes
          * Returns a boolean.
          */
-        AbstractMesh.prototype.intersectsMesh = function (mesh, precise) {
+        AbstractMesh.prototype.intersectsMesh = function (mesh, precise, includeDescendants) {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;
             }
-            return this._boundingInfo.intersects(mesh._boundingInfo, precise);
+            if (this._boundingInfo.intersects(mesh._boundingInfo, precise)) {
+                return true;
+            }
+            if (includeDescendants) {
+                for (var _i = 0, _a = this.getChildMeshes(); _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (child.intersectsMesh(mesh, precise, true)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         };
         /**
          * Returns true if the passed point (Vector3) is inside the mesh bounding box.
@@ -18190,6 +18248,11 @@ var BABYLON;
             else {
                 BABYLON.Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
+            if (this.activeCamera._alternateCamera) {
+                var otherCamera = this.activeCamera._alternateCamera;
+                otherCamera.getViewMatrix().multiplyToRef(otherCamera.getProjectionMatrix(), BABYLON.Tmp.Matrix[0]);
+                BABYLON.Frustum.GetRightPlaneToRef(BABYLON.Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
+            }
             if (this._sceneUbo.useUbo) {
                 this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
                 this._sceneUbo.updateMatrix("view", this._viewMatrix);
@@ -20033,8 +20096,9 @@ var BABYLON;
             }
             return hdrSkybox;
         };
-        Scene.prototype.createDefaultVRExperience = function () {
-            this.VRHelper = new BABYLON.VRExperienceHelper(this, null);
+        Scene.prototype.createDefaultVRExperience = function (webVROptions) {
+            if (webVROptions === void 0) { webVROptions = {}; }
+            this.VRHelper = new BABYLON.VRExperienceHelper(this, webVROptions);
         };
         // Tags
         Scene.prototype._getByTags = function (list, tagsQuery, forEach) {
@@ -35576,6 +35640,11 @@ var BABYLON;
     var ArcRotateCameraMouseWheelInput = (function () {
         function ArcRotateCameraMouseWheelInput() {
             this.wheelPrecision = 3.0;
+            /**
+             * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+             * It defines the percentage of current camera.radius to use as delta when wheel is used.
+             */
+            this.wheelDeltaPercentage = 0;
         }
         ArcRotateCameraMouseWheelInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -35586,7 +35655,7 @@ var BABYLON;
                 var event = p.event;
                 var delta = 0;
                 if (event.wheelDelta) {
-                    delta = event.wheelDelta / (_this.wheelPrecision * 40);
+                    delta = _this.wheelDeltaPercentage ? (event.wheelDelta * 0.01) * _this.camera.radius * _this.wheelDeltaPercentage : event.wheelDelta / (_this.wheelPrecision * 40);
                 }
                 else if (event.detail) {
                     delta = -event.detail / _this.wheelPrecision;
@@ -35617,6 +35686,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraMouseWheelInput.prototype, "wheelDeltaPercentage", void 0);
         return ArcRotateCameraMouseWheelInput;
     }());
     BABYLON.ArcRotateCameraMouseWheelInput = ArcRotateCameraMouseWheelInput;
@@ -35635,6 +35707,11 @@ var BABYLON;
             this.angularSensibilityX = 1000.0;
             this.angularSensibilityY = 1000.0;
             this.pinchPrecision = 12.0;
+            /**
+             * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
+             * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+             */
+            this.pinchDeltaPercentage = 0;
             this.panningSensibility = 1000.0;
             this.multiTouchPanning = true;
             this.multiTouchPanAndZoom = true;
@@ -35764,11 +35841,15 @@ var BABYLON;
                             return;
                         }
                         if (_this.multiTouchPanAndZoom) {
-                            _this.camera
-                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
-                                (_this.pinchPrecision *
-                                    ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
-                                    direction);
+                            if (_this.pinchDeltaPercentage) {
+                                _this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001) * _this.camera.radius * _this.pinchDeltaPercentage;
+                            }
+                            else {
+                                _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                                    (_this.pinchPrecision *
+                                        ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
+                                        direction);
+                            }
                             if (_this.panningSensibility !== 0) {
                                 var pointersCenterX = (pointA.x + pointB.x) / 2;
                                 var pointersCenterY = (pointA.y + pointB.y) / 2;
@@ -35783,11 +35864,15 @@ var BABYLON;
                         else {
                             twoFingerActivityCount++;
                             if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > _this.camera.pinchToPanMaxDistance)) {
-                                _this.camera
-                                    .inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
-                                    (_this.pinchPrecision *
-                                        ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
-                                        direction);
+                                if (_this.pinchDeltaPercentage) {
+                                    _this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001) * _this.camera.radius * _this.pinchDeltaPercentage;
+                                }
+                                else {
+                                    _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                                        (_this.pinchPrecision *
+                                            ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
+                                            direction);
+                                }
                                 previousMultiTouchPanPosition.isPaning = false;
                                 previousMultiTouchPanPosition.isPinching = true;
                             }
@@ -35907,6 +35992,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "pinchPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "pinchDeltaPercentage", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "panningSensibility", void 0);
@@ -36069,6 +36157,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ArcRotateCamera.prototype, "pinchDeltaPercentage", {
+            get: function () {
+                var pointers = this.inputs.attached["pointers"];
+                if (pointers)
+                    return pointers.pinchDeltaPercentage;
+            },
+            set: function (value) {
+                var pointers = this.inputs.attached["pointers"];
+                if (pointers) {
+                    pointers.pinchDeltaPercentage = value;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ArcRotateCamera.prototype, "panningSensibility", {
             get: function () {
                 var pointers = this.inputs.attached["pointers"];
@@ -36150,6 +36253,20 @@ var BABYLON;
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
                     mousewheel.wheelPrecision = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArcRotateCamera.prototype, "wheelDeltaPercentage", {
+            get: function () {
+                var mousewheel = this.inputs.attached["mousewheel"];
+                if (mousewheel)
+                    return mousewheel.wheelDeltaPercentage;
+            },
+            set: function (value) {
+                var mousewheel = this.inputs.attached["mousewheel"];
+                if (mousewheel)
+                    mousewheel.wheelDeltaPercentage = value;
             },
             enumerable: true,
             configurable: true
@@ -48431,6 +48548,39 @@ var BABYLON;
             return this._shadowMap;
         };
         /**
+         * Helper function to add a mesh and its descendants to the list of shadow casters
+         * @param mesh Mesh to add
+         * @param includeDescendants boolean indicating if the descendants should be added. Default to true
+         */
+        ShadowGenerator.prototype.addShadowCaster = function (mesh, includeDescendants) {
+            if (includeDescendants === void 0) { includeDescendants = true; }
+            this._shadowMap.renderList.push(mesh);
+            if (includeDescendants) {
+                (_a = this._shadowMap.renderList).push.apply(_a, mesh.getChildMeshes());
+            }
+            return this;
+            var _a;
+        };
+        /**
+         * Helper function to remove a mesh and its descendants from the list of shadow casters
+         * @param mesh Mesh to remove
+         * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
+         */
+        ShadowGenerator.prototype.removeShadowCaster = function (mesh, includeDescendants) {
+            if (includeDescendants === void 0) { includeDescendants = true; }
+            var index = this._shadowMap.renderList.indexOf(mesh);
+            if (index !== -1) {
+                this._shadowMap.renderList.splice(index, 1);
+            }
+            if (includeDescendants) {
+                for (var _i = 0, _a = mesh.getChildren(); _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    this.removeShadowCaster(child);
+                }
+            }
+            return this;
+        };
+        /**
          * Returns the associated light object.
          */
         ShadowGenerator.prototype.getLight = function () {
@@ -49176,7 +49326,17 @@ var BABYLON;
                 }
             }
             else {
-                BABYLON.Tools.ReadFile(sceneFilename, dataCallback, onProgress, useArrayBuffer);
+                var fileOrString = sceneFilename;
+                if (fileOrString.name) {
+                    BABYLON.Tools.ReadFile(fileOrString, dataCallback, onProgress, useArrayBuffer);
+                }
+                else if (BABYLON.FilesInput.FilesToLoad[sceneFilename]) {
+                    BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[sceneFilename], dataCallback, onProgress, useArrayBuffer);
+                }
+                else {
+                    onError("Unable to find file named " + sceneFilename);
+                    return;
+                }
             }
         };
         // Public functions
@@ -67378,6 +67538,7 @@ var BABYLON;
             _this.deviceScaleFactor = 1;
             _this.controllers = [];
             _this.onControllersAttachedObservable = new BABYLON.Observable();
+            _this.onControllerMeshLoadedObservable = new BABYLON.Observable();
             _this.rigParenting = true; // should the rig cameras be used as parent instead of this camera.
             _this.minZ = 0.1;
             //legacy support - the compensation boolean was removed.
@@ -67622,14 +67783,15 @@ var BABYLON;
             });
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add(function (gamepad) {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
-                    var webVrController = gamepad;
+                    var webVrController_1 = gamepad;
                     if (_this.webVROptions.controllerMeshes) {
-                        if (webVrController.defaultModel) {
-                            webVrController.defaultModel.setEnabled(true);
+                        if (webVrController_1.defaultModel) {
+                            webVrController_1.defaultModel.setEnabled(true);
                         }
                         else {
                             // Load the meshes
-                            webVrController.initControllerMesh(_this.getScene(), function (loadedMesh) {
+                            webVrController_1.initControllerMesh(_this.getScene(), function (loadedMesh) {
+                                _this.onControllerMeshLoadedObservable.notifyObservers(webVrController_1);
                                 if (_this.webVROptions.defaultLightingOnControllers) {
                                     if (!_this._lightOnControllers) {
                                         _this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), _this.getScene());
@@ -67649,11 +67811,11 @@ var BABYLON;
                             });
                         }
                     }
-                    webVrController.attachToPoseControlledCamera(_this);
+                    webVrController_1.attachToPoseControlledCamera(_this);
                     // since this is async - sanity check. Is the controller already stored?
-                    if (_this.controllers.indexOf(webVrController) === -1) {
+                    if (_this.controllers.indexOf(webVrController_1) === -1) {
                         //add to the controllers array
-                        _this.controllers.push(webVrController);
+                        _this.controllers.push(webVrController_1);
                         //did we find enough controllers? Great! let the developer know.
                         if (_this.controllers.length >= 2) {
                             // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
@@ -67972,10 +68134,14 @@ var BABYLON;
             window.addEventListener("resize", function () {
                 _this._btnVR.style.top = _this._canvas.offsetTop + _this._canvas.offsetHeight - 70 + "px";
                 _this._btnVR.style.left = _this._canvas.offsetLeft + _this._canvas.offsetWidth - 100 + "px";
-                if (_this._fullscreenVRpresenting) {
+                if (_this._fullscreenVRpresenting && _this._webVRready) {
                     _this.exitVR();
                 }
             });
+            document.addEventListener("fullscreenchange", function () { _this._onFullscreenChange(); }, false);
+            document.addEventListener("mozfullscreenchange", function () { _this._onFullscreenChange(); }, false);
+            document.addEventListener("webkitfullscreenchange", function () { _this._onFullscreenChange(); }, false);
+            document.addEventListener("msfullscreenchange", function () { _this._onFullscreenChange(); }, false);
             document.body.appendChild(this._btnVR);
             // Exiting VR mode using 'ESC' key on desktop
             this._onKeyDown = function (event) {
@@ -67988,6 +68154,9 @@ var BABYLON;
             this._scene.onPrePointerObservable.add(function (pointerInfo, eventState) {
                 if (_this.isInVRMode()) {
                     _this.exitVR();
+                    if (_this._fullscreenVRpresenting) {
+                        _this._scene.getEngine().switchFullscreen(true);
+                    }
                 }
             }, BABYLON.PointerEventTypes.POINTERDOUBLETAP, false);
             // Listen for WebVR display changes
@@ -68007,9 +68176,34 @@ var BABYLON;
             window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
             // Create the cameras
             this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
-            this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene);
+            this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
+            this._webVRCamera.onControllerMeshLoadedObservable.add(function (webVRController) { return _this._onDefaultMeshLoaded(webVRController); });
             this.updateButtonVisibility();
         }
+        VRExperienceHelper.prototype._onDefaultMeshLoaded = function (webVRController) {
+            if (this.onControllerMeshLoaded) {
+                this.onControllerMeshLoaded(webVRController);
+            }
+        };
+        VRExperienceHelper.prototype._onFullscreenChange = function () {
+            if (document.fullscreen !== undefined) {
+                this._fullscreenVRpresenting = document.fullscreen;
+            }
+            else if (document.mozFullScreen !== undefined) {
+                this._fullscreenVRpresenting = document.mozFullScreen;
+            }
+            else if (document.webkitIsFullScreen !== undefined) {
+                this._fullscreenVRpresenting = document.webkitIsFullScreen;
+            }
+            else if (document.msIsFullScreen !== undefined) {
+                this._fullscreenVRpresenting = document.msIsFullScreen;
+            }
+            if (!this._fullscreenVRpresenting) {
+                this.exitVR();
+                this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
+                this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+            }
+        };
         VRExperienceHelper.prototype.isInVRMode = function () {
             return this._webVRpresenting || this._fullscreenVRpresenting;
         };
@@ -68055,6 +68249,9 @@ var BABYLON;
          * Otherwise, will use the fullscreen API.
          */
         VRExperienceHelper.prototype.enterVR = function () {
+            if (this.onEnteringVR) {
+                this.onEnteringVR();
+            }
             if (this._webVRrequesting)
                 return;
             // If WebVR is supported and a headset is connected
@@ -68068,7 +68265,6 @@ var BABYLON;
                 this._vrDeviceOrientationCamera.position = this._position;
                 this._scene.activeCamera = this._vrDeviceOrientationCamera;
                 this._scene.getEngine().switchFullscreen(true);
-                this._fullscreenVRpresenting = true;
                 this.updateButtonVisibility();
             }
             this._scene.activeCamera.attachControl(this._canvas);
@@ -68077,6 +68273,9 @@ var BABYLON;
          * Attempt to exit VR, or fullscreen.
          */
         VRExperienceHelper.prototype.exitVR = function () {
+            if (this.onExitingVR) {
+                this.onExitingVR();
+            }
             if (this._webVRpresenting) {
                 this._scene.getEngine().disableVR();
             }
@@ -68086,7 +68285,6 @@ var BABYLON;
             this._deviceOrientationCamera.position = this._position;
             this._scene.activeCamera = this._deviceOrientationCamera;
             this._scene.activeCamera.attachControl(this._canvas);
-            this._fullscreenVRpresenting = false;
             this.updateButtonVisibility();
         };
         Object.defineProperty(VRExperienceHelper.prototype, "position", {
