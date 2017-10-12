@@ -628,7 +628,7 @@
         public onVRRequestPresentStart = new Observable<Engine>();
 
         private _hardwareScalingLevel: number;
-        private _caps: EngineCapabilities;
+        protected _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _alphaTest: boolean;
         private _isStencilEnable: boolean;
@@ -761,6 +761,11 @@
         constructor(canvasOrContext: HTMLCanvasElement | WebGLRenderingContext, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             var canvas: HTMLCanvasElement;
             Engine.Instances.push(this);
+
+            if (!canvasOrContext) {
+                return;
+            }
+
             options = options || {};
 
             if ((<HTMLCanvasElement>canvasOrContext).getContext) {
