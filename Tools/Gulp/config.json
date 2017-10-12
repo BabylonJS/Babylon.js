@@ -60,7 +60,6 @@
             "textureFormats",
             "debug",
             "morphTargets",
-            "colorCurves",
             "octrees",
             "simd",
             "vr",
@@ -138,7 +137,6 @@
             "textureFormats",
             "debug",
             "morphTargets",
-            "colorCurves",
             "octrees",
             "simd",
             "vr",
@@ -202,10 +200,15 @@
                 "../../src/Mesh/babylon.mesh.vertexData.js",
                 "../../src/Mesh/babylon.geometry.js",
                 "../../src/PostProcess/babylon.postProcessManager.js",
-                "../../src/Tools/babylon.performanceMonitor.js"
+                "../../src/Tools/babylon.performanceMonitor.js",
+                "../../src/Materials/babylon.imageProcessingConfiguration.js",
+                "../../src/Materials/Textures/babylon.colorGradingTexture.js",
+                "../../src/Materials/babylon.colorCurves.js"
             ],
             "shaderIncludes": [
-                "depthPrePass"
+                "depthPrePass",
+                "imageProcessingDeclaration",
+                "imageProcessingFunctions"
             ]
         },
         "particles": {
@@ -939,27 +942,6 @@
             ],
             "dependUpon": [
                 "core"
-            ]
-        },
-        "colorCurves": {
-            "files": [
-                "../../src/Materials/Textures/babylon.colorGradingTexture.js",
-                "../../src/Materials/babylon.colorCurves.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "imageProcessing": {
-            "files": [
-                "../../src/Materials/babylon.imageProcessingConfiguration.js"
-            ],
-            "dependUpon": [
-                "colorCurves"
-            ],
-            "shaderIncludes": [
-                "imageProcessingDeclaration",
-                "imageProcessingFunctions"
             ]
         },
         "octrees": {
