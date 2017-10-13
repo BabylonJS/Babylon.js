@@ -40832,7 +40832,7 @@ var BABYLON;
                 object.actionManager = actionManager;
             // instanciate a new object
             var instanciate = function (name, params) {
-                var newInstance = BABYLON.Tools.Instantiate(name);
+                var newInstance = Object.create(BABYLON.Tools.Instantiate("BABYLON." + name).prototype);
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;
             };

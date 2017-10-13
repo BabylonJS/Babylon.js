@@ -421,8 +421,8 @@
                 object.actionManager = actionManager;
 
             // instanciate a new object
-            var instanciate = (name: any, params: Array<any>): any => {
-                var newInstance: Object = Tools.Instantiate(name);
+            var instanciate = (name: string, params: Array<any>): any => {
+                var newInstance: Object = Object.create(Tools.Instantiate("BABYLON." + name).prototype);
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;
             };
