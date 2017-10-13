@@ -146,7 +146,7 @@ module BABYLON {
                 }
             }
 
-            var createLoaders:{[key: number]: (parent: GLTFFileLoader) => IGLTFLoader} = {
+            var createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
                 1: GLTFFileLoader.CreateGLTFLoaderV1,
                 2: GLTFFileLoader.CreateGLTFLoaderV2
             };
@@ -187,7 +187,7 @@ module BABYLON {
             const ContentFormat = {
                 JSON: 0
             };
-            
+
             var length = binaryReader.readUint32();
             if (length != binaryReader.getLength()) {
                 onError("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
@@ -282,12 +282,12 @@ module BABYLON {
             return 0;
         }
 
-        private static _decodeBufferToText(view: ArrayBufferView): string {
+        private static _decodeBufferToText(buffer: Uint8Array): string {
             var result = "";
-            var length = view.byteLength;
+            var length = buffer.byteLength;
 
             for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode((<any>view)[i]);
+                result += String.fromCharCode(buffer[i]);
             }
 
             return result;
