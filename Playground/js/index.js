@@ -701,6 +701,7 @@
 
             var oldCode = jsEditor.getValue();
             jsEditor.dispose();
+            editorOptions.theme = vsTheme;
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
