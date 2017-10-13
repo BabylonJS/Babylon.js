@@ -25,13 +25,13 @@ namespace Max2Babylon
             var bones = new List<BabylonBone>(babylonSkeleton.bones);
 
             // Compute and store world matrix of each bone
-            var bonesWorldMatrices = new Dictionary<BabylonBone, BabylonMatrix>();
+            var bonesWorldMatrices = new Dictionary<int, BabylonMatrix>();
             foreach (var babylonBone in babylonSkeleton.bones)
             {
-                if (!bonesWorldMatrices.ContainsKey(babylonBone))
+                if (!bonesWorldMatrices.ContainsKey(babylonBone.index))
                 {
                     BabylonMatrix boneWorldMatrix = _getBoneWorldMatrix(babylonBone, bones);
-                    bonesWorldMatrices.Add(babylonBone, boneWorldMatrix);
+                    bonesWorldMatrices.Add(babylonBone.index, boneWorldMatrix);
                 }
             }
 
@@ -64,9 +64,25 @@ namespace Max2Babylon
                 {
                     gltfSkin.skeleton = gltfBoneNode.index;
                 }
-
                 // Compute inverseBindMatrice for this bone when attached to this node
-                var boneWorldMatrix = bonesWorldMatrices[babylonBone];
+                var boneLocalMatrix = new BabylonMatrix();
+                boneLocalMatrix.m = babylonBone.matrix;
+
+                BabylonMatrix boneWorldMatrix = null;
+                if (babylonBone.parentBoneIndex == -1)
+                {
+                    boneWorldMatrix = boneLocalMatrix;
+                }
+                else
+                {
+                    var parentWorldMatrix = bonesWorldMatrices[babylonBone.parentBoneIndex];
+                    // Remove scale of parent
+                    // This actually enable to take into account the scale of the bones, except for the root one
+                    parentWorldMatrix = _removeScale(parentWorldMatrix);
+
+                    boneWorldMatrix = boneLocalMatrix * parentWorldMatrix;
+                }
+
                 var inverseBindMatrices = BabylonMatrix.Invert(boneWorldMatrix * invNodeWorldMatrix);
 
                 // Populate accessor
@@ -85,8 +101,6 @@ namespace Max2Babylon
             {
                 return alreadyExportedBones[babylonBone];
             }
-
-            RaiseMessage("GLTFExporter.Skin | Export bone named: " + babylonBone.name, 1);
 
             // Node
             var gltfNode = new GLTFNode
@@ -171,6 +185,18 @@ namespace Max2Babylon
                 var parentWorldMatrix = _getBoneWorldMatrix(parentBabylonBone, bones);
                 return boneLocalMatrix * parentWorldMatrix;
             }
+        }
+
+        private BabylonMatrix _removeScale(BabylonMatrix boneWorldMatrix)
+        {
+            var translation = new BabylonVector3();
+            var rotation = new BabylonQuaternion();
+            var scale = new BabylonVector3();
+            boneWorldMatrix.decompose(scale, rotation, translation);
+            scale.X = 1;
+            scale.Y = 1;
+            scale.Z = 1;
+            return BabylonMatrix.Compose(scale, rotation, translation);
         }
     }
 }
