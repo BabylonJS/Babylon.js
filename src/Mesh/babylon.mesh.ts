@@ -840,20 +840,35 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: number): Mesh {
+        public setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): Mesh {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.indices = indices;
 
                 var scene = this.getScene();
 
-                new Geometry(Geometry.RandomId(), scene, vertexData, false, this);
+                new Geometry(Geometry.RandomId(), scene, vertexData, updatable, this);
             }
             else {
-                this._geometry.setIndices(indices, totalVertices);
+                this._geometry.setIndices(indices, totalVertices, updatable);
             }
             return this;
         }
+
+        /**
+         * Update the current index buffer
+         * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array)
+         * Returns the Mesh. 
+         */
+        public updateIndices(indices: IndicesArray, offset?: number): Mesh {
+            if (!this._geometry) {
+                return;
+            }
+
+            this._geometry.updateIndices(indices, offset);
+            return this;
+        }
+        
 
         /**
          * Invert the geometry to move from a right handed system to a left handed one.  
