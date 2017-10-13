@@ -821,7 +821,9 @@
                 this._outlineRenderer = new OutlineRenderer(this);
             }
 
-            this.attachControl();
+            if (Tools.IsWindowObjectExist()) {
+                this.attachControl();
+            }
 
             //simplification queue
             if (SimplificationQueue) {

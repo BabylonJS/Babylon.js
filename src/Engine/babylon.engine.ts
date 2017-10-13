@@ -628,7 +628,7 @@
         public onVRRequestPresentStart = new Observable<Engine>();
 
         private _hardwareScalingLevel: number;
-        private _caps: EngineCapabilities;
+        protected _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _alphaTest: boolean;
         private _isStencilEnable: boolean;
@@ -675,24 +675,24 @@
         // States
         private _depthCullingState = new Internals._DepthCullingState();
         private _stencilState = new Internals._StencilState();
-        private _alphaState = new Internals._AlphaState();
-        private _alphaMode = Engine.ALPHA_DISABLE;
+        protected _alphaState = new Internals._AlphaState();
+        protected _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
         private _internalTexturesCache = new Array<InternalTexture>();
         private _maxTextureChannels = 16;
         private _activeTexture: number;
         private _activeTexturesCache: { [key: string]: WebGLTexture } = {};
-        private _currentEffect: Effect;
+        protected _currentEffect: Effect;
         private _currentProgram: WebGLProgram;
         private _compiledEffects = {};
         private _vertexAttribArraysEnabled: boolean[] = [];
-        private _cachedViewport: Viewport;
+        protected _cachedViewport: Viewport;
         private _cachedVertexArrayObject: WebGLVertexArrayObject;
         private _cachedVertexBuffers: any;
         private _cachedIndexBuffer: WebGLBuffer;
         private _cachedEffectForVertexBuffers: Effect;
-        private _currentRenderTarget: InternalTexture;
+        protected _currentRenderTarget: InternalTexture;
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<WebGLBuffer>();
         private _currentFramebuffer: WebGLFramebuffer;
@@ -761,6 +761,11 @@
         constructor(canvasOrContext: HTMLCanvasElement | WebGLRenderingContext, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             var canvas: HTMLCanvasElement;
             Engine.Instances.push(this);
+
+            if (!canvasOrContext) {
+                return;
+            }
+
             options = options || {};
 
             if ((<HTMLCanvasElement>canvasOrContext).getContext) {
@@ -1413,7 +1418,7 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                var requester = window;
+                var requester = null;
                 if (this._vrDisplay && this._vrDisplay.isPresenting)
                     requester = this._vrDisplay;
                 this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, requester);

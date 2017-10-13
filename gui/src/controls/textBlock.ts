@@ -12,6 +12,12 @@ module BABYLON.GUI {
         private _totalHeight: number;
         private _resizeToFit: boolean = false;
 
+        /**
+        * An event triggered after the text is changed
+        * @type {BABYLON.Observable}
+        */
+        public onTextChangedObservable = new Observable<TextBlock>();
+
         get resizeToFit(): boolean {
             return this._resizeToFit;
         }
@@ -47,6 +53,8 @@ module BABYLON.GUI {
             }
             this._text = value;
             this._markAsDirty();
+
+            this.onTextChangedObservable.notifyObservers(this);
         }
 
         public get textHorizontalAlignment(): number {
@@ -193,6 +201,12 @@ module BABYLON.GUI {
                 this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
                 this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
             }
+        }
+
+        dispose(): void {
+            super.dispose();
+
+            this.onTextChangedObservable.clear();
         }
     }
 }

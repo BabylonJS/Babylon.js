@@ -1627,6 +1627,7 @@ var BABYLON;
             };
             Control.prototype.dispose = function () {
                 this.onDirtyObservable.clear();
+                this.onAfterDrawObservable.clear();
                 this.onPointerDownObservable.clear();
                 this.onPointerEnterObservable.clear();
                 this.onPointerMoveObservable.clear();
@@ -2945,6 +2946,11 @@ var BABYLON;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
                 _this._resizeToFit = false;
+                /**
+                * An event triggered after the text is changed
+                * @type {BABYLON.Observable}
+                */
+                _this.onTextChangedObservable = new BABYLON.Observable();
                 _this.text = text;
                 return _this;
             }
@@ -2986,6 +2992,7 @@ var BABYLON;
                     }
                     this._text = value;
                     this._markAsDirty();
+                    this.onTextChangedObservable.notifyObservers(this);
                 },
                 enumerable: true,
                 configurable: true
@@ -3118,6 +3125,10 @@ var BABYLON;
                     this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
                     this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
                 }
+            };
+            TextBlock.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                this.onTextChangedObservable.clear();
             };
             return TextBlock;
         }(GUI.Control));
@@ -3471,6 +3482,19 @@ var BABYLON;
             };
             Button.CreateSimpleButton = function (name, text) {
                 var result = new Button(name);
+                // Adding text
+                var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
+                textBlock.textWrapping = true;
+                textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+                result.addControl(textBlock);
+                return result;
+            };
+            Button.CreateImageWithCenterTextButton = function (name, text, imageUrl) {
+                var result = new Button(name);
+                // Adding image
+                var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
+                iconImage.stretch = BABYLON.GUI.Image.STRETCH_FILL;
+                result.addControl(iconImage);
                 // Adding text
                 var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
                 textBlock.textWrapping = true;
