@@ -140,17 +140,16 @@ module BABYLON.GUI {
         public static CreateImageWithCenterTextButton(name: string, text: string, imageUrl: string): Button {
             var result = new Button(name);
 
-            // Adding text
-            var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
-            textBlock.textWrapping = true;
-            textBlock.zIndex = 10; 
-            textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-            result.addControl(textBlock);   
-
             // Adding image
             var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
             iconImage.stretch = BABYLON.GUI.Image.STRETCH_FILL;
-            result.addControl(iconImage);            
+            result.addControl(iconImage);         
+            
+            // Adding text
+            var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
+            textBlock.textWrapping = true;
+            textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+            result.addControl(textBlock);   
 
             return result;
         }
