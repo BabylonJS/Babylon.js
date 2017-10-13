@@ -37,7 +37,7 @@ module BABYLON.GUI {
         }
 
         // While being a container, the button behaves like a control.
-        public _processPicking(x: number, y: number, type: number): boolean {
+        public _processPicking(x: number, y: number, type: number, buttonIndex: number): boolean {
             if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                 return false;
             }
@@ -46,7 +46,7 @@ module BABYLON.GUI {
                 return false;
             }
 
-            this._processObservables(type, x, y);
+            this._processObservables(type, x, y, buttonIndex);
 
             return true;
         }
@@ -71,8 +71,8 @@ module BABYLON.GUI {
             super._onPointerOut();
         }
 
-        protected _onPointerDown(coordinates: Vector2): boolean {
-            if (!super._onPointerDown(coordinates)) {
+        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
+            if (!super._onPointerDown(coordinates, buttonIndex)) {
                 return false;
             }
 
@@ -84,12 +84,12 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerUp(coordinates: Vector2): void {
+        protected _onPointerUp(coordinates: Vector2, buttonIndex: number): void {
             if (this.pointerUpAnimation) {
                 this.pointerUpAnimation();
             }
 
-            super._onPointerUp(coordinates);
+            super._onPointerUp(coordinates, buttonIndex);
         }        
 
         // Statics
@@ -133,6 +133,23 @@ module BABYLON.GUI {
             textBlock.textWrapping = true;
             textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
             result.addControl(textBlock);           
+
+            return result;
+        }
+        
+        public static CreateImageWithCenterTextButton(name: string, text: string, imageUrl: string): Button {
+            var result = new Button(name);
+
+            // Adding image
+            var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
+            iconImage.stretch = BABYLON.GUI.Image.STRETCH_FILL;
+            result.addControl(iconImage);         
+            
+            // Adding text
+            var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
+            textBlock.textWrapping = true;
+            textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+            result.addControl(textBlock);   
 
             return result;
         }

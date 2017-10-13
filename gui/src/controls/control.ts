@@ -20,7 +20,7 @@ module BABYLON.GUI {
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
-        private _cachedParentMeasure = Measure.Empty();
+        protected _cachedParentMeasure = Measure.Empty();
         private _paddingLeft = new ValueAndUnit(0);
         private _paddingRight = new ValueAndUnit(0);
         private _paddingTop = new ValueAndUnit(0);
@@ -75,13 +75,13 @@ module BABYLON.GUI {
         * An event triggered when the pointer taps the control
         * @type {BABYLON.Observable}
         */
-        public onPointerDownObservable = new Observable<Vector2>();     
+        public onPointerDownObservable = new Observable<Vector2WithInfo>();     
 
         /**
         * An event triggered when pointer up
         * @type {BABYLON.Observable}
         */
-        public onPointerUpObservable = new Observable<Vector2>();     
+        public onPointerUpObservable = new Observable<Vector2WithInfo>();     
 
         /**
         * An event triggered when pointer enters the control
@@ -93,7 +93,13 @@ module BABYLON.GUI {
         * An event triggered when the control is marked as dirty
         * @type {BABYLON.Observable}
         */
-        public onDirtyObservable = new Observable<Control>();           
+        public onDirtyObservable = new Observable<Control>();         
+        
+         /**
+        * An event triggered after the control is drawn
+        * @type {BABYLON.Observable}
+        */
+        public onAfterDrawObservable = new Observable<Control>();    
 
         public get alpha(): number {
             return this._alpha;
@@ -208,6 +214,10 @@ module BABYLON.GUI {
             return this._width.toString(this._host);
         }
 
+        public get widthInPixels(): number  {
+            return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }
+
         public set width(value: string | number ) {
             if (this._width.toString(this._host) === value) {
                 return;
@@ -220,6 +230,10 @@ module BABYLON.GUI {
 
         public get height(): string | number  {
             return this._height.toString(this._host);
+        }
+
+        public get heightInPixels(): number  {
+            return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
         }
 
         public set height(value: string | number ) {
@@ -256,7 +270,11 @@ module BABYLON.GUI {
 
             this._fontStyle = value;
             this._fontSet = true;
-        }        
+        }     
+        
+        public get fontSizeInPixels(): number  {
+            return this._fontSize.getValueInPixel(this._host, 100);
+        }
 
         public get fontSize(): string | number  {
             return this._fontSize.toString(this._host);
@@ -336,6 +354,10 @@ module BABYLON.GUI {
             return this._paddingLeft.toString(this._host);
         }
 
+        public get paddingLeftInPixels(): number  {
+            return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }             
+
         public set paddingLeft(value: string | number ) {
             if (this._paddingLeft.fromString(value)) {
                 this._markAsDirty();
@@ -345,6 +367,10 @@ module BABYLON.GUI {
         public get paddingRight(): string | number  {
             return this._paddingRight.toString(this._host);
         }
+
+        public get paddingRightInPixels(): number  {
+            return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }         
 
         public set paddingRight(value: string | number ) {
             if (this._paddingRight.fromString(value)) {
@@ -356,6 +382,10 @@ module BABYLON.GUI {
             return this._paddingTop.toString(this._host);
         }
 
+        public get paddingTopInPixels(): number  {
+            return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        }         
+
         public set paddingTop(value: string | number ) {
             if (this._paddingTop.fromString(value)) {
                 this._markAsDirty();
@@ -365,6 +395,10 @@ module BABYLON.GUI {
         public get paddingBottom(): string | number  {
             return this._paddingBottom.toString(this._host);
         }
+
+        public get paddingBottomInPixels(): number  {
+            return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        }                 
 
         public set paddingBottom(value: string | number ) {
             if (this._paddingBottom.fromString(value)) {
@@ -376,6 +410,10 @@ module BABYLON.GUI {
             return this._left.toString(this._host);
         }
 
+        public get leftInPixels(): number  {
+            return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }          
+
         public set left(value: string | number ) {
             if (this._left.fromString(value)) {
                 this._markAsDirty();
@@ -385,6 +423,10 @@ module BABYLON.GUI {
         public get top(): string | number  {
             return this._top.toString(this._host);
         }
+
+        public get topInPixels(): number  {
+            return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        }        
 
         public set top(value: string | number ) {
             if (this._top.fromString(value)) {
@@ -396,6 +438,10 @@ module BABYLON.GUI {
             return this._linkOffsetX.toString(this._host);
         }
 
+        public get linkOffsetXInPixels(): number  {
+            return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }        
+
         public set linkOffsetX(value: string | number ) {
             if (this._linkOffsetX.fromString(value)) {
                 this._markAsDirty();
@@ -405,6 +451,10 @@ module BABYLON.GUI {
         public get linkOffsetY(): string | number  {
             return this._linkOffsetY.toString(this._host);
         }
+
+        public get linkOffsetYInPixels(): number  {
+            return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        }        
 
         public set linkOffsetY(value: string | number ) {
             if (this._linkOffsetY.fromString(value)) {
@@ -442,6 +492,15 @@ module BABYLON.GUI {
             return this;
         }
 
+        public getParentLocalCoordinates(globalCoordinates: Vector2): Vector2 {
+            var result = Vector2.Zero();
+
+            result.x = globalCoordinates.x - this._cachedParentMeasure.left;
+            result.y = globalCoordinates.y - this._cachedParentMeasure.top;
+
+            return result;
+        }
+        
         public moveToVector3(position: Vector3, scene: Scene): void {
             if (!this._host || this._root !== this._host._rootContainer) {
                 Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
@@ -764,7 +823,7 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _processPicking(x: number, y: number, type: number): boolean {
+        public _processPicking(x: number, y: number, type: number, buttonIndex: number): boolean {
             if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
                 return false;
             }
@@ -773,7 +832,7 @@ module BABYLON.GUI {
                 return false;
             }
 
-            this._processObservables(type, x, y);
+            this._processObservables(type, x, y, buttonIndex);
 
             return true;
         }
@@ -804,31 +863,31 @@ module BABYLON.GUI {
             }
         }
 
-        protected _onPointerDown(coordinates: Vector2): boolean {
+        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
             if (this._downCount !== 0) {
                 return false;
             }
 
             this._downCount++;            
             if (this.onPointerDownObservable.hasObservers()) {
-                this.onPointerDownObservable.notifyObservers(coordinates);
+                this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex));
             }
 
             return true;
         }
 
-        protected _onPointerUp(coordinates: Vector2): void {
+        protected _onPointerUp(coordinates: Vector2, buttonIndex: number): void {
             this._downCount = 0;
             if (this.onPointerUpObservable.hasObservers()) {
-                this.onPointerUpObservable.notifyObservers(coordinates);
-            }
+                this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex));
+            }           
         }
 
         public forcePointerUp() {
-            this._onPointerUp(Vector2.Zero());
+            this._onPointerUp(Vector2.Zero(), 0);
         }
 
-        public _processObservables(type: number, x: number, y: number): boolean {
+        public _processObservables(type: number, x: number, y: number, buttonIndex: number): boolean {
             this._dummyVector2.copyFromFloats(x, y);
             if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                 this._onPointerMove(this._dummyVector2);
@@ -847,7 +906,7 @@ module BABYLON.GUI {
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                this._onPointerDown(this._dummyVector2);
+                this._onPointerDown(this._dummyVector2, buttonIndex);
                 this._host._lastControlDown = this;
                 this._host._lastPickedControl = this;
                 return true;
@@ -855,7 +914,7 @@ module BABYLON.GUI {
 
             if (type === BABYLON.PointerEventTypes.POINTERUP) {
                 if (this._host._lastControlDown) {
-                    this._host._lastControlDown._onPointerUp(this._dummyVector2);
+                    this._host._lastControlDown._onPointerUp(this._dummyVector2, buttonIndex);
                 }
                 this._host._lastControlDown = null;
                 return true;
@@ -876,11 +935,22 @@ module BABYLON.GUI {
 
         public dispose() {
             this.onDirtyObservable.clear();
+            this.onAfterDrawObservable.clear();
             this.onPointerDownObservable.clear();
             this.onPointerEnterObservable.clear();
             this.onPointerMoveObservable.clear();
             this.onPointerOutObservable.clear();
             this.onPointerUpObservable.clear();
+
+            if (this._root) {
+                this._root.removeControl(this);
+                this._root = null;
+            }
+
+            var index = this._host._linkedControls.indexOf(this);
+            if (index > -1) {
+                this.linkWithMesh(null);
+            }
         }
 
         // Statics
@@ -985,7 +1055,6 @@ module BABYLON.GUI {
         }
 
         protected static drawEllipse(x:number, y:number, width:number, height:number, context:CanvasRenderingContext2D):void{
-
             context.translate(x, y);
             context.scale(width, height);
 
@@ -994,8 +1063,7 @@ module BABYLON.GUI {
             context.closePath();
 
             context.scale(1/width, 1/height);
-            context.translate(-x, -y);
-            
+            context.translate(-x, -y);            
         }
     }    
 }
