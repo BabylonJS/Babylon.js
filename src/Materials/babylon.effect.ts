@@ -268,11 +268,13 @@
         }
 
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
-            // DOM element ?
-            if (vertex instanceof HTMLElement) {
-                var vertexCode = Tools.GetDOMTextContent(vertex);
-                callback(vertexCode);
-                return;
+            if (Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (vertex instanceof HTMLElement) {
+                    var vertexCode = Tools.GetDOMTextContent(vertex);
+                    callback(vertexCode);
+                    return;
+                }
             }
 
             // Base64 encoded ?
@@ -301,11 +303,13 @@
         }
 
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
-            // DOM element ?
-            if (fragment instanceof HTMLElement) {
-                var fragmentCode = Tools.GetDOMTextContent(fragment);
-                callback(fragmentCode);
-                return;
+            if (Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (fragment instanceof HTMLElement) {
+                    var fragmentCode = Tools.GetDOMTextContent(fragment);
+                    callback(fragmentCode);
+                    return;
+                }
             }
 
             // Base64 encoded ?

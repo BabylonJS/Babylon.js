@@ -935,6 +935,7 @@ module BABYLON.GUI {
 
         public dispose() {
             this.onDirtyObservable.clear();
+            this.onAfterDrawObservable.clear();
             this.onPointerDownObservable.clear();
             this.onPointerEnterObservable.clear();
             this.onPointerMoveObservable.clear();
