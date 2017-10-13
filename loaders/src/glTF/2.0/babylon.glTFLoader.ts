@@ -20,7 +20,11 @@ module BABYLON.GLTF2 {
         }
     }
 
-    interface TypedArrayConstructor<T extends ArrayBufferView> {
+    interface TypedArray extends ArrayBufferView {
+        [index: number]: number;
+    }
+
+    interface TypedArrayConstructor<T extends TypedArray> {
         readonly prototype: T;
         new(length: number): T;
         new(array: ArrayLike<number>): T;
@@ -756,24 +760,28 @@ module BABYLON.GLTF2 {
                 throw new Error(channelContext + ": Failed to find target node " + channel.target.node);
             }
 
-            var conversion:any = {
-                "translation": "position",
-                "rotation": "rotationQuaternion",
-                "scale": "scaling",
-                "weights": "influence"
+            var targetPath: string;
+            var animationType: number;
+            switch (channel.target.path) {
+                case "translation":
+                    targetPath = "position";
+                    animationType = Animation.ANIMATIONTYPE_VECTOR3;
+                    break;
+                case "rotation":
+                    targetPath = "rotationQuaternion";
+                    animationType = Animation.ANIMATIONTYPE_QUATERNION;
+                    break;
+                case "scale":
+                    targetPath = "scaling";
+                    animationType = Animation.ANIMATIONTYPE_VECTOR3;
+                    break;
+                case "weights":
+                    targetPath = "influence";
+                    animationType = Animation.ANIMATIONTYPE_FLOAT;
+                    break;
+                default:
+                    throw new Error(channelContext + ": Invalid target path '" + channel.target.path + "'");
             }
-            var targetPath = conversion[channel.target.path];
-            if (!targetPath) {
-                throw new Error(channelContext + ": Invalid target path '" + channel.target.path + "'");
-            }
-
-            var animationConvertion: any = {
-                "position": Animation.ANIMATIONTYPE_VECTOR3,
-                "rotationQuaternion": Animation.ANIMATIONTYPE_QUATERNION,
-                "scaling": Animation.ANIMATIONTYPE_VECTOR3,
-                "influence": Animation.ANIMATIONTYPE_FLOAT,
-            }
-            var animationType = animationConvertion[targetPath];
 
             var inputData: Float32Array;
             var outputData: Float32Array;
@@ -785,50 +793,60 @@ module BABYLON.GLTF2 {
 
                 var outputBufferOffset = 0;
 
-                var nextOutputConversion: any = {
-                    "position": () => {
-                        var value = Vector3.FromArray(outputData, outputBufferOffset);
-                        outputBufferOffset += 3;
-                        return value;
-                    },
-                    "rotationQuaternion": () => {
-                        var value = Quaternion.FromArray(outputData, outputBufferOffset);
-                        outputBufferOffset += 4;
-                        return value;
-                    },
-                    "scaling": () => {
-                        var value = Vector3.FromArray(outputData, outputBufferOffset);
-                        outputBufferOffset += 3;
-                        return value;
-                    },
-                    "influence": () => {
-                        var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
-                        var value = new Array(numTargets);
-                        for (var i = 0; i < numTargets; i++) {
-                            value[i] = outputData[outputBufferOffset++];
-                        }
-                        return value;
-                    },
-                };
-                
-                var getNextOutputValue: () => any = nextOutputConversion[targetPath];
-
-                var nextKeyConversion: any = {
-                    "LINEAR": (frameIndex: number) => ({
-                        frame: inputData[frameIndex],
-                        value: getNextOutputValue()
-                    }),
-                    "CUBICSPLINE": (frameIndex: number) => ({
-                        frame: inputData[frameIndex],
-                        inTangent: getNextOutputValue(),
-                        value: getNextOutputValue(),
-                        outTangent: getNextOutputValue()
-                    }),
-                };
-                var getNextKey: (frameIndex: number) => any = nextKeyConversion[sampler.interpolation];
-                if (!getNextKey) {
-                    throw new Error(samplerContext + ": Invalid interpolation '" + sampler.interpolation + "'");
+                var getNextOutputValue: () => any;
+                switch (targetPath) {
+                    case "position":
+                        getNextOutputValue = () => {
+                            var value = Vector3.FromArray(outputData, outputBufferOffset);
+                            outputBufferOffset += 3;
+                            return value;
+                        };
+                        break;
+                    case "rotationQuaternion":
+                        getNextOutputValue = () => {
+                            var value = Quaternion.FromArray(outputData, outputBufferOffset);
+                            outputBufferOffset += 4;
+                            return value;
+                        };
+                        break;
+                    case "scaling":
+                        getNextOutputValue = () => {
+                            var value = Vector3.FromArray(outputData, outputBufferOffset);
+                            outputBufferOffset += 3;
+                            return value;
+                        };
+                        break;
+                    case "influence":
+                        getNextOutputValue = () => {
+                            var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
+                            var value = new Array(numTargets);
+                            for (var i = 0; i < numTargets; i++) {
+                                value[i] = outputData[outputBufferOffset++];
+                            }
+                            return value;
+                        };
+                        break;
                 }
+
+                var getNextKey: (frameIndex: number) => any;
+                switch (sampler.interpolation) {
+                    case "LINEAR":
+                        getNextKey = frameIndex => ({
+                            frame: inputData[frameIndex],
+                            value: getNextOutputValue()
+                        });
+                        break;
+                    case "CUBICSPLINE":
+                        getNextKey = frameIndex => ({
+                            frame: inputData[frameIndex],
+                            inTangent: getNextOutputValue(),
+                            value: getNextOutputValue(),
+                            outTangent: getNextOutputValue()
+                        });
+                        break;
+                    default:
+                        throw new Error(samplerContext + ": Invalid interpolation '" + sampler.interpolation + "'");
+                };
 
                 var keys = new Array(inputData.length);
                 for (var frameIndex = 0; frameIndex < inputData.length; frameIndex++) {
@@ -1027,7 +1045,7 @@ module BABYLON.GLTF2 {
             return 0;
         }
 
-        private _buildArrayBuffer<T extends ArrayBufferView>(typedArray: TypedArrayConstructor<T>, context: string, data: ArrayBufferView, byteOffset: number, count: number, numComponents: number, byteStride: number): T {
+        private _buildArrayBuffer<T extends TypedArray>(typedArray: TypedArrayConstructor<T>, context: string, data: ArrayBufferView, byteOffset: number, count: number, numComponents: number, byteStride: number): T {
             try {
                 var byteOffset = data.byteOffset + (byteOffset || 0);
                 var targetLength = count * numComponents;
@@ -1044,7 +1062,7 @@ module BABYLON.GLTF2 {
 
                 while (targetIndex < targetLength) {
                     for (var componentIndex = 0; componentIndex < numComponents; componentIndex++) {
-                        (<any>targetBuffer)[targetIndex] = (<any>sourceBuffer)[sourceIndex + componentIndex];
+                        targetBuffer[targetIndex] = sourceBuffer[sourceIndex + componentIndex];
                         targetIndex++;
                     }
                     sourceIndex += elementStride;
