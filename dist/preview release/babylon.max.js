@@ -9169,6 +9169,19 @@ var BABYLON;
             vbo.references = 1;
             return vbo;
         };
+        Engine.prototype.updateDynamicIndexBuffer = function (indexBuffer, indices, offset) {
+            if (offset === void 0) { offset = 0; }
+            this.bindIndexBuffer(indexBuffer);
+            var arrayBuffer;
+            if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
+                arrayBuffer = indices;
+            }
+            else {
+                arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+            }
+            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
+            this._resetIndexBufferBinding();
+        };
         Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset, count) {
             this.bindArrayBuffer(vertexBuffer);
             if (offset === undefined) {
@@ -9196,7 +9209,7 @@ var BABYLON;
             this.bindIndexBuffer(null);
             this._cachedIndexBuffer = null;
         };
-        Engine.prototype.createIndexBuffer = function (indices) {
+        Engine.prototype.createIndexBuffer = function (indices, updatable) {
             var vbo = this._gl.createBuffer();
             this.bindIndexBuffer(vbo);
             // Check for 32 bits indices
@@ -9228,7 +9241,7 @@ var BABYLON;
                     arrayBuffer = new Uint16Array(indices);
                 }
             }
-            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, updatable ? this._gl.DYNAMIC_DRAW : this._gl.STATIC_DRAW);
             this._resetIndexBufferBinding();
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
@@ -22310,16 +22323,28 @@ var BABYLON;
          * This method creates a new index buffer each call.
          * Returns the Mesh.
          */
-        Mesh.prototype.setIndices = function (indices, totalVertices) {
+        Mesh.prototype.setIndices = function (indices, totalVertices, updatable) {
             if (!this._geometry) {
                 var vertexData = new BABYLON.VertexData();
                 vertexData.indices = indices;
                 var scene = this.getScene();
-                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene, vertexData, false, this);
+                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene, vertexData, updatable, this);
             }
             else {
-                this._geometry.setIndices(indices, totalVertices);
+                this._geometry.setIndices(indices, totalVertices, updatable);
             }
+            return this;
+        };
+        /**
+         * Update the current index buffer
+         * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array)
+         * Returns the Mesh.
+         */
+        Mesh.prototype.updateIndices = function (indices, offset) {
+            if (!this._geometry) {
+                return;
+            }
+            this._geometry.updateIndices(indices, offset);
             return this;
         };
         /**
@@ -27136,7 +27161,7 @@ var BABYLON;
                 meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updatable);
             }
             if (this.indices) {
-                meshOrGeometry.setIndices(this.indices);
+                meshOrGeometry.setIndices(this.indices, null, updatable);
             }
             return this;
         };
@@ -29185,6 +29210,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._totalVertices = 0;
             this._isDisposed = false;
+            this._indexBufferIsUpdatable = false;
             this.id = id;
             this._engine = scene.getEngine();
             this._meshes = [];
@@ -29429,16 +29455,28 @@ var BABYLON;
             }
             return result;
         };
-        Geometry.prototype.setIndices = function (indices, totalVertices) {
+        Geometry.prototype.updateIndices = function (indices, offset) {
+            if (!this._indexBuffer) {
+                return;
+            }
+            if (!this._indexBufferIsUpdatable) {
+                this.setIndices(indices, null, true);
+            }
+            else {
+                this._engine.updateDynamicIndexBuffer(this._indexBuffer, indices, offset);
+            }
+        };
+        Geometry.prototype.setIndices = function (indices, totalVertices, updatable) {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
             this._disposeVertexArrayObjects();
             this._indices = indices;
+            this._indexBufferIsUpdatable = updatable;
             if (this._meshes.length !== 0 && this._indices) {
-                this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+                this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
             }
-            if (totalVertices !== undefined) {
+            if (totalVertices != undefined) {
                 this._totalVertices = totalVertices;
             }
             var meshes = this._meshes;
