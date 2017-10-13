@@ -593,6 +593,7 @@ declare module BABYLON.GUI {
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;
         static CreateImageOnlyButton(name: string, imageUrl: string): Button;
         static CreateSimpleButton(name: string, text: string): Button;
+        static CreateImageWithCenterTextButton(name: string, text: string, imageUrl: string): Button;
     }
 }
 
