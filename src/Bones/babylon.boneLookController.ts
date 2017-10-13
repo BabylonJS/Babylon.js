@@ -500,7 +500,7 @@ module BABYLON {
 
         }
 
-        private _getAngleDiff(ang1, ang2):number {
+        private _getAngleDiff(ang1: number, ang2: number):number {
 
             var angDiff = ang2 - ang1;
             angDiff %= Math.PI*2;
@@ -514,7 +514,7 @@ module BABYLON {
             return angDiff;
         }
 
-        private _getAngleBetween(ang1, ang2):number {
+        private _getAngleBetween(ang1: number, ang2: number):number {
 
             ang1 %= (2 * Math.PI);
             ang1 = (ang1 < 0) ? ang1 + (2 * Math.PI) : ang1;
@@ -537,7 +537,7 @@ module BABYLON {
             return ab;
         }
 
-        private _isAngleBetween(ang, ang1, ang2):boolean {
+        private _isAngleBetween(ang: number,ang1: number, ang2: number):boolean {
 
             ang %= (2 * Math.PI);
             ang = (ang < 0) ? ang + (2 * Math.PI) : ang;

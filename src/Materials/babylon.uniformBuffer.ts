@@ -313,7 +313,7 @@ module BABYLON {
          * @param {Color3} color
          */
         public addColor3(name: string, color: Color3) {
-            var temp = [];
+            var temp = new Array<number>();
             color.toArray(temp);
             this.addUniform(name, temp);
         }
@@ -325,7 +325,7 @@ module BABYLON {
          * @param {number} alpha
          */
         public addColor4(name: string, color: Color3, alpha: number) {
-            var temp = [];
+            var temp = new Array<number>();
             color.toArray(temp);
             temp.push(alpha);
             this.addUniform(name, temp);
@@ -337,7 +337,7 @@ module BABYLON {
          * @param {Vector3} vector
          */
         public addVector3(name: string, vector: Vector3) {
-            var temp = [];
+            var temp = new Array<number>();
             vector.toArray(temp);
             this.addUniform(name, temp);
         }

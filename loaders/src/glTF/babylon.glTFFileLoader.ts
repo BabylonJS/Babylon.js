@@ -146,7 +146,7 @@ module BABYLON {
                 }
             }
 
-            var createLoaders = {
+            var createLoaders:{[key: number]: (parent: GLTFFileLoader) => IGLTFLoader} = {
                 1: GLTFFileLoader.CreateGLTFLoaderV1,
                 2: GLTFFileLoader.CreateGLTFLoaderV2
             };
@@ -301,7 +301,7 @@ module BABYLON {
             var length = view.byteLength;
 
             for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode(view[i]);
+                result += String.fromCharCode((<any>view)[i]);
             }
 
             return result;

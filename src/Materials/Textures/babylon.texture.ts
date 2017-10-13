@@ -293,10 +293,10 @@
             switch (this.coordinatesMode) {
                 case Texture.PLANAR_MODE:
                     Matrix.IdentityToRef(this._cachedTextureMatrix);
-                    this._cachedTextureMatrix[0] = this.uScale;
-                    this._cachedTextureMatrix[5] = this.vScale;
-                    this._cachedTextureMatrix[12] = this.uOffset;
-                    this._cachedTextureMatrix[13] = this.vOffset;
+                    (<any>this._cachedTextureMatrix)[0] = this.uScale;
+                    (<any>this._cachedTextureMatrix)[5] = this.vScale;
+                    (<any>this._cachedTextureMatrix)[12] = this.uOffset;
+                    (<any>this._cachedTextureMatrix)[13] = this.vOffset;
                     break;
                 case Texture.PROJECTION_MODE:
                     Matrix.IdentityToRef(this._projectionModeMatrix);

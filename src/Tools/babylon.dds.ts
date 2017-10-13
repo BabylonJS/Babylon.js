@@ -33,14 +33,14 @@
         DDPF_YUV = 0x200,
         DDPF_LUMINANCE = 0x20000;
 
-    function FourCCToInt32(value) {
+    function FourCCToInt32(value: string) {
         return value.charCodeAt(0) +
             (value.charCodeAt(1) << 8) +
             (value.charCodeAt(2) << 16) +
             (value.charCodeAt(3) << 24);
     }
 
-    function Int32ToFourCC(value) {
+    function Int32ToFourCC(value: number) {
         return String.fromCharCode(
             value & 0xff,
             (value >> 8) & 0xff,

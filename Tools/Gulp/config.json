@@ -69,7 +69,6 @@
             "assetsManager",
             "mapTexture",
             "dynamicFloatArray",
-            "imageProcessing",
             "serialization",
             "probes",
             "layer",
@@ -146,7 +145,6 @@
             "assetsManager",
             "mapTexture",
             "dynamicFloatArray",
-            "imageProcessing",
             "serialization",
             "probes",
             "layer",
@@ -206,9 +204,7 @@
                 "../../src/Materials/babylon.colorCurves.js"
             ],
             "shaderIncludes": [
-                "depthPrePass",
-                "imageProcessingDeclaration",
-                "imageProcessingFunctions"
+                "depthPrePass"
             ]
         },
         "particles": {
@@ -384,7 +380,7 @@
                 "defaultUboDeclaration",
                 "shadowsFragmentFunctions",
                 "fresnelFunction",
-                "reflectionFunction",
+                "reflectionFunction",                
                 "imageProcessingDeclaration",
                 "imageProcessingFunctions",
                 "bumpFragmentFunctions",
@@ -440,7 +436,7 @@
                 "shadowsFragmentFunctions",
                 "pbrFunctions",
                 "imageProcessingDeclaration",
-                "imageProcessingFunctions",
+                "imageProcessingFunctions",                
                 "harmonicsFunctions",
                 "pbrLightFunctions",
                 "helperFunctions",

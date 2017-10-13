@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     var serializedGeometries: Geometry[] = [];
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
-        if (serializedGeometries[geometry.id]) {
+        if ((<any>serializedGeometries)[geometry.id]) {
             return;
         }
 
@@ -37,7 +37,7 @@
             serializationGeometries.vertexData.push(geometry.serializeVerticeData());
         }
 
-        serializedGeometries[geometry.id] = true;
+        (<any>serializedGeometries)[geometry.id] = true;
     };
 
     var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
@@ -67,12 +67,12 @@
             if (mesh.material) {
                 if (mesh.material instanceof StandardMaterial) {
                     serializationObject.materials = serializationObject.materials || [];
-                    if (!serializationObject.materials.some(mat => (mat.id === mesh.material.id))) {
+                    if (!serializationObject.materials.some((mat: Material) => (mat.id === mesh.material.id))) {
                         serializationObject.materials.push(mesh.material.serialize());
                     }
                 } else if (mesh.material instanceof MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
-                    if (!serializationObject.multiMaterials.some(mat => (mat.id === mesh.material.id))) {
+                    if (!serializationObject.multiMaterials.some((mat: Material) => (mat.id === mesh.material.id))) {
                         serializationObject.multiMaterials.push(mesh.material.serialize());
                     }
 
@@ -301,7 +301,7 @@
                 //deliberate for loop! not for each, appended should be processed as well.
                 for (var i = 0; i < toSerialize.length; ++i) {
                     if (withChildren) {
-                        toSerialize[i].getDescendants().forEach((node) => {
+                        toSerialize[i].getDescendants().forEach((node: Node) => {
                             if (node instanceof Mesh && (toSerialize.indexOf(node) < 0)) {
                                 toSerialize.push(node);
                             }

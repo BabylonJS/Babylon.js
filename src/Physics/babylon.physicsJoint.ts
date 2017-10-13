@@ -17,14 +17,14 @@ module BABYLON {
      */
     export class PhysicsJoint {
 
-        private _physicsJoint;
+        private _physicsJoint: any;
         protected _physicsPlugin: IPhysicsEnginePlugin;
 
         constructor(public type: number, public jointData: PhysicsJointData) {
             jointData.nativeParams = jointData.nativeParams || {};
         }
 
-        public get physicsJoint() {
+        public get physicsJoint(): any {
             return this._physicsJoint;
         }
 
@@ -175,8 +175,8 @@ module BABYLON {
 
     export interface IMotorEnabledJoint {
         physicsJoint: any;
-        setMotor(force?: number, maxForce?: number, motorIndex?: number);
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number);
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
     }
 
     export interface DistanceJointData extends PhysicsJointData {

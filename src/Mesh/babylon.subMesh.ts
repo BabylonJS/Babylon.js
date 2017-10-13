@@ -37,7 +37,7 @@
 
         private _currentMaterial: Material;
 
-        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
+        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart: number, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
             super();
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || <Mesh>mesh;

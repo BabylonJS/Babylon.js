@@ -352,7 +352,7 @@ module BABYLON {
                     // Water
                     "refractionSampler", "reflectionSampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -487,8 +487,8 @@ module BABYLON {
             this._reflectionRTT.ignoreCameraViewport = true;
 
             var isVisible: boolean;
-            var clipPlane = null;
-            var savedViewMatrix;
+            var clipPlane: Plane = null;
+            var savedViewMatrix: Matrix;
             var mirrorMatrix = Matrix.Zero();
 
             this._refractionRTT.onBeforeRender = () => {

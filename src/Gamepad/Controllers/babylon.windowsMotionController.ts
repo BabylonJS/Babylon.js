@@ -67,7 +67,7 @@ module BABYLON {
 
         public onTrackpadChangedObservable = new Observable<ExtendedGamepadButton>();
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.WINDOWS;
             this._loadedMeshInfo = null;
@@ -122,7 +122,7 @@ module BABYLON {
             }
 
             // Only emit events for buttons that we know how to map from index to name
-            let observable = this[this._mapping.buttonObservableNames[buttonName]];
+            let observable = (<any>this)[(<any>(this._mapping.buttonObservableNames))[buttonName]];
             if (observable) {
                 observable.notifyObservers(state);
             }
@@ -279,7 +279,7 @@ module BABYLON {
 
             // Button Meshes
             for (i = 0; i < this._mapping.buttons.length; i++) {
-                var buttonMeshName = this._mapping.buttonMeshNames[this._mapping.buttons[i]];
+                var buttonMeshName = (<any>this._mapping.buttonMeshNames)[this._mapping.buttons[i]];
                 if (!buttonMeshName) {
                     Tools.Log('Skipping unknown button at index: ' + i + ' with mapped name: ' + this._mapping.buttons[i]);
                     continue;
@@ -350,11 +350,11 @@ module BABYLON {
             return loadedMeshInfo;
             
             // Look through all children recursively. This will return null if no mesh exists with the given name.
-            function getChildByName(node, name) {
+            function getChildByName(node: Node, name: string) {
                 return node.getChildMeshes(false, n => n.name === name)[0];
             }
             // Look through only immediate children. This will return null if no mesh exists with the given name.
-            function getImmediateChildByName (node, name) : AbstractMesh {
+            function getImmediateChildByName (node: Node, name: string) : AbstractMesh {
                 return node.getChildMeshes(true, n => n.name == name)[0];
             }
         }

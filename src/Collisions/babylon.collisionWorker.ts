@@ -1,11 +1,13 @@
+declare function importScripts(...urls: string[]): void;
+
 module BABYLON {
 
     //If this file is included in the main thread, this will be initialized.
     export var WorkerIncluded: boolean = true;
 
     export class CollisionCache {
-        private _meshes: { [n: number]: SerializedMesh; } = {};
-        private _geometries: { [s: number]: SerializedGeometry; } = {};
+        private _meshes: { [n: string]: SerializedMesh; } = {};
+        private _geometries: { [s: string]: SerializedGeometry; } = {};
 
         public getMeshes(): { [n: number]: SerializedMesh; } {
             return this._meshes;
@@ -64,12 +66,12 @@ module BABYLON {
             var meshes = this._collisionCache.getMeshes();
             var keys = Object.keys(meshes);
             var len = keys.length;
-            var uniqueId;
+            var uniqueId: string;
 
             for (var i = 0; i < len; ++i) {
                 uniqueId = keys[i];
                 if (parseInt(uniqueId) != excludedMeshUniqueId) {
-                    var mesh: SerializedMesh = meshes[uniqueId];
+                    var mesh: SerializedMesh = (<any>meshes)[uniqueId];
                     if (mesh.checkCollisions)
                         this.checkCollision(mesh);
                 }
@@ -146,27 +148,27 @@ module BABYLON {
         }
 
         private collideForSubMesh(subMesh: SerializedSubMesh, transformMatrix: Matrix, meshGeometry: SerializedGeometry): void {
-            if (!meshGeometry['positionsArray']) {
-                meshGeometry['positionsArray'] = [];
+            if (!(<any>meshGeometry)['positionsArray']) {
+                (<any>meshGeometry)['positionsArray'] = [];
                 for (var i = 0, len = meshGeometry.positions.length; i < len; i = i + 3) {
                     var p = Vector3.FromArray([meshGeometry.positions[i], meshGeometry.positions[i + 1], meshGeometry.positions[i + 2]]);
-                    meshGeometry['positionsArray'].push(p);
+                    (<any>meshGeometry)['positionsArray'].push(p);
                 }
             }
 
-            if (!subMesh['_lastColliderWorldVertices'] || !subMesh['_lastColliderTransformMatrix'].equals(transformMatrix)) {
-                subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
-                subMesh['_lastColliderWorldVertices'] = [];
-                subMesh['_trianglePlanes'] = [];
+            if (!(<any>subMesh)['_lastColliderWorldVertices'] || !(<any>subMesh)['_lastColliderTransformMatrix'].equals(transformMatrix)) {
+                (<any>subMesh)['_lastColliderTransformMatrix'] = transformMatrix.clone();
+                (<any>subMesh)['_lastColliderWorldVertices'] = [];
+                (<any>subMesh)['_trianglePlanes'] = [];
                 var start = subMesh.verticesStart;
                 var end = (subMesh.verticesStart + subMesh.verticesCount);
                 for (var i = start; i < end; i++) {
-                    subMesh['_lastColliderWorldVertices'].push(Vector3.TransformCoordinates(meshGeometry['positionsArray'][i], transformMatrix));
+                    (<any>subMesh)['_lastColliderWorldVertices'].push(Vector3.TransformCoordinates((<any>meshGeometry)['positionsArray'][i], transformMatrix));
                 }
             }        
 
             // Collide
-            this.collider._collide(subMesh['_trianglePlanes'], subMesh['_lastColliderWorldVertices'], <any>meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
+            this.collider._collide((<any>subMesh)['_trianglePlanes'], (<any>subMesh)['_lastColliderWorldVertices'], <any>meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
 
         }
 

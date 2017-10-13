@@ -150,7 +150,7 @@
             if (this.getScene().workerCollisions)
                 newPosition.multiplyInPlace(this._collider.radius);
 
-            var updatePosition = (newPos) => {
+            var updatePosition = (newPos: Vector3) => {
                 this._newPosition.copyFrom(newPos);
 
                 this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);

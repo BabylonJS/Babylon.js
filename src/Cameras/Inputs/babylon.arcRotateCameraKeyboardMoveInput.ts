@@ -1,7 +1,7 @@
 module BABYLON {
     export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
-        private _keys = [];
+        private _keys = new Array<number>();
         
         @serialize()
         public keysUp = [38];
@@ -158,5 +158,5 @@ module BABYLON {
         }
     }
     
-    CameraInputTypes["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;
+    (<any>CameraInputTypes)["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;
 }

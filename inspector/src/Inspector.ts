@@ -123,7 +123,7 @@ module INSPECTOR {
 
                     // copy style from canvas to wrapper
                     for (let prop in this._canvasStyle) {
-                        this._c2diwrapper.style[prop] = this._canvasStyle[prop];
+                        (<any>this._c2diwrapper.style)[prop] = this._canvasStyle[prop];
                     }
 
                     // Convert wrapper size in % (because getComputedStyle returns px only)
@@ -327,7 +327,7 @@ module INSPECTOR {
 
                 // restore canvas style
                 for (let prop in this._canvasStyle) {
-                    canvas.style[prop] = this._canvasStyle[prop];
+                    (<any>canvas.style)[prop] = this._canvasStyle[prop];
                 }
                 // Get parent of the wrapper 
                 let canvasParent = canvas.parentElement.parentElement;

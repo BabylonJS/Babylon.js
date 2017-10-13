@@ -67,7 +67,7 @@ module BABYLON {
             this._linkParameters();
         }
 
-        public getPass(passName: string): void {
+        public getPass(passName: string): PostProcessRenderPass {
             for (var renderPassName in this._renderPasses) {
                 if (renderPassName === passName) {
                     return this._renderPasses[passName];
@@ -82,8 +82,8 @@ module BABYLON {
         }
 
         // private
-        public _attachCameras(cameras: Camera);
-        public _attachCameras(cameras: Camera[]);
+        public _attachCameras(cameras: Camera): void;
+        public _attachCameras(cameras: Camera[]): void;
         public _attachCameras(cameras: any): void {
             var cameraKey;
 
@@ -123,8 +123,8 @@ module BABYLON {
         }
 
         // private
-        public _detachCameras(cameras: Camera);
-        public _detachCameras(cameras: Camera[]);
+        public _detachCameras(cameras: Camera): void;
+        public _detachCameras(cameras: Camera[]): void;
         public _detachCameras(cameras: any): void {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
@@ -146,8 +146,8 @@ module BABYLON {
         }
 
         // private
-        public _enable(cameras: Camera);
-        public _enable(cameras: Camera[]);
+        public _enable(cameras: Camera): void;
+        public _enable(cameras: Camera[]): void;
         public _enable(cameras: any): void {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
@@ -168,8 +168,8 @@ module BABYLON {
         }
 
         // private
-        public _disable(cameras: Camera);
-        public _disable(cameras: Camera[]);
+        public _disable(cameras: Camera): void;
+        public _disable(cameras: Camera[]): void;
         public _disable(cameras: any): void {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
@@ -206,7 +206,7 @@ module BABYLON {
             }
         }
 
-        private _linkTextures(effect): void {
+        private _linkTextures(effect: Effect): void {
             for (var renderPassName in this._renderPasses) {
                 effect.setTexture(renderPassName, this._renderPasses[renderPassName].getRenderTexture());
             }

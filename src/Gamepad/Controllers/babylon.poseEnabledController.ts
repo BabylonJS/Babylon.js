@@ -59,7 +59,7 @@ module BABYLON {
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
         
-        constructor(browserGamepad) {
+        constructor(browserGamepad: any) {
             super(browserGamepad.id, browserGamepad.index, browserGamepad);
             this.type = Gamepad.POSE_ENABLED;
             this.controllerType = PoseEnabledControllerType.GENERIC;
