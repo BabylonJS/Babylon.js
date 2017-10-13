@@ -347,5 +347,5 @@ module BABYLON {
         }
     }
 
-    CameraInputTypes["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
+    (<any>CameraInputTypes)["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
 }

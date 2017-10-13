@@ -247,7 +247,7 @@ module BABYLON {
                     "heightTexture", "furTexture"
                 ];
                 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

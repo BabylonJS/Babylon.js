@@ -1898,6 +1898,7 @@ vColor=color;\n\
     var StandardShaderVersions = (function () {
         function StandardShaderVersions() {
         }
+        StandardShaderVersions.Ver3_0 = "3.0.0";
         return StandardShaderVersions;
     }());
     BABYLON.StandardShaderVersions = StandardShaderVersions;
@@ -1996,7 +1997,7 @@ vColor=color;\n\
                     this._newUniformInstances[kind + "-" + name] = param;
                 }
                 else {
-                    this._newSamplerInstances[kind + "-" + name] = param;
+                    this._newUniformInstances[kind + "-" + name] = param;
                 }
             }
             this._customUniform.push("uniform " + kind + " " + name + ";");

@@ -115,7 +115,7 @@ module BABYLON.GLTF2 {
             var length = view.byteLength;
 
             for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode(view[i]);
+                result += String.fromCharCode((<any>view)[i]);
             }
 
             return result;

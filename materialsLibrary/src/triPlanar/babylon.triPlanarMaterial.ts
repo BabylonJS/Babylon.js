@@ -139,7 +139,7 @@ module BABYLON {
                                 if (!textures[i].isReady()) {
                                     return false;
                                 } else {
-                                    defines[textureDefines[i]] = true;
+                                    (<any>defines)[textureDefines[i]] = true;
                                 }
                             }
                         }
@@ -153,7 +153,7 @@ module BABYLON {
                                 if (!textures[i].isReady()) {
                                     return false;
                                 } else {
-                                    defines[textureDefines[i]] = true;
+                                    (<any>defines)[textureDefines[i]] = true;
                                 }
                             }
                         }
@@ -217,7 +217,7 @@ module BABYLON {
                     "normalSamplerX", "normalSamplerY", "normalSamplerZ"
                 ];
 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

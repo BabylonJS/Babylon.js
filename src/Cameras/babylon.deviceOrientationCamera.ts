@@ -36,10 +36,10 @@ module BABYLON {
             this._initialQuaternion.copyFrom(this._quaternionCache || this.rotationQuaternion);
 
             ['x', 'y', 'z'].forEach((axisName) => {
-                if (!axis[axisName]) {
-                    this._initialQuaternion[axisName] = 0;
+                if (!(<any>axis)[axisName]) {
+                    (<any>this._initialQuaternion)[axisName] = 0;
                 } else {
-                    this._initialQuaternion[axisName] *= -1;
+                    (<any>this._initialQuaternion)[axisName] *= -1;
                 }
             });
             this._initialQuaternion.normalize();

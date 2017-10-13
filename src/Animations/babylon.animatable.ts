@@ -22,7 +22,7 @@
             this._speedRatio = value;
         }
 
-        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, speedRatio: number = 1.0, public onAnimationEnd?, animations?: any) {
+        constructor(scene: Scene, public target: any, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, speedRatio: number = 1.0, public onAnimationEnd?: () => void, animations?: any) {
             if (animations) {
                 this.appendAnimations(target, animations);
             }

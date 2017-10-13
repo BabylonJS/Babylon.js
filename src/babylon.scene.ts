@@ -392,17 +392,17 @@
         /** If you need to check double click without raising a single click at first click, enable this flag */
         public static ExclusiveDoubleClickMode = false;
 
-        private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => void;
+        private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void) => void;
         private _initActionManager: (act: ActionManager, clickInfo: ClickInfo) => ActionManager;
-        private _delayedSimpleClick: (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => void;
-        private _delayedSimpleClickTimeout;
-        private _previousDelayedSimpleClickTimeout;
+        private _delayedSimpleClick: (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void) => void;
+        private _delayedSimpleClickTimeout: number;
+        private _previousDelayedSimpleClickTimeout: number;
         private _meshPickProceed = false;
 
-        private _previousButtonPressed;
+        private _previousButtonPressed: number;
         private _previousHasSwiped = false;
-        private _currentPickResult = null;
-        private _previousPickResult = null;
+        private _currentPickResult: PickingInfo = null;
+        private _previousPickResult: PickingInfo = null;
         private _totalPointersPressed = 0;
         private _doubleClickOccured = false;
 
@@ -636,7 +636,7 @@
 
         // Collisions
         public collisionsEnabled = true;
-        private _workerCollisions;
+        private _workerCollisions: boolean;
         public collisionCoordinator: ICollisionCoordinator;
         /** Defines the gravity applied to this scene */
         public gravity = new Vector3(0, -9.807, 0);
@@ -670,7 +670,7 @@
         public reflectionProbes = new Array<ReflectionProbe>();
 
         // Database
-        public database; //ANY
+        public database: any;
 
         /**
          * This scene's action manager
@@ -745,9 +745,9 @@
         private _alternateProjectionUpdateFlag = -1;
 
         public _toBeDisposed = new SmartArray<IDisposable>(256);
-        private _pendingData = [];//ANY
+        private _pendingData = new Array();
 
-        private _activeMeshes = new SmartArray<Mesh>(256);
+        private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArray<RenderTargetTexture>(256);
         public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
@@ -986,7 +986,7 @@
             return this._evaluateActiveMeshesDuration;
         }
 
-        public getActiveMeshes(): SmartArray<Mesh> {
+        public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
         }
 
@@ -1269,7 +1269,7 @@
                 return act;
             };
 
-            this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => {
+            this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void) => {
                 // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
                 if ((new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
                     btn !== this._previousButtonPressed) {
@@ -1280,7 +1280,7 @@
                 }
             }
 
-            this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void): void => {
+            this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void): void => {
                 let clickInfo = new ClickInfo();
                 this._currentPickResult = null;
                 let act;
@@ -1348,8 +1348,9 @@
                                     this._doubleClickOccured = true;
                                     clickInfo.doubleClick = true;
                                     clickInfo.ignore = false;
-                                    if (Scene.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout)
-                                        this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                    if (Scene.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout) {
+                                        clearTimeout(this._previousDelayedSimpleClickTimeout);
+                                    }
                                     this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
                                     cb(clickInfo, this._currentPickResult);
                                 }
@@ -1362,8 +1363,8 @@
                                     this._previousButtonPressed = btn;
                                     this._previousHasSwiped = clickInfo.hasSwiped;
                                     if (Scene.ExclusiveDoubleClickMode) {
-                                        if (this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout) {
-                                            this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                        if (this._previousDelayedSimpleClickTimeout) {
+                                            clearTimeout(this._previousDelayedSimpleClickTimeout);
                                         }
                                         this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
                                         cb(clickInfo, this._previousPickResult);
@@ -1496,7 +1497,7 @@
 
                 this._updatePointerPosition(evt);
 
-                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (function (clickInfo, pickResult) {
+                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (function (clickInfo: ClickInfo, pickResult: PickingInfo) {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
@@ -1734,11 +1735,11 @@
             this.onAfterRenderObservable.removeCallback(func);
         }
 
-        public _addPendingData(data): void {
+        public _addPendingData(data: any): void {
             this._pendingData.push(data);
         }
 
-        public _removePendingData(data): void {
+        public _removePendingData(data: any): void {
             var index = this._pendingData.indexOf(data);
 
             if (index !== -1) {
@@ -2636,7 +2637,7 @@
          * @param key the unique key that identifies the data
          * @return true if the data was successfully removed, false if it doesn't exist
          */
-        public removeExternalData(key): boolean {
+        public removeExternalData(key: string): boolean {
             return this._externalData.remove(key);
         }
 
@@ -2789,7 +2790,7 @@
                 }
 
                 if (!mesh.computeBonesUsingShaders) {
-                    this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
+                    this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh);
                 }
             }
 

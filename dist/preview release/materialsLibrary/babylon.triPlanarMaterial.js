@@ -160,7 +160,7 @@ var BABYLON;
                 var samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ",
                     "normalSamplerX", "normalSamplerY", "normalSamplerZ"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

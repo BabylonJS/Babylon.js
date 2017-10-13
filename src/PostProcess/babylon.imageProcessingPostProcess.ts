@@ -334,7 +334,7 @@
             this.imageProcessingConfiguration.prepareDefines(this._defines, true);
             var defines = "";
             for (const define in this._defines) {
-                if (this._defines[define]) {
+                if ((<any>this._defines)[define]) {
                     defines += `#define ${define};\r\n`;
                 }
             }

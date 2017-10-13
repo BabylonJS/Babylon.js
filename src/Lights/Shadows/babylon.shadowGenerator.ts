@@ -687,7 +687,7 @@
         /**
          * This creates the defines related to the standard BJS materials.
          */
-        public prepareDefines(defines: MaterialDefines, lightIndex: number): void {
+        public prepareDefines(defines: any, lightIndex: number): void {
             var scene = this._scene;
             var light = this._light;
 

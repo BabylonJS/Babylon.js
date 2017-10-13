@@ -112,7 +112,7 @@ declare module BABYLON.GUI {
         negativeValueAllowed: boolean;
         private _value;
         ignoreAdaptiveScaling: boolean;
-        constructor(value: any, unit?: number, negativeValueAllowed?: boolean);
+        constructor(value: number, unit?: number, negativeValueAllowed?: boolean);
         readonly isPercentage: boolean;
         readonly isPixel: boolean;
         readonly internalValue: number;
@@ -513,6 +513,11 @@ declare module BABYLON.GUI {
         private _lines;
         private _totalHeight;
         private _resizeToFit;
+        /**
+        * An event triggered after the text is changed
+        * @type {BABYLON.Observable}
+        */
+        onTextChangedObservable: Observable<TextBlock>;
         resizeToFit: boolean;
         textWrapping: boolean;
         text: string;
@@ -526,6 +531,7 @@ declare module BABYLON.GUI {
         protected _parseLine(line: string, context: CanvasRenderingContext2D): object;
         protected _parseLineWithTextWrapping(line: string, context: CanvasRenderingContext2D): object;
         protected _renderLines(context: CanvasRenderingContext2D): void;
+        dispose(): void;
     }
 }
 

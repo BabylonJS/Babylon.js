@@ -6,23 +6,25 @@
         private _id: number;
         private _duplicateId = 0;
 
+        [index: number]: T;
+
         constructor(capacity: number) {
             this.data = new Array(capacity);
             this._id = SmartArray._GlobalId++;
         }
 
-        public push(value): void {
+        public push(value: T): void {
             this.data[this.length++] = value;
 
             if (this.length > this.data.length) {
                 this.data.length *= 2;
             }
 
-            if (!value.__smartArrayFlags) {
-                value.__smartArrayFlags = {};
+            if (!(<any>value).__smartArrayFlags) {
+                (<any>value).__smartArrayFlags = {};
             }
 
-            value.__smartArrayFlags[this._id] = this._duplicateId;
+            (<any>value).__smartArrayFlags[this._id] = this._duplicateId;
         }
 
         public forEach(func: (content: T) => void): void {
@@ -31,15 +33,15 @@
             }
         }
 
-        public pushNoDuplicate(value): boolean {
-            if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
+        public pushNoDuplicate(value: T): boolean {
+            if ((<any>value).__smartArrayFlags && (<any>value).__smartArrayFlags[this._id] === this._duplicateId) {
                 return false;
             }
             this.push(value);
             return true;
         }
 
-        public sort(compareFn): void {
+        public sort(compareFn: (a: T, b: T) => number): void {
             this.data.sort(compareFn);
         }
 

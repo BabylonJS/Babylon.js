@@ -29,7 +29,7 @@
         // Create a new vertex between this vertex and `other` by linearly
         // interpolating all properties using a parameter of `t`. Subclasses should
         // override this to interpolate additional properties.
-        public interpolate(other, t): Vertex {
+        public interpolate(other: Vertex, t: number): Vertex {
             return new Vertex(Vector3.Lerp(this.pos, other.pos, t),
                 Vector3.Lerp(this.normal, other.normal, t),
                 Vector2.Lerp(this.uv, other.uv, t)
@@ -148,10 +148,10 @@
     // This can be used to define per-polygon properties (such as surface color).
     class Polygon {
         public vertices: Vertex[];
-        public shared;
+        public shared: any;
         public plane: Plane;
 
-        constructor(vertices: Vertex[], shared) {
+        constructor(vertices: Vertex[], shared: any) {
             this.vertices = vertices;
             this.shared = shared;
             this.plane = Plane.FromPoints(vertices[0].pos, vertices[1].pos, vertices[2].pos);
@@ -177,12 +177,12 @@
     // the front and/or back subtrees. This is not a leafy BSP tree since there is
     // no distinction between internal and leaf nodes.
     class Node {
-        private plane = null;
-        private front = null;
-        private back = null;
-        private polygons = [];
+        private plane: Plane = null;
+        private front: Node = null;
+        private back: Node = null;
+        private polygons = new Array<Polygon>();
 
-        constructor(polygons?) {
+        constructor(polygons?: Array<Polygon>) {
             if (polygons) {
                 this.build(polygons);
             }
@@ -218,9 +218,9 @@
 
         // Recursively remove all polygons in `polygons` that are inside this BSP
         // tree.
-        clipPolygons(polygons: Polygon[]) {
+        clipPolygons(polygons: Polygon[]): Polygon[] {
             if (!this.plane) return polygons.slice();
-            var front = [], back = [];
+            var front = new Array<Polygon>(), back = new Array<Polygon>();
             for (var i = 0; i < polygons.length; i++) {
                 this.plane.splitPolygon(polygons[i], front, back, front, back);
             }
@@ -255,10 +255,10 @@
         // new polygons are filtered down to the bottom of the tree and become new
         // nodes there. Each set of polygons is partitioned using the first polygon
         // (no heuristic is used to pick a good split).
-        build(polygons: Polygon[]) {
+        build(polygons: Polygon[]): void {
             if (!polygons.length) return;
             if (!this.plane) this.plane = polygons[0].plane.clone();
-            var front = [], back = [];
+            var front = new Array<Polygon>(), back = new Array<Polygon>();
             for (var i = 0; i < polygons.length; i++) {
                 this.plane.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
             }
@@ -513,17 +513,17 @@
                 polygon = polygons[i];
 
                 // Building SubMeshes
-                if (!subMesh_dict[polygon.shared.meshId]) {
-                    subMesh_dict[polygon.shared.meshId] = {};
+                if (!(<any>subMesh_dict)[polygon.shared.meshId]) {
+                    (<any>subMesh_dict)[polygon.shared.meshId] = {};
                 }
-                if (!subMesh_dict[polygon.shared.meshId][polygon.shared.subMeshId]) {
-                    subMesh_dict[polygon.shared.meshId][polygon.shared.subMeshId] = {
+                if (!(<any>subMesh_dict)[polygon.shared.meshId][polygon.shared.subMeshId]) {
+                    (<any>subMesh_dict)[polygon.shared.meshId][polygon.shared.subMeshId] = {
                         indexStart: +Infinity,
                         indexEnd: -Infinity,
                         materialIndex: polygon.shared.materialIndex
                     };
                 }
-                subMesh_obj = subMesh_dict[polygon.shared.meshId][polygon.shared.subMeshId];
+                subMesh_obj = (<any>subMesh_dict)[polygon.shared.meshId][polygon.shared.subMeshId];
 
                 for (var j = 2, jl = polygon.vertices.length; j < jl; j++) {
 
@@ -538,7 +538,7 @@
                         var localVertex = Vector3.TransformCoordinates(vertex, matrix);
                         var localNormal = Vector3.TransformNormal(normal, matrix);
 
-                        vertex_idx = vertice_dict[localVertex.x + ',' + localVertex.y + ',' + localVertex.z];
+                        vertex_idx = (<any>vertice_dict)[localVertex.x + ',' + localVertex.y + ',' + localVertex.z];
 
                         // Check if 2 points can be merged
                         if (!(typeof vertex_idx !== 'undefined' &&
@@ -550,7 +550,7 @@
                             vertices.push(localVertex.x, localVertex.y, localVertex.z);
                             uvs.push(uv.x, uv.y);
                             normals.push(normal.x, normal.y, normal.z);
-                            vertex_idx = vertice_dict[localVertex.x + ',' + localVertex.y + ',' + localVertex.z] = (vertices.length / 3) - 1;
+                            vertex_idx = (<any>vertice_dict)[localVertex.x + ',' + localVertex.y + ',' + localVertex.z] = (vertices.length / 3) - 1;
                         }
 
                         indices.push(vertex_idx);
@@ -578,8 +578,8 @@
 
                 for (var m in subMesh_dict) {
                     materialMaxIndex = -1;
-                    for (var sm in subMesh_dict[m]) {
-                        subMesh_obj = subMesh_dict[m][sm];
+                    for (var sm in (<any>subMesh_dict)[m]) {
+                        subMesh_obj = (<any>subMesh_dict)[m][sm];
                         SubMesh.CreateFromIndices(subMesh_obj.materialIndex + materialIndexOffset, subMesh_obj.indexStart, subMesh_obj.indexEnd - subMesh_obj.indexStart + 1, mesh);
                         materialMaxIndex = Math.max(subMesh_obj.materialIndex, materialMaxIndex);
                     }

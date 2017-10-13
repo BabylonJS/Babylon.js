@@ -4,7 +4,7 @@ module BABYLON {
         private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/vive/';
         private static readonly MODEL_FILENAME:string = 'wand.babylon';
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.VIVE;
         }

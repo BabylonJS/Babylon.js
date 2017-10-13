@@ -134,9 +134,9 @@ module BABYLON {
                                 "mBones",
                                 "vClipPlane"
                 ];
-                var samplers = [];
+                var samplers = new Array<string>();
                 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

@@ -702,7 +702,7 @@ var BABYLON;
             }
             //Create a BABYLON.Mesh list
             var babylonMeshesArray = []; //The mesh for babylon
-            var materialToUse = [];
+            var materialToUse = new Array();
             //Set data for each mesh
             for (var j = 0; j < meshesFromObj.length; j++) {
                 //check meshesNames (stlFileLoader)

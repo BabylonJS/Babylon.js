@@ -986,7 +986,7 @@ module BABYLON.GUI {
             return Control._VERTICAL_ALIGNMENT_CENTER;
         }
 
-        private static _FontHeightSizes = {};
+        private static _FontHeightSizes: {[key: string]: {ascent: number, height: number, descent: number}} = {};
 
         public static _GetFontOffset(font: string): {ascent: number, height: number, descent: number} {
 

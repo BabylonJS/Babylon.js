@@ -234,7 +234,7 @@ var BABYLON;
          * Returns a new array populated with 3 numeric elements : red, green and blue values.
          */
         Color3.prototype.asArray = function () {
-            var result = [];
+            var result = new Array();
             this.toArray(result, 0);
             return result;
         };
@@ -480,7 +480,7 @@ var BABYLON;
          * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.
          */
         Color4.prototype.asArray = function () {
-            var result = [];
+            var result = new Array();
             this.toArray(result, 0);
             return result;
         };
@@ -770,7 +770,7 @@ var BABYLON;
          * Returns a new array with 2 elements : the Vector2 coordinates.
          */
         Vector2.prototype.asArray = function () {
-            var result = [];
+            var result = new Array();
             this.toArray(result, 0);
             return result;
         };
@@ -1847,7 +1847,7 @@ var BABYLON;
          * Returns a new array populated with 4 elements : the Vector4 coordinates.
          */
         Vector4.prototype.asArray = function () {
-            var result = [];
+            var result = new Array();
             this.toArray(result, 0);
             return result;
         };
@@ -5275,36 +5275,37 @@ var BABYLON;
                 var sourceProperty = source[propertyDescriptor.sourceName || property];
                 var propertyType = propertyDescriptor.type;
                 if (sourceProperty !== undefined && sourceProperty !== null) {
+                    var dest = destination;
                     switch (propertyType) {
                         case 0:// Value
-                            destination[property] = sourceProperty;
+                            dest[property] = sourceProperty;
                             break;
                         case 1:// Texture
-                            destination[property] = BABYLON.Texture.Parse(sourceProperty, scene, rootUrl);
+                            dest[property] = BABYLON.Texture.Parse(sourceProperty, scene, rootUrl);
                             break;
                         case 2:// Color3
-                            destination[property] = BABYLON.Color3.FromArray(sourceProperty);
+                            dest[property] = BABYLON.Color3.FromArray(sourceProperty);
                             break;
                         case 3:// FresnelParameters
-                            destination[property] = BABYLON.FresnelParameters.Parse(sourceProperty);
+                            dest[property] = BABYLON.FresnelParameters.Parse(sourceProperty);
                             break;
                         case 4:// Vector2
-                            destination[property] = BABYLON.Vector2.FromArray(sourceProperty);
+                            dest[property] = BABYLON.Vector2.FromArray(sourceProperty);
                             break;
                         case 5:// Vector3
-                            destination[property] = BABYLON.Vector3.FromArray(sourceProperty);
+                            dest[property] = BABYLON.Vector3.FromArray(sourceProperty);
                             break;
                         case 6:// Mesh reference
-                            destination[property] = scene.getLastMeshByID(sourceProperty);
+                            dest[property] = scene.getLastMeshByID(sourceProperty);
                             break;
                         case 7:// Color Curves
-                            destination[property] = BABYLON.ColorCurves.Parse(sourceProperty);
+                            dest[property] = BABYLON.ColorCurves.Parse(sourceProperty);
                             break;
                         case 8:// Color 4
-                            destination[property] = BABYLON.Color4.FromArray(sourceProperty);
+                            dest[property] = BABYLON.Color4.FromArray(sourceProperty);
                             break;
                         case 9:// Image Processing
-                            destination[property] = BABYLON.ImageProcessingConfiguration.Parse(sourceProperty);
+                            dest[property] = BABYLON.ImageProcessingConfiguration.Parse(sourceProperty);
                             break;
                     }
                 }
@@ -7751,7 +7752,7 @@ var BABYLON;
             this._colorWrite = true;
             this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
-            this._activeRenderLoops = [];
+            this._activeRenderLoops = new Array();
             // Deterministic lockstepMaxSteps
             this._deterministicLockstep = false;
             this._lockstepMaxSteps = 4;
@@ -10757,7 +10758,7 @@ var BABYLON;
             for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
                 var faceData = data[faceIndex];
                 if (compression) {
-                    gl.compressedTexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, this.getCaps().s3tc[compression], texture.width, texture.height, 0, faceData);
+                    gl.compressedTexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, (this.getCaps().s3tc)[compression], texture.width, texture.height, 0, faceData);
                 }
                 else {
                     if (needConversion) {
@@ -11823,7 +11824,7 @@ var BABYLON;
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
         Node.prototype.getDescendants = function (directDescendantsOnly, predicate) {
-            var results = [];
+            var results = new Array();
             this._getDescendants(results, directDescendantsOnly, predicate);
             return results;
         };
@@ -16942,7 +16943,7 @@ var BABYLON;
             this._alternateViewUpdateFlag = -1;
             this._alternateProjectionUpdateFlag = -1;
             this._toBeDisposed = new BABYLON.SmartArray(256);
-            this._pendingData = []; //ANY
+            this._pendingData = new Array();
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._processedMaterials = new BABYLON.SmartArray(256);
             this._renderTargets = new BABYLON.SmartArray(256);
@@ -17787,8 +17788,9 @@ var BABYLON;
                                     _this._doubleClickOccured = true;
                                     clickInfo.doubleClick = true;
                                     clickInfo.ignore = false;
-                                    if (Scene.ExclusiveDoubleClickMode && _this._previousDelayedSimpleClickTimeout && _this._previousDelayedSimpleClickTimeout.clearTimeout)
-                                        _this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                    if (Scene.ExclusiveDoubleClickMode && _this._previousDelayedSimpleClickTimeout) {
+                                        clearTimeout(_this._previousDelayedSimpleClickTimeout);
+                                    }
                                     _this._previousDelayedSimpleClickTimeout = _this._delayedSimpleClickTimeout;
                                     cb(clickInfo, _this._currentPickResult);
                                 }
@@ -17800,8 +17802,8 @@ var BABYLON;
                                     _this._previousButtonPressed = btn;
                                     _this._previousHasSwiped = clickInfo.hasSwiped;
                                     if (Scene.ExclusiveDoubleClickMode) {
-                                        if (_this._previousDelayedSimpleClickTimeout && _this._previousDelayedSimpleClickTimeout.clearTimeout) {
-                                            _this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                        if (_this._previousDelayedSimpleClickTimeout) {
+                                            clearTimeout(_this._previousDelayedSimpleClickTimeout);
                                         }
                                         _this._previousDelayedSimpleClickTimeout = _this._delayedSimpleClickTimeout;
                                         cb(clickInfo, _this._previousPickResult);
@@ -21983,7 +21985,7 @@ var BABYLON;
          */
         Mesh.prototype.getVerticesDataKinds = function () {
             if (!this._geometry) {
-                var result = [];
+                var result = new Array();
                 if (this._delayInfo) {
                     this._delayInfo.forEach(function (kind, index, array) {
                         result.push(kind);
@@ -22742,7 +22744,7 @@ var BABYLON;
          * Returns as a new array populated with the mesh material and/or skeleton, if any.
          */
         Mesh.prototype.getAnimatables = function () {
-            var results = [];
+            var results = new Array();
             if (this.material) {
                 results.push(this.material);
             }
@@ -22767,7 +22769,7 @@ var BABYLON;
             var submeshes = this.subMeshes.splice(0);
             this._resetPointsArrayCache();
             var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var temp = [];
+            var temp = new Array();
             var index;
             for (index = 0; index < data.length; index += 3) {
                 BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
@@ -22981,9 +22983,9 @@ var BABYLON;
             /// <summary>Update normals and vertices to get a flat shading rendering.</summary>
             /// <summary>Warning: This may imply adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
             var kinds = this.getVerticesDataKinds();
-            var vbs = [];
-            var data = [];
-            var newdata = [];
+            var vbs = {};
+            var data = {};
+            var newdata = {};
             var updatableNormals = false;
             var kindIndex;
             var kind;
@@ -23062,9 +23064,9 @@ var BABYLON;
             /// <summary>Remove indices by unfolding faces into buffers</summary>
             /// <summary>Warning: This implies adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
             var kinds = this.getVerticesDataKinds();
-            var vbs = [];
-            var data = [];
-            var newdata = [];
+            var vbs = {};
+            var data = {};
+            var newdata = {};
             var updatableNormals = false;
             var kindIndex;
             var kind;
@@ -23196,11 +23198,11 @@ var BABYLON;
             var _this = this;
             var indices = this.getIndices();
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var vectorPositions = [];
+            var vectorPositions = new Array();
             for (var pos = 0; pos < positions.length; pos = pos + 3) {
                 vectorPositions.push(BABYLON.Vector3.FromArray(positions, pos));
             }
-            var dupes = [];
+            var dupes = new Array();
             BABYLON.AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, function (iteration) {
                 var realPos = vectorPositions.length - 1 - iteration;
                 var testedPosition = vectorPositions[realPos];
@@ -25000,7 +25002,7 @@ var BABYLON;
                                         return p1 + "{X}";
                                     });
                                 }
-                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
+                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
                             }
                         }
                         else {
@@ -26675,7 +26677,7 @@ var BABYLON;
          * @param {Color3} color
          */
         UniformBuffer.prototype.addColor3 = function (name, color) {
-            var temp = [];
+            var temp = new Array();
             color.toArray(temp);
             this.addUniform(name, temp);
         };
@@ -26686,7 +26688,7 @@ var BABYLON;
          * @param {number} alpha
          */
         UniformBuffer.prototype.addColor4 = function (name, color, alpha) {
-            var temp = [];
+            var temp = new Array();
             color.toArray(temp);
             temp.push(alpha);
             this.addUniform(name, temp);
@@ -26697,7 +26699,7 @@ var BABYLON;
          * @param {Vector3} vector
          */
         UniformBuffer.prototype.addVector3 = function (name, vector) {
-            var temp = [];
+            var temp = new Array();
             vector.toArray(temp);
             this.addUniform(name, temp);
         };
@@ -27797,11 +27799,11 @@ var BABYLON;
                     faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
                 }
             }
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
-            var colors = [];
+            var indices = new Array();
+            var positions = new Array();
+            var normals = new Array();
+            var uvs = new Array();
+            var colors = new Array();
             var angle_step = Math.PI * 2 * arc / tessellation;
             var angle;
             var h;
@@ -28166,10 +28168,10 @@ var BABYLON;
             var zmax = options.zmax || 1.0;
             var subdivisions = options.subdivisions || { w: 1, h: 1 };
             var precision = options.precision || { w: 1, h: 1 };
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
+            var indices = new Array();
+            var positions = new Array();
+            var normals = new Array();
+            var uvs = new Array();
             var row, col, tileRow, tileCol;
             subdivisions.h = (subdivisions.h < 1) ? 1 : subdivisions.h;
             subdivisions.w = (subdivisions.w < 1) ? 1 : subdivisions.w;
@@ -28323,10 +28325,10 @@ var BABYLON;
          * Creates the VertexData of the Disc or regular Polygon.
          */
         VertexData.CreateDisc = function (options) {
-            var positions = [];
-            var indices = [];
-            var normals = [];
-            var uvs = [];
+            var positions = new Array();
+            var indices = new Array();
+            var normals = new Array();
+            var uvs = new Array();
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
             var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
@@ -28533,10 +28535,10 @@ var BABYLON;
                 0, 0, 1, 1, 0,
                 0, 1, 1, 1, 0 //  15 - 19
             ];
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
+            var indices = new Array();
+            var positions = new Array();
+            var normals = new Array();
+            var uvs = new Array();
             var current_indice = 0;
             // prepare array of 3 vector (empty) (to be worked in place, shared for each face)
             var face_vertex_pos = new Array(3);
@@ -28704,14 +28706,14 @@ var BABYLON;
             var faceColors = options.faceColors;
             var flat = (options.flat === undefined) ? true : options.flat;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
-            var positions = [];
-            var indices = [];
-            var normals = [];
-            var uvs = [];
-            var colors = [];
+            var positions = new Array();
+            var indices = new Array();
+            var normals = new Array();
+            var uvs = new Array();
+            var colors = new Array();
             var index = 0;
             var faceIdx = 0; // face cursor in the array "indexes"
-            var indexes = [];
+            var indexes = new Array();
             var i = 0;
             var f = 0;
             var u, v, ang, x, y, tmp;
@@ -28785,10 +28787,10 @@ var BABYLON;
          * Creates the VertexData of the Torus Knot.
          */
         VertexData.CreateTorusKnot = function (options) {
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
+            var indices = new Array();
+            var positions = new Array();
+            var normals = new Array();
+            var uvs = new Array();
             var radius = options.radius || 2;
             var tube = options.tube || 0.5;
             var radialSegments = options.radialSegments || 32;
@@ -30847,6 +30849,1224 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.performanceMonitor.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * This groups together the common properties used for image processing either in direct forward pass
+     * or through post processing effect depending on the use of the image processing pipeline in your scene
+     * or not.
+     */
+    var ImageProcessingConfiguration = (function () {
+        function ImageProcessingConfiguration() {
+            /**
+             * Color curves setup used in the effect if colorCurvesEnabled is set to true
+             */
+            this.colorCurves = new BABYLON.ColorCurves();
+            this._colorCurvesEnabled = false;
+            this._colorGradingEnabled = false;
+            this._colorGradingWithGreenDepth = false;
+            this._colorGradingBGR = false;
+            this._exposure = 1.0;
+            this._toneMappingEnabled = false;
+            this._contrast = 1.0;
+            /**
+             * Vignette stretch size.
+             */
+            this.vignetteStretch = 0;
+            /**
+             * Vignette centre X Offset.
+             */
+            this.vignetteCentreX = 0;
+            /**
+             * Vignette centre Y Offset.
+             */
+            this.vignetteCentreY = 0;
+            /**
+             * Vignette weight or intensity of the vignette effect.
+             */
+            this.vignetteWeight = 1.5;
+            /**
+             * Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
+             * if vignetteEnabled is set to true.
+             */
+            this.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
+            /**
+             * Camera field of view used by the Vignette effect.
+             */
+            this.vignetteCameraFov = 0.5;
+            this._vignetteBlendMode = ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
+            this._vignetteEnabled = false;
+            this._applyByPostProcess = false;
+            /**
+            * An event triggered when the configuration changes and requires Shader to Update some parameters.
+            * @type {BABYLON.Observable}
+            */
+            this.onUpdateParameters = new BABYLON.Observable();
+        }
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "colorCurvesEnabled", {
+            /**
+             * Gets wether the color curves effect is enabled.
+             */
+            get: function () {
+                return this._colorCurvesEnabled;
+            },
+            /**
+             * Sets wether the color curves effect is enabled.
+             */
+            set: function (value) {
+                if (this._colorCurvesEnabled === value) {
+                    return;
+                }
+                this._colorCurvesEnabled = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "colorGradingEnabled", {
+            /**
+             * Gets wether the color grading effect is enabled.
+             */
+            get: function () {
+                return this._colorGradingEnabled;
+            },
+            /**
+             * Sets wether the color grading effect is enabled.
+             */
+            set: function (value) {
+                if (this._colorGradingEnabled === value) {
+                    return;
+                }
+                this._colorGradingEnabled = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "colorGradingWithGreenDepth", {
+            /**
+             * Gets wether the color grading effect is using a green depth for the 3d Texture.
+             */
+            get: function () {
+                return this._colorGradingWithGreenDepth;
+            },
+            /**
+             * Sets wether the color grading effect is using a green depth for the 3d Texture.
+             */
+            set: function (value) {
+                if (this._colorGradingWithGreenDepth === value) {
+                    return;
+                }
+                this._colorGradingWithGreenDepth = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "colorGradingBGR", {
+            /**
+             * Gets wether the color grading texture contains BGR values.
+             */
+            get: function () {
+                return this._colorGradingBGR;
+            },
+            /**
+             * Sets wether the color grading texture contains BGR values.
+             */
+            set: function (value) {
+                if (this._colorGradingBGR === value) {
+                    return;
+                }
+                this._colorGradingBGR = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "exposure", {
+            /**
+             * Gets the Exposure used in the effect.
+             */
+            get: function () {
+                return this._exposure;
+            },
+            /**
+             * Sets the Exposure used in the effect.
+             */
+            set: function (value) {
+                if (this._exposure === value) {
+                    return;
+                }
+                this._exposure = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "toneMappingEnabled", {
+            /**
+             * Gets wether the tone mapping effect is enabled.
+             */
+            get: function () {
+                return this._toneMappingEnabled;
+            },
+            /**
+             * Sets wether the tone mapping effect is enabled.
+             */
+            set: function (value) {
+                if (this._toneMappingEnabled === value) {
+                    return;
+                }
+                this._toneMappingEnabled = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "contrast", {
+            /**
+             * Gets the contrast used in the effect.
+             */
+            get: function () {
+                return this._contrast;
+            },
+            /**
+             * Sets the contrast used in the effect.
+             */
+            set: function (value) {
+                if (this._contrast === value) {
+                    return;
+                }
+                this._contrast = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "vignetteBlendMode", {
+            /**
+             * Gets the vignette blend mode allowing different kind of effect.
+             */
+            get: function () {
+                return this._vignetteBlendMode;
+            },
+            /**
+             * Sets the vignette blend mode allowing different kind of effect.
+             */
+            set: function (value) {
+                if (this._vignetteBlendMode === value) {
+                    return;
+                }
+                this._vignetteBlendMode = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "vignetteEnabled", {
+            /**
+             * Gets wether the vignette effect is enabled.
+             */
+            get: function () {
+                return this._vignetteEnabled;
+            },
+            /**
+             * Sets wether the vignette effect is enabled.
+             */
+            set: function (value) {
+                if (this._vignetteEnabled === value) {
+                    return;
+                }
+                this._vignetteEnabled = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration.prototype, "applyByPostProcess", {
+            /**
+             * Gets wether the image processing is applied through a post process or not.
+             */
+            get: function () {
+                return this._applyByPostProcess;
+            },
+            /**
+             * Sets wether the image processing is applied through a post process or not.
+             */
+            set: function (value) {
+                if (this._applyByPostProcess === value) {
+                    return;
+                }
+                this._applyByPostProcess = value;
+                this._updateParameters();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Method called each time the image processing information changes requires to recompile the effect.
+         */
+        ImageProcessingConfiguration.prototype._updateParameters = function () {
+            this.onUpdateParameters.notifyObservers(this);
+        };
+        ImageProcessingConfiguration.prototype.getClassName = function () {
+            return "ImageProcessingConfiguration";
+        };
+        /**
+         * Prepare the list of uniforms associated with the Image Processing effects.
+         * @param uniformsList The list of uniforms used in the effect
+         * @param defines the list of defines currently in use
+         */
+        ImageProcessingConfiguration.PrepareUniforms = function (uniforms, defines) {
+            if (defines.EXPOSURE) {
+                uniforms.push("exposureLinear");
+            }
+            if (defines.CONTRAST) {
+                uniforms.push("contrast");
+            }
+            if (defines.COLORGRADING) {
+                uniforms.push("colorTransformSettings");
+            }
+            if (defines.VIGNETTE) {
+                uniforms.push("vInverseScreenSize");
+                uniforms.push("vignetteSettings1");
+                uniforms.push("vignetteSettings2");
+            }
+            if (defines.COLORCURVES) {
+                BABYLON.ColorCurves.PrepareUniforms(uniforms);
+            }
+        };
+        /**
+         * Prepare the list of samplers associated with the Image Processing effects.
+         * @param uniformsList The list of uniforms used in the effect
+         * @param defines the list of defines currently in use
+         */
+        ImageProcessingConfiguration.PrepareSamplers = function (samplersList, defines) {
+            if (defines.COLORGRADING) {
+                samplersList.push("txColorTransform");
+            }
+        };
+        /**
+         * Prepare the list of defines associated to the shader.
+         * @param defines the list of defines to complete
+         */
+        ImageProcessingConfiguration.prototype.prepareDefines = function (defines, forPostProcess) {
+            if (forPostProcess === void 0) { forPostProcess = false; }
+            if (forPostProcess !== this.applyByPostProcess) {
+                defines.VIGNETTE = false;
+                defines.TONEMAPPING = false;
+                defines.CONTRAST = false;
+                defines.EXPOSURE = false;
+                defines.COLORCURVES = false;
+                defines.COLORGRADING = false;
+                defines.IMAGEPROCESSING = false;
+                defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
+                return;
+            }
+            defines.VIGNETTE = this.vignetteEnabled;
+            defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
+            defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
+            defines.TONEMAPPING = this.toneMappingEnabled;
+            defines.CONTRAST = (this.contrast !== 1.0);
+            defines.EXPOSURE = (this.exposure !== 1.0);
+            defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
+            defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
+            defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
+            defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
+            defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
+            defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
+        };
+        /**
+         * Returns true if all the image processing information are ready.
+         */
+        ImageProcessingConfiguration.prototype.isReady = function () {
+            // Color Grading texure can not be none blocking.
+            return !this.colorGradingEnabled || !this.colorGradingTexture || this.colorGradingTexture.isReady();
+        };
+        /**
+         * Binds the image processing to the shader.
+         * @param effect The effect to bind to
+         */
+        ImageProcessingConfiguration.prototype.bind = function (effect, aspectRatio) {
+            if (aspectRatio === void 0) { aspectRatio = 1; }
+            // Color Curves
+            if (this._colorCurvesEnabled) {
+                BABYLON.ColorCurves.Bind(this.colorCurves, effect);
+            }
+            // Vignette
+            if (this._vignetteEnabled) {
+                var inverseWidth = 1 / effect.getEngine().getRenderWidth();
+                var inverseHeight = 1 / effect.getEngine().getRenderHeight();
+                effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
+                var vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
+                var vignetteScaleX = vignetteScaleY * aspectRatio;
+                var vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
+                vignetteScaleX = BABYLON.Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
+                vignetteScaleY = BABYLON.Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
+                effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
+                var vignettePower = -2.0 * this.vignetteWeight;
+                effect.setFloat4("vignetteSettings2", this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
+            }
+            // Exposure
+            effect.setFloat("exposureLinear", this.exposure);
+            // Contrast
+            effect.setFloat("contrast", this.contrast);
+            // Color transform settings
+            if (this.colorGradingTexture) {
+                effect.setTexture("txColorTransform", this.colorGradingTexture);
+                var textureSize = this.colorGradingTexture.getSize().height;
+                effect.setFloat4("colorTransformSettings", (textureSize - 1) / textureSize, // textureScale
+                0.5 / textureSize, // textureOffset
+                textureSize, // textureSize
+                this.colorGradingTexture.level // weight
+                );
+            }
+        };
+        /**
+         * Clones the current image processing instance.
+         * @return The cloned image processing
+         */
+        ImageProcessingConfiguration.prototype.clone = function () {
+            return BABYLON.SerializationHelper.Clone(function () { return new ImageProcessingConfiguration(); }, this);
+        };
+        /**
+         * Serializes the current image processing instance to a json representation.
+         * @return a JSON representation
+         */
+        ImageProcessingConfiguration.prototype.serialize = function () {
+            return BABYLON.SerializationHelper.Serialize(this);
+        };
+        /**
+         * Parses the image processing from a json representation.
+         * @param source the JSON source to parse
+         * @return The parsed image processing
+         */
+        ImageProcessingConfiguration.Parse = function (source) {
+            return BABYLON.SerializationHelper.Parse(function () { return new ImageProcessingConfiguration(); }, source, null, null);
+        };
+        Object.defineProperty(ImageProcessingConfiguration, "VIGNETTEMODE_MULTIPLY", {
+            /**
+             * Used to apply the vignette as a mix with the pixel color.
+             */
+            get: function () {
+                return this._VIGNETTEMODE_MULTIPLY;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageProcessingConfiguration, "VIGNETTEMODE_OPAQUE", {
+            /**
+             * Used to apply the vignette as a replacement of the pixel color.
+             */
+            get: function () {
+                return this._VIGNETTEMODE_OPAQUE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        // Static constants associated to the image processing.
+        ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY = 0;
+        ImageProcessingConfiguration._VIGNETTEMODE_OPAQUE = 1;
+        __decorate([
+            BABYLON.serializeAsColorCurves()
+        ], ImageProcessingConfiguration.prototype, "colorCurves", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_colorCurvesEnabled", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], ImageProcessingConfiguration.prototype, "colorGradingTexture", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_colorGradingEnabled", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_colorGradingWithGreenDepth", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_colorGradingBGR", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_exposure", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_toneMappingEnabled", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_contrast", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "vignetteStretch", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "vignetteCentreX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "vignetteCentreY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "vignetteWeight", void 0);
+        __decorate([
+            BABYLON.serializeAsColor4()
+        ], ImageProcessingConfiguration.prototype, "vignetteColor", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "vignetteCameraFov", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_vignetteBlendMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_vignetteEnabled", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ImageProcessingConfiguration.prototype, "_applyByPostProcess", void 0);
+        return ImageProcessingConfiguration;
+    }());
+    BABYLON.ImageProcessingConfiguration = ImageProcessingConfiguration;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.imageProcessingConfiguration.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
+     * It can help converting any input color in a desired output one. This can then be used to create effects
+     * from sepia, black and white to sixties or futuristic rendering...
+     *
+     * The only supported format is currently 3dl.
+     * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table/
+     */
+    var ColorGradingTexture = (function (_super) {
+        __extends(ColorGradingTexture, _super);
+        /**
+         * Instantiates a ColorGradingTexture from the following parameters.
+         *
+         * @param url The location of the color gradind data (currently only supporting 3dl)
+         * @param scene The scene the texture will be used in
+         */
+        function ColorGradingTexture(url, scene) {
+            var _this = _super.call(this, scene) || this;
+            if (!url) {
+                return _this;
+            }
+            _this._textureMatrix = BABYLON.Matrix.Identity();
+            _this.name = url;
+            _this.url = url;
+            _this.hasAlpha = false;
+            _this.isCube = false;
+            _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            _this.anisotropicFilteringLevel = 1;
+            _this._texture = _this._getFromCache(url, true);
+            if (!_this._texture) {
+                if (!scene.useDelayedTextureLoading) {
+                    _this.loadTexture();
+                }
+                else {
+                    _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                }
+            }
+            return _this;
+        }
+        /**
+         * Returns the texture matrix used in most of the material.
+         * This is not used in color grading but keep for troubleshooting purpose (easily swap diffuse by colorgrading to look in).
+         */
+        ColorGradingTexture.prototype.getTextureMatrix = function () {
+            return this._textureMatrix;
+        };
+        /**
+         * Occurs when the file being loaded is a .3dl LUT file.
+         */
+        ColorGradingTexture.prototype.load3dlTexture = function () {
+            var _this = this;
+            var mipLevels = 0;
+            var floatArrayView = null;
+            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+            this._texture = texture;
+            var callback = function (text) {
+                var data;
+                var tempData;
+                var line;
+                var lines = text.split('\n');
+                var size = 0, pixelIndexW = 0, pixelIndexH = 0, pixelIndexSlice = 0;
+                var maxColor = 0;
+                for (var i = 0; i < lines.length; i++) {
+                    line = lines[i];
+                    if (!ColorGradingTexture._noneEmptyLineRegex.test(line))
+                        continue;
+                    if (line.indexOf('#') === 0)
+                        continue;
+                    var words = line.split(" ");
+                    if (size === 0) {
+                        // Number of space + one
+                        size = words.length;
+                        data = new Uint8Array(size * size * size * 4); // volume texture of side size and rgb 8
+                        tempData = new Float32Array(size * size * size * 4);
+                        continue;
+                    }
+                    if (size != 0) {
+                        var r = Math.max(parseInt(words[0]), 0);
+                        var g = Math.max(parseInt(words[1]), 0);
+                        var b = Math.max(parseInt(words[2]), 0);
+                        maxColor = Math.max(r, maxColor);
+                        maxColor = Math.max(g, maxColor);
+                        maxColor = Math.max(b, maxColor);
+                        var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 4;
+                        tempData[pixelStorageIndex + 0] = r;
+                        tempData[pixelStorageIndex + 1] = g;
+                        tempData[pixelStorageIndex + 2] = b;
+                        pixelIndexSlice++;
+                        if (pixelIndexSlice % size == 0) {
+                            pixelIndexH++;
+                            pixelIndexSlice = 0;
+                            if (pixelIndexH % size == 0) {
+                                pixelIndexW++;
+                                pixelIndexH = 0;
+                            }
+                        }
+                    }
+                }
+                for (var i = 0; i < tempData.length; i++) {
+                    if (i > 0 && (i + 1) % 4 === 0) {
+                        data[i] = 255;
+                    }
+                    else {
+                        var value = tempData[i];
+                        data[i] = (value / maxColor * 255);
+                    }
+                }
+                texture.updateSize(size * size, size);
+                _this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
+            };
+            BABYLON.Tools.LoadFile(this.url, callback);
+            return this._texture;
+        };
+        /**
+         * Starts the loading process of the texture.
+         */
+        ColorGradingTexture.prototype.loadTexture = function () {
+            if (this.url && this.url.toLocaleLowerCase().indexOf(".3dl") == (this.url.length - 4)) {
+                this.load3dlTexture();
+            }
+        };
+        /**
+         * Clones the color gradind texture.
+         */
+        ColorGradingTexture.prototype.clone = function () {
+            var newTexture = new ColorGradingTexture(this.url, this.getScene());
+            // Base texture
+            newTexture.level = this.level;
+            return newTexture;
+        };
+        /**
+         * Called during delayed load for textures.
+         */
+        ColorGradingTexture.prototype.delayLoad = function () {
+            if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+                return;
+            }
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+            this._texture = this._getFromCache(this.url, true);
+            if (!this._texture) {
+                this.loadTexture();
+            }
+        };
+        /**
+         * Parses a color grading texture serialized by Babylon.
+         * @param parsedTexture The texture information being parsedTexture
+         * @param scene The scene to load the texture in
+         * @param rootUrl The root url of the data assets to load
+         * @return A color gradind texture
+         */
+        ColorGradingTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = null;
+            if (parsedTexture.name && !parsedTexture.isRenderTarget) {
+                texture = new BABYLON.ColorGradingTexture(parsedTexture.name, scene);
+                texture.name = parsedTexture.name;
+                texture.level = parsedTexture.level;
+            }
+            return texture;
+        };
+        /**
+         * Serializes the LUT texture to json format.
+         */
+        ColorGradingTexture.prototype.serialize = function () {
+            if (!this.name) {
+                return null;
+            }
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.level = this.level;
+            serializationObject.customType = "BABYLON.ColorGradingTexture";
+            return serializationObject;
+        };
+        /**
+         * Empty line regex stored for GC.
+         */
+        ColorGradingTexture._noneEmptyLineRegex = /\S+/;
+        return ColorGradingTexture;
+    }(BABYLON.BaseTexture));
+    BABYLON.ColorGradingTexture = ColorGradingTexture;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.colorGradingTexture.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+     */
+    var ColorCurves = (function () {
+        function ColorCurves() {
+            this._dirty = true;
+            this._tempColor = new BABYLON.Color4(0, 0, 0, 0);
+            this._globalCurve = new BABYLON.Color4(0, 0, 0, 0);
+            this._highlightsCurve = new BABYLON.Color4(0, 0, 0, 0);
+            this._midtonesCurve = new BABYLON.Color4(0, 0, 0, 0);
+            this._shadowsCurve = new BABYLON.Color4(0, 0, 0, 0);
+            this._positiveCurve = new BABYLON.Color4(0, 0, 0, 0);
+            this._negativeCurve = new BABYLON.Color4(0, 0, 0, 0);
+            this._globalHue = 30;
+            this._globalDensity = 0;
+            this._globalSaturation = 0;
+            this._globalExposure = 0;
+            this._highlightsHue = 30;
+            this._highlightsDensity = 0;
+            this._highlightsSaturation = 0;
+            this._highlightsExposure = 0;
+            this._midtonesHue = 30;
+            this._midtonesDensity = 0;
+            this._midtonesSaturation = 0;
+            this._midtonesExposure = 0;
+            this._shadowsHue = 30;
+            this._shadowsDensity = 0;
+            this._shadowsSaturation = 0;
+            this._shadowsExposure = 0;
+        }
+        Object.defineProperty(ColorCurves.prototype, "globalHue", {
+            /**
+             * Gets the global Hue value.
+             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+             */
+            get: function () {
+                return this._globalHue;
+            },
+            /**
+             * Sets the global Hue value.
+             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+             */
+            set: function (value) {
+                this._globalHue = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "globalDensity", {
+            /**
+             * Gets the global Density value.
+             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+             * Values less than zero provide a filter of opposite hue.
+             */
+            get: function () {
+                return this._globalDensity;
+            },
+            /**
+             * Sets the global Density value.
+             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+             * Values less than zero provide a filter of opposite hue.
+             */
+            set: function (value) {
+                this._globalDensity = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "globalSaturation", {
+            /**
+             * Gets the global Saturation value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+             */
+            get: function () {
+                return this._globalSaturation;
+            },
+            /**
+             * Sets the global Saturation value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+             */
+            set: function (value) {
+                this._globalSaturation = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "highlightsHue", {
+            /**
+             * Gets the highlights Hue value.
+             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+             */
+            get: function () {
+                return this._highlightsHue;
+            },
+            /**
+             * Sets the highlights Hue value.
+             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+             */
+            set: function (value) {
+                this._highlightsHue = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "highlightsDensity", {
+            /**
+             * Gets the highlights Density value.
+             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+             * Values less than zero provide a filter of opposite hue.
+             */
+            get: function () {
+                return this._highlightsDensity;
+            },
+            /**
+             * Sets the highlights Density value.
+             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+             * Values less than zero provide a filter of opposite hue.
+             */
+            set: function (value) {
+                this._highlightsDensity = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "highlightsSaturation", {
+            /**
+             * Gets the highlights Saturation value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+             */
+            get: function () {
+                return this._highlightsSaturation;
+            },
+            /**
+             * Sets the highlights Saturation value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+             */
+            set: function (value) {
+                this._highlightsSaturation = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "highlightsExposure", {
+            /**
+             * Gets the highlights Exposure value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+             */
+            get: function () {
+                return this._highlightsExposure;
+            },
+            /**
+             * Sets the highlights Exposure value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+             */
+            set: function (value) {
+                this._highlightsExposure = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "midtonesHue", {
+            /**
+             * Gets the midtones Hue value.
+             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+             */
+            get: function () {
+                return this._midtonesHue;
+            },
+            /**
+             * Sets the midtones Hue value.
+             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+             */
+            set: function (value) {
+                this._midtonesHue = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "midtonesDensity", {
+            /**
+             * Gets the midtones Density value.
+             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+             * Values less than zero provide a filter of opposite hue.
+             */
+            get: function () {
+                return this._midtonesDensity;
+            },
+            /**
+             * Sets the midtones Density value.
+             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+             * Values less than zero provide a filter of opposite hue.
+             */
+            set: function (value) {
+                this._midtonesDensity = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "midtonesSaturation", {
+            /**
+             * Gets the midtones Saturation value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+             */
+            get: function () {
+                return this._midtonesSaturation;
+            },
+            /**
+             * Sets the midtones Saturation value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+             */
+            set: function (value) {
+                this._midtonesSaturation = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "midtonesExposure", {
+            /**
+             * Gets the midtones Exposure value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+             */
+            get: function () {
+                return this._midtonesExposure;
+            },
+            /**
+             * Sets the midtones Exposure value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+             */
+            set: function (value) {
+                this._midtonesExposure = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "shadowsHue", {
+            /**
+             * Gets the shadows Hue value.
+             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+             */
+            get: function () {
+                return this._shadowsHue;
+            },
+            /**
+             * Sets the shadows Hue value.
+             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+             */
+            set: function (value) {
+                this._shadowsHue = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "shadowsDensity", {
+            /**
+             * Gets the shadows Density value.
+             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+             * Values less than zero provide a filter of opposite hue.
+             */
+            get: function () {
+                return this._shadowsDensity;
+            },
+            /**
+             * Sets the shadows Density value.
+             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+             * Values less than zero provide a filter of opposite hue.
+             */
+            set: function (value) {
+                this._shadowsDensity = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "shadowsSaturation", {
+            /**
+             * Gets the shadows Saturation value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+             */
+            get: function () {
+                return this._shadowsSaturation;
+            },
+            /**
+             * Sets the shadows Saturation value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+             */
+            set: function (value) {
+                this._shadowsSaturation = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ColorCurves.prototype, "shadowsExposure", {
+            /**
+             * Gets the shadows Exposure value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+             */
+            get: function () {
+                return this._shadowsExposure;
+            },
+            /**
+             * Sets the shadows Exposure value.
+             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+             */
+            set: function (value) {
+                this._shadowsExposure = value;
+                this._dirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ColorCurves.prototype.getClassName = function () {
+            return "ColorCurves";
+        };
+        /**
+         * Binds the color curves to the shader.
+         * @param colorCurves The color curve to bind
+         * @param effect The effect to bind to
+         */
+        ColorCurves.Bind = function (colorCurves, effect, positiveUniform, neutralUniform, negativeUniform) {
+            if (positiveUniform === void 0) { positiveUniform = "vCameraColorCurvePositive"; }
+            if (neutralUniform === void 0) { neutralUniform = "vCameraColorCurveNeutral"; }
+            if (negativeUniform === void 0) { negativeUniform = "vCameraColorCurveNegative"; }
+            if (colorCurves._dirty) {
+                colorCurves._dirty = false;
+                // Fill in global info.
+                colorCurves.getColorGradingDataToRef(colorCurves._globalHue, colorCurves._globalDensity, colorCurves._globalSaturation, colorCurves._globalExposure, colorCurves._globalCurve);
+                // Compute highlights info.
+                colorCurves.getColorGradingDataToRef(colorCurves._highlightsHue, colorCurves._highlightsDensity, colorCurves._highlightsSaturation, colorCurves._highlightsExposure, colorCurves._tempColor);
+                colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._highlightsCurve);
+                // Compute midtones info.
+                colorCurves.getColorGradingDataToRef(colorCurves._midtonesHue, colorCurves._midtonesDensity, colorCurves._midtonesSaturation, colorCurves._midtonesExposure, colorCurves._tempColor);
+                colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._midtonesCurve);
+                // Compute shadows info.
+                colorCurves.getColorGradingDataToRef(colorCurves._shadowsHue, colorCurves._shadowsDensity, colorCurves._shadowsSaturation, colorCurves._shadowsExposure, colorCurves._tempColor);
+                colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._shadowsCurve);
+                // Compute deltas (neutral is midtones).
+                colorCurves._highlightsCurve.subtractToRef(colorCurves._midtonesCurve, colorCurves._positiveCurve);
+                colorCurves._midtonesCurve.subtractToRef(colorCurves._shadowsCurve, colorCurves._negativeCurve);
+            }
+            if (effect) {
+                effect.setFloat4(positiveUniform, colorCurves._positiveCurve.r, colorCurves._positiveCurve.g, colorCurves._positiveCurve.b, colorCurves._positiveCurve.a);
+                effect.setFloat4(neutralUniform, colorCurves._midtonesCurve.r, colorCurves._midtonesCurve.g, colorCurves._midtonesCurve.b, colorCurves._midtonesCurve.a);
+                effect.setFloat4(negativeUniform, colorCurves._negativeCurve.r, colorCurves._negativeCurve.g, colorCurves._negativeCurve.b, colorCurves._negativeCurve.a);
+            }
+        };
+        /**
+         * Prepare the list of uniforms associated with the ColorCurves effects.
+         * @param uniformsList The list of uniforms used in the effect
+         */
+        ColorCurves.PrepareUniforms = function (uniformsList) {
+            uniformsList.push("vCameraColorCurveNeutral", "vCameraColorCurvePositive", "vCameraColorCurveNegative");
+        };
+        /**
+         * Returns color grading data based on a hue, density, saturation and exposure value.
+         * @param filterHue The hue of the color filter.
+         * @param filterDensity The density of the color filter.
+         * @param saturation The saturation.
+         * @param exposure The exposure.
+         * @param result The result data container.
+         */
+        ColorCurves.prototype.getColorGradingDataToRef = function (hue, density, saturation, exposure, result) {
+            if (hue == null) {
+                return;
+            }
+            hue = ColorCurves.clamp(hue, 0, 360);
+            density = ColorCurves.clamp(density, -100, 100);
+            saturation = ColorCurves.clamp(saturation, -100, 100);
+            exposure = ColorCurves.clamp(exposure, -100, 100);
+            // Remap the slider/config filter density with non-linear mapping and also scale by half
+            // so that the maximum filter density is only 50% control. This provides fine control 
+            // for small values and reasonable range.
+            density = ColorCurves.applyColorGradingSliderNonlinear(density);
+            density *= 0.5;
+            exposure = ColorCurves.applyColorGradingSliderNonlinear(exposure);
+            if (density < 0) {
+                density *= -1;
+                hue = (hue + 180) % 360;
+            }
+            ColorCurves.fromHSBToRef(hue, density, 50 + 0.25 * exposure, result);
+            result.scaleToRef(2, result);
+            result.a = 1 + 0.01 * saturation;
+        };
+        /**
+         * Takes an input slider value and returns an adjusted value that provides extra control near the centre.
+         * @param value The input slider value in range [-100,100].
+         * @returns Adjusted value.
+         */
+        ColorCurves.applyColorGradingSliderNonlinear = function (value) {
+            value /= 100;
+            var x = Math.abs(value);
+            x = Math.pow(x, 2);
+            if (value < 0) {
+                x *= -1;
+            }
+            x *= 100;
+            return x;
+        };
+        /**
+         * Returns an RGBA Color4 based on Hue, Saturation and Brightness (also referred to as value, HSV).
+         * @param hue The hue (H) input.
+         * @param saturation The saturation (S) input.
+         * @param brightness The brightness (B) input.
+         * @result An RGBA color represented as Vector4.
+         */
+        ColorCurves.fromHSBToRef = function (hue, saturation, brightness, result) {
+            var h = ColorCurves.clamp(hue, 0, 360);
+            var s = ColorCurves.clamp(saturation / 100, 0, 1);
+            var v = ColorCurves.clamp(brightness / 100, 0, 1);
+            if (s === 0) {
+                result.r = v;
+                result.g = v;
+                result.b = v;
+            }
+            else {
+                // sector 0 to 5
+                h /= 60;
+                var i = Math.floor(h);
+                // fractional part of h
+                var f = h - i;
+                var p = v * (1 - s);
+                var q = v * (1 - s * f);
+                var t = v * (1 - s * (1 - f));
+                switch (i) {
+                    case 0:
+                        result.r = v;
+                        result.g = t;
+                        result.b = p;
+                        break;
+                    case 1:
+                        result.r = q;
+                        result.g = v;
+                        result.b = p;
+                        break;
+                    case 2:
+                        result.r = p;
+                        result.g = v;
+                        result.b = t;
+                        break;
+                    case 3:
+                        result.r = p;
+                        result.g = q;
+                        result.b = v;
+                        break;
+                    case 4:
+                        result.r = t;
+                        result.g = p;
+                        result.b = v;
+                        break;
+                    default:// case 5:
+                        result.r = v;
+                        result.g = p;
+                        result.b = q;
+                        break;
+                }
+            }
+            result.a = 1;
+        };
+        /**
+         * Returns a value clamped between min and max
+         * @param value The value to clamp
+         * @param min The minimum of value
+         * @param max The maximum of value
+         * @returns The clamped value.
+         */
+        ColorCurves.clamp = function (value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        };
+        /**
+         * Clones the current color curve instance.
+         * @return The cloned curves
+         */
+        ColorCurves.prototype.clone = function () {
+            return BABYLON.SerializationHelper.Clone(function () { return new ColorCurves(); }, this);
+        };
+        /**
+         * Serializes the current color curve instance to a json representation.
+         * @return a JSON representation
+         */
+        ColorCurves.prototype.serialize = function () {
+            return BABYLON.SerializationHelper.Serialize(this);
+        };
+        /**
+         * Parses the color curve from a json representation.
+         * @param source the JSON source to parse
+         * @return The parsed curves
+         */
+        ColorCurves.Parse = function (source) {
+            return BABYLON.SerializationHelper.Parse(function () { return new ColorCurves(); }, source, null, null);
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_globalHue", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_globalDensity", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_globalSaturation", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_globalExposure", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_highlightsHue", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_highlightsDensity", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_highlightsSaturation", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_highlightsExposure", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_midtonesHue", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_midtonesDensity", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_midtonesSaturation", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ColorCurves.prototype, "_midtonesExposure", void 0);
+        return ColorCurves;
+    }());
+    BABYLON.ColorCurves = ColorCurves;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.colorCurves.js.map
 
 
 
@@ -34827,7 +36047,7 @@ var BABYLON;
 (function (BABYLON) {
     var FreeCameraKeyboardMoveInput = (function () {
         function FreeCameraKeyboardMoveInput() {
-            this._keys = [];
+            this._keys = new Array();
             this.keysUp = [38];
             this.keysDown = [40];
             this.keysLeft = [37];
@@ -35500,7 +36720,7 @@ var BABYLON;
 (function (BABYLON) {
     var ArcRotateCameraKeyboardMoveInput = (function () {
         function ArcRotateCameraKeyboardMoveInput() {
-            this._keys = [];
+            this._keys = new Array();
             this.keysUp = [38];
             this.keysDown = [40];
             this.keysLeft = [37];
@@ -36664,13 +37884,14 @@ var BABYLON;
             var meshesOrMinMaxVector;
             var distance;
             if (meshesOrMinMaxVectorAndDistance.min === undefined) {
-                meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance || this.getScene().meshes;
-                meshesOrMinMaxVector = BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
+                var meshes = meshesOrMinMaxVectorAndDistance || this.getScene().meshes;
+                meshesOrMinMaxVector = BABYLON.Mesh.MinMax(meshes);
                 distance = BABYLON.Vector3.Distance(meshesOrMinMaxVector.min, meshesOrMinMaxVector.max);
             }
             else {
-                meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance;
-                distance = meshesOrMinMaxVectorAndDistance.distance;
+                var minMaxVectorAndDistance = meshesOrMinMaxVectorAndDistance;
+                meshesOrMinMaxVector = minMaxVectorAndDistance;
+                distance = minMaxVectorAndDistance.distance;
             }
             this._target = BABYLON.Mesh.Center(meshesOrMinMaxVector);
             if (!doNotUpdateMaxZ) {
@@ -39570,17 +40791,17 @@ var BABYLON;
         };
         ActionManager.prototype.serialize = function (name) {
             var root = {
-                children: [],
+                children: new Array(),
                 name: name,
                 type: 3,
-                properties: [] // Empty for root but required
+                properties: new Array() // Empty for root but required
             };
             for (var i = 0; i < this.actions.length; i++) {
                 var triggerObject = {
                     type: 0,
-                    children: [],
+                    children: new Array(),
                     name: ActionManager.GetTriggerName(this.actions[i].trigger),
-                    properties: []
+                    properties: new Array()
                 };
                 var triggerOptions = this.actions[i].triggerOptions;
                 if (triggerOptions && typeof triggerOptions !== "number") {
@@ -39611,7 +40832,7 @@ var BABYLON;
                 object.actionManager = actionManager;
             // instanciate a new object
             var instanciate = function (name, params) {
-                var newInstance = Object.create(BABYLON[name].prototype);
+                var newInstance = BABYLON.Tools.Instantiate(name);
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;
             };
@@ -39747,10 +40968,10 @@ var BABYLON;
                     if (value._meshId) {
                         value.mesh = scene.getMeshByID(value._meshId);
                     }
-                    triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
+                    triggerParams = { trigger: ActionManager[trigger.name], parameter: value };
                 }
                 else
-                    triggerParams = BABYLON.ActionManager[trigger.name];
+                    triggerParams = ActionManager[trigger.name];
                 for (var j = 0; j < trigger.children.length; j++) {
                     if (!trigger.detached)
                         traverse(trigger.children[j], triggerParams, null, null);
@@ -49419,9 +50640,9 @@ var BABYLON;
             SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data) {
                 if (plugin.importMesh) {
                     var syncedPlugin = plugin;
-                    var meshes = [];
-                    var particleSystems = [];
-                    var skeletons = [];
+                    var meshes = new Array();
+                    var particleSystems = new Array();
+                    var skeletons = new Array();
                     if (!syncedPlugin.importMesh(meshNames, scene, data, rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;
                     }
@@ -49611,7 +50832,7 @@ var BABYLON;
                     if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                         var loadedSkeletonsIds = [];
                         var loadedMaterialsIds = [];
-                        var hierarchyIds = [];
+                        var hierarchyIds = new Array();
                         var index;
                         var cache;
                         for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
@@ -50244,7 +51465,7 @@ var BABYLON;
                 this._filesToLoad = event.target.files;
             }
             if (this._filesToLoad && this._filesToLoad.length > 0) {
-                var files_1 = [];
+                var files_1 = new Array();
                 var folders = [];
                 var items = event.dataTransfer ? event.dataTransfer.items : null;
                 for (var i = 0; i < this._filesToLoad.length; i++) {
@@ -50326,7 +51547,7 @@ var BABYLON;
                 BABYLON.Tools.Error("Please provide a valid .babylon file.");
             }
         };
-        FilesInput.FilesToLoad = new Array();
+        FilesInput.FilesToLoad = {};
         return FilesInput;
     }());
     BABYLON.FilesInput = FilesInput;
@@ -50929,7 +52150,8 @@ var BABYLON;
                             transaction.onabort = function (event) {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
+                                    var error = event.srcElement['error'];
+                                    if (error && error.name === "QuotaExceededError") {
                                         _this.hasReachedQuota = true;
                                     }
                                 }
@@ -50978,7 +52200,7 @@ var BABYLON;
         };
         Database.prototype._checkVersionFromDB = function (url, versionLoaded) {
             var _this = this;
-            var updateVersion = function (event) {
+            var updateVersion = function () {
                 // the version is not yet in the DB or we need to update it
                 _this._saveVersionIntoDBAsync(url, versionLoaded);
             };
@@ -51037,7 +52259,8 @@ var BABYLON;
                     // the transaction could abort because of a QuotaExceededError error
                     transaction.onabort = function (event) {
                         try {
-                            if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
+                            var error = event.srcElement['error'];
+                            if (error && error.name === "QuotaExceededError") {
                                 _this.hasReachedQuota = true;
                             }
                         }
@@ -51068,7 +52291,7 @@ var BABYLON;
         Database.prototype.loadFileFromDB = function (url, sceneLoaded, progressCallBack, errorCallback, useArrayBuffer) {
             var _this = this;
             var completeUrl = Database.ReturnFullUrlLocation(url);
-            var saveAndLoadFile = function (event) {
+            var saveAndLoadFile = function () {
                 // the scene is not yet in the DB, let's try to save it
                 _this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
             };
@@ -51133,7 +52356,8 @@ var BABYLON;
                     targetStore = "textures";
                 }
                 // Create XHR
-                var xhr = new XMLHttpRequest(), fileData;
+                var xhr = new XMLHttpRequest();
+                var fileData;
                 xhr.open("GET", url, true);
                 if (useArrayBuffer) {
                     xhr.responseType = "arraybuffer";
@@ -51151,7 +52375,8 @@ var BABYLON;
                             transaction.onabort = function (event) {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
+                                    var error = event.srcElement['error'];
+                                    if (error && error.name === "QuotaExceededError") {
                                         _this.hasReachedQuota = true;
                                     }
                                 }
@@ -51410,7 +52635,7 @@ var BABYLON;
             this._offsetX = null;
             this._offsetY = null;
             this._pointerCount = 0;
-            this._pointerPressed = [];
+            this._pointerPressed = new Array();
             this.touchAngularSensibility = 200000.0;
             this.touchMoveSensibility = 250.0;
         }
@@ -51597,14 +52822,14 @@ var BABYLON;
             _this._vertexBuffers = {};
             _this._uniforms = new Array();
             _this._samplers = new Array();
-            _this._textures = new Array();
-            _this._floats = new Array();
+            _this._textures = {};
+            _this._floats = {};
             _this._floatsArrays = {};
-            _this._colors3 = new Array();
-            _this._colors4 = new Array();
-            _this._vectors2 = new Array();
-            _this._vectors3 = new Array();
-            _this._matrices = new Array();
+            _this._colors3 = {};
+            _this._colors4 = {};
+            _this._vectors2 = {};
+            _this._vectors3 = {};
+            _this._matrices = {};
             _this._fallbackTextureUsed = false;
             scene._proceduralTextures.push(_this);
             _this.name = name;
@@ -53416,7 +54641,7 @@ var BABYLON;
                 return;
             }
             // Only emit events for buttons that we know how to map from index to name
-            var observable = this[this._mapping.buttonObservableNames[buttonName]];
+            var observable = this[(this._mapping.buttonObservableNames)[buttonName]];
             if (observable) {
                 observable.notifyObservers(state);
             }
@@ -54577,7 +55802,7 @@ var BABYLON;
             ];
             */
             var samples = 16;
-            var samplerOffsets = [];
+            var samplerOffsets = new Array();
             for (var i = -8; i < 8; i++) {
                 samplerOffsets.push(i * 2);
             }
@@ -54913,16 +56138,13 @@ var BABYLON;
             var rand = function (min, max) {
                 return Math.random() * (max - min) + min;
             };
-            var lerp = function (start, end, percent) {
-                return (start + percent * (end - start));
-            };
             var i = 0;
             var normal = new BABYLON.Vector3(0, 0, 1);
             while (i < numSamples) {
                 vector = new BABYLON.Vector3(rand(-1.0, 1.0), rand(-1.0, 1.0), rand(0.30, 1.0));
                 vector.normalize();
                 scale = i / numSamples;
-                scale = lerp(0.1, 1.0, scale * scale);
+                scale = BABYLON.Scalar.Lerp(0.1, 1.0, scale * scale);
                 vector.scaleInPlace(scale);
                 result.push(vector.x, vector.y, vector.z);
                 i++;
@@ -60392,7 +61614,7 @@ var BABYLON;
             var mipLevels = 0;
             var floatArrayView = null;
             var mipmapGenerator = (!this._useInGammaSpace && this.getScene().getEngine().getCaps().textureFloat) ? function (data) {
-                var mips = [];
+                var mips = new Array();
                 var startIndex = 30;
                 for (var level = 0; level < mipLevels; level++) {
                     mips.push([]);
@@ -60514,7 +61736,7 @@ var BABYLON;
                         var byteBuffer = new ArrayBuffer(_this._size * _this._size * 3);
                         byteArray = new Uint8Array(byteBuffer);
                     }
-                    var dataFace = data[HDRCubeTexture._facesMapping[j]];
+                    var dataFace = (data[HDRCubeTexture._facesMapping[j]]);
                     // If special cases.
                     if (_this._useInGammaSpace || byteArray) {
                         for (var i = 0; i < _this._size * _this._size; i++) {
@@ -60734,7 +61956,7 @@ var Earcut;
      */
     function earcut(data, holeIndices, dim) {
         dim = dim || 2;
-        var hasHoles = holeIndices && holeIndices.length, outerLen = hasHoles ? holeIndices[0] * dim : data.length, outerNode = linkedList(data, 0, outerLen, dim, true), triangles = [];
+        var hasHoles = holeIndices && holeIndices.length, outerLen = hasHoles ? holeIndices[0] * dim : data.length, outerNode = linkedList(data, 0, outerLen, dim, true), triangles = new Array();
         if (!outerNode)
             return triangles;
         var minX, minY, maxX, maxY, x, y, size;
@@ -60763,6 +61985,20 @@ var Earcut;
         return triangles;
     }
     Earcut.earcut = earcut;
+    var Node = (function () {
+        function Node(i, x, y) {
+            this.i = i;
+            this.x = x;
+            this.y = y;
+            this.prev = null;
+            this.next = null;
+            this.z = null;
+            this.prevZ = null;
+            this.nextZ = null;
+            this.steiner = false;
+        }
+        return Node;
+    }());
     // create a circular doubly linked list from polygon points in the specified winding order
     function linkedList(data, start, end, dim, clockwise) {
         var i, last;
@@ -61197,23 +62433,6 @@ var Earcut;
         if (p.nextZ)
             p.nextZ.prevZ = p.prevZ;
     }
-    function Node(i, x, y) {
-        // vertice index in coordinates array
-        this.i = i;
-        // vertex coordinates
-        this.x = x;
-        this.y = y;
-        // previous and next vertice nodes in a polygon ring
-        this.prev = null;
-        this.next = null;
-        // z-order curve value
-        this.z = null;
-        // previous and next nodes in z-order
-        this.prevZ = null;
-        this.nextZ = null;
-        // indicates whether this is a steiner point
-        this.steiner = false;
-    }
     /**
      * return a percentage difference between the polygon area and its triangulation area;
      * used to verify correctness of triangulation
@@ -61253,7 +62472,7 @@ var Earcut;
      *  turn a polygon in a multi-dimensional array form (e.g. as in GeoJSON) into a form Earcut accepts
      */
     function flatten(data) {
-        var dim = data[0][0].length, result = { vertices: [], holes: [], dimensions: dim }, holeIndex = 0;
+        var dim = data[0][0].length, result = { vertices: new Array(), holes: new Array(), dimensions: dim }, holeIndex = 0;
         for (var i = 0; i < data.length; i++) {
             for (var j = 0; j < data[i].length; j++) {
                 for (var d = 0; d < dim; d++)
@@ -61371,7 +62590,7 @@ var BABYLON;
         function PolygonMeshBuilder(name, contours, scene) {
             this._points = new PolygonPoints();
             this._outlinepoints = new PolygonPoints();
-            this._holes = [];
+            this._holes = new Array();
             this._epoints = new Array();
             this._eholes = new Array();
             this._name = name;
@@ -61406,16 +62625,16 @@ var BABYLON;
             var _this = this;
             if (updatable === void 0) { updatable = false; }
             var result = new BABYLON.Mesh(this._name, this._scene);
-            var normals = [];
-            var positions = [];
-            var uvs = [];
+            var normals = new Array();
+            var positions = new Array();
+            var uvs = new Array();
             var bounds = this._points.computeBounds();
             this._points.elements.forEach(function (p) {
                 normals.push(0, 1.0, 0);
                 positions.push(p.x, 0, p.y);
                 uvs.push((p.x - bounds.min.x) / bounds.width, (p.y - bounds.min.y) / bounds.height);
             });
-            var indices = [];
+            var indices = new Array();
             var res = Earcut.earcut(this._epoints, this._eholes, 2);
             for (var i = 0; i < res.length; i++) {
                 indices.push(res[i]);
@@ -61671,7 +62890,7 @@ var BABYLON;
             this.plane = null;
             this.front = null;
             this.back = null;
-            this.polygons = [];
+            this.polygons = new Array();
             if (polygons) {
                 this.build(polygons);
             }
@@ -61707,7 +62926,7 @@ var BABYLON;
         Node.prototype.clipPolygons = function (polygons) {
             if (!this.plane)
                 return polygons.slice();
-            var front = [], back = [];
+            var front = new Array(), back = new Array();
             for (var i = 0; i < polygons.length; i++) {
                 this.plane.splitPolygon(polygons[i], front, back, front, back);
             }
@@ -61749,7 +62968,7 @@ var BABYLON;
                 return;
             if (!this.plane)
                 this.plane = polygons[0].plane.clone();
-            var front = [], back = [];
+            var front = new Array(), back = new Array();
             for (var i = 0; i < polygons.length; i++) {
                 this.plane.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
             }
@@ -63138,7 +64357,7 @@ var BABYLON;
             if (iterations === void 0) { iterations = 10; }
             this._useDeltaForWorldStep = _useDeltaForWorldStep;
             this.name = "CannonJSPlugin";
-            this._physicsMaterials = [];
+            this._physicsMaterials = new Array();
             this._fixedTimeStep = 1 / 60;
             //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
             this._currentCollisionGroup = 2;
@@ -63383,7 +64602,7 @@ var BABYLON;
         };
         CannonJSPlugin.prototype._createHeightmap = function (object, pointDepth) {
             var pos = object.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var matrix = [];
+            var matrix = new Array();
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
@@ -65129,7 +66348,7 @@ var BABYLON;
                 this.autoUpdateBonesMatrices = autoUpdateBonesMatrices;
                 this.renderingGroupId = renderingGroupId;
                 this.color = BABYLON.Color3.White();
-                this._debugLines = [];
+                this._debugLines = new Array();
                 this._isEnabled = false;
                 this._scene = scene;
                 this.update();
@@ -66060,744 +67279,6 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.morphTargetManager.js.map
-
-
-var BABYLON;
-(function (BABYLON) {
-    /**
-     * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
-     * It can help converting any input color in a desired output one. This can then be used to create effects
-     * from sepia, black and white to sixties or futuristic rendering...
-     *
-     * The only supported format is currently 3dl.
-     * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table/
-     */
-    var ColorGradingTexture = (function (_super) {
-        __extends(ColorGradingTexture, _super);
-        /**
-         * Instantiates a ColorGradingTexture from the following parameters.
-         *
-         * @param url The location of the color gradind data (currently only supporting 3dl)
-         * @param scene The scene the texture will be used in
-         */
-        function ColorGradingTexture(url, scene) {
-            var _this = _super.call(this, scene) || this;
-            if (!url) {
-                return _this;
-            }
-            _this._textureMatrix = BABYLON.Matrix.Identity();
-            _this.name = url;
-            _this.url = url;
-            _this.hasAlpha = false;
-            _this.isCube = false;
-            _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            _this.anisotropicFilteringLevel = 1;
-            _this._texture = _this._getFromCache(url, true);
-            if (!_this._texture) {
-                if (!scene.useDelayedTextureLoading) {
-                    _this.loadTexture();
-                }
-                else {
-                    _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
-                }
-            }
-            return _this;
-        }
-        /**
-         * Returns the texture matrix used in most of the material.
-         * This is not used in color grading but keep for troubleshooting purpose (easily swap diffuse by colorgrading to look in).
-         */
-        ColorGradingTexture.prototype.getTextureMatrix = function () {
-            return this._textureMatrix;
-        };
-        /**
-         * Occurs when the file being loaded is a .3dl LUT file.
-         */
-        ColorGradingTexture.prototype.load3dlTexture = function () {
-            var _this = this;
-            var mipLevels = 0;
-            var floatArrayView = null;
-            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
-            this._texture = texture;
-            var callback = function (text) {
-                var data;
-                var tempData;
-                var line;
-                var lines = text.split('\n');
-                var size = 0, pixelIndexW = 0, pixelIndexH = 0, pixelIndexSlice = 0;
-                var maxColor = 0;
-                for (var i = 0; i < lines.length; i++) {
-                    line = lines[i];
-                    if (!ColorGradingTexture._noneEmptyLineRegex.test(line))
-                        continue;
-                    if (line.indexOf('#') === 0)
-                        continue;
-                    var words = line.split(" ");
-                    if (size === 0) {
-                        // Number of space + one
-                        size = words.length;
-                        data = new Uint8Array(size * size * size * 4); // volume texture of side size and rgb 8
-                        tempData = new Float32Array(size * size * size * 4);
-                        continue;
-                    }
-                    if (size != 0) {
-                        var r = Math.max(parseInt(words[0]), 0);
-                        var g = Math.max(parseInt(words[1]), 0);
-                        var b = Math.max(parseInt(words[2]), 0);
-                        maxColor = Math.max(r, maxColor);
-                        maxColor = Math.max(g, maxColor);
-                        maxColor = Math.max(b, maxColor);
-                        var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 4;
-                        tempData[pixelStorageIndex + 0] = r;
-                        tempData[pixelStorageIndex + 1] = g;
-                        tempData[pixelStorageIndex + 2] = b;
-                        pixelIndexSlice++;
-                        if (pixelIndexSlice % size == 0) {
-                            pixelIndexH++;
-                            pixelIndexSlice = 0;
-                            if (pixelIndexH % size == 0) {
-                                pixelIndexW++;
-                                pixelIndexH = 0;
-                            }
-                        }
-                    }
-                }
-                for (var i = 0; i < tempData.length; i++) {
-                    if (i > 0 && (i + 1) % 4 === 0) {
-                        data[i] = 255;
-                    }
-                    else {
-                        var value = tempData[i];
-                        data[i] = (value / maxColor * 255);
-                    }
-                }
-                texture.updateSize(size * size, size);
-                _this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
-            };
-            BABYLON.Tools.LoadFile(this.url, callback);
-            return this._texture;
-        };
-        /**
-         * Starts the loading process of the texture.
-         */
-        ColorGradingTexture.prototype.loadTexture = function () {
-            if (this.url && this.url.toLocaleLowerCase().indexOf(".3dl") == (this.url.length - 4)) {
-                this.load3dlTexture();
-            }
-        };
-        /**
-         * Clones the color gradind texture.
-         */
-        ColorGradingTexture.prototype.clone = function () {
-            var newTexture = new ColorGradingTexture(this.url, this.getScene());
-            // Base texture
-            newTexture.level = this.level;
-            return newTexture;
-        };
-        /**
-         * Called during delayed load for textures.
-         */
-        ColorGradingTexture.prototype.delayLoad = function () {
-            if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
-                return;
-            }
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
-            this._texture = this._getFromCache(this.url, true);
-            if (!this._texture) {
-                this.loadTexture();
-            }
-        };
-        /**
-         * Parses a color grading texture serialized by Babylon.
-         * @param parsedTexture The texture information being parsedTexture
-         * @param scene The scene to load the texture in
-         * @param rootUrl The root url of the data assets to load
-         * @return A color gradind texture
-         */
-        ColorGradingTexture.Parse = function (parsedTexture, scene, rootUrl) {
-            var texture = null;
-            if (parsedTexture.name && !parsedTexture.isRenderTarget) {
-                texture = new BABYLON.ColorGradingTexture(parsedTexture.name, scene);
-                texture.name = parsedTexture.name;
-                texture.level = parsedTexture.level;
-            }
-            return texture;
-        };
-        /**
-         * Serializes the LUT texture to json format.
-         */
-        ColorGradingTexture.prototype.serialize = function () {
-            if (!this.name) {
-                return null;
-            }
-            var serializationObject = {};
-            serializationObject.name = this.name;
-            serializationObject.level = this.level;
-            serializationObject.customType = "BABYLON.ColorGradingTexture";
-            return serializationObject;
-        };
-        /**
-         * Empty line regex stored for GC.
-         */
-        ColorGradingTexture._noneEmptyLineRegex = /\S+/;
-        return ColorGradingTexture;
-    }(BABYLON.BaseTexture));
-    BABYLON.ColorGradingTexture = ColorGradingTexture;
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.colorGradingTexture.js.map
-
-
-var BABYLON;
-(function (BABYLON) {
-    /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-     */
-    var ColorCurves = (function () {
-        function ColorCurves() {
-            this._dirty = true;
-            this._tempColor = new BABYLON.Color4(0, 0, 0, 0);
-            this._globalCurve = new BABYLON.Color4(0, 0, 0, 0);
-            this._highlightsCurve = new BABYLON.Color4(0, 0, 0, 0);
-            this._midtonesCurve = new BABYLON.Color4(0, 0, 0, 0);
-            this._shadowsCurve = new BABYLON.Color4(0, 0, 0, 0);
-            this._positiveCurve = new BABYLON.Color4(0, 0, 0, 0);
-            this._negativeCurve = new BABYLON.Color4(0, 0, 0, 0);
-            this._globalHue = 30;
-            this._globalDensity = 0;
-            this._globalSaturation = 0;
-            this._globalExposure = 0;
-            this._highlightsHue = 30;
-            this._highlightsDensity = 0;
-            this._highlightsSaturation = 0;
-            this._highlightsExposure = 0;
-            this._midtonesHue = 30;
-            this._midtonesDensity = 0;
-            this._midtonesSaturation = 0;
-            this._midtonesExposure = 0;
-            this._shadowsHue = 30;
-            this._shadowsDensity = 0;
-            this._shadowsSaturation = 0;
-            this._shadowsExposure = 0;
-        }
-        Object.defineProperty(ColorCurves.prototype, "globalHue", {
-            /**
-             * Gets the global Hue value.
-             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-             */
-            get: function () {
-                return this._globalHue;
-            },
-            /**
-             * Sets the global Hue value.
-             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-             */
-            set: function (value) {
-                this._globalHue = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "globalDensity", {
-            /**
-             * Gets the global Density value.
-             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-             * Values less than zero provide a filter of opposite hue.
-             */
-            get: function () {
-                return this._globalDensity;
-            },
-            /**
-             * Sets the global Density value.
-             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-             * Values less than zero provide a filter of opposite hue.
-             */
-            set: function (value) {
-                this._globalDensity = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "globalSaturation", {
-            /**
-             * Gets the global Saturation value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-             */
-            get: function () {
-                return this._globalSaturation;
-            },
-            /**
-             * Sets the global Saturation value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-             */
-            set: function (value) {
-                this._globalSaturation = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "highlightsHue", {
-            /**
-             * Gets the highlights Hue value.
-             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-             */
-            get: function () {
-                return this._highlightsHue;
-            },
-            /**
-             * Sets the highlights Hue value.
-             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-             */
-            set: function (value) {
-                this._highlightsHue = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "highlightsDensity", {
-            /**
-             * Gets the highlights Density value.
-             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-             * Values less than zero provide a filter of opposite hue.
-             */
-            get: function () {
-                return this._highlightsDensity;
-            },
-            /**
-             * Sets the highlights Density value.
-             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-             * Values less than zero provide a filter of opposite hue.
-             */
-            set: function (value) {
-                this._highlightsDensity = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "highlightsSaturation", {
-            /**
-             * Gets the highlights Saturation value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-             */
-            get: function () {
-                return this._highlightsSaturation;
-            },
-            /**
-             * Sets the highlights Saturation value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-             */
-            set: function (value) {
-                this._highlightsSaturation = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "highlightsExposure", {
-            /**
-             * Gets the highlights Exposure value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-             */
-            get: function () {
-                return this._highlightsExposure;
-            },
-            /**
-             * Sets the highlights Exposure value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-             */
-            set: function (value) {
-                this._highlightsExposure = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "midtonesHue", {
-            /**
-             * Gets the midtones Hue value.
-             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-             */
-            get: function () {
-                return this._midtonesHue;
-            },
-            /**
-             * Sets the midtones Hue value.
-             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-             */
-            set: function (value) {
-                this._midtonesHue = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "midtonesDensity", {
-            /**
-             * Gets the midtones Density value.
-             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-             * Values less than zero provide a filter of opposite hue.
-             */
-            get: function () {
-                return this._midtonesDensity;
-            },
-            /**
-             * Sets the midtones Density value.
-             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-             * Values less than zero provide a filter of opposite hue.
-             */
-            set: function (value) {
-                this._midtonesDensity = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "midtonesSaturation", {
-            /**
-             * Gets the midtones Saturation value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-             */
-            get: function () {
-                return this._midtonesSaturation;
-            },
-            /**
-             * Sets the midtones Saturation value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-             */
-            set: function (value) {
-                this._midtonesSaturation = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "midtonesExposure", {
-            /**
-             * Gets the midtones Exposure value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-             */
-            get: function () {
-                return this._midtonesExposure;
-            },
-            /**
-             * Sets the midtones Exposure value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-             */
-            set: function (value) {
-                this._midtonesExposure = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "shadowsHue", {
-            /**
-             * Gets the shadows Hue value.
-             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-             */
-            get: function () {
-                return this._shadowsHue;
-            },
-            /**
-             * Sets the shadows Hue value.
-             * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-             */
-            set: function (value) {
-                this._shadowsHue = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "shadowsDensity", {
-            /**
-             * Gets the shadows Density value.
-             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-             * Values less than zero provide a filter of opposite hue.
-             */
-            get: function () {
-                return this._shadowsDensity;
-            },
-            /**
-             * Sets the shadows Density value.
-             * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-             * Values less than zero provide a filter of opposite hue.
-             */
-            set: function (value) {
-                this._shadowsDensity = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "shadowsSaturation", {
-            /**
-             * Gets the shadows Saturation value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-             */
-            get: function () {
-                return this._shadowsSaturation;
-            },
-            /**
-             * Sets the shadows Saturation value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-             */
-            set: function (value) {
-                this._shadowsSaturation = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ColorCurves.prototype, "shadowsExposure", {
-            /**
-             * Gets the shadows Exposure value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-             */
-            get: function () {
-                return this._shadowsExposure;
-            },
-            /**
-             * Sets the shadows Exposure value.
-             * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-             */
-            set: function (value) {
-                this._shadowsExposure = value;
-                this._dirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ColorCurves.prototype.getClassName = function () {
-            return "ColorCurves";
-        };
-        /**
-         * Binds the color curves to the shader.
-         * @param colorCurves The color curve to bind
-         * @param effect The effect to bind to
-         */
-        ColorCurves.Bind = function (colorCurves, effect, positiveUniform, neutralUniform, negativeUniform) {
-            if (positiveUniform === void 0) { positiveUniform = "vCameraColorCurvePositive"; }
-            if (neutralUniform === void 0) { neutralUniform = "vCameraColorCurveNeutral"; }
-            if (negativeUniform === void 0) { negativeUniform = "vCameraColorCurveNegative"; }
-            if (colorCurves._dirty) {
-                colorCurves._dirty = false;
-                // Fill in global info.
-                colorCurves.getColorGradingDataToRef(colorCurves._globalHue, colorCurves._globalDensity, colorCurves._globalSaturation, colorCurves._globalExposure, colorCurves._globalCurve);
-                // Compute highlights info.
-                colorCurves.getColorGradingDataToRef(colorCurves._highlightsHue, colorCurves._highlightsDensity, colorCurves._highlightsSaturation, colorCurves._highlightsExposure, colorCurves._tempColor);
-                colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._highlightsCurve);
-                // Compute midtones info.
-                colorCurves.getColorGradingDataToRef(colorCurves._midtonesHue, colorCurves._midtonesDensity, colorCurves._midtonesSaturation, colorCurves._midtonesExposure, colorCurves._tempColor);
-                colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._midtonesCurve);
-                // Compute shadows info.
-                colorCurves.getColorGradingDataToRef(colorCurves._shadowsHue, colorCurves._shadowsDensity, colorCurves._shadowsSaturation, colorCurves._shadowsExposure, colorCurves._tempColor);
-                colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._shadowsCurve);
-                // Compute deltas (neutral is midtones).
-                colorCurves._highlightsCurve.subtractToRef(colorCurves._midtonesCurve, colorCurves._positiveCurve);
-                colorCurves._midtonesCurve.subtractToRef(colorCurves._shadowsCurve, colorCurves._negativeCurve);
-            }
-            if (effect) {
-                effect.setFloat4(positiveUniform, colorCurves._positiveCurve.r, colorCurves._positiveCurve.g, colorCurves._positiveCurve.b, colorCurves._positiveCurve.a);
-                effect.setFloat4(neutralUniform, colorCurves._midtonesCurve.r, colorCurves._midtonesCurve.g, colorCurves._midtonesCurve.b, colorCurves._midtonesCurve.a);
-                effect.setFloat4(negativeUniform, colorCurves._negativeCurve.r, colorCurves._negativeCurve.g, colorCurves._negativeCurve.b, colorCurves._negativeCurve.a);
-            }
-        };
-        /**
-         * Prepare the list of uniforms associated with the ColorCurves effects.
-         * @param uniformsList The list of uniforms used in the effect
-         */
-        ColorCurves.PrepareUniforms = function (uniformsList) {
-            uniformsList.push("vCameraColorCurveNeutral", "vCameraColorCurvePositive", "vCameraColorCurveNegative");
-        };
-        /**
-         * Returns color grading data based on a hue, density, saturation and exposure value.
-         * @param filterHue The hue of the color filter.
-         * @param filterDensity The density of the color filter.
-         * @param saturation The saturation.
-         * @param exposure The exposure.
-         * @param result The result data container.
-         */
-        ColorCurves.prototype.getColorGradingDataToRef = function (hue, density, saturation, exposure, result) {
-            if (hue == null) {
-                return;
-            }
-            hue = ColorCurves.clamp(hue, 0, 360);
-            density = ColorCurves.clamp(density, -100, 100);
-            saturation = ColorCurves.clamp(saturation, -100, 100);
-            exposure = ColorCurves.clamp(exposure, -100, 100);
-            // Remap the slider/config filter density with non-linear mapping and also scale by half
-            // so that the maximum filter density is only 50% control. This provides fine control 
-            // for small values and reasonable range.
-            density = ColorCurves.applyColorGradingSliderNonlinear(density);
-            density *= 0.5;
-            exposure = ColorCurves.applyColorGradingSliderNonlinear(exposure);
-            if (density < 0) {
-                density *= -1;
-                hue = (hue + 180) % 360;
-            }
-            ColorCurves.fromHSBToRef(hue, density, 50 + 0.25 * exposure, result);
-            result.scaleToRef(2, result);
-            result.a = 1 + 0.01 * saturation;
-        };
-        /**
-         * Takes an input slider value and returns an adjusted value that provides extra control near the centre.
-         * @param value The input slider value in range [-100,100].
-         * @returns Adjusted value.
-         */
-        ColorCurves.applyColorGradingSliderNonlinear = function (value) {
-            value /= 100;
-            var x = Math.abs(value);
-            x = Math.pow(x, 2);
-            if (value < 0) {
-                x *= -1;
-            }
-            x *= 100;
-            return x;
-        };
-        /**
-         * Returns an RGBA Color4 based on Hue, Saturation and Brightness (also referred to as value, HSV).
-         * @param hue The hue (H) input.
-         * @param saturation The saturation (S) input.
-         * @param brightness The brightness (B) input.
-         * @result An RGBA color represented as Vector4.
-         */
-        ColorCurves.fromHSBToRef = function (hue, saturation, brightness, result) {
-            var h = ColorCurves.clamp(hue, 0, 360);
-            var s = ColorCurves.clamp(saturation / 100, 0, 1);
-            var v = ColorCurves.clamp(brightness / 100, 0, 1);
-            if (s === 0) {
-                result.r = v;
-                result.g = v;
-                result.b = v;
-            }
-            else {
-                // sector 0 to 5
-                h /= 60;
-                var i = Math.floor(h);
-                // fractional part of h
-                var f = h - i;
-                var p = v * (1 - s);
-                var q = v * (1 - s * f);
-                var t = v * (1 - s * (1 - f));
-                switch (i) {
-                    case 0:
-                        result.r = v;
-                        result.g = t;
-                        result.b = p;
-                        break;
-                    case 1:
-                        result.r = q;
-                        result.g = v;
-                        result.b = p;
-                        break;
-                    case 2:
-                        result.r = p;
-                        result.g = v;
-                        result.b = t;
-                        break;
-                    case 3:
-                        result.r = p;
-                        result.g = q;
-                        result.b = v;
-                        break;
-                    case 4:
-                        result.r = t;
-                        result.g = p;
-                        result.b = v;
-                        break;
-                    default:// case 5:
-                        result.r = v;
-                        result.g = p;
-                        result.b = q;
-                        break;
-                }
-            }
-            result.a = 1;
-        };
-        /**
-         * Returns a value clamped between min and max
-         * @param value The value to clamp
-         * @param min The minimum of value
-         * @param max The maximum of value
-         * @returns The clamped value.
-         */
-        ColorCurves.clamp = function (value, min, max) {
-            return Math.min(Math.max(value, min), max);
-        };
-        /**
-         * Clones the current color curve instance.
-         * @return The cloned curves
-         */
-        ColorCurves.prototype.clone = function () {
-            return BABYLON.SerializationHelper.Clone(function () { return new ColorCurves(); }, this);
-        };
-        /**
-         * Serializes the current color curve instance to a json representation.
-         * @return a JSON representation
-         */
-        ColorCurves.prototype.serialize = function () {
-            return BABYLON.SerializationHelper.Serialize(this);
-        };
-        /**
-         * Parses the color curve from a json representation.
-         * @param source the JSON source to parse
-         * @return The parsed curves
-         */
-        ColorCurves.Parse = function (source) {
-            return BABYLON.SerializationHelper.Parse(function () { return new ColorCurves(); }, source, null, null);
-        };
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_globalHue", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_globalDensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_globalSaturation", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_globalExposure", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_highlightsHue", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_highlightsDensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_highlightsSaturation", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_highlightsExposure", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_midtonesHue", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_midtonesDensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_midtonesSaturation", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ColorCurves.prototype, "_midtonesExposure", void 0);
-        return ColorCurves;
-    }());
-    BABYLON.ColorCurves = ColorCurves;
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.colorCurves.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -68981,14 +69462,14 @@ var BABYLON;
                                 var uv = BABYLON.Vector2.Zero();
                                 var color = new BABYLON.Color4(0, 0, 0, 1);
                                 _this.calculateError(v0, v1, p, n, uv, color);
-                                var delTr = [];
+                                var delTr = new Array();
                                 if (_this.isFlipped(v0, v1, p, deleted0, t.borderFactor, delTr))
                                     continue;
                                 if (_this.isFlipped(v1, v0, p, deleted1, t.borderFactor, delTr))
                                     continue;
                                 if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
                                     continue;
-                                var uniqueArray = [];
+                                var uniqueArray = new Array();
                                 delTr.forEach(function (deletedT) {
                                     if (uniqueArray.indexOf(deletedT) === -1) {
                                         deletedT.deletePending = true;
@@ -71494,486 +71975,6 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.rectPackingMap.js.map
-
-
-var BABYLON;
-(function (BABYLON) {
-    /**
-     * This groups together the common properties used for image processing either in direct forward pass
-     * or through post processing effect depending on the use of the image processing pipeline in your scene
-     * or not.
-     */
-    var ImageProcessingConfiguration = (function () {
-        function ImageProcessingConfiguration() {
-            /**
-             * Color curves setup used in the effect if colorCurvesEnabled is set to true
-             */
-            this.colorCurves = new BABYLON.ColorCurves();
-            this._colorCurvesEnabled = false;
-            this._colorGradingEnabled = false;
-            this._colorGradingWithGreenDepth = false;
-            this._colorGradingBGR = false;
-            this._exposure = 1.0;
-            this._toneMappingEnabled = false;
-            this._contrast = 1.0;
-            /**
-             * Vignette stretch size.
-             */
-            this.vignetteStretch = 0;
-            /**
-             * Vignette centre X Offset.
-             */
-            this.vignetteCentreX = 0;
-            /**
-             * Vignette centre Y Offset.
-             */
-            this.vignetteCentreY = 0;
-            /**
-             * Vignette weight or intensity of the vignette effect.
-             */
-            this.vignetteWeight = 1.5;
-            /**
-             * Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
-             * if vignetteEnabled is set to true.
-             */
-            this.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
-            /**
-             * Camera field of view used by the Vignette effect.
-             */
-            this.vignetteCameraFov = 0.5;
-            this._vignetteBlendMode = ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
-            this._vignetteEnabled = false;
-            this._applyByPostProcess = false;
-            /**
-            * An event triggered when the configuration changes and requires Shader to Update some parameters.
-            * @type {BABYLON.Observable}
-            */
-            this.onUpdateParameters = new BABYLON.Observable();
-        }
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "colorCurvesEnabled", {
-            /**
-             * Gets wether the color curves effect is enabled.
-             */
-            get: function () {
-                return this._colorCurvesEnabled;
-            },
-            /**
-             * Sets wether the color curves effect is enabled.
-             */
-            set: function (value) {
-                if (this._colorCurvesEnabled === value) {
-                    return;
-                }
-                this._colorCurvesEnabled = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "colorGradingEnabled", {
-            /**
-             * Gets wether the color grading effect is enabled.
-             */
-            get: function () {
-                return this._colorGradingEnabled;
-            },
-            /**
-             * Sets wether the color grading effect is enabled.
-             */
-            set: function (value) {
-                if (this._colorGradingEnabled === value) {
-                    return;
-                }
-                this._colorGradingEnabled = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "colorGradingWithGreenDepth", {
-            /**
-             * Gets wether the color grading effect is using a green depth for the 3d Texture.
-             */
-            get: function () {
-                return this._colorGradingWithGreenDepth;
-            },
-            /**
-             * Sets wether the color grading effect is using a green depth for the 3d Texture.
-             */
-            set: function (value) {
-                if (this._colorGradingWithGreenDepth === value) {
-                    return;
-                }
-                this._colorGradingWithGreenDepth = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "colorGradingBGR", {
-            /**
-             * Gets wether the color grading texture contains BGR values.
-             */
-            get: function () {
-                return this._colorGradingBGR;
-            },
-            /**
-             * Sets wether the color grading texture contains BGR values.
-             */
-            set: function (value) {
-                if (this._colorGradingBGR === value) {
-                    return;
-                }
-                this._colorGradingBGR = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "exposure", {
-            /**
-             * Gets the Exposure used in the effect.
-             */
-            get: function () {
-                return this._exposure;
-            },
-            /**
-             * Sets the Exposure used in the effect.
-             */
-            set: function (value) {
-                if (this._exposure === value) {
-                    return;
-                }
-                this._exposure = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "toneMappingEnabled", {
-            /**
-             * Gets wether the tone mapping effect is enabled.
-             */
-            get: function () {
-                return this._toneMappingEnabled;
-            },
-            /**
-             * Sets wether the tone mapping effect is enabled.
-             */
-            set: function (value) {
-                if (this._toneMappingEnabled === value) {
-                    return;
-                }
-                this._toneMappingEnabled = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "contrast", {
-            /**
-             * Gets the contrast used in the effect.
-             */
-            get: function () {
-                return this._contrast;
-            },
-            /**
-             * Sets the contrast used in the effect.
-             */
-            set: function (value) {
-                if (this._contrast === value) {
-                    return;
-                }
-                this._contrast = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "vignetteBlendMode", {
-            /**
-             * Gets the vignette blend mode allowing different kind of effect.
-             */
-            get: function () {
-                return this._vignetteBlendMode;
-            },
-            /**
-             * Sets the vignette blend mode allowing different kind of effect.
-             */
-            set: function (value) {
-                if (this._vignetteBlendMode === value) {
-                    return;
-                }
-                this._vignetteBlendMode = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "vignetteEnabled", {
-            /**
-             * Gets wether the vignette effect is enabled.
-             */
-            get: function () {
-                return this._vignetteEnabled;
-            },
-            /**
-             * Sets wether the vignette effect is enabled.
-             */
-            set: function (value) {
-                if (this._vignetteEnabled === value) {
-                    return;
-                }
-                this._vignetteEnabled = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration.prototype, "applyByPostProcess", {
-            /**
-             * Gets wether the image processing is applied through a post process or not.
-             */
-            get: function () {
-                return this._applyByPostProcess;
-            },
-            /**
-             * Sets wether the image processing is applied through a post process or not.
-             */
-            set: function (value) {
-                if (this._applyByPostProcess === value) {
-                    return;
-                }
-                this._applyByPostProcess = value;
-                this._updateParameters();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * Method called each time the image processing information changes requires to recompile the effect.
-         */
-        ImageProcessingConfiguration.prototype._updateParameters = function () {
-            this.onUpdateParameters.notifyObservers(this);
-        };
-        ImageProcessingConfiguration.prototype.getClassName = function () {
-            return "ImageProcessingConfiguration";
-        };
-        /**
-         * Prepare the list of uniforms associated with the Image Processing effects.
-         * @param uniformsList The list of uniforms used in the effect
-         * @param defines the list of defines currently in use
-         */
-        ImageProcessingConfiguration.PrepareUniforms = function (uniforms, defines) {
-            if (defines.EXPOSURE) {
-                uniforms.push("exposureLinear");
-            }
-            if (defines.CONTRAST) {
-                uniforms.push("contrast");
-            }
-            if (defines.COLORGRADING) {
-                uniforms.push("colorTransformSettings");
-            }
-            if (defines.VIGNETTE) {
-                uniforms.push("vInverseScreenSize");
-                uniforms.push("vignetteSettings1");
-                uniforms.push("vignetteSettings2");
-            }
-            if (defines.COLORCURVES) {
-                BABYLON.ColorCurves.PrepareUniforms(uniforms);
-            }
-        };
-        /**
-         * Prepare the list of samplers associated with the Image Processing effects.
-         * @param uniformsList The list of uniforms used in the effect
-         * @param defines the list of defines currently in use
-         */
-        ImageProcessingConfiguration.PrepareSamplers = function (samplersList, defines) {
-            if (defines.COLORGRADING) {
-                samplersList.push("txColorTransform");
-            }
-        };
-        /**
-         * Prepare the list of defines associated to the shader.
-         * @param defines the list of defines to complete
-         */
-        ImageProcessingConfiguration.prototype.prepareDefines = function (defines, forPostProcess) {
-            if (forPostProcess === void 0) { forPostProcess = false; }
-            if (forPostProcess !== this.applyByPostProcess) {
-                defines.VIGNETTE = false;
-                defines.TONEMAPPING = false;
-                defines.CONTRAST = false;
-                defines.EXPOSURE = false;
-                defines.COLORCURVES = false;
-                defines.COLORGRADING = false;
-                defines.IMAGEPROCESSING = false;
-                defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
-                return;
-            }
-            defines.VIGNETTE = this.vignetteEnabled;
-            defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
-            defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
-            defines.TONEMAPPING = this.toneMappingEnabled;
-            defines.CONTRAST = (this.contrast !== 1.0);
-            defines.EXPOSURE = (this.exposure !== 1.0);
-            defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
-            defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
-            defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
-            defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
-            defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
-            defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
-        };
-        /**
-         * Returns true if all the image processing information are ready.
-         */
-        ImageProcessingConfiguration.prototype.isReady = function () {
-            // Color Grading texure can not be none blocking.
-            return !this.colorGradingEnabled || !this.colorGradingTexture || this.colorGradingTexture.isReady();
-        };
-        /**
-         * Binds the image processing to the shader.
-         * @param effect The effect to bind to
-         */
-        ImageProcessingConfiguration.prototype.bind = function (effect, aspectRatio) {
-            if (aspectRatio === void 0) { aspectRatio = 1; }
-            // Color Curves
-            if (this._colorCurvesEnabled) {
-                BABYLON.ColorCurves.Bind(this.colorCurves, effect);
-            }
-            // Vignette
-            if (this._vignetteEnabled) {
-                var inverseWidth = 1 / effect.getEngine().getRenderWidth();
-                var inverseHeight = 1 / effect.getEngine().getRenderHeight();
-                effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
-                var vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
-                var vignetteScaleX = vignetteScaleY * aspectRatio;
-                var vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
-                vignetteScaleX = BABYLON.Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
-                vignetteScaleY = BABYLON.Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
-                effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
-                var vignettePower = -2.0 * this.vignetteWeight;
-                effect.setFloat4("vignetteSettings2", this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
-            }
-            // Exposure
-            effect.setFloat("exposureLinear", this.exposure);
-            // Contrast
-            effect.setFloat("contrast", this.contrast);
-            // Color transform settings
-            if (this.colorGradingTexture) {
-                effect.setTexture("txColorTransform", this.colorGradingTexture);
-                var textureSize = this.colorGradingTexture.getSize().height;
-                effect.setFloat4("colorTransformSettings", (textureSize - 1) / textureSize, // textureScale
-                0.5 / textureSize, // textureOffset
-                textureSize, // textureSize
-                this.colorGradingTexture.level // weight
-                );
-            }
-        };
-        /**
-         * Clones the current image processing instance.
-         * @return The cloned image processing
-         */
-        ImageProcessingConfiguration.prototype.clone = function () {
-            return BABYLON.SerializationHelper.Clone(function () { return new ImageProcessingConfiguration(); }, this);
-        };
-        /**
-         * Serializes the current image processing instance to a json representation.
-         * @return a JSON representation
-         */
-        ImageProcessingConfiguration.prototype.serialize = function () {
-            return BABYLON.SerializationHelper.Serialize(this);
-        };
-        /**
-         * Parses the image processing from a json representation.
-         * @param source the JSON source to parse
-         * @return The parsed image processing
-         */
-        ImageProcessingConfiguration.Parse = function (source) {
-            return BABYLON.SerializationHelper.Parse(function () { return new ImageProcessingConfiguration(); }, source, null, null);
-        };
-        Object.defineProperty(ImageProcessingConfiguration, "VIGNETTEMODE_MULTIPLY", {
-            /**
-             * Used to apply the vignette as a mix with the pixel color.
-             */
-            get: function () {
-                return this._VIGNETTEMODE_MULTIPLY;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ImageProcessingConfiguration, "VIGNETTEMODE_OPAQUE", {
-            /**
-             * Used to apply the vignette as a replacement of the pixel color.
-             */
-            get: function () {
-                return this._VIGNETTEMODE_OPAQUE;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        // Static constants associated to the image processing.
-        ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY = 0;
-        ImageProcessingConfiguration._VIGNETTEMODE_OPAQUE = 1;
-        __decorate([
-            BABYLON.serializeAsColorCurves()
-        ], ImageProcessingConfiguration.prototype, "colorCurves", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_colorCurvesEnabled", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], ImageProcessingConfiguration.prototype, "colorGradingTexture", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_colorGradingEnabled", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_colorGradingWithGreenDepth", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_colorGradingBGR", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_exposure", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_toneMappingEnabled", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_contrast", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "vignetteStretch", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "vignetteCentreX", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "vignetteCentreY", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "vignetteWeight", void 0);
-        __decorate([
-            BABYLON.serializeAsColor4()
-        ], ImageProcessingConfiguration.prototype, "vignetteColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "vignetteCameraFov", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_vignetteBlendMode", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_vignetteEnabled", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ImageProcessingConfiguration.prototype, "_applyByPostProcess", void 0);
-        return ImageProcessingConfiguration;
-    }());
-    BABYLON.ImageProcessingConfiguration = ImageProcessingConfiguration;
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.imageProcessingConfiguration.js.map
 
 var BABYLON;
 (function (BABYLON) {

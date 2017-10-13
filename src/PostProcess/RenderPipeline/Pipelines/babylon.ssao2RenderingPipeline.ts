@@ -262,12 +262,8 @@
             var result = [];
             var vector, scale;
 
-            var rand = (min, max) => {
+            var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
-            }
-
-            var lerp = (start, end, percent) => {
-                return (start + percent*(end - start));
             }
 
             var i = 0;
@@ -279,7 +275,7 @@
                    rand(0.30, 1.0));
                vector.normalize();
                scale = i / numSamples;
-               scale = lerp(0.1, 1.0, scale*scale);
+               scale = Scalar.Lerp(0.1, 1.0, scale*scale);
                vector.scaleInPlace(scale);
 
 
@@ -350,7 +346,7 @@
 
             var context = this._randomTexture.getContext();
 
-            var rand = (min, max) => {
+            var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
             }
 

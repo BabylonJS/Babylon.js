@@ -91,7 +91,7 @@ module BABYLON {
                         ];
 
             for (var mode of modes) {
-                this[mode] = (mode === modeToEnable);
+                (<any>this)[mode] = (mode === modeToEnable);
             }
         }
     }
@@ -440,11 +440,11 @@ module BABYLON {
                 this._renderTargets.reset();
 
                 if (StandardMaterial_OldVer.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._reflectionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
                 }
 
                 if (StandardMaterial_OldVer.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._refractionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
                 }
 
                 return this._renderTargets;
@@ -1977,7 +1977,7 @@ vColor=color;\n\
  
    export class StandardShaderVersions{
 
-        public static Ver3_0;
+        public static Ver3_0 = "3.0.0";
 
    } 
 
@@ -2032,7 +2032,7 @@ vColor=color;\n\
               this._isCreatedShader  = false;
             
             CustomMaterial.ShaderIndexer++;
-            var name = name+"custom_"+CustomMaterial.ShaderIndexer;
+            var name: string = name + "custom_" + CustomMaterial.ShaderIndexer;
 
             this.ReviewUniform("uniform",uniforms);
             this.ReviewUniform("sampler",samplers);
@@ -2089,10 +2089,10 @@ vColor=color;\n\
               }
               if(param){
               if(kind.indexOf("sampler") == -1) {
-                    this._newUniformInstances[kind+"-"+name] = param;
+                    (<any>this._newUniformInstances)[kind+"-"+name] = param;
               }
               else{
-                  this._newSamplerInstances[kind+"-"+name] = param;
+                (<any>this._newUniformInstances)[kind+"-"+name] = param;
               }
              }
 

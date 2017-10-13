@@ -142,7 +142,7 @@
             return ActionManager._OnKeyUpTrigger;
         }
 
-        public static Triggers = {};
+        public static Triggers: { [key: string]: number} = {};
 
         // Members
         public actions = new Array<Action>();
@@ -371,18 +371,18 @@
 
         public serialize(name: string): any {
             var root = {
-                children: [],
+                children: new Array(),
                 name: name,
                 type: 3, // Root node
-                properties: [] // Empty for root but required
+                properties: new Array() // Empty for root but required
             };
 
             for (var i = 0; i < this.actions.length; i++) {
                 var triggerObject = {
                     type: 0, // Trigger
-                    children: [],
+                    children: new Array(),
                     name: ActionManager.GetTriggerName(this.actions[i].trigger),
-                    properties: []
+                    properties: new Array()
                 };
 
                 var triggerOptions = this.actions[i].triggerOptions;
@@ -422,7 +422,7 @@
 
             // instanciate a new object
             var instanciate = (name: any, params: Array<any>): any => {
-                var newInstance: Object = Object.create(BABYLON[name].prototype);
+                var newInstance: Object = Tools.Instantiate(name);
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;
             };
@@ -513,7 +513,7 @@
                             value = scene.getSoundByName(value);
                         else if (name !== "propertyPath") {
                             if (parsedAction.type === 2 && name === "operator")
-                                value = ValueCondition[value];
+                                value = (<any>ValueCondition)[value];
                             else
                                 value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
                         } else {
@@ -585,10 +585,10 @@
                         value.mesh = scene.getMeshByID(value._meshId);
                     }
 
-                    triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
+                    triggerParams = { trigger: (<any>ActionManager)[trigger.name], parameter: value };
                 }
                 else
-                    triggerParams = BABYLON.ActionManager[trigger.name];
+                    triggerParams = (<any>ActionManager)[trigger.name];
 
                 for (var j = 0; j < trigger.children.length; j++) {
                     if (!trigger.detached)
