@@ -49,6 +49,9 @@ namespace GLTFExport.Entities
         [DataMember(EmitDefaultValue = false)]
         public GLTFAnimation[] animations { get; set; }
 
+        [DataMember(EmitDefaultValue = false)]
+        public GLTFSkin[] skins { get; set; }
+
         public string OutputFolder { get; private set; }
         public string OutputFile { get; private set; }
 
@@ -63,11 +66,14 @@ namespace GLTFExport.Entities
         public List<GLTFImage> ImagesList { get; private set; }
         public List<GLTFSampler> SamplersList { get; private set; }
         public List<GLTFAnimation> AnimationsList { get; private set; }
+        public List<GLTFSkin> SkinsList { get; private set; }
 
         public GLTFBuffer buffer;
         public GLTFBufferView bufferViewScalar;
         public GLTFBufferView bufferViewFloatVec3;
         public GLTFBufferView bufferViewFloatVec4;
+        public GLTFBufferView bufferViewFloatMat4;
+        public GLTFBufferView bufferViewUnsignedShortVec4;
         public GLTFBufferView bufferViewFloatVec2;
         public GLTFBufferView bufferViewImage;
         public GLTFBufferView bufferViewAnimationFloatScalar;
@@ -90,6 +96,7 @@ namespace GLTFExport.Entities
             ImagesList = new List<GLTFImage>();
             SamplersList = new List<GLTFSampler>();
             AnimationsList = new List<GLTFAnimation>();
+            SkinsList = new List<GLTFSkin>();
         }
 
         public void Prepare()
@@ -141,6 +148,10 @@ namespace GLTFExport.Entities
             if (AnimationsList.Count > 0)
             {
                 animations = AnimationsList.ToArray();
+            }
+            if (SkinsList.Count > 0)
+            {
+                skins = SkinsList.ToArray();
             }
         }
     }
