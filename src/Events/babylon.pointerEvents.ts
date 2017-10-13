@@ -47,7 +47,7 @@ module BABYLON {
      * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
      */
     export class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX, localY) {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number) {
             super(type, event);
             this.skipOnPointerObservable = false;
             this.localPosition = new Vector2(localX, localY);

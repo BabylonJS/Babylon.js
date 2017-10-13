@@ -226,7 +226,7 @@ module BABYLON.GLTF2 {
         }
 
         private _getSkeletons(): Skeleton[] {
-            var skeletons = [];
+            var skeletons = new Array<Skeleton>();
 
             var skins = this._gltf.skins;
             if (skins) {
@@ -241,7 +241,7 @@ module BABYLON.GLTF2 {
         }
 
         private _getAnimationTargets(): any[] {
-            var targets = [];
+            var targets = new Array();
 
             var animations = this._gltf.animations;
             if (animations) {
@@ -430,7 +430,7 @@ module BABYLON.GLTF2 {
             this._loadVertexDataAsync(context, mesh, primitive, vertexData => {
                 this._loadMorphTargetsData(context, mesh, primitive, vertexData, node.babylonMesh);
 
-                var loadMaterial = index => {
+                var loadMaterial = (index: number) => {
                     if (primitive.material == null) {
                         subMaterials[index] = this._getDefaultMaterial();
                     }
@@ -756,22 +756,24 @@ module BABYLON.GLTF2 {
                 throw new Error(channelContext + ": Failed to find target node " + channel.target.node);
             }
 
-            var targetPath = {
+            var conversion:any = {
                 "translation": "position",
                 "rotation": "rotationQuaternion",
                 "scale": "scaling",
                 "weights": "influence"
-            }[channel.target.path];
+            }
+            var targetPath = conversion[channel.target.path];
             if (!targetPath) {
                 throw new Error(channelContext + ": Invalid target path '" + channel.target.path + "'");
             }
 
-            var animationType = {
+            var animationConvertion: any = {
                 "position": Animation.ANIMATIONTYPE_VECTOR3,
                 "rotationQuaternion": Animation.ANIMATIONTYPE_QUATERNION,
                 "scaling": Animation.ANIMATIONTYPE_VECTOR3,
                 "influence": Animation.ANIMATIONTYPE_FLOAT,
-            }[targetPath];
+            }
+            var animationType = animationConvertion[targetPath];
 
             var inputData: Float32Array;
             var outputData: Float32Array;
@@ -782,7 +784,8 @@ module BABYLON.GLTF2 {
                 }
 
                 var outputBufferOffset = 0;
-                var getNextOutputValue: () => any = {
+
+                var nextOutputConversion: any = {
                     "position": () => {
                         var value = Vector3.FromArray(outputData, outputBufferOffset);
                         outputBufferOffset += 3;
@@ -806,20 +809,23 @@ module BABYLON.GLTF2 {
                         }
                         return value;
                     },
-                }[targetPath];
+                };
+                
+                var getNextOutputValue: () => any = nextOutputConversion[targetPath];
 
-                var getNextKey: (frameIndex) => any = {
-                    "LINEAR": frameIndex => ({
+                var nextKeyConversion: any = {
+                    "LINEAR": (frameIndex: number) => ({
                         frame: inputData[frameIndex],
                         value: getNextOutputValue()
                     }),
-                    "CUBICSPLINE": frameIndex => ({
+                    "CUBICSPLINE": (frameIndex: number) => ({
                         frame: inputData[frameIndex],
                         inTangent: getNextOutputValue(),
                         value: getNextOutputValue(),
                         outTangent: getNextOutputValue()
                     }),
-                }[sampler.interpolation];
+                };
+                var getNextKey: (frameIndex: number) => any = nextKeyConversion[sampler.interpolation];
                 if (!getNextKey) {
                     throw new Error(samplerContext + ": Invalid interpolation '" + sampler.interpolation + "'");
                 }
@@ -1038,7 +1044,7 @@ module BABYLON.GLTF2 {
 
                 while (targetIndex < targetLength) {
                     for (var componentIndex = 0; componentIndex < numComponents; componentIndex++) {
-                        targetBuffer[targetIndex] = sourceBuffer[sourceIndex + componentIndex];
+                        (<any>targetBuffer)[targetIndex] = (<any>sourceBuffer)[sourceIndex + componentIndex];
                         targetIndex++;
                     }
                     sourceIndex += elementStride;

@@ -1,7 +1,7 @@
 module BABYLON {
     export class VRExperienceHelper {
         private _scene: BABYLON.Scene;
-        private _position;
+        private _position: Vector3;
         private _btnVR: HTMLButtonElement;
 
         // Can the system support WebVR, even if a headset isn't plugged in?
@@ -21,7 +21,7 @@ module BABYLON {
         private _vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
         private _deviceOrientationCamera: DeviceOrientationCamera;
         
-        private _onKeyDown;
+        private _onKeyDown: (event: KeyboardEvent) => void;
         private _onVrDisplayPresentChange: any;
         private _onVRDisplayChanged: (eventArgs:IDisplayChangedEventArgs) => void;
         private _onVRRequestPresentStart: () => void;
@@ -29,7 +29,7 @@ module BABYLON {
         
         public onEnteringVR: () => void;
         public onExitingVR: () => void;
-        public onControllerMeshLoaded: (WebVRController) => void;
+        public onControllerMeshLoaded: (controller: WebVRController) => void;
                 
         constructor(scene: Scene, private webVROptions: WebVROptions = {}) {
             this._scene = scene;
@@ -88,7 +88,7 @@ module BABYLON {
             document.body.appendChild(this._btnVR);
 
             // Exiting VR mode using 'ESC' key on desktop
-            this._onKeyDown = (event) => {
+            this._onKeyDown = (event: KeyboardEvent) => {
                 if (event.keyCode === 27 && this.isInVRMode()) {
                     this.exitVR();
                 }

@@ -8,6 +8,20 @@ namespace BabylonExport.Entities
         public float Y { get; set; }
         public float Z { get; set; }
 
+        public BabylonVector3() { }
+
+        /**
+         * Creates a new Vector3 object from the passed x, y, z (floats) coordinates.  
+         * A Vector3 is the main object used in 3D geometry.  
+         * It can represent etiher the coordinates of a point the space, either a direction.  
+         */
+        public BabylonVector3(float x, float y, float z)
+        {
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
+        }
+
         public float[] ToArray()
         {
             return new [] {X, Y, Z};
@@ -67,6 +81,14 @@ namespace BabylonExport.Entities
             result.Z = (float)((cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll));
             result.W = (float)((cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll));
             return result;
+        }
+
+        /**
+         * Returns a new Vector3 set from the index "offset" of the passed array.
+         */
+        public static BabylonVector3 FromArray(float[] array, int offset = 0)
+        {
+            return new BabylonVector3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
         public override string ToString()

@@ -167,38 +167,38 @@
     export interface IPhysicsEnginePlugin {
         world: any;
         name: string;
-        setGravity(gravity: Vector3);
-        setTimeStep(timeStep: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
         getTimeStep(): number;
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void; //not forgetting pre and post events
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
-        generatePhysicsBody(impostor: PhysicsImpostor);
-        removePhysicsBody(impostor: PhysicsImpostor);
-        generateJoint(joint: PhysicsImpostorJoint);
-        removeJoint(joint: PhysicsImpostorJoint)
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(joint: PhysicsImpostorJoint): void;
+        removeJoint(joint: PhysicsImpostorJoint): void;
         isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor);
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion);
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3);
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3);
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
         getLinearVelocity(impostor: PhysicsImpostor) : Vector3;
         getAngularVelocity(impostor: PhysicsImpostor) : Vector3;
-        setBodyMass(impostor: PhysicsImpostor, mass: number);
-        getBodyMass(impostor: PhysicsImpostor);
-        getBodyFriction(impostor: PhysicsImpostor);
-        setBodyFriction(impostor: PhysicsImpostor, friction: number);
-        getBodyRestitution(impostor: PhysicsImpostor);
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number);
-        sleepBody(impostor: PhysicsImpostor);
-        wakeUpBody(impostor: PhysicsImpostor);
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
         //Joint Update
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number);
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number);
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number);
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
         getRadius(impostor: PhysicsImpostor):number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result:Vector3);
-        syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor);
-        dispose();
+        getBoxSizeToRef(impostor: PhysicsImpostor, result:Vector3): void;
+        syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor): void;
+        dispose(): void;
     }
 }

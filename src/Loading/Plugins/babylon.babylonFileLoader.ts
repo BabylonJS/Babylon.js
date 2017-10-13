@@ -1,6 +1,6 @@
 ﻿module BABYLON.Internals {
 
-    var parseMaterialById = (id, parsedData, scene, rootUrl) => {
+    var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];
             if (parsedMaterial.id === id) {
@@ -10,7 +10,7 @@
         return null;
     };
 
-    var isDescendantOf = (mesh, names: Array<any>, hierarchyIds) => {
+    var isDescendantOf = (mesh: any, names: Array<any>, hierarchyIds: Array<number>) => {
         for (var i in names) {
             if (mesh.name === names[i]) {
                 hierarchyIds.push(mesh.id);
@@ -24,7 +24,7 @@
         return false;
     };
 
-    var logOperation = (operation, producer) => {
+    var logOperation = (operation: string, producer: {file: string, name: string, version: string, exporter_version: string}) => {
         return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
     }
 
@@ -57,7 +57,7 @@
                 if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                     var loadedSkeletonsIds = [];
                     var loadedMaterialsIds = [];
-                    var hierarchyIds = [];
+                    var hierarchyIds = new Array<number>();
                     var index: number;
                     var cache: number;
                     for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
@@ -79,7 +79,7 @@
                                         if (found === true || !parsedData.geometries[geometryType] || !(Array.isArray(parsedData.geometries[geometryType]))) {
                                             return;
                                         } else {
-                                            parsedData.geometries[geometryType].forEach((parsedGeometryData) => {
+                                            parsedData.geometries[geometryType].forEach((parsedGeometryData: any) => {
                                                 if (parsedGeometryData.id === parsedMesh.geometryId) {
                                                     switch (geometryType) {
                                                         case "boxes":

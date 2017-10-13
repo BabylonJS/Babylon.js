@@ -69,7 +69,7 @@
             this._isBlendFunctionParametersDirty = true;
         }
 
-        public setAlphaEquationParameters(rgb: number, alpha): void {
+        public setAlphaEquationParameters(rgb: number, alpha: number): void {
             if (
                 this._blendEquationParameters[0] === rgb &&
                 this._blendEquationParameters[1] === alpha
@@ -129,7 +129,7 @@
 
             // Alpha equation
             if (this._isBlendEquationParametersDirty) {
-                gl.blendEquationSeparate(this._isBlendEquationParametersDirty[0], this._isBlendEquationParametersDirty[1]);
+                gl.blendEquationSeparate((<any>this._isBlendEquationParametersDirty)[0], (<any>this._isBlendEquationParametersDirty)[1]);
                 this._isBlendEquationParametersDirty = false;
             }        
 

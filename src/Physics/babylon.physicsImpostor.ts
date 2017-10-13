@@ -236,14 +236,14 @@ module BABYLON {
          * Get a specific parametes from the options parameter.
          */
         public getParam(paramName: string) {
-            return this._options[paramName];
+            return (<any>this._options)[paramName];
         }
 
         /**
          * Sets a specific parameter in the options given to the physics plugin
          */
         public setParam(paramName: string, value: number) {
-            this._options[paramName] = value;
+            (<any>this._options)[paramName] = value;
             this._bodyUpdateRequired = true;
         }
 

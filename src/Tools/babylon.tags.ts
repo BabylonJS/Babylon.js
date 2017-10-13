@@ -7,15 +7,15 @@
                 return Tags.HasTags(obj);
             };
 
-            obj.addTags = (tagsString) => {
+            obj.addTags = (tagsString: string) => {
                 return Tags.AddTagsTo(obj, tagsString);
             };
 
-            obj.removeTags = (tagsString) => {
+            obj.removeTags = (tagsString: string) => {
                 return Tags.RemoveTagsFrom(obj, tagsString);
             };
 
-            obj.matchesTagsQuery = (tagsQuery) => {
+            obj.matchesTagsQuery = (tagsQuery: string) => {
                 return Tags.MatchesQuery(obj, tagsQuery);
             };
         }

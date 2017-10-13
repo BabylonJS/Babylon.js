@@ -104,7 +104,7 @@ module BABYLON.Internals {
 
             for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
                 var fileFace = this.FileFaces[faceIndex];
-                var dataArray = cubeInfo[fileFace.name];
+                var dataArray = (<any>cubeInfo)[fileFace.name];
                 var v = minUV;
 
                 // TODO: we could perform the summation directly into a SphericalPolynomial (SP), which is more efficient than SphericalHarmonic (SH).

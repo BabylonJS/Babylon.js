@@ -127,7 +127,7 @@
                             max: (constraints && constraints.maxHeight) || 480
                         }
                     }
-                }, (stream) => {
+                }, (stream: any) => {
 
                     if (video.mozSrcObject !== undefined) { // hack for Firefox < 19
                         video.mozSrcObject = stream;
@@ -140,7 +140,7 @@
                     if (onReady) {
                         onReady(new BABYLON.VideoTexture("video", video, scene, true, true));
                     }
-			    }, function (e) {
+			    }, function (e: DOMException) {
                     Tools.Error(e.name);
                 });
             }

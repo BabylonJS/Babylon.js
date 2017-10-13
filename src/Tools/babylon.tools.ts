@@ -6,7 +6,7 @@
     // Screenshots
     var screenshotCanvas: HTMLCanvasElement;
 
-    var cloneValue = (source, destinationObject) => {
+    var cloneValue = (source: any, destinationObject: any) => {
         if (!source)
             return null;
 
@@ -54,7 +54,7 @@
 
             var arr = className.split(".");
 
-            var fn = (window || this);
+            var fn: any = (window || this);
             for (var i = 0, len = arr.length; i < len; i++) {
                 fn = fn[arr[i]];
             }
@@ -302,7 +302,7 @@
             };
         }
 
-        public static MakeArray(obj, allowsNullUndefined?: boolean): Array<any> {
+        public static MakeArray(obj: any, allowsNullUndefined?: boolean): Array<any> {
             if (allowsNullUndefined !== true && (obj === undefined || obj == null))
                 return undefined;
 
@@ -325,7 +325,7 @@
          * @param func - the function to be called
          * @param requester - the object that will request the next frame. Falls back to window.
          */
-        public static QueueNewFrame(func, requester?): number {
+        public static QueueNewFrame(func: () => void, requester?: any): number {
             if (!Tools.IsWindowObjectExist()) {
                 return setTimeout(func, 16);
             }
@@ -354,8 +354,8 @@
             }
         }
 
-        public static RequestFullscreen(element): void {
-            var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
+        public static RequestFullscreen(element: HTMLElement): void {
+            var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || element.webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
             if (!requestFunction) return;
             requestFunction.call(element);
         }
@@ -402,7 +402,7 @@
             return url;
         }
 
-        public static LoadImage(url: any, onLoad, onError: (message?: string, exception?: any) => void, database): HTMLImageElement {
+        public static LoadImage(url: any, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, database: any): HTMLImageElement {
             if (url instanceof ArrayBuffer) {
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
@@ -478,7 +478,7 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest, exception?: any) => void): void {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: any, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest, exception?: any) => void): void {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
@@ -571,17 +571,17 @@
             head.appendChild(script);
         }
 
-        public static ReadFileAsDataURL(fileToLoad: Blob, callback, progressCallback): void {
+        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): void {
             var reader = new FileReader();
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
-                callback(e.target['result']);
+                callback((<any>e.target)['result']);
             };
             reader.onprogress = progressCallback;
             reader.readAsDataURL(fileToLoad);
         }
 
-        public static ReadFile(fileToLoad: File, callback, progressCallBack, useArrayBuffer?: boolean): void {
+        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): void {
             var reader = new FileReader();
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
@@ -589,7 +589,7 @@
             };
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
-                callback(e.target['result']);
+                callback((<any>e.target)['result']);
             };
             reader.onprogress = progressCallBack;
             if (!useArrayBuffer) {
@@ -630,7 +630,7 @@
                 max.z = v.z;
         }
 
-        public static DeepCopy(source, destination, doNotCopyList?: string[], mustCopyList?: string[]): void {
+        public static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void {
             for (var prop in source) {
 
                 if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {
@@ -673,7 +673,7 @@
             }
         }
 
-        public static IsEmpty(obj): boolean {
+        public static IsEmpty(obj: any): boolean {
             for (var i in obj) {
                 return false;
             }
@@ -995,7 +995,7 @@
         }
 
         private static _FormatMessage(message: string): string {
-            var padStr = i => (i < 10) ? "0" + i : "" + i;
+            var padStr = (i: number) => (i < 10) ? "0" + i : "" + i;
 
             var date = new Date();
             return "[" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
@@ -1182,7 +1182,7 @@
          * @param object the object to get the class name from
          * @return the name of the class, will be "object" for a custom data type not using the @className decorator
          */
-        public static GetClassName(object, isType: boolean = false): string {
+        public static GetClassName(object: any, isType: boolean = false): string {
             let name = null;
 
             if (!isType && object.getClassName) {
@@ -1213,7 +1213,7 @@
          * @param object the object to get the class name from
          * @return a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
          */
-        public static getFullClassName(object, isType: boolean = false): string {
+        public static getFullClassName(object: any, isType: boolean = false): string {
             let className = null;
             let moduleName = null;
 
@@ -1439,8 +1439,8 @@
      */
     export function className(name: string, module?: string): (target: Object) => void {
         return (target: Object) => {
-            target["__bjsclassName__"] = name;
-            target["__bjsmoduleName__"] = (module != null) ? module : null;
+            (<any>target)["__bjsclassName__"] = name;
+            (<any>target)["__bjsmoduleName__"] = (module != null) ? module : null;
         }
     }
 

@@ -6,8 +6,8 @@
         private _target: any;
 
         private _originalBlendValue: any;
-        private _offsetsCache = {};
-        private _highLimitsCache = {};
+        private _offsetsCache: {[key: string]: any} = {};
+        private _highLimitsCache: {[key: string]: any} = {};
         private _stopped = false;
         private _blendingFactor = 0;
         
@@ -50,7 +50,7 @@
             return value;
         }      
         
-        private _interpolate(currentFrame: number, repeatCount: number, loopMode: number, offsetValue?, highLimitValue?) {
+        private _interpolate(currentFrame: number, repeatCount: number, loopMode: number, offsetValue?: any, highLimitValue?: any) {
             if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
                 return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
             }

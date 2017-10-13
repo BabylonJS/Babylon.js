@@ -263,6 +263,11 @@ namespace Max2Babylon
             ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Float);
         }
 
+        private static BabylonAnimation ExportMatrixAnimation(string property, Func<int, float[]> extractValueFunc, bool removeLinearAnimationKeys = true)
+        {
+            return ExportAnimation(property, extractValueFunc, BabylonAnimation.DataType.Matrix, removeLinearAnimationKeys);
+        }
+
         static void RemoveLinearAnimationKeys(List<BabylonAnimationKey> keys)
         {
             for (int ixFirst = keys.Count - 3; ixFirst >= 0; --ixFirst)
@@ -313,9 +318,18 @@ namespace Max2Babylon
 
         }
 
-        private static void ExportAnimation(string property, List<BabylonAnimation> animations, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType)
+        private static void ExportAnimation(string property, List<BabylonAnimation> animations, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType, bool removeLinearAnimationKeys = true)
         {
-            var exportNonOptimizedAnimations = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportnonoptimizedanimations");
+            var babylonAnimation = ExportAnimation(property, extractValueFunc, dataType, removeLinearAnimationKeys);
+            if (babylonAnimation != null)
+            {
+                animations.Add(babylonAnimation);
+            }
+        }
+
+        private static BabylonAnimation ExportAnimation(string property, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType, bool removeLinearAnimationKeys = true)
+        {
+            var optimizeAnimations = !Loader.Core.RootNode.GetBoolProperty("babylonjs_donotoptimizeanimations"); // reverse negation for clarity
 
             var start = Loader.Core.AnimRange.Start;
             var end = Loader.Core.AnimRange.End;
@@ -326,7 +340,9 @@ namespace Max2Babylon
             {
                 var current = extractValueFunc(key);
 
-                if (exportNonOptimizedAnimations && previous != null && previous.IsEqualTo(current))
+                // if animations are not optimized, all keys from start to end are created
+                // otherwise, keys are added only for non constant values
+                if (optimizeAnimations && previous != null && previous.IsEqualTo(current))
                 {
                     continue; // Do not add key
                 }
@@ -340,7 +356,8 @@ namespace Max2Babylon
                 previous = current;
             }
 
-            if (!exportNonOptimizedAnimations)
+            // if animations are not optimized, do the following as minimal optimization
+            if (removeLinearAnimationKeys && !optimizeAnimations)
             {
                 RemoveLinearAnimationKeys(keys);
             }
@@ -359,7 +376,6 @@ namespace Max2Babylon
 
                 if (animationPresent)
                 {
-
                     if (keys[keys.Count - 1].frame != end / Ticks)
                     {
                         keys.Add(new BabylonAnimationKey()
@@ -378,10 +394,10 @@ namespace Max2Babylon
                         loopBehavior = (int)BabylonAnimation.LoopBehavior.Cycle,
                         property = property
                     };
-
-                    animations.Add(babylonAnimation);
+                    return babylonAnimation;
                 }
             }
+            return null;
         }
     }
 }

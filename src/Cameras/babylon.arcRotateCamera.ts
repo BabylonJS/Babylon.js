@@ -33,10 +33,10 @@ module BABYLON {
         public inertialRadiusOffset = 0;
 
         @serialize()
-        public lowerAlphaLimit = null;
+        public lowerAlphaLimit: number = null;
 
         @serialize()
-        public upperAlphaLimit = null;
+        public upperAlphaLimit: number = null;
 
         @serialize()
         public lowerBetaLimit = 0.01;
@@ -45,10 +45,10 @@ module BABYLON {
         public upperBetaLimit = Math.PI;
 
         @serialize()
-        public lowerRadiusLimit = null;
+        public lowerRadiusLimit: number = null;
 
         @serialize()
-        public upperRadiusLimit = null;
+        public upperRadiusLimit: number = null;
 
         @serialize()
         public inertialPanningX: number = 0;
@@ -717,18 +717,19 @@ module BABYLON {
             this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance }, doNotUpdateMaxZ);
         }
 
-        public focusOn(meshesOrMinMaxVectorAndDistance, doNotUpdateMaxZ = false): void {
-            var meshesOrMinMaxVector;
-            var distance;
+        public focusOn(meshesOrMinMaxVectorAndDistance: AbstractMesh[] | { min: Vector3, max: Vector3, distance: number }, doNotUpdateMaxZ = false): void {
+            var meshesOrMinMaxVector: { min: Vector3, max: Vector3};
+            var distance: number;
 
-            if (meshesOrMinMaxVectorAndDistance.min === undefined) { // meshes
-                meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance || this.getScene().meshes;
-                meshesOrMinMaxVector = Mesh.MinMax(meshesOrMinMaxVector);
+            if ((<any>meshesOrMinMaxVectorAndDistance).min === undefined) { // meshes
+                var meshes = (<AbstractMesh[]>meshesOrMinMaxVectorAndDistance) || this.getScene().meshes;
+                meshesOrMinMaxVector = Mesh.MinMax(meshes);
                 distance = Vector3.Distance(meshesOrMinMaxVector.min, meshesOrMinMaxVector.max);
             }
             else { //minMaxVector and distance
-                meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance;
-                distance = meshesOrMinMaxVectorAndDistance.distance;
+                var minMaxVectorAndDistance = <any>meshesOrMinMaxVectorAndDistance;
+                meshesOrMinMaxVector = minMaxVectorAndDistance;
+                distance = minMaxVectorAndDistance.distance;
             }
 
             this._target = Mesh.Center(meshesOrMinMaxVector);

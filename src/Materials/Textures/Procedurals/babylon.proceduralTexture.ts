@@ -17,14 +17,14 @@
         private _samplers = new Array<string>();
         private _fragment: any;
 
-        public _textures = new Array<Texture>();
-        private _floats = new Array<number>();
-        private _floatsArrays = {};
-        private _colors3 = new Array<Color3>();
-        private _colors4 = new Array<Color4>();
-        private _vectors2 = new Array<Vector2>();
-        private _vectors3 = new Array<Vector3>();
-        private _matrices = new Array<Matrix>();
+        public _textures: {[key: string]: Texture} = {};
+        private _floats: {[key: string]: number} = {};
+        private _floatsArrays: {[key: string]: number[]} = {};
+        private _colors3: {[key: string]: Color3} = {};
+        private _colors4: {[key: string]: Color4} = {};
+        private _vectors2: {[key: string]: Vector2} = {};
+        private _vectors3: {[key: string]: Vector3} = {};
+        private _matrices: {[key: string]: Matrix} = {};
 
         private _fallbackTexture: Texture;
 
@@ -182,7 +182,7 @@
             return this._size;
         }
 
-        public resize(size, generateMipMaps) {
+        public resize(size: number, generateMipMaps: boolean): void {
             if (this._fallbackTextureUsed) {
                 return;
             }
@@ -191,7 +191,7 @@
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         }
 
-        private _checkUniform(uniformName): void {
+        private _checkUniform(uniformName: string): void {
             if (this._uniforms.indexOf(uniformName) === -1) {
                 this._uniforms.push(uniformName);
             }

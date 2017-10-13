@@ -250,7 +250,7 @@
 
             // check if polyfills needed
             if (!self.Math.fround) {
-                self.Math.fround = (array => x => {
+                self.Math.fround = (array => (x: number) => {
                     return array[0] = x, array[0];
                 })(new Float32Array(1));
             }

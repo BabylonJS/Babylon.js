@@ -97,7 +97,7 @@ module BABYLON {
                         ];
 
             for (var mode of modes) {
-                this[mode] = (mode === modeToEnable);
+                (<any>this)[mode] = (mode === modeToEnable);
             }
         }
     }
@@ -465,11 +465,11 @@ module BABYLON {
                 this._renderTargets.reset();
 
                 if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._reflectionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
                 }
 
                 if (StandardMaterial.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._refractionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
                 }
 
                 return this._renderTargets;

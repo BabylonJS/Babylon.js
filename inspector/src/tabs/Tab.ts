@@ -54,7 +54,7 @@ module INSPECTOR {
         public filter(str: string) { };
 
         /** Dispose properly this tab */
-        public abstract dispose();
+        public abstract dispose(): void;
 
         /** Select an item in the tree */
         public select(item: TreeItem) {
