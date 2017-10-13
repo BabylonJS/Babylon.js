@@ -7,7 +7,7 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private static float FPS_FACTOR = 60.0f; // TODO - Which FPS factor ?
+        private static float FPS_FACTOR = 30.0f; // TODO - Which FPS factor ?
 
         private GLTFAnimation ExportNodeAnimation(BabylonNode babylonNode, GLTF gltf, GLTFNode gltfNode, BabylonScene babylonScene = null)
         {
@@ -34,62 +34,11 @@ namespace Max2Babylon
                         continue;
                     }
 
-                    // Buffer
-                    var buffer = GLTFBufferService.Instance.GetBuffer(gltf);
-
                     // --- Input ---
-                    var accessorInput = GLTFBufferService.Instance.CreateAccessor(
-                        gltf,
-                        GLTFBufferService.Instance.GetBufferViewAnimationFloatScalar(gltf, buffer),
-                        "accessorAnimationInput",
-                        GLTFAccessor.ComponentType.FLOAT,
-                        GLTFAccessor.TypeEnum.SCALAR
-                    );
-                    // Populate accessor
-                    accessorInput.min = new float[] { float.MaxValue };
-                    accessorInput.max = new float[] { float.MinValue };
-                    foreach (var babylonAnimationKey in babylonAnimation.keys)
-                    {
-                        var inputValue = babylonAnimationKey.frame / FPS_FACTOR;
-                        // Store values as bytes
-                        accessorInput.bytesList.AddRange(BitConverter.GetBytes(inputValue));
-                        // Update min and max values
-                        GLTFBufferService.UpdateMinMaxAccessor(accessorInput, inputValue);
-                    };
-                    accessorInput.count = babylonAnimation.keys.Length;
+                    var accessorInput = _createAndPopulateInput(gltf, babylonAnimation);
 
                     // --- Output ---
-                    GLTFAccessor accessorOutput = null;
-                    switch (gltfTarget.path)
-                    {
-                        case "translation":
-                            accessorOutput = GLTFBufferService.Instance.CreateAccessor(
-                                gltf,
-                                GLTFBufferService.Instance.GetBufferViewAnimationFloatVec3(gltf, buffer),
-                                "accessorAnimationPositions",
-                                GLTFAccessor.ComponentType.FLOAT,
-                                GLTFAccessor.TypeEnum.VEC3
-                            );
-                            break;
-                        case "rotation":
-                            accessorOutput = GLTFBufferService.Instance.CreateAccessor(
-                                gltf,
-                                GLTFBufferService.Instance.GetBufferViewAnimationFloatVec4(gltf, buffer),
-                                "accessorAnimationRotations",
-                                GLTFAccessor.ComponentType.FLOAT,
-                                GLTFAccessor.TypeEnum.VEC4
-                            );
-                            break;
-                        case "scale":
-                            accessorOutput = GLTFBufferService.Instance.CreateAccessor(
-                                gltf,
-                                GLTFBufferService.Instance.GetBufferViewAnimationFloatVec3(gltf, buffer),
-                                "accessorAnimationScales",
-                                GLTFAccessor.ComponentType.FLOAT,
-                                GLTFAccessor.TypeEnum.VEC3
-                            );
-                            break;
-                    }
+                    GLTFAccessor accessorOutput = _createAccessorOfPath(gltfTarget.path, gltf);
                     // Populate accessor
                     foreach (var babylonAnimationKey in babylonAnimation.keys)
                     {
@@ -149,6 +98,169 @@ namespace Max2Babylon
             {
                 return null;
             }
+        }
+
+        private GLTFAnimation ExportBoneAnimation(BabylonBone babylonBone, GLTF gltf, GLTFNode gltfNode)
+        {
+            var channelList = new List<GLTFChannel>();
+            var samplerList = new List<GLTFAnimationSampler>();
+
+            if (babylonBone.animation != null && babylonBone.animation.property == "_matrix")
+            {
+                RaiseMessage("GLTFExporter.Animation | Export animation of bone named: " + babylonBone.name, 2);
+
+                var babylonAnimation = babylonBone.animation;
+
+                // --- Input ---
+                var accessorInput = _createAndPopulateInput(gltf, babylonAnimation);
+
+                // --- Output ---
+                var paths = new string[] { "translation", "rotation", "scale" };
+                var accessorOutputByPath = new Dictionary<string, GLTFAccessor>();
+
+                foreach (string path in paths)
+                {
+                    GLTFAccessor accessorOutput = _createAccessorOfPath(path, gltf);
+                    accessorOutputByPath.Add(path, accessorOutput);
+                }
+
+                // Populate accessors
+                foreach (var babylonAnimationKey in babylonAnimation.keys)
+                {
+                    var matrix = new BabylonMatrix();
+                    matrix.m = babylonAnimationKey.values;
+
+                    var translationBabylon = new BabylonVector3();
+                    var rotationQuatBabylon = new BabylonQuaternion();
+                    var scaleBabylon = new BabylonVector3();
+                    matrix.decompose(scaleBabylon, rotationQuatBabylon, translationBabylon);
+
+                    var outputValuesByPath = new Dictionary<string, float[]>();
+                    outputValuesByPath.Add("translation", translationBabylon.ToArray());
+                    outputValuesByPath.Add("rotation", rotationQuatBabylon.ToArray());
+                    outputValuesByPath.Add("scale", scaleBabylon.ToArray());
+
+                    // Store values as bytes
+                    foreach (string path in paths)
+                    {
+                        var accessorOutput = accessorOutputByPath[path];
+                        var outputValues = outputValuesByPath[path];
+                        foreach (var outputValue in outputValues)
+                        {
+                            accessorOutput.bytesList.AddRange(BitConverter.GetBytes(outputValue));
+                        }
+                        accessorOutput.count++;
+                    }
+                };
+
+                foreach (string path in paths)
+                {
+                    var accessorOutput = accessorOutputByPath[path];
+
+                    // Animation sampler
+                    var gltfAnimationSampler = new GLTFAnimationSampler
+                    {
+                        input = accessorInput.index,
+                        output = accessorOutput.index
+                    };
+                    gltfAnimationSampler.index = samplerList.Count;
+                    samplerList.Add(gltfAnimationSampler);
+
+                    // Target
+                    var gltfTarget = new GLTFChannelTarget
+                    {
+                        node = gltfNode.index
+                    };
+                    gltfTarget.path = path;
+
+                    // Channel
+                    var gltfChannel = new GLTFChannel
+                    {
+                        sampler = gltfAnimationSampler.index,
+                        target = gltfTarget
+                    };
+                    channelList.Add(gltfChannel);
+                }
+            }
+
+            // Do not export empty arrays
+            if (channelList.Count > 0)
+            {
+                // Animation
+                var gltfAnimation = new GLTFAnimation
+                {
+                    channels = channelList.ToArray(),
+                    samplers = samplerList.ToArray()
+                };
+                gltf.AnimationsList.Add(gltfAnimation);
+                return gltfAnimation;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private GLTFAccessor _createAndPopulateInput(GLTF gltf, BabylonAnimation babylonAnimation)
+        {
+            var buffer = GLTFBufferService.Instance.GetBuffer(gltf);
+            var accessorInput = GLTFBufferService.Instance.CreateAccessor(
+                gltf,
+                GLTFBufferService.Instance.GetBufferViewAnimationFloatScalar(gltf, buffer),
+                "accessorAnimationInput",
+                GLTFAccessor.ComponentType.FLOAT,
+                GLTFAccessor.TypeEnum.SCALAR
+            );
+            // Populate accessor
+            accessorInput.min = new float[] { float.MaxValue };
+            accessorInput.max = new float[] { float.MinValue };
+            foreach (var babylonAnimationKey in babylonAnimation.keys)
+            {
+                var inputValue = babylonAnimationKey.frame / FPS_FACTOR;
+                // Store values as bytes
+                accessorInput.bytesList.AddRange(BitConverter.GetBytes(inputValue));
+                // Update min and max values
+                GLTFBufferService.UpdateMinMaxAccessor(accessorInput, inputValue);
+            };
+            accessorInput.count = babylonAnimation.keys.Length;
+            return accessorInput;
+        }
+
+        private GLTFAccessor _createAccessorOfPath(string path, GLTF gltf)
+        {
+            var buffer = GLTFBufferService.Instance.GetBuffer(gltf);
+            GLTFAccessor accessorOutput = null;
+            switch (path)
+            {
+                case "translation":
+                    accessorOutput = GLTFBufferService.Instance.CreateAccessor(
+                        gltf,
+                        GLTFBufferService.Instance.GetBufferViewAnimationFloatVec3(gltf, buffer),
+                        "accessorAnimationPositions",
+                        GLTFAccessor.ComponentType.FLOAT,
+                        GLTFAccessor.TypeEnum.VEC3
+                    );
+                    break;
+                case "rotation":
+                    accessorOutput = GLTFBufferService.Instance.CreateAccessor(
+                        gltf,
+                        GLTFBufferService.Instance.GetBufferViewAnimationFloatVec4(gltf, buffer),
+                        "accessorAnimationRotations",
+                        GLTFAccessor.ComponentType.FLOAT,
+                        GLTFAccessor.TypeEnum.VEC4
+                    );
+                    break;
+                case "scale":
+                    accessorOutput = GLTFBufferService.Instance.CreateAccessor(
+                        gltf,
+                        GLTFBufferService.Instance.GetBufferViewAnimationFloatVec3(gltf, buffer),
+                        "accessorAnimationScales",
+                        GLTFAccessor.ComponentType.FLOAT,
+                        GLTFAccessor.TypeEnum.VEC3
+                    );
+                    break;
+            }
+            return accessorOutput;
         }
 
         private bool ExportMorphTargetWeightAnimation(BabylonMorphTargetManager babylonMorphTargetManager, GLTF gltf, GLTFNode gltfNode, List<GLTFChannel> channelList, List<GLTFAnimationSampler> samplerList)
