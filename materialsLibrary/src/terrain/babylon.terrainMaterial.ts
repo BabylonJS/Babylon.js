@@ -205,7 +205,7 @@ module BABYLON {
                     "bump1Sampler", "bump2Sampler", "bump3Sampler"
                 ];
 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

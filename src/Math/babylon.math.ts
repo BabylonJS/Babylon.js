@@ -1,6 +1,6 @@
 ﻿module BABYLON {
 
-    declare var SIMD;
+    declare var SIMD: any;
 
     export const ToGammaSpace = 1 / 2.2;
     export const ToLinearSpace = 2.2;
@@ -64,7 +64,7 @@
          * Returns a new array populated with 3 numeric elements : red, green and blue values.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -316,7 +316,7 @@
          * Adds in place the passed Color4 values to the current Color4.  
          * Returns the updated Color4.  
          */
-        public addInPlace(right): Color4 {
+        public addInPlace(right: Color4): Color4 {
             this.r += right.r;
             this.g += right.g;
             this.b += right.b;
@@ -328,7 +328,7 @@
          * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -636,7 +636,7 @@
          * Returns a new array with 2 elements : the Vector2 coordinates.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -1387,7 +1387,7 @@
         /**
          * 
          */
-        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size) {
+        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number) {
             var d0 = Vector3.Dot(vector0, axis) - size;
             var d1 = Vector3.Dot(vector1, axis) - size;
 
@@ -1843,7 +1843,7 @@
          * Returns a new array populated with 4 elements : the Vector4 coordinates.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
 
             this.toArray(result, 0);
 
@@ -3936,7 +3936,7 @@
         /**
          * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
          */
-        public static OrthoOffCenterRHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+        public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
             result.m[10] *= -1.0;
         }
@@ -4030,7 +4030,7 @@
         /**
          * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
          */
-        public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+        public static PerspectiveFovWebVRToRef(fov: {upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number}, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
 
             var rightHandedFactor = rightHanded ? -1 : 1;
 
@@ -4310,7 +4310,7 @@
         /**
          * Returns the dot product (float) of the point coordinates and the plane normal.  
          */
-        public dotCoordinate(point): number {
+        public dotCoordinate(point: Vector3): number {
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
         }
 
@@ -4371,7 +4371,7 @@
         /**
          * Returns a new Plane defined by the three passed points.  
          */
-        static FromPoints(point1, point2, point3): Plane {
+        static FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
             var result = new Plane(0.0, 0.0, 0.0, 0.0);
             result.copyFromPoints(point1, point2, point3);
             return result;
@@ -4843,7 +4843,7 @@
         }
 
         // private function compute() : computes tangents, normals and binormals
-        private _compute(firstNormal) {
+        private _compute(firstNormal: Vector3): void {
             var l = this._curve.length;
 
             // first and last tangents

@@ -41,7 +41,7 @@
         }    
 
         // Properties
-        public getSubMaterial(index) {
+        public getSubMaterial(index: number): Material {
             if (index < 0 || index >= this.subMaterials.length) {
                 return this.getScene().defaultMaterial;
             }

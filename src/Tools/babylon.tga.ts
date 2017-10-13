@@ -190,7 +190,7 @@
 
             // Load the specify method
             var func = '_getImageData' + (use_grey ? 'Grey' : '') + (header.pixel_size) + 'bits';
-            var imageData = TGATools[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
+            var imageData = (<any>TGATools)[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
 
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, header.width, header.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData);
 

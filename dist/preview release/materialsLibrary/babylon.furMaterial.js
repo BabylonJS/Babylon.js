@@ -193,7 +193,7 @@ var BABYLON;
                 var samplers = ["diffuseSampler",
                     "heightTexture", "furTexture"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

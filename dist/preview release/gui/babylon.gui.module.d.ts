@@ -112,7 +112,7 @@ declare module BABYLON.GUI {
         negativeValueAllowed: boolean;
         private _value;
         ignoreAdaptiveScaling: boolean;
-        constructor(value: any, unit?: number, negativeValueAllowed?: boolean);
+        constructor(value: number, unit?: number, negativeValueAllowed?: boolean);
         readonly isPercentage: boolean;
         readonly isPixel: boolean;
         readonly internalValue: number;

@@ -1,3 +1,4 @@
+declare function Split(elements: HTMLDivElement[], options: any): void;
 module INSPECTOR{
     
     /**

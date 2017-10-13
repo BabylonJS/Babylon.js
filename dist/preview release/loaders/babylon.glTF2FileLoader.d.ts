@@ -97,7 +97,9 @@ declare module BABYLON.GLTF2 {
     * Interfaces
     */
     interface IGLTFProperty {
-        extensions?: Object;
+        extensions?: {
+            [key: string]: any;
+        };
         extras?: any;
     }
     interface IGLTFChildRootProperty extends IGLTFProperty {

@@ -72,7 +72,7 @@
          * @param key the key to check for
          * @return true if the key is present, false otherwise
          */
-        public contains(key): boolean {
+        public contains(key: string): boolean {
             return this._data[key] !== undefined;
         }
 
@@ -170,6 +170,6 @@
         }
 
         private _count = 0;
-        private _data = {};
+        private _data: {[key: string]: T} = {};
     }
 }

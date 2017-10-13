@@ -65,6 +65,7 @@ declare module INSPECTOR {
     }
 }
 
+
 declare module INSPECTOR {
     var PROPERTIES: {
         format: (obj: any) => any;
@@ -158,9 +159,6 @@ declare module INSPECTOR {
         'HDRCubeTexture': {
             type: typeof BABYLON.HDRCubeTexture;
         };
-        'FontTexture': {
-            type: typeof BABYLON.FontTexture;
-        };
         'Sound': {
             type: typeof BABYLON.Sound;
             properties: string[];
@@ -225,26 +223,6 @@ declare module INSPECTOR {
                 };
             };
         };
-        'PrimitiveAlignment': {
-            type: typeof BABYLON.PrimitiveAlignment;
-            properties: string[];
-        };
-        'PrimitiveThickness': {
-            type: typeof BABYLON.PrimitiveThickness;
-            properties: string[];
-        };
-        'BoundingInfo2D': {
-            type: typeof BABYLON.BoundingInfo2D;
-            properties: string[];
-        };
-        'SolidColorBrush2D': {
-            type: typeof BABYLON.SolidColorBrush2D;
-            properties: string[];
-        };
-        'GradientColorBrush2D': {
-            type: typeof BABYLON.GradientColorBrush2D;
-            properties: string[];
-        };
         'PBRMaterial': {
             type: typeof BABYLON.PBRMaterial;
             properties: string[];
@@ -256,102 +234,13 @@ declare module INSPECTOR {
                 };
             };
         };
-        'Canvas2D': {
-            type: typeof BABYLON.Canvas2D;
-        };
-        'Canvas2DEngineBoundData': {
-            type: typeof BABYLON.Canvas2DEngineBoundData;
-        };
-        'Ellipse2D': {
-            type: typeof BABYLON.Ellipse2D;
-        };
-        'Ellipse2DInstanceData': {
-            type: typeof BABYLON.Ellipse2DInstanceData;
-        };
-        'Ellipse2DRenderCache': {
-            type: typeof BABYLON.Ellipse2DRenderCache;
-        };
-        'Group2D': {
-            type: typeof BABYLON.Group2D;
-        };
-        'IntersectInfo2D': {
-            type: typeof BABYLON.IntersectInfo2D;
-        };
-        'Lines2D': {
-            type: typeof BABYLON.Lines2D;
-        };
-        'Lines2DInstanceData': {
-            type: typeof BABYLON.Lines2DInstanceData;
-        };
-        'Lines2DRenderCache': {
-            type: typeof BABYLON.Lines2DRenderCache;
-        };
-        'PrepareRender2DContext': {
-            type: typeof BABYLON.PrepareRender2DContext;
-        };
-        'Prim2DBase': {
-            type: typeof BABYLON.Prim2DBase;
-        };
-        'Prim2DClassInfo': {
-            type: typeof BABYLON.Prim2DClassInfo;
-        };
-        'Prim2DPropInfo': {
-            type: typeof BABYLON.Prim2DPropInfo;
-        };
-        'Rectangle2D': {
-            type: typeof BABYLON.Rectangle2D;
-        };
-        'Rectangle2DInstanceData': {
-            type: typeof BABYLON.Rectangle2DInstanceData;
-        };
-        'Rectangle2DRenderCache': {
-            type: typeof BABYLON.Rectangle2DRenderCache;
-        };
-        'Render2DContext': {
-            type: typeof BABYLON.Render2DContext;
-        };
-        'RenderablePrim2D': {
-            type: typeof BABYLON.RenderablePrim2D;
-        };
-        'ScreenSpaceCanvas2D': {
-            type: typeof BABYLON.ScreenSpaceCanvas2D;
-        };
-        'Shape2D': {
-            type: typeof BABYLON.Shape2D;
-        };
-        'Shape2DInstanceData': {
-            type: typeof BABYLON.Shape2DInstanceData;
-        };
-        'Sprite2D': {
-            type: typeof BABYLON.Sprite2D;
-        };
-        'Sprite2DInstanceData': {
-            type: typeof BABYLON.Sprite2DInstanceData;
-        };
-        'Sprite2DRenderCache': {
-            type: typeof BABYLON.Sprite2DRenderCache;
-        };
-        'Text2D': {
-            type: typeof BABYLON.Text2D;
-        };
-        'Text2DInstanceData': {
-            type: typeof BABYLON.Text2DInstanceData;
-        };
-        'Text2DRenderCache': {
-            type: typeof BABYLON.Text2DRenderCache;
-        };
-        'WorldSpaceCanvas2D': {
-            type: typeof BABYLON.WorldSpaceCanvas2D;
-        };
-        'WorldSpaceCanvas2DNode': {
-            type: typeof BABYLON.WorldSpaceCanvas2DNode;
-        };
         'PhysicsImpostor': {
             type: typeof BABYLON.PhysicsImpostor;
             properties: string[];
         };
     };
 }
+
 
 declare module INSPECTOR {
     /**
@@ -376,7 +265,7 @@ declare module INSPECTOR {
          * Build the html element
          */
         protected _build(): void;
-        abstract update(data?: any): any;
+        abstract update(data?: any): void;
         /** Default dispose method if needed */
         dispose(): void;
     }
@@ -863,7 +752,7 @@ declare module INSPECTOR {
         /** Send the event which name is given in parameter to the window */
         static SEND_EVENT(eventName: string): void;
         /** Returns the given number with 2 decimal number max if a decimal part exists */
-        static Trunc(nb: any): number;
+        static Trunc(nb: number): number;
         /**
          * Useful function used to create a div
          */
@@ -931,7 +820,7 @@ declare module INSPECTOR {
         /** Add this in the propertytab with the searchbar */
         filter(str: string): void;
         /** Dispose properly this tab */
-        abstract dispose(): any;
+        abstract dispose(): void;
         /** Select an item in the tree */
         select(item: TreeItem): void;
         /**
@@ -941,6 +830,7 @@ declare module INSPECTOR {
     }
 }
 
+declare function Split(elements: HTMLDivElement[], options: any): void;
 declare module INSPECTOR {
     /**
      * A Property tab can creates two panels:
@@ -1037,6 +927,7 @@ declare module INSPECTOR {
     }
 }
 
+
 declare module INSPECTOR {
     class MeshTab extends PropertyTab {
         constructor(tabbar: TabBar, inspector: Inspector);
@@ -1044,6 +935,7 @@ declare module INSPECTOR {
     }
 }
 
+declare function Split(elements: HTMLElement[], options: any): void;
 declare module INSPECTOR {
     class SceneTab extends Tab {
         private _inspector;
@@ -1066,6 +958,7 @@ declare module INSPECTOR {
     }
 }
 
+declare function Split(elements: HTMLDivElement[], options: any): void;
 declare module INSPECTOR {
     /**
      * The console tab will have two features :
@@ -1175,7 +1068,7 @@ declare module INSPECTOR {
          * Updates the icon of this tool with the given string
          */
         protected _updateIcon(icon: string): void;
-        abstract action(): any;
+        abstract action(): void;
     }
 }
 

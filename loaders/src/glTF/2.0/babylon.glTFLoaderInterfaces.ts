@@ -47,7 +47,7 @@ module BABYLON.GLTF2 {
     * Interfaces
     */
     export interface IGLTFProperty {
-        extensions?: Object;
+        extensions?: {[key: string]: any};
         extras?: any;
     }
 

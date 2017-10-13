@@ -6,7 +6,7 @@
         public color: Color3 = Color3.White();
 
         private _scene: Scene;
-        private _debugLines = []; 
+        private _debugLines = new Array<Array<Vector3>>(); 
         private _debugMesh: LinesMesh;
         private _isEnabled = false;
         private _renderFunction: () => void;

@@ -485,7 +485,7 @@ var BABYLON;
                 return meshes;
             };
             GLTFLoader.prototype._getSkeletons = function () {
-                var skeletons = [];
+                var skeletons = new Array();
                 var skins = this._gltf.skins;
                 if (skins) {
                     skins.forEach(function (skin) {
@@ -497,7 +497,7 @@ var BABYLON;
                 return skeletons;
             };
             GLTFLoader.prototype._getAnimationTargets = function () {
-                var targets = [];
+                var targets = new Array();
                 var animations = this._gltf.animations;
                 if (animations) {
                     animations.forEach(function (animation) {
@@ -940,21 +940,23 @@ var BABYLON;
                 if (!targetNode) {
                     throw new Error(channelContext + ": Failed to find target node " + channel.target.node);
                 }
-                var targetPath = {
+                var conversion = {
                     "translation": "position",
                     "rotation": "rotationQuaternion",
                     "scale": "scaling",
                     "weights": "influence"
-                }[channel.target.path];
+                };
+                var targetPath = conversion[channel.target.path];
                 if (!targetPath) {
                     throw new Error(channelContext + ": Invalid target path '" + channel.target.path + "'");
                 }
-                var animationType = {
+                var animationConvertion = {
                     "position": BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
                     "rotationQuaternion": BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
                     "scaling": BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
                     "influence": BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-                }[targetPath];
+                };
+                var animationType = animationConvertion[targetPath];
                 var inputData;
                 var outputData;
                 var checkSuccess = function () {
@@ -962,7 +964,7 @@ var BABYLON;
                         return;
                     }
                     var outputBufferOffset = 0;
-                    var getNextOutputValue = {
+                    var nextOutputConversion = {
                         "position": function () {
                             var value = BABYLON.Vector3.FromArray(outputData, outputBufferOffset);
                             outputBufferOffset += 3;
@@ -986,8 +988,9 @@ var BABYLON;
                             }
                             return value;
                         },
-                    }[targetPath];
-                    var getNextKey = {
+                    };
+                    var getNextOutputValue = nextOutputConversion[targetPath];
+                    var nextKeyConversion = {
                         "LINEAR": function (frameIndex) { return ({
                             frame: inputData[frameIndex],
                             value: getNextOutputValue()
@@ -998,7 +1001,8 @@ var BABYLON;
                             value: getNextOutputValue(),
                             outTangent: getNextOutputValue()
                         }); },
-                    }[sampler.interpolation];
+                    };
+                    var getNextKey = nextKeyConversion[sampler.interpolation];
                     if (!getNextKey) {
                         throw new Error(samplerContext + ": Invalid interpolation '" + sampler.interpolation + "'");
                     }

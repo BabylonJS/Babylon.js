@@ -8,7 +8,7 @@
         public soundCollection: Array<Sound>;
         private _isMainTrack: boolean = false;
         private _connectedAnalyser: Analyser;
-        private _options;
+        private _options: any;
         private _isInitialized = false;
 
         constructor(scene: Scene, options?: any) {

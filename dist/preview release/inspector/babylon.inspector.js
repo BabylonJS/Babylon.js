@@ -330,6 +330,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=Inspector.js.map
 
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
 var INSPECTOR;
 (function (INSPECTOR) {
     INSPECTOR.PROPERTIES = {
@@ -346,7 +347,7 @@ var INSPECTOR;
             }
         },
         'type_not_defined': {
-            properties: [],
+            properties: new Array(),
             format: function () { return ''; }
         },
         'Vector2': {
@@ -423,9 +424,6 @@ var INSPECTOR;
         },
         'HDRCubeTexture': {
             type: BABYLON.HDRCubeTexture
-        },
-        'FontTexture': {
-            type: BABYLON.FontTexture
         },
         'Sound': {
             type: BABYLON.Sound,
@@ -606,26 +604,6 @@ var INSPECTOR;
                 alpha: { min: 0, max: 1, step: 0.01 }
             }
         },
-        'PrimitiveAlignment': {
-            type: BABYLON.PrimitiveAlignment,
-            properties: ['horizontal', 'vertical']
-        },
-        'PrimitiveThickness': {
-            type: BABYLON.PrimitiveThickness,
-            properties: ['topPixels', 'leftPixels', 'rightPixels', 'bottomPixels']
-        },
-        'BoundingInfo2D': {
-            type: BABYLON.BoundingInfo2D,
-            properties: ['radius', 'center', 'extent']
-        },
-        'SolidColorBrush2D': {
-            type: BABYLON.SolidColorBrush2D,
-            properties: ['color']
-        },
-        'GradientColorBrush2D': {
-            type: BABYLON.GradientColorBrush2D,
-            properties: ['color1', 'color2', 'translation', 'rotation', 'scale']
-        },
         'PBRMaterial': {
             type: BABYLON.PBRMaterial,
             properties: [
@@ -667,96 +645,6 @@ var INSPECTOR;
                 alpha: { min: 0, max: 1, step: 0.01 }
             }
         },
-        'Canvas2D': {
-            type: BABYLON.Canvas2D
-        },
-        'Canvas2DEngineBoundData': {
-            type: BABYLON.Canvas2DEngineBoundData
-        },
-        'Ellipse2D': {
-            type: BABYLON.Ellipse2D
-        },
-        'Ellipse2DInstanceData': {
-            type: BABYLON.Ellipse2DInstanceData
-        },
-        'Ellipse2DRenderCache': {
-            type: BABYLON.Ellipse2DRenderCache
-        },
-        'Group2D': {
-            type: BABYLON.Group2D
-        },
-        'IntersectInfo2D': {
-            type: BABYLON.IntersectInfo2D
-        },
-        'Lines2D': {
-            type: BABYLON.Lines2D
-        },
-        'Lines2DInstanceData': {
-            type: BABYLON.Lines2DInstanceData
-        },
-        'Lines2DRenderCache': {
-            type: BABYLON.Lines2DRenderCache
-        },
-        'PrepareRender2DContext': {
-            type: BABYLON.PrepareRender2DContext
-        },
-        'Prim2DBase': {
-            type: BABYLON.Prim2DBase
-        },
-        'Prim2DClassInfo': {
-            type: BABYLON.Prim2DClassInfo
-        },
-        'Prim2DPropInfo': {
-            type: BABYLON.Prim2DPropInfo
-        },
-        'Rectangle2D': {
-            type: BABYLON.Rectangle2D
-        },
-        'Rectangle2DInstanceData': {
-            type: BABYLON.Rectangle2DInstanceData
-        },
-        'Rectangle2DRenderCache': {
-            type: BABYLON.Rectangle2DRenderCache
-        },
-        'Render2DContext': {
-            type: BABYLON.Render2DContext
-        },
-        'RenderablePrim2D': {
-            type: BABYLON.RenderablePrim2D
-        },
-        'ScreenSpaceCanvas2D': {
-            type: BABYLON.ScreenSpaceCanvas2D
-        },
-        'Shape2D': {
-            type: BABYLON.Shape2D
-        },
-        'Shape2DInstanceData': {
-            type: BABYLON.Shape2DInstanceData
-        },
-        'Sprite2D': {
-            type: BABYLON.Sprite2D
-        },
-        'Sprite2DInstanceData': {
-            type: BABYLON.Sprite2DInstanceData
-        },
-        'Sprite2DRenderCache': {
-            type: BABYLON.Sprite2DRenderCache
-        },
-        'Text2D': {
-            type: BABYLON.Text2D
-        },
-        'Text2DInstanceData': {
-            type: BABYLON.Text2DInstanceData
-        },
-        'Text2DRenderCache': {
-            type: BABYLON.Text2DRenderCache
-        },
-        'WorldSpaceCanvas2D': {
-            type: BABYLON.WorldSpaceCanvas2D
-        },
-        'WorldSpaceCanvas2DNode': {
-            type: BABYLON.WorldSpaceCanvas2DNode
-        },
         'PhysicsImpostor': {
             type: BABYLON.PhysicsImpostor,
             properties: [
@@ -770,6 +658,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=properties.js.map
 
+/// <reference path="../../dist/preview release/gui/babylon.gui.d.ts"/>
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -804,7 +693,7 @@ var INSPECTOR;
             },
             'Button': {
                 type: BABYLON.GUI.Button,
-                properties: [],
+                properties: new Array(),
                 format: function (button) { return button.name; }
             },
             'ColorPicker': {
@@ -1217,7 +1106,7 @@ var INSPECTOR;
             return [];
         };
         TextureAdapter.prototype.getTools = function () {
-            var tools = [];
+            var tools = new Array();
             // tools.push(new CameraPOV(this));
             return tools;
         };
@@ -1631,35 +1520,7 @@ var INSPECTOR;
         PropertyFormatter.format = function (obj, prop) {
             // Get original value;
             var value = obj[prop];
-            // test if type PrimitiveAlignment is available (only included in canvas2d)
-            if (BABYLON.PrimitiveAlignment) {
-                if (obj instanceof BABYLON.PrimitiveAlignment) {
-                    if (prop === 'horizontal') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignLeft:
-                                return 'left';
-                            case BABYLON.PrimitiveAlignment.AlignRight:
-                                return 'right';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    }
-                    else if (prop === 'vertical') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignTop:
-                                return 'top';
-                            case BABYLON.PrimitiveAlignment.AlignBottom:
-                                return 'bottom';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    }
-                }
-            }
+            // test if type PrimitiveAlignment is available (only included in canvas2d)           
             return value;
         };
         return PropertyFormatter;
@@ -3065,7 +2926,7 @@ var INSPECTOR;
         }
         /* Overrides super */
         PhysicsTab.prototype._getTree = function () {
-            var arr = [];
+            var arr = new Array();
             var scene = this._inspector.scene;
             if (!scene.isPhysicsEnabled()) {
                 return arr;
@@ -3106,7 +2967,7 @@ var INSPECTOR;
         /* Overrides super */
         SoundTab.prototype._getTree = function () {
             var _this = this;
-            var arr = [];
+            var arr = new Array();
             // get all cameras from the first scene
             var instances = this._inspector.scene;
             for (var _i = 0, _a = instances.soundTracks; _i < _a.length; _i++) {
@@ -3364,6 +3225,7 @@ var INSPECTOR;
     INSPECTOR.MaterialTab = MaterialTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3384,9 +3246,9 @@ var INSPECTOR;
         /* Overrides super */
         MeshTab.prototype._getTree = function () {
             var _this = this;
-            var arr = [];
-            // Tab containign mesh already in results
-            var alreadyIn = [];
+            var arr = new Array();
+            // Tab containing mesh already in results
+            var alreadyIn = new Array();
             // Recursive method building the tree panel
             var createNode = function (obj) {
                 var descendants = obj.getDescendants(true);

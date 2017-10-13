@@ -859,10 +859,10 @@ var BABYLON;
             }
             var vertexData = new BABYLON.VertexData();
             var geometry = new BABYLON.Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
-            var verticesStarts = [];
-            var verticesCounts = [];
-            var indexStarts = [];
-            var indexCounts = [];
+            var verticesStarts = new Array();
+            var verticesCounts = new Array();
+            var indexStarts = new Array();
+            var indexCounts = new Array();
             for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
                 var meshID = meshes[meshIndex];
                 var mesh = gltfRuntime.meshes[meshID];
@@ -1654,8 +1654,8 @@ var BABYLON;
                     }
                     // Create nodes
                     _this._createNodes(gltfRuntime);
-                    var meshes = [];
-                    var skeletons = [];
+                    var meshes = new Array();
+                    var skeletons = new Array();
                     // Fill arrays of meshes and skeletons
                     for (var nde in gltfRuntime.nodes) {
                         var node = gltfRuntime.nodes[nde];
@@ -2035,7 +2035,7 @@ var BABYLON;
                     var options = {
                         attributes: ["position"],
                         uniforms: ["worldView", "projection", "u_emission"],
-                        samplers: [],
+                        samplers: new Array(),
                         needAlphaBlending: false
                     };
                     GLTFUtils._DefaultMaterial = new BABYLON.ShaderMaterial("GLTFDefaultMaterial", scene, shaderPath, options);

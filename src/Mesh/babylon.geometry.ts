@@ -16,7 +16,7 @@
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
-        public _delayInfo; //ANY
+        public _delayInfo: Array<string>;
         private _indexBuffer: WebGLBuffer;
         public _boundingInfo: BoundingInfo;
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
@@ -425,7 +425,7 @@
             }
         }
 
-        private updateExtend(data = null, stride? : number) {
+        private updateExtend(data: number[] | Float32Array = null, stride? : number) {
             if (!data) {
                 data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }

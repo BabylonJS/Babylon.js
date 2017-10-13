@@ -139,7 +139,9 @@ declare module BABYLON.GLTF1 {
     * Interfaces
     */
     interface IGLTFProperty {
-        extensions?: Object;
+        extensions?: {
+            [key: string]: any;
+        };
         extras?: Object;
     }
     interface IGLTFChildRootProperty extends IGLTFProperty {
@@ -203,10 +205,16 @@ declare module BABYLON.GLTF1 {
         functions: IGLTFTechniqueStatesFunctions;
     }
     interface IGLTFTechnique extends IGLTFChildRootProperty {
-        parameters: Object;
+        parameters: {
+            [key: string]: IGLTFTechniqueParameter;
+        };
         program: string;
-        attributes: Object;
-        uniforms: Object;
+        attributes: {
+            [key: string]: string;
+        };
+        uniforms: {
+            [key: string]: string;
+        };
         states: IGLTFTechniqueStates;
     }
     interface IGLTFMaterial extends IGLTFChildRootProperty {
@@ -214,7 +222,9 @@ declare module BABYLON.GLTF1 {
         values: string[];
     }
     interface IGLTFMeshPrimitive extends IGLTFProperty {
-        attributes: Object;
+        attributes: {
+            [key: string]: string;
+        };
         indices: string;
         material: string;
         mode?: number;
@@ -293,8 +303,12 @@ declare module BABYLON.GLTF1 {
     }
     interface IGLTFAnimation extends IGLTFChildRootProperty {
         channels?: IGLTFAnimationChannel[];
-        parameters?: Object;
-        samplers?: Object;
+        parameters?: {
+            [key: string]: string;
+        };
+        samplers?: {
+            [key: string]: IGLTFAnimationSampler;
+        };
     }
     interface IGLTFNodeInstanceSkin {
         skeletons: string[];
@@ -328,25 +342,61 @@ declare module BABYLON.GLTF1 {
     * Runtime
     */
     interface IGLTFRuntime {
-        extensions: Object;
-        accessors: Object;
-        buffers: Object;
-        bufferViews: Object;
-        meshes: Object;
-        lights: Object;
-        cameras: Object;
-        nodes: Object;
-        images: Object;
-        textures: Object;
-        shaders: Object;
-        programs: Object;
-        samplers: Object;
-        techniques: Object;
-        materials: Object;
-        animations: Object;
-        skins: Object;
+        extensions: {
+            [key: string]: any;
+        };
+        accessors: {
+            [key: string]: IGLTFAccessor;
+        };
+        buffers: {
+            [key: string]: IGLTFBuffer;
+        };
+        bufferViews: {
+            [key: string]: IGLTFBufferView;
+        };
+        meshes: {
+            [key: string]: IGLTFMesh;
+        };
+        lights: {
+            [key: string]: IGLTFLight;
+        };
+        cameras: {
+            [key: string]: IGLTFCamera;
+        };
+        nodes: {
+            [key: string]: IGLTFNode;
+        };
+        images: {
+            [key: string]: IGLTFImage;
+        };
+        textures: {
+            [key: string]: IGLTFTexture;
+        };
+        shaders: {
+            [key: string]: IGLTFShader;
+        };
+        programs: {
+            [key: string]: IGLTFProgram;
+        };
+        samplers: {
+            [key: string]: IGLTFSampler;
+        };
+        techniques: {
+            [key: string]: IGLTFTechnique;
+        };
+        materials: {
+            [key: string]: IGLTFMaterial;
+        };
+        animations: {
+            [key: string]: IGLTFAnimation;
+        };
+        skins: {
+            [key: string]: IGLTFSkins;
+        };
         currentScene?: Object;
-        scenes: Object;
+        scenes: {
+            [key: string]: IGLTFScene;
+        };
         extensionsUsed: string[];
         extensionsRequired?: string[];
         buffersCount: number;
@@ -593,7 +643,9 @@ declare module BABYLON.GLTF2 {
     * Interfaces
     */
     interface IGLTFProperty {
-        extensions?: Object;
+        extensions?: {
+            [key: string]: any;
+        };
         extras?: any;
     }
     interface IGLTFChildRootProperty extends IGLTFProperty {

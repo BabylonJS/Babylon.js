@@ -807,7 +807,7 @@ declare module BABYLON {
         constructor();
     }
     class StandardShaderVersions {
-        static Ver3_0: any;
+        static Ver3_0: string;
     }
     class CustomMaterial extends StandardMaterial_OldVer {
         static ShaderIndexer: number;

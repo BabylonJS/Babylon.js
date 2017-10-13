@@ -25,6 +25,7 @@ namespace Max2Babylon
             {
                 RaiseMessage("GLTFExporter.Light | Add " + babylonLight.name + " as child to " + gltfParentNode.name, 3);
                 gltfParentNode.ChildrenList.Add(gltfNode.index);
+                gltfNode.parent = gltfParentNode;
             }
             else
             {

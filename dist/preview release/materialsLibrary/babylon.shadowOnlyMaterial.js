@@ -127,8 +127,8 @@ var BABYLON;
                     "mBones",
                     "vClipPlane"
                 ];
-                var samplers = [];
-                var uniformBuffers = [];
+                var samplers = new Array();
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

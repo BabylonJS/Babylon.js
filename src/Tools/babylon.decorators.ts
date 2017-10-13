@@ -15,14 +15,14 @@
         // Properties
         for (var property in classStore) {
             var propertyDescriptor = classStore[property];
-            var sourceProperty = source[property];
+            var sourceProperty = (<any>source)[property];
             var propertyType = propertyDescriptor.type;
 
             if (sourceProperty !== undefined && sourceProperty !== null) {
                 switch (propertyType) {
                     case 0:     // Value
                     case 6:     // Mesh reference
-                        destination[property] = sourceProperty;
+                        (<any>destination)[property] = sourceProperty;
                         break;
                     case 1:     // Texture
                     case 2:     // Color3
@@ -30,7 +30,7 @@
                     case 4:     // Vector2
                     case 5:     // Vector3
                     case 7:     // Color Curves
-                        destination[property] = instanciate?sourceProperty:sourceProperty.clone();
+                        (<any>destination)[property] = instanciate?sourceProperty:sourceProperty.clone();
                         break;
                 }
             }
@@ -42,11 +42,11 @@
     function getDirectStore(target: any): any {
         var classKey = target.getClassName();
 
-        if (!__decoratorInitialStore[classKey]) {
-            __decoratorInitialStore[classKey] = {};
+        if (!(<any>__decoratorInitialStore)[classKey]) {
+            (<any>__decoratorInitialStore)[classKey] = {};
         }
 
-        return __decoratorInitialStore[classKey];
+        return (<any>__decoratorInitialStore)[classKey];
     }
 
     /**
@@ -56,17 +56,17 @@
     function getMergedStore(target: any): any {
         let classKey = target.getClassName();
 
-        if (__mergedStore[classKey]) {
-            return __mergedStore[classKey];
+        if ((<any>__mergedStore)[classKey]) {
+            return (<any>__mergedStore)[classKey];
         }
 
-        __mergedStore[classKey] = {};
+        (<any>__mergedStore)[classKey] = {};
 
-        let store = __mergedStore[classKey];
+        let store = (<any>__mergedStore)[classKey];
         let currentTarget = target;
         let currentKey = classKey;
         while (currentKey) {
-            let initialStore = __decoratorInitialStore[currentKey];
+            let initialStore = (<any>__decoratorInitialStore)[currentKey];
             for (var property in initialStore) {
                 store[property] = initialStore[property];                
             }
@@ -195,7 +195,7 @@
                 var propertyDescriptor = serializedProperties[property];
                 var targetPropertyName = propertyDescriptor.sourceName || property;
                 var propertyType = propertyDescriptor.type;
-                var sourceProperty = entity[property];
+                var sourceProperty = (<any>entity)[property];
 
                 if (sourceProperty !== undefined && sourceProperty !== null) {
                     switch (propertyType) {
@@ -253,36 +253,37 @@
                 var propertyType = propertyDescriptor.type;
 
                 if (sourceProperty !== undefined && sourceProperty !== null) {
+                    var dest = <any>destination;
                     switch (propertyType) {
                         case 0:     // Value
-                            destination[property] = sourceProperty;
+                            dest[property] = sourceProperty;
                             break;
                         case 1:     // Texture
-                            destination[property] = Texture.Parse(sourceProperty, scene, rootUrl);
+                            dest[property] = Texture.Parse(sourceProperty, scene, rootUrl);
                             break;
                         case 2:     // Color3
-                            destination[property] = Color3.FromArray(sourceProperty);
+                            dest[property] = Color3.FromArray(sourceProperty);
                             break;
                         case 3:     // FresnelParameters
-                            destination[property] = FresnelParameters.Parse(sourceProperty);
+                            dest[property] = FresnelParameters.Parse(sourceProperty);
                             break;
                         case 4:     // Vector2
-                            destination[property] = Vector2.FromArray(sourceProperty);
+                            dest[property] = Vector2.FromArray(sourceProperty);
                             break;
                         case 5:     // Vector3
-                            destination[property] = Vector3.FromArray(sourceProperty);
+                            dest[property] = Vector3.FromArray(sourceProperty);
                             break;
                         case 6:     // Mesh reference
-                            destination[property] = scene.getLastMeshByID(sourceProperty);
+                            dest[property] = scene.getLastMeshByID(sourceProperty);
                             break;
                         case 7:     // Color Curves
-                            destination[property] = ColorCurves.Parse(sourceProperty);
+                            dest[property] = ColorCurves.Parse(sourceProperty);
                             break;
                         case 8:     // Color 4
-                            destination[property] = Color4.FromArray(sourceProperty);
+                            dest[property] = Color4.FromArray(sourceProperty);
                             break;
                         case 9:     // Image Processing
-                            destination[property] = ImageProcessingConfiguration.Parse(sourceProperty);
+                            dest[property] = ImageProcessingConfiguration.Parse(sourceProperty);
                             break;
                     }
                 }

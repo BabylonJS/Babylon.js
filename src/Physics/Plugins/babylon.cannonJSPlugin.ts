@@ -1,12 +1,12 @@
 ﻿module BABYLON {
-    declare var require;
-    declare var CANNON;
+    declare var require: any;
+    declare var CANNON: any;
 
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
         public world: any; //this.BJSCANNON.World
         public name: string = "CannonJSPlugin";
-        private _physicsMaterials = [];
+        private _physicsMaterials = new Array();
         private _fixedTimeStep: number = 1 / 60;
         //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
         private _currentCollisionGroup = 2;
@@ -88,7 +88,7 @@
                 var nativeOptions = impostor.getParam("nativeOptions");
                 for (var key in nativeOptions) {
                     if (nativeOptions.hasOwnProperty(key)) {
-                        bodyCreationObject[key] = nativeOptions[key];
+                        (<any>bodyCreationObject)[key] = nativeOptions[key];
                     }
                 }
                 impostor.physicsBody = new this.BJSCANNON.Body(bodyCreationObject);
@@ -154,7 +154,7 @@
             if (!mainBody || !connectedBody) {
                 return;
             }
-            var constraint;
+            var constraint: any;
             var jointData = impostorJoint.joint.jointData;
             //TODO - https://github.com/schteppe/this.BJSCANNON.js/blob/gh-pages/demos/collisionFilter.html
             var constraintData = {
@@ -278,7 +278,7 @@
 
         private _createHeightmap(object: IPhysicsEnabledObject, pointDepth?: number) {
             var pos = object.getVerticesData(VertexBuffer.PositionKind);
-            var matrix = [];
+            var matrix = new Array<Array<any>>();
 
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.

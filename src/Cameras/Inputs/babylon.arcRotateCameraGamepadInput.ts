@@ -79,5 +79,5 @@ module BABYLON {
         }        
     }
 
-    CameraInputTypes["ArcRotateCameraGamepadInput"] = ArcRotateCameraGamepadInput;
+    (<any>CameraInputTypes)["ArcRotateCameraGamepadInput"] = ArcRotateCameraGamepadInput;
 }

@@ -73,16 +73,16 @@
         public upVector = Vector3.Up();
 
         @serialize()
-        public orthoLeft = null;
+        public orthoLeft: number = null;
 
         @serialize()
-        public orthoRight = null;
+        public orthoRight: number = null;
 
         @serialize()
-        public orthoBottom = null;
+        public orthoBottom: number = null;
 
         @serialize()
-        public orthoTop = null;
+        public orthoTop: number = null;
 
         @serialize()
         public fov = 0.8;
@@ -141,7 +141,7 @@
         public _postProcesses = new Array<PostProcess>();
         private _transformMatrix = Matrix.Zero();
 
-        public _activeMeshes = new SmartArray<Mesh>(256);
+        public _activeMeshes = new SmartArray<AbstractMesh>(256);
 
         private _globalPosition = Vector3.Zero();
         private _frustumPlanes: Plane[];
@@ -221,7 +221,7 @@
             return this._globalPosition;
         }
 
-        public getActiveMeshes(): SmartArray<Mesh> {
+        public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
         }
 

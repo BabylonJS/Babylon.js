@@ -10,7 +10,7 @@ module INSPECTOR{
 
         /* Overrides super */
         protected _getTree() : Array<TreeItem> {
-            let arr = [];
+            let arr = new Array<TreeItem>();
 
             let scene = this._inspector.scene;
             

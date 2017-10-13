@@ -146,5 +146,5 @@ module BABYLON {
         }      
     }
 
-    CameraInputTypes["FreeCameraMouseInput"] = FreeCameraMouseInput;
+    (<any>CameraInputTypes)["FreeCameraMouseInput"] = FreeCameraMouseInput;
 }

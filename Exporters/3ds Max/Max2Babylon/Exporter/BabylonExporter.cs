@@ -338,10 +338,10 @@ namespace Max2Babylon
             if (babylonNode == null &&
                 isNodeRelevantToExport(maxGameNode))
             {
-                if (!hasExporter)
-                {
-                    RaiseWarning($"Type '{maxGameNode.IGameObject.IGameType}' of node '{maxGameNode.Name}' has no exporter, an empty node is exported instead", 1);
-                }
+                //if (!hasExporter)
+                //{
+                //    RaiseWarning($"Type '{maxGameNode.IGameObject.IGameType}' of node '{maxGameNode.Name}' has no exporter, an empty node is exported instead", 1);
+                //}
                 // Create a dummy (empty mesh)
                 babylonNode = ExportDummy(maxGameScene, maxGameNode, babylonScene);
             };

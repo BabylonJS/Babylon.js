@@ -161,7 +161,7 @@
             ];
             */
             var samples = 16;
-            var samplerOffsets = [];
+            var samplerOffsets = new Array<number>();
 
             for (var i = -8; i < 8; i++) {
                 samplerOffsets.push(i * 2);
@@ -265,7 +265,7 @@
 
             var context = this._randomTexture.getContext();
 
-            var rand = (min, max) => {
+            var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
             }
 

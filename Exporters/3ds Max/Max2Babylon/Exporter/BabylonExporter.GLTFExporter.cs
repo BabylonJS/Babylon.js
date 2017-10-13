@@ -263,7 +263,7 @@ namespace Max2Babylon
             }
             else if (type == typeof(BabylonLight))
             {
-                if (isNodeRelevantToExport(babylonNode, babylonScene))
+                if (isNodeRelevantToExport(babylonNode))
                 {
                     // Export light nodes as empty nodes (no lights in glTF 2.0 core)
                     RaiseWarning($"GLTFExporter | Light named {babylonNode.name} has children but lights are not exported with glTF 2.0 core version. An empty node is used instead.", 1);
@@ -285,12 +285,12 @@ namespace Max2Babylon
             if (gltfNode != null)
             {
                 // ...export its children
-                List<BabylonNode> babylonDescendants = getDescendants(babylonNode, babylonScene);
+                List<BabylonNode> babylonDescendants = getDescendants(babylonNode);
                 babylonDescendants.ForEach(descendant => exportNodeRec(descendant, gltf, babylonScene, gltfNode));
             }
         }
 
-        private List<BabylonNode> getDescendants(BabylonNode babylonNode, BabylonScene babylonScene)
+        private List<BabylonNode> getDescendants(BabylonNode babylonNode)
         {
             return babylonNodes.FindAll(node => node.parentId == babylonNode.id);
         }
@@ -298,7 +298,7 @@ namespace Max2Babylon
         /// <summary>
         /// Return true if node descendant hierarchy has any Mesh or Camera to export
         /// </summary>
-        private bool isNodeRelevantToExport(BabylonNode babylonNode, BabylonScene babylonScene)
+        private bool isNodeRelevantToExport(BabylonNode babylonNode)
         {
             var type = babylonNode.GetType();
             if (type == typeof(BabylonAbstractMesh) ||
@@ -309,11 +309,11 @@ namespace Max2Babylon
             }
 
             // Descandant recursivity
-            List<BabylonNode> babylonDescendants = getDescendants(babylonNode, babylonScene);
+            List<BabylonNode> babylonDescendants = getDescendants(babylonNode);
             int indexDescendant = 0;
             while (indexDescendant < babylonDescendants.Count) // while instead of for to stop as soon as a relevant node has been found
             {
-                if (isNodeRelevantToExport(babylonDescendants[indexDescendant], babylonScene))
+                if (isNodeRelevantToExport(babylonDescendants[indexDescendant]))
                 {
                     return true;
                 }

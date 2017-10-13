@@ -194,7 +194,7 @@
             this._bottomNode = null;
         }
 
-        private get isRecursiveFree() {
+        private get isRecursiveFree(): boolean {
             return !this.contentSize && (!this._leftNode || this._leftNode.isRecursiveFree) && (!this._rightNode || this._rightNode.isRecursiveFree) && (!this._bottomNode || this._bottomNode.isRecursiveFree);
         }
 

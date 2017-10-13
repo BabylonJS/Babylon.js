@@ -38,6 +38,6 @@
             this._elem.className = `tool fa ${icon}`;
         }
 
-        public abstract action(); 
+        public abstract action(): void; 
     }
  }

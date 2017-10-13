@@ -7,7 +7,7 @@ module INSPECTOR {
         }
         /* Overrides super */
         protected _getTree(): Array<TreeItem> {
-            let arr = [];
+            let arr = new Array<TreeItem>();
 
             // get all cameras from the first scene
             let instances = this._inspector.scene;

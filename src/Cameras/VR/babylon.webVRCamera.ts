@@ -1,6 +1,6 @@
-declare var HMDVRDevice;
-declare var VRDisplay;
-declare var VRFrameData;
+declare var HMDVRDevice: any;
+declare var VRDisplay: any;
+declare var VRFrameData: any;
 
 module BABYLON {
     /**
@@ -26,7 +26,7 @@ module BABYLON {
         deviceRotationQuaternion: Quaternion;
         rawPose: DevicePose;
         deviceScaleFactor: number;
-        updateFromDevice(poseData: DevicePose);
+        updateFromDevice(poseData: DevicePose): void;
     }
 
     export interface WebVROptions {
@@ -38,7 +38,7 @@ module BABYLON {
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-        public _vrDevice = null;
+        public _vrDevice: any = null;
         public rawPose: DevicePose = null;
         private _onVREnabled: (success: boolean) => void;
         private _specsVersion: string = "1.1";
@@ -47,7 +47,7 @@ module BABYLON {
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
 
-        private _frameData;
+        private _frameData: any;
 
         private _quaternionCache: Quaternion;
 
@@ -56,7 +56,7 @@ module BABYLON {
         protected _descendants: Array<Node> = [];
 
         public devicePosition = Vector3.Zero();
-        public deviceRotationQuaternion;
+        public deviceRotationQuaternion: Quaternion;
         public deviceScaleFactor: number = 1;
 
         public controllers: Array<WebVRController> = [];

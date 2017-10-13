@@ -117,7 +117,7 @@
 
         // Private
         public _geometry: Geometry;
-        public _delayInfo; //ANY
+        public _delayInfo: Array<string>;
         public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
 
         public _visibleInstances: any = {};
@@ -436,7 +436,7 @@
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
-        public getVertexBuffer(kind): VertexBuffer {
+        public getVertexBuffer(kind: string): VertexBuffer {
             if (!this._geometry) {
                 return undefined;
             }
@@ -486,7 +486,7 @@
          */
         public getVerticesDataKinds(): string[] {
             if (!this._geometry) {
-                var result = [];
+                var result = new Array<string>();
                 if (this._delayInfo) {
                     this._delayInfo.forEach(function (kind, index, array) {
                         result.push(kind);
@@ -805,7 +805,7 @@
          * The parameter `computeNormals` is a boolean (default true) to enable/disable the mesh normal recomputation after the vertex position update.     
          * Returns the Mesh.  
          */
-        public updateMeshPositions(positionFunction, computeNormals: boolean = true): Mesh {
+        public updateMeshPositions(positionFunction: (data: number[] | Float32Array) => void, computeNormals: boolean = true): Mesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             positionFunction(positions);
             this.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
@@ -1358,7 +1358,7 @@
          * Returns as a new array populated with the mesh material and/or skeleton, if any.
          */
         public getAnimatables(): IAnimatable[] {
-            var results = [];
+            var results = new Array<IAnimatable>();
 
             if (this.material) {
                 results.push(this.material);
@@ -1390,7 +1390,7 @@
             this._resetPointsArrayCache();
 
             var data = this.getVerticesData(VertexBuffer.PositionKind);
-            var temp = [];
+            var temp = new Array<number>();
             var index: number;
             for (index = 0; index < data.length; index += 3) {
                 Vector3.TransformCoordinates(Vector3.FromArray(data, index), transform).toArray(temp, index);
@@ -1531,7 +1531,7 @@
         public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2): Mesh {
             var scene = this.getScene();
 
-            var onload = img => {
+            var onload = (img: HTMLImageElement) => {
                 // Getting height map data
                 var canvas = document.createElement("canvas");
                 var context = canvas.getContext("2d");
@@ -1629,9 +1629,9 @@
             /// <summary>Warning: This may imply adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
 
             var kinds = this.getVerticesDataKinds();
-            var vbs = [];
-            var data = [];
-            var newdata = [];
+            var vbs:{ [key: string]: VertexBuffer } = {};
+            var data:{ [key: string]: number[] | Float32Array } = {};
+            var newdata: { [key: string]: Array<number> } = {};
             var updatableNormals = false;
             var kindIndex: number;
             var kind: string;
@@ -1728,9 +1728,9 @@
             /// <summary>Warning: This implies adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
 
             var kinds = this.getVerticesDataKinds();
-            var vbs = [];
-            var data = [];
-            var newdata = [];
+            var vbs:{ [key: string]: VertexBuffer } = {};
+            var data:{ [key: string]: number[] | Float32Array } = {};
+            var newdata: { [key: string]: Array<number> } = {};
             var updatableNormals = false;
             var kindIndex: number;
             var kind: string;
@@ -1876,11 +1876,11 @@
         public optimizeIndices(successCallback?: (mesh?: Mesh) => void): Mesh {
             var indices = this.getIndices();
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
-            var vectorPositions = [];
+            var vectorPositions = new Array<Vector3>();
             for (var pos = 0; pos < positions.length; pos = pos + 3) {
                 vectorPositions.push(Vector3.FromArray(positions, pos));
             }
-            var dupes = [];
+            var dupes = new Array<number>();
 
             AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, (iteration) => {
                 var realPos = vectorPositions.length - 1 - iteration;
@@ -3040,7 +3040,7 @@
         /**
          * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
-        public static Center(meshesOrMinMaxVector): Vector3 {
+        public static Center(meshesOrMinMaxVector: { min: Vector3; max: Vector3 } | AbstractMesh[]): Vector3 {
             var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? BABYLON.Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
             return Vector3.Center(minMaxVector.min, minMaxVector.max);
         }

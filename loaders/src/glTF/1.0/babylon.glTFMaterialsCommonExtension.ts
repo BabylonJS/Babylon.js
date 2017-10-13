@@ -18,7 +18,7 @@ module BABYLON.GLTF1 {
     };
 
     interface IGLTFRuntimeCommonExtension {
-        lights: Object;
+        lights: {[key: string]: IGLTFLightCommonExtension};
     }
 
     interface IGLTFLightCommonExtension {
@@ -64,11 +64,11 @@ module BABYLON.GLTF1 {
         public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean {
             if (!gltfRuntime.extensions) return false;
 
-            var extension = gltfRuntime.extensions[this.name];
+            var extension: IGLTFRuntimeCommonExtension = gltfRuntime.extensions[this.name];
             if (!extension) return false;
 
             // Create lights
-            var lights: IGLTFRuntimeCommonExtension = extension.lights;
+            var lights = extension.lights;
             if (lights) {
                 for (var thing in lights) {
                     var light: IGLTFLightCommonExtension = lights[thing];
@@ -162,7 +162,7 @@ module BABYLON.GLTF1 {
             // Create buffer from texture url
             GLTFLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, (buffer) => {
                 // Create texture from buffer
-                GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => material[propertyPath] = texture, onError);
+                GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => (<any>material)[propertyPath] = texture, onError);
             }, onError);
         }
     }

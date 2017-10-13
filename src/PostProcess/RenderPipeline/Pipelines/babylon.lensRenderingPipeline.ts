@@ -260,7 +260,7 @@ module BABYLON {
 
             var context = (<DynamicTexture>this._grainTexture).getContext();
 
-            var rand = (min, max) => {
+            var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
             }
 

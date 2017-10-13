@@ -5,6 +5,7 @@
     "module": "commonjs",
     "target": "es5",
     "sourceMap": true,
-    "lib": ["dom", "es2015.promise", "es5"]
+    "lib": ["dom", "es2015.promise", "es5"],
+    "noImplicitAny": true
   }
 }
