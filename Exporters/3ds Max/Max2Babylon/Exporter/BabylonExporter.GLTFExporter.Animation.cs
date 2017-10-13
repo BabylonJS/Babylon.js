@@ -7,7 +7,7 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private static float FPS_FACTOR = 60.0f; // TODO - Which FPS factor ?
+        private static float FPS_FACTOR = 30.0f; // TODO - Which FPS factor ?
 
         private GLTFAnimation ExportNodeAnimation(BabylonNode babylonNode, GLTF gltf, GLTFNode gltfNode, BabylonScene babylonScene = null)
         {

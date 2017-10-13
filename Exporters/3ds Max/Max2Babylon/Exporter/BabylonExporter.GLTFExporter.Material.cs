@@ -44,11 +44,29 @@ namespace Max2Babylon
                 {
                     RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.diffuseTexture=null", 3);
                 }
+                else
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.diffuseTexture.name=" + babylonStandardMaterial.diffuseTexture.name, 3);
+                }
 
                 // Normal / bump
                 if (babylonStandardMaterial.bumpTexture == null)
                 {
                     RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.bumpTexture=null", 3);
+                }
+                else
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.bumpTexture.name=" + babylonStandardMaterial.bumpTexture.name, 3);
+                }
+
+                // Opacity
+                if (babylonStandardMaterial.opacityTexture == null)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.opacityTexture=null", 3);
+                }
+                else
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.opacityTexture.name=" + babylonStandardMaterial.opacityTexture.name, 3);
                 }
 
                 // Specular
@@ -57,11 +75,23 @@ namespace Max2Babylon
                     RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.specular[" + i + "]=" + babylonStandardMaterial.specular[i], 3);
                 }
                 RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.specularPower=" + babylonStandardMaterial.specularPower, 3);
+                if (babylonStandardMaterial.specularTexture == null)
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.specularTexture=null", 3);
+                }
+                else
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.specularTexture.name=" + babylonStandardMaterial.specularTexture.name, 3);
+                }
 
                 // Occlusion
                 if (babylonStandardMaterial.ambientTexture == null)
                 {
                     RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.ambientTexture=null", 3);
+                }
+                else
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.ambientTexture.name=" + babylonStandardMaterial.ambientTexture.name, 3);
                 }
 
                 // Emissive
@@ -72,6 +102,10 @@ namespace Max2Babylon
                 if (babylonStandardMaterial.emissiveTexture == null)
                 {
                     RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.emissiveTexture=null", 3);
+                }
+                else
+                {
+                    RaiseMessage("GLTFExporter.Material | babylonStandardMaterial.emissiveTexture.name=" + babylonStandardMaterial.emissiveTexture.name, 3);
                 }
 
 
