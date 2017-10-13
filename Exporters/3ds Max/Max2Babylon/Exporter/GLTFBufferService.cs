@@ -76,6 +76,27 @@ namespace Max2Babylon
             return gltf.bufferViewFloatVec4;
         }
 
+        public GLTFBufferView GetBufferViewFloatMat4(GLTF gltf, GLTFBuffer buffer)
+        {
+            if (gltf.bufferViewFloatMat4 == null)
+            {
+                var bufferView = CreateBufferView(gltf, buffer, "bufferViewFloatMat4");
+                gltf.bufferViewFloatMat4 = bufferView;
+            }
+            return gltf.bufferViewFloatMat4;
+        }
+
+        public GLTFBufferView GetBufferViewUnsignedShortVec4(GLTF gltf, GLTFBuffer buffer)
+        {
+            if (gltf.bufferViewUnsignedShortVec4 == null)
+            {
+                var bufferView = CreateBufferView(gltf, buffer, "bufferViewUnsignedShortVec4");
+                bufferView.byteStride = 8;
+                gltf.bufferViewUnsignedShortVec4 = bufferView;
+            }
+            return gltf.bufferViewUnsignedShortVec4;
+        }
+
         public GLTFBufferView GetBufferViewAnimationFloatScalar(GLTF gltf, GLTFBuffer buffer)
         {
             if (gltf.bufferViewAnimationFloatScalar == null)

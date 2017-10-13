@@ -36,6 +36,9 @@ namespace GLTFExport.Entities
 
         public List<int> ChildrenList { get; private set; }
 
+        // Used to compute transform world matrix
+        public GLTFNode parent;
+
         public GLTFNode()
         {
             ChildrenList = new List<int>();

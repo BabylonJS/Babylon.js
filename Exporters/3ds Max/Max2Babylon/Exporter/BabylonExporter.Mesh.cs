@@ -124,9 +124,6 @@ namespace Max2Babylon
             
             // Position / rotation / scaling / hierarchy
             exportNode(babylonMesh, meshNode, scene, babylonScene);
-
-            // Animations
-            exportAnimation(babylonMesh, meshNode);
             
             // Sounds
             var soundName = meshNode.MaxNode.GetStringProperty("babylonjs_sound_filename", "");
@@ -406,27 +403,32 @@ namespace Max2Babylon
                         {
                             // Morph target
                             var maxMorphTarget = morpher.GetMorphTarget(i);
-                            var babylonMorphTarget = new BabylonMorphTarget
+
+                            // Ensure target still exists (green color legend)
+                            if (maxMorphTarget != null)
                             {
-                                name = maxMorphTarget.Name
-                            };
-                            babylonMorphTargets.Add(babylonMorphTarget);
+                                var babylonMorphTarget = new BabylonMorphTarget
+                                {
+                                    name = maxMorphTarget.Name
+                                };
+                                babylonMorphTargets.Add(babylonMorphTarget);
 
-                            // TODO - Influence
-                            babylonMorphTarget.influence = 0f;
+                                // TODO - Influence
+                                babylonMorphTarget.influence = 0f;
 
-                            // Target geometry
-                            var targetVertices = ExtractVertices(maxMorphTarget, optimizeVertices);
-                            babylonMorphTarget.positions = targetVertices.SelectMany(v => new[] { v.Position.X, v.Position.Y, v.Position.Z }).ToArray();
-                            babylonMorphTarget.normals = targetVertices.SelectMany(v => new[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToArray();
-
-                            // Animations
-                            var animations = new List<BabylonAnimation>();
-                            var morphWeight = morpher.GetMorphWeight(i);
-                            ExportFloatGameController(morphWeight, "influence", animations);
-                            if (animations.Count > 0)
-                            {
-                                babylonMorphTarget.animations = animations.ToArray();
+                                // Target geometry
+                                var targetVertices = ExtractVertices(maxMorphTarget, optimizeVertices);
+                                babylonMorphTarget.positions = targetVertices.SelectMany(v => new[] { v.Position.X, v.Position.Y, v.Position.Z }).ToArray();
+                                babylonMorphTarget.normals = targetVertices.SelectMany(v => new[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToArray();
+                                
+                                // Animations
+                                var animations = new List<BabylonAnimation>();
+                                var morphWeight = morpher.GetMorphWeight(i);
+                                ExportFloatGameController(morphWeight, "influence", animations);
+                                if (animations.Count > 0)
+                                {
+                                    babylonMorphTarget.animations = animations.ToArray();
+                                }
                             }
                         }
                     });
@@ -434,6 +436,10 @@ namespace Max2Babylon
                     babylonMorphTargetManager.targets = babylonMorphTargets.ToArray();
                 }
             }
+
+            // Animations
+			// Done last to avoid '0 vertex found' error (unkown cause)
+            exportAnimation(babylonMesh, meshNode);
 
             babylonScene.MeshesList.Add(babylonMesh);
 
