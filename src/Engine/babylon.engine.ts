@@ -1879,6 +1879,21 @@
             return vbo;
         }
 
+        public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
+            this.bindIndexBuffer(indexBuffer);
+            var arrayBuffer;
+
+            if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
+                arrayBuffer = indices;
+            } else {
+                arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+            }
+
+            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
+            
+            this._resetIndexBufferBinding();
+        }
+
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: number[] | Float32Array, offset?: number, count?: number): void {
             this.bindArrayBuffer(vertexBuffer);
 
@@ -1908,7 +1923,7 @@
             this._cachedIndexBuffer = null;
         }
 
-        public createIndexBuffer(indices: IndicesArray): WebGLBuffer {
+        public createIndexBuffer(indices: IndicesArray, updatable?: boolean): WebGLBuffer {
             var vbo = this._gl.createBuffer();
             this.bindIndexBuffer(vbo);
 
@@ -1941,7 +1956,7 @@
                 }
             }
 
-            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.STATIC_DRAW);
+            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, updatable ? this._gl.DYNAMIC_DRAW : this._gl.STATIC_DRAW);
             this._resetIndexBufferBinding();
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
