@@ -69,7 +69,6 @@
             "assetsManager",
             "mapTexture",
             "dynamicFloatArray",
-            "imageProcessing",
             "serialization",
             "probes",
             "layer",
