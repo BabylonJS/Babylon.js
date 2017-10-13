@@ -314,7 +314,7 @@
             var eventPrefix = "pointer";
 
             // Check if pointer events are supported
-            if (!window.PointerEvent && !navigator.pointerEnabled) {
+            if (Tools.IsWindowObjectExist() && !window.PointerEvent && !navigator.pointerEnabled) {
                 eventPrefix = "mouse";
             }
 
@@ -325,7 +325,15 @@
          * @param func - the function to be called
          * @param requester - the object that will request the next frame. Falls back to window.
          */
-        public static QueueNewFrame(func, requester: any = window): number {
+        public static QueueNewFrame(func, requester?): number {
+            if (!Tools.IsWindowObjectExist()) {
+                return setTimeout(func, 16);
+            }
+
+            if (!requester) {
+                requester = window;
+            }
+
             if (requester.requestAnimationFrame) {
                 return requester.requestAnimationFrame(func);
             }
@@ -491,7 +499,7 @@
                     if (request.readyState === (XMLHttpRequest.DONE || 4)) {
                         request.onreadystatechange = null;//some browsers have issues where onreadystatechange can be called multiple times with the same value
 
-                        if (request.status >= 200 && request.status < 300 || (navigator.isCocoonJS && (request.status === 0))) {
+                        if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else { // Failed
                             let e = new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
@@ -563,7 +571,7 @@
             head.appendChild(script);
         }
 
-        public static ReadFileAsDataURL(fileToLoad, callback, progressCallback): void {
+        public static ReadFileAsDataURL(fileToLoad: Blob, callback, progressCallback): void {
             var reader = new FileReader();
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
@@ -573,7 +581,7 @@
             reader.readAsDataURL(fileToLoad);
         }
 
-        public static ReadFile(fileToLoad, callback, progressCallBack, useArrayBuffer?: boolean): void {
+        public static ReadFile(fileToLoad: File, callback, progressCallBack, useArrayBuffer?: boolean): void {
             var reader = new FileReader();
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
@@ -1065,12 +1073,16 @@
             }
         }
 
+        public static IsWindowObjectExist(): boolean {
+            return (typeof window) !== "undefined";
+        }
+
         // Performances
         private static _PerformanceNoneLogLevel = 0;
         private static _PerformanceUserMarkLogLevel = 1;
         private static _PerformanceConsoleLogLevel = 2;
 
-        private static _performance: Performance = window.performance;
+        private static _performance: Performance;
 
         static get PerformanceNoneLogLevel(): number {
             return Tools._PerformanceNoneLogLevel;
@@ -1108,6 +1120,13 @@
         }
 
         static _StartUserMark(counterName: string, condition = true): void {
+            if (!Tools._performance) {
+                if (!Tools.IsWindowObjectExist()) {
+                    return;
+                }
+                Tools._performance = window.performance;
+            }
+
             if (!condition || !Tools._performance.mark) {
                 return;
             }
@@ -1150,7 +1169,7 @@
         public static EndPerformanceCounter: (counterName: string, condition?: boolean) => void = Tools._EndPerformanceCounterDisabled;
 
         public static get Now(): number {
-            if (window.performance && window.performance.now) {
+            if (Tools.IsWindowObjectExist() && window.performance && window.performance.now) {
                 return window.performance.now();
             }
 

@@ -33,7 +33,37 @@
      * Represent an Observer registered to a given Observable object.
      */
     export class Observer<T> {
-        constructor(public callback: (eventData: T, eventState: EventState) => void, public mask: number) {
+        constructor(public callback: (eventData: T, eventState: EventState) => void, public mask: number, public scope: any = null) {
+        }
+    }
+
+    /**
+     * Represent a list of observers registered to multiple Observables object.
+     */
+    export class MultiObserver<T> {
+        private _observers: Observer<T>[];
+        private _observables: Observable<T>[];
+        
+        public dispose(): void {
+            for (var index = 0; index < this._observers.length; index++) {
+                this._observables[index].remove(this._observers[index]);
+            }
+
+            this._observers = null;
+            this._observables = null;
+        }
+
+        public static Watch<T>(observables: Observable<T>[], callback: (eventData: T, eventState: EventState) => void, mask: number = -1, scope: any = null): MultiObserver<T> {
+            let result = new MultiObserver<T>();
+
+            result._observers = new Array<Observer<T>>();
+            result._observables = observables;            
+
+            for (var observable of observables) {
+                result._observers.push(observable.add(callback, mask, false, scope));
+            }
+
+            return result;
         }
     }
 
@@ -62,13 +92,14 @@
          * @param callback the callback that will be executed for that Observer
          * @param mask the mask used to filter observers
          * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
+         * @param scope optional scope for the callback to be called from
          */
-        public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false): Observer<T> {
+        public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope: any = null): Observer<T> {
             if (!callback) {
                 return null;
             }
 
-            var observer = new Observer(callback, mask);
+            var observer = new Observer(callback, mask, scope);
 
             if (insertFirst) {
                 this._observers.unshift(observer);
@@ -129,7 +160,11 @@
 
             for (var obs of this._observers) {
                 if (obs.mask & mask) {
-                    obs.callback(eventData, state);
+                    if(obs.scope){
+                        obs.callback.apply(obs.scope, [eventData, state])
+                    }else{
+                        obs.callback(eventData, state);
+                    }
                 }
                 if (state.skipNextObservers) {
                     return false;

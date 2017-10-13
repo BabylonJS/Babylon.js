@@ -35,6 +35,26 @@ module BABYLON.GLTF2 {
             }
         }
 
+        public static ValidateUri(uri: string): boolean {
+            return (uri.indexOf("..") === -1);
+        }
+
+        public static AssignIndices(array: Array<{index?: number}>): void {
+            if (array) {
+                for (var index = 0; index < array.length; index++) {
+                    array[index].index = index;
+                }
+            }
+        }
+
+        public static GetArrayItem<T>(array: ArrayLike<T>, index: number): T {
+            if (!array || !array[index]) {
+                return null;
+            }
+
+            return array[index];
+        }
+
         public static GetTextureWrapMode(mode: ETextureWrapMode): number {
             // Set defaults if undefined
             mode = mode === undefined ? ETextureWrapMode.REPEAT : mode;

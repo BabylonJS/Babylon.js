@@ -96,6 +96,8 @@
         private static _FOGMODE_EXP2 = 2;
         private static _FOGMODE_LINEAR = 3;
 
+        private static _uniqueIdCounter = 0;        
+
         public static MinDeltaTime = 1.0;
         public static MaxDeltaTime = 1000.0;
 
@@ -401,7 +403,7 @@
         private _previousHasSwiped = false;
         private _currentPickResult = null;
         private _previousPickResult = null;
-        private _isButtonPressed = false;
+        private _totalPointersPressed = 0;
         private _doubleClickOccured = false;
 
         /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
@@ -795,8 +797,6 @@
         private _depthRenderer: DepthRenderer;
         private _geometryBufferRenderer: GeometryBufferRenderer;
 
-        private _uniqueIdCounter = 0;
-
         private _pickedDownMesh: AbstractMesh;
         private _pickedUpMesh: AbstractMesh;
         private _pickedDownSprite: Sprite;
@@ -821,7 +821,9 @@
                 this._outlineRenderer = new OutlineRenderer(this);
             }
 
-            this.attachControl();
+            if (Tools.IsWindowObjectExist()) {
+                this.attachControl();
+            }
 
             //simplification queue
             if (SimplificationQueue) {
@@ -1149,7 +1151,7 @@
                                 false, this.cameraToUseForPointers);
 
                             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                                if (this._isButtonPressed &&
+                                if (this._totalPointersPressed !== 0 &&
                                     ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                     (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
                                         Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
@@ -1420,7 +1422,7 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
-                this._isButtonPressed = true;
+                this._totalPointersPressed++;
                 this._pickedDownMesh = null;
                 this._meshPickProceed = false;
 
@@ -1484,11 +1486,11 @@
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
-                if (!this._isButtonPressed) {   // We are attaching the pointer up to windows because of a bug in FF                    
-                    return;                     // So we need to test it the pointer down was pressed before.
+                if (this._totalPointersPressed === 0) {  // We are attaching the pointer up to windows because of a bug in FF                    
+                    return;                             // So we need to test it the pointer down was pressed before.
                 }
 
-                this._isButtonPressed = false;
+                this._totalPointersPressed--;
                 this._pickedUpMesh = null;
                 this._meshPickProceed = false;
 
@@ -1916,6 +1918,12 @@
                 Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
 
+            if (this.activeCamera._alternateCamera) {
+                let otherCamera = this.activeCamera._alternateCamera;
+                otherCamera.getViewMatrix().multiplyToRef(otherCamera.getProjectionMatrix(), Tmp.Matrix[0]);
+                Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
+            }
+
             if (this._sceneUbo.useUbo) {
                 this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
                 this._sceneUbo.updateMatrix("view", this._viewMatrix);
@@ -1957,13 +1965,12 @@
         // Methods
 
         public getUniqueId() {
-            var result = this._uniqueIdCounter;
-            this._uniqueIdCounter++;
+            var result = Scene._uniqueIdCounter;
+            Scene._uniqueIdCounter++;
             return result;
         }
 
         public addMesh(newMesh: AbstractMesh) {
-            newMesh.uniqueId = this.getUniqueId();
             var position = this.meshes.push(newMesh);
 
             //notify the collision coordinator
@@ -2046,7 +2053,6 @@
         }
 
         public addLight(newLight: Light) {
-            newLight.uniqueId = this.getUniqueId();
             this.lights.push(newLight);
             this.sortLightsByPriority();
 
@@ -2060,7 +2066,6 @@
         }
 
         public addCamera(newCamera: Camera) {
-            newCamera.uniqueId = this.getUniqueId();
             var position = this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
@@ -4124,8 +4129,8 @@
             return hdrSkybox;
         }
 
-        public createDefaultVRExperience() {
-            this.VRHelper = new BABYLON.VRExperienceHelper(this, null);
+        public createDefaultVRExperience(webVROptions: WebVROptions = {}) {
+            this.VRHelper = new BABYLON.VRExperienceHelper(this, webVROptions);
         }
 
         // Tags

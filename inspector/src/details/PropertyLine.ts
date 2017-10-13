@@ -83,11 +83,15 @@ module INSPECTOR {
         private _escapeInputHandler: EventListener;
         /** Handler used on focus out */
         private _focusOutInputHandler: EventListener;
-        private _input_checkbox: HTMLInputElement;
         /** Handler used to get mouse position */
         private _onMouseDownHandler: EventListener;
         private _onMouseDragHandler: EventListener;
         private _onMouseUpHandler: EventListener;
+
+        private _sliderfill: HTMLElement;
+        private _slidertrack: HTMLElement;
+
+        private _textValue: HTMLElement;
         /** Save previous Y mouse position */
         private _prevY: number;
         /**Save value while slider is on */
@@ -108,7 +112,7 @@ module INSPECTOR {
             // Value
             this._valueDiv = Helpers.CreateDiv('prop-value', this._div);
 
-            if (typeof this.value !== 'boolean') {
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
                 this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
             }
 
@@ -119,10 +123,11 @@ module INSPECTOR {
             }
 
             this._updateValue();
-
             // If the property type is not simple, add click event to unfold its children
             if (typeof this.value === 'boolean') {
                 this._checkboxInput();
+            } else if (this._isSliderType()) {
+                this._rangeInput();
             } else if (!this._isSimple()) {
                 this._valueDiv.classList.add('clickable');
                 this._valueDiv.addEventListener('click', this._addDetails.bind(this));
@@ -175,18 +180,19 @@ module INSPECTOR {
             }
         }
 
-        public validateInput(value: any): void {
+        public validateInput(value: any, forceupdate:boolean = true): void {
             this.updateObject();
-
             if (typeof this._property.value === 'number') {
                 this._property.value = parseFloat(value);
             } else {
                 this._property.value = value;
             }
             // Remove input
-            this.update();
-            // resume scheduler
-            Scheduler.getInstance().pause = false;
+            if (forceupdate) {
+                this.update();
+                // resume scheduler
+                Scheduler.getInstance().pause = false;
+            }
         }
 
         /** 
@@ -204,23 +210,23 @@ module INSPECTOR {
         /** Removes the input without validating the new value */
         private _removeInputWithoutValidating() {
             Helpers.CleanDiv(this._valueDiv);
-            if (typeof this.value !== 'boolean') {
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
                 this._valueDiv.textContent = "-";
             } 
             // restore elements
             for (let elem of this._elements) {
                 this._valueDiv.appendChild(elem.toHtml());
             }
-            this._valueDiv.addEventListener('click', this._displayInputHandler);
+
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.addEventListener('click', this._displayInputHandler);
+            }
         }
 
         /** Replaces the default display with an input */
         private _displayInput(e) {
             // Remove the displayInput event listener
             this._valueDiv.removeEventListener('click', this._displayInputHandler);
-
-            
-
             // Set input value
             let valueTxt = this._valueDiv.textContent;
             this._valueDiv.textContent = "";
@@ -228,15 +234,11 @@ module INSPECTOR {
             this._valueDiv.appendChild(this._input);
             this._input.focus();
 
-            if (typeof this.value === 'number') {
-                // Slider
-                // let slider = Helpers.CreateDiv('slider-number', this._valueDiv);
-                // slider.style.background = '#303030';
-                // slider.style.cursor = 'ew-resize';
-                // slider.innerHTML = 'HELLO'
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._input.addEventListener('focusout', this._focusOutInputHandler);
+            } else if (typeof this.value === 'number') {
                 this._input.addEventListener('mousedown', this._onMouseDownHandler);
             }
-            this._input.addEventListener('focusout', this._focusOutInputHandler);
 
             // Pause the scheduler
             Scheduler.getInstance().pause = true;
@@ -256,6 +258,10 @@ module INSPECTOR {
 
         // Returns the property name
         public get name(): string {
+            // let arrayName = Helpers.Capitalize(this._property.name).match(/[A-Z][a-z]+|[0-9]+/g)
+            // if (arrayName) {
+            //     return arrayName.join(" ");
+            // }
             return this._property.name;
         }
 
@@ -338,6 +344,8 @@ module INSPECTOR {
             // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
             if (typeof this.value === 'boolean') {
                  this._checkboxInput();
+            } else if (this._isSliderType()) { // Add slider when parent have slider property
+                this._rangeInput();
             } else {
                 this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
             }
@@ -385,6 +393,17 @@ module INSPECTOR {
             return this._div;
         }
 
+        public closeDetails() {
+            if (this._div.classList.contains('unfolded')) {
+                // Remove class unfolded
+                this._div.classList.remove('unfolded');
+                // remove html children
+                for (let child of this._children) {
+                    this._div.parentNode.removeChild(child.toHtml());
+                }
+            }
+        }
+
         /**
          * Add sub properties in case of a complex type
          */
@@ -401,7 +420,7 @@ module INSPECTOR {
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
                     let objToDetail = this.value;
-                    let propToDisplay = PROPERTIES[Helpers.GET_TYPE(objToDetail)].properties.reverse();
+                    let propToDisplay = PROPERTIES[Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
                     let propertyLine = null;
 
                     for (let prop of propToDisplay) {
@@ -452,14 +471,55 @@ module INSPECTOR {
          */
         private _checkboxInput() {
             if(this._valueDiv.childElementCount < 1) { // Prevent display two checkbox
-                this._input_checkbox = Helpers.CreateInput('checkbox-element', this._valueDiv);
-                this._input_checkbox.type = 'checkbox'
-                this._input_checkbox.checked = this.value;
-                this._input_checkbox.addEventListener('change', () => {
+                this._input = Helpers.CreateInput('checkbox-element', this._valueDiv);
+                this._input.type = 'checkbox'
+                this._input.checked = this.value;
+                this._input.addEventListener('change', () => {
                     Scheduler.getInstance().pause = true;
                     this.validateInput(!this.value)
                 })
             }            
+        }
+
+        private _rangeInput() {
+            if(this._valueDiv.childElementCount < 1) { // Prevent display two input range
+                this._input = Helpers.CreateInput('slider-element', this._valueDiv);
+                this._input.type = 'range';
+                this._input.style.display = 'inline-block';
+                this._input.min = this._getSliderProperty().min;
+                this._input.max = this._getSliderProperty().max;
+                this._input.step = this._getSliderProperty().step;
+                this._input.value = this.value;
+                
+                this._validateInputHandler = this._rangeHandler.bind(this)
+                this._input.addEventListener('input', this._validateInputHandler)
+                this._input.addEventListener('change', () => {
+                    Scheduler.getInstance().pause = false;
+                })
+
+                this._textValue = Helpers.CreateDiv('value-text', this._valueDiv);
+                this._textValue.innerText = Helpers.Trunc(this.value).toString();
+                this._textValue.style.paddingLeft = '10px';
+                this._textValue.style.display = 'inline-block';
+            }
+        }
+
+        private _rangeHandler() {
+            Scheduler.getInstance().pause = true;
+            //this._input.style.backgroundSize = ((parseFloat(this._input.value) - parseFloat(this._input.min)) * 100 / ( parseFloat(this._input.max) - parseFloat(this._input.min))) + '% 100%'
+            this._textValue.innerText = this._input.value;
+            this.validateInput(this._input.value, false);
+        }
+
+        private _isSliderType() { //Check if property have slider definition
+            return this._property  && 
+            PROPERTIES.hasOwnProperty(this._property.obj.constructor.name) &&
+            PROPERTIES[this._property.obj.constructor.name].hasOwnProperty('slider') && 
+            PROPERTIES[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
+        }
+
+        private _getSliderProperty() {
+            return PROPERTIES[this._property.obj.constructor.name].slider[this.name]
         }
     }
 }

@@ -61,6 +61,7 @@ module BABYLON {
 
         public controllers: Array<WebVRController> = [];
         public onControllersAttachedObservable = new Observable<Array<WebVRController>>();
+        public onControllerMeshLoadedObservable = new Observable<WebVRController>();
 
         public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
@@ -359,6 +360,7 @@ module BABYLON {
                         } else {
                             // Load the meshes
                             webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
+                                this.onControllerMeshLoadedObservable.notifyObservers(webVrController);
                                 if (this.webVROptions.defaultLightingOnControllers) {
                                     if (!this._lightOnControllers) {
                                         this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), this.getScene());

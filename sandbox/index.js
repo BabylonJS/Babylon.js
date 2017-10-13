@@ -79,20 +79,23 @@ if (BABYLON.Engine.isSupported()) {
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {
             currentScene.createDefaultCameraOrLight(true);
             // Enable camera's behaviors
-            currentScene.activeCamera.useBouncingBehavior = true;
             currentScene.activeCamera.useFramingBehavior = true;
 
             var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
             framingBehavior.framingTime = 0;
             framingBehavior.elevationReturnTime = -1;
 
-            var bouncingBehavior = currentScene.activeCamera.getBehaviorByName("Bouncing");
-            bouncingBehavior.autoTransitionRange = true;
-
             if (currentScene.meshes.length) {
                 var worldExtends = currentScene.getWorldExtends();
+                currentScene.activeCamera.lowerRadiusLimit = null;
                 framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
             }
+
+            currentScene.activeCamera.pinchPrecision = 200 / currentScene.activeCamera.radius;
+            currentScene.activeCamera.upperRadiusLimit = 5 * currentScene.activeCamera.radius;
+
+            currentScene.activeCamera.wheelDeltaPercentage = 0.01;
+            currentScene.activeCamera.pinchDeltaPercentage = 0.01;
         }
 
         currentScene.activeCamera.attachControl(canvas); 
@@ -203,5 +206,20 @@ if (BABYLON.Engine.isSupported()) {
                 localStorage.setItem("helpcounter", currentHelpCounter + 1);
             }, 5000);
         }, 5000);
+    }
+
+    sizeScene();
+
+    window.onresize = function () {
+        sizeScene();
+    }
+}
+
+function sizeScene () {
+    let divInspWrapper = document.getElementsByClassName('insp-wrapper')[0];
+    if (divInspWrapper) {
+        let divFooter = document.getElementsByClassName('footer')[0];
+        divInspWrapper.style.height = (document.body.clientHeight - divFooter.clientHeight) + "px";
+        divInspWrapper.style['max-width'] = document.body.clientWidth + "px";
     }
 }

@@ -384,6 +384,8 @@
 
         public _boundingInfo: BoundingInfo;
         private _pivotMatrix = Matrix.Identity();
+        private _pivotMatrixInverse: Matrix;
+        private _postMultiplyPivotMatrix = false;
         public _isDisposed = false;
         public _renderId = 0;
 
@@ -1087,9 +1089,14 @@
          * Sets a new pivot matrix to the mesh.  
          * Returns the AbstractMesh.
          */
-        public setPivotMatrix(matrix: Matrix): AbstractMesh {
-            this._pivotMatrix = matrix;
+        public setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix = false): AbstractMesh {
+            this._pivotMatrix = matrix.clone();
             this._cache.pivotMatrixUpdated = true;
+            this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
+
+            if (this._postMultiplyPivotMatrix) {
+                this._pivotMatrixInverse = Matrix.Invert(matrix);
+            }
             return this;
         }
 
@@ -1365,6 +1372,11 @@
                 this._worldMatrix.copyFrom(this._localWorld);
             }
 
+            // Post multiply inverse of pivotMatrix
+            if (this._postMultiplyPivotMatrix) {
+                this._worldMatrix.multiplyToRef(this._pivotMatrixInverse, this._worldMatrix);
+            }
+
             // Bounding info
             this._updateBoundingInfo();
 
@@ -1493,14 +1505,27 @@
         /** 
          * True if the mesh intersects another mesh or a SolidParticle object.  
          * Unless the parameter `precise` is set to `true` the intersection is computed according to Axis Aligned Bounding Boxes (AABB), else according to OBB (Oriented BBoxes)
+         * includeDescendants can be set to true to test if the mesh defined in parameters intersects with the current mesh or any child meshes
          * Returns a boolean.  
          */
-        public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise?: boolean): boolean {
+        public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise?: boolean, includeDescendants?: boolean): boolean {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;
             }
 
-            return this._boundingInfo.intersects(mesh._boundingInfo, precise);
+            if (this._boundingInfo.intersects(mesh._boundingInfo, precise)) {
+                return true;
+            }
+
+            if (includeDescendants) {
+                for (var child of this.getChildMeshes()) {
+                    if (child.intersectsMesh(mesh, precise, true)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /**

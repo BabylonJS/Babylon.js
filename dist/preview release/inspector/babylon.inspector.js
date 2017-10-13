@@ -362,7 +362,22 @@ var INSPECTOR;
         'Color3': {
             type: BABYLON.Color3,
             properties: ['r', 'g', 'b'],
-            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; }
+            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            slider: {
+                r: { min: 0, max: 1, step: 0.01 },
+                g: { min: 0, max: 1, step: 0.01 },
+                b: { min: 0, max: 1, step: 0.01 }
+            }
+        },
+        'Color4': {
+            type: BABYLON.Color4,
+            properties: ['r', 'g', 'b'],
+            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            slider: {
+                r: { min: 0, max: 1, step: 0.01 },
+                g: { min: 0, max: 1, step: 0.01 },
+                b: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'Quaternion': {
             type: BABYLON.Quaternion,
@@ -449,7 +464,12 @@ var INSPECTOR;
                 'wheelPrecision',
                 'allowUpsideDown',
                 'checkCollisions'
-            ]
+            ],
+            slider: {
+                alpha: { min: 0, max: 2 * Math.PI, step: 0.01 },
+                beta: { min: -Math.PI, max: Math.PI, step: 0.01 },
+                fov: { min: 0, max: 180, step: 1 }
+            }
         },
         'FreeCamera': {
             type: BABYLON.FreeCamera,
@@ -479,7 +499,10 @@ var INSPECTOR;
                 'orthoTop',
                 'orthoLeft',
                 'orthoRight'
-            ]
+            ],
+            slider: {
+                fov: { min: 0, max: 180, step: 1 }
+            }
         },
         'Scene': {
             type: BABYLON.Scene,
@@ -541,7 +564,10 @@ var INSPECTOR;
                 'checkCollisions',
                 'hasLODLevels'
             ],
-            format: function (m) { return m.name; }
+            format: function (m) { return m.name; },
+            slider: {
+                visibility: { min: 0, max: 1, step: 0.1 }
+            }
         },
         'StandardMaterial': {
             type: BABYLON.StandardMaterial,
@@ -575,7 +601,10 @@ var INSPECTOR;
                 'reflectionTexture',
                 'refractionTexture'
             ],
-            format: function (mat) { return mat.name; }
+            format: function (mat) { return mat.name; },
+            slider: {
+                alpha: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'PrimitiveAlignment': {
             type: BABYLON.PrimitiveAlignment,
@@ -633,7 +662,10 @@ var INSPECTOR;
                 'cameraContrast',
                 'cameraColorGradingTexture',
                 'cameraColorCurves'
-            ]
+            ],
+            slider: {
+                alpha: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'Canvas2D': {
             type: BABYLON.Canvas2D
@@ -924,10 +956,10 @@ var INSPECTOR;
             enumerable: true,
             configurable: true
         });
+        // a unique name for this adapter, to retrieve its own key in the local storage
+        Adapter._name = BABYLON.Geometry.RandomId();
         return Adapter;
     }());
-    // a unique name for this adapter, to retrieve its own key in the local storage
-    Adapter._name = BABYLON.Geometry.RandomId();
     INSPECTOR.Adapter = Adapter;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -1306,10 +1338,7 @@ var INSPECTOR;
     var MeshAdapter = (function (_super) {
         __extends(MeshAdapter, _super);
         function MeshAdapter(obj) {
-            var _this = _super.call(this, obj) || this;
-            /** Keep track of the axis of the actual object */
-            _this._axis = [];
-            return _this;
+            return _super.call(this, obj) || this;
         }
         /** Returns the name displayed in the tree */
         MeshAdapter.prototype.id = function () {
@@ -1352,13 +1381,13 @@ var INSPECTOR;
         };
         MeshAdapter.prototype.debug = function (b) {
             // Draw axis the first time
-            if (this._axis.length == 0) {
+            if (!this._axesViewer) {
                 this._drawAxis();
             }
             // Display or hide axis
-            for (var _i = 0, _a = this._axis; _i < _a.length; _i++) {
-                var ax = _a[_i];
-                ax.setEnabled(b);
+            if (!b && this._axesViewer) {
+                this._axesViewer.dispose();
+                this._axesViewer = null;
             }
         };
         /** Returns some information about this mesh */
@@ -1369,35 +1398,14 @@ var INSPECTOR;
          * Should be called only one time as it will fill this._axis
          */
         MeshAdapter.prototype._drawAxis = function () {
-            var _this = this;
             this._obj.computeWorldMatrix();
             var m = this._obj.getWorldMatrix();
             // Axis
             var x = new BABYLON.Vector3(8 / this._obj.scaling.x, 0, 0);
             var y = new BABYLON.Vector3(0, 8 / this._obj.scaling.y, 0);
             var z = new BABYLON.Vector3(0, 0, 8 / this._obj.scaling.z);
-            // Draw an axis of the given color
-            var _drawAxis = function (color, start, end) {
-                var axis = BABYLON.Mesh.CreateLines("###axis###", [
-                    start,
-                    end
-                ], _this._obj.getScene());
-                axis.color = color;
-                axis.renderingGroupId = 1;
-                return axis;
-            };
-            // X axis
-            var xAxis = _drawAxis(BABYLON.Color3.Red(), BABYLON.Vector3.Zero(), x);
-            xAxis.parent = this._obj;
-            this._axis.push(xAxis);
-            // Y axis        
-            var yAxis = _drawAxis(BABYLON.Color3.Green(), BABYLON.Vector3.Zero(), y);
-            yAxis.parent = this._obj;
-            this._axis.push(yAxis);
-            // Z axis
-            var zAxis = _drawAxis(BABYLON.Color3.Blue(), BABYLON.Vector3.Zero(), z);
-            zAxis.parent = this._obj;
-            this._axis.push(zAxis);
+            this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
+            this._axesViewer.update(this._obj.position, x, y, z);
         };
         return MeshAdapter;
     }(INSPECTOR.Adapter));
@@ -1491,6 +1499,9 @@ var INSPECTOR;
             var isString = function (s) {
                 return typeof (s) === 'string' || s instanceof String;
             };
+            this._detailRows.forEach(function (property) {
+                property.closeDetails();
+            });
             this._detailRows.sort(function (detail1, detail2) {
                 var str1 = String(detail1[property]);
                 var str2 = String(detail2[property]);
@@ -1683,7 +1694,7 @@ var INSPECTOR;
             propName.textContent = "" + this.name;
             // Value
             this._valueDiv = INSPECTOR.Helpers.CreateDiv('prop-value', this._div);
-            if (typeof this.value !== 'boolean') {
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
                 this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
             }
             this._createElements();
@@ -1695,6 +1706,9 @@ var INSPECTOR;
             // If the property type is not simple, add click event to unfold its children
             if (typeof this.value === 'boolean') {
                 this._checkboxInput();
+            }
+            else if (this._isSliderType()) {
+                this._rangeInput();
             }
             else if (!this._isSimple()) {
                 this._valueDiv.classList.add('clickable');
@@ -1746,7 +1760,8 @@ var INSPECTOR;
                 this.update();
             }
         };
-        PropertyLine.prototype.validateInput = function (value) {
+        PropertyLine.prototype.validateInput = function (value, forceupdate) {
+            if (forceupdate === void 0) { forceupdate = true; }
             this.updateObject();
             if (typeof this._property.value === 'number') {
                 this._property.value = parseFloat(value);
@@ -1755,9 +1770,11 @@ var INSPECTOR;
                 this._property.value = value;
             }
             // Remove input
-            this.update();
-            // resume scheduler
-            INSPECTOR.Scheduler.getInstance().pause = false;
+            if (forceupdate) {
+                this.update();
+                // resume scheduler
+                INSPECTOR.Scheduler.getInstance().pause = false;
+            }
         };
         /**
          * On escape : removes the input
@@ -1773,7 +1790,7 @@ var INSPECTOR;
         /** Removes the input without validating the new value */
         PropertyLine.prototype._removeInputWithoutValidating = function () {
             INSPECTOR.Helpers.CleanDiv(this._valueDiv);
-            if (typeof this.value !== 'boolean') {
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
                 this._valueDiv.textContent = "-";
             }
             // restore elements
@@ -1781,7 +1798,9 @@ var INSPECTOR;
                 var elem = _a[_i];
                 this._valueDiv.appendChild(elem.toHtml());
             }
-            this._valueDiv.addEventListener('click', this._displayInputHandler);
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.addEventListener('click', this._displayInputHandler);
+            }
         };
         /** Replaces the default display with an input */
         PropertyLine.prototype._displayInput = function (e) {
@@ -1793,15 +1812,12 @@ var INSPECTOR;
             this._input.value = valueTxt;
             this._valueDiv.appendChild(this._input);
             this._input.focus();
-            if (typeof this.value === 'number') {
-                // Slider
-                // let slider = Helpers.CreateDiv('slider-number', this._valueDiv);
-                // slider.style.background = '#303030';
-                // slider.style.cursor = 'ew-resize';
-                // slider.innerHTML = 'HELLO'
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._input.addEventListener('focusout', this._focusOutInputHandler);
+            }
+            else if (typeof this.value === 'number') {
                 this._input.addEventListener('mousedown', this._onMouseDownHandler);
             }
-            this._input.addEventListener('focusout', this._focusOutInputHandler);
             // Pause the scheduler
             INSPECTOR.Scheduler.getInstance().pause = true;
         };
@@ -1819,6 +1835,10 @@ var INSPECTOR;
         Object.defineProperty(PropertyLine.prototype, "name", {
             // Returns the property name
             get: function () {
+                // let arrayName = Helpers.Capitalize(this._property.name).match(/[A-Z][a-z]+|[0-9]+/g)
+                // if (arrayName) {
+                //     return arrayName.join(" ");
+                // }
                 return this._property.name;
             },
             enumerable: true,
@@ -1908,6 +1928,9 @@ var INSPECTOR;
             if (typeof this.value === 'boolean') {
                 this._checkboxInput();
             }
+            else if (this._isSliderType()) {
+                this._rangeInput();
+            }
             else {
                 this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
             }
@@ -1953,6 +1976,17 @@ var INSPECTOR;
         PropertyLine.prototype.toHtml = function () {
             return this._div;
         };
+        PropertyLine.prototype.closeDetails = function () {
+            if (this._div.classList.contains('unfolded')) {
+                // Remove class unfolded
+                this._div.classList.remove('unfolded');
+                // remove html children
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    this._div.parentNode.removeChild(child.toHtml());
+                }
+            }
+        };
         /**
          * Add sub properties in case of a complex type
          */
@@ -1971,7 +2005,7 @@ var INSPECTOR;
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
                     var objToDetail = this.value;
-                    var propToDisplay = INSPECTOR.PROPERTIES[INSPECTOR.Helpers.GET_TYPE(objToDetail)].properties.reverse();
+                    var propToDisplay = INSPECTOR.PROPERTIES[INSPECTOR.Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
                     var propertyLine = null;
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
@@ -2020,21 +2054,56 @@ var INSPECTOR;
         PropertyLine.prototype._checkboxInput = function () {
             var _this = this;
             if (this._valueDiv.childElementCount < 1) {
-                this._input_checkbox = INSPECTOR.Helpers.CreateInput('checkbox-element', this._valueDiv);
-                this._input_checkbox.type = 'checkbox';
-                this._input_checkbox.checked = this.value;
-                this._input_checkbox.addEventListener('change', function () {
+                this._input = INSPECTOR.Helpers.CreateInput('checkbox-element', this._valueDiv);
+                this._input.type = 'checkbox';
+                this._input.checked = this.value;
+                this._input.addEventListener('change', function () {
                     INSPECTOR.Scheduler.getInstance().pause = true;
                     _this.validateInput(!_this.value);
                 });
             }
         };
+        PropertyLine.prototype._rangeInput = function () {
+            if (this._valueDiv.childElementCount < 1) {
+                this._input = INSPECTOR.Helpers.CreateInput('slider-element', this._valueDiv);
+                this._input.type = 'range';
+                this._input.style.display = 'inline-block';
+                this._input.min = this._getSliderProperty().min;
+                this._input.max = this._getSliderProperty().max;
+                this._input.step = this._getSliderProperty().step;
+                this._input.value = this.value;
+                this._validateInputHandler = this._rangeHandler.bind(this);
+                this._input.addEventListener('input', this._validateInputHandler);
+                this._input.addEventListener('change', function () {
+                    INSPECTOR.Scheduler.getInstance().pause = false;
+                });
+                this._textValue = INSPECTOR.Helpers.CreateDiv('value-text', this._valueDiv);
+                this._textValue.innerText = INSPECTOR.Helpers.Trunc(this.value).toString();
+                this._textValue.style.paddingLeft = '10px';
+                this._textValue.style.display = 'inline-block';
+            }
+        };
+        PropertyLine.prototype._rangeHandler = function () {
+            INSPECTOR.Scheduler.getInstance().pause = true;
+            //this._input.style.backgroundSize = ((parseFloat(this._input.value) - parseFloat(this._input.min)) * 100 / ( parseFloat(this._input.max) - parseFloat(this._input.min))) + '% 100%'
+            this._textValue.innerText = this._input.value;
+            this.validateInput(this._input.value, false);
+        };
+        PropertyLine.prototype._isSliderType = function () {
+            return this._property &&
+                INSPECTOR.PROPERTIES.hasOwnProperty(this._property.obj.constructor.name) &&
+                INSPECTOR.PROPERTIES[this._property.obj.constructor.name].hasOwnProperty('slider') &&
+                INSPECTOR.PROPERTIES[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
+        };
+        PropertyLine.prototype._getSliderProperty = function () {
+            return INSPECTOR.PROPERTIES[this._property.obj.constructor.name].slider[this.name];
+        };
+        // Array representing the simple type. All others are considered 'complex'
+        PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
+        // The number of pixel at each children step
+        PropertyLine._MARGIN_LEFT = 15;
         return PropertyLine;
     }());
-    // Array representing the simple type. All others are considered 'complex'
-    PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
-    // The number of pixel at each children step
-    PropertyLine._MARGIN_LEFT = 15;
     INSPECTOR.PropertyLine = PropertyLine;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -2616,6 +2685,9 @@ var INSPECTOR;
             }
             return propertiesLines;
         };
+        Helpers.Capitalize = function (str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        };
         return Helpers;
     }());
     INSPECTOR.Helpers = Helpers;
@@ -2657,10 +2729,10 @@ var INSPECTOR;
                 }
             }
         };
+        /** All properties are refreshed every 250ms */
+        Scheduler.REFRESH_TIME = 250;
         return Scheduler;
     }());
-    /** All properties are refreshed every 250ms */
-    Scheduler.REFRESH_TIME = 250;
     INSPECTOR.Scheduler = Scheduler;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -2830,6 +2902,7 @@ var INSPECTOR;
                     node.active(false);
                 }
             }
+            item.getDiv().scrollIntoView();
             item.active(true);
         };
         /** Returns the treeitem corersponding to the given obj, null if not found */
@@ -4729,6 +4802,9 @@ var INSPECTOR;
             if (b) {
                 this._div.classList.add('active');
             }
+        };
+        TreeItem.prototype.getDiv = function () {
+            return this._div;
         };
         return TreeItem;
     }(INSPECTOR.BasicElement));

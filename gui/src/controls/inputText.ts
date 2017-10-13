@@ -4,8 +4,8 @@ module BABYLON.GUI {
     export class InputText extends Control implements IFocusableControl {
         private _text = "";
         private _placeholderText = "";
-        private _background = "black";   
-        private _focusedBackground = "black";   
+        private _background = "#222222";   
+        private _focusedBackground = "#000000";   
         private _placeholderColor = "gray";   
         private _thickness = 1;
         private _margin = new ValueAndUnit(10, ValueAndUnit.UNITMODE_PIXEL);
@@ -16,7 +16,9 @@ module BABYLON.GUI {
         private _blinkIsEven = false;
         private _cursorOffset = 0;        
         private _scrollLeft: number;
-
+        private _textWidth: number;
+        private _clickedCoordinate: number;
+        
         public promptMessage = "Please enter text:";
 
         public onTextChangedObservable = new Observable<InputText>();
@@ -26,6 +28,10 @@ module BABYLON.GUI {
         public get maxWidth(): string | number {
             return this._maxWidth.toString(this._host);
         }
+
+        public get maxWidthInPixels(): number  {
+            return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }             
 
         public set maxWidth(value: string | number ) {
             if (this._maxWidth.toString(this._host) === value) {
@@ -40,6 +46,10 @@ module BABYLON.GUI {
         public get margin(): string {
             return this._margin.toString(this._host);
         }
+
+        public get marginInPixels(): number  {
+            return this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        }            
 
         public set margin(value: string) {
             if (this._margin.toString(this._host) === value) {
@@ -168,7 +178,11 @@ module BABYLON.GUI {
             this.onFocusObservable.notifyObservers(this);
 
             if (navigator.userAgent.indexOf("Mobile") !== -1) {
-                this.text = prompt(this.promptMessage);
+                let value = prompt(this.promptMessage);
+
+                if (value !== null) {
+                    this.text = value;
+                }
                 this._host.focusedControl = null;
                 return;
             }
@@ -293,10 +307,10 @@ module BABYLON.GUI {
                     }
                 }
 
-                let textWidth = context.measureText(text).width;   
+                this._textWidth = context.measureText(text).width;   
                 let marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
                 if (this._autoStretchWidth) {
-                    this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), textWidth + marginWidth) + "px";
+                    this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), this._textWidth + marginWidth) + "px";
                 }
 
                 let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
@@ -306,8 +320,8 @@ module BABYLON.GUI {
                 context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
                 context.clip();
 
-                if (this._isFocused && textWidth > availableWidth) {      
-                    let textLeft = clipTextLeft - textWidth + availableWidth;
+                if (this._isFocused && this._textWidth > availableWidth) {      
+                    let textLeft = clipTextLeft - this._textWidth + availableWidth;
                     if (!this._scrollLeft) {
                         this._scrollLeft = textLeft;
                     }
@@ -319,10 +333,37 @@ module BABYLON.GUI {
 
                 // Cursor
                 if (this._isFocused) {         
+
+                    // Need to move cursor
+                    if (this._clickedCoordinate) {
+                        var rightPosition = this._scrollLeft + this._textWidth;
+                        var absoluteCursorPosition = rightPosition - this._clickedCoordinate;
+                        var currentSize = 0;
+                        this._cursorOffset = 0;
+                        var previousDist = 0;
+                        do {
+                            if (this._cursorOffset) {
+                                previousDist = Math.abs(absoluteCursorPosition - currentSize);
+                            }
+                            this._cursorOffset++;
+                            currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
+
+                        } while(currentSize < absoluteCursorPosition);
+
+                        // Find closest move
+                        if (Math.abs(absoluteCursorPosition - currentSize) > previousDist) {
+                            this._cursorOffset--;
+                        }
+
+                        this._blinkIsEven = false;
+                        this._clickedCoordinate = null;
+                    }
+
+                    // Render cursor
                     if (!this._blinkIsEven) {
                         let cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
                         let cursorOffsetWidth = context.measureText(cursorOffsetText).width;   
-                        let cursorLeft = this._scrollLeft  + textWidth - cursorOffsetWidth;
+                        let cursorLeft = this._scrollLeft  + this._textWidth - cursorOffsetWidth;
     
                         if (cursorLeft < clipTextLeft) {
                             this._scrollLeft += (clipTextLeft - cursorLeft);
@@ -359,18 +400,25 @@ module BABYLON.GUI {
             context.restore();
         }
 
-        protected _onPointerDown(coordinates: Vector2): boolean {
-            if (!super._onPointerDown(coordinates)) {
+        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
+            if (!super._onPointerDown(coordinates, buttonIndex)) {
                 return false;
             }
 
+            this._clickedCoordinate = coordinates.x;
+            if (this._host.focusedControl === this) {
+                // Move cursor
+                clearTimeout(this._blinkTimeout);
+                this._markAsDirty();
+                return true;
+            }
             this._host.focusedControl = this;
 
             return true;
         }
 
-        protected _onPointerUp(coordinates: Vector2): void {
-            super._onPointerUp(coordinates);
+        protected _onPointerUp(coordinates: Vector2, buttonIndex: number): void {
+            super._onPointerUp(coordinates, buttonIndex);
         }  
 
         public dispose() {

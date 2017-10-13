@@ -16,7 +16,6 @@ module INSPECTOR {
             properties: [],
             format: () => ''
         },
-
         'Vector2': {
             type: BABYLON.Vector2,
             properties: ['x', 'y'],
@@ -30,7 +29,22 @@ module INSPECTOR {
         'Color3': {
             type: BABYLON.Color3,
             properties: ['r', 'g', 'b'],
-            format: (color: BABYLON.Color3) => { return `R:${color.r}, G:${color.g}, B:${color.b}` }
+            format: (color: BABYLON.Color3) => { return `R:${color.r}, G:${color.g}, B:${color.b}` },
+            slider: {
+                r: {min: 0, max: 1, step: 0.01},
+                g: {min: 0, max: 1, step: 0.01},
+                b: {min: 0, max: 1, step: 0.01}
+            }
+        },
+        'Color4': {
+            type: BABYLON.Color4,
+            properties: ['r', 'g', 'b'],
+            format: (color: BABYLON.Color4) => { return `R:${color.r}, G:${color.g}, B:${color.b}` },
+            slider: {
+                r: {min: 0, max: 1, step: 0.01},
+                g: {min: 0, max: 1, step: 0.01},
+                b: {min: 0, max: 1, step: 0.01}
+            }
         },
         'Quaternion': {
             type: BABYLON.Quaternion,
@@ -80,7 +94,6 @@ module INSPECTOR {
         'FontTexture': {
             type: BABYLON.FontTexture
         },
-
         'Sound': {
             type: BABYLON.Sound,
             properties: [
@@ -98,7 +111,6 @@ module INSPECTOR {
                 'isPaused'
             ]
         },
-
         'ArcRotateCamera': {
             type: BABYLON.ArcRotateCamera,
             properties: [
@@ -109,7 +121,6 @@ module INSPECTOR {
                 'angularSensibilityX',
                 'angularSensibilityY',
                 'target',
-
                 'lowerAlphaLimit',
                 'lowerBetaLimit',
                 'upperAlphaLimit',
@@ -121,9 +132,13 @@ module INSPECTOR {
                 'wheelPrecision',
                 'allowUpsideDown',
                 'checkCollisions'
-            ]
+            ],
+            slider: {
+                alpha: {min: 0, max: 2*Math.PI, step: 0.01},
+                beta: {min: -Math.PI, max: Math.PI, step: 0.01},
+                fov: {min: 0, max: 180, step: 1}
+            }
         },
-
         'FreeCamera': {
             type: BABYLON.FreeCamera,
             properties: [
@@ -132,7 +147,6 @@ module INSPECTOR {
                 'rotationQuaternion',
                 'cameraDirection',
                 'cameraRotation',
-
                 'ellipsoid',
                 'applyGravity',
                 'angularSensibility',
@@ -153,9 +167,11 @@ module INSPECTOR {
                 'orthoTop',
                 'orthoLeft',
                 'orthoRight'
-            ]
+            ],
+            slider: {
+                fov: {min: 0, max: 180, step: 1}
+            }
         },
-
         'Scene': {
             type: BABYLON.Scene,
             properties: [
@@ -216,7 +232,10 @@ module INSPECTOR {
                 'checkCollisions',
                 'hasLODLevels'
             ],
-            format: (m: BABYLON.Mesh): string => { return m.name; }
+            format: (m: BABYLON.Mesh): string => { return m.name; },
+            slider: {
+                visibility: {min: 0, max: 1, step: 0.1}
+            }
         },
         'StandardMaterial': {
             type: BABYLON.StandardMaterial,
@@ -254,7 +273,10 @@ module INSPECTOR {
                 'reflectionTexture',
                 'refractionTexture'
             ],
-            format: (mat: BABYLON.StandardMaterial): string => { return mat.name; }
+            format: (mat: BABYLON.StandardMaterial): string => { return mat.name; },
+            slider: {
+                alpha: {min: 0, max: 1, step: 0.01}
+            }
         },
         'PrimitiveAlignment': {
             type: BABYLON.PrimitiveAlignment,
@@ -320,7 +342,10 @@ module INSPECTOR {
                 'cameraContrast',
                 'cameraColorGradingTexture',
                 'cameraColorCurves'
-            ]
+            ],
+            slider: {
+                alpha: {min: 0, max: 1, step: 0.01}
+            }
         },
         'Canvas2D': {
             type: BABYLON.Canvas2D
