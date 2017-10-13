@@ -263,28 +263,14 @@ module BABYLON {
         }
 
         private static _parseVersion(version: string): { major: number, minor: number } {
-            if (!version) {
-                return null;
-            }
-
-            var parts = version.split(".");
-            if (parts.length != 2) {
-                return null;
-            }
-
-            var major = +parts[0];
-            if (isNaN(major)) {
-                return null;
-            }
-
-            var minor = +parts[1];
-            if (isNaN(minor)) {
+            var match = (version + "").match(/^(\d+)\.(\d+)$/);
+            if (!match) {
                 return null;
             }
 
             return {
-                major: major,
-                minor: minor
+                major: parseInt(match[1]),
+                minor: parseInt(match[2])
             };
         }
 
