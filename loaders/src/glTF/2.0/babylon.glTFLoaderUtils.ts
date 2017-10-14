@@ -105,20 +105,5 @@ module BABYLON.GLTF2 {
                 }
             }
         }
-
-        /**
-         * Decodes a buffer view into a string
-         * @param view: the buffer view
-         */
-        public static DecodeBufferToText(view: ArrayBufferView): string {
-            var result = "";
-            var length = view.byteLength;
-
-            for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode((<any>view)[i]);
-            }
-
-            return result;
-        }
     }
 }
