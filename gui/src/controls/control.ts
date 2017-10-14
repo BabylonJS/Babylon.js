@@ -7,6 +7,7 @@ module BABYLON.GUI {
         private _zIndex = 0;
         public _root: Container;
         public _host: AdvancedDynamicTexture;
+        public parent: Container;
         public _currentMeasure = Measure.Empty();
         private _fontFamily = "Arial";
         private _fontStyle = "";

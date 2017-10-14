@@ -76,6 +76,8 @@ module BABYLON.GUI {
 
             if (index !== -1) {
                 this._children.splice(index, 1);
+
+                control.parent = null;
             }
 
             this._markAsDirty();
@@ -93,6 +95,8 @@ module BABYLON.GUI {
             }
 
             this._children.push(control);
+
+            control.parent = this;
 
             this._markAsDirty();
         }
