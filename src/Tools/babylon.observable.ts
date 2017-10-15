@@ -165,7 +165,7 @@
             state.target = target;
             state.currentTarget = currentTarget;
             state.skipNextObservers = false;
-            
+
             for (var obs of this._observers) {
                 if (obs.mask & mask) {
                     if(obs.scope){
