@@ -1199,12 +1199,14 @@
             return name;
         }
 
-        public static first<T>(array: Array<T>, predicate: (item: T) => boolean) {
+        public static First<T>(array: Array<T>, predicate: (item: T) => boolean): T {
             for (let el of array) {
                 if (predicate(el)) {
                     return el;
                 }
             }
+
+            return null;
         }
 
         /**

@@ -196,7 +196,7 @@
 				if (onAnimationEnd) {
                     onAnimationEnd();
                 }
-				return;
+				return null;
 			}
 
 			var endFrame: number = frameRate * (duration / 1000);

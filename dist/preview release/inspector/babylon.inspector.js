@@ -2788,6 +2788,7 @@ var INSPECTOR;
                         return null;
                     }
                 }
+                return null;
             };
             for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
                 var item = _a[_i];
@@ -4039,6 +4040,7 @@ var INSPECTOR;
                     return tab;
                 }
             }
+            return null;
         };
         TabBar.prototype.getActiveTabIndex = function () {
             for (var i = 0; i < this._tabs.length; i++) {

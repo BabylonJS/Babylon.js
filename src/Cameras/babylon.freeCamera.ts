@@ -16,6 +16,8 @@
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
             if (mouse)
                 return mouse.angularSensibility;
+
+            return null;
         }
         
         public set angularSensibility(value) {
@@ -28,6 +30,8 @@
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysUp;
+
+            return null;
         }
         
         public set keysUp(value) {
@@ -40,6 +44,8 @@
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysDown;
+
+            return null;
         }
         
         public set keysDown(value) {
@@ -52,6 +58,8 @@
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysLeft;
+
+            return null;
         }
         
         public set keysLeft(value) {
@@ -64,6 +72,8 @@
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysRight;
+
+            return null;
         }
         
         public set keysRight(value) {

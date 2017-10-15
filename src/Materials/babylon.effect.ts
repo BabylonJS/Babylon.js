@@ -805,7 +805,7 @@
 
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
             if (!matrices) {
-                return;
+                return this;
             }
 
             this._valueCache[uniformName] = null;

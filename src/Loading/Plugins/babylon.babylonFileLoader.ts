@@ -222,6 +222,8 @@
                     Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
+
+            return false;
         },
         load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean => {
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
@@ -594,6 +596,8 @@
                     Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
+
+            return false;
         }
     });
 }

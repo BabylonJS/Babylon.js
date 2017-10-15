@@ -583,7 +583,7 @@
         */
         public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): SolidParticleSystem {
             if (!this._updatable) {
-                return;
+                return this;
             }
 
             // custom beforeUpdate

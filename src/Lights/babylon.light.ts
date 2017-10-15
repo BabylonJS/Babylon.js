@@ -481,6 +481,8 @@
                 case 3:
                     return () => new HemisphericLight(name, Vector3.Zero(), scene);
             }
+
+            return null;
         }
 
         /**

@@ -184,24 +184,13 @@ var BABYLON;
             };
         };
         GLTFFileLoader._parseVersion = function (version) {
-            if (!version) {
-                return null;
-            }
-            var parts = version.split(".");
-            if (parts.length != 2) {
-                return null;
-            }
-            var major = +parts[0];
-            if (isNaN(major)) {
-                return null;
-            }
-            var minor = +parts[1];
-            if (isNaN(minor)) {
+            var match = (version + "").match(/^(\d+)\.(\d+)$/);
+            if (!match) {
                 return null;
             }
             return {
-                major: major,
-                minor: minor
+                major: parseInt(match[1]),
+                minor: parseInt(match[2])
             };
         };
         GLTFFileLoader._compareVersion = function (a, b) {
@@ -215,11 +204,11 @@ var BABYLON;
                 return -1;
             return 0;
         };
-        GLTFFileLoader._decodeBufferToText = function (view) {
+        GLTFFileLoader._decodeBufferToText = function (buffer) {
             var result = "";
-            var length = view.byteLength;
+            var length = buffer.byteLength;
             for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode(view[i]);
+                result += String.fromCharCode(buffer[i]);
             }
             return result;
         };
@@ -478,6 +467,7 @@ var BABYLON;
                 var channel = Number(attributeParameter.semantic.split("_")[1]);
                 return "uv" + (channel === 0 ? "" : channel + 1);
             }
+            return null;
         };
         /**
         * Returns the animation path (glTF -> Babylon)

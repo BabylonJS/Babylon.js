@@ -6668,13 +6668,14 @@ var BABYLON;
             }
             return name;
         };
-        Tools.first = function (array, predicate) {
+        Tools.First = function (array, predicate) {
             for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
                 var el = array_1[_i];
                 if (predicate(el)) {
                     return el;
                 }
             }
+            return null;
         };
         /**
          * This method will return the name of the full name of the class, including its owning module (if any).
@@ -11682,7 +11683,7 @@ var BABYLON;
         Node.prototype.addBehavior = function (behavior) {
             var index = this._behaviors.indexOf(behavior);
             if (index !== -1) {
-                return;
+                return this;
             }
             behavior.attach(this);
             this._behaviors.push(behavior);
@@ -11691,7 +11692,7 @@ var BABYLON;
         Node.prototype.removeBehavior = function (behavior) {
             var index = this._behaviors.indexOf(behavior);
             if (index === -1) {
-                return;
+                return this;
             }
             this._behaviors[index].detach();
             this._behaviors.splice(index, 1);
@@ -13268,14 +13269,14 @@ var BABYLON;
          */
         AbstractMesh.prototype.setAbsolutePosition = function (absolutePosition) {
             if (!absolutePosition) {
-                return;
+                return this;
             }
             var absolutePositionX;
             var absolutePositionY;
             var absolutePositionZ;
             if (absolutePosition.x === undefined) {
                 if (arguments.length < 3) {
-                    return;
+                    return this;
                 }
                 absolutePositionX = arguments[0];
                 absolutePositionY = arguments[1];
@@ -13473,7 +13474,7 @@ var BABYLON;
          */
         AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
             if (!this.subMeshes) {
-                return;
+                return this;
             }
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
@@ -13776,14 +13777,14 @@ var BABYLON;
         };
         AbstractMesh.prototype.applyImpulse = function (force, contactPoint) {
             if (!this.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.applyImpulse(force, contactPoint);
             return this;
         };
         AbstractMesh.prototype.setPhysicsLinkWith = function (otherMesh, pivot1, pivot2, options) {
             if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.createJoint(otherMesh.physicsImpostor, BABYLON.PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,
@@ -14989,6 +14990,7 @@ var BABYLON;
                 case 3:
                     return function () { return new BABYLON.HemisphericLight(name, BABYLON.Vector3.Zero(), scene); };
             }
+            return null;
         };
         /**
          * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.
@@ -20103,7 +20105,7 @@ var BABYLON;
             }
             if (!this.environmentTexture) {
                 BABYLON.Tools.Warn("Can not create default skybox without environment texture.");
-                return;
+                return null;
             }
             // Skybox
             var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", scale, this);
@@ -22121,7 +22123,7 @@ var BABYLON;
          */
         Mesh.prototype.refreshBoundingInfo = function () {
             if (this._boundingInfo.isLocked) {
-                return;
+                return this;
             }
             var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (data) {
@@ -22162,7 +22164,7 @@ var BABYLON;
                     }
                 }
                 if (!needToRecreate) {
-                    return;
+                    return this.subMeshes[0];
                 }
             }
             this.releaseSubMeshes();
@@ -22271,7 +22273,7 @@ var BABYLON;
          */
         Mesh.prototype.updateVerticesData = function (kind, data, updateExtends, makeItUnique) {
             if (!this._geometry) {
-                return;
+                return this;
             }
             if (!makeItUnique) {
                 this._geometry.updateVerticesData(kind, data, updateExtends);
@@ -22308,7 +22310,7 @@ var BABYLON;
          */
         Mesh.prototype.makeGeometryUnique = function () {
             if (!this._geometry) {
-                return;
+                return this;
             }
             var oldGeometry = this._geometry;
             var geometry = this._geometry.copy(BABYLON.Geometry.RandomId());
@@ -22342,7 +22344,7 @@ var BABYLON;
          */
         Mesh.prototype.updateIndices = function (indices, offset) {
             if (!this._geometry) {
-                return;
+                return this;
             }
             this._geometry.updateIndices(indices, offset);
             return this;
@@ -22353,7 +22355,7 @@ var BABYLON;
          */
         Mesh.prototype.toLeftHanded = function () {
             if (!this._geometry) {
-                return;
+                return this;
             }
             this._geometry.toLeftHanded();
             return this;
@@ -22574,7 +22576,7 @@ var BABYLON;
         Mesh.prototype.render = function (subMesh, enableAlphaMode) {
             this.checkOcclusionQuery();
             if (this._isOccluded) {
-                return;
+                return this;
             }
             var scene = this.getScene();
             // Managing instances
@@ -24461,12 +24463,12 @@ var BABYLON;
         SubMesh.prototype.refreshBoundingInfo = function () {
             this._lastColliderWorldVertices = null;
             if (this.IsGlobal) {
-                return;
+                return this;
             }
             var data = this._renderingMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
-                return;
+                return this;
             }
             var indices = this._renderingMesh.getIndices();
             var extend;
@@ -25309,7 +25311,7 @@ var BABYLON;
         };
         Effect.prototype.setMatrices = function (uniformName, matrices) {
             if (!matrices) {
-                return;
+                return this;
             }
             this._valueCache[uniformName] = null;
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
@@ -36604,6 +36606,7 @@ var BABYLON;
                 var mouse = this.inputs.attached["mouse"];
                 if (mouse)
                     return mouse.angularSensibility;
+                return null;
             },
             set: function (value) {
                 var mouse = this.inputs.attached["mouse"];
@@ -36618,6 +36621,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysUp;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -36632,6 +36636,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysDown;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -36646,6 +36651,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysLeft;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -36660,6 +36666,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysRight;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -37397,6 +37404,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.angularSensibilityX;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37412,6 +37420,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.angularSensibilityY;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37427,6 +37436,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.pinchPrecision;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37442,6 +37452,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.pinchDeltaPercentage;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37457,6 +37468,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.panningSensibility;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37472,6 +37484,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysUp;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -37486,6 +37499,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysDown;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -37500,6 +37514,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysLeft;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -37514,6 +37529,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysRight;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -37528,6 +37544,7 @@ var BABYLON;
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
                     return mousewheel.wheelPrecision;
+                return null;
             },
             set: function (value) {
                 var mousewheel = this.inputs.attached["mousewheel"];
@@ -37542,6 +37559,7 @@ var BABYLON;
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
                     return mousewheel.wheelDeltaPercentage;
+                return null;
             },
             set: function (value) {
                 var mousewheel = this.inputs.attached["mousewheel"];
@@ -38981,7 +38999,7 @@ var BABYLON;
                 if (onAnimationEnd) {
                     onAnimationEnd();
                 }
-                return;
+                return null;
             }
             var endFrame = frameRate * (duration / 1000);
             transition.setKeys([{
@@ -44042,7 +44060,7 @@ var BABYLON;
             if (end === void 0) { end = this.nbParticles - 1; }
             if (update === void 0) { update = true; }
             if (!this._updatable) {
-                return;
+                return this;
             }
             // custom beforeUpdate
             this.beforeUpdateParticles(start, end, update);
@@ -51029,6 +51047,7 @@ var BABYLON;
                         BABYLON.Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
                     }
                 }
+                return false;
             },
             load: function (scene, data, rootUrl, onError) {
                 // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
@@ -51375,6 +51394,7 @@ var BABYLON;
                         BABYLON.Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
                     }
                 }
+                return false;
             }
         });
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
@@ -52805,6 +52825,7 @@ var BABYLON;
                 var touch = this.inputs.attached["touch"];
                 if (touch)
                     return touch.touchAngularSensibility;
+                return null;
             },
             set: function (value) {
                 var touch = this.inputs.attached["touch"];
@@ -52819,6 +52840,7 @@ var BABYLON;
                 var touch = this.inputs.attached["touch"];
                 if (touch)
                     return touch.touchMoveSensibility;
+                return null;
             },
             set: function (value) {
                 var touch = this.inputs.attached["touch"];
@@ -55038,6 +55060,7 @@ var BABYLON;
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadAngularSensibility;
+                return null;
             },
             set: function (value) {
                 var gamepad = this.inputs.attached["gamepad"];
@@ -55052,6 +55075,7 @@ var BABYLON;
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadMoveSensibility;
+                return null;
             },
             set: function (value) {
                 var gamepad = this.inputs.attached["gamepad"];
@@ -55088,6 +55112,7 @@ var BABYLON;
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadAngularSensibility;
+                return null;
             },
             set: function (value) {
                 var gamepad = this.inputs.attached["gamepad"];
@@ -55102,6 +55127,7 @@ var BABYLON;
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadMoveSensibility;
+                return null;
             },
             set: function (value) {
                 var gamepad = this.inputs.attached["gamepad"];
@@ -55303,6 +55329,7 @@ var BABYLON;
                     return this._renderPasses[passName];
                 }
             }
+            return null;
         };
         PostProcessRenderEffect.prototype.emptyPasses = function () {
             this._renderPasses = {};
@@ -63877,7 +63904,7 @@ var BABYLON;
                 var parentMesh = this.object.parent;
                 return parentMesh.physicsImpostor;
             }
-            return;
+            return null;
         };
         /**
          * Should a new body be generated.
@@ -64370,6 +64397,7 @@ var BABYLON;
                     return this._impostors[i];
                 }
             }
+            return null;
         };
         PhysicsEngine.prototype.getImpostorWithPhysicsBody = function (body) {
             for (var i = 0; i < this._impostors.length; ++i) {
@@ -64377,6 +64405,7 @@ var BABYLON;
                     return this._impostors[i];
                 }
             }
+            return null;
         };
         // Statics
         PhysicsEngine.Epsilon = 0.001;
