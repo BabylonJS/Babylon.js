@@ -131,8 +131,8 @@ module BABYLON.GUI {
         }
 
         // Events
-        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
-            if (!super._onPointerDown(coordinates, buttonIndex)) {
+        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
+            if (!super._onPointerDown(target, coordinates, buttonIndex)) {
                 return false;
             }
             this.isChecked = !this.isChecked;

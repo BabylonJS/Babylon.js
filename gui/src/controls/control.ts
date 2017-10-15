@@ -838,68 +838,89 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerMove(coordinates: Vector2): void {
-            if (this.onPointerMoveObservable.hasObservers()) {
+        public _onPointerMove(target: Control, coordinates: Vector2): void {
+            /*if (this.onPointerMoveObservable.hasObservers()) {
                 this.onPointerMoveObservable.notifyObservers(coordinates);
-            }
+            }*/
+
+            var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, null, target, this);
+
+            if (canNotify && this.parent != null) this.parent._onPointerMove(target, coordinates);
         }
 
-        protected _onPointerEnter(): boolean {
+        public _onPointerEnter(target: Control): boolean {
             if (this._enterCount !== 0) {
                 return false;
             }
 
             this._enterCount++;
-            if (this.onPointerEnterObservable.hasObservers()) {
+            /*if (this.onPointerEnterObservable.hasObservers()) {
                 this.onPointerEnterObservable.notifyObservers(this);
-            }
+            }*/
+
+            var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, null, target, this);
+
+            if (canNotify && this.parent != null) this.parent._onPointerEnter(target);
 
             return true;
         }
 
-        public _onPointerOut(): void {
+        public _onPointerOut(target: Control): void {
             this._enterCount = 0;
-            if (this.onPointerOutObservable.hasObservers()) {
+
+            /*if (this.onPointerOutObservable.hasObservers()) {
                 this.onPointerOutObservable.notifyObservers(this);
-            }
+            }*/
+
+            var canNotify: boolean = this.onPointerOutObservable.notifyObservers(this, null, target, this);
+
+            if (canNotify && this.parent != null) this.parent._onPointerOut(target);
         }
 
-        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
+        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
             if (this._downCount !== 0) {
                 return false;
             }
 
             this._downCount++;            
-            if (this.onPointerDownObservable.hasObservers()) {
+            /*if (this.onPointerDownObservable.hasObservers()) {
                 this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex));
-            }
+            }*/
+
+            var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), null, target, this);
+
+            if (canNotify && this.parent != null) this.parent._onPointerDown(target, coordinates, buttonIndex);
 
             return true;
         }
 
-        protected _onPointerUp(coordinates: Vector2, buttonIndex: number): void {
+        public _onPointerUp(target: Control, coordinates: Vector2, buttonIndex: number): void {
             this._downCount = 0;
-            if (this.onPointerUpObservable.hasObservers()) {
+            /*if (this.onPointerUpObservable.hasObservers()) {
                 this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex));
-            }           
+            }*/
+            
+            var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), null, target, this);
+            
+            if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, buttonIndex);
         }
 
         public forcePointerUp() {
-            this._onPointerUp(Vector2.Zero(), 0);
+            this._onPointerUp(this, Vector2.Zero(), 0);
         }
 
         public _processObservables(type: number, x: number, y: number, buttonIndex: number): boolean {
             this._dummyVector2.copyFromFloats(x, y);
             if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                this._onPointerMove(this._dummyVector2);
+                this._onPointerMove(this, this._dummyVector2);
 
                 var previousControlOver = this._host._lastControlOver;
                 if (previousControlOver && previousControlOver !== this) {
-                    previousControlOver._onPointerOut();                
+                    previousControlOver._onPointerOut(this);                
                 }
 
                 if (previousControlOver !== this) {
-                    this._onPointerEnter();
+                    this._onPointerEnter(this);
                 }
 
                 this._host._lastControlOver = this;
@@ -907,7 +928,7 @@ module BABYLON.GUI {
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                this._onPointerDown(this._dummyVector2, buttonIndex);
+                this._onPointerDown(this, this._dummyVector2, buttonIndex);
                 this._host._lastControlDown = this;
                 this._host._lastPickedControl = this;
                 return true;
@@ -915,7 +936,7 @@ module BABYLON.GUI {
 
             if (type === BABYLON.PointerEventTypes.POINTERUP) {
                 if (this._host._lastControlDown) {
-                    this._host._lastControlDown._onPointerUp(this._dummyVector2, buttonIndex);
+                    this._host._lastControlDown._onPointerUp(this, this._dummyVector2, buttonIndex);
                 }
                 this._host._lastControlDown = null;
                 return true;
