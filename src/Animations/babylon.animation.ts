@@ -515,7 +515,7 @@
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
 
             var dataType = parsedAnimation.dataType;
-            var keys: Array<{ frame: number, value: any }> = [];
+            var keys: Array<{ frame: number, value: any, inTangent:any, outTangent:any }> = [];
             var data;
             var index: number;
 
@@ -529,14 +529,27 @@
 
             for (index = 0; index < parsedAnimation.keys.length; index++) {
                 var key = parsedAnimation.keys[index];
-
+                var inTangent:any;
+                var outTangent:any;
 
                 switch (dataType) {
                     case Animation.ANIMATIONTYPE_FLOAT:
                         data = key.values[0];
+                        if (key.values.length >= 1) {
+                            inTangent = key.values[1];
+                        }
+                        if (key.values.length >= 2) {
+                            outTangent = key.values[2];
+                        }
                         break;
                     case Animation.ANIMATIONTYPE_QUATERNION:
                         data = Quaternion.FromArray(key.values);
+                        if (key.values.length >= 8) {
+                            inTangent = Quaternion.FromArray(key.values.slice(4, 8));
+                        }
+                        if (key.values.length >= 12) {
+                            outTangent = Quaternion.FromArray(key.values.slice(8, 12));
+                        }
                         break;
                     case Animation.ANIMATIONTYPE_MATRIX:
                         data = Matrix.FromArray(key.values);
@@ -550,10 +563,17 @@
                         break;
                 }
 
-                keys.push({
-                    frame: key.frame,
-                    value: data
-                });
+                var keyData:any = {};
+                keyData.frame = key.frame;
+                keyData.value = data;
+
+                if (inTangent != undefined) {
+                    keyData.inTangent = inTangent;
+                }
+                if (outTangent != undefined) {
+                    keyData.outTangent = outTangent;
+                }
+                keys.push(keyData)
             }
 
             animation.setKeys(keys);
