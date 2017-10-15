@@ -843,7 +843,7 @@ module BABYLON.GUI {
                 this.onPointerMoveObservable.notifyObservers(coordinates);
             }*/
 
-            var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, null, target, this);
+            var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
 
             if (canNotify && this.parent != null) this.parent._onPointerMove(target, coordinates);
         }
@@ -858,7 +858,7 @@ module BABYLON.GUI {
                 this.onPointerEnterObservable.notifyObservers(this);
             }*/
 
-            var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, null, target, this);
+            var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
 
             if (canNotify && this.parent != null) this.parent._onPointerEnter(target);
 
@@ -872,7 +872,7 @@ module BABYLON.GUI {
                 this.onPointerOutObservable.notifyObservers(this);
             }*/
 
-            var canNotify: boolean = this.onPointerOutObservable.notifyObservers(this, null, target, this);
+            var canNotify: boolean = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
 
             if (canNotify && this.parent != null) this.parent._onPointerOut(target);
         }
@@ -887,7 +887,7 @@ module BABYLON.GUI {
                 this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex));
             }*/
 
-            var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), null, target, this);
+            var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
 
             if (canNotify && this.parent != null) this.parent._onPointerDown(target, coordinates, buttonIndex);
 
@@ -900,7 +900,7 @@ module BABYLON.GUI {
                 this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex));
             }*/
             
-            var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), null, target, this);
+            var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
             
             if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, buttonIndex);
         }
