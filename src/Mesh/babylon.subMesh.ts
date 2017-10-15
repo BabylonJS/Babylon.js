@@ -125,13 +125,13 @@
             this._lastColliderWorldVertices = null;
 
             if (this.IsGlobal) {
-                return;
+                return this;
             }
             var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
-                return;
+                return this;
             }
 
             var indices = this._renderingMesh.getIndices();

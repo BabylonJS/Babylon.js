@@ -114,7 +114,7 @@ module BABYLON {
             var index = this._behaviors.indexOf(behavior);
 
             if (index !== -1) {
-                return;
+                return this;
             }
 
             behavior.attach(this);
@@ -127,7 +127,7 @@ module BABYLON {
             var index = this._behaviors.indexOf(behavior);
 
             if (index === -1) {
-                return;
+                return this;
             } 
 
             this._behaviors[index].detach();

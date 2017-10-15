@@ -4101,7 +4101,7 @@
 
             if (!this.environmentTexture) {
                 Tools.Warn("Can not create default skybox without environment texture.");
-                return;
+                return null;
             }
 
             // Skybox

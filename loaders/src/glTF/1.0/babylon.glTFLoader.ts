@@ -118,7 +118,7 @@ module BABYLON.GLTF1 {
         return str;
     };
 
-    var getAttribute = (attributeParameter: IGLTFTechniqueParameter) => {
+    var getAttribute = (attributeParameter: IGLTFTechniqueParameter): string => {
         if (attributeParameter.semantic === "NORMAL") {
             return "normal";
         } else if (attributeParameter.semantic === "POSITION") {
@@ -133,6 +133,8 @@ module BABYLON.GLTF1 {
             var channel = Number(attributeParameter.semantic.split("_")[1]);
             return "uv" + (channel === 0 ? "" : channel + 1);
         }
+
+        return null;
     };
 
     /**

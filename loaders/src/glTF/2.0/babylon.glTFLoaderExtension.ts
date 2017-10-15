@@ -54,7 +54,7 @@ module BABYLON.GLTF2 {
         private static _ApplyExtensions(action: (extension: GLTFLoaderExtension) => boolean) {
             var extensions = GLTFLoaderExtension._Extensions;
             if (!extensions) {
-                return;
+                return false;
             }
 
             for (var i = 0; i < extensions.length; i++) {

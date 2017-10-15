@@ -614,7 +614,7 @@
          */
         public refreshBoundingInfo(): Mesh {
             if (this._boundingInfo.isLocked) {
-                return;
+                return this;
             }
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
@@ -661,7 +661,7 @@
                 }
 
                 if (!needToRecreate) {
-                    return;
+                    return this.subMeshes[0];
                 }
             }
 
@@ -786,7 +786,7 @@
          */
         public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
             if (!makeItUnique) {
                 this._geometry.updateVerticesData(kind, data, updateExtends);
@@ -824,7 +824,7 @@
          */
         public makeGeometryUnique(): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
             var oldGeometry = this._geometry;
             var geometry = this._geometry.copy(Geometry.RandomId());
@@ -862,7 +862,7 @@
          */
         public updateIndices(indices: IndicesArray, offset?: number): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
 
             this._geometry.updateIndices(indices, offset);
@@ -876,7 +876,7 @@
          */
         public toLeftHanded(): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
             this._geometry.toLeftHanded();
             return this;
@@ -1135,7 +1135,7 @@
 
             this.checkOcclusionQuery();
             if (this._isOccluded) {
-                return;
+                return this;
             }
 
             var scene = this.getScene();
