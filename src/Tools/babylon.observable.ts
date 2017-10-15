@@ -8,13 +8,15 @@
         /**
         * If the callback of a given Observer set skipNextObservers to true the following observers will be ignored
         */
-        constructor(mask: number, skipNextObservers = false) {
-            this.initalize(mask, skipNextObservers);
+        constructor(mask: number, skipNextObservers = false, target?: any, currentTarget?: any) {
+            this.initalize(mask, skipNextObservers, target, currentTarget);
         }
 
-        public initalize(mask: number, skipNextObservers = false): EventState {
+        public initalize(mask: number, skipNextObservers = false, target?: any, currentTarget?: any): EventState {
             this.mask = mask;
             this.skipNextObservers = skipNextObservers;
+            this.target = target;
+            this.currentTarget = currentTarget;
             return this;
         }
 
@@ -27,6 +29,10 @@
          * Get the mask value that were used to trigger the event corresponding to this EventState object
          */
         public mask: number;
+
+        public target?: any;
+        
+        public currentTarget?: any;
     }
 
     /**
@@ -153,11 +159,13 @@
          * @param eventData
          * @param mask
          */
-        public notifyObservers(eventData: T, mask: number = -1): boolean {
+        public notifyObservers(eventData: T, mask: number = -1, target?: any, currentTarget?: any): boolean {
             let state = this._eventState;
             state.mask = mask;
+            state.target = target;
+            state.currentTarget = currentTarget;
             state.skipNextObservers = false;
-
+            
             for (var obs of this._observers) {
                 if (obs.mask & mask) {
                     if(obs.scope){
