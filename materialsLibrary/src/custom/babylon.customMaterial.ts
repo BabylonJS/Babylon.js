@@ -2039,7 +2039,7 @@ vColor=color;\n\
             
 
             var fn_afterBind = this._afterBind;
-            this._afterBind = function(this: any, m,e){ 
+            this._afterBind = (m,e) => { 
                 this.AttachAfterBind(m,e);
                 try{fn_afterBind(m,e);}catch(e){};
             } ;
