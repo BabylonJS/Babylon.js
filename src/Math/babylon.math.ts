@@ -1,7 +1,4 @@
 ﻿module BABYLON {
-
-    declare var SIMD: any;
-
     export const ToGammaSpace = 1 / 2.2;
     export const ToLinearSpace = 2.2;
     export const Epsilon = 0.001;

@@ -79,8 +79,6 @@
         private _cam_axisZ: Vector3 = Vector3.Zero();
         private _cam_axisY: Vector3 = Vector3.Zero();
         private _cam_axisX: Vector3 = Vector3.Zero();
-        private _axisX: Vector3 = Axis.X;
-        private _axisY: Vector3 = Axis.Y;
         private _axisZ: Vector3 = Axis.Z;
         private _camera: TargetCamera;
         private _particle: SolidParticle;
@@ -228,7 +226,6 @@
             var facetUV: number[] = [];       // submesh UV
             var facetCol: number[] = [];      // submesh colors
             var barycenter: Vector3 = Tmp.Vector3[0];
-            var rand: number;
             var sizeO: number = size;
 
             while (f < totalFacets) {
@@ -583,7 +580,7 @@
         */
         public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): SolidParticleSystem {
             if (!this._updatable) {
-                return;
+                return this;
             }
 
             // custom beforeUpdate

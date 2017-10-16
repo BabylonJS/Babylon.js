@@ -110,15 +110,7 @@ module BABYLON.GLTF1 {
         }
     };
 
-    var replaceInString = (str: string, searchValue: string, replaceValue: string) => {
-        while (str.indexOf(searchValue) !== -1) {
-            str = str.replace(searchValue, replaceValue);
-        }
-
-        return str;
-    };
-
-    var getAttribute = (attributeParameter: IGLTFTechniqueParameter) => {
+    var getAttribute = (attributeParameter: IGLTFTechniqueParameter): string => {
         if (attributeParameter.semantic === "NORMAL") {
             return "normal";
         } else if (attributeParameter.semantic === "POSITION") {
@@ -133,20 +125,10 @@ module BABYLON.GLTF1 {
             var channel = Number(attributeParameter.semantic.split("_")[1]);
             return "uv" + (channel === 0 ? "" : channel + 1);
         }
+
+        return null;
     };
 
-    /**
-    * Returns the animation path (glTF -> Babylon)
-    */
-    var getAnimationPath = (path: string): string => {
-        var index = glTFAnimationPaths.indexOf(path);
-
-        if (index !== -1) {
-            return babylonAnimationPaths[index];
-        }
-
-        return path;
-    };
 
     /**
     * Loads and creates animations
@@ -456,15 +438,6 @@ module BABYLON.GLTF1 {
         }
     };
 
-    var printMat = (m: Float32Array) => {
-        console.log(
-            m[0] + "\t" + m[1] + "\t" + m[2] + "\t" + m[3] + "\n" +
-            m[4] + "\t" + m[5] + "\t" + m[6] + "\t" + m[7] + "\n" +
-            m[8] + "\t" + m[9] + "\t" + m[10] + "\t" + m[11] + "\n" +
-            m[12] + "\t" + m[13] + "\t" + m[14] + "\t" + m[15] + "\n"
-        );
-    }
-
     /**
     * Imports a skeleton
     */
@@ -477,12 +450,6 @@ module BABYLON.GLTF1 {
         if (!skins.babylonSkeleton) {
             return newSkeleton;
         }
-
-        // Matrices
-        var accessor = gltfRuntime.accessors[skins.inverseBindMatrices];
-        var buffer = GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
-
-        var bindShapeMatrix = Matrix.FromArray(skins.bindShapeMatrix);
 
         // Find the root bones
         var nodesToRoot: INodeToRoot[] = [];
@@ -738,7 +705,7 @@ module BABYLON.GLTF1 {
                     //continue;
                 }
 
-                var subMesh = new SubMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
+                SubMesh.AddToMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
                 index++;
             }
         }
@@ -887,7 +854,6 @@ module BABYLON.GLTF1 {
 
             if (camera) {
                 if (camera.type === "orthographic") {
-                    var orthographicCamera: IGLTFCameraOrthographic = (<any>camera)[camera.type];
                     var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene);
 
                     orthoCamera.name = node.name;
@@ -1549,7 +1515,7 @@ module BABYLON.GLTF1 {
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
 
-            var gltfRuntime = GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
+            GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
                 gltfRuntime.importOnlyMeshes = true;
 
                 if (meshesNames === "") {

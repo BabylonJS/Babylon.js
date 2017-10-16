@@ -329,7 +329,6 @@
         private _viewMatrix = Matrix.Zero();
         private _projectionMatrix = Matrix.Zero();
         private _transformMatrix = Matrix.Zero();
-        private _worldViewProjection = Matrix.Zero();
         private _cachedPosition: Vector3;
         private _cachedDirection: Vector3;
         private _cachedDefines: string;
@@ -343,7 +342,6 @@
         private _currentFaceIndex = 0;
         private _currentFaceIndexCache = 0;
         private _textureType: number;
-        private _isCube = false;
         private _defaultTextureMatrix = Matrix.Identity();
 
         /**
@@ -578,8 +576,6 @@
          * Force shader compilation including textures ready check
          */
         public forceCompilation(onCompiled: (generator: ShadowGenerator) => void, options?: { useInstances: boolean }): void {
-            var scene = this._scene;
-            var engine = scene.getEngine();
             var subMeshes = new Array<SubMesh>();
             var currentIndex = 0;
 

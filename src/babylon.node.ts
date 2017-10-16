@@ -28,7 +28,6 @@ module BABYLON {
 
         public onReady: (node: Node) => void;
 
-        private _childrenFlag = -1;
         private _isEnabled = true;
         private _isReady = true;
         public _currentRenderId = -1;
@@ -114,7 +113,7 @@ module BABYLON {
             var index = this._behaviors.indexOf(behavior);
 
             if (index !== -1) {
-                return;
+                return this;
             }
 
             behavior.attach(this);
@@ -127,7 +126,7 @@ module BABYLON {
             var index = this._behaviors.indexOf(behavior);
 
             if (index === -1) {
-                return;
+                return this;
             } 
 
             this._behaviors[index].detach();

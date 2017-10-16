@@ -73,6 +73,8 @@ module BABYLON {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityX;
+
+            return null;
         }
 
         public set angularSensibilityX(value: number) {
@@ -86,6 +88,8 @@ module BABYLON {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityY;
+            
+            return null;
         }
 
         public set angularSensibilityY(value: number) {
@@ -99,6 +103,8 @@ module BABYLON {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.pinchPrecision;
+
+            return null;
         }
 
         public set pinchPrecision(value: number) {
@@ -112,6 +118,8 @@ module BABYLON {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.pinchDeltaPercentage;
+
+            return null;
         }
 
         public set pinchDeltaPercentage(value: number) {
@@ -125,6 +133,8 @@ module BABYLON {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.panningSensibility;
+
+            return null;
         }
 
         public set panningSensibility(value: number) {
@@ -138,6 +148,8 @@ module BABYLON {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysUp;
+
+            return null;
         }
 
         public set keysUp(value: number[]) {
@@ -150,6 +162,8 @@ module BABYLON {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysDown;
+
+            return null;
         }
 
         public set keysDown(value: number[]) {
@@ -162,6 +176,8 @@ module BABYLON {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysLeft;
+
+            return null;
         }
 
         public set keysLeft(value: number[]) {
@@ -174,6 +190,8 @@ module BABYLON {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysRight;
+
+            return null;
         }
 
         public set keysRight(value: number[]) {
@@ -186,6 +204,8 @@ module BABYLON {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 return mousewheel.wheelPrecision;
+
+            return null;
         }
 
         public set wheelPrecision(value: number) {
@@ -198,6 +218,8 @@ module BABYLON {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 return mousewheel.wheelDeltaPercentage;
+
+            return null;
         }
 
         public set wheelDeltaPercentage(value: number) {

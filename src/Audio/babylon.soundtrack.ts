@@ -1,8 +1,6 @@
 ﻿module BABYLON {
     export class SoundTrack {
         private _outputAudioNode: GainNode;
-        private _inputAudioNode: AudioNode;
-        private _trackConvolver: ConvolverNode;
         private _scene: Scene;
         public id: number = -1;
         public soundCollection: Array<Sound>;

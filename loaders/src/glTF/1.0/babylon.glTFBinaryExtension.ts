@@ -3,10 +3,6 @@
 module BABYLON.GLTF1 {
     const BinaryExtensionBufferName = "binary_glTF";
 
-    enum EContentFormat {
-        JSON = 0
-    };
-
     interface IGLTFBinaryExtensionShader {
         bufferView: string;
     };
@@ -79,34 +75,6 @@ module BABYLON.GLTF1 {
             });
 
             return true;
-        }
-    }
-
-    class BinaryReader {
-        private _arrayBuffer: ArrayBuffer;
-        private _dataView: DataView;
-        private _byteOffset: number;
-
-        constructor(arrayBuffer: ArrayBuffer) {
-            this._arrayBuffer = arrayBuffer;
-            this._dataView = new DataView(arrayBuffer);
-            this._byteOffset = 0;
-        }
-
-        public getUint32(): number {
-            var value = this._dataView.getUint32(this._byteOffset, true);
-            this._byteOffset += 4;
-            return value;
-        }
-
-        public getUint8Array(length?: number): Uint8Array {
-            if (!length) {
-                length = this._arrayBuffer.byteLength - this._byteOffset;
-            }
-
-            var value = new Uint8Array(this._arrayBuffer, this._byteOffset, length);
-            this._byteOffset += length;
-            return value;
         }
     }
 

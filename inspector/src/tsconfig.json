@@ -3,6 +3,9 @@
         "experimentalDecorators": true,
         "module": "commonjs", 
         "target": "es5",
-        "noImplicitAny": true
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true
     }
 }

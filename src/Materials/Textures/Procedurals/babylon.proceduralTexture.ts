@@ -3,7 +3,6 @@
         private _size: number;
         public _generateMipMaps: boolean;
         public isEnabled = true;
-        private _doNotChangeAspectRatio: boolean;
         private _currentRefreshId = -1;
         private _refreshRate = 1;
 

@@ -193,7 +193,7 @@
 
                         if (mesh.parent === source) {
                             // doNotCloneChildren is always going to be False
-                            var newChild = mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
+                             mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
                         }
                     }
                 }
@@ -614,7 +614,7 @@
          */
         public refreshBoundingInfo(): Mesh {
             if (this._boundingInfo.isLocked) {
-                return;
+                return this;
             }
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
@@ -661,7 +661,7 @@
                 }
 
                 if (!needToRecreate) {
-                    return;
+                    return this.subMeshes[0];
                 }
             }
 
@@ -786,7 +786,7 @@
          */
         public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
             if (!makeItUnique) {
                 this._geometry.updateVerticesData(kind, data, updateExtends);
@@ -824,7 +824,7 @@
          */
         public makeGeometryUnique(): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
             var oldGeometry = this._geometry;
             var geometry = this._geometry.copy(Geometry.RandomId());
@@ -862,7 +862,7 @@
          */
         public updateIndices(indices: IndicesArray, offset?: number): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
 
             this._geometry.updateIndices(indices, offset);
@@ -876,7 +876,7 @@
          */
         public toLeftHanded(): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
             this._geometry.toLeftHanded();
             return this;
@@ -1135,7 +1135,7 @@
 
             this.checkOcclusionQuery();
             if (this._isOccluded) {
-                return;
+                return this;
             }
 
             var scene = this.getScene();
@@ -1152,7 +1152,6 @@
                 return this;
             }
 
-            var callbackIndex: number;
             this.onBeforeRenderObservable.notifyObservers(this);
 
             var engine = scene.getEngine();
@@ -1725,7 +1724,7 @@
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
-                var subMesh = new SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+                SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
 
             this.synchronizeInstances();
@@ -1746,7 +1745,6 @@
             var vbs:{ [key: string]: VertexBuffer } = {};
             var data:{ [key: string]: number[] | Float32Array } = {};
             var newdata: { [key: string]: Array<number> } = {};
-            var updatableNormals = false;
             var kindIndex: number;
             var kind: string;
             for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
@@ -1797,7 +1795,7 @@
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
-                var subMesh = new SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+                SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
 
             this._unIndexed = true;

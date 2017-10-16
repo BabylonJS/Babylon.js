@@ -680,7 +680,6 @@
 
         // Cache
         private _internalTexturesCache = new Array<InternalTexture>();
-        private _maxTextureChannels = 16;
         private _activeTexture: number;
         private _activeTexturesCache: { [key: string]: WebGLTexture } = {};
         protected _currentEffect: Effect;
@@ -1670,7 +1669,6 @@
 
                 //get the width and height, change the render size
                 var leftEye = this._vrDisplay.getEyeParameters('left');
-                var width, height;
                 this.setHardwareScalingLevel(1);
                 this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
             } else {
@@ -3858,7 +3856,6 @@
 
             var textureType = this._getWebGLTextureType(type);
             var internalFormat = this._getInternalFormat(format);
-            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
 
             var needConversion = false;
             if (internalFormat === gl.RGB) {
@@ -3934,7 +3931,6 @@
 
             var internalCallback = (data: any) => {
                 var width = texture.width;
-                var height = texture.height;
                 var faceDataArrays = callback(data);
 
                 if (mipmmapGenerator) {

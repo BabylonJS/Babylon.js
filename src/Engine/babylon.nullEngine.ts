@@ -103,11 +103,6 @@
         }
 
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-            var width = requiredWidth || this.getRenderWidth();
-            var height = requiredHeight || this.getRenderHeight();
-            var x = viewport.x || 0;
-            var y = viewport.y || 0;
-
             this._cachedViewport = viewport;
         }
 

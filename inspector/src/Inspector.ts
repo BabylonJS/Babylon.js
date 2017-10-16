@@ -9,8 +9,6 @@ module INSPECTOR {
         private _tabPanel: HTMLElement;
         /** The panel containing the list if items */
         // private _treePanel   : HTMLElement;
-        /** The list if tree items displayed in the tree panel. */
-        private _items: Array<TreeItem>;
         private _tabbar: TabBar;
         private _scene: BABYLON.Scene;
         /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
@@ -75,7 +73,6 @@ module INSPECTOR {
                 // Get canvas and its DOM parent
                 let canvas = this._scene.getEngine().getRenderingCanvas();
                 let canvasParent = canvas.parentElement;
-                let canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);
 
                 // get canvas style                
                 let canvasComputedStyle = Inspector.WINDOW.getComputedStyle(canvas);

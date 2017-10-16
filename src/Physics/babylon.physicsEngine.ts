@@ -147,12 +147,14 @@
             return this._physicsPlugin;
         }
 
-        public getImpostorForPhysicsObject(object: IPhysicsEnabledObject) {
+        public getImpostorForPhysicsObject(object: IPhysicsEnabledObject): PhysicsImpostor {
             for (var i = 0; i < this._impostors.length; ++i) {
                 if (this._impostors[i].object === object) {
                     return this._impostors[i];
                 }
             }
+
+            return null;
         }
 
         public getImpostorWithPhysicsBody(body: any): PhysicsImpostor {
@@ -161,6 +163,8 @@
                     return this._impostors[i];
                 }
             }
+
+            return null;
         }
     }
 

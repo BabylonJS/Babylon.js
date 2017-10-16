@@ -402,7 +402,7 @@
             return url;
         }
 
-        public static LoadImage(url: any, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, database: any): HTMLImageElement {
+        public static LoadImage(url: any, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, database: Database): HTMLImageElement {
             if (url instanceof ArrayBuffer) {
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
@@ -478,7 +478,7 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: any, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest, exception?: any) => void): void {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest, exception?: any) => void): void {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
@@ -555,7 +555,6 @@
             script.type = 'text/javascript';
             script.src = scriptUrl;
 
-            var self = this;
             script.onload = () => {
                 if (onSuccess) {
                     onSuccess();
@@ -675,7 +674,9 @@
 
         public static IsEmpty(obj: any): boolean {
             for (var i in obj) {
-                return false;
+                if (obj.hasOwnProperty(i)) {
+                    return false;                    
+                }
             }
             return true;
         }
@@ -1199,12 +1200,14 @@
             return name;
         }
 
-        public static first<T>(array: Array<T>, predicate: (item: T) => boolean) {
+        public static First<T>(array: Array<T>, predicate: (item: T) => boolean): T {
             for (let el of array) {
                 if (predicate(el)) {
                     return el;
                 }
             }
+
+            return null;
         }
 
         /**

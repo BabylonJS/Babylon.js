@@ -82,7 +82,6 @@ module BABYLON {
                
         public _meshes: AbstractMesh[];
 
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _renderId: number;
         
         private _furTime: number = 0;

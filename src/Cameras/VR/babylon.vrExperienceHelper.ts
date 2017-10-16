@@ -31,7 +31,7 @@ module BABYLON {
         public onExitingVR: () => void;
         public onControllerMeshLoaded: (controller: WebVRController) => void;
                 
-        constructor(scene: Scene, private webVROptions: WebVROptions = {}) {
+        constructor(scene: Scene, public webVROptions: WebVROptions = {}) {
             this._scene = scene;
 
             if (!this._scene.activeCamera) {

@@ -143,8 +143,6 @@ module BABYLON {
         private _refractionRTT: RenderTargetTexture;
         private _reflectionRTT: RenderTargetTexture;
 
-        private _material: ShaderMaterial;
-
         private _reflectionTransform: Matrix = Matrix.Zero();
         private _lastTime: number = 0;
         private _lastDeltaTime: number = 0;
