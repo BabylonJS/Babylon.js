@@ -120,7 +120,8 @@ body {
     color:white;
     padding:5px;
     border-radius: 3px;
-    font-family: 'Montserrat'
+    font-family: 'Montserrat';
+    pointer-events: none;
 }
 .navbar {
     height: 40px;
