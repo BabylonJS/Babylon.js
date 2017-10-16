@@ -677,28 +677,28 @@
         }
 
         // States
-        private _depthCullingState = new Internals._DepthCullingState();
-        private _stencilState = new Internals._StencilState();
+        protected _depthCullingState = new Internals._DepthCullingState();
+        protected _stencilState = new Internals._StencilState();
         protected _alphaState = new Internals._AlphaState();
         protected _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
         private _internalTexturesCache = new Array<InternalTexture>();
-        private _activeTexture: number;
-        private _activeTexturesCache: { [key: string]: WebGLTexture } = {};
+        protected _activeTexture: number;
+        protected _activeTexturesCache: { [key: string]: WebGLTexture } = {};
         protected _currentEffect: Effect;
-        private _currentProgram: WebGLProgram;
+        protected _currentProgram: WebGLProgram;
         private _compiledEffects: { [key: string]: Effect } = {}
         private _vertexAttribArraysEnabled: boolean[] = [];
         protected _cachedViewport: Viewport;
         private _cachedVertexArrayObject: WebGLVertexArrayObject;
-        private _cachedVertexBuffers: any;
-        private _cachedIndexBuffer: WebGLBuffer;
-        private _cachedEffectForVertexBuffers: Effect;
+        protected _cachedVertexBuffers: any;
+        protected _cachedIndexBuffer: WebGLBuffer;
+        protected _cachedEffectForVertexBuffers: Effect;
         protected _currentRenderTarget: InternalTexture;
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<WebGLBuffer>();
-        private _currentFramebuffer: WebGLFramebuffer;
+        protected _currentFramebuffer: WebGLFramebuffer;
         private _currentBufferPointers = new Array<BufferPointer>();
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();

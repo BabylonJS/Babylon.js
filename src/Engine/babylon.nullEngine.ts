@@ -65,6 +65,18 @@
             this._caps.instancedArrays = false;
 
             Tools.Log("Babylon.js null engine (v" + Engine.Version + ") launched");
+
+            // Wrappers
+            if (typeof URL === "undefined") {
+                (<any>URL) = {
+                    createObjectURL: function() {},
+                    revokeObjectURL: function() {}
+                }
+            }
+
+            if (typeof Blob === "undefined") {
+                (<any>Blob) = function() {};         
+            }   
         }
 
         public createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
@@ -221,6 +233,27 @@
         public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
         }
 
+        public wipeCaches(bruteForce?: boolean): void {
+            if (this.preventCacheWipeBetweenFrames) {
+                return;
+            }
+            this.resetTextureCache();
+            this._currentEffect = null;
+
+            if (bruteForce) {
+                this._currentProgram = null;
+
+                this._stencilState.reset();
+                this._depthCullingState.reset();
+                this.setDepthFunctionToLessOrEqual();
+                this._alphaState.reset();
+            }
+
+            this._cachedVertexBuffers = null;
+            this._cachedIndexBuffer = null;
+            this._cachedEffectForVertexBuffers = null;
+        }
+
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
         }
 
@@ -249,6 +282,100 @@
             }
 
             return texture;
+        }
+
+        public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
+            let fullOptions = new RenderTargetCreationOptions();
+
+            if (options !== undefined && typeof options === "object") {
+                fullOptions.generateMipMaps = options.generateMipMaps;
+                fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
+                fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
+                fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            } else {
+                fullOptions.generateMipMaps = <boolean>options;
+                fullOptions.generateDepthBuffer = true;
+                fullOptions.generateStencilBuffer = false;
+                fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            }
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
+
+            var width = size.width || size;
+            var height = size.height || size;
+
+            texture._depthStencilBuffer = {};
+            texture._framebuffer = {};
+            texture.baseWidth = width;
+            texture.baseHeight = height;
+            texture.width = width;
+            texture.height = height;
+            texture.isReady = true;
+            texture.samples = 1;
+            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.samplingMode = fullOptions.samplingMode;
+            texture.type = fullOptions.type;
+            texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
+            return texture;
+        }     
+        
+        public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
+            texture.samplingMode = samplingMode;
+        }      
+        
+        public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+            if (this._currentRenderTarget) {
+                this.unBindFramebuffer(this._currentRenderTarget);
+            }
+            this._currentRenderTarget = texture;
+            this._currentFramebuffer = texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer;
+            if (this._cachedViewport && !forceFullscreenViewport) {
+                this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
+            } 
+        }
+
+        public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+            this._currentRenderTarget = null;
+
+            if (onBeforeUnbind) {
+                if (texture._MSAAFramebuffer) {
+                    this._currentFramebuffer = texture._framebuffer;
+                }
+                onBeforeUnbind();
+            }
+            this._currentFramebuffer = null;
+        }
+
+        public createDynamicVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
+            var vbo = {
+                capacity: 1,
+                references: 1,                
+                is32Bits: false
+            }
+
+            return vbo;
+        }
+
+        public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
+        }
+
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: number[] | Float32Array, offset?: number, count?: number): void {
+        }        
+
+        public _bindTextureDirectly(target: number, texture: InternalTexture): void {
+            if (this._activeTexturesCache[this._activeTexture] !== texture) {
+                this._activeTexturesCache[this._activeTexture] = texture;
+            }
+        }
+
+        public _bindTexture(channel: number, texture: InternalTexture): void {
+            if (channel < 0) {
+                return;
+            }
+
+            this._bindTextureDirectly(0, texture);
         }
     }
 }
