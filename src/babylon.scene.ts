@@ -181,6 +181,11 @@
 
         public hoverCursor = "pointer";
         public defaultCursor: string = "";
+        /**
+         * This is used to call preventDefault() on pointer down
+         * in order to block unwanted artifacts like system double clicks
+         */
+        public preventDefaultOnPointerDown = true;
 
         // Metadata
         public metadata: any = null;
@@ -1429,6 +1434,11 @@
 
                 this._updatePointerPosition(evt);
 
+                if (this.preventDefaultOnPointerDown) {
+                    evt.preventDefault();
+                    canvas.focus();
+                }
+
                 // PreObservable support
                 if (this.onPrePointerObservable.hasObservers()) {
                     let type = PointerEventTypes.POINTERDOWN;
@@ -1495,7 +1505,7 @@
                 this._pickedUpMesh = null;
                 this._meshPickProceed = false;
 
-                this._updatePointerPosition(evt);
+                this._updatePointerPosition(evt);      
 
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: PickingInfo) => {
                     // PreObservable support
