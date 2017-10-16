@@ -10071,7 +10071,7 @@ var BABYLON;
                     else {
                         BABYLON.Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
                     }
-                else if (buffer instanceof Array || typeof buffer === "string")
+                else if (buffer instanceof Array || typeof buffer === "string" || buffer instanceof ArrayBuffer)
                     BABYLON.Tools.LoadImage(buffer, onload, onerror, scene ? scene.database : null);
                 else
                     onload(buffer);
@@ -10669,14 +10669,16 @@ var BABYLON;
             var isKTX = false;
             var isDDS = false;
             var lastDot = rootUrl.lastIndexOf('.');
-            var extension = forcedExtension ? forcedExtension : rootUrl.substring(lastDot).toLowerCase();
-            if (this._textureFormatInUse) {
-                extension = this._textureFormatInUse;
-                rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
-                isKTX = true;
-            }
-            else {
-                isDDS = (extension === ".dds");
+            if (lastDot > -1) {
+                var extension = forcedExtension ? forcedExtension : rootUrl.substring(lastDot).toLowerCase();
+                if (this._textureFormatInUse) {
+                    extension = this._textureFormatInUse;
+                    rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
+                    isKTX = true;
+                }
+                else {
+                    isDDS = (extension === ".dds");
+                }
             }
             var onerror = function (request, exception) {
                 if (onError) {
@@ -48379,9 +48381,6 @@ var BABYLON;
                         this.renderList.push(mesh);
                     }
                 }
-            }
-            if (this.renderList && this.renderList.length === 0) {
-                return;
             }
             this.onBeforeBindObservable.notifyObservers(this);
             // Set custom projection.
