@@ -6086,7 +6086,6 @@ var BABYLON;
             var script = document.createElement('script');
             script.type = 'text/javascript';
             script.src = scriptUrl;
-            var self = this;
             script.onload = function () {
                 if (onSuccess) {
                     onSuccess();
@@ -6194,7 +6193,9 @@ var BABYLON;
         };
         Tools.IsEmpty = function (obj) {
             for (var i in obj) {
-                return false;
+                if (obj.hasOwnProperty(i)) {
+                    return false;
+                }
             }
             return true;
         };
@@ -6668,13 +6669,14 @@ var BABYLON;
             }
             return name;
         };
-        Tools.first = function (array, predicate) {
+        Tools.First = function (array, predicate) {
             for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
                 var el = array_1[_i];
                 if (predicate(el)) {
                     return el;
                 }
             }
+            return null;
         };
         /**
          * This method will return the name of the full name of the class, including its owning module (if any).
@@ -7776,7 +7778,6 @@ var BABYLON;
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._internalTexturesCache = new Array();
-            this._maxTextureChannels = 16;
             this._activeTexturesCache = {};
             this._compiledEffects = {};
             this._vertexAttribArraysEnabled = [];
@@ -7796,7 +7797,6 @@ var BABYLON;
                     _this._oldHardwareScaleFactor = _this.getHardwareScalingLevel();
                     //get the width and height, change the render size
                     var leftEye = _this._vrDisplay.getEyeParameters('left');
-                    var width, height;
                     _this.setHardwareScalingLevel(1);
                     _this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
                 }
@@ -10801,7 +10801,6 @@ var BABYLON;
             }
             var textureType = this._getWebGLTextureType(type);
             var internalFormat = this._getInternalFormat(format);
-            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
             var needConversion = false;
             if (internalFormat === gl.RGB) {
                 internalFormat = gl.RGBA;
@@ -10862,7 +10861,6 @@ var BABYLON;
             };
             var internalCallback = function (data) {
                 var width = texture.width;
-                var height = texture.height;
                 var faceDataArrays = callback(data);
                 if (mipmmapGenerator) {
                     var textureType = _this._getWebGLTextureType(type);
@@ -11617,7 +11615,6 @@ var BABYLON;
             this.doNotSerialize = false;
             this.animations = new Array();
             this._ranges = {};
-            this._childrenFlag = -1;
             this._isEnabled = true;
             this._isReady = true;
             this._currentRenderId = -1;
@@ -11682,7 +11679,7 @@ var BABYLON;
         Node.prototype.addBehavior = function (behavior) {
             var index = this._behaviors.indexOf(behavior);
             if (index !== -1) {
-                return;
+                return this;
             }
             behavior.attach(this);
             this._behaviors.push(behavior);
@@ -11691,7 +11688,7 @@ var BABYLON;
         Node.prototype.removeBehavior = function (behavior) {
             var index = this._behaviors.indexOf(behavior);
             if (index === -1) {
-                return;
+                return this;
             }
             this._behaviors[index].detach();
             this._behaviors.splice(index, 1);
@@ -12416,7 +12413,6 @@ var BABYLON;
             _this.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
             _this._oldPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
             _this._diffPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
-            _this._newPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
             // Edges
             _this.edgesWidth = 1;
             _this.edgesColor = new BABYLON.Color4(1, 0, 0, 1);
@@ -13268,14 +13264,14 @@ var BABYLON;
          */
         AbstractMesh.prototype.setAbsolutePosition = function (absolutePosition) {
             if (!absolutePosition) {
-                return;
+                return this;
             }
             var absolutePositionX;
             var absolutePositionY;
             var absolutePositionZ;
             if (absolutePosition.x === undefined) {
                 if (arguments.length < 3) {
-                    return;
+                    return this;
                 }
                 absolutePositionX = arguments[0];
                 absolutePositionY = arguments[1];
@@ -13473,7 +13469,7 @@ var BABYLON;
          */
         AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
             if (!this.subMeshes) {
-                return;
+                return this;
             }
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
@@ -13776,14 +13772,14 @@ var BABYLON;
         };
         AbstractMesh.prototype.applyImpulse = function (force, contactPoint) {
             if (!this.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.applyImpulse(force, contactPoint);
             return this;
         };
         AbstractMesh.prototype.setPhysicsLinkWith = function (otherMesh, pivot1, pivot2, options) {
             if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.createJoint(otherMesh.physicsImpostor, BABYLON.PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,
@@ -14989,6 +14985,7 @@ var BABYLON;
                 case 3:
                     return function () { return new BABYLON.HemisphericLight(name, BABYLON.Vector3.Zero(), scene); };
             }
+            return null;
         };
         /**
          * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.
@@ -15146,7 +15143,7 @@ var BABYLON;
         };
         Light.prototype._reorderLightsInScene = function () {
             var scene = this.getScene();
-            if (this.renderPriority != 0) {
+            if (this._renderPriority != 0) {
                 scene.requireLightSorting = true;
             }
             this.getScene().sortLightsByPriority();
@@ -15420,7 +15417,6 @@ var BABYLON;
             if (!ignoreParentClass) {
                 _super.prototype._updateCache.call(this);
             }
-            var engine = this.getEngine();
             this._cache.position.copyFrom(this.position);
             this._cache.upVector.copyFrom(this.upVector);
         };
@@ -17597,6 +17593,7 @@ var BABYLON;
             return this._processPointerDown(pickResult, evt);
         };
         Scene.prototype._processPointerDown = function (pickResult, evt) {
+            var _this = this;
             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
                 this._pickedDownMesh = pickResult.pickedMesh;
                 var actionManager = pickResult.pickedMesh.actionManager;
@@ -17616,19 +17613,18 @@ var BABYLON;
                         }
                     }
                     if (actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)) {
-                        window.setTimeout((function () {
-                            var _this = this;
-                            var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger) && mesh == _this._pickedDownMesh; }, false, this.cameraToUseForPointers);
+                        window.setTimeout(function () {
+                            var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger) && mesh == _this._pickedDownMesh; }, false, _this.cameraToUseForPointers);
                             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                                if (this._totalPointersPressed !== 0 &&
-                                    ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
-                                    (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
-                                        Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
-                                    this._startingPointerTime = 0;
+                                if (_this._totalPointersPressed !== 0 &&
+                                    ((new Date().getTime() - _this._startingPointerTime) > Scene.LongPressDelay) &&
+                                    (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < Scene.DragMovementThreshold &&
+                                        Math.abs(_this._startingPointerPosition.y - _this._pointerY) < Scene.DragMovementThreshold)) {
+                                    _this._startingPointerTime = 0;
                                     actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 }
                             }
-                        }).bind(this), Scene.LongPressDelay);
+                        }, Scene.LongPressDelay);
                     }
                 }
             }
@@ -17926,23 +17922,23 @@ var BABYLON;
                 _this._pickedUpMesh = null;
                 _this._meshPickProceed = false;
                 _this._updatePointerPosition(evt);
-                _this._initClickEvent(_this.onPrePointerObservable, _this.onPointerObservable, evt, (function (clickInfo, pickResult) {
+                _this._initClickEvent(_this.onPrePointerObservable, _this.onPointerObservable, evt, function (clickInfo, pickResult) {
                     // PreObservable support
-                    if (this.onPrePointerObservable.hasObservers()) {
+                    if (_this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
                             if (!clickInfo.hasSwiped) {
-                                if (clickInfo.singleClick && this.onPrePointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP)) {
+                                if (clickInfo.singleClick && _this.onPrePointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP)) {
                                     var type = BABYLON.PointerEventTypes.POINTERTAP;
-                                    var pi = new BABYLON.PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                                    this.onPrePointerObservable.notifyObservers(pi, type);
+                                    var pi = new BABYLON.PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
+                                    _this.onPrePointerObservable.notifyObservers(pi, type);
                                     if (pi.skipOnPointerObservable) {
                                         return;
                                     }
                                 }
-                                if (clickInfo.doubleClick && this.onPrePointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP)) {
+                                if (clickInfo.doubleClick && _this.onPrePointerObservable.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP)) {
                                     var type = BABYLON.PointerEventTypes.POINTERDOUBLETAP;
-                                    var pi = new BABYLON.PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                                    this.onPrePointerObservable.notifyObservers(pi, type);
+                                    var pi = new BABYLON.PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
+                                    _this.onPrePointerObservable.notifyObservers(pi, type);
                                     if (pi.skipOnPointerObservable) {
                                         return;
                                     }
@@ -17951,48 +17947,48 @@ var BABYLON;
                         }
                         else {
                             var type = BABYLON.PointerEventTypes.POINTERUP;
-                            var pi = new BABYLON.PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                            this.onPrePointerObservable.notifyObservers(pi, type);
+                            var pi = new BABYLON.PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
+                            _this.onPrePointerObservable.notifyObservers(pi, type);
                             if (pi.skipOnPointerObservable) {
                                 return;
                             }
                         }
                     }
-                    if (!this.cameraToUseForPointers && !this.activeCamera) {
+                    if (!_this.cameraToUseForPointers && !_this.activeCamera) {
                         return;
                     }
-                    if (!this.pointerUpPredicate) {
-                        this.pointerUpPredicate = function (mesh) {
+                    if (!_this.pointerUpPredicate) {
+                        _this.pointerUpPredicate = function (mesh) {
                             return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
                         };
                     }
                     // Meshes
-                    if (!this._meshPickProceed && (BABYLON.ActionManager && BABYLON.ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
-                        this._initActionManager(null, clickInfo);
+                    if (!_this._meshPickProceed && (BABYLON.ActionManager && BABYLON.ActionManager.HasTriggers || _this.onPointerObservable.hasObservers())) {
+                        _this._initActionManager(null, clickInfo);
                     }
                     if (!pickResult) {
-                        pickResult = this._currentPickResult;
+                        pickResult = _this._currentPickResult;
                     }
-                    this._processPointerUp(pickResult, evt, clickInfo);
+                    _this._processPointerUp(pickResult, evt, clickInfo);
                     // Sprites
-                    if (this.spriteManagers.length > 0) {
-                        pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers);
+                    if (_this.spriteManagers.length > 0) {
+                        pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this._spritePredicate, false, _this.cameraToUseForPointers);
                         if (pickResult.hit && pickResult.pickedSprite) {
                             if (pickResult.pickedSprite.actionManager) {
-                                pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                                pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
                                 if (pickResult.pickedSprite.actionManager) {
-                                    if (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold) {
-                                        pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                                    if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < Scene.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < Scene.DragMovementThreshold) {
+                                        pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
                                     }
                                 }
                             }
                         }
-                        if (this._pickedDownSprite && this._pickedDownSprite.actionManager && this._pickedDownSprite !== pickResult.pickedSprite) {
-                            this._pickedDownSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                        if (_this._pickedDownSprite && _this._pickedDownSprite.actionManager && _this._pickedDownSprite !== pickResult.pickedSprite) {
+                            _this._pickedDownSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(_this._pickedDownSprite, _this, evt));
                         }
                     }
-                    this._previousPickResult = this._currentPickResult;
-                }).bind(_this));
+                    _this._previousPickResult = _this._currentPickResult;
+                });
             };
             this._onKeyDown = function (evt) {
                 var type = BABYLON.KeyboardEventTypes.KEYDOWN;
@@ -18323,7 +18319,7 @@ var BABYLON;
             return result;
         };
         Scene.prototype.addMesh = function (newMesh) {
-            var position = this.meshes.push(newMesh);
+            this.meshes.push(newMesh);
             //notify the collision coordinator
             if (this.collisionCoordinator) {
                 this.collisionCoordinator.onMeshAdded(newMesh);
@@ -18404,7 +18400,7 @@ var BABYLON;
             }
         };
         Scene.prototype.addCamera = function (newCamera) {
-            var position = this.cameras.push(newCamera);
+            this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         };
         /**
@@ -18984,7 +18980,6 @@ var BABYLON;
             }
             // Particle systems
             this._particlesDuration.beginMonitoring();
-            var beforeParticlesDate = BABYLON.Tools.Now;
             if (this.particlesEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
@@ -19045,7 +19040,6 @@ var BABYLON;
                 return;
             }
             var engine = this._engine;
-            var startTime = BABYLON.Tools.Now;
             this.activeCamera = camera;
             if (!this.activeCamera)
                 throw new Error("Active camera not set");
@@ -19076,7 +19070,6 @@ var BABYLON;
             // Render targets
             this._renderTargetsDuration.beginMonitoring();
             var needsRestoreFrameBuffer = false;
-            var beforeRenderTargetDate = BABYLON.Tools.Now;
             if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
                 this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
             }
@@ -19317,7 +19310,6 @@ var BABYLON;
             this.onBeforeRenderObservable.notifyObservers(this);
             // Customs render targets
             this._renderTargetsDuration.beginMonitoring();
-            var beforeRenderTargetDate = BABYLON.Tools.Now;
             var engine = this.getEngine();
             var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
@@ -20103,7 +20095,7 @@ var BABYLON;
             }
             if (!this.environmentTexture) {
                 BABYLON.Tools.Warn("Can not create default skybox without environment texture.");
-                return;
+                return null;
             }
             // Skybox
             var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", scale, this);
@@ -21617,7 +21609,7 @@ var BABYLON;
                         var mesh = scene.meshes[index];
                         if (mesh.parent === source) {
                             // doNotCloneChildren is always going to be False
-                            var newChild = mesh.clone(name + "." + mesh.name, _this, doNotCloneChildren);
+                            mesh.clone(name + "." + mesh.name, _this, doNotCloneChildren);
                         }
                     }
                 }
@@ -22121,7 +22113,7 @@ var BABYLON;
          */
         Mesh.prototype.refreshBoundingInfo = function () {
             if (this._boundingInfo.isLocked) {
-                return;
+                return this;
             }
             var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (data) {
@@ -22162,7 +22154,7 @@ var BABYLON;
                     }
                 }
                 if (!needToRecreate) {
-                    return;
+                    return this.subMeshes[0];
                 }
             }
             this.releaseSubMeshes();
@@ -22271,7 +22263,7 @@ var BABYLON;
          */
         Mesh.prototype.updateVerticesData = function (kind, data, updateExtends, makeItUnique) {
             if (!this._geometry) {
-                return;
+                return this;
             }
             if (!makeItUnique) {
                 this._geometry.updateVerticesData(kind, data, updateExtends);
@@ -22308,7 +22300,7 @@ var BABYLON;
          */
         Mesh.prototype.makeGeometryUnique = function () {
             if (!this._geometry) {
-                return;
+                return this;
             }
             var oldGeometry = this._geometry;
             var geometry = this._geometry.copy(BABYLON.Geometry.RandomId());
@@ -22342,7 +22334,7 @@ var BABYLON;
          */
         Mesh.prototype.updateIndices = function (indices, offset) {
             if (!this._geometry) {
-                return;
+                return this;
             }
             this._geometry.updateIndices(indices, offset);
             return this;
@@ -22353,7 +22345,7 @@ var BABYLON;
          */
         Mesh.prototype.toLeftHanded = function () {
             if (!this._geometry) {
-                return;
+                return this;
             }
             this._geometry.toLeftHanded();
             return this;
@@ -22574,7 +22566,7 @@ var BABYLON;
         Mesh.prototype.render = function (subMesh, enableAlphaMode) {
             this.checkOcclusionQuery();
             if (this._isOccluded) {
-                return;
+                return this;
             }
             var scene = this.getScene();
             // Managing instances
@@ -22586,7 +22578,6 @@ var BABYLON;
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return this;
             }
-            var callbackIndex;
             this.onBeforeRenderObservable.notifyObservers(this);
             var engine = scene.getEngine();
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
@@ -23074,7 +23065,7 @@ var BABYLON;
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
-                var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+                BABYLON.SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
             this.synchronizeInstances();
             return this;
@@ -23092,7 +23083,6 @@ var BABYLON;
             var vbs = {};
             var data = {};
             var newdata = {};
-            var updatableNormals = false;
             var kindIndex;
             var kind;
             for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
@@ -23134,7 +23124,7 @@ var BABYLON;
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
-                var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+                BABYLON.SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
             this._unIndexed = true;
             this.synchronizeInstances();
@@ -24398,6 +24388,10 @@ var BABYLON;
             }
             return _this;
         }
+        SubMesh.AddToMesh = function (materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox) {
+            if (createBoundingBox === void 0) { createBoundingBox = true; }
+            return new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox);
+        };
         Object.defineProperty(SubMesh.prototype, "IsGlobal", {
             get: function () {
                 return (this.verticesStart === 0 && this.verticesCount == this._mesh.getTotalVertices());
@@ -24461,12 +24455,12 @@ var BABYLON;
         SubMesh.prototype.refreshBoundingInfo = function () {
             this._lastColliderWorldVertices = null;
             if (this.IsGlobal) {
-                return;
+                return this;
             }
             var data = this._renderingMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
-                return;
+                return this;
             }
             var indices = this._renderingMesh.getIndices();
             var extend;
@@ -25309,7 +25303,7 @@ var BABYLON;
         };
         Effect.prototype.setMatrices = function (uniformName, matrices) {
             if (!matrices) {
-                return;
+                return this;
             }
             this._valueCache[uniformName] = null;
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
@@ -29928,7 +29922,7 @@ var BABYLON;
                         var verticesCount = subMeshesData[(i * 5) + 2];
                         var indexStart = subMeshesData[(i * 5) + 3];
                         var indexCount = subMeshesData[(i * 5) + 4];
-                        var subMesh = new BABYLON.SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
+                        BABYLON.SubMesh.AddToMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
                     }
                 }
             }
@@ -30004,7 +29998,7 @@ var BABYLON;
                 mesh.subMeshes = [];
                 for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
                     var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
-                    var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                    BABYLON.SubMesh.AddToMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
                 }
             }
             // Flat shading
@@ -31423,8 +31417,6 @@ var BABYLON;
          */
         ColorGradingTexture.prototype.load3dlTexture = function () {
             var _this = this;
-            var mipLevels = 0;
-            var floatArrayView = null;
             var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
             this._texture = texture;
             var callback = function (text) {
@@ -32920,10 +32912,10 @@ var BABYLON;
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
                             BABYLON.MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             }
                             else {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? -1.0 : 1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
                         if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -33855,9 +33847,7 @@ var BABYLON;
              */
             _this._forceNormalForward = false;
             _this._renderTargets = new BABYLON.SmartArray(16);
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
-            _this._tempColor = new BABYLON.Color3();
             // Setup the default processing configuration to the scene.
             _this._attachImageProcessingConfiguration(null);
             _this.getRenderTargetTextures = function () {
@@ -33933,6 +33923,7 @@ var BABYLON;
             return this._albedoTexture;
         };
         PBRBaseMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+            var _this = this;
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -34297,11 +34288,11 @@ var BABYLON;
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
                 var onCompiled = function (effect) {
-                    if (this.onCompiled) {
-                        this.onCompiled(effect);
+                    if (_this.onCompiled) {
+                        _this.onCompiled(effect);
                     }
-                    this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
+                    _this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                };
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect("pbr", {
                     attributes: attribs,
@@ -35875,7 +35866,6 @@ var BABYLON;
             this.attachedElement = element;
             this.noPreventDefault = noPreventDefault;
             for (var cam in this.attached) {
-                var input = this.attached[cam];
                 this.attached[cam].attachControl(element, noPreventDefault);
             }
         };
@@ -35885,7 +35875,6 @@ var BABYLON;
                 return;
             }
             for (var cam in this.attached) {
-                var input = this.attached[cam];
                 this.attached[cam].detachControl(element);
                 if (disconnect) {
                     this.attached[cam].camera = null;
@@ -36584,7 +36573,6 @@ var BABYLON;
                 var updatePosition = function (newPos) {
                     _this._newPosition.copyFrom(newPos);
                     _this._newPosition.subtractToRef(_this._oldPosition, _this._diffPosition);
-                    var oldPosition = _this.position.clone();
                     if (_this._diffPosition.length() > BABYLON.Engine.CollisionsEpsilon) {
                         _this.position.addInPlace(_this._diffPosition);
                         if (_this.onCollide && collidedMesh) {
@@ -36604,6 +36592,7 @@ var BABYLON;
                 var mouse = this.inputs.attached["mouse"];
                 if (mouse)
                     return mouse.angularSensibility;
+                return null;
             },
             set: function (value) {
                 var mouse = this.inputs.attached["mouse"];
@@ -36618,6 +36607,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysUp;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -36632,6 +36622,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysDown;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -36646,6 +36637,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysLeft;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -36660,6 +36652,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysRight;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -36980,7 +36973,6 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var eventPrefix = BABYLON.Tools.GetPointerPrefix();
     var ArcRotateCameraPointersInput = (function () {
         function ArcRotateCameraPointersInput() {
             this.buttons = [0, 1, 2];
@@ -37397,6 +37389,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.angularSensibilityX;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37412,6 +37405,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.angularSensibilityY;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37427,6 +37421,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.pinchPrecision;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37442,6 +37437,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.pinchDeltaPercentage;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37457,6 +37453,7 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.panningSensibility;
+                return null;
             },
             set: function (value) {
                 var pointers = this.inputs.attached["pointers"];
@@ -37472,6 +37469,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysUp;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -37486,6 +37484,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysDown;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -37500,6 +37499,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysLeft;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -37514,6 +37514,7 @@ var BABYLON;
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysRight;
+                return null;
             },
             set: function (value) {
                 var keyboard = this.inputs.attached["keyboard"];
@@ -37528,6 +37529,7 @@ var BABYLON;
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
                     return mousewheel.wheelPrecision;
+                return null;
             },
             set: function (value) {
                 var mousewheel = this.inputs.attached["mousewheel"];
@@ -37542,6 +37544,7 @@ var BABYLON;
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
                     return mousewheel.wheelDeltaPercentage;
+                return null;
             },
             set: function (value) {
                 var mousewheel = this.inputs.attached["mousewheel"];
@@ -38877,11 +38880,6 @@ var BABYLON;
             return this;
         };
         // used by animation engine
-        PathCursor.prototype.markAsDirty = function (propertyName) {
-            this.ensureLimits();
-            this.raiseOnChange();
-            return this;
-        };
         PathCursor.prototype.raiseOnChange = function () {
             var _this = this;
             this._onchange.forEach(function (f) { return f(_this); });
@@ -38981,7 +38979,7 @@ var BABYLON;
                 if (onAnimationEnd) {
                     onAnimationEnd();
                 }
-                return;
+                return null;
             }
             var endFrame = frameRate * (duration / 1000);
             transition.setKeys([{
@@ -41717,7 +41715,6 @@ var BABYLON;
             this._toIndex = 0;
             this._delay = 0;
             this._direction = 1;
-            this._frameCount = 0;
             this._time = 0;
             this._manager = manager;
             this._manager.sprites.push(this);
@@ -43593,8 +43590,6 @@ var BABYLON;
             this._cam_axisZ = BABYLON.Vector3.Zero();
             this._cam_axisY = BABYLON.Vector3.Zero();
             this._cam_axisX = BABYLON.Vector3.Zero();
-            this._axisX = BABYLON.Axis.X;
-            this._axisY = BABYLON.Axis.Y;
             this._axisZ = BABYLON.Axis.Z;
             this._camDir = BABYLON.Vector3.Zero();
             this._rotMatrix = new BABYLON.Matrix();
@@ -43722,7 +43717,6 @@ var BABYLON;
             var facetUV = []; // submesh UV
             var facetCol = []; // submesh colors
             var barycenter = BABYLON.Tmp.Vector3[0];
-            var rand;
             var sizeO = size;
             while (f < totalFacets) {
                 size = sizeO + Math.floor((1 + delta) * Math.random());
@@ -44042,7 +44036,7 @@ var BABYLON;
             if (end === void 0) { end = this.nbParticles - 1; }
             if (update === void 0) { update = true; }
             if (!this._updatable) {
-                return;
+                return this;
             }
             // custom beforeUpdate
             this.beforeUpdateParticles(start, end, update);
@@ -44545,7 +44539,6 @@ var BABYLON;
         function GroundMesh(name, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.generateOctree = false;
-            _this._worldInverse = new BABYLON.Matrix();
             return _this;
         }
         GroundMesh.prototype.getClassName = function () {
@@ -44656,8 +44649,6 @@ var BABYLON;
         // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
         GroundMesh.prototype._getFacetAt = function (x, z) {
             // retrieve col and row from x, z coordinates in the ground local system
-            var subdivisionsX = this._subdivisionsX;
-            var subdivisionsY = this._subdivisionsY;
             var col = Math.floor((x + this._maxX) * this._subdivisionsX / this._width);
             var row = Math.floor(-(z + this._maxZ) * this._subdivisionsY / this._height + this._subdivisionsY);
             var quad = this._heightQuads[row * this._subdivisionsX + col];
@@ -45805,7 +45796,6 @@ var BABYLON;
             var pathArray = options.pathArray;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
-            var offset = options.offset;
             var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var updatable = options.updatable;
@@ -49381,9 +49371,6 @@ var BABYLON;
                 if (this._shareOutputWithPostProcess) {
                     return this._shareOutputWithPostProcess.aspectRatio;
                 }
-                if (this._forcedOutputTexture) {
-                    var size = this._forcedOutputTexture.width / this._forcedOutputTexture.height;
-                }
                 return this.width / this.height;
             },
             enumerable: true,
@@ -49516,10 +49503,8 @@ var BABYLON;
             this._viewMatrix = BABYLON.Matrix.Zero();
             this._projectionMatrix = BABYLON.Matrix.Zero();
             this._transformMatrix = BABYLON.Matrix.Zero();
-            this._worldViewProjection = BABYLON.Matrix.Zero();
             this._currentFaceIndex = 0;
             this._currentFaceIndexCache = 0;
-            this._isCube = false;
             this._defaultTextureMatrix = BABYLON.Matrix.Identity();
             this._mapSize = mapSize;
             this._light = light;
@@ -50025,8 +50010,6 @@ var BABYLON;
          */
         ShadowGenerator.prototype.forceCompilation = function (onCompiled, options) {
             var _this = this;
-            var scene = this._scene;
-            var engine = scene.getEngine();
             var subMeshes = new Array();
             var currentIndex = 0;
             for (var _i = 0, _a = this.getShadowMap().renderList; _i < _a.length; _i++) {
@@ -51029,6 +51012,7 @@ var BABYLON;
                         BABYLON.Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
                     }
                 }
+                return false;
             },
             load: function (scene, data, rootUrl, onError) {
                 // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
@@ -51145,7 +51129,7 @@ var BABYLON;
                     if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
                         for (var _i = 0, _a = parsedData.morphTargetManagers; _i < _a.length; _i++) {
                             var managerData = _a[_i];
-                            var parsedManager = BABYLON.MorphTargetManager.Parse(managerData, scene);
+                            BABYLON.MorphTargetManager.Parse(managerData, scene);
                         }
                     }
                     // Skeletons
@@ -51279,7 +51263,7 @@ var BABYLON;
                                 }
                             }
                             else {
-                                var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
+                                new BABYLON.Sound(parsedSound.name, null, scene);
                             }
                         }
                     }
@@ -51375,6 +51359,7 @@ var BABYLON;
                         BABYLON.Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
                     }
                 }
+                return false;
             }
         });
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
@@ -51509,7 +51494,6 @@ var BABYLON;
                 for (var i = 0; i < this._filesToLoad.length; i++) {
                     var fileToLoad = this._filesToLoad[i];
                     var name_1 = fileToLoad.name.toLowerCase();
-                    var type = fileToLoad.type;
                     var entry = void 0;
                     fileToLoad.correctName = name_1;
                     if (items) {
@@ -52086,9 +52070,9 @@ var BABYLON;
                     request.onupgradeneeded = function (event) {
                         _this.db = (event.target).result;
                         try {
-                            var scenesStore = _this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
-                            var versionsStore = _this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
-                            var texturesStore = _this.db.createObjectStore("textures", { keyPath: "textureUrl" });
+                            _this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
+                            _this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
+                            _this.db.createObjectStore("textures", { keyPath: "textureUrl" });
                         }
                         catch (ex) {
                             BABYLON.Tools.Error("Error while creating object stores. Exception: " + ex.message);
@@ -52805,6 +52789,7 @@ var BABYLON;
                 var touch = this.inputs.attached["touch"];
                 if (touch)
                     return touch.touchAngularSensibility;
+                return null;
             },
             set: function (value) {
                 var touch = this.inputs.attached["touch"];
@@ -52819,6 +52804,7 @@ var BABYLON;
                 var touch = this.inputs.attached["touch"];
                 if (touch)
                     return touch.touchMoveSensibility;
+                return null;
             },
             set: function (value) {
                 var touch = this.inputs.attached["touch"];
@@ -55038,6 +55024,7 @@ var BABYLON;
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadAngularSensibility;
+                return null;
             },
             set: function (value) {
                 var gamepad = this.inputs.attached["gamepad"];
@@ -55052,6 +55039,7 @@ var BABYLON;
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadMoveSensibility;
+                return null;
             },
             set: function (value) {
                 var gamepad = this.inputs.attached["gamepad"];
@@ -55088,6 +55076,7 @@ var BABYLON;
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadAngularSensibility;
+                return null;
             },
             set: function (value) {
                 var gamepad = this.inputs.attached["gamepad"];
@@ -55102,6 +55091,7 @@ var BABYLON;
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadMoveSensibility;
+                return null;
             },
             set: function (value) {
                 var gamepad = this.inputs.attached["gamepad"];
@@ -55213,7 +55203,6 @@ var BABYLON;
 (function (BABYLON) {
     var PostProcessRenderPass = (function () {
         function PostProcessRenderPass(scene, name, size, renderList, beforeRender, afterRender) {
-            this._enabled = true;
             this._refCount = 0;
             this._name = name;
             this._renderTexture = new BABYLON.RenderTargetTexture(name, size, scene);
@@ -55303,6 +55292,7 @@ var BABYLON;
                     return this._renderPasses[passName];
                 }
             }
+            return null;
         };
         PostProcessRenderEffect.prototype.emptyPasses = function () {
             this._renderPasses = {};
@@ -55575,10 +55565,6 @@ var BABYLON;
         function DepthRenderer(scene, type) {
             if (type === void 0) { type = BABYLON.Engine.TEXTURETYPE_FLOAT; }
             var _this = this;
-            this._viewMatrix = BABYLON.Matrix.Zero();
-            this._projectionMatrix = BABYLON.Matrix.Zero();
-            this._transformMatrix = BABYLON.Matrix.Zero();
-            this._worldViewProjection = BABYLON.Matrix.Zero();
             this._scene = scene;
             var engine = scene.getEngine();
             // Render target
@@ -55650,7 +55636,6 @@ var BABYLON;
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var mesh = subMesh.getMesh();
-            var scene = mesh.getScene();
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
@@ -55839,7 +55824,6 @@ var BABYLON;
                 2.0, 4.0, 6.0, 8.0
             ];
             */
-            var samples = 16;
             var samplerOffsets = new Array();
             for (var i = -8; i < 8; i++) {
                 samplerOffsets.push(i * 2);
@@ -55892,7 +55876,6 @@ var BABYLON;
                 "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
                 "area", "fallOff", "base", "range", "viewport"
             ], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define SAMPLES " + numSamples + "\n#define SSAO");
-            var viewport = new BABYLON.Vector2(0, 0);
             this._ssaoPostProcess.onApply = function (effect) {
                 if (_this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
@@ -56135,7 +56118,6 @@ var BABYLON;
         // Private Methods
         SSAO2RenderingPipeline.prototype._createBlurPostProcess = function (ssaoRatio, blurRatio) {
             var _this = this;
-            var samples = 16;
             this._samplerOffsets = [];
             var expensive = this.expensiveBlur;
             for (var i = -8; i < 8; i++) {
@@ -56177,7 +56159,6 @@ var BABYLON;
                 return Math.random() * (max - min) + min;
             };
             var i = 0;
-            var normal = new BABYLON.Vector3(0, 0, 1);
             while (i < numSamples) {
                 vector = new BABYLON.Vector3(rand(-1.0, 1.0), rand(-1.0, 1.0), rand(0.30, 1.0));
                 vector.normalize();
@@ -57624,10 +57605,6 @@ var BABYLON;
     var GeometryBufferRenderer = (function () {
         function GeometryBufferRenderer(scene, ratio) {
             if (ratio === void 0) { ratio = 1; }
-            this._viewMatrix = BABYLON.Matrix.Zero();
-            this._projectionMatrix = BABYLON.Matrix.Zero();
-            this._transformMatrix = BABYLON.Matrix.Zero();
-            this._worldViewProjection = BABYLON.Matrix.Zero();
             this._enablePosition = false;
             this._scene = scene;
             this._ratio = ratio;
@@ -57668,7 +57645,6 @@ var BABYLON;
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.NormalKind];
             var mesh = subMesh.getMesh();
-            var scene = mesh.getScene();
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
@@ -58014,7 +57990,6 @@ var BABYLON;
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var material = subMesh.getMaterial();
-            var needUV = false;
             // Alpha test
             if (material) {
                 if (material.needAlphaTesting()) {
@@ -63086,9 +63061,6 @@ var BABYLON;
             csg.copyTransformAttributes(this);
             return csg;
         };
-        CSG.prototype.toPolygons = function () {
-            return this.polygons;
-        };
         CSG.prototype.union = function (csg) {
             var a = new Node(this.clone().polygons);
             var b = new Node(csg.clone().polygons);
@@ -63290,19 +63262,23 @@ var BABYLON;
             this.size = size;
             this.position = position;
             this.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
-            this.dispose = function () {
-                if (this.texture) {
-                    this.texture.dispose();
-                }
-                // Remove from scene
-                var index = this._system.lensFlares.indexOf(this);
-                this._system.lensFlares.splice(index, 1);
-            };
             this.color = color || new BABYLON.Color3(1, 1, 1);
             this.texture = imgUrl ? new BABYLON.Texture(imgUrl, system.getScene(), true) : null;
             this._system = system;
             system.lensFlares.push(this);
         }
+        LensFlare.AddFlare = function (size, position, color, imgUrl, system) {
+            return new LensFlare(size, position, color, imgUrl, system);
+        };
+        LensFlare.prototype.dispose = function () {
+            if (this.texture) {
+                this.texture.dispose();
+            }
+            // Remove from scene
+            var index = this._system.lensFlares.indexOf(this);
+            this._system.lensFlares.splice(index, 1);
+        };
+        ;
         return LensFlare;
     }());
     BABYLON.LensFlare = LensFlare;
@@ -63519,7 +63495,7 @@ var BABYLON;
             lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
                 var parsedFlare = parsedLensFlareSystem.flares[index];
-                var flare = new BABYLON.LensFlare(parsedFlare.size, parsedFlare.position, BABYLON.Color3.FromArray(parsedFlare.color), parsedFlare.textureName ? rootUrl + parsedFlare.textureName : "", lensFlareSystem);
+                BABYLON.LensFlare.AddFlare(parsedFlare.size, parsedFlare.position, BABYLON.Color3.FromArray(parsedFlare.color), parsedFlare.textureName ? rootUrl + parsedFlare.textureName : "", lensFlareSystem);
             }
             return lensFlareSystem;
         };
@@ -63877,7 +63853,7 @@ var BABYLON;
                 var parentMesh = this.object.parent;
                 return parentMesh.physicsImpostor;
             }
-            return;
+            return null;
         };
         /**
          * Should a new body be generated.
@@ -64370,6 +64346,7 @@ var BABYLON;
                     return this._impostors[i];
                 }
             }
+            return null;
         };
         PhysicsEngine.prototype.getImpostorWithPhysicsBody = function (body) {
             for (var i = 0; i < this._impostors.length; ++i) {
@@ -64377,6 +64354,7 @@ var BABYLON;
                     return this._impostors[i];
                 }
             }
+            return null;
         };
         // Statics
         PhysicsEngine.Epsilon = 0.001;
@@ -64398,14 +64376,11 @@ var BABYLON;
             this._physicsMaterials = new Array();
             this._fixedTimeStep = 1 / 60;
             //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
-            this._currentCollisionGroup = 2;
             this.BJSCANNON = typeof CANNON !== 'undefined' ? CANNON : (typeof require !== 'undefined' ? require('cannon') : undefined);
             this._minus90X = new BABYLON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
             this._plus90X = new BABYLON.Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
             this._tmpPosition = BABYLON.Vector3.Zero();
-            this._tmpQuaternion = new BABYLON.Quaternion();
             this._tmpDeltaPosition = BABYLON.Vector3.Zero();
-            this._tmpDeltaRotation = new BABYLON.Quaternion();
             this._tmpUnityRotation = new BABYLON.Quaternion();
             if (!this.isSupported()) {
                 BABYLON.Tools.Error("CannonJS is not available. Please make sure you included the js file.");
@@ -64794,16 +64769,16 @@ var BABYLON;
         CannonJSPlugin.prototype.updateDistanceJoint = function (joint, maxDistance, minDistance) {
             joint.physicsJoint.distance = maxDistance;
         };
-        CannonJSPlugin.prototype.enableMotor = function (joint, motorIndex) {
-            if (!motorIndex) {
-                joint.physicsJoint.enableMotor();
-            }
-        };
-        CannonJSPlugin.prototype.disableMotor = function (joint, motorIndex) {
-            if (!motorIndex) {
-                joint.physicsJoint.disableMotor();
-            }
-        };
+        // private enableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
+        //     if (!motorIndex) {
+        //         joint.physicsJoint.enableMotor();
+        //     }
+        // }
+        // private disableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
+        //     if (!motorIndex) {
+        //         joint.physicsJoint.disableMotor();
+        //     }
+        // }
         CannonJSPlugin.prototype.setMotor = function (joint, speed, maxForce, motorIndex) {
             if (!motorIndex) {
                 joint.physicsJoint.enableMotor();
@@ -65295,7 +65270,7 @@ var BABYLON;
                         break;
                 }
                 var pixel_data;
-                var numAlphaBits = header.flags & 0xf;
+                // var numAlphaBits = header.flags & 0xf;
                 var pixel_size = header.pixel_size >> 3;
                 var pixel_total = header.width * header.height * pixel_size;
                 // Read palettes
@@ -65471,7 +65446,7 @@ var BABYLON;
                 }
                 return imageData;
             };
-            TGATools._TYPE_NO_DATA = 0;
+            //private static _TYPE_NO_DATA = 0;
             TGATools._TYPE_INDEXED = 1;
             TGATools._TYPE_RGB = 2;
             TGATools._TYPE_GREY = 3;
@@ -65500,10 +65475,32 @@ var BABYLON;
         // All values and structures referenced from:
         // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
         var DDS_MAGIC = 0x20534444;
-        var DDSD_CAPS = 0x1, DDSD_HEIGHT = 0x2, DDSD_WIDTH = 0x4, DDSD_PITCH = 0x8, DDSD_PIXELFORMAT = 0x1000, DDSD_MIPMAPCOUNT = 0x20000, DDSD_LINEARSIZE = 0x80000, DDSD_DEPTH = 0x800000;
-        var DDSCAPS_COMPLEX = 0x8, DDSCAPS_MIPMAP = 0x400000, DDSCAPS_TEXTURE = 0x1000;
-        var DDSCAPS2_CUBEMAP = 0x200, DDSCAPS2_CUBEMAP_POSITIVEX = 0x400, DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800, DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000, DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000, DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000, DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000, DDSCAPS2_VOLUME = 0x200000;
-        var DDPF_ALPHAPIXELS = 0x1, DDPF_ALPHA = 0x2, DDPF_FOURCC = 0x4, DDPF_RGB = 0x40, DDPF_YUV = 0x200, DDPF_LUMINANCE = 0x20000;
+        var 
+        //DDSD_CAPS = 0x1,
+        //DDSD_HEIGHT = 0x2,
+        //DDSD_WIDTH = 0x4,
+        //DDSD_PITCH = 0x8,
+        //DDSD_PIXELFORMAT = 0x1000,
+        DDSD_MIPMAPCOUNT = 0x20000;
+        //DDSD_LINEARSIZE = 0x80000,
+        //DDSD_DEPTH = 0x800000;
+        // var DDSCAPS_COMPLEX = 0x8,
+        //     DDSCAPS_MIPMAP = 0x400000,
+        //     DDSCAPS_TEXTURE = 0x1000;
+        var DDSCAPS2_CUBEMAP = 0x200;
+        // DDSCAPS2_CUBEMAP_POSITIVEX = 0x400,
+        // DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800,
+        // DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000,
+        // DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000,
+        // DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000,
+        // DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000,
+        // DDSCAPS2_VOLUME = 0x200000;
+        var 
+        //DDPF_ALPHAPIXELS = 0x1,
+        //DDPF_ALPHA = 0x2,
+        DDPF_FOURCC = 0x4, DDPF_RGB = 0x40, 
+        //DDPF_YUV = 0x200,
+        DDPF_LUMINANCE = 0x20000;
         function FourCCToInt32(value) {
             return value.charCodeAt(0) +
                 (value.charCodeAt(1) << 8) +
@@ -65532,14 +65529,14 @@ var BABYLON;
         var off_pfFlags = 20;
         var off_pfFourCC = 21;
         var off_RGBbpp = 22;
-        var off_RMask = 23;
-        var off_GMask = 24;
-        var off_BMask = 25;
-        var off_AMask = 26;
-        var off_caps1 = 27;
+        // var off_RMask = 23;
+        // var off_GMask = 24;
+        // var off_BMask = 25;
+        // var off_AMask = 26;
+        // var off_caps1 = 27;
         var off_caps2 = 28;
-        var off_caps3 = 29;
-        var off_caps4 = 30;
+        // var off_caps3 = 29;
+        // var off_caps4 = 30;
         var off_dxgiFormat = 32;
         ;
         var DDSTools = (function () {
@@ -66870,8 +66867,6 @@ var BABYLON;
                 return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
             };
             PhysicsViewer.prototype._getDebugMesh = function (impostor, scene) {
-                var body = impostor.physicsBody;
-                var shape = body.shapes[0];
                 var mesh;
                 if (impostor.type == BABYLON.PhysicsImpostor.BoxImpostor) {
                     mesh = this._getDebugBoxMesh(scene);
@@ -67264,9 +67259,6 @@ var BABYLON;
                 serializationObject.targets.push(target.serialize());
             }
             return serializationObject;
-        };
-        MorphTargetManager.prototype._onInfluenceChanged = function (needUpdate) {
-            this._syncActiveTargets(needUpdate);
         };
         MorphTargetManager.prototype._syncActiveTargets = function (needUpdate) {
             var influenceCount = 0;
@@ -67951,7 +67943,6 @@ var BABYLON;
             window.addEventListener("deviceorientation", this._deviceOrientationHandler);
         };
         ArcRotateCameraVRDeviceOrientationInput.prototype._onOrientationEvent = function (evt) {
-            var camera = this.camera;
             this._alpha = +evt.alpha | 0;
             this._beta = +evt.beta | 0;
             this._gamma = +evt.gamma | 0;
@@ -68072,7 +68063,6 @@ var BABYLON;
             _this.rawPose = null;
             _this._specsVersion = "1.1";
             _this._attached = false;
-            _this._positionOffset = BABYLON.Vector3.Zero();
             _this._descendants = [];
             _this.devicePosition = BABYLON.Vector3.Zero();
             _this.deviceScaleFactor = 1;
@@ -69091,14 +69081,6 @@ var BABYLON;
                     break;
             }
         };
-        VirtualJoystick.prototype._clearCanvas = function () {
-            if (this._leftJoystick) {
-                VirtualJoystick.vjCanvasContext.clearRect(0, 0, VirtualJoystick.vjCanvasWidth / 2, VirtualJoystick.vjCanvasHeight);
-            }
-            else {
-                VirtualJoystick.vjCanvasContext.clearRect(VirtualJoystick.vjCanvasWidth / 2, 0, VirtualJoystick.vjCanvasWidth, VirtualJoystick.vjCanvasHeight);
-            }
-        };
         VirtualJoystick.prototype._drawVirtualJoystick = function () {
             var _this = this;
             if (this.pressed) {
@@ -69442,29 +69424,6 @@ var BABYLON;
                 }, 0);
             });
         };
-        QuadraticErrorSimplification.prototype.isTriangleOnBoundingBox = function (triangle) {
-            var _this = this;
-            var gCount = 0;
-            triangle.vertices.forEach(function (vertex) {
-                var count = 0;
-                var vPos = vertex.position;
-                var bbox = _this._mesh.getBoundingInfo().boundingBox;
-                if (bbox.maximum.x - vPos.x < _this.boundingBoxEpsilon || vPos.x - bbox.minimum.x > _this.boundingBoxEpsilon)
-                    ++count;
-                if (bbox.maximum.y === vPos.y || vPos.y === bbox.minimum.y)
-                    ++count;
-                if (bbox.maximum.z === vPos.z || vPos.z === bbox.minimum.z)
-                    ++count;
-                if (count > 1) {
-                    ++gCount;
-                }
-                ;
-            });
-            if (gCount > 1) {
-                console.log(triangle, gCount);
-            }
-            return gCount > 1;
-        };
         QuadraticErrorSimplification.prototype.runDecimation = function (settings, submeshIndex, successCallback) {
             var _this = this;
             var targetCount = ~~(this.triangles.length * settings.quality);
@@ -69708,9 +69667,9 @@ var BABYLON;
             if (submeshIndex > 0) {
                 this._reconstructedMesh.subMeshes = [];
                 submeshesArray.forEach(function (submesh) {
-                    new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, /* 0, newPositionData.length/3, */ submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                    BABYLON.SubMesh.AddToMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, /* 0, newPositionData.length/3, */ submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, /* 0, newPositionData.length / 3, */ startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+                BABYLON.SubMesh.AddToMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, /* 0, newPositionData.length / 3, */ startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         };
         QuadraticErrorSimplification.prototype.initDecimatedMesh = function () {
@@ -72641,12 +72600,10 @@ var BABYLON;
             this._zoomStopsAnimation = false;
             this._framingTime = 1500;
             this._isPointerDown = false;
-            this._lastFrameTime = null;
             this._lastInteractionTime = -Infinity;
             // Framing control
             this._animatables = new Array();
             this._betaIsAnimating = false;
-            this._lastFrameRadius = 0;
         }
         Object.defineProperty(FramingBehavior.prototype, "name", {
             get: function () {
@@ -72868,7 +72825,6 @@ var BABYLON;
             this._animatables.push(BABYLON.Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 60, this._vectorTransition, this._framingTime));
             // sets the radius and lower radius bounds
             // Small delta ensures camera is not always at lower zoom limit.
-            var delta = 0.1;
             var radius = 0;
             if (this._mode === FramingBehavior.FitFrustumSidesMode) {
                 var position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
@@ -73454,10 +73410,6 @@ var BABYLON;
             return this._options.renderHeight;
         };
         NullEngine.prototype.setViewport = function (viewport, requiredWidth, requiredHeight) {
-            var width = requiredWidth || this.getRenderWidth();
-            var height = requiredHeight || this.getRenderHeight();
-            var x = viewport.x || 0;
-            var y = viewport.y || 0;
             this._cachedViewport = viewport;
         };
         NullEngine.prototype.createShaderProgram = function (vertexCode, fragmentCode, defines, context) {

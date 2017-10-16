@@ -6,7 +6,7 @@
     */
     export class TGATools {
 
-        private static _TYPE_NO_DATA = 0;
+        //private static _TYPE_NO_DATA = 0;
         private static _TYPE_INDEXED = 1;
         private static _TYPE_RGB = 2;
         private static _TYPE_GREY = 3;
@@ -91,7 +91,7 @@
 
             var pixel_data;
 
-            var numAlphaBits = header.flags & 0xf;
+           // var numAlphaBits = header.flags & 0xf;
             var pixel_size = header.pixel_size >> 3;
             var pixel_total = header.width * header.height * pixel_size;
 

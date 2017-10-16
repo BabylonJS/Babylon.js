@@ -1,4 +1,5 @@
-var BABYLON = BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
+var babylonDependency; try { babylonDependency = (typeof require !== 'undefined' && require("../babylon.max")); } catch (e) { babylonDependency = (typeof require !== 'undefined' && require("babylonjs")); } 
+var BABYLON = BABYLON || babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -16,7 +17,6 @@ var __extends = (this && this.__extends) || (function () {
             };
         })();
         
-
 
 var BABYLON;
 (function (BABYLON) {
@@ -39,10 +39,7 @@ var BABYLON;
     var ShadowOnlyMaterial = (function (_super) {
         __extends(ShadowOnlyMaterial, _super);
         function ShadowOnlyMaterial(name, scene) {
-            var _this = _super.call(this, name, scene) || this;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._scaledDiffuse = new BABYLON.Color3();
-            return _this;
+            return _super.call(this, name, scene) || this;
         }
         ShadowOnlyMaterial.prototype.needAlphaBlending = function () {
             return true;
@@ -209,9 +206,6 @@ var BABYLON;
         ShadowOnlyMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new ShadowOnlyMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serialize()
-        ], ShadowOnlyMaterial.prototype, "_worldViewProjectionMatrix", void 0);
         return ShadowOnlyMaterial;
     }(BABYLON.PushMaterial));
     BABYLON.ShadowOnlyMaterial = ShadowOnlyMaterial;
@@ -298,7 +292,6 @@ var BABYLON;
             _this.offset = 0;
             _this.smoothness = 1.0;
             _this.disableLighting = false;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
@@ -566,8 +559,6 @@ var BABYLON;
             _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
         NormalMaterial.prototype.needAlphaBlending = function () {
@@ -875,7 +866,6 @@ var BABYLON;
             _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
@@ -1186,8 +1176,6 @@ var BABYLON;
             _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
         SimpleMaterial.prototype.needAlphaBlending = function () {
@@ -2375,7 +2363,6 @@ var BABYLON;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
             _this.highLevelFur = true;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._furTime = 0;
             return _this;
         }
@@ -2825,7 +2812,6 @@ var BABYLON;
             _this.specularPower = 64;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             return _this;
         }
         TerrainMaterial.prototype.needAlphaBlending = function () {
@@ -3213,7 +3199,6 @@ var BABYLON;
             _this.specularPower = 64;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             return _this;
         }
         TriPlanarMaterial.prototype.needAlphaBlending = function () {
@@ -3615,7 +3600,6 @@ var BABYLON;
                     return true;
                 }
             }
-            var engine = scene.getEngine();
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
@@ -3851,7 +3835,6 @@ var BABYLON;
                     return true;
                 }
             }
-            var engine = scene.getEngine();
             if (defines.TRANSPARENT !== (this.opacity < 1.0)) {
                 defines.TRANSPARENT = !defines.TRANSPARENT;
                 defines.markAsUnprocessed();
@@ -4742,10 +4725,10 @@ var BABYLON;
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             }
                             else {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? -1.0 : 1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
                         if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
@@ -6041,8 +6024,6 @@ var BABYLON;
             _this._computeHighLevel = false;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
         CellMaterial.prototype.needAlphaBlending = function () {
@@ -6636,13 +6617,11 @@ var BABYLON;
              */
             _this.twoSidedLighting = false;
             _this._renderTargets = new BABYLON.SmartArray(16);
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
             _this._tempColor = new BABYLON.Color3();
             _this._defines = new LegacyPBRMaterialDefines();
             _this._cachedDefines = new LegacyPBRMaterialDefines();
             _this._myScene = null;
-            _this._myShadowGenerator = null;
             _this._cachedDefines.BonesPerMesh = -1;
             _this.getRenderTargetTextures = function () {
                 _this._renderTargets.reset();
@@ -6736,6 +6715,7 @@ var BABYLON;
             }
         };
         LegacyPBRMaterial.prototype.isReady = function (mesh, useInstances) {
+            var _this = this;
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -7135,11 +7115,11 @@ var BABYLON;
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
                 var onCompiled = function (effect) {
-                    if (this.onCompiled) {
-                        this.onCompiled(effect);
+                    if (_this.onCompiled) {
+                        _this.onCompiled(effect);
                     }
-                    this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
+                    _this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                };
                 this._effect = scene.getEngine().createEffect("legacyPbr", {
                     attributes: attribs,
                     uniformsNames: uniforms,

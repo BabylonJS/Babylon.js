@@ -139,7 +139,6 @@ declare module BABYLON.GUI {
         private _font;
         _width: ValueAndUnit;
         _height: ValueAndUnit;
-        private _lastMeasuredFont;
         protected _fontOffset: {
             ascent: number;
             height: number;
@@ -395,7 +394,6 @@ declare module BABYLON.GUI {
     class Line extends Control {
         name: string;
         private _lineWidth;
-        private _background;
         private _x1;
         private _y1;
         private _x2;
@@ -501,12 +499,10 @@ declare module BABYLON.GUI {
     class TextBlock extends Control {
         name: string;
         private _text;
-        private _textY;
         private _textWrapping;
         private _textHorizontalAlignment;
         private _textVerticalAlignment;
         private _lines;
-        private _totalHeight;
         private _resizeToFit;
         /**
         * An event triggered after the text is changed

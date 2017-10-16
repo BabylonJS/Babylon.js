@@ -114,7 +114,7 @@ module INSPECTOR{
                 if(treeItem.correspondsTo(object)) {
                     return treeItem;
                 }
-                else{
+                else {
                     if(treeItem.children.length > 0){
                         for (let item of treeItem.children) {
                             let it = searchObjectInTree(obj, item);
@@ -123,10 +123,12 @@ module INSPECTOR{
                             }
                         }
                     }
-                    else{
+                    else {
                         return null;
                     }
                 } 
+
+                return null;
             }
 
             for (let item of this._treeItems) {

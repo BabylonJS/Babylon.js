@@ -4,7 +4,6 @@ module BABYLON {
     export class GroundMesh extends Mesh {
         public generateOctree = false;
 
-        private _worldInverse = new Matrix();
         private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
         
         public _subdivisionsX: number;
@@ -124,8 +123,6 @@ module BABYLON {
         // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
         private _getFacetAt(x: number, z: number): Vector4 {
             // retrieve col and row from x, z coordinates in the ground local system
-            var subdivisionsX = this._subdivisionsX;
-            var subdivisionsY = this._subdivisionsY;
             var col = Math.floor((x + this._maxX) * this._subdivisionsX / this._width);
             var row = Math.floor(-(z + this._maxZ) * this._subdivisionsY / this._height + this._subdivisionsY);
             var quad = this._heightQuads[row * this._subdivisionsX + col];

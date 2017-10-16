@@ -4,8 +4,9 @@ var through = require('through2');
 module.exports = function (varName, subModule, extendsRoot) {
     return through.obj(function (file, enc, cb) {
 
-        var optionalRequire = 'var BABYLON = BABYLON || (typeof require !== \'undefined\' && require("babylonjs"));\n'
-
+        var optionalRequire = `var babylonDependency; try { babylonDependency = (typeof require !== 'undefined' && require("../babylon.max")); } catch (e) { babylonDependency = (typeof require !== 'undefined' && require("babylonjs")); } 
+var BABYLON = BABYLON || babylonDependency;
+`
         function moduleExportAddition(varName) {
 
             let basicInit = `root["BABYLON"]${(subModule && !extendsRoot) ? '["' + varName + '"]' : ''} = factory();`;

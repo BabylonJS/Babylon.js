@@ -17,10 +17,6 @@ module BABYLON {
     }
 
     export class ShadowOnlyMaterial extends PushMaterial {
-        @serialize()
-
-        private _worldViewProjectionMatrix = Matrix.Zero();
-        private _scaledDiffuse = new Color3();
         private _renderId: number;
         private _activeLight: IShadowLight;
 

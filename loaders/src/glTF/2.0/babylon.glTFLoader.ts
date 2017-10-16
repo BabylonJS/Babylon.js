@@ -20,7 +20,11 @@ module BABYLON.GLTF2 {
         }
     }
 
-    interface TypedArrayConstructor<T extends ArrayBufferView> {
+    interface TypedArray extends ArrayBufferView {
+        [index: number]: number;
+    }
+
+    interface TypedArrayConstructor<T extends TypedArray> {
         readonly prototype: T;
         new(length: number): T;
         new(array: ArrayLike<number>): T;
@@ -263,7 +267,7 @@ module BABYLON.GLTF2 {
                 throw new Error("Failed to find scene " + (this._gltf.scene || 0));
             }
 
-            this._loadScene("scenes[" + scene.index + "]", scene, nodeNames);
+            this._loadScene("#/scenes/" + scene.index, scene, nodeNames);
         }
 
         private _loadScene(context: string, scene: IGLTFScene, nodeNames: any): void {
@@ -318,7 +322,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find node " + nodeIndices[i]);
                 }
 
-                this._loadNode("nodes[" + nodeIndices[i] + "]", node);
+                this._loadNode("#/nodes/" + nodeIndices[i], node);
             }
 
             // Disable the root mesh until the asset is ready to render.
@@ -340,7 +344,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find mesh " + node.mesh);
                 }
 
-                this._loadMesh("meshes[" + node.mesh + "]", node, mesh);
+                this._loadMesh("#/meshes/" + node.mesh, node, mesh);
             }
 
             node.babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
@@ -354,7 +358,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find skin " + node.skin);
                 }
 
-                node.babylonMesh.skeleton = this._loadSkin("skins[" + node.skin + "]", skin);
+                node.babylonMesh.skeleton = this._loadSkin("#/skins/" + node.skin, skin);
             }
 
             if (node.camera != null) {
@@ -368,7 +372,7 @@ module BABYLON.GLTF2 {
                         throw new Error(context + ": Failed to find child node " + node.children[i]);
                     }
 
-                    this._loadNode("nodes[" + node.children[i] + "]", childNode);
+                    this._loadNode("#/nodes/" + node.children[i], childNode);
                 }
             }
         }
@@ -389,7 +393,7 @@ module BABYLON.GLTF2 {
 
             for (var index = 0; index < mesh.primitives.length; index++) {
                 var primitive = mesh.primitives[index];
-                this._loadPrimitive(context + "/primitives[" + index + "]", node, mesh, primitive, (subVertexData, loadMaterial) => {
+                this._loadPrimitive(context + "/primitives/" + index, node, mesh, primitive, (subVertexData, loadMaterial) => {
                     subMeshInfos.push({
                         verticesStart: vertexData.positions.length,
                         verticesCount: subVertexData.positions.length,
@@ -409,7 +413,7 @@ module BABYLON.GLTF2 {
 
                         for (var index = 0; index < subMeshInfos.length; index++) {
                             var info = subMeshInfos[index];
-                            new SubMesh(index, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, node.babylonMesh);
+                            SubMesh.AddToMesh(index, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, node.babylonMesh);
                             info.loadMaterial(index);
                         }
                     }
@@ -440,7 +444,7 @@ module BABYLON.GLTF2 {
                             throw new Error(context + ": Failed to find material " + primitive.material);
                         }
 
-                        this._loadMaterial("materials[" + material.index + "]", material, (babylonMaterial, isNew) => {
+                        this._loadMaterial("#/materials/" + material.index, material, (babylonMaterial, isNew) => {
                             if (isNew && this._parent.onMaterialLoaded) {
                                 this._parent.onMaterialLoaded(babylonMaterial);
                             }
@@ -477,7 +481,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
                 }
 
-                this._loadAccessorAsync("accessors[" + accessor.index + "]", accessor, data => {
+                this._loadAccessorAsync("#/accessors/" + accessor.index, accessor, data => {
                     switch (attribute) {
                         case "NORMAL":
                             vertexData.normals = <Float32Array>data;
@@ -520,7 +524,7 @@ module BABYLON.GLTF2 {
                                 throw new Error(context + ": Failed to find indices accessor " + primitive.indices);
                             }
 
-                            this._loadAccessorAsync("accessors[" + indicesAccessor.index + "]", indicesAccessor, data => {
+                            this._loadAccessorAsync("#/accessors/" + indicesAccessor.index, indicesAccessor, data => {
                                 vertexData.indices = <IndicesArray>data;
                                 onSuccess(vertexData);
                             });
@@ -558,10 +562,10 @@ module BABYLON.GLTF2 {
                 for (let attribute in attributes) {
                     var accessor = GLTFUtils.GetArrayItem(this._gltf.accessors, attributes[attribute]);
                     if (!accessor) {
-                        throw new Error(context + "/targets[" + index + "]: Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
+                        throw new Error(context + "/targets/" + index + ": Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
                     }
 
-                    this._loadAccessorAsync("accessors[" + accessor.index + "]", accessor, data => {
+                    this._loadAccessorAsync("#/accessors/" + accessor.index, accessor, data => {
                         if (accessor.name) {
                             babylonMorphTarget.name = accessor.name;
                         }
@@ -632,7 +636,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find inverse bind matrices attribute " + skin.inverseBindMatrices);
                 }
 
-                this._loadAccessorAsync("accessors[" + accessor.index + "]", accessor, data => {
+                this._loadAccessorAsync("#/accessors/" + accessor.index, accessor, data => {
                     this._loadBones(context, skin, <Float32Array>data);
                 });
             }
@@ -731,7 +735,7 @@ module BABYLON.GLTF2 {
 
             for (var animationIndex = 0; animationIndex < animations.length; animationIndex++) {
                 var animation = animations[animationIndex];
-                var context = "animations[" + animationIndex + "]";
+                var context = "#/animations/" + animationIndex;
                 for (var channelIndex = 0; channelIndex < animation.channels.length; channelIndex++) {
                     var channel = GLTFUtils.GetArrayItem(animation.channels, channelIndex);
                     if (!channel) {
@@ -744,8 +748,8 @@ module BABYLON.GLTF2 {
                     }
 
                     this._loadAnimationChannel(animation,
-                        context + "/channels[" + channelIndex + "]", channel,
-                        context + "/samplers[" + channel.sampler + "]", sampler);
+                        context + "/channels/" + channelIndex, channel,
+                        context + "/samplers/" + channel.sampler, sampler);
                 }
             }
         }
@@ -756,24 +760,28 @@ module BABYLON.GLTF2 {
                 throw new Error(channelContext + ": Failed to find target node " + channel.target.node);
             }
 
-            var conversion:any = {
-                "translation": "position",
-                "rotation": "rotationQuaternion",
-                "scale": "scaling",
-                "weights": "influence"
+            var targetPath: string;
+            var animationType: number;
+            switch (channel.target.path) {
+                case "translation":
+                    targetPath = "position";
+                    animationType = Animation.ANIMATIONTYPE_VECTOR3;
+                    break;
+                case "rotation":
+                    targetPath = "rotationQuaternion";
+                    animationType = Animation.ANIMATIONTYPE_QUATERNION;
+                    break;
+                case "scale":
+                    targetPath = "scaling";
+                    animationType = Animation.ANIMATIONTYPE_VECTOR3;
+                    break;
+                case "weights":
+                    targetPath = "influence";
+                    animationType = Animation.ANIMATIONTYPE_FLOAT;
+                    break;
+                default:
+                    throw new Error(channelContext + ": Invalid target path '" + channel.target.path + "'");
             }
-            var targetPath = conversion[channel.target.path];
-            if (!targetPath) {
-                throw new Error(channelContext + ": Invalid target path '" + channel.target.path + "'");
-            }
-
-            var animationConvertion: any = {
-                "position": Animation.ANIMATIONTYPE_VECTOR3,
-                "rotationQuaternion": Animation.ANIMATIONTYPE_QUATERNION,
-                "scaling": Animation.ANIMATIONTYPE_VECTOR3,
-                "influence": Animation.ANIMATIONTYPE_FLOAT,
-            }
-            var animationType = animationConvertion[targetPath];
 
             var inputData: Float32Array;
             var outputData: Float32Array;
@@ -785,50 +793,60 @@ module BABYLON.GLTF2 {
 
                 var outputBufferOffset = 0;
 
-                var nextOutputConversion: any = {
-                    "position": () => {
-                        var value = Vector3.FromArray(outputData, outputBufferOffset);
-                        outputBufferOffset += 3;
-                        return value;
-                    },
-                    "rotationQuaternion": () => {
-                        var value = Quaternion.FromArray(outputData, outputBufferOffset);
-                        outputBufferOffset += 4;
-                        return value;
-                    },
-                    "scaling": () => {
-                        var value = Vector3.FromArray(outputData, outputBufferOffset);
-                        outputBufferOffset += 3;
-                        return value;
-                    },
-                    "influence": () => {
-                        var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
-                        var value = new Array(numTargets);
-                        for (var i = 0; i < numTargets; i++) {
-                            value[i] = outputData[outputBufferOffset++];
-                        }
-                        return value;
-                    },
-                };
-                
-                var getNextOutputValue: () => any = nextOutputConversion[targetPath];
-
-                var nextKeyConversion: any = {
-                    "LINEAR": (frameIndex: number) => ({
-                        frame: inputData[frameIndex],
-                        value: getNextOutputValue()
-                    }),
-                    "CUBICSPLINE": (frameIndex: number) => ({
-                        frame: inputData[frameIndex],
-                        inTangent: getNextOutputValue(),
-                        value: getNextOutputValue(),
-                        outTangent: getNextOutputValue()
-                    }),
-                };
-                var getNextKey: (frameIndex: number) => any = nextKeyConversion[sampler.interpolation];
-                if (!getNextKey) {
-                    throw new Error(samplerContext + ": Invalid interpolation '" + sampler.interpolation + "'");
+                var getNextOutputValue: () => any;
+                switch (targetPath) {
+                    case "position":
+                        getNextOutputValue = () => {
+                            var value = Vector3.FromArray(outputData, outputBufferOffset);
+                            outputBufferOffset += 3;
+                            return value;
+                        };
+                        break;
+                    case "rotationQuaternion":
+                        getNextOutputValue = () => {
+                            var value = Quaternion.FromArray(outputData, outputBufferOffset);
+                            outputBufferOffset += 4;
+                            return value;
+                        };
+                        break;
+                    case "scaling":
+                        getNextOutputValue = () => {
+                            var value = Vector3.FromArray(outputData, outputBufferOffset);
+                            outputBufferOffset += 3;
+                            return value;
+                        };
+                        break;
+                    case "influence":
+                        getNextOutputValue = () => {
+                            var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
+                            var value = new Array(numTargets);
+                            for (var i = 0; i < numTargets; i++) {
+                                value[i] = outputData[outputBufferOffset++];
+                            }
+                            return value;
+                        };
+                        break;
                 }
+
+                var getNextKey: (frameIndex: number) => any;
+                switch (sampler.interpolation) {
+                    case "LINEAR":
+                        getNextKey = frameIndex => ({
+                            frame: inputData[frameIndex],
+                            value: getNextOutputValue()
+                        });
+                        break;
+                    case "CUBICSPLINE":
+                        getNextKey = frameIndex => ({
+                            frame: inputData[frameIndex],
+                            inTangent: getNextOutputValue(),
+                            value: getNextOutputValue(),
+                            outTangent: getNextOutputValue()
+                        });
+                        break;
+                    default:
+                        throw new Error(samplerContext + ": Invalid interpolation '" + sampler.interpolation + "'");
+                };
 
                 var keys = new Array(inputData.length);
                 for (var frameIndex = 0; frameIndex < inputData.length; frameIndex++) {
@@ -873,7 +891,7 @@ module BABYLON.GLTF2 {
                 throw new Error(samplerContext + ": Failed to find input accessor " + sampler.input);
             }
 
-            this._loadAccessorAsync("accessors[" + inputAccessor.index + "]", inputAccessor, data => {
+            this._loadAccessorAsync("#/accessors/" + inputAccessor.index, inputAccessor, data => {
                 inputData = <Float32Array>data;
                 checkSuccess();
             });
@@ -883,7 +901,7 @@ module BABYLON.GLTF2 {
                 throw new Error(samplerContext + ": Failed to find output accessor " + sampler.output);
             }
 
-            this._loadAccessorAsync("accessors[" + outputAccessor.index + "]", outputAccessor, data => {
+            this._loadAccessorAsync("#/accessors/" + outputAccessor.index, outputAccessor, data => {
                 outputData = <Float32Array>data;
                 checkSuccess();
             });
@@ -949,7 +967,7 @@ module BABYLON.GLTF2 {
                 throw new Error(context + ": Failed to find buffer " + bufferView.buffer);
             }
 
-            this._loadBufferAsync("buffers[" + buffer.index + "]", buffer, bufferData => {
+            this._loadBufferAsync("#/buffers/" + buffer.index, buffer, bufferData => {
                 if (this._disposed) {
                     return;
                 }
@@ -979,7 +997,7 @@ module BABYLON.GLTF2 {
                 throw new Error(context + ": Failed to find buffer view " + accessor.bufferView);
             }
 
-            this._loadBufferViewAsync("bufferViews[" + bufferView.index + "]", bufferView, bufferViewData => {
+            this._loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView, bufferViewData => {
                 var numComponents = this._getNumComponentsOfType(accessor.type);
                 if (numComponents === 0) {
                     throw new Error(context + ": Invalid type (" + accessor.type + ")");
@@ -1027,7 +1045,7 @@ module BABYLON.GLTF2 {
             return 0;
         }
 
-        private _buildArrayBuffer<T extends ArrayBufferView>(typedArray: TypedArrayConstructor<T>, context: string, data: ArrayBufferView, byteOffset: number, count: number, numComponents: number, byteStride: number): T {
+        private _buildArrayBuffer<T extends TypedArray>(typedArray: TypedArrayConstructor<T>, context: string, data: ArrayBufferView, byteOffset: number, count: number, numComponents: number, byteStride: number): T {
             try {
                 var byteOffset = data.byteOffset + (byteOffset || 0);
                 var targetLength = count * numComponents;
@@ -1044,7 +1062,7 @@ module BABYLON.GLTF2 {
 
                 while (targetIndex < targetLength) {
                     for (var componentIndex = 0; componentIndex < numComponents; componentIndex++) {
-                        (<any>targetBuffer)[targetIndex] = (<any>sourceBuffer)[sourceIndex + componentIndex];
+                        targetBuffer[targetIndex] = sourceBuffer[sourceIndex + componentIndex];
                         targetIndex++;
                     }
                     sourceIndex += elementStride;
@@ -1144,7 +1162,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find base color texture " + properties.baseColorTexture.index);
                 }
 
-                babylonMaterial.albedoTexture = this._loadTexture("textures[" + texture.index + "]", texture, properties.baseColorTexture.texCoord);
+                babylonMaterial.albedoTexture = this._loadTexture("#/textures/" + texture.index, texture, properties.baseColorTexture.texCoord);
             }
 
             if (properties.metallicRoughnessTexture) {
@@ -1153,7 +1171,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find metallic roughness texture " + properties.metallicRoughnessTexture.index);
                 }
 
-                babylonMaterial.metallicTexture = this._loadTexture("textures[" + texture.index + "]", texture, properties.metallicRoughnessTexture.texCoord);
+                babylonMaterial.metallicTexture = this._loadTexture("#/textures/" + texture.index, texture, properties.metallicRoughnessTexture.texCoord);
                 babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
                 babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
                 babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
@@ -1199,7 +1217,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find normal texture " + material.normalTexture.index);
                 }
 
-                babylonMaterial.bumpTexture = this._loadTexture("textures[" + texture.index + "]", texture, material.normalTexture.texCoord);
+                babylonMaterial.bumpTexture = this._loadTexture("#/textures/" + texture.index, texture, material.normalTexture.texCoord);
                 babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
                 babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
                 if (material.normalTexture.scale != null) {
@@ -1213,7 +1231,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find occlusion texture " + material.occlusionTexture.index);
                 }
 
-                babylonMaterial.ambientTexture = this._loadTexture("textures[" + texture.index + "]", texture, material.occlusionTexture.texCoord);
+                babylonMaterial.ambientTexture = this._loadTexture("#/textures/" + texture.index, texture, material.occlusionTexture.texCoord);
                 babylonMaterial.useAmbientInGrayScale = true;
                 if (material.occlusionTexture.strength != null) {
                     babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
@@ -1226,7 +1244,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find emissive texture " + material.emissiveTexture.index);
                 }
 
-                babylonMaterial.emissiveTexture = this._loadTexture("textures[" + texture.index + "]", texture, material.emissiveTexture.texCoord);
+                babylonMaterial.emissiveTexture = this._loadTexture("#/textures/" + texture.index, texture, material.emissiveTexture.texCoord);
             }
         }
 
@@ -1308,7 +1326,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find source " + texture.source);
                 }
 
-                this._loadImage("images[" + image.index + "]", image, data => {
+                this._loadImage("#/images/" + image.index, image, data => {
                     texture.url = URL.createObjectURL(new Blob([data], { type: image.mimeType }));
                     texture.dataReadyObservable.notifyObservers(texture);
                 });
@@ -1357,7 +1375,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find buffer view " + image.bufferView);
                 }
 
-                this._loadBufferViewAsync("bufferViews[" + bufferView.index + "]", bufferView, onSuccess);
+                this._loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView, onSuccess);
             }
         }
 

@@ -8,6 +8,8 @@ module BABYLON {
             var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
             if (gamepad)
                 return gamepad.gamepadAngularSensibility;
+
+            return null;
         }
         
         public set gamepadAngularSensibility(value) {
@@ -20,6 +22,8 @@ module BABYLON {
             var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
             if (gamepad)
                 return gamepad.gamepadMoveSensibility;
+
+            return null;
         }
         
         public set gamepadMoveSensibility(value) {

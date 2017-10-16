@@ -58,7 +58,6 @@ var BABYLON;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
             _this.highLevelFur = true;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._furTime = 0;
             return _this;
         }

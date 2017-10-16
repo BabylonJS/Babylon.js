@@ -222,6 +222,8 @@
                     Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
+
+            return false;
         },
         load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean => {
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
@@ -341,7 +343,7 @@
                 // Morph targets
                 if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
                     for (var managerData of parsedData.morphTargetManagers) {
-                        var parsedManager = MorphTargetManager.Parse(managerData, scene);
+                        MorphTargetManager.Parse(managerData, scene);
                     }
                 }
 
@@ -487,7 +489,7 @@
                                 Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
                             }
                         } else {
-                            var emptySound = new Sound(parsedSound.name, null, scene);
+                            new Sound(parsedSound.name, null, scene);
                         }
                     }
                 }
@@ -594,6 +596,8 @@
                     Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
+
+            return false;
         }
     });
 }

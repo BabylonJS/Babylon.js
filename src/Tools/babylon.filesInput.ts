@@ -165,7 +165,6 @@
                 for (var i = 0; i < this._filesToLoad.length; i++) {
                     let fileToLoad:any =  this._filesToLoad[i];
                     let name = fileToLoad.name.toLowerCase();
-                    let type = fileToLoad.type;
                     let entry;
 
                     fileToLoad.correctName = name;

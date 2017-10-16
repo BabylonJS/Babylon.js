@@ -37,6 +37,10 @@
 
         private _currentMaterial: Material;
 
+        public static AddToMesh(materialIndex: number, verticesStart: number, verticesCount: number, indexStart: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true): SubMesh {
+            return new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox);
+        }
+
         constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart: number, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
             super();
             this._mesh = mesh;
@@ -125,13 +129,13 @@
             this._lastColliderWorldVertices = null;
 
             if (this.IsGlobal) {
-                return;
+                return this;
             }
             var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
-                return;
+                return this;
             }
 
             var indices = this._renderingMesh.getIndices();

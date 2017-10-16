@@ -6,12 +6,10 @@ module BABYLON {
         private _data: number[];
         private _bufferData: Float32Array;
         private _dynamic: boolean;
-        private _uniformName: string;
         private _uniformLocations: { [key:string]:number; };
         private _uniformSizes: { [key:string]:number; };
         private _uniformLocationPointer: number;
         private _needSync: boolean;
-        private _cache: Float32Array;
         private _noUBO: boolean;
         private _currentEffect: Effect;
 

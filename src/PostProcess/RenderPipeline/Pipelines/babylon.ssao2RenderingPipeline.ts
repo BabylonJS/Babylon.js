@@ -215,7 +215,6 @@
 
         // Private Methods
         private _createBlurPostProcess(ssaoRatio: number, blurRatio: number): void {
-            var samples = 16;
             this._samplerOffsets = [];
             var expensive = this.expensiveBlur;
 
@@ -267,7 +266,6 @@
             }
 
             var i = 0;
-            var normal = new BABYLON.Vector3(0, 0, 1);
             while (i < numSamples) {
                vector = new BABYLON.Vector3(
                    rand(-1.0, 1.0),

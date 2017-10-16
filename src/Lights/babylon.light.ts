@@ -481,6 +481,8 @@
                 case 3:
                     return () => new HemisphericLight(name, Vector3.Zero(), scene);
             }
+
+            return null;
         }
 
         /**
@@ -651,9 +653,9 @@
             return photometricScale;
         }
 
-        private _reorderLightsInScene(): void {
+        public _reorderLightsInScene(): void {
             var scene = this.getScene();
-            if (this.renderPriority != 0) {
+            if (this._renderPriority != 0) {
                 scene.requireLightSorting = true;
             }
             this.getScene().sortLightsByPriority();

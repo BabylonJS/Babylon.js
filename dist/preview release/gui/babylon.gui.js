@@ -1,4 +1,5 @@
-var BABYLON = BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
+var babylonDependency; try { babylonDependency = (typeof require !== 'undefined' && require("../babylon.max")); } catch (e) { babylonDependency = (typeof require !== 'undefined' && require("babylonjs")); } 
+var BABYLON = BABYLON || babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -261,7 +262,6 @@ var BABYLON;
                 this.update();
             };
             AdvancedDynamicTexture.prototype._render = function () {
-                var engine = this.getScene().getEngine();
                 var textureSize = this.getSize();
                 var renderWidth = textureSize.width;
                 var renderHeight = textureSize.height;
@@ -1283,7 +1283,6 @@ var BABYLON;
                 }
                 this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-                var engine = scene.getEngine();
                 var globalViewport = this._host._getGlobalViewport(scene);
                 var projectedPosition = BABYLON.Vector3.Project(position, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
                 this._moveToProjectedPosition(projectedPosition);
@@ -3095,7 +3094,6 @@ var BABYLON;
                 return { text: line, width: lineWidth };
             };
             TextBlock.prototype._renderLines = function (context) {
-                var width = this._currentMeasure.width;
                 var height = this._currentMeasure.height;
                 if (!this._fontOffset) {
                     this._fontOffset = GUI.Control._GetFontOffset(context.font);

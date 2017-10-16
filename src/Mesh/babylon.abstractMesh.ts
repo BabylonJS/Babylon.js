@@ -346,7 +346,6 @@
         private _collider: Collider;
         private _oldPositionForCollisions = new Vector3(0, 0, 0);
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
-        private _newPositionForCollisions = new Vector3(0, 0, 0);
 
 
         public get collisionMask(): number {
@@ -989,14 +988,14 @@
          */
         public setAbsolutePosition(absolutePosition: Vector3): AbstractMesh {
             if (!absolutePosition) {
-                return;
+                return this;
             }
             var absolutePositionX;
             var absolutePositionY;
             var absolutePositionZ;
             if (absolutePosition.x === undefined) {
                 if (arguments.length < 3) {
-                    return;
+                    return this;
                 }
                 absolutePositionX = arguments[0];
                 absolutePositionY = arguments[1];
@@ -1221,7 +1220,7 @@
          */
         public _updateSubMeshesBoundingInfo(matrix: Matrix): AbstractMesh {
             if (!this.subMeshes) {
-                return;
+                return this;
             }
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
@@ -1565,7 +1564,7 @@
 
         public applyImpulse(force: Vector3, contactPoint: Vector3): AbstractMesh {
             if (!this.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.applyImpulse(force, contactPoint);
             return this;
@@ -1573,7 +1572,7 @@
 
         public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh {
             if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.createJoint(otherMesh.physicsImpostor, PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,

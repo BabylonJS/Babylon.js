@@ -9,7 +9,6 @@
         private _physicsMaterials = new Array();
         private _fixedTimeStep: number = 1 / 60;
         //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
-        private _currentCollisionGroup = 2;
         public BJSCANNON = typeof CANNON !== 'undefined' ? CANNON : (typeof require !== 'undefined' ? require('cannon') : undefined);
 
 
@@ -339,9 +338,7 @@
         private _minus90X = new Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
         private _plus90X = new Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
         private _tmpPosition: Vector3 = Vector3.Zero();
-        private _tmpQuaternion: Quaternion = new Quaternion();
         private _tmpDeltaPosition: Vector3 = Vector3.Zero();
-        private _tmpDeltaRotation: Quaternion = new Quaternion();
         private _tmpUnityRotation: Quaternion = new Quaternion();
 
         private _updatePhysicsBodyTransformation(impostor: PhysicsImpostor) {
@@ -474,17 +471,17 @@
             joint.physicsJoint.distance = maxDistance;
         }
 
-        private enableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
-            if (!motorIndex) {
-                joint.physicsJoint.enableMotor();
-            }
-        }
+        // private enableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
+        //     if (!motorIndex) {
+        //         joint.physicsJoint.enableMotor();
+        //     }
+        // }
 
-        private disableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
-            if (!motorIndex) {
-                joint.physicsJoint.disableMotor();
-            }
-        }
+        // private disableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
+        //     if (!motorIndex) {
+        //         joint.physicsJoint.disableMotor();
+        //     }
+        // }
 
         public setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number) {
             if (!motorIndex) {

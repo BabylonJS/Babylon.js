@@ -50,7 +50,7 @@ declare module BABYLON {
         private static _parseV2(binaryReader, onError);
         private static _parseVersion(version);
         private static _compareVersion(a, b);
-        private static _decodeBufferToText(view);
+        private static _decodeBufferToText(buffer);
     }
 }
 

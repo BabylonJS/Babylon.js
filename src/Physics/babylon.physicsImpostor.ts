@@ -146,7 +146,7 @@ module BABYLON {
                 var parentMesh: AbstractMesh = <AbstractMesh>this.object.parent;
                 return parentMesh.physicsImpostor;
             }
-            return;
+            return null;
         }
 
         /**

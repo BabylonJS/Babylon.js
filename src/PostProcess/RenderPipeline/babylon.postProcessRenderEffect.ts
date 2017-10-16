@@ -73,6 +73,8 @@ module BABYLON {
                     return this._renderPasses[passName];
                 }
             }
+
+            return null;
         }
 
         public emptyPasses(): void {

@@ -40,7 +40,6 @@ var INSPECTOR;
                 // Get canvas and its DOM parent
                 var canvas = this._scene.getEngine().getRenderingCanvas();
                 var canvasParent = canvas.parentElement;
-                var canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);
                 // get canvas style                
                 var canvasComputedStyle = Inspector.WINDOW.getComputedStyle(canvas);
                 this._canvasStyle = {
@@ -1288,7 +1287,6 @@ var INSPECTOR;
          */
         MeshAdapter.prototype._drawAxis = function () {
             this._obj.computeWorldMatrix();
-            var m = this._obj.getWorldMatrix();
             // Axis
             var x = new BABYLON.Vector3(8 / this._obj.scaling.x, 0, 0);
             var y = new BABYLON.Vector3(0, 8 / this._obj.scaling.y, 0);
@@ -1809,13 +1807,6 @@ var INSPECTOR;
             this._updateValue();
         };
         /**
-         * Returns true if the given instance is a simple type
-         */
-        PropertyLine._IS_TYPE_SIMPLE = function (inst) {
-            var type = INSPECTOR.Helpers.GET_TYPE(inst);
-            return PropertyLine._SIMPLE_TYPE.indexOf(type) != -1;
-        };
-        /**
          * Returns true if the type of this property is simple, false otherwise.
          * Returns true if the value is null
          */
@@ -1867,7 +1858,6 @@ var INSPECTOR;
                 if (this._children.length == 0) {
                     var objToDetail = this.value;
                     var propToDisplay = INSPECTOR.PROPERTIES[INSPECTOR.Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
-                    var propertyLine = null;
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
                         var infos = new INSPECTOR.Property(prop, this._property.value);
@@ -2006,7 +1996,7 @@ var INSPECTOR;
                 var b = (color.b * 255) | 0;
                 var a = 1;
                 if (color instanceof BABYLON.Color4) {
-                    var a_1 = color.a;
+                    a = color.a;
                 }
                 return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
             }
@@ -2076,7 +2066,7 @@ var INSPECTOR;
                 var b = (color.b * 255) | 0;
                 var a = 1;
                 if (color instanceof BABYLON.Color4) {
-                    var a_1 = color.a;
+                    a = color.a;
                 }
                 return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
             }
@@ -2167,8 +2157,6 @@ var INSPECTOR;
             this._engine = new BABYLON.Engine(this._canvas);
             this._scene = new BABYLON.Scene(this._engine);
             this._scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
-            var cam = new BABYLON.FreeCamera('cam', new BABYLON.Vector3(0, 0, -20), this._scene);
-            var light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this._scene);
             this._engine.runRenderLoop(function () {
                 if (!_this._pause) {
                     _this._scene.render();
@@ -2788,6 +2776,7 @@ var INSPECTOR;
                         return null;
                     }
                 }
+                return null;
             };
             for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
                 var item = _a[_i];
@@ -4039,6 +4028,7 @@ var INSPECTOR;
                     return tab;
                 }
             }
+            return null;
         };
         TabBar.prototype.getActiveTabIndex = function () {
             for (var i = 0; i < this._tabs.length; i++) {
