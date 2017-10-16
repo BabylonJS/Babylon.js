@@ -16711,6 +16711,11 @@ var BABYLON;
             this.constantlyUpdateMeshUnderPointer = false;
             this.hoverCursor = "pointer";
             this.defaultCursor = "";
+            /**
+             * This is used to call preventDefault() on pointer down
+             * in order to block unwanted artifacts like system double clicks
+             */
+            this.preventDefaultOnPointerDown = true;
             // Metadata
             this.metadata = null;
             /**
@@ -17865,6 +17870,10 @@ var BABYLON;
                 _this._pickedDownMesh = null;
                 _this._meshPickProceed = false;
                 _this._updatePointerPosition(evt);
+                if (_this.preventDefaultOnPointerDown) {
+                    evt.preventDefault();
+                    canvas.focus();
+                }
                 // PreObservable support
                 if (_this.onPrePointerObservable.hasObservers()) {
                     var type = BABYLON.PointerEventTypes.POINTERDOWN;
