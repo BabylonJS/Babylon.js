@@ -107,7 +107,9 @@
         }
 
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
-            return {};
+            return {
+                __SPECTOR_rebuildProgram: undefined,
+            };
         }
 
         public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[] {

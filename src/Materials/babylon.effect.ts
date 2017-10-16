@@ -89,7 +89,6 @@
     }
 
     export class Effect {
-        public static rebuildProgramFunctionName = "__SPECTOR_rebuildProgram";
         public name: any;
         public defines: string;
         public onCompiled: (effect: Effect) => void;
@@ -519,7 +518,7 @@
             return source;
         }
 
-        public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (WebGLProgram) => void, onError: (message: string) => void) {
+        public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) {
             this._isReady = false;
 
             this._vertexSourceCodeOverride = vertexSourceCode;
@@ -560,7 +559,7 @@
                 else {
                     this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
                 }
-                this._program[Effect.rebuildProgramFunctionName] = this._rebuildProgram.bind(this);
+                this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 
                 if (engine.webGLVersion > 1) {
                     for (var name in this._uniformBuffersNames) {
