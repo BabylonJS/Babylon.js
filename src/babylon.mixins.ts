@@ -118,6 +118,10 @@ interface WebGLBuffer {
     is32Bits: boolean;
 }
 
+interface WebGLProgram {
+    __SPECTOR_rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void): void;
+}
+
 interface MouseEvent {
     mozMovementX: number;
     mozMovementY: number;
