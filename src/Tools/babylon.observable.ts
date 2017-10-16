@@ -30,8 +30,14 @@
          */
         public mask: number;
 
+        /**
+         * The object that originally notified the event
+         */
         public target?: any;
         
+        /**
+         * The current object in the bubbling phase
+         */
         public currentTarget?: any;
     }
 
