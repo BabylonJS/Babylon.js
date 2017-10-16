@@ -114,6 +114,8 @@
         private _fallbacks: EffectFallbacks;
         private _vertexSourceCode: string;
         private _fragmentSourceCode: string;
+        private _vertexSourceCodeOverride: string;
+        private _fragmentSourceCodeOverride: string;
 
         public _program: WebGLProgram;
         private _valueCache: { [key: string]: any };
@@ -516,15 +518,48 @@
             return source;
         }
 
+        public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) {
+            this._isReady = false;
+
+            this._vertexSourceCodeOverride = vertexSourceCode;
+            this._fragmentSourceCodeOverride = fragmentSourceCode;
+            this.onError = (effect, error) => {
+                if (onError) {
+                    onError(error);
+                }
+            };
+            this.onCompiled = () => {
+                var scenes = this.getEngine().scenes;
+                for (var i = 0; i < scenes.length; i++) {
+                    scenes[i].markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                }
+
+                if (onCompiled) {
+                    onCompiled(this._program);
+                }
+            };
+            this._fallbacks = null;
+            this._prepareEffect();
+        }
+
         public _prepareEffect() {
             let attributesNames = this._attributesNames;
             let defines = this.defines;
             let fallbacks = this._fallbacks;
             this._valueCache = {};
 
+            var previousProgram = this._program;
+
             try {
                 var engine = this._engine;
-                this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
+
+                if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
+                    this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride);
+                }
+                else {
+                    this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
+                }
+                this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 
                 if (engine.webGLVersion > 1) {
                     for (var name in this._uniformBuffersNames) {
@@ -559,6 +594,10 @@
                 if (this._fallbacks) {
                     this._fallbacks.unBindMesh();
                 }
+
+                if (previousProgram) {
+                    this.getEngine()._deleteProgram(previousProgram);
+                }
             } catch (e) {
                 this._compilationError = e.message;
 
@@ -572,6 +611,14 @@
                 }));
                 this._dumpShadersSource(this._vertexSourceCode, this._fragmentSourceCode, defines);
                 Tools.Error("Error: " + this._compilationError);
+                if (previousProgram) {
+                    this._program = previousProgram;
+                    this._isReady = true;
+                    if (this.onError) {
+                        this.onError(this, this._compilationError);
+                    }
+                    this.onErrorObservable.notifyObservers(this);
+                }
 
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     Tools.Error("Trying next fallback.");
