@@ -545,10 +545,16 @@
                     case Animation.ANIMATIONTYPE_QUATERNION:
                         data = Quaternion.FromArray(key.values);
                         if (key.values.length >= 8) {
-                            inTangent = Quaternion.FromArray(key.values.slice(4, 8));
+                            var _inTangent = Quaternion.FromArray(key.values.slice(4, 8));
+                            if (!_inTangent.equals(Quaternion.Zero())) {
+                                inTangent = _inTangent;
+                            }
                         }
                         if (key.values.length >= 12) {
-                            outTangent = Quaternion.FromArray(key.values.slice(8, 12));
+                            var _outTangent = Quaternion.FromArray(key.values.slice(8, 12));
+                            if (!_outTangent.equals(Quaternion.Zero())) {
+                                outTangent = _outTangent;
+                            }
                         }
                         break;
                     case Animation.ANIMATIONTYPE_MATRIX:
