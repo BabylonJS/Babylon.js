@@ -114,10 +114,10 @@
         return (target: any, propertyKey: string) => {
             var key = targetKey || ("_" + propertyKey);
             Object.defineProperty(target, propertyKey, {
-                get: function () {
+                get: function (this: any) {
                     return this[key];
                 },
-                set: function (value) {
+                set: function (this: any, value) {
                     if (this[key] === value) {
                         return;
                     }

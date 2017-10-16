@@ -2307,9 +2307,9 @@
             }
         }
 
-        public _deleteProgram(program) {
+        public _deleteProgram(program: WebGLProgram): void {
             if (program) {
-                program[Effect.rebuildProgramFunctionName] = null;
+                program.__SPECTOR_rebuildProgram = null;
                 this._gl.deleteProgram(program);
             }
         }
