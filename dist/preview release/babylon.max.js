@@ -5334,14 +5334,16 @@ var BABYLON;
         /**
         * If the callback of a given Observer set skipNextObservers to true the following observers will be ignored
         */
-        function EventState(mask, skipNextObservers) {
+        function EventState(mask, skipNextObservers, target, currentTarget) {
             if (skipNextObservers === void 0) { skipNextObservers = false; }
-            this.initalize(mask, skipNextObservers);
+            this.initalize(mask, skipNextObservers, target, currentTarget);
         }
-        EventState.prototype.initalize = function (mask, skipNextObservers) {
+        EventState.prototype.initalize = function (mask, skipNextObservers, target, currentTarget) {
             if (skipNextObservers === void 0) { skipNextObservers = false; }
             this.mask = mask;
             this.skipNextObservers = skipNextObservers;
+            this.target = target;
+            this.currentTarget = currentTarget;
             return this;
         };
         return EventState;
@@ -5458,10 +5460,12 @@ var BABYLON;
          * @param eventData
          * @param mask
          */
-        Observable.prototype.notifyObservers = function (eventData, mask) {
+        Observable.prototype.notifyObservers = function (eventData, mask, target, currentTarget) {
             if (mask === void 0) { mask = -1; }
             var state = this._eventState;
             state.mask = mask;
+            state.target = target;
+            state.currentTarget = currentTarget;
             state.skipNextObservers = false;
             for (var _i = 0, _a = this._observers; _i < _a.length; _i++) {
                 var obs = _a[_i];
@@ -27354,7 +27358,7 @@ var BABYLON;
                 return this._mergeElement(source, new Float32Array(source.length), length);
             }
             if (!source) {
-                if (length === other.length) {
+                if (length === 0 || length === other.length) {
                     return other;
                 }
                 return this._mergeElement(new Float32Array(length - other.length), other, length);
