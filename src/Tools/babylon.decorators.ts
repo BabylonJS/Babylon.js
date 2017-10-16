@@ -25,6 +25,8 @@
                         (<any>destination)[property] = sourceProperty;
                         break;
                     case 1:     // Texture
+                        (<any>destination)[property] = (instanciate||sourceProperty.isRenderTarget)?sourceProperty:sourceProperty.clone();
+                        break;
                     case 2:     // Color3
                     case 3:     // FresnelParameters
                     case 4:     // Vector2
