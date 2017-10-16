@@ -1,4 +1,5 @@
-var BABYLON = BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
+var babylonDependency; try { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("../babylon.max")); } catch (e) { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("babylonjs")); } 
+var BABYLON = babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -26,7 +27,7 @@ var BABYLON;
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    var AsciiArtFontTexture = (function (_super) {
+    var AsciiArtFontTexture = /** @class */ (function (_super) {
         __extends(AsciiArtFontTexture, _super);
         /**
          * Create a new instance of the Ascii Art FontTexture class
@@ -163,7 +164,7 @@ var BABYLON;
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
      */
-    var AsciiArtPostProcess = (function (_super) {
+    var AsciiArtPostProcess = /** @class */ (function (_super) {
         __extends(AsciiArtPostProcess, _super);
         /**
          * Instantiates a new Ascii Art Post Process.
@@ -230,7 +231,7 @@ var BABYLON;
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    var DigitalRainFontTexture = (function (_super) {
+    var DigitalRainFontTexture = /** @class */ (function (_super) {
         __extends(DigitalRainFontTexture, _super);
         /**
          * Create a new instance of the Digital Rain FontTexture class
@@ -367,7 +368,7 @@ var BABYLON;
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
      */
-    var DigitalRainPostProcess = (function (_super) {
+    var DigitalRainPostProcess = /** @class */ (function (_super) {
         __extends(DigitalRainPostProcess, _super);
         /**
          * Instantiates a new Digital Rain Post Process.

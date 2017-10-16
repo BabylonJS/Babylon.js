@@ -43441,12 +43441,13 @@ var BABYLON;
          * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
          * `particleIndex` (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.
          * `positionIndex` (integer) is the starting index of the particle vertices in the SPS "positions" array.
-         *  `model` (ModelShape) is a reference to the model shape on what the particle is designed.
+         * `indiceIndex` (integer) is the starting index of the particle indices in the SPS "indices" array.
+         * `model` (ModelShape) is a reference to the model shape on what the particle is designed.
          * `shapeId` (integer) is the model shape identifier in the SPS.
          * `idxInShape` (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
          * `modelBoundingInfo` is the reference to the model BoundingInfo used for intersection computations.
          */
-        function SolidParticle(particleIndex, positionIndex, model, shapeId, idxInShape, sps, modelBoundingInfo) {
+        function SolidParticle(particleIndex, positionIndex, indiceIndex, model, shapeId, idxInShape, sps, modelBoundingInfo) {
             this.idx = 0; // particle global index
             this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0); // color
             this.position = BABYLON.Vector3.Zero(); // position
@@ -43457,11 +43458,13 @@ var BABYLON;
             this.alive = true; // alive
             this.isVisible = true; // visibility
             this._pos = 0; // index of this particle in the global "positions" array
+            this._ind = 0; // index of this particle in the global "indices" array
             this.shapeId = 0; // model shape id
             this.idxInShape = 0; // index of the particle in its shape id
             this._stillInvisible = false; // still set as invisible in order to skip useless computations
             this.idx = particleIndex;
             this._pos = positionIndex;
+            this._ind = indiceIndex;
             this._model = model;
             this.shapeId = shapeId;
             this.idxInShape = idxInShape;
@@ -43519,9 +43522,11 @@ var BABYLON;
          * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
          * SPS internal tool, don't use it manually.
          */
-        function ModelShape(id, shape, shapeUV, posFunction, vtxFunction) {
+        function ModelShape(id, shape, indicesLength, shapeUV, posFunction, vtxFunction) {
+            this._indicesLength = 0; // length of the shape in the model indices array
             this.shapeID = id;
             this._shape = shape;
+            this._indicesLength = indicesLength;
             this._shapeUV = shapeUV;
             this._positionFunction = posFunction;
             this._vertexFunction = vtxFunction;
@@ -43529,6 +43534,15 @@ var BABYLON;
         return ModelShape;
     }());
     BABYLON.ModelShape = ModelShape;
+    var DepthSortedParticle = (function () {
+        function DepthSortedParticle() {
+            this.ind = 0; // index of the particle in the "indices" array
+            this.indicesLength = 0; // length of the particle shape in the "indices" array
+            this.sqDistance = 0.0; // squared distance from the particle to the camera
+        }
+        return DepthSortedParticle;
+    }());
+    BABYLON.DepthSortedParticle = DepthSortedParticle;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.solidParticle.js.map
@@ -43545,6 +43559,7 @@ var BABYLON;
         * `scene` (Scene) is the scene in which the SPS is added.
         * `updatable` (optional boolean, default true) : if the SPS must be updatable or immutable.
         * `isPickable` (optional boolean, default false) : if the solid particles must be pickable.
+        * `enableDepthSort` (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
         * `particleIntersection` (optional boolean, default false) : if the solid particle intersections must be computed.
         * `boundingSphereOnly` (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
         * `bSphereRadiusFactor` (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
@@ -43588,14 +43603,16 @@ var BABYLON;
             this._pickable = false;
             this._isVisibilityBoxLocked = false;
             this._alwaysVisible = false;
+            this._depthSort = false;
             this._shapeCounter = 0;
-            this._copy = new BABYLON.SolidParticle(null, null, null, null, null, null);
+            this._copy = new BABYLON.SolidParticle(null, null, null, null, null, null, null);
             this._color = new BABYLON.Color4(0, 0, 0, 0);
             this._computeParticleColor = true;
             this._computeParticleTexture = true;
             this._computeParticleRotation = true;
             this._computeParticleVertex = false;
             this._computeBoundingBox = false;
+            this._depthSortParticles = true;
             this._cam_axisZ = BABYLON.Vector3.Zero();
             this._cam_axisY = BABYLON.Vector3.Zero();
             this._cam_axisX = BABYLON.Vector3.Zero();
@@ -43627,12 +43644,16 @@ var BABYLON;
             this._minBbox = BABYLON.Tmp.Vector3[4];
             this._maxBbox = BABYLON.Tmp.Vector3[5];
             this._particlesIntersect = false;
+            this._depthSortFunction = function (p1, p2) {
+                return (p2.sqDistance - p1.sqDistance);
+            };
             this._bSphereOnly = false;
             this._bSphereRadiusFactor = 1.0;
             this.name = name;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._camera = scene.activeCamera;
             this._pickable = options ? options.isPickable : false;
+            this._depthSort = options ? options.enableDepthSort : false;
             this._particlesIntersect = options ? options.particleIntersection : false;
             this._bSphereOnly = options ? options.boundingSphereOnly : false;
             this._bSphereRadiusFactor = (options && options.bSphereRadiusFactor) ? options.bSphereRadiusFactor : 1.0;
@@ -43644,6 +43665,9 @@ var BABYLON;
             }
             if (this._pickable) {
                 this.pickedParticles = [];
+            }
+            if (this._depthSort) {
+                this.depthSortedParticles = [];
             }
         }
         /**
@@ -43668,8 +43692,14 @@ var BABYLON;
                 this._unrotateFixedNormals();
             }
             var vertexData = new BABYLON.VertexData();
+            if (this._depthSort) {
+                this._depthSortedIndices = this._indices.slice();
+                vertexData.indices = this._depthSortedIndices;
+            }
+            else {
+                vertexData.indices = this._indices;
+            }
             vertexData.set(this._positions32, BABYLON.VertexBuffer.PositionKind);
-            vertexData.indices = this._indices;
             vertexData.set(this._normals32, BABYLON.VertexBuffer.NormalKind);
             if (this._uvs32) {
                 vertexData.set(this._uvs32, BABYLON.VertexBuffer.UVKind);
@@ -43769,11 +43799,12 @@ var BABYLON;
                 if (this._particlesIntersect) {
                     bInfo = new BABYLON.BoundingInfo(barycenter, barycenter);
                 }
-                var modelShape = new BABYLON.ModelShape(this._shapeCounter, shape, shapeUV, null, null);
+                var modelShape = new BABYLON.ModelShape(this._shapeCounter, shape, size * 3, shapeUV, null, null);
                 // add the particle in the SPS
                 var currentPos = this._positions.length;
+                var currentInd = this._indices.length;
                 this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, meshNor, this._normals, idx, 0, null);
-                this._addParticle(idx, currentPos, modelShape, this._shapeCounter, 0, bInfo);
+                this._addParticle(idx, currentPos, currentInd, modelShape, this._shapeCounter, 0, bInfo);
                 // initialize the particle position
                 this.particles[this.nbParticles].position.addInPlace(barycenter);
                 this._index += shape.length;
@@ -43821,13 +43852,13 @@ var BABYLON;
             this._copy.rotation.y = 0;
             this._copy.rotation.z = 0;
             this._copy.rotationQuaternion = null;
-            this._copy.scaling.x = 1;
-            this._copy.scaling.y = 1;
-            this._copy.scaling.z = 1;
+            this._copy.scaling.x = 1.0;
+            this._copy.scaling.y = 1.0;
+            this._copy.scaling.z = 1.0;
             this._copy.uvs.x = 0;
             this._copy.uvs.y = 0;
-            this._copy.uvs.z = 1;
-            this._copy.uvs.w = 1;
+            this._copy.uvs.z = 1.0;
+            this._copy.uvs.w = 1.0;
             this._copy.color = null;
         };
         // _meshBuilder : inserts the shape model in the global SPS mesh
@@ -43877,10 +43908,10 @@ var BABYLON;
                     this._color.a = meshCol[c + 3];
                 }
                 else {
-                    this._color.r = 1;
-                    this._color.g = 1;
-                    this._color.b = 1;
-                    this._color.a = 1;
+                    this._color.r = 1.0;
+                    this._color.g = 1.0;
+                    this._color.b = 1.0;
+                    this._color.a = 1.0;
                 }
                 colors.push(this._color.r, this._color.g, this._color.b, this._color.a);
                 c += 4;
@@ -43902,6 +43933,9 @@ var BABYLON;
                     this.pickedParticles.push({ idx: idx, faceId: i });
                 }
             }
+            if (this._depthSort) {
+                this.depthSortedParticles.push(new BABYLON.DepthSortedParticle());
+            }
             return this._copy;
         };
         // returns a shape array from positions array
@@ -43922,8 +43956,8 @@ var BABYLON;
             return shapeUV;
         };
         // adds a new particle object in the particles array
-        SolidParticleSystem.prototype._addParticle = function (idx, idxpos, model, shapeId, idxInShape, bInfo) {
-            var sp = new BABYLON.SolidParticle(idx, idxpos, model, shapeId, idxInShape, this, bInfo);
+        SolidParticleSystem.prototype._addParticle = function (idx, idxpos, idxind, model, shapeId, idxInShape, bInfo) {
+            var sp = new BABYLON.SolidParticle(idx, idxpos, idxind, model, shapeId, idxInShape, this, bInfo);
             this.particles.push(sp);
             return sp;
         };
@@ -43949,16 +43983,17 @@ var BABYLON;
             var shapeUV = this._uvsToShapeUV(meshUV);
             var posfunc = options ? options.positionFunction : null;
             var vtxfunc = options ? options.vertexFunction : null;
-            var modelShape = new BABYLON.ModelShape(this._shapeCounter, shape, shapeUV, posfunc, vtxfunc);
+            var modelShape = new BABYLON.ModelShape(this._shapeCounter, shape, meshInd.length, shapeUV, posfunc, vtxfunc);
             // particles
             var sp;
             var currentCopy;
             var idx = this.nbParticles;
             for (var i = 0; i < nb; i++) {
                 var currentPos = this._positions.length;
+                var currentInd = this._indices.length;
                 currentCopy = this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
                 if (this._updatable) {
-                    sp = this._addParticle(idx, currentPos, modelShape, this._shapeCounter, i, bbInfo);
+                    sp = this._addParticle(idx, currentPos, currentInd, modelShape, this._shapeCounter, i, bbInfo);
                     sp.position.copyFrom(currentCopy.position);
                     sp.rotation.copyFrom(currentCopy.rotation);
                     if (currentCopy.rotationQuaternion) {
@@ -44137,6 +44172,13 @@ var BABYLON;
                         }
                         this._quaternionToRotationMatrix();
                     }
+                    // camera-particle distance for depth sorting
+                    if (this._depthSort && this._depthSortParticles) {
+                        var dsp = this.depthSortedParticles[p];
+                        dsp.ind = this._particle._ind;
+                        dsp.indicesLength = this._particle._model._indicesLength;
+                        dsp.sqDistance = BABYLON.Vector3.DistanceSquared(this._particle.position, this._camera.position);
+                    }
                     // particle vertex loop
                     for (pt = 0; pt < this._shape.length; pt++) {
                         idx = index + pt * 3;
@@ -44285,6 +44327,23 @@ var BABYLON;
                     if (!this.mesh.areNormalsFrozen) {
                         this.mesh.updateVerticesData(BABYLON.VertexBuffer.NormalKind, this._normals32, false, false);
                     }
+                }
+                if (this._depthSort && this._depthSortParticles) {
+                    this.depthSortedParticles.sort(this._depthSortFunction);
+                    var dspl = this.depthSortedParticles.length;
+                    var sorted = 0;
+                    var lind = 0;
+                    var sind = 0;
+                    var sid = 0;
+                    for (sorted = 0; sorted < dspl; sorted++) {
+                        lind = this.depthSortedParticles[sorted].indicesLength;
+                        sind = this.depthSortedParticles[sorted].ind;
+                        for (var i = 0; i < lind; i++) {
+                            this._depthSortedIndices[sid] = this._indices[sind + i];
+                            sid++;
+                        }
+                    }
+                    this.mesh.updateIndices(this._depthSortedIndices);
                 }
             }
             if (this._computeBoundingBox) {
@@ -44470,6 +44529,21 @@ var BABYLON;
             */
             set: function (val) {
                 this._computeBoundingBox = val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SolidParticleSystem.prototype, "depthSortParticles", {
+            get: function () {
+                return this._depthSortParticles;
+            },
+            /**
+            * Tells to `setParticles()` to sort or not the distance between each particle and the camera.
+            * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
+            * Default : `true`
+            */
+            set: function (val) {
+                this._depthSortParticles = val;
             },
             enumerable: true,
             configurable: true
