@@ -197,7 +197,7 @@ module BABYLON.GUI {
                 this._updateValueFromPointer(coordinates.x);
             }
 
-            //not calling super._onPointerMove on purpose?
+            super._onPointerMove(target, coordinates);
         }
 
         public _onPointerUp (target: Control, coordinates: Vector2, buttonIndex: number): void {
