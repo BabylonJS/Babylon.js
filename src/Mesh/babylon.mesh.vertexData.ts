@@ -337,7 +337,7 @@
             }
 
             if (!source) {
-                if (length === other.length) {
+                if (length === 0 || length === other.length) {
                     return other;
                 }
 
