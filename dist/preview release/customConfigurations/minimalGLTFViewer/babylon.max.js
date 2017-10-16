@@ -49371,6 +49371,9 @@ var BABYLON;
                 if (this._shareOutputWithPostProcess) {
                     return this._shareOutputWithPostProcess.aspectRatio;
                 }
+                if (this._forcedOutputTexture) {
+                    return this._forcedOutputTexture.width / this._forcedOutputTexture.height;
+                }
                 return this.width / this.height;
             },
             enumerable: true,
@@ -51961,8 +51964,8 @@ var BABYLON;
             this.callbackManifestChecked = callbackManifestChecked;
             this.currentSceneUrl = Database.ReturnFullUrlLocation(urlToScene);
             this.db = null;
-            this.enableSceneOffline = false;
-            this.enableTexturesOffline = false;
+            this._enableSceneOffline = false;
+            this._enableTexturesOffline = false;
             this.manifestVersionFound = 0;
             this.mustUpdateRessources = false;
             this.hasReachedQuota = false;
@@ -51973,14 +51976,27 @@ var BABYLON;
                 this.checkManifestFile();
             }
         }
+        Object.defineProperty(Database.prototype, "enableSceneOffline", {
+            get: function () {
+                return this._enableSceneOffline;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Database.prototype, "enableTexturesOffline", {
+            get: function () {
+                return this._enableTexturesOffline;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Database.prototype.checkManifestFile = function () {
             var _this = this;
-            function noManifestFile() {
-                that.enableSceneOffline = false;
-                that.enableTexturesOffline = false;
-                that.callbackManifestChecked(false);
-            }
-            var that = this;
+            var noManifestFile = function () {
+                _this._enableSceneOffline = false;
+                _this._enableTexturesOffline = false;
+                _this.callbackManifestChecked(false);
+            };
             var timeStampUsed = false;
             var manifestURL = this.currentSceneUrl + ".manifest";
             var xhr = new XMLHttpRequest();
@@ -51994,8 +52010,8 @@ var BABYLON;
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try {
                         var manifestFile = JSON.parse(xhr.response);
-                        _this.enableSceneOffline = manifestFile.enableSceneOffline;
-                        _this.enableTexturesOffline = manifestFile.enableTexturesOffline;
+                        _this._enableSceneOffline = manifestFile.enableSceneOffline;
+                        _this._enableTexturesOffline = manifestFile.enableTexturesOffline;
                         if (manifestFile.version && !isNaN(parseInt(manifestFile.version))) {
                             _this.manifestVersionFound = manifestFile.version;
                         }
@@ -52029,7 +52045,7 @@ var BABYLON;
             }
             catch (ex) {
                 BABYLON.Tools.Error("Error on XHR send request.");
-                that.callbackManifestChecked(false);
+                this.callbackManifestChecked(false);
             }
         };
         Database.prototype.openAsync = function (successCallback, errorCallback) {
@@ -52040,7 +52056,7 @@ var BABYLON;
                     errorCallback();
             }
             var that = this;
-            if (!this.idbFactory || !(this.enableSceneOffline || this.enableTexturesOffline)) {
+            if (!this.idbFactory || !(this._enableSceneOffline || this._enableTexturesOffline)) {
                 // Your browser doesn't support IndexedDB
                 this.isSupported = false;
                 if (errorCallback)
