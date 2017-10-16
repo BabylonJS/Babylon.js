@@ -205,6 +205,10 @@ module BABYLON.GLTF2 {
         material?: number;
         mode?: EMeshPrimitiveMode;
         targets?: { [name: string]: number }[];
+
+        // Runtime values
+        vertexData: VertexData;
+        targetsVertexData: VertexData[];
     }
 
     export interface IGLTFMesh extends IGLTFChildRootProperty {
