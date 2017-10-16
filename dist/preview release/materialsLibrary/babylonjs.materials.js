@@ -5874,6 +5874,7 @@ vColor=color;\n\
             return arr;
         };
         CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+            var _this = this;
             if (this._isCreatedShader)
                 return this._createdShaderName;
             this._isCreatedShader = false;
@@ -5883,7 +5884,7 @@ vColor=color;\n\
             this.ReviewUniform("sampler", samplers);
             var fn_afterBind = this._afterBind;
             this._afterBind = function (m, e) {
-                this.AttachAfterBind(m, e);
+                _this.AttachAfterBind(m, e);
                 try {
                     fn_afterBind(m, e);
                 }

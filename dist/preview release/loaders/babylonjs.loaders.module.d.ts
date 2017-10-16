@@ -872,6 +872,8 @@ declare module BABYLON.GLTF2 {
         targets?: {
             [name: string]: number;
         }[];
+        vertexData: VertexData;
+        targetsVertexData: VertexData[];
     }
     interface IGLTFMesh extends IGLTFChildRootProperty {
         primitives: IGLTFMeshPrimitive[];
@@ -986,10 +988,12 @@ declare module BABYLON.GLTF2 {
         private _loadScene(context, scene, nodeNames);
         _loadNode(context: string, node: IGLTFNode): void;
         private _loadMesh(context, node, mesh);
-        private _loadPrimitive(context, node, mesh, primitive, onSuccess);
+        private _loadAllVertexDataAsync(context, mesh, onSuccess);
         private _loadVertexDataAsync(context, mesh, primitive, onSuccess);
-        private _createMorphTargets(node, mesh, primitive);
-        private _loadMorphTargetsData(context, mesh, primitive, vertexData, babylonMesh);
+        private _createMorphTargets(context, node, mesh);
+        private _loadMorphTargets(context, node, mesh);
+        private _loadAllMorphTargetVertexDataAsync(context, node, mesh, onSuccess);
+        private _loadMorphTargetVertexDataAsync(context, vertexData, attributes, onSuccess);
         private _loadTransform(node);
         private _loadSkin(context, skin);
         private _createBone(node, skin, parent, localMatrix, baseMatrix, index);
@@ -1038,7 +1042,6 @@ declare module BABYLON.GLTF2 {
         * @param uri: the uri to decode
         */
         static DecodeBase64(uri: string): ArrayBuffer;
-        static ForEach(view: Uint16Array | Uint32Array | Float32Array, func: (nvalue: number, index: number) => void): void;
         static ValidateUri(uri: string): boolean;
         static AssignIndices(array: Array<{
             index?: number;
