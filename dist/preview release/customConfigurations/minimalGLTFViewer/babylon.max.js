@@ -68783,7 +68783,7 @@ var BABYLON;
             // Are we presenting in the fullscreen fallback?
             this._fullscreenVRpresenting = false;
             this._scene = scene;
-            if (!this._scene.activeCamera) {
+            if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
                 this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
             }
             else {

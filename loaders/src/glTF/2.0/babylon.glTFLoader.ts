@@ -378,63 +378,47 @@ module BABYLON.GLTF2 {
         }
 
         private _loadMesh(context: string, node: IGLTFNode, mesh: IGLTFMesh): void {
-            node.babylonMesh.name = mesh.name || node.babylonMesh.name;
+            node.babylonMesh.name = node.babylonMesh.name || mesh.name;
 
-            var babylonMultiMaterial = new MultiMaterial(node.babylonMesh.name, this._babylonScene);
-            node.babylonMesh.material = babylonMultiMaterial;
-
-            var geometry = new Geometry(node.babylonMesh.name, this._babylonScene, null, false, node.babylonMesh);
-            var vertexData = new VertexData();
-            vertexData.positions = [];
-            vertexData.indices = [];
-
-            var subMeshInfos: { verticesStart: number; verticesCount: number; indicesStart: number; indicesCount: number; loadMaterial: (index: number) => void }[] = [];
-            var numRemainingPrimitives = mesh.primitives.length;
-
-            for (var index = 0; index < mesh.primitives.length; index++) {
-                var primitive = mesh.primitives[index];
-                this._loadPrimitive(context + "/primitives/" + index, node, mesh, primitive, (subVertexData, loadMaterial) => {
-                    subMeshInfos.push({
-                        verticesStart: vertexData.positions.length,
-                        verticesCount: subVertexData.positions.length,
-                        indicesStart: vertexData.indices.length,
-                        indicesCount: subVertexData.indices.length,
-                        loadMaterial: loadMaterial
-                    });
-
-                    vertexData.merge(subVertexData);
-
-                    if (--numRemainingPrimitives === 0) {
-                        geometry.setAllVerticesData(vertexData, false);
-
-                        // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
-                        // Sub meshes must be cleared and created after setting vertex data because of mesh._createGlobalSubMesh.
-                        node.babylonMesh.subMeshes = [];
-
-                        for (var index = 0; index < subMeshInfos.length; index++) {
-                            var info = subMeshInfos[index];
-                            SubMesh.AddToMesh(index, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, node.babylonMesh);
-                            info.loadMaterial(index);
-                        }
-                    }
-                });
-            }
-        }
-
-        private _loadPrimitive(context: string, node: IGLTFNode, mesh: IGLTFMesh, primitive: IGLTFMeshPrimitive, onSuccess: (vertexData: VertexData, loadMaterial: (index: number) => void) => void): void {
-            var subMaterials = (node.babylonMesh.material as MultiMaterial).subMaterials;
-
-            if (primitive.mode && primitive.mode !== EMeshPrimitiveMode.TRIANGLES) {
-                // TODO: handle other primitive modes
-                throw new Error(context + ": Mode " + primitive.mode + " is not currently supported");
+            if (!mesh.primitives || mesh.primitives.length === 0) {
+                throw new Error(context + ": Primitives are missing");
             }
 
-            this._createMorphTargets(node, mesh, primitive);
+            this._createMorphTargets(context, node, mesh);
 
-            this._loadVertexDataAsync(context, mesh, primitive, vertexData => {
-                this._loadMorphTargetsData(context, mesh, primitive, vertexData, node.babylonMesh);
+            this._loadAllVertexDataAsync(context, mesh, () => {
+                this._loadMorphTargets(context, node, mesh);
 
-                var loadMaterial = (index: number) => {
+                var primitives = mesh.primitives;
+
+                var vertexData = new VertexData();
+                for (var primitive of primitives) {
+                    vertexData.merge(primitive.vertexData);
+                }
+
+                new Geometry(node.babylonMesh.name, this._babylonScene, vertexData, false, node.babylonMesh);
+
+                // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
+                // Sub meshes must be cleared and created after setting vertex data because of mesh._createGlobalSubMesh.
+                node.babylonMesh.subMeshes = [];
+
+                var verticesStart = 0;
+                var indicesStart = 0;
+                for (var index = 0; index < primitives.length; index++) {
+                    var vertexData = primitives[index].vertexData;
+                    var verticesCount = vertexData.positions.length;
+                    var indicesCount = vertexData.indices.length;
+                    SubMesh.AddToMesh(index, verticesStart, verticesCount, indicesStart, indicesCount, node.babylonMesh);
+                    verticesStart += verticesCount;
+                    indicesStart += indicesCount;
+                };
+
+                var multiMaterial = new MultiMaterial(node.babylonMesh.name, this._babylonScene);
+                node.babylonMesh.material = multiMaterial;
+                var subMaterials = multiMaterial.subMaterials;
+                for (var index = 0; index < primitives.length; index++) {
+                    var primitive = primitives[index];
+
                     if (primitive.material == null) {
                         subMaterials[index] = this._getDefaultMaterial();
                     }
@@ -461,15 +445,32 @@ module BABYLON.GLTF2 {
                         });
                     }
                 };
-
-                onSuccess(vertexData, loadMaterial);
             });
+        }
+
+        private _loadAllVertexDataAsync(context: string, mesh: IGLTFMesh, onSuccess: () => void): void {
+            var primitives = mesh.primitives;
+            var numRemainingPrimitives = primitives.length;
+            for (var index = 0; index < primitives.length; index++) {
+                let primitive = primitives[index];
+                this._loadVertexDataAsync(context + "/primitive/" + index, mesh, primitive, vertexData => {
+                    primitive.vertexData = vertexData;
+                    if (--numRemainingPrimitives === 0) {
+                        onSuccess();
+                    }
+                });
+            }
         }
 
         private _loadVertexDataAsync(context: string, mesh: IGLTFMesh, primitive: IGLTFMeshPrimitive, onSuccess: (vertexData: VertexData) => void): void {
             var attributes = primitive.attributes;
             if (!attributes) {
                 throw new Error(context + ": Attributes are missing");
+            }
+
+            if (primitive.mode && primitive.mode !== EMeshPrimitiveMode.TRIANGLES) {
+                // TODO: handle other primitive modes
+                throw new Error(context + ": Mode " + primitive.mode + " is not currently supported");
             }
 
             var vertexData = new VertexData();
@@ -534,72 +535,115 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _createMorphTargets(node: IGLTFNode, mesh: IGLTFMesh, primitive: IGLTFMeshPrimitive): void {
-            var targets = primitive.targets;
+        private _createMorphTargets(context: string, node: IGLTFNode, mesh: IGLTFMesh): void {
+            var primitives = mesh.primitives;
+
+            var targets = primitives[0].targets;
             if (!targets) {
                 return;
             }
 
-            if (!node.babylonMesh.morphTargetManager) {
-                node.babylonMesh.morphTargetManager = new MorphTargetManager();
+            for (var primitive of primitives) {
+                if (!primitive.targets || primitive.targets.length != targets.length) {
+                    throw new Error(context + ": All primitives are required to list the same number of targets");
+                }
             }
 
+            var morphTargetManager = new MorphTargetManager();
+            node.babylonMesh.morphTargetManager = morphTargetManager;
             for (var index = 0; index < targets.length; index++) {
                 var weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
-                node.babylonMesh.morphTargetManager.addTarget(new MorphTarget("morphTarget" + index, weight));
+                morphTargetManager.addTarget(new MorphTarget("morphTarget" + index, weight));
             }
         }
 
-        private _loadMorphTargetsData(context: string, mesh: IGLTFMesh, primitive: IGLTFMeshPrimitive, vertexData: VertexData, babylonMesh: Mesh): void {
-            var targets = primitive.targets;
-            if (!targets) {
+        private _loadMorphTargets(context: string, node: IGLTFNode, mesh: IGLTFMesh): void {
+            var morphTargetManager = node.babylonMesh.morphTargetManager;
+            if (!morphTargetManager) {
                 return;
             }
 
-            for (var index = 0; index < targets.length; index++) {
-                let babylonMorphTarget = babylonMesh.morphTargetManager.getTarget(index);
-                var attributes = targets[index];
-                for (let attribute in attributes) {
-                    var accessor = GLTFUtils.GetArrayItem(this._gltf.accessors, attributes[attribute]);
-                    if (!accessor) {
-                        throw new Error(context + "/targets/" + index + ": Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
+            this._loadAllMorphTargetVertexDataAsync(context, node, mesh, () => {
+                var numTargets = morphTargetManager.numTargets;
+                for (var index = 0; index < numTargets; index++) {
+                    var vertexData = new VertexData();
+                    for (var primitive of mesh.primitives) {
+                        vertexData.merge(primitive.targetsVertexData[index]);
                     }
 
-                    this._loadAccessorAsync("#/accessors/" + accessor.index, accessor, data => {
-                        if (accessor.name) {
-                            babylonMorphTarget.name = accessor.name;
-                        }
+                    var target = morphTargetManager.getTarget(index);
+                    target.setNormals(vertexData.normals);
+                    target.setPositions(vertexData.positions);
+                    target.setTangents(vertexData.tangents);
+                }
+            });
+        }
 
-                        // glTF stores morph target information as deltas while babylon.js expects the final data.
-                        // As a result we have to add the original data to the delta to calculate the final data.
-                        var values = <Float32Array>data;
-                        switch (attribute) {
-                            case "NORMAL":
-                                GLTFUtils.ForEach(values, (v, i) => values[i] += vertexData.normals[i]);
-                                babylonMorphTarget.setNormals(values);
-                                break;
-                            case "POSITION":
-                                GLTFUtils.ForEach(values, (v, i) => values[i] += vertexData.positions[i]);
-                                babylonMorphTarget.setPositions(values);
-                                break;
-                            case "TANGENT":
-                                // Tangent data for morph targets is stored as xyz delta.
-                                // The vertexData.tangent is stored as xyzw.
-                                // So we need to skip every fourth vertexData.tangent.
-                                for (var i = 0, j = 0; i < values.length; i++, j++) {
-                                    values[i] += vertexData.tangents[j];
-                                    if ((i + 1) % 3 == 0) {
-                                        j++;
-                                    }
-                                }
-                                babylonMorphTarget.setTangents(values);
-                                break;
-                            default:
-                                Tools.Warn("Ignoring unrecognized attribute '" + attribute + "'");
-                                break;
+        private _loadAllMorphTargetVertexDataAsync(context: string, node: IGLTFNode, mesh: IGLTFMesh, onSuccess: () => void): void {
+            var numRemainingTargets = mesh.primitives.length * node.babylonMesh.morphTargetManager.numTargets;
+
+            for (var primitive of mesh.primitives) {
+                var targets = primitive.targets;
+                primitive.targetsVertexData = new Array<VertexData>(targets.length);
+                for (let index = 0; index < targets.length; index++) {
+                    this._loadMorphTargetVertexDataAsync(context + "/targets/" + index, primitive.vertexData, targets[index], vertexData => {
+                        primitive.targetsVertexData[index] = vertexData;
+                        if (--numRemainingTargets === 0) {
+                            onSuccess();
                         }
                     });
                 }
+            }
+        }
+
+        private _loadMorphTargetVertexDataAsync(context: string, vertexData: VertexData, attributes: { [name: string]: number }, onSuccess: (vertexData: VertexData) => void): void {
+            var targetVertexData = new VertexData();
+
+            var numRemainingAttributes = Object.keys(attributes).length;
+            for (let attribute in attributes) {
+                var accessor = GLTFUtils.GetArrayItem(this._gltf.accessors, attributes[attribute]);
+                if (!accessor) {
+                    throw new Error(context + ": Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
+                }
+
+                this._loadAccessorAsync("#/accessors/" + accessor.index, accessor, data => {
+                    // glTF stores morph target information as deltas while babylon.js expects the final data.
+                    // As a result we have to add the original data to the delta to calculate the final data.
+                    var values = <Float32Array>data;
+                    switch (attribute) {
+                        case "NORMAL":
+                            for (var i = 0; i < values.length; i++) {
+                                values[i] += vertexData.normals[i];
+                            }
+                            targetVertexData.normals = values;
+                            break;
+                        case "POSITION":
+                            for (var i = 0; i < values.length; i++) {
+                                values[i] += vertexData.positions[i];
+                            }
+                            targetVertexData.positions = values;
+                            break;
+                        case "TANGENT":
+                            // Tangent data for morph targets is stored as xyz delta.
+                            // The vertexData.tangent is stored as xyzw.
+                            // So we need to skip every fourth vertexData.tangent.
+                            for (var i = 0, j = 0; i < values.length; i++, j++) {
+                                values[i] += vertexData.tangents[j];
+                                if ((i + 1) % 3 == 0) {
+                                    j++;
+                                }
+                            }
+                            targetVertexData.tangents = values;
+                            break;
+                        default:
+                            Tools.Warn("Ignoring unrecognized attribute '" + attribute + "'");
+                            break;
+                    }
+
+                    if (--numRemainingAttributes === 0) {
+                        onSuccess(targetVertexData);
+                    }
+                });
             }
         }
 
@@ -819,7 +863,7 @@ module BABYLON.GLTF2 {
                     case "influence":
                         getNextOutputValue = () => {
                             var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
-                            var value = new Array(numTargets);
+                            var value = new Array<number>(numTargets);
                             for (var i = 0; i < numTargets; i++) {
                                 value[i] = outputData[outputBufferOffset++];
                             }
@@ -1258,7 +1302,7 @@ module BABYLON.GLTF2 {
                     break;
                 case "MASK":
                     babylonMaterial.alphaCutOff = (material.alphaCutoff == null ? 0.5 : material.alphaCutoff);
-                    
+
                     if (colorFactor) {
                         if (colorFactor[3] == 0) {
                             babylonMaterial.alphaCutOff = 1;
