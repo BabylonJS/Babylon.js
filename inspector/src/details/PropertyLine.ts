@@ -61,9 +61,6 @@ module INSPECTOR {
         private _onMouseDragHandler: EventListener;
         private _onMouseUpHandler: EventListener;
 
-        private _sliderfill: HTMLElement;
-        private _slidertrack: HTMLElement;
-
         private _textValue: HTMLElement;
         /** Save previous Y mouse position */
         private _prevY: number;
@@ -337,14 +334,6 @@ module INSPECTOR {
         }
 
         /**
-         * Returns true if the given instance is a simple type  
-         */
-        private static _IS_TYPE_SIMPLE(inst: any) {
-            let type = Helpers.GET_TYPE(inst);
-            return PropertyLine._SIMPLE_TYPE.indexOf(type) != -1;
-        }
-
-        /**
          * Returns true if the type of this property is simple, false otherwise.
          * Returns true if the value is null
          */
@@ -394,7 +383,6 @@ module INSPECTOR {
                 if (this._children.length == 0) {
                     let objToDetail = this.value;
                     let propToDisplay = (<any>PROPERTIES)[Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
-                    let propertyLine = null;
 
                     for (let prop of propToDisplay) {
                         let infos = new Property(prop, this._property.value);

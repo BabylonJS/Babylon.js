@@ -262,33 +262,6 @@
                 });
         }
 
-        private isTriangleOnBoundingBox(triangle: DecimationTriangle): boolean {
-            var gCount = 0;
-            triangle.vertices.forEach((vertex) => {
-                var count = 0;
-                var vPos = vertex.position;
-                var bbox = this._mesh.getBoundingInfo().boundingBox;
-
-                if (bbox.maximum.x - vPos.x < this.boundingBoxEpsilon || vPos.x - bbox.minimum.x > this.boundingBoxEpsilon)
-                    ++count;
-
-                if (bbox.maximum.y === vPos.y || vPos.y === bbox.minimum.y)
-                    ++count;
-
-                if (bbox.maximum.z === vPos.z || vPos.z === bbox.minimum.z)
-                    ++count;
-
-                if (count > 1) {
-                    ++gCount;
-                };
-            });
-            if (gCount > 1) {
-                console.log(triangle, gCount);
-            }
-            return gCount > 1;
-
-        }
-
         private runDecimation(settings: ISimplificationSettings, submeshIndex: number, successCallback: () => void) {
             var targetCount = ~~(this.triangles.length * settings.quality);
             var deletedTriangles = 0;
@@ -563,9 +536,9 @@
             if (submeshIndex > 0) {
                 this._reconstructedMesh.subMeshes = [];
                 submeshesArray.forEach(submesh => {
-                    new SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount,/* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                    SubMesh.AddToMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount,/* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+                SubMesh.AddToMesh(originalSubmesh.materialIndex, startingVertex, vertexCount,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         }
 
@@ -588,7 +561,7 @@
                 var v1 = t.vertices[(s + 1) % 3];
                 var v2 = t.vertices[(s + 2) % 3];
 
-                if ((v1 === vertex2 || v2 === vertex2)/* && !this.isTriangleOnBoundingBox(t)*/) {
+                if ((v1 === vertex2 || v2 === vertex2)) {
                     deletedArray[i] = true;
                     delTr.push(t);
                     continue;

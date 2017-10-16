@@ -4,6 +4,8 @@
     "module": "commonjs",
     "target": "es5",
     "noImplicitAny": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true
   }
 }

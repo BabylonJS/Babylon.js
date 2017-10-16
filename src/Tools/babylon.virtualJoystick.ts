@@ -287,15 +287,6 @@ module BABYLON {
             }
         }
 
-        private _clearCanvas(): void {
-            if (this._leftJoystick) {
-                VirtualJoystick.vjCanvasContext.clearRect(0, 0, VirtualJoystick.vjCanvasWidth / 2, VirtualJoystick.vjCanvasHeight);
-            }
-            else {
-                VirtualJoystick.vjCanvasContext.clearRect(VirtualJoystick.vjCanvasWidth / 2, 0, VirtualJoystick.vjCanvasWidth, VirtualJoystick.vjCanvasHeight);
-            }
-        }
-
         private _drawVirtualJoystick() {
             if (this.pressed) {
                 this._touches.forEach((key, touch) => {

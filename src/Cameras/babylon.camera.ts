@@ -257,8 +257,6 @@
                 super._updateCache();
             }
 
-            var engine = this.getEngine();
-
             this._cache.position.copyFrom(this.position);
             this._cache.upVector.copyFrom(this.upVector);
         }

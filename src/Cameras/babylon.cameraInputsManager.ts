@@ -96,7 +96,6 @@ module BABYLON {
             this.noPreventDefault = noPreventDefault;
 
             for (var cam in this.attached) {
-                var input = this.attached[cam];
                 this.attached[cam].attachControl(element, noPreventDefault);
             }
         }
@@ -107,7 +106,6 @@ module BABYLON {
             }
 
             for (var cam in this.attached) {
-                var input = this.attached[cam];
                 this.attached[cam].detachControl(element);
 
                 if (disconnect) {

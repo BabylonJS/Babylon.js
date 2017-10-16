@@ -160,7 +160,6 @@
                 2.0, 4.0, 6.0, 8.0
             ];
             */
-            var samples = 16;
             var samplerOffsets = new Array<number>();
 
             for (var i = -8; i < 8; i++) {
@@ -225,8 +224,6 @@
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                                                     this._scene.getEngine(), false,
                                                     "#define SAMPLES " + numSamples + "\n#define SSAO");
-
-            var viewport = new Vector2(0, 0);
 
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {

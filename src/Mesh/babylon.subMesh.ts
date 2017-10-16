@@ -37,6 +37,10 @@
 
         private _currentMaterial: Material;
 
+        public static AddToMesh(materialIndex: number, verticesStart: number, verticesCount: number, indexStart: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true): SubMesh {
+            return new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox);
+        }
+
         constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart: number, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
             super();
             this._mesh = mesh;

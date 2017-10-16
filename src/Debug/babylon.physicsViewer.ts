@@ -121,8 +121,6 @@
         }
 
         private _getDebugMesh(impostor:PhysicsImpostor, scene:Scene):AbstractMesh{
-            var body = impostor.physicsBody;
-            var shape = body.shapes[0];
             var mesh:AbstractMesh;
             
             if (impostor.type == PhysicsImpostor.BoxImpostor) {

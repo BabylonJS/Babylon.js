@@ -3,13 +3,11 @@
 module BABYLON.GUI {
     export class TextBlock extends Control {
         private _text = "";
-        private _textY: number;
         private _textWrapping = false;
         private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
 
         private _lines: any[];
-        private _totalHeight: number;
         private _resizeToFit: boolean = false;
 
         /**
@@ -167,7 +165,6 @@ module BABYLON.GUI {
         }
 
         protected _renderLines(context: CanvasRenderingContext2D): void {
-            var width = this._currentMeasure.width;
             var height = this._currentMeasure.height;
 
             if (!this._fontOffset) {

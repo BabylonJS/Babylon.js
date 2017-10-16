@@ -20,7 +20,6 @@ module BABYLON {
         private _useInGammaSpace = false;
         private _generateHarmonics = true;
         private _noMipmap: boolean;
-        private _extensions: string[];
         private _textureMatrix: Matrix;
         private _size: number;
         private _usePMREMGenerator: boolean;

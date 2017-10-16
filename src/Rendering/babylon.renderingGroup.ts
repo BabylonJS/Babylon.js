@@ -7,7 +7,6 @@
         private _depthOnlySubMeshes = new SmartArray<SubMesh>(256);
         private _particleSystems = new SmartArray<IParticleSystem>(256);
         private _spriteManagers = new SmartArray<SpriteManager>(256);        
-        private _activeVertices: number;
 
         private _opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number;
         private _alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number;

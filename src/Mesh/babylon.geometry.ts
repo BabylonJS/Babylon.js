@@ -896,7 +896,7 @@
                         var indexStart = subMeshesData[(i * 5) + 3];
                         var indexCount = subMeshesData[(i * 5) + 4];
 
-                        var subMesh = new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
+                        SubMesh.AddToMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
                     }
                 }
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
@@ -990,7 +990,7 @@
                 for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
                     var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
 
-                    var subMesh = new SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                    SubMesh.AddToMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
                 }
             }
 

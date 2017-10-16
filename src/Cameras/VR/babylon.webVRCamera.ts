@@ -44,14 +44,7 @@ module BABYLON {
         private _specsVersion: string = "1.1";
         private _attached: boolean = false;
 
-        private _oldSize: BABYLON.Size;
-        private _oldHardwareScaleFactor: number;
-
         private _frameData: any;
-
-        private _quaternionCache: Quaternion;
-
-        private _positionOffset: Vector3 = Vector3.Zero();
 
         protected _descendants: Array<Node> = [];
 

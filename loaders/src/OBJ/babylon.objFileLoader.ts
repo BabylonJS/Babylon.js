@@ -20,7 +20,7 @@ module BABYLON {
          * @param data
          * @param rootUrl
          */
-        public parseMTL = function (scene: BABYLON.Scene, data: string, rootUrl: string) {
+        public parseMTL(scene: BABYLON.Scene, data: string, rootUrl: string) {
             //Split the lines from the file
             var lines = data.split('\n');
             //Space char

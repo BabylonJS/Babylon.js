@@ -14,7 +14,6 @@ module BABYLON.GUI {
         private _font: string;
         public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-        private _lastMeasuredFont: string;
         protected _fontOffset: {ascent: number, height: number, descent: number};
         private _color = "";
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -510,7 +509,6 @@ module BABYLON.GUI {
             this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
             this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
 
-            var engine = scene.getEngine();
             var globalViewport = this._host._getGlobalViewport(scene);
             var projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
 

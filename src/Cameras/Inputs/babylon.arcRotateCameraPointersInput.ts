@@ -1,6 +1,4 @@
 module BABYLON {
-    var eventPrefix = Tools.GetPointerPrefix();
-
     export class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
 
