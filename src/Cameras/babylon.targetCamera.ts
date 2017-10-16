@@ -287,8 +287,6 @@ module BABYLON {
                 // Computing target and final matrix
                 this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             } else {
-                //update the up vector!
-                BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
                 this._currentTarget.copyFrom(this._getLockedTargetPosition());
             }
 
