@@ -138,7 +138,6 @@
             var pathArray = options.pathArray;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
-            var offset = options.offset;
             var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var updatable = options.updatable;
@@ -148,7 +147,7 @@
                 // only pathArray and sideOrientation parameters are taken into account for positions update
                 Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Tmp.Vector3[0]);         // minimum
                 Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, Tmp.Vector3[1]);
-                var positionFunction = positions => {
+                var positionFunction = (positions: number[] | Float32Array) => {
                     var minlg = pathArray[0].length;
                     var i = 0;
                     var ns = (instance._originalBuilderSideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
@@ -368,7 +367,7 @@
             var lines = options.lines;
 
             if (instance) { // lines update
-                var positionFunction = positions => {
+                var positionFunction = (positions: number[] | Float32Array) => {
                     var i = 0;
                     for (var l = 0; l < lines.length; l++) {
                         var points = lines[l];
@@ -744,7 +743,7 @@
 
             ground._setReady(false);
 
-            var onload = img => {
+            var onload = (img: HTMLImageElement) => {
                 // Getting height map data
                 var canvas = document.createElement("canvas");
                 var context = canvas.getContext("2d");
@@ -876,7 +875,8 @@
             options.arc = (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
 
             // tube geometry
-            var tubePathArray = (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) => {
+            var tubePathArray = (path: Vector3[], path3D: Path3D, circlePaths: Vector3[][], radius: number, tessellation: number, 
+                                radiusFunction: { (i: number, distance: number): number; }, cap: number, arc: number) => {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var distances = path3D.getDistances();
@@ -906,7 +906,7 @@
                     index++;
                 }
                 // cap
-                var capPath = (nbPoints, pathIndex) => {
+                var capPath = (nbPoints: number, pathIndex: number): Array<Vector3> => {
                     var pointCap = Array<Vector3>();
                     for (var i = 0; i < nbPoints; i++) {
                         pointCap.push(path[pathIndex]);
@@ -1216,7 +1216,8 @@
         // Privates
         private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, cap: number, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh, invertUV: boolean, frontUVs: Vector4, backUVs: Vector4): Mesh {
             // extrusion geometry
-            var extrusionPathArray = (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom) => {
+            var extrusionPathArray = (shape: Vector3[], curve: Vector3[], path3D: Path3D, shapePaths: Vector3[][], scale: number, rotation: number, 
+                                        scaleFunction:{ (i: number, distance: number): number; } , rotateFunction:{ (i: number, distance: number): number; } , cap: number, custom: boolean) => {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var binormals = path3D.getBinormals();
@@ -1247,7 +1248,7 @@
                     index++;
                 }
                 // cap
-                var capPath = shapePath => {
+                var capPath = (shapePath: Vector3[])  => {
                     var pointCap = Array<Vector3>();
                     var barycenter = Vector3.Zero();
                     var i: number;

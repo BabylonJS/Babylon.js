@@ -20,7 +20,6 @@ module BABYLON {
         private _useInGammaSpace = false;
         private _generateHarmonics = true;
         private _noMipmap: boolean;
-        private _extensions: string[];
         private _textureMatrix: Matrix;
         private _size: number;
         private _usePMREMGenerator: boolean;
@@ -124,8 +123,8 @@ module BABYLON {
             var mipLevels = 0;
             var floatArrayView: Float32Array = null;
 
-            var mipmapGenerator = (!this._useInGammaSpace && this.getScene().getEngine().getCaps().textureFloat) ? (data: ArrayBufferView[]) => {
-                var mips = [];
+            var mipmapGenerator = (!this._useInGammaSpace && this.getScene().getEngine().getCaps().textureFloat) ? (data: ArrayBufferView[]): Array<Array<Float32Array>> => {
+                var mips = new Array<Array<Float32Array>>();
                 var startIndex = 30;
                 for (var level = 0; level < mipLevels; level++) {
                     mips.push([]);
@@ -278,7 +277,7 @@ module BABYLON {
                         byteArray = new Uint8Array(byteBuffer);
                     }
 
-                    var dataFace = <Float32Array>data[HDRCubeTexture._facesMapping[j]];
+                    var dataFace = <Float32Array>((<any>data)[HDRCubeTexture._facesMapping[j]]);
 
                     // If special cases.
                     if (this._useInGammaSpace || byteArray) {
@@ -450,7 +449,7 @@ module BABYLON {
          * @return The packed binary data.
          */
         public static generateBabylonHDROnDisk(url: string, size: number, onError: (() => void) = null): void {
-            var callback = function (buffer) {
+            var callback = function (buffer: ArrayBuffer) {
                 var data = new Blob([buffer], { type: 'application/octet-stream' });
 
                 // Returns a URL you can use as a href.

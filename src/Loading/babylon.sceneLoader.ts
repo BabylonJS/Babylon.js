@@ -147,7 +147,7 @@
 
             SceneLoader.OnPluginActivatedObservable.notifyObservers(registeredPlugin.plugin);
 
-            var dataCallback = data => {
+            var dataCallback = (data: any) => {
                 if (scene.isDisposed) {
                     onError("Scene has been disposed");
                     return;
@@ -163,7 +163,7 @@
                 }
             };
 
-            var manifestChecked = success => {
+            var manifestChecked = (success: any) => {
                 Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress, database, useArrayBuffer, request => {
                     onError(request.status + " " + request.statusText);
                 });
@@ -185,7 +185,16 @@
             }
             // Loading file from disk via input file or drag'n'drop
             else {
-                Tools.ReadFile(sceneFilename, dataCallback, onProgress, useArrayBuffer);
+                var fileOrString = <any> sceneFilename;
+
+                if (fileOrString.name) { // File
+                    Tools.ReadFile(fileOrString, dataCallback, onProgress, useArrayBuffer);
+                } else if (FilesInput.FilesToLoad[sceneFilename]) {
+                    Tools.ReadFile(FilesInput.FilesToLoad[sceneFilename], dataCallback, onProgress, useArrayBuffer);
+                } else {
+                    onError("Unable to find file named " + sceneFilename);
+                    return;
+                }
             }
         }
 
@@ -252,9 +261,9 @@
             SceneLoader._loadData(rootUrl, sceneFilename, scene, (plugin, data) => {
                 if ((<any>plugin).importMesh) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
-                    var meshes = [];
-                    var particleSystems = [];
-                    var skeletons = [];
+                    var meshes = new Array<AbstractMesh>();
+                    var particleSystems = new Array<ParticleSystem>();
+                    var skeletons = new Array<Skeleton>();
                     if (!syncedPlugin.importMesh(meshNames, scene, data, rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;
                     }

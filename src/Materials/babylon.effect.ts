@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class EffectFallbacks {
-        private _defines = {};
+        private _defines: {[key: string]: Array<String>} = {};
 
         private _currentRank = 32;
         private _maxRank = -1;
@@ -118,7 +118,7 @@
         private _vertexSourceCodeOverride: string;
         private _fragmentSourceCodeOverride: string;
 
-        private _program: WebGLProgram;
+        public _program: WebGLProgram;
         private _valueCache: { [key: string]: any };
         private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
@@ -159,8 +159,8 @@
         
             this.uniqueId = Effect._uniqueIdSeed++;
 
-            var vertexSource;
-            var fragmentSource;
+            var vertexSource: any;
+            var fragmentSource: any;
 
             if (baseName.vertexElement) {
                 vertexSource = document.getElementById(baseName.vertexElement);
@@ -271,11 +271,13 @@
         }
 
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
-            // DOM element ?
-            if (vertex instanceof HTMLElement) {
-                var vertexCode = Tools.GetDOMTextContent(vertex);
-                callback(vertexCode);
-                return;
+            if (Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (vertex instanceof HTMLElement) {
+                    var vertexCode = Tools.GetDOMTextContent(vertex);
+                    callback(vertexCode);
+                    return;
+                }
             }
 
             // Base64 encoded ?
@@ -304,11 +306,13 @@
         }
 
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
-            // DOM element ?
-            if (fragment instanceof HTMLElement) {
-                var fragmentCode = Tools.GetDOMTextContent(fragment);
-                callback(fragmentCode);
-                return;
+            if (Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (fragment instanceof HTMLElement) {
+                    var fragmentCode = Tools.GetDOMTextContent(fragment);
+                    callback(fragmentCode);
+                    return;
+                }
             }
 
             // Base64 encoded ?
@@ -468,7 +472,7 @@
                                         return p1 + "{X}";
                                     });
                                 }
-                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
+                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
                             }
                         } else {
                             if (!this._engine.supportsUniformBuffers) {
@@ -849,7 +853,7 @@
 
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
             if (!matrices) {
-                return;
+                return this;
             }
 
             this._valueCache[uniformName] = null;
@@ -961,8 +965,8 @@
         }
 
         // Statics
-        public static ShadersStore = {};
-        public static IncludesShadersStore = {};
+        public static ShadersStore: { [key: string]: string } = {};
+        public static IncludesShadersStore: { [key: string]: string } = {};
 
         public static ResetCache() {
             Effect._baseCache = {};

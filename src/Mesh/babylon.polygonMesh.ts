@@ -102,7 +102,7 @@ module BABYLON {
 
         private _points = new PolygonPoints();
         private _outlinepoints = new PolygonPoints();
-        private _holes = [];
+        private _holes = new Array<PolygonPoints>();
 
         private _name: string;
         private _scene: Scene;
@@ -150,9 +150,9 @@ module BABYLON {
         build(updatable: boolean = false, depth?:number): Mesh {
             var result = new Mesh(this._name, this._scene);
 
-            var normals = [];
-            var positions = [];
-            var uvs = [];
+            var normals = new Array<number>();
+            var positions = new Array<number>();
+            var uvs = new Array<number>();
 
             var bounds = this._points.computeBounds();
             this._points.elements.forEach((p) => {
@@ -161,7 +161,7 @@ module BABYLON {
                 uvs.push((p.x - bounds.min.x) / bounds.width, (p.y - bounds.min.y) / bounds.height);
             });
 
-            var indices = [];
+            var indices = new Array<number>();
 
             let res = Earcut.earcut(this._epoints, this._eholes, 2);
 

@@ -84,8 +84,7 @@ module BABYLON {
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public maxSimultaneousLights: number; 
-
-        private _worldViewProjectionMatrix = Matrix.Zero();
+        
         private _renderId: number;
 
         constructor(name: string, scene: Scene) {
@@ -139,7 +138,7 @@ module BABYLON {
                                 if (!textures[i].isReady()) {
                                     return false;
                                 } else {
-                                    defines[textureDefines[i]] = true;
+                                    (<any>defines)[textureDefines[i]] = true;
                                 }
                             }
                         }
@@ -153,7 +152,7 @@ module BABYLON {
                                 if (!textures[i].isReady()) {
                                     return false;
                                 } else {
-                                    defines[textureDefines[i]] = true;
+                                    (<any>defines)[textureDefines[i]] = true;
                                 }
                             }
                         }
@@ -217,7 +216,7 @@ module BABYLON {
                     "normalSamplerX", "normalSamplerY", "normalSamplerZ"
                 ];
 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

@@ -1,8 +1,10 @@
 ﻿module BABYLON {
-    export class Skeleton {
+    export class Skeleton implements IAnimatable {
         public bones = new Array<Bone>();
         public dimensionsAtRest: Vector3;
         public needInitialSkinMatrix = false;
+
+        public animations: Array<Animation>;
 
         private _scene: Scene;
         private _isDirty = true;
@@ -138,7 +140,7 @@
             var frameOffset = this._getHighestAnimationFrame() + 1;
 
             // make a dictionary of source skeleton's bones, so exact same order or doublely nested loop is not required
-            var boneDict = {};
+            var boneDict: {[key: string]: Bone} = {};
             var sourceBones = source.bones;
             var nBones: number;
             var i: number;

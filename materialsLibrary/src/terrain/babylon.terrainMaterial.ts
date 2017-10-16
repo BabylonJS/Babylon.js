@@ -81,7 +81,6 @@ module BABYLON {
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public maxSimultaneousLights: number; 
 
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _renderId: number;
 
         constructor(name: string, scene: Scene) {
@@ -205,7 +204,7 @@ module BABYLON {
                     "bump1Sampler", "bump2Sampler", "bump3Sampler"
                 ];
 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

@@ -71,10 +71,9 @@ If you want to contribute, please read our [contribution guidelines](https://git
  - Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
  - Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .babylon scenes with a simple drag'n'drop
  - Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
- - 3DS Max [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/3ds%20Max) can be used to generate a .babylon file from 3DS Max
- - Blender [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender) can be used to generate a .babylon file from Blender 3d
- - Unity 5 [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Unity%205) can be used to export your geometries from Unity 5 scene editor
- - FBX command line [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/FBX) can be used to generate a .babylon file from .FBX file (animations are supported)
+ - 3DS Max [exporter](https://github.com/BabylonJS/Exporters/tree/master/3ds%20Max) can be used to generate a .babylon file from 3DS Max
+ - Blender [exporter](https://github.com/BabylonJS/Exporters/tree/master/Blender) can be used to generate a .babylon file from Blender 3d
+ - Unity 5 [exporter](https://github.com/BabylonJS/Exporters/tree/master/Unity%205) can be used to export your geometries from Unity 5 scene editor(animations are supported)
 
 ## Features
 To get a complete list of supported features, please visit our [website](http://www.babylonjs.com/#specifications).

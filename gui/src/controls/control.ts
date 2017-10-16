@@ -14,7 +14,6 @@ module BABYLON.GUI {
         private _font: string;
         public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-        private _lastMeasuredFont: string;
         protected _fontOffset: {ascent: number, height: number, descent: number};
         private _color = "";
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -93,7 +92,13 @@ module BABYLON.GUI {
         * An event triggered when the control is marked as dirty
         * @type {BABYLON.Observable}
         */
-        public onDirtyObservable = new Observable<Control>();           
+        public onDirtyObservable = new Observable<Control>();         
+        
+         /**
+        * An event triggered after the control is drawn
+        * @type {BABYLON.Observable}
+        */
+        public onAfterDrawObservable = new Observable<Control>();    
 
         public get alpha(): number {
             return this._alpha;
@@ -504,7 +509,6 @@ module BABYLON.GUI {
             this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
             this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
 
-            var engine = scene.getEngine();
             var globalViewport = this._host._getGlobalViewport(scene);
             var projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
 
@@ -929,6 +933,7 @@ module BABYLON.GUI {
 
         public dispose() {
             this.onDirtyObservable.clear();
+            this.onAfterDrawObservable.clear();
             this.onPointerDownObservable.clear();
             this.onPointerEnterObservable.clear();
             this.onPointerMoveObservable.clear();
@@ -979,7 +984,7 @@ module BABYLON.GUI {
             return Control._VERTICAL_ALIGNMENT_CENTER;
         }
 
-        private static _FontHeightSizes = {};
+        private static _FontHeightSizes: {[key: string]: {ascent: number, height: number, descent: number}} = {};
 
         public static _GetFontOffset(font: string): {ascent: number, height: number, descent: number} {
 

@@ -4,7 +4,7 @@ module BABYLON {
         public static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/generic/';
         public static readonly MODEL_FILENAME:string = 'generic.babylon';
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
         }
 

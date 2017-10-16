@@ -8,34 +8,7 @@ module INSPECTOR {
         public static format(obj: any, prop: string): string {
             // Get original value;
             let value = obj[prop];
-            // test if type PrimitiveAlignment is available (only included in canvas2d)
-            if (BABYLON.PrimitiveAlignment) {
-                if (obj instanceof BABYLON.PrimitiveAlignment) {
-                    if (prop === 'horizontal') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignLeft:
-                                return 'left';
-                            case BABYLON.PrimitiveAlignment.AlignRight:
-                                return 'right';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    } else if (prop === 'vertical') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignTop:
-                                return 'top';
-                            case BABYLON.PrimitiveAlignment.AlignBottom:
-                                return 'bottom';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    }
-                }
-            }
+            // test if type PrimitiveAlignment is available (only included in canvas2d)           
             return value;
         }
 
@@ -221,7 +194,7 @@ module INSPECTOR {
         }
 
         /** Replaces the default display with an input */
-        private _displayInput(e) {
+        private _displayInput(e: any) {
             // Remove the displayInput event listener
             this._valueDiv.removeEventListener('click', this._displayInputHandler);
             // Set input value
@@ -361,14 +334,6 @@ module INSPECTOR {
         }
 
         /**
-         * Returns true if the given instance is a simple type  
-         */
-        private static _IS_TYPE_SIMPLE(inst: any) {
-            let type = Helpers.GET_TYPE(inst);
-            return PropertyLine._SIMPLE_TYPE.indexOf(type) != -1;
-        }
-
-        /**
          * Returns true if the type of this property is simple, false otherwise.
          * Returns true if the value is null
          */
@@ -417,8 +382,7 @@ module INSPECTOR {
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
                     let objToDetail = this.value;
-                    let propToDisplay = PROPERTIES[Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
-                    let propertyLine = null;
+                    let propToDisplay = (<any>PROPERTIES)[Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
 
                     for (let prop of propToDisplay) {
                         let infos = new Property(prop, this._property.value);
@@ -495,7 +459,7 @@ module INSPECTOR {
                 })
 
                 this._textValue = Helpers.CreateDiv('value-text', this._valueDiv);
-                this._textValue.innerText = this.value;
+                this._textValue.innerText = Helpers.Trunc(this.value).toString();
                 this._textValue.style.paddingLeft = '10px';
                 this._textValue.style.display = 'inline-block';
             }
@@ -503,6 +467,7 @@ module INSPECTOR {
 
         private _rangeHandler() {
             Scheduler.getInstance().pause = true;
+            //this._input.style.backgroundSize = ((parseFloat(this._input.value) - parseFloat(this._input.min)) * 100 / ( parseFloat(this._input.max) - parseFloat(this._input.min))) + '% 100%'
             this._textValue.innerText = this._input.value;
             this.validateInput(this._input.value, false);
         }
@@ -510,12 +475,12 @@ module INSPECTOR {
         private _isSliderType() { //Check if property have slider definition
             return this._property  && 
             PROPERTIES.hasOwnProperty(this._property.obj.constructor.name) &&
-            PROPERTIES[this._property.obj.constructor.name].hasOwnProperty('slider') && 
-            PROPERTIES[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
+            (<any>PROPERTIES)[this._property.obj.constructor.name].hasOwnProperty('slider') && 
+            (<any>PROPERTIES)[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
         }
 
         private _getSliderProperty() {
-            return PROPERTIES[this._property.obj.constructor.name].slider[this.name]
+            return (<any>PROPERTIES)[this._property.obj.constructor.name].slider[this.name]
         }
     }
 }

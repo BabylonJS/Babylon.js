@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class MaterialHelper {
 
-        public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: MaterialDefines, key: string): void {
+        public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
             defines._needUVs = true;
             defines[key] = true;
             if (texture.getTextureMatrix().isIdentity(true)) {
@@ -24,7 +24,7 @@
             }
         }
 
-        public static PrepareDefinesForMisc(mesh: AbstractMesh, scene: Scene, useLogarithmicDepth: boolean, pointsCloud, fogEnabled: boolean, defines: MaterialDefines): void {
+        public static PrepareDefinesForMisc(mesh: AbstractMesh, scene: Scene, useLogarithmicDepth: boolean, pointsCloud: boolean, fogEnabled: boolean, defines: any): void {
             if (defines._areMiscDirty) {
                 defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
                 defines["POINTSIZE"] = (pointsCloud || scene.forcePointsCloud);
@@ -32,7 +32,7 @@
             }
         }
 
-        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: MaterialDefines, useInstances: boolean, forceAlphaTest = false): void {
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, forceAlphaTest = false): void {
             var changed = false;
 
             if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
@@ -60,7 +60,7 @@
             }
         }
 
-        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): boolean {
+        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): boolean {
             if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
                 return false;
             }               
@@ -115,7 +115,7 @@
             return true;
         }
 
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
+        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: any, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
             if (!defines._areLightsDirty) {
                 return defines._needNormals;
             }
@@ -222,8 +222,8 @@
             return needNormals;
         }
 
-        public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: MaterialDefines, maxSimultaneousLights = 4): void {
-            var uniformsList: string[], uniformBuffersList: string[], samplersList: string[], defines: MaterialDefines;
+        public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
+            var uniformsList: string[], uniformBuffersList: string[], samplersList: string[], defines: any;
 
             if ((<EffectCreationOptions>uniformsListOrOptions).uniformsNames) {
                 var options = <EffectCreationOptions>uniformsListOrOptions;
@@ -264,7 +264,7 @@
             }
         }
 
-        public static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks, maxSimultaneousLights = 4): void {
+        public static HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbacks, maxSimultaneousLights = 4): void {
             if (!defines["SHADOWS"]) {
                 return;
             }
@@ -292,7 +292,7 @@
             }
         }
 
-        public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines): void {
+        public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {
             var influencers = defines["NUM_MORPH_INFLUENCERS"];
 
             if (influencers > 0) {
@@ -318,7 +318,7 @@
             }
         }
 
-        public static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines, fallbacks: EffectFallbacks): void {
+        public static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: any, fallbacks: EffectFallbacks): void {
             if (defines["NUM_BONE_INFLUENCERS"] > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
 
@@ -331,7 +331,7 @@
             }
         }
 
-        public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
+        public static PrepareAttributesForInstances(attribs: string[], defines: any): void {
             if (defines["INSTANCES"]) {
                 attribs.push("world0");
                 attribs.push("world1");
@@ -354,7 +354,7 @@
             light.transferToEffect(effect, lightIndex + "");
         }
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
             var lightIndex = 0;
             for (var light of mesh._lightSources) {
                 let scaledIntensity = light.getScaledIntensity();
@@ -406,7 +406,7 @@
             effect.setFloatArray("morphTargetInfluences", (<Mesh>abstractMesh).morphTargetManager.influences);
         }
 
-        public static BindLogDepth(defines: MaterialDefines, effect: Effect, scene: Scene): void {
+        public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
             if (defines["LOGARITHMICDEPTH"]) {
                 effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
             }

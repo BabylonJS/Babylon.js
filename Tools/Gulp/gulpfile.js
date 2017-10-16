@@ -45,7 +45,11 @@ var tsConfig = {
     declarationFiles: true,
     typescript: require('typescript'),
     experimentalDecorators: true,
-    isolatedModules: false
+    isolatedModules: false,
+    noImplicitAny: true,
+    noImplicitReturns: true,
+    noImplicitThis: true,
+    noUnusedLocals: true
 };
 var tsProject = typescript.createProject(tsConfig);
 
@@ -55,7 +59,11 @@ var externalTsConfig = {
     declarationFiles: true,
     typescript: require('typescript'),
     experimentalDecorators: true,
-    isolatedModules: false
+    isolatedModules: false,
+    noImplicitAny: true,
+    noImplicitReturns: true,
+    noImplicitThis: true,
+    noUnusedLocals: true
 };
 
 function processDependency(kind, dependency, filesToLoad) {

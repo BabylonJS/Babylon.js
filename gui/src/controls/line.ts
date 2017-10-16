@@ -3,7 +3,6 @@
 module BABYLON.GUI {
     export class Line extends Control {
         private _lineWidth = 1;
-        private _background: string;
         private _x1 = new ValueAndUnit(0);
         private _y1 = new ValueAndUnit(0);
         private _x2 = new ValueAndUnit(0);

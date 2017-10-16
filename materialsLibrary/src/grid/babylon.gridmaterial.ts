@@ -106,8 +106,6 @@ module BABYLON {
                 }
             }
 
-            var engine = scene.getEngine();
-
             if (defines.TRANSPARENT !== (this.opacity < 1.0)) {
                 defines.TRANSPARENT = !defines.TRANSPARENT;
                 defines.markAsUnprocessed();

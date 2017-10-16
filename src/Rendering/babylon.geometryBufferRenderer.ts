@@ -5,11 +5,6 @@ module BABYLON {
         private _effect: Effect;
         private _ratio: number;
 
-        private _viewMatrix = Matrix.Zero();
-        private _projectionMatrix = Matrix.Zero();
-        private _transformMatrix = Matrix.Zero();
-        private _worldViewProjection = Matrix.Zero();
-
         private _cachedDefines: string;
 
         private _enablePosition: boolean = false;
@@ -52,7 +47,6 @@ module BABYLON {
             var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
 
             var mesh = subMesh.getMesh();
-            var scene = mesh.getScene();
 
             // Alpha test
             if (material && material.needAlphaTesting()) {

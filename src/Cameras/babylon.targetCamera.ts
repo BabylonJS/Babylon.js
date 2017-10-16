@@ -17,7 +17,7 @@ module BABYLON {
         public noRotationConstraint = false;
 
         @serializeAsMeshReference("lockedTargetId")
-        public lockedTarget = null;
+        public lockedTarget: any = null;
 
         public _currentTarget = Vector3.Zero();
         public _viewMatrix = Matrix.Zero();

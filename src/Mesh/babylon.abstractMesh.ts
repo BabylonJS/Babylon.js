@@ -346,7 +346,6 @@
         private _collider: Collider;
         private _oldPositionForCollisions = new Vector3(0, 0, 0);
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
-        private _newPositionForCollisions = new Vector3(0, 0, 0);
 
 
         public get collisionMask(): number {
@@ -989,14 +988,14 @@
          */
         public setAbsolutePosition(absolutePosition: Vector3): AbstractMesh {
             if (!absolutePosition) {
-                return;
+                return this;
             }
             var absolutePositionX;
             var absolutePositionY;
             var absolutePositionZ;
             if (absolutePosition.x === undefined) {
                 if (arguments.length < 3) {
-                    return;
+                    return this;
                 }
                 absolutePositionX = arguments[0];
                 absolutePositionY = arguments[1];
@@ -1090,7 +1089,7 @@
          * Returns the AbstractMesh.
          */
         public setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix = false): AbstractMesh {
-            this._pivotMatrix = matrix;
+            this._pivotMatrix = matrix.clone();
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
 
@@ -1221,7 +1220,7 @@
          */
         public _updateSubMeshesBoundingInfo(matrix: Matrix): AbstractMesh {
             if (!this.subMeshes) {
-                return;
+                return this;
             }
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
@@ -1505,14 +1504,27 @@
         /** 
          * True if the mesh intersects another mesh or a SolidParticle object.  
          * Unless the parameter `precise` is set to `true` the intersection is computed according to Axis Aligned Bounding Boxes (AABB), else according to OBB (Oriented BBoxes)
+         * includeDescendants can be set to true to test if the mesh defined in parameters intersects with the current mesh or any child meshes
          * Returns a boolean.  
          */
-        public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise?: boolean): boolean {
+        public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise?: boolean, includeDescendants?: boolean): boolean {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;
             }
 
-            return this._boundingInfo.intersects(mesh._boundingInfo, precise);
+            if (this._boundingInfo.intersects(mesh._boundingInfo, precise)) {
+                return true;
+            }
+
+            if (includeDescendants) {
+                for (var child of this.getChildMeshes()) {
+                    if (child.intersectsMesh(mesh, precise, true)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /**
@@ -1552,7 +1564,7 @@
 
         public applyImpulse(force: Vector3, contactPoint: Vector3): AbstractMesh {
             if (!this.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.applyImpulse(force, contactPoint);
             return this;
@@ -1560,7 +1572,7 @@
 
         public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh {
             if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.createJoint(otherMesh.physicsImpostor, PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,

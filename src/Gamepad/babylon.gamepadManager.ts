@@ -11,8 +11,8 @@
         public onGamepadConnectedObservable: Observable<Gamepad>;
         public onGamepadDisconnectedObservable = new Observable<Gamepad>();
 
-        private _onGamepadConnectedEvent: (evt) => void;
-        private _onGamepadDisconnectedEvent: (evt) => void;
+        private _onGamepadConnectedEvent: (evt: any) => void;
+        private _onGamepadDisconnectedEvent: (evt: any) => void;
 
         constructor() {
             this.onGamepadConnectedObservable = new Observable<Gamepad>((observer) => {
@@ -113,7 +113,7 @@
             this._babylonGamepads = [];
         }
 
-        private _addNewGamepad(gamepad): Gamepad {
+        private _addNewGamepad(gamepad: any): Gamepad {
             if (!this._oneGamepadConnected) {
                 this._oneGamepadConnected = true;
             }
