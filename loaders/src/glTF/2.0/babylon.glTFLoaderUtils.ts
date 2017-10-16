@@ -29,12 +29,6 @@ module BABYLON.GLTF2 {
             return bufferView.buffer;
         }
 
-        public static ForEach(view: Uint16Array | Uint32Array | Float32Array, func: (nvalue: number, index: number) => void): void {
-            for (var index = 0; index < view.length; index++) {
-                func(view[index], index);
-            }
-        }
-
         public static ValidateUri(uri: string): boolean {
             return (uri.indexOf("..") === -1);
         }

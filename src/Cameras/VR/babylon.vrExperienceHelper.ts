@@ -34,7 +34,7 @@ module BABYLON {
         constructor(scene: Scene, public webVROptions: WebVROptions = {}) {
             this._scene = scene;
 
-            if (!this._scene.activeCamera) {
+            if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
                 this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
             }
             else {
