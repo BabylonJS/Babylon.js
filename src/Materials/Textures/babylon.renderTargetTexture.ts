@@ -305,10 +305,6 @@
                 }
             }
 
-            if (this.renderList && this.renderList.length === 0) {
-                return;
-            }
-
             this.onBeforeBindObservable.notifyObservers(this);
 
             // Set custom projection.

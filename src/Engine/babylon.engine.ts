@@ -2938,7 +2938,7 @@
                     } else {
                         Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
                     }
-                else if (buffer instanceof Array || typeof buffer === "string")
+                else if (buffer instanceof Array || typeof buffer === "string" || buffer instanceof ArrayBuffer)
                     Tools.LoadImage(buffer, onload, onerror, scene ? scene.database : null);
                 else
                     onload(<HTMLImageElement>buffer);
@@ -3690,13 +3690,15 @@
             var isKTX = false;
             var isDDS = false;
             var lastDot = rootUrl.lastIndexOf('.');
-            var extension = forcedExtension ? forcedExtension : rootUrl.substring(lastDot).toLowerCase();
-            if (this._textureFormatInUse) {
-                extension = this._textureFormatInUse;
-                rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
-                isKTX = true;
-            } else {
-                isDDS = (extension === ".dds");
+            if (lastDot > -1) {
+                var extension = forcedExtension ? forcedExtension : rootUrl.substring(lastDot).toLowerCase();
+                if (this._textureFormatInUse) {
+                    extension = this._textureFormatInUse;
+                    rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
+                    isKTX = true;
+                } else {
+                    isDDS = (extension === ".dds");
+                }
             }
 
             let onerror = (request: XMLHttpRequest, exception: any) => {
