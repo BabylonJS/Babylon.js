@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var LegacyPBRMaterialDefines = (function (_super) {
+    var LegacyPBRMaterialDefines = /** @class */ (function (_super) {
         __extends(LegacyPBRMaterialDefines, _super);
         function LegacyPBRMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -110,7 +110,7 @@ var BABYLON;
      * For more information, please refer to the documentation :
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
-    var LegacyPBRMaterial = (function (_super) {
+    var LegacyPBRMaterial = /** @class */ (function (_super) {
         __extends(LegacyPBRMaterial, _super);
         /**
          * Instantiates a new PBRMaterial instance.
