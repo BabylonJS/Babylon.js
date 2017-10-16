@@ -5077,7 +5077,9 @@ var BABYLON;
                     case 6:// Mesh reference
                         destination[property] = sourceProperty;
                         break;
-                    case 1: // Texture
+                    case 1:// Texture
+                        destination[property] = (instanciate || sourceProperty.isRenderTarget) ? sourceProperty : sourceProperty.clone();
+                        break;
                     case 2: // Color3
                     case 3: // FresnelParameters
                     case 4: // Vector2
