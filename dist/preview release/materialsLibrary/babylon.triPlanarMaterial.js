@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var TriPlanarMaterialDefines = (function (_super) {
+    var TriPlanarMaterialDefines = /** @class */ (function (_super) {
         __extends(TriPlanarMaterialDefines, _super);
         function TriPlanarMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -44,7 +44,7 @@ var BABYLON;
         }
         return TriPlanarMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var TriPlanarMaterial = (function (_super) {
+    var TriPlanarMaterial = /** @class */ (function (_super) {
         __extends(TriPlanarMaterial, _super);
         function TriPlanarMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
