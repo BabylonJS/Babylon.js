@@ -49425,8 +49425,8 @@ var BABYLON;
                 var scene = camera.getScene();
                 var engine = scene.getEngine();
                 var maxSize = engine.getCaps().maxTextureSize;
-                var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderingCanvas().width) * this._options) | 0;
-                var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderingCanvas().height) * this._options) | 0;
+                var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * this._options) | 0;
+                var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * this._options) | 0;
                 var desiredWidth = (this._options.width || requiredWidth);
                 var desiredHeight = this._options.height || requiredHeight;
                 if (this.adaptScaleToCurrentViewport) {

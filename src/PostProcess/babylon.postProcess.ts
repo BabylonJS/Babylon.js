@@ -219,8 +219,8 @@
                 var engine = scene.getEngine();
                 var maxSize = engine.getCaps().maxTextureSize;
 
-                var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderingCanvas().width) * <number>this._options) | 0;
-                var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderingCanvas().height) * <number>this._options) | 0;
+                var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this._options) | 0;
+                var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
 
                 var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
                 var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;

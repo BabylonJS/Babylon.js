@@ -49425,8 +49425,8 @@ var BABYLON;
                 var scene = camera.getScene();
                 var engine = scene.getEngine();
                 var maxSize = engine.getCaps().maxTextureSize;
-                var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderingCanvas().width) * this._options) | 0;
-                var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderingCanvas().height) * this._options) | 0;
+                var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * this._options) | 0;
+                var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * this._options) | 0;
                 var desiredWidth = (this._options.width || requiredWidth);
                 var desiredHeight = this._options.height || requiredHeight;
                 if (this.adaptScaleToCurrentViewport) {
@@ -73536,6 +73536,16 @@ var BABYLON;
             _this._caps.vertexArrayObject = false;
             _this._caps.instancedArrays = false;
             BABYLON.Tools.Log("Babylon.js null engine (v" + BABYLON.Engine.Version + ") launched");
+            // Wrappers
+            if (typeof URL === "undefined") {
+                URL = {
+                    createObjectURL: function () { },
+                    revokeObjectURL: function () { }
+                };
+            }
+            if (typeof Blob === "undefined") {
+                Blob = function () { };
+            }
             return _this;
         }
         NullEngine.prototype.createVertexBuffer = function (vertices) {
@@ -73656,6 +73666,23 @@ var BABYLON;
         };
         NullEngine.prototype.bindBuffers = function (vertexBuffers, indexBuffer, effect) {
         };
+        NullEngine.prototype.wipeCaches = function (bruteForce) {
+            if (this.preventCacheWipeBetweenFrames) {
+                return;
+            }
+            this.resetTextureCache();
+            this._currentEffect = null;
+            if (bruteForce) {
+                this._currentProgram = null;
+                this._stencilState.reset();
+                this._depthCullingState.reset();
+                this.setDepthFunctionToLessOrEqual();
+                this._alphaState.reset();
+            }
+            this._cachedVertexBuffers = null;
+            this._cachedIndexBuffer = null;
+            this._cachedEffectForVertexBuffers = null;
+        };
         NullEngine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
         };
         NullEngine.prototype._createTexture = function () {
@@ -73682,6 +73709,88 @@ var BABYLON;
                 onLoad();
             }
             return texture;
+        };
+        NullEngine.prototype.createRenderTargetTexture = function (size, options) {
+            var fullOptions = new BABYLON.RenderTargetCreationOptions();
+            if (options !== undefined && typeof options === "object") {
+                fullOptions.generateMipMaps = options.generateMipMaps;
+                fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
+                fullOptions.type = options.type === undefined ? BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
+                fullOptions.samplingMode = options.samplingMode === undefined ? BABYLON.Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            }
+            else {
+                fullOptions.generateMipMaps = options;
+                fullOptions.generateDepthBuffer = true;
+                fullOptions.generateStencilBuffer = false;
+                fullOptions.type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+                fullOptions.samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
+            }
+            var texture = new BABYLON.InternalTexture(this, BABYLON.InternalTexture.DATASOURCE_RENDERTARGET);
+            var width = size.width || size;
+            var height = size.height || size;
+            texture._depthStencilBuffer = {};
+            texture._framebuffer = {};
+            texture.baseWidth = width;
+            texture.baseHeight = height;
+            texture.width = width;
+            texture.height = height;
+            texture.isReady = true;
+            texture.samples = 1;
+            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.samplingMode = fullOptions.samplingMode;
+            texture.type = fullOptions.type;
+            texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
+            return texture;
+        };
+        NullEngine.prototype.updateTextureSamplingMode = function (samplingMode, texture) {
+            texture.samplingMode = samplingMode;
+        };
+        NullEngine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight, forceFullscreenViewport) {
+            if (this._currentRenderTarget) {
+                this.unBindFramebuffer(this._currentRenderTarget);
+            }
+            this._currentRenderTarget = texture;
+            this._currentFramebuffer = texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer;
+            if (this._cachedViewport && !forceFullscreenViewport) {
+                this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
+            }
+        };
+        NullEngine.prototype.unBindFramebuffer = function (texture, disableGenerateMipMaps, onBeforeUnbind) {
+            if (disableGenerateMipMaps === void 0) { disableGenerateMipMaps = false; }
+            this._currentRenderTarget = null;
+            if (onBeforeUnbind) {
+                if (texture._MSAAFramebuffer) {
+                    this._currentFramebuffer = texture._framebuffer;
+                }
+                onBeforeUnbind();
+            }
+            this._currentFramebuffer = null;
+        };
+        NullEngine.prototype.createDynamicVertexBuffer = function (vertices) {
+            var vbo = {
+                capacity: 1,
+                references: 1,
+                is32Bits: false
+            };
+            return vbo;
+        };
+        NullEngine.prototype.updateDynamicIndexBuffer = function (indexBuffer, indices, offset) {
+            if (offset === void 0) { offset = 0; }
+        };
+        NullEngine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset, count) {
+        };
+        NullEngine.prototype._bindTextureDirectly = function (target, texture) {
+            if (this._activeTexturesCache[this._activeTexture] !== texture) {
+                this._activeTexturesCache[this._activeTexture] = texture;
+            }
+        };
+        NullEngine.prototype._bindTexture = function (channel, texture) {
+            if (channel < 0) {
+                return;
+            }
+            this._bindTextureDirectly(0, texture);
         };
         return NullEngine;
     }(BABYLON.Engine));

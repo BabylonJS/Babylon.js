@@ -17,6 +17,7 @@
 - Added support for Windows Motion Controllers ([Lewis Weaver](https://github.com/leweaver))
 - Added support for Particle animation in ParticleSystem. [Doc here](http://doc.babylonjs.com/tutorials/particles#particle-animation) ([Ibraheem Osama](https://github.com/IbraheemOsama))
 - More robust TypeScript code with *noImplicitAny*, *noImplicitThis* and *noImplicitReturns* compiler options ([deltakosh](https://github.com/deltakosh))
+- Introduced `NullEngine` which can be used to use Babylon.js in headless mode. [Doc here](http://doc.babylonjs.com/generals/nullengine) ([deltakosh](https://github.com/deltakosh)) 
 
 ## Updates
 - Added `MultiObserver`. [Doc here](http://doc.babylonjs.com/overviews/observables#multiobserver) ([deltakosh](https://github.com/deltakosh))
