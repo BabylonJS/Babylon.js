@@ -122,6 +122,7 @@ body {
     border-radius: 3px;
     font-family: 'Montserrat';
     pointer-events: none;
+    user-select: none;
 }
 .navbar {
     height: 40px;
