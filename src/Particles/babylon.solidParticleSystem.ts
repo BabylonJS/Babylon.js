@@ -79,8 +79,6 @@
         private _cam_axisZ: Vector3 = Vector3.Zero();
         private _cam_axisY: Vector3 = Vector3.Zero();
         private _cam_axisX: Vector3 = Vector3.Zero();
-        private _axisX: Vector3 = Axis.X;
-        private _axisY: Vector3 = Axis.Y;
         private _axisZ: Vector3 = Axis.Z;
         private _camera: TargetCamera;
         private _particle: SolidParticle;
@@ -228,7 +226,6 @@
             var facetUV: number[] = [];       // submesh UV
             var facetCol: number[] = [];      // submesh colors
             var barycenter: Vector3 = Tmp.Vector3[0];
-            var rand: number;
             var sizeO: number = size;
 
             while (f < totalFacets) {
@@ -345,7 +342,9 @@
         }
 
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options): SolidParticle {
+        private _meshBuilder(p: number, shape: Vector3[], positions: number[], meshInd: IndicesArray, indices: number[], 
+                    meshUV: number[] | Float32Array, uvs: number[], meshCol: number[] | Float32Array, colors: number[], meshNor: number[] | Float32Array, normals: number[], 
+                    idx: number, idxInShape: number, options: any): SolidParticle {
             var i;
             var u = 0;
             var c = 0;
@@ -428,7 +427,7 @@
         }
 
         // returns a shape array from positions array
-        private _posToShape(positions): Vector3[] {
+        private _posToShape(positions: number[] | Float32Array): Vector3[] {
             var shape = [];
             for (var i = 0; i < positions.length; i += 3) {
                 shape.push(new Vector3(positions[i], positions[i + 1], positions[i + 2]));
@@ -437,7 +436,7 @@
         }
 
         // returns a shapeUV array from a Vector4 uvs
-        private _uvsToShapeUV(uvs): number[] {
+        private _uvsToShapeUV(uvs: number[] | Float32Array): number[] {
             var shapeUV = [];
             if (uvs) {
                 for (var i = 0; i < uvs.length; i++)
@@ -581,7 +580,7 @@
         */
         public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): SolidParticleSystem {
             if (!this._updatable) {
-                return;
+                return this;
             }
 
             // custom beforeUpdate

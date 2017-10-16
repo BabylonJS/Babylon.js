@@ -325,9 +325,8 @@
             }
 
             if (this._forcedOutputTexture) {
-                var size = this._forcedOutputTexture.width / this._forcedOutputTexture.height;
+                return this._forcedOutputTexture.width / this._forcedOutputTexture.height;
             }
-
             return this.width / this.height;
         }
         

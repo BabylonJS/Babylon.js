@@ -93,7 +93,7 @@ module BABYLON.GLTF1 {
     var parseObject = (parsedObjects: any, runtimeProperty: string, gltfRuntime: IGLTFRuntime) => {
         for (var object in parsedObjects) {
             var parsedObject = parsedObjects[object];
-            gltfRuntime[runtimeProperty][object] = parsedObject;
+            (<any>gltfRuntime)[runtimeProperty][object] = parsedObject;
         }
     };
 
@@ -110,15 +110,7 @@ module BABYLON.GLTF1 {
         }
     };
 
-    var replaceInString = (str: string, searchValue: string, replaceValue: string) => {
-        while (str.indexOf(searchValue) !== -1) {
-            str = str.replace(searchValue, replaceValue);
-        }
-
-        return str;
-    };
-
-    var getAttribute = (attributeParameter: IGLTFTechniqueParameter) => {
+    var getAttribute = (attributeParameter: IGLTFTechniqueParameter): string => {
         if (attributeParameter.semantic === "NORMAL") {
             return "normal";
         } else if (attributeParameter.semantic === "POSITION") {
@@ -133,20 +125,10 @@ module BABYLON.GLTF1 {
             var channel = Number(attributeParameter.semantic.split("_")[1]);
             return "uv" + (channel === 0 ? "" : channel + 1);
         }
+
+        return null;
     };
 
-    /**
-    * Returns the animation path (glTF -> Babylon)
-    */
-    var getAnimationPath = (path: string): string => {
-        var index = glTFAnimationPaths.indexOf(path);
-
-        if (index !== -1) {
-            return babylonAnimationPaths[index];
-        }
-
-        return path;
-    };
 
     /**
     * Loads and creates animations
@@ -456,15 +438,6 @@ module BABYLON.GLTF1 {
         }
     };
 
-    var printMat = (m: Float32Array) => {
-        console.log(
-            m[0] + "\t" + m[1] + "\t" + m[2] + "\t" + m[3] + "\n" +
-            m[4] + "\t" + m[5] + "\t" + m[6] + "\t" + m[7] + "\n" +
-            m[8] + "\t" + m[9] + "\t" + m[10] + "\t" + m[11] + "\n" +
-            m[12] + "\t" + m[13] + "\t" + m[14] + "\t" + m[15] + "\n"
-        );
-    }
-
     /**
     * Imports a skeleton
     */
@@ -477,12 +450,6 @@ module BABYLON.GLTF1 {
         if (!skins.babylonSkeleton) {
             return newSkeleton;
         }
-
-        // Matrices
-        var accessor = gltfRuntime.accessors[skins.inverseBindMatrices];
-        var buffer = GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
-
-        var bindShapeMatrix = Matrix.FromArray(skins.bindShapeMatrix);
 
         // Find the root bones
         var nodesToRoot: INodeToRoot[] = [];
@@ -608,10 +575,10 @@ module BABYLON.GLTF1 {
         var vertexData = new VertexData();
         var geometry = new Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
 
-        var verticesStarts = [];
-        var verticesCounts = [];
-        var indexStarts = [];
-        var indexCounts = [];
+        var verticesStarts = new Array<number>();
+        var verticesCounts = new Array<number>();
+        var indexStarts = new Array<number>();
+        var indexCounts = new Array<number>();
 
         for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
             var meshID = meshes[meshIndex];
@@ -738,7 +705,7 @@ module BABYLON.GLTF1 {
                     //continue;
                 }
 
-                var subMesh = new SubMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
+                SubMesh.AddToMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
                 index++;
             }
         }
@@ -828,7 +795,7 @@ module BABYLON.GLTF1 {
 
             if (light) {
                 if (light.type === "ambient") {
-                    var ambienLight: IGLTFAmbienLight = light[light.type];
+                    var ambienLight: IGLTFAmbienLight = (<any>light)[light.type];
                     var hemiLight = new HemisphericLight(node.light, Vector3.Zero(), gltfRuntime.scene);
                     hemiLight.name = node.name;
 
@@ -839,7 +806,7 @@ module BABYLON.GLTF1 {
                     lastNode = hemiLight;
                 }
                 else if (light.type === "directional") {
-                    var directionalLight: IGLTFDirectionalLight = light[light.type];
+                    var directionalLight: IGLTFDirectionalLight = (<any>light)[light.type];
                     var dirLight = new DirectionalLight(node.light, Vector3.Zero(), gltfRuntime.scene);
                     dirLight.name = node.name;
 
@@ -850,7 +817,7 @@ module BABYLON.GLTF1 {
                     lastNode = dirLight;
                 }
                 else if (light.type === "point") {
-                    var pointLight: IGLTFPointLight = light[light.type];
+                    var pointLight: IGLTFPointLight = (<any>light)[light.type];
                     var ptLight = new PointLight(node.light, Vector3.Zero(), gltfRuntime.scene);
                     ptLight.name = node.name;
 
@@ -861,7 +828,7 @@ module BABYLON.GLTF1 {
                     lastNode = ptLight;
                 }
                 else if (light.type === "spot") {
-                    var spotLight: IGLTFSpotLight = light[light.type];
+                    var spotLight: IGLTFSpotLight = (<any>light)[light.type];
                     var spLight = new SpotLight(node.light, Vector3.Zero(), Vector3.Zero(), 0, 0, gltfRuntime.scene);
                     spLight.name = node.name;
 
@@ -887,7 +854,6 @@ module BABYLON.GLTF1 {
 
             if (camera) {
                 if (camera.type === "orthographic") {
-                    var orthographicCamera: IGLTFCameraOrthographic = camera[camera.type];
                     var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene);
 
                     orthoCamera.name = node.name;
@@ -897,7 +863,7 @@ module BABYLON.GLTF1 {
                     lastNode = orthoCamera;
                 }
                 else if (camera.type === "perspective") {
-                    var perspectiveCamera: IGLTFCameraPerspective = camera[camera.type];
+                    var perspectiveCamera: IGLTFCameraPerspective = (<any>camera)[camera.type];
                     var persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene);
 
                     persCamera.name = node.name;
@@ -1016,7 +982,7 @@ module BABYLON.GLTF1 {
     /**
     * onBind shaderrs callback to set uniforms and matrices
     */
-    var onBindShaderMaterial = (mesh: Mesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: Object, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
+    var onBindShaderMaterial = (mesh: Mesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: {[key: string]: IGLTFTechniqueParameter}, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
         var materialValues = material.values || technique.parameters;
 
         for (var unif in unTreatedUniforms) {
@@ -1040,7 +1006,7 @@ module BABYLON.GLTF1 {
                 }
             }
             else {
-                var value = materialValues[technique.uniforms[unif]];
+                var value = (<any>materialValues)[technique.uniforms[unif]];
                 if (!value) {
                     continue;
                 }
@@ -1067,7 +1033,7 @@ module BABYLON.GLTF1 {
     * Prepare uniforms to send the only one time
     * Loads the appropriate textures
     */
-    var prepareShaderMaterialUniforms = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, unTreatedUniforms: Object) => {
+    var prepareShaderMaterialUniforms = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, unTreatedUniforms: {[key: string]: IGLTFTechniqueParameter}) => {
         var materialValues = material.values || technique.parameters;
         var techniqueUniforms = technique.uniforms;
 
@@ -1077,7 +1043,7 @@ module BABYLON.GLTF1 {
         for (var unif in unTreatedUniforms) {
             var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
             var type = uniform.type;
-            var value = materialValues[techniqueUniforms[unif]];
+            var value = (<any>materialValues)[techniqueUniforms[unif]];
 
             if (value === undefined) {
                 // In case the value is the same for all materials
@@ -1125,7 +1091,7 @@ module BABYLON.GLTF1 {
     /**
     * Shader compilation success
     */
-    var onShaderCompileSuccess = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, unTreatedUniforms: Object, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
+    var onShaderCompileSuccess = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, unTreatedUniforms: {[key: string]: IGLTFTechniqueParameter}, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
         return (_: Effect) => {
             prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
 
@@ -1138,7 +1104,7 @@ module BABYLON.GLTF1 {
     /**
     * Returns the appropriate uniform if already handled by babylon
     */
-    var parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, unTreatedUniforms: Object): string => {
+    var parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, unTreatedUniforms: {[key: string]: IGLTFTechniqueParameter}): string => {
         for (var unif in technique.uniforms) {
             var uniform = technique.uniforms[unif];
             var uniformParameter: IGLTFTechniqueParameter = technique.parameters[uniform];
@@ -1399,7 +1365,7 @@ module BABYLON.GLTF1 {
             var vertexTokenizer = new Tokenizer(vertexShader);
             var pixelTokenizer = new Tokenizer(pixelShader);
 
-            var unTreatedUniforms: Object = {};
+            var unTreatedUniforms: {[key: string]: IGLTFTechniqueParameter} = {};
             var uniforms = [];
             var attributes = [];
             var samplers = [];
@@ -1549,7 +1515,7 @@ module BABYLON.GLTF1 {
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
 
-            var gltfRuntime = GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
+            GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
                 gltfRuntime.importOnlyMeshes = true;
 
                 if (meshesNames === "") {
@@ -1569,8 +1535,8 @@ module BABYLON.GLTF1 {
                 // Create nodes
                 this._createNodes(gltfRuntime);
 
-                var meshes = [];
-                var skeletons = [];
+                var meshes = new Array<AbstractMesh>();
+                var skeletons = new Array<Skeleton>();
 
                 // Fill arrays of meshes and skeletons
                 for (var nde in gltfRuntime.nodes) {

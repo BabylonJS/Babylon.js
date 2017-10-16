@@ -146,7 +146,7 @@ module BABYLON {
                 }
             }
 
-            var createLoaders = {
+            var createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
                 1: GLTFFileLoader.CreateGLTFLoaderV1,
                 2: GLTFFileLoader.CreateGLTFLoaderV2
             };
@@ -187,7 +187,7 @@ module BABYLON {
             const ContentFormat = {
                 JSON: 0
             };
-            
+
             var length = binaryReader.readUint32();
             if (length != binaryReader.getLength()) {
                 onError("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
@@ -263,28 +263,14 @@ module BABYLON {
         }
 
         private static _parseVersion(version: string): { major: number, minor: number } {
-            if (!version) {
-                return null;
-            }
-
-            var parts = version.split(".");
-            if (parts.length != 2) {
-                return null;
-            }
-
-            var major = +parts[0];
-            if (isNaN(major)) {
-                return null;
-            }
-
-            var minor = +parts[1];
-            if (isNaN(minor)) {
+            var match = (version + "").match(/^(\d+)\.(\d+)$/);
+            if (!match) {
                 return null;
             }
 
             return {
-                major: major,
-                minor: minor
+                major: parseInt(match[1]),
+                minor: parseInt(match[2])
             };
         }
 
@@ -296,12 +282,12 @@ module BABYLON {
             return 0;
         }
 
-        private static _decodeBufferToText(view: ArrayBufferView): string {
+        private static _decodeBufferToText(buffer: Uint8Array): string {
             var result = "";
-            var length = view.byteLength;
+            var length = buffer.byteLength;
 
             for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode(view[i]);
+                result += String.fromCharCode(buffer[i]);
             }
 
             return result;

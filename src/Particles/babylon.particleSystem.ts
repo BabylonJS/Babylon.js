@@ -17,7 +17,7 @@
         layerMask: number;
         isStarted(): boolean;
         animate(): void;
-        render();
+        render(): number;
         dispose(): void;
         clone(name: string, newEmitter: any): IParticleSystem;
         serialize(): any;

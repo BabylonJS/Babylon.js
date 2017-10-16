@@ -52,7 +52,7 @@ module BABYLON {
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
         * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
         */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?) {
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any) {
             this.name = name;
             this._scene = scene;
             this._readyToPlayCallback = readyToPlayCallback;
@@ -251,7 +251,7 @@ module BABYLON {
             }
         }
 
-        public updateOptions(options) {
+        public updateOptions(options: any) {
             if (options) {
                 this.loop = options.loop || this.loop;
                 this.maxDistance = options.maxDistance || this.maxDistance;

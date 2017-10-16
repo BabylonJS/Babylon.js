@@ -99,7 +99,7 @@ var BABYLON;
             // check characters higher than ASCII to confirm binary
             var fileLength = reader.byteLength;
             for (var index = 0; index < fileLength; index++) {
-                if (reader.getUint8(index, false) > 127) {
+                if (reader.getUint8(index) > 127) {
                     return true;
                 }
             }
@@ -190,165 +190,165 @@ var BABYLON;
         function MTLFileLoader() {
             // All material loaded from the mtl will be set here
             this.materials = [];
-            /**
-             * This function will read the mtl file and create each material described inside
-             * This function could be improve by adding :
-             * -some component missing (Ni, Tf...)
-             * -including the specific options available
-             *
-             * @param scene
-             * @param data
-             * @param rootUrl
-             */
-            this.parseMTL = function (scene, data, rootUrl) {
-                //Split the lines from the file
-                var lines = data.split('\n');
-                //Space char
-                var delimiter_pattern = /\s+/;
-                //Array with RGB colors
-                var color;
-                //New material
-                var material;
-                //Look at each line
-                for (var i = 0; i < lines.length; i++) {
-                    var line = lines[i].trim();
-                    // Blank line or comment
-                    if (line.length === 0 || line.charAt(0) === '#') {
-                        continue;
+        }
+        /**
+         * This function will read the mtl file and create each material described inside
+         * This function could be improve by adding :
+         * -some component missing (Ni, Tf...)
+         * -including the specific options available
+         *
+         * @param scene
+         * @param data
+         * @param rootUrl
+         */
+        MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl) {
+            //Split the lines from the file
+            var lines = data.split('\n');
+            //Space char
+            var delimiter_pattern = /\s+/;
+            //Array with RGB colors
+            var color;
+            //New material
+            var material;
+            //Look at each line
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim();
+                // Blank line or comment
+                if (line.length === 0 || line.charAt(0) === '#') {
+                    continue;
+                }
+                //Get the first parameter (keyword)
+                var pos = line.indexOf(' ');
+                var key = (pos >= 0) ? line.substring(0, pos) : line;
+                key = key.toLowerCase();
+                //Get the data following the key
+                var value = (pos >= 0) ? line.substring(pos + 1).trim() : "";
+                //This mtl keyword will create the new material
+                if (key === "newmtl") {
+                    //Check if it is the first material.
+                    // Materials specifications are described after this keyword.
+                    if (material) {
+                        //Add the previous material in the material array.
+                        this.materials.push(material);
                     }
-                    //Get the first parameter (keyword)
-                    var pos = line.indexOf(' ');
-                    var key = (pos >= 0) ? line.substring(0, pos) : line;
-                    key = key.toLowerCase();
-                    //Get the data following the key
-                    var value = (pos >= 0) ? line.substring(pos + 1).trim() : "";
-                    //This mtl keyword will create the new material
-                    if (key === "newmtl") {
-                        //Check if it is the first material.
-                        // Materials specifications are described after this keyword.
-                        if (material) {
-                            //Add the previous material in the material array.
-                            this.materials.push(material);
-                        }
-                        //Create a new material.
-                        // value is the name of the material read in the mtl file
-                        material = new BABYLON.StandardMaterial(value, scene);
+                    //Create a new material.
+                    // value is the name of the material read in the mtl file
+                    material = new BABYLON.StandardMaterial(value, scene);
+                }
+                else if (key === "kd") {
+                    // Diffuse color (color under white light) using RGB values
+                    //value  = "r g b"
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
+                    //color = [r,g,b]
+                    //Set tghe color into the material
+                    material.diffuseColor = BABYLON.Color3.FromArray(color);
+                }
+                else if (key === "ka") {
+                    // Ambient color (color under shadow) using RGB values
+                    //value = "r g b"
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
+                    //color = [r,g,b]
+                    //Set tghe color into the material
+                    material.ambientColor = BABYLON.Color3.FromArray(color);
+                }
+                else if (key === "ks") {
+                    // Specular color (color when light is reflected from shiny surface) using RGB values
+                    //value = "r g b"
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
+                    //color = [r,g,b]
+                    //Set the color into the material
+                    material.specularColor = BABYLON.Color3.FromArray(color);
+                }
+                else if (key === "ke") {
+                    // Emissive color using RGB values
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
+                    material.emissiveColor = BABYLON.Color3.FromArray(color);
+                }
+                else if (key === "ns") {
+                    //value = "Integer"
+                    material.specularPower = parseFloat(value);
+                }
+                else if (key === "d") {
+                    //d is dissolve for current material. It mean alpha for BABYLON
+                    material.alpha = parseFloat(value);
+                    //Texture
+                    //This part can be improved by adding the possible options of texture
+                }
+                else if (key === "map_ka") {
+                    // ambient texture map with a loaded image
+                    //We must first get the folder of the image
+                    material.ambientTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                }
+                else if (key === "map_kd") {
+                    // Diffuse texture map with a loaded image
+                    material.diffuseTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                }
+                else if (key === "map_ks") {
+                    // Specular texture map with a loaded image
+                    //We must first get the folder of the image
+                    material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                }
+                else if (key === "map_ns") {
+                    //Specular
+                    //Specular highlight component
+                    //We must first get the folder of the image
+                    //
+                    //Not supported by BABYLON
+                    //
+                    //    continue;
+                }
+                else if (key === "map_bump") {
+                    //The bump texture
+                    material.bumpTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                }
+                else if (key === "map_d") {
+                    // The dissolve of the material
+                    material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                    //Options for illumination
+                }
+                else if (key === "illum") {
+                    //Illumination
+                    if (value === "0") {
+                        //That mean Kd == Kd
                     }
-                    else if (key === "kd") {
-                        // Diffuse color (color under white light) using RGB values
-                        //value  = "r g b"
-                        color = value.split(delimiter_pattern, 3).map(parseFloat);
-                        //color = [r,g,b]
-                        //Set tghe color into the material
-                        material.diffuseColor = BABYLON.Color3.FromArray(color);
+                    else if (value === "1") {
+                        //Color on and Ambient on
                     }
-                    else if (key === "ka") {
-                        // Ambient color (color under shadow) using RGB values
-                        //value = "r g b"
-                        color = value.split(delimiter_pattern, 3).map(parseFloat);
-                        //color = [r,g,b]
-                        //Set tghe color into the material
-                        material.ambientColor = BABYLON.Color3.FromArray(color);
+                    else if (value === "2") {
+                        //Highlight on
                     }
-                    else if (key === "ks") {
-                        // Specular color (color when light is reflected from shiny surface) using RGB values
-                        //value = "r g b"
-                        color = value.split(delimiter_pattern, 3).map(parseFloat);
-                        //color = [r,g,b]
-                        //Set the color into the material
-                        material.specularColor = BABYLON.Color3.FromArray(color);
+                    else if (value === "3") {
+                        //Reflection on and Ray trace on
                     }
-                    else if (key === "ke") {
-                        // Emissive color using RGB values
-                        color = value.split(delimiter_pattern, 3).map(parseFloat);
-                        material.emissiveColor = BABYLON.Color3.FromArray(color);
+                    else if (value === "4") {
+                        //Transparency: Glass on, Reflection: Ray trace on
                     }
-                    else if (key === "ns") {
-                        //value = "Integer"
-                        material.specularPower = parseFloat(value);
+                    else if (value === "5") {
+                        //Reflection: Fresnel on and Ray trace on
                     }
-                    else if (key === "d") {
-                        //d is dissolve for current material. It mean alpha for BABYLON
-                        material.alpha = parseFloat(value);
-                        //Texture
-                        //This part can be improved by adding the possible options of texture
+                    else if (value === "6") {
+                        //Transparency: Refraction on, Reflection: Fresnel off and Ray trace on
                     }
-                    else if (key === "map_ka") {
-                        // ambient texture map with a loaded image
-                        //We must first get the folder of the image
-                        material.ambientTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                    else if (value === "7") {
+                        //Transparency: Refraction on, Reflection: Fresnel on and Ray trace on
                     }
-                    else if (key === "map_kd") {
-                        // Diffuse texture map with a loaded image
-                        material.diffuseTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                    else if (value === "8") {
+                        //Reflection on and Ray trace off
                     }
-                    else if (key === "map_ks") {
-                        // Specular texture map with a loaded image
-                        //We must first get the folder of the image
-                        material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                    else if (value === "9") {
+                        //Transparency: Glass on, Reflection: Ray trace off
                     }
-                    else if (key === "map_ns") {
-                        //Specular
-                        //Specular highlight component
-                        //We must first get the folder of the image
-                        //
-                        //Not supported by BABYLON
-                        //
-                        //    continue;
-                    }
-                    else if (key === "map_bump") {
-                        //The bump texture
-                        material.bumpTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
-                    }
-                    else if (key === "map_d") {
-                        // The dissolve of the material
-                        material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
-                        //Options for illumination
-                    }
-                    else if (key === "illum") {
-                        //Illumination
-                        if (value === "0") {
-                            //That mean Kd == Kd
-                        }
-                        else if (value === "1") {
-                            //Color on and Ambient on
-                        }
-                        else if (value === "2") {
-                            //Highlight on
-                        }
-                        else if (value === "3") {
-                            //Reflection on and Ray trace on
-                        }
-                        else if (value === "4") {
-                            //Transparency: Glass on, Reflection: Ray trace on
-                        }
-                        else if (value === "5") {
-                            //Reflection: Fresnel on and Ray trace on
-                        }
-                        else if (value === "6") {
-                            //Transparency: Refraction on, Reflection: Fresnel off and Ray trace on
-                        }
-                        else if (value === "7") {
-                            //Transparency: Refraction on, Reflection: Fresnel on and Ray trace on
-                        }
-                        else if (value === "8") {
-                            //Reflection on and Ray trace off
-                        }
-                        else if (value === "9") {
-                            //Transparency: Glass on, Reflection: Ray trace off
-                        }
-                        else if (value === "10") {
-                            //Casts shadows onto invisible surfaces
-                        }
-                    }
-                    else {
-                        // console.log("Unhandled expression at line : " + i +'\n' + "with value : " + line);
+                    else if (value === "10") {
+                        //Casts shadows onto invisible surfaces
                     }
                 }
-                //At the end of the file, add the last material
-                this.materials.push(material);
-            };
-        }
+                else {
+                    // console.log("Unhandled expression at line : " + i +'\n' + "with value : " + line);
+                }
+            }
+            //At the end of the file, add the last material
+            this.materials.push(material);
+        };
         /**
          * Gets the texture for the material.
          *
@@ -884,7 +884,7 @@ var BABYLON;
             }
             //Create a BABYLON.Mesh list
             var babylonMeshesArray = []; //The mesh for babylon
-            var materialToUse = [];
+            var materialToUse = new Array();
             //Set data for each mesh
             for (var j = 0; j < meshesFromObj.length; j++) {
                 //check meshesNames (stlFileLoader)
@@ -1154,24 +1154,13 @@ var BABYLON;
             };
         };
         GLTFFileLoader._parseVersion = function (version) {
-            if (!version) {
-                return null;
-            }
-            var parts = version.split(".");
-            if (parts.length != 2) {
-                return null;
-            }
-            var major = +parts[0];
-            if (isNaN(major)) {
-                return null;
-            }
-            var minor = +parts[1];
-            if (isNaN(minor)) {
+            var match = (version + "").match(/^(\d+)\.(\d+)$/);
+            if (!match) {
                 return null;
             }
             return {
-                major: major,
-                minor: minor
+                major: parseInt(match[1]),
+                minor: parseInt(match[2])
             };
         };
         GLTFFileLoader._compareVersion = function (a, b) {
@@ -1185,11 +1174,11 @@ var BABYLON;
                 return -1;
             return 0;
         };
-        GLTFFileLoader._decodeBufferToText = function (view) {
+        GLTFFileLoader._decodeBufferToText = function (buffer) {
             var result = "";
-            var length = view.byteLength;
+            var length = buffer.byteLength;
             for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode(view[i]);
+                result += String.fromCharCode(buffer[i]);
             }
             return result;
         };
@@ -1422,12 +1411,6 @@ var BABYLON;
                 buffer[i * 2 + 1] = 1.0 - buffer[i * 2 + 1];
             }
         };
-        var replaceInString = function (str, searchValue, replaceValue) {
-            while (str.indexOf(searchValue) !== -1) {
-                str = str.replace(searchValue, replaceValue);
-            }
-            return str;
-        };
         var getAttribute = function (attributeParameter) {
             if (attributeParameter.semantic === "NORMAL") {
                 return "normal";
@@ -1448,16 +1431,7 @@ var BABYLON;
                 var channel = Number(attributeParameter.semantic.split("_")[1]);
                 return "uv" + (channel === 0 ? "" : channel + 1);
             }
-        };
-        /**
-        * Returns the animation path (glTF -> Babylon)
-        */
-        var getAnimationPath = function (path) {
-            var index = glTFAnimationPaths.indexOf(path);
-            if (index !== -1) {
-                return babylonAnimationPaths[index];
-            }
-            return path;
+            return null;
         };
         /**
         * Loads and creates animations
@@ -1712,12 +1686,6 @@ var BABYLON;
                 }
             }
         };
-        var printMat = function (m) {
-            console.log(m[0] + "\t" + m[1] + "\t" + m[2] + "\t" + m[3] + "\n" +
-                m[4] + "\t" + m[5] + "\t" + m[6] + "\t" + m[7] + "\n" +
-                m[8] + "\t" + m[9] + "\t" + m[10] + "\t" + m[11] + "\n" +
-                m[12] + "\t" + m[13] + "\t" + m[14] + "\t" + m[15] + "\n");
-        };
         /**
         * Imports a skeleton
         */
@@ -1728,10 +1696,6 @@ var BABYLON;
             if (!skins.babylonSkeleton) {
                 return newSkeleton;
             }
-            // Matrices
-            var accessor = gltfRuntime.accessors[skins.inverseBindMatrices];
-            var buffer = GLTF1.GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
-            var bindShapeMatrix = BABYLON.Matrix.FromArray(skins.bindShapeMatrix);
             // Find the root bones
             var nodesToRoot = [];
             var nodesToRootToAdd = [];
@@ -1829,10 +1793,10 @@ var BABYLON;
             }
             var vertexData = new BABYLON.VertexData();
             var geometry = new BABYLON.Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
-            var verticesStarts = [];
-            var verticesCounts = [];
-            var indexStarts = [];
-            var indexCounts = [];
+            var verticesStarts = new Array();
+            var verticesCounts = new Array();
+            var indexStarts = new Array();
+            var indexCounts = new Array();
             for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
                 var meshID = meshes[meshIndex];
                 var mesh = gltfRuntime.meshes[meshID];
@@ -1938,7 +1902,7 @@ var BABYLON;
                     if (mesh.primitives[i].mode !== 4) {
                         //continue;
                     }
-                    var subMesh = new BABYLON.SubMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
+                    BABYLON.SubMesh.AddToMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
                     index++;
                 }
             }
@@ -2059,7 +2023,6 @@ var BABYLON;
                 var camera = gltfRuntime.cameras[node.camera];
                 if (camera) {
                     if (camera.type === "orthographic") {
-                        var orthographicCamera = camera[camera.type];
                         var orthoCamera = new BABYLON.FreeCamera(node.camera, BABYLON.Vector3.Zero(), gltfRuntime.scene);
                         orthoCamera.name = node.name;
                         orthoCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
@@ -2607,7 +2570,7 @@ var BABYLON;
             GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
                 var _this = this;
                 scene.useRightHandedSystem = true;
-                var gltfRuntime = GLTF1.GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
+                GLTF1.GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
                     gltfRuntime.importOnlyMeshes = true;
                     if (meshesNames === "") {
                         gltfRuntime.importMeshesNames = [];
@@ -2624,8 +2587,8 @@ var BABYLON;
                     }
                     // Create nodes
                     _this._createNodes(gltfRuntime);
-                    var meshes = [];
-                    var skeletons = [];
+                    var meshes = new Array();
+                    var skeletons = new Array();
                     // Fill arrays of meshes and skeletons
                     for (var nde in gltfRuntime.nodes) {
                         var node = gltfRuntime.nodes[nde];
@@ -3005,7 +2968,7 @@ var BABYLON;
                     var options = {
                         attributes: ["position"],
                         uniforms: ["worldView", "projection", "u_emission"],
-                        samplers: [],
+                        samplers: new Array(),
                         needAlphaBlending: false
                     };
                     GLTFUtils._DefaultMaterial = new BABYLON.ShaderMaterial("GLTFDefaultMaterial", scene, shaderPath, options);
@@ -3171,11 +3134,6 @@ var BABYLON;
     var GLTF1;
     (function (GLTF1) {
         var BinaryExtensionBufferName = "binary_glTF";
-        var EContentFormat;
-        (function (EContentFormat) {
-            EContentFormat[EContentFormat["JSON"] = 0] = "JSON";
-        })(EContentFormat || (EContentFormat = {}));
-        ;
         ;
         ;
         var GLTFBinaryExtension = (function (_super) {
@@ -3231,27 +3189,6 @@ var BABYLON;
             return GLTFBinaryExtension;
         }(GLTF1.GLTFLoaderExtension));
         GLTF1.GLTFBinaryExtension = GLTFBinaryExtension;
-        var BinaryReader = (function () {
-            function BinaryReader(arrayBuffer) {
-                this._arrayBuffer = arrayBuffer;
-                this._dataView = new DataView(arrayBuffer);
-                this._byteOffset = 0;
-            }
-            BinaryReader.prototype.getUint32 = function () {
-                var value = this._dataView.getUint32(this._byteOffset, true);
-                this._byteOffset += 4;
-                return value;
-            };
-            BinaryReader.prototype.getUint8Array = function (length) {
-                if (!length) {
-                    length = this._arrayBuffer.byteLength - this._byteOffset;
-                }
-                var value = new Uint8Array(this._arrayBuffer, this._byteOffset, length);
-                this._byteOffset += length;
-                return value;
-            };
-            return BinaryReader;
-        }());
         GLTF1.GLTFLoader.RegisterExtension(new GLTFBinaryExtension());
     })(GLTF1 = BABYLON.GLTF1 || (BABYLON.GLTF1 = {}));
 })(BABYLON || (BABYLON = {}));
@@ -3595,7 +3532,7 @@ var BABYLON;
                 return meshes;
             };
             GLTFLoader.prototype._getSkeletons = function () {
-                var skeletons = [];
+                var skeletons = new Array();
                 var skins = this._gltf.skins;
                 if (skins) {
                     skins.forEach(function (skin) {
@@ -3607,7 +3544,7 @@ var BABYLON;
                 return skeletons;
             };
             GLTFLoader.prototype._getAnimationTargets = function () {
-                var targets = [];
+                var targets = new Array();
                 var animations = this._gltf.animations;
                 if (animations) {
                     animations.forEach(function (animation) {
@@ -3625,7 +3562,7 @@ var BABYLON;
                 if (!scene) {
                     throw new Error("Failed to find scene " + (this._gltf.scene || 0));
                 }
-                this._loadScene("scenes[" + scene.index + "]", scene, nodeNames);
+                this._loadScene("#/scenes/" + scene.index, scene, nodeNames);
             };
             GLTFLoader.prototype._loadScene = function (context, scene, nodeNames) {
                 this._rootNode = { babylonMesh: new BABYLON.Mesh("__root__", this._babylonScene) };
@@ -3670,7 +3607,7 @@ var BABYLON;
                     if (!node) {
                         throw new Error(context + ": Failed to find node " + nodeIndices[i]);
                     }
-                    this._loadNode("nodes[" + nodeIndices[i] + "]", node);
+                    this._loadNode("#/nodes/" + nodeIndices[i], node);
                 }
                 // Disable the root mesh until the asset is ready to render.
                 this._rootNode.babylonMesh.setEnabled(false);
@@ -3686,7 +3623,7 @@ var BABYLON;
                     if (!mesh) {
                         throw new Error(context + ": Failed to find mesh " + node.mesh);
                     }
-                    this._loadMesh("meshes[" + node.mesh + "]", node, mesh);
+                    this._loadMesh("#/meshes/" + node.mesh, node, mesh);
                 }
                 node.babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
                 node.babylonAnimationTargets = node.babylonAnimationTargets || [];
@@ -3696,7 +3633,7 @@ var BABYLON;
                     if (!skin) {
                         throw new Error(context + ": Failed to find skin " + node.skin);
                     }
-                    node.babylonMesh.skeleton = this._loadSkin("skins[" + node.skin + "]", skin);
+                    node.babylonMesh.skeleton = this._loadSkin("#/skins/" + node.skin, skin);
                 }
                 if (node.camera != null) {
                     // TODO: handle cameras
@@ -3707,7 +3644,7 @@ var BABYLON;
                         if (!childNode) {
                             throw new Error(context + ": Failed to find child node " + node.children[i]);
                         }
-                        this._loadNode("nodes[" + node.children[i] + "]", childNode);
+                        this._loadNode("#/nodes/" + node.children[i], childNode);
                     }
                 }
             };
@@ -3723,7 +3660,7 @@ var BABYLON;
                 var numRemainingPrimitives = mesh.primitives.length;
                 for (var index = 0; index < mesh.primitives.length; index++) {
                     var primitive = mesh.primitives[index];
-                    this._loadPrimitive(context + "/primitives[" + index + "]", node, mesh, primitive, function (subVertexData, loadMaterial) {
+                    this._loadPrimitive(context + "/primitives/" + index, node, mesh, primitive, function (subVertexData, loadMaterial) {
                         subMeshInfos.push({
                             verticesStart: vertexData.positions.length,
                             verticesCount: subVertexData.positions.length,
@@ -3739,7 +3676,7 @@ var BABYLON;
                             node.babylonMesh.subMeshes = [];
                             for (var index = 0; index < subMeshInfos.length; index++) {
                                 var info = subMeshInfos[index];
-                                new BABYLON.SubMesh(index, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, node.babylonMesh);
+                                BABYLON.SubMesh.AddToMesh(index, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, node.babylonMesh);
                                 info.loadMaterial(index);
                             }
                         }
@@ -3765,7 +3702,7 @@ var BABYLON;
                             if (!material) {
                                 throw new Error(context + ": Failed to find material " + primitive.material);
                             }
-                            _this._loadMaterial("materials[" + material.index + "]", material, function (babylonMaterial, isNew) {
+                            _this._loadMaterial("#/materials/" + material.index, material, function (babylonMaterial, isNew) {
                                 if (isNew && _this._parent.onMaterialLoaded) {
                                     _this._parent.onMaterialLoaded(babylonMaterial);
                                 }
@@ -3798,7 +3735,7 @@ var BABYLON;
                     if (!accessor) {
                         throw new Error(context + ": Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
                     }
-                    this_1._loadAccessorAsync("accessors[" + accessor.index + "]", accessor, function (data) {
+                    this_1._loadAccessorAsync("#/accessors/" + accessor.index, accessor, function (data) {
                         switch (attribute) {
                             case "NORMAL":
                                 vertexData.normals = data;
@@ -3839,7 +3776,7 @@ var BABYLON;
                                 if (!indicesAccessor) {
                                     throw new Error(context + ": Failed to find indices accessor " + primitive.indices);
                                 }
-                                _this._loadAccessorAsync("accessors[" + indicesAccessor.index + "]", indicesAccessor, function (data) {
+                                _this._loadAccessorAsync("#/accessors/" + indicesAccessor.index, indicesAccessor, function (data) {
                                     vertexData.indices = data;
                                     onSuccess(vertexData);
                                 });
@@ -3876,9 +3813,9 @@ var BABYLON;
                     var _loop_3 = function (attribute) {
                         accessor = GLTF2.GLTFUtils.GetArrayItem(this_2._gltf.accessors, attributes[attribute]);
                         if (!accessor) {
-                            throw new Error(context + "/targets[" + index + "]: Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
+                            throw new Error(context + "/targets/" + index + ": Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
                         }
-                        this_2._loadAccessorAsync("accessors[" + accessor.index + "]", accessor, function (data) {
+                        this_2._loadAccessorAsync("#/accessors/" + accessor.index, accessor, function (data) {
                             if (accessor.name) {
                                 babylonMorphTarget.name = accessor.name;
                             }
@@ -3953,7 +3890,7 @@ var BABYLON;
                     if (!accessor) {
                         throw new Error(context + ": Failed to find inverse bind matrices attribute " + skin.inverseBindMatrices);
                     }
-                    this._loadAccessorAsync("accessors[" + accessor.index + "]", accessor, function (data) {
+                    this._loadAccessorAsync("#/accessors/" + accessor.index, accessor, function (data) {
                         _this._loadBones(context, skin, data);
                     });
                 }
@@ -4031,7 +3968,7 @@ var BABYLON;
                 }
                 for (var animationIndex = 0; animationIndex < animations.length; animationIndex++) {
                     var animation = animations[animationIndex];
-                    var context = "animations[" + animationIndex + "]";
+                    var context = "#/animations/" + animationIndex;
                     for (var channelIndex = 0; channelIndex < animation.channels.length; channelIndex++) {
                         var channel = GLTF2.GLTFUtils.GetArrayItem(animation.channels, channelIndex);
                         if (!channel) {
@@ -4041,7 +3978,7 @@ var BABYLON;
                         if (!sampler) {
                             throw new Error(context + ": Failed to find sampler " + channel.sampler);
                         }
-                        this._loadAnimationChannel(animation, context + "/channels[" + channelIndex + "]", channel, context + "/samplers[" + channel.sampler + "]", sampler);
+                        this._loadAnimationChannel(animation, context + "/channels/" + channelIndex, channel, context + "/samplers/" + channel.sampler, sampler);
                     }
                 }
             };
@@ -4050,21 +3987,28 @@ var BABYLON;
                 if (!targetNode) {
                     throw new Error(channelContext + ": Failed to find target node " + channel.target.node);
                 }
-                var targetPath = {
-                    "translation": "position",
-                    "rotation": "rotationQuaternion",
-                    "scale": "scaling",
-                    "weights": "influence"
-                }[channel.target.path];
-                if (!targetPath) {
-                    throw new Error(channelContext + ": Invalid target path '" + channel.target.path + "'");
+                var targetPath;
+                var animationType;
+                switch (channel.target.path) {
+                    case "translation":
+                        targetPath = "position";
+                        animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
+                        break;
+                    case "rotation":
+                        targetPath = "rotationQuaternion";
+                        animationType = BABYLON.Animation.ANIMATIONTYPE_QUATERNION;
+                        break;
+                    case "scale":
+                        targetPath = "scaling";
+                        animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
+                        break;
+                    case "weights":
+                        targetPath = "influence";
+                        animationType = BABYLON.Animation.ANIMATIONTYPE_FLOAT;
+                        break;
+                    default:
+                        throw new Error(channelContext + ": Invalid target path '" + channel.target.path + "'");
                 }
-                var animationType = {
-                    "position": BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                    "rotationQuaternion": BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                    "scaling": BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                    "influence": BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-                }[targetPath];
                 var inputData;
                 var outputData;
                 var checkSuccess = function () {
@@ -4072,46 +4016,60 @@ var BABYLON;
                         return;
                     }
                     var outputBufferOffset = 0;
-                    var getNextOutputValue = {
-                        "position": function () {
-                            var value = BABYLON.Vector3.FromArray(outputData, outputBufferOffset);
-                            outputBufferOffset += 3;
-                            return value;
-                        },
-                        "rotationQuaternion": function () {
-                            var value = BABYLON.Quaternion.FromArray(outputData, outputBufferOffset);
-                            outputBufferOffset += 4;
-                            return value;
-                        },
-                        "scaling": function () {
-                            var value = BABYLON.Vector3.FromArray(outputData, outputBufferOffset);
-                            outputBufferOffset += 3;
-                            return value;
-                        },
-                        "influence": function () {
-                            var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
-                            var value = new Array(numTargets);
-                            for (var i = 0; i < numTargets; i++) {
-                                value[i] = outputData[outputBufferOffset++];
-                            }
-                            return value;
-                        },
-                    }[targetPath];
-                    var getNextKey = {
-                        "LINEAR": function (frameIndex) { return ({
-                            frame: inputData[frameIndex],
-                            value: getNextOutputValue()
-                        }); },
-                        "CUBICSPLINE": function (frameIndex) { return ({
-                            frame: inputData[frameIndex],
-                            inTangent: getNextOutputValue(),
-                            value: getNextOutputValue(),
-                            outTangent: getNextOutputValue()
-                        }); },
-                    }[sampler.interpolation];
-                    if (!getNextKey) {
-                        throw new Error(samplerContext + ": Invalid interpolation '" + sampler.interpolation + "'");
+                    var getNextOutputValue;
+                    switch (targetPath) {
+                        case "position":
+                            getNextOutputValue = function () {
+                                var value = BABYLON.Vector3.FromArray(outputData, outputBufferOffset);
+                                outputBufferOffset += 3;
+                                return value;
+                            };
+                            break;
+                        case "rotationQuaternion":
+                            getNextOutputValue = function () {
+                                var value = BABYLON.Quaternion.FromArray(outputData, outputBufferOffset);
+                                outputBufferOffset += 4;
+                                return value;
+                            };
+                            break;
+                        case "scaling":
+                            getNextOutputValue = function () {
+                                var value = BABYLON.Vector3.FromArray(outputData, outputBufferOffset);
+                                outputBufferOffset += 3;
+                                return value;
+                            };
+                            break;
+                        case "influence":
+                            getNextOutputValue = function () {
+                                var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
+                                var value = new Array(numTargets);
+                                for (var i = 0; i < numTargets; i++) {
+                                    value[i] = outputData[outputBufferOffset++];
+                                }
+                                return value;
+                            };
+                            break;
                     }
+                    var getNextKey;
+                    switch (sampler.interpolation) {
+                        case "LINEAR":
+                            getNextKey = function (frameIndex) { return ({
+                                frame: inputData[frameIndex],
+                                value: getNextOutputValue()
+                            }); };
+                            break;
+                        case "CUBICSPLINE":
+                            getNextKey = function (frameIndex) { return ({
+                                frame: inputData[frameIndex],
+                                inTangent: getNextOutputValue(),
+                                value: getNextOutputValue(),
+                                outTangent: getNextOutputValue()
+                            }); };
+                            break;
+                        default:
+                            throw new Error(samplerContext + ": Invalid interpolation '" + sampler.interpolation + "'");
+                    }
+                    ;
                     var keys = new Array(inputData.length);
                     for (var frameIndex = 0; frameIndex < inputData.length; frameIndex++) {
                         keys[frameIndex] = getNextKey(frameIndex);
@@ -4148,7 +4106,7 @@ var BABYLON;
                 if (!inputAccessor) {
                     throw new Error(samplerContext + ": Failed to find input accessor " + sampler.input);
                 }
-                this._loadAccessorAsync("accessors[" + inputAccessor.index + "]", inputAccessor, function (data) {
+                this._loadAccessorAsync("#/accessors/" + inputAccessor.index, inputAccessor, function (data) {
                     inputData = data;
                     checkSuccess();
                 });
@@ -4156,7 +4114,7 @@ var BABYLON;
                 if (!outputAccessor) {
                     throw new Error(samplerContext + ": Failed to find output accessor " + sampler.output);
                 }
-                this._loadAccessorAsync("accessors[" + outputAccessor.index + "]", outputAccessor, function (data) {
+                this._loadAccessorAsync("#/accessors/" + outputAccessor.index, outputAccessor, function (data) {
                     outputData = data;
                     checkSuccess();
                 });
@@ -4217,7 +4175,7 @@ var BABYLON;
                 if (!buffer) {
                     throw new Error(context + ": Failed to find buffer " + bufferView.buffer);
                 }
-                this._loadBufferAsync("buffers[" + buffer.index + "]", buffer, function (bufferData) {
+                this._loadBufferAsync("#/buffers/" + buffer.index, buffer, function (bufferData) {
                     if (_this._disposed) {
                         return;
                     }
@@ -4242,7 +4200,7 @@ var BABYLON;
                 if (!bufferView) {
                     throw new Error(context + ": Failed to find buffer view " + accessor.bufferView);
                 }
-                this._loadBufferViewAsync("bufferViews[" + bufferView.index + "]", bufferView, function (bufferViewData) {
+                this._loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView, function (bufferViewData) {
                     var numComponents = _this._getNumComponentsOfType(accessor.type);
                     if (numComponents === 0) {
                         throw new Error(context + ": Invalid type (" + accessor.type + ")");
@@ -4377,14 +4335,14 @@ var BABYLON;
                     if (!texture) {
                         throw new Error(context + ": Failed to find base color texture " + properties.baseColorTexture.index);
                     }
-                    babylonMaterial.albedoTexture = this._loadTexture("textures[" + texture.index + "]", texture, properties.baseColorTexture.texCoord);
+                    babylonMaterial.albedoTexture = this._loadTexture("#/textures/" + texture.index, texture, properties.baseColorTexture.texCoord);
                 }
                 if (properties.metallicRoughnessTexture) {
                     var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, properties.metallicRoughnessTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find metallic roughness texture " + properties.metallicRoughnessTexture.index);
                     }
-                    babylonMaterial.metallicTexture = this._loadTexture("textures[" + texture.index + "]", texture, properties.metallicRoughnessTexture.texCoord);
+                    babylonMaterial.metallicTexture = this._loadTexture("#/textures/" + texture.index, texture, properties.metallicRoughnessTexture.texCoord);
                     babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
                     babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
                     babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
@@ -4421,7 +4379,7 @@ var BABYLON;
                     if (!texture) {
                         throw new Error(context + ": Failed to find normal texture " + material.normalTexture.index);
                     }
-                    babylonMaterial.bumpTexture = this._loadTexture("textures[" + texture.index + "]", texture, material.normalTexture.texCoord);
+                    babylonMaterial.bumpTexture = this._loadTexture("#/textures/" + texture.index, texture, material.normalTexture.texCoord);
                     babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
                     babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
                     if (material.normalTexture.scale != null) {
@@ -4433,7 +4391,7 @@ var BABYLON;
                     if (!texture) {
                         throw new Error(context + ": Failed to find occlusion texture " + material.occlusionTexture.index);
                     }
-                    babylonMaterial.ambientTexture = this._loadTexture("textures[" + texture.index + "]", texture, material.occlusionTexture.texCoord);
+                    babylonMaterial.ambientTexture = this._loadTexture("#/textures/" + texture.index, texture, material.occlusionTexture.texCoord);
                     babylonMaterial.useAmbientInGrayScale = true;
                     if (material.occlusionTexture.strength != null) {
                         babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
@@ -4444,7 +4402,7 @@ var BABYLON;
                     if (!texture) {
                         throw new Error(context + ": Failed to find emissive texture " + material.emissiveTexture.index);
                     }
-                    babylonMaterial.emissiveTexture = this._loadTexture("textures[" + texture.index + "]", texture, material.emissiveTexture.texCoord);
+                    babylonMaterial.emissiveTexture = this._loadTexture("#/textures/" + texture.index, texture, material.emissiveTexture.texCoord);
                 }
             };
             GLTFLoader.prototype._loadMaterialAlphaProperties = function (context, material, colorFactor) {
@@ -4516,7 +4474,7 @@ var BABYLON;
                     if (!image) {
                         throw new Error(context + ": Failed to find source " + texture.source);
                     }
-                    this._loadImage("images[" + image.index + "]", image, function (data) {
+                    this._loadImage("#/images/" + image.index, image, function (data) {
                         texture.url = URL.createObjectURL(new Blob([data], { type: image.mimeType }));
                         texture.dataReadyObservable.notifyObservers(texture);
                     });
@@ -4560,7 +4518,7 @@ var BABYLON;
                     if (!bufferView) {
                         throw new Error(context + ": Failed to find buffer view " + image.bufferView);
                     }
-                    this._loadBufferViewAsync("bufferViews[" + bufferView.index + "]", bufferView, onSuccess);
+                    this._loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView, onSuccess);
                 }
             };
             GLTFLoader.prototype._tryCatchOnError = function (handler) {
@@ -4679,18 +4637,6 @@ var BABYLON;
                     }
                 }
             };
-            /**
-             * Decodes a buffer view into a string
-             * @param view: the buffer view
-             */
-            GLTFUtils.DecodeBufferToText = function (view) {
-                var result = "";
-                var length = view.byteLength;
-                for (var i = 0; i < length; ++i) {
-                    result += String.fromCharCode(view[i]);
-                }
-                return result;
-            };
             return GLTFUtils;
         }());
         GLTF2.GLTFUtils = GLTFUtils;
@@ -4740,7 +4686,7 @@ var BABYLON;
             GLTFLoaderExtension._ApplyExtensions = function (action) {
                 var extensions = GLTFLoaderExtension._Extensions;
                 if (!extensions) {
-                    return;
+                    return false;
                 }
                 for (var i = 0; i < extensions.length; i++) {
                     var extension = extensions[i];

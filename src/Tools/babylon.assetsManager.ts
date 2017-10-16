@@ -18,7 +18,7 @@
             exception?: any;
         }
 
-        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void);
+        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
 
     export abstract class AbstractAssetTask implements IAssetTask {
@@ -181,7 +181,7 @@
                 onSuccess();
             };
 
-            var onerror = (msg, exception) => {
+            var onerror = (msg: string, exception: any) => {
                 onError(msg, exception);
             };
 
@@ -202,7 +202,7 @@
                 onSuccess();
             };
 
-            var onerror = (msg, exception) => {
+            var onerror = (msg: string, exception: any) => {
                 onError(msg, exception);
             };
 

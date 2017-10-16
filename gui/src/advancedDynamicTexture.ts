@@ -282,7 +282,6 @@ module BABYLON.GUI {
         }
 
         private _render(): void {
-            var engine = this.getScene().getEngine();
             var textureSize = this.getSize();
             var renderWidth = textureSize.width;
             var renderHeight = textureSize.height;

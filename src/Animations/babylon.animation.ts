@@ -68,13 +68,6 @@
         }
 
         // used by animation engine
-        private markAsDirty(propertyName: string): PathCursor {
-            this.ensureLimits();
-            this.raiseOnChange();
-
-            return this;
-        }
-
         private raiseOnChange(): PathCursor {
             this._onchange.forEach(f => f(this));
 
@@ -196,7 +189,7 @@
 				if (onAnimationEnd) {
                     onAnimationEnd();
                 }
-				return;
+				return null;
 			}
 
 			var endFrame: number = frameRate * (duration / 1000);

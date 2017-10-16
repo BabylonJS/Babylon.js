@@ -50,7 +50,7 @@ declare module BABYLON {
         private static _parseV2(binaryReader, onError);
         private static _parseVersion(version);
         private static _compareVersion(a, b);
-        private static _decodeBufferToText(view);
+        private static _decodeBufferToText(buffer);
     }
 }
 
@@ -97,7 +97,9 @@ declare module BABYLON.GLTF2 {
     * Interfaces
     */
     interface IGLTFProperty {
-        extensions?: Object;
+        extensions?: {
+            [key: string]: any;
+        };
         extras?: any;
     }
     interface IGLTFChildRootProperty extends IGLTFProperty {
@@ -400,11 +402,6 @@ declare module BABYLON.GLTF2 {
         static GetArrayItem<T>(array: ArrayLike<T>, index: number): T;
         static GetTextureWrapMode(mode: ETextureWrapMode): number;
         static GetTextureSamplingMode(magFilter: ETextureMagFilter, minFilter: ETextureMinFilter): number;
-        /**
-         * Decodes a buffer view into a string
-         * @param view: the buffer view
-         */
-        static DecodeBufferToText(view: ArrayBufferView): string;
     }
 }
 

@@ -13,7 +13,7 @@ module BABYLON {
         private _debugCanvas: HTMLCanvasElement;
         private _debugCanvasContext: CanvasRenderingContext2D;
         private _scene: Scene;
-        private _registerFunc;
+        private _registerFunc: () => void
         private _audioEngine: AudioEngine;
 
         constructor(scene: Scene) {

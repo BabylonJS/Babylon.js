@@ -40,7 +40,6 @@ var INSPECTOR;
                 // Get canvas and its DOM parent
                 var canvas = this._scene.getEngine().getRenderingCanvas();
                 var canvasParent = canvas.parentElement;
-                var canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);
                 // get canvas style                
                 var canvasComputedStyle = Inspector.WINDOW.getComputedStyle(canvas);
                 this._canvasStyle = {
@@ -330,6 +329,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=Inspector.js.map
 
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
 var INSPECTOR;
 (function (INSPECTOR) {
     INSPECTOR.PROPERTIES = {
@@ -346,7 +346,7 @@ var INSPECTOR;
             }
         },
         'type_not_defined': {
-            properties: [],
+            properties: new Array(),
             format: function () { return ''; }
         },
         'Vector2': {
@@ -424,9 +424,6 @@ var INSPECTOR;
         'HDRCubeTexture': {
             type: BABYLON.HDRCubeTexture
         },
-        'FontTexture': {
-            type: BABYLON.FontTexture
-        },
         'Sound': {
             type: BABYLON.Sound,
             properties: [
@@ -466,7 +463,9 @@ var INSPECTOR;
                 'checkCollisions'
             ],
             slider: {
-                alpha: { min: 0, max: 1, step: 0.01 }
+                alpha: { min: 0, max: 2 * Math.PI, step: 0.01 },
+                beta: { min: -Math.PI, max: Math.PI, step: 0.01 },
+                fov: { min: 0, max: 180, step: 1 }
             }
         },
         'FreeCamera': {
@@ -497,7 +496,10 @@ var INSPECTOR;
                 'orthoTop',
                 'orthoLeft',
                 'orthoRight'
-            ]
+            ],
+            slider: {
+                fov: { min: 0, max: 180, step: 1 }
+            }
         },
         'Scene': {
             type: BABYLON.Scene,
@@ -559,7 +561,10 @@ var INSPECTOR;
                 'checkCollisions',
                 'hasLODLevels'
             ],
-            format: function (m) { return m.name; }
+            format: function (m) { return m.name; },
+            slider: {
+                visibility: { min: 0, max: 1, step: 0.1 }
+            }
         },
         'StandardMaterial': {
             type: BABYLON.StandardMaterial,
@@ -597,26 +602,6 @@ var INSPECTOR;
             slider: {
                 alpha: { min: 0, max: 1, step: 0.01 }
             }
-        },
-        'PrimitiveAlignment': {
-            type: BABYLON.PrimitiveAlignment,
-            properties: ['horizontal', 'vertical']
-        },
-        'PrimitiveThickness': {
-            type: BABYLON.PrimitiveThickness,
-            properties: ['topPixels', 'leftPixels', 'rightPixels', 'bottomPixels']
-        },
-        'BoundingInfo2D': {
-            type: BABYLON.BoundingInfo2D,
-            properties: ['radius', 'center', 'extent']
-        },
-        'SolidColorBrush2D': {
-            type: BABYLON.SolidColorBrush2D,
-            properties: ['color']
-        },
-        'GradientColorBrush2D': {
-            type: BABYLON.GradientColorBrush2D,
-            properties: ['color1', 'color2', 'translation', 'rotation', 'scale']
         },
         'PBRMaterial': {
             type: BABYLON.PBRMaterial,
@@ -659,96 +644,6 @@ var INSPECTOR;
                 alpha: { min: 0, max: 1, step: 0.01 }
             }
         },
-        'Canvas2D': {
-            type: BABYLON.Canvas2D
-        },
-        'Canvas2DEngineBoundData': {
-            type: BABYLON.Canvas2DEngineBoundData
-        },
-        'Ellipse2D': {
-            type: BABYLON.Ellipse2D
-        },
-        'Ellipse2DInstanceData': {
-            type: BABYLON.Ellipse2DInstanceData
-        },
-        'Ellipse2DRenderCache': {
-            type: BABYLON.Ellipse2DRenderCache
-        },
-        'Group2D': {
-            type: BABYLON.Group2D
-        },
-        'IntersectInfo2D': {
-            type: BABYLON.IntersectInfo2D
-        },
-        'Lines2D': {
-            type: BABYLON.Lines2D
-        },
-        'Lines2DInstanceData': {
-            type: BABYLON.Lines2DInstanceData
-        },
-        'Lines2DRenderCache': {
-            type: BABYLON.Lines2DRenderCache
-        },
-        'PrepareRender2DContext': {
-            type: BABYLON.PrepareRender2DContext
-        },
-        'Prim2DBase': {
-            type: BABYLON.Prim2DBase
-        },
-        'Prim2DClassInfo': {
-            type: BABYLON.Prim2DClassInfo
-        },
-        'Prim2DPropInfo': {
-            type: BABYLON.Prim2DPropInfo
-        },
-        'Rectangle2D': {
-            type: BABYLON.Rectangle2D
-        },
-        'Rectangle2DInstanceData': {
-            type: BABYLON.Rectangle2DInstanceData
-        },
-        'Rectangle2DRenderCache': {
-            type: BABYLON.Rectangle2DRenderCache
-        },
-        'Render2DContext': {
-            type: BABYLON.Render2DContext
-        },
-        'RenderablePrim2D': {
-            type: BABYLON.RenderablePrim2D
-        },
-        'ScreenSpaceCanvas2D': {
-            type: BABYLON.ScreenSpaceCanvas2D
-        },
-        'Shape2D': {
-            type: BABYLON.Shape2D
-        },
-        'Shape2DInstanceData': {
-            type: BABYLON.Shape2DInstanceData
-        },
-        'Sprite2D': {
-            type: BABYLON.Sprite2D
-        },
-        'Sprite2DInstanceData': {
-            type: BABYLON.Sprite2DInstanceData
-        },
-        'Sprite2DRenderCache': {
-            type: BABYLON.Sprite2DRenderCache
-        },
-        'Text2D': {
-            type: BABYLON.Text2D
-        },
-        'Text2DInstanceData': {
-            type: BABYLON.Text2DInstanceData
-        },
-        'Text2DRenderCache': {
-            type: BABYLON.Text2DRenderCache
-        },
-        'WorldSpaceCanvas2D': {
-            type: BABYLON.WorldSpaceCanvas2D
-        },
-        'WorldSpaceCanvas2DNode': {
-            type: BABYLON.WorldSpaceCanvas2DNode
-        },
         'PhysicsImpostor': {
             type: BABYLON.PhysicsImpostor,
             properties: [
@@ -762,6 +657,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=properties.js.map
 
+/// <reference path="../../dist/preview release/gui/babylon.gui.d.ts"/>
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -796,7 +692,7 @@ var INSPECTOR;
             },
             'Button': {
                 type: BABYLON.GUI.Button,
-                properties: [],
+                properties: new Array(),
                 format: function (button) { return button.name; }
             },
             'ColorPicker': {
@@ -1209,7 +1105,7 @@ var INSPECTOR;
             return [];
         };
         TextureAdapter.prototype.getTools = function () {
-            var tools = [];
+            var tools = new Array();
             // tools.push(new CameraPOV(this));
             return tools;
         };
@@ -1330,10 +1226,7 @@ var INSPECTOR;
     var MeshAdapter = (function (_super) {
         __extends(MeshAdapter, _super);
         function MeshAdapter(obj) {
-            var _this = _super.call(this, obj) || this;
-            /** Keep track of the axis of the actual object */
-            _this._axis = [];
-            return _this;
+            return _super.call(this, obj) || this;
         }
         /** Returns the name displayed in the tree */
         MeshAdapter.prototype.id = function () {
@@ -1376,13 +1269,13 @@ var INSPECTOR;
         };
         MeshAdapter.prototype.debug = function (b) {
             // Draw axis the first time
-            if (this._axis.length == 0) {
+            if (!this._axesViewer) {
                 this._drawAxis();
             }
             // Display or hide axis
-            for (var _i = 0, _a = this._axis; _i < _a.length; _i++) {
-                var ax = _a[_i];
-                ax.setEnabled(b);
+            if (!b && this._axesViewer) {
+                this._axesViewer.dispose();
+                this._axesViewer = null;
             }
         };
         /** Returns some information about this mesh */
@@ -1393,35 +1286,13 @@ var INSPECTOR;
          * Should be called only one time as it will fill this._axis
          */
         MeshAdapter.prototype._drawAxis = function () {
-            var _this = this;
             this._obj.computeWorldMatrix();
-            var m = this._obj.getWorldMatrix();
             // Axis
             var x = new BABYLON.Vector3(8 / this._obj.scaling.x, 0, 0);
             var y = new BABYLON.Vector3(0, 8 / this._obj.scaling.y, 0);
             var z = new BABYLON.Vector3(0, 0, 8 / this._obj.scaling.z);
-            // Draw an axis of the given color
-            var _drawAxis = function (color, start, end) {
-                var axis = BABYLON.Mesh.CreateLines("###axis###", [
-                    start,
-                    end
-                ], _this._obj.getScene());
-                axis.color = color;
-                axis.renderingGroupId = 1;
-                return axis;
-            };
-            // X axis
-            var xAxis = _drawAxis(BABYLON.Color3.Red(), BABYLON.Vector3.Zero(), x);
-            xAxis.parent = this._obj;
-            this._axis.push(xAxis);
-            // Y axis        
-            var yAxis = _drawAxis(BABYLON.Color3.Green(), BABYLON.Vector3.Zero(), y);
-            yAxis.parent = this._obj;
-            this._axis.push(yAxis);
-            // Z axis
-            var zAxis = _drawAxis(BABYLON.Color3.Blue(), BABYLON.Vector3.Zero(), z);
-            zAxis.parent = this._obj;
-            this._axis.push(zAxis);
+            this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
+            this._axesViewer.update(this._obj.position, x, y, z);
         };
         return MeshAdapter;
     }(INSPECTOR.Adapter));
@@ -1647,35 +1518,7 @@ var INSPECTOR;
         PropertyFormatter.format = function (obj, prop) {
             // Get original value;
             var value = obj[prop];
-            // test if type PrimitiveAlignment is available (only included in canvas2d)
-            if (BABYLON.PrimitiveAlignment) {
-                if (obj instanceof BABYLON.PrimitiveAlignment) {
-                    if (prop === 'horizontal') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignLeft:
-                                return 'left';
-                            case BABYLON.PrimitiveAlignment.AlignRight:
-                                return 'right';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    }
-                    else if (prop === 'vertical') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignTop:
-                                return 'top';
-                            case BABYLON.PrimitiveAlignment.AlignBottom:
-                                return 'bottom';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    }
-                }
-            }
+            // test if type PrimitiveAlignment is available (only included in canvas2d)           
             return value;
         };
         return PropertyFormatter;
@@ -1964,13 +1807,6 @@ var INSPECTOR;
             this._updateValue();
         };
         /**
-         * Returns true if the given instance is a simple type
-         */
-        PropertyLine._IS_TYPE_SIMPLE = function (inst) {
-            var type = INSPECTOR.Helpers.GET_TYPE(inst);
-            return PropertyLine._SIMPLE_TYPE.indexOf(type) != -1;
-        };
-        /**
          * Returns true if the type of this property is simple, false otherwise.
          * Returns true if the value is null
          */
@@ -2022,7 +1858,6 @@ var INSPECTOR;
                 if (this._children.length == 0) {
                     var objToDetail = this.value;
                     var propToDisplay = INSPECTOR.PROPERTIES[INSPECTOR.Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
-                    var propertyLine = null;
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
                         var infos = new INSPECTOR.Property(prop, this._property.value);
@@ -2094,13 +1929,14 @@ var INSPECTOR;
                     INSPECTOR.Scheduler.getInstance().pause = false;
                 });
                 this._textValue = INSPECTOR.Helpers.CreateDiv('value-text', this._valueDiv);
-                this._textValue.innerText = this.value;
+                this._textValue.innerText = INSPECTOR.Helpers.Trunc(this.value).toString();
                 this._textValue.style.paddingLeft = '10px';
                 this._textValue.style.display = 'inline-block';
             }
         };
         PropertyLine.prototype._rangeHandler = function () {
             INSPECTOR.Scheduler.getInstance().pause = true;
+            //this._input.style.backgroundSize = ((parseFloat(this._input.value) - parseFloat(this._input.min)) * 100 / ( parseFloat(this._input.max) - parseFloat(this._input.min))) + '% 100%'
             this._textValue.innerText = this._input.value;
             this.validateInput(this._input.value, false);
         };
@@ -2160,7 +1996,7 @@ var INSPECTOR;
                 var b = (color.b * 255) | 0;
                 var a = 1;
                 if (color instanceof BABYLON.Color4) {
-                    var a_1 = color.a;
+                    a = color.a;
                 }
                 return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
             }
@@ -2230,7 +2066,7 @@ var INSPECTOR;
                 var b = (color.b * 255) | 0;
                 var a = 1;
                 if (color instanceof BABYLON.Color4) {
-                    var a_1 = color.a;
+                    a = color.a;
                 }
                 return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
             }
@@ -2321,8 +2157,6 @@ var INSPECTOR;
             this._engine = new BABYLON.Engine(this._canvas);
             this._scene = new BABYLON.Scene(this._engine);
             this._scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
-            var cam = new BABYLON.FreeCamera('cam', new BABYLON.Vector3(0, 0, -20), this._scene);
-            var light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this._scene);
             this._engine.runRenderLoop(function () {
                 if (!_this._pause) {
                     _this._scene.render();
@@ -2942,6 +2776,7 @@ var INSPECTOR;
                         return null;
                     }
                 }
+                return null;
             };
             for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
                 var item = _a[_i];
@@ -3080,7 +2915,7 @@ var INSPECTOR;
         }
         /* Overrides super */
         PhysicsTab.prototype._getTree = function () {
-            var arr = [];
+            var arr = new Array();
             var scene = this._inspector.scene;
             if (!scene.isPhysicsEnabled()) {
                 return arr;
@@ -3121,7 +2956,7 @@ var INSPECTOR;
         /* Overrides super */
         SoundTab.prototype._getTree = function () {
             var _this = this;
-            var arr = [];
+            var arr = new Array();
             // get all cameras from the first scene
             var instances = this._inspector.scene;
             for (var _i = 0, _a = instances.soundTracks; _i < _a.length; _i++) {
@@ -3379,6 +3214,7 @@ var INSPECTOR;
     INSPECTOR.MaterialTab = MaterialTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3399,9 +3235,9 @@ var INSPECTOR;
         /* Overrides super */
         MeshTab.prototype._getTree = function () {
             var _this = this;
-            var arr = [];
-            // Tab containign mesh already in results
-            var alreadyIn = [];
+            var arr = new Array();
+            // Tab containing mesh already in results
+            var alreadyIn = new Array();
             // Recursive method building the tree panel
             var createNode = function (obj) {
                 var descendants = obj.getDescendants(true);
@@ -4192,6 +4028,7 @@ var INSPECTOR;
                     return tab;
                 }
             }
+            return null;
         };
         TabBar.prototype.getActiveTabIndex = function () {
             for (var i = 0; i < this._tabs.length; i++) {

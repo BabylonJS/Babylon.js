@@ -9,7 +9,7 @@ module BABYLON {
 
         public onThumbRestChangedObservable = new Observable<ExtendedGamepadButton>();
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.OCULUS;
         }

@@ -16,8 +16,9 @@
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
-        public _delayInfo; //ANY
+        public _delayInfo: Array<string>;
         private _indexBuffer: WebGLBuffer;
+        private _indexBufferIsUpdatable = false;
         public _boundingInfo: BoundingInfo;
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
         public _softwareSkinningRenderId: number;
@@ -314,7 +315,19 @@
             return result;
         }
 
-        public setIndices(indices: IndicesArray, totalVertices?: number): void {
+        public updateIndices(indices: IndicesArray, offset?: number): void {
+            if (!this._indexBuffer) {
+                return;
+            }
+
+            if (!this._indexBufferIsUpdatable) {
+                this.setIndices(indices, null, true);
+            } else {
+                this._engine.updateDynamicIndexBuffer(this._indexBuffer, indices, offset);
+            }
+        }
+
+        public setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): void {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
@@ -322,11 +335,12 @@
             this._disposeVertexArrayObjects();
 
             this._indices = indices;
+            this._indexBufferIsUpdatable = updatable;
             if (this._meshes.length !== 0 && this._indices) {
-                this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+                this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
             }
 
-            if (totalVertices !== undefined) {
+            if (totalVertices != undefined) { // including null and undefined
                 this._totalVertices = totalVertices;
             }
 
@@ -425,7 +439,7 @@
             }
         }
 
-        private updateExtend(data = null, stride? : number) {
+        private updateExtend(data: number[] | Float32Array = null, stride? : number) {
             if (!data) {
                 data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }
@@ -882,7 +896,7 @@
                         var indexStart = subMeshesData[(i * 5) + 3];
                         var indexCount = subMeshesData[(i * 5) + 4];
 
-                        var subMesh = new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
+                        SubMesh.AddToMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
                     }
                 }
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
@@ -976,7 +990,7 @@
                 for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
                     var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
 
-                    var subMesh = new SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                    SubMesh.AddToMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
                 }
             }
 

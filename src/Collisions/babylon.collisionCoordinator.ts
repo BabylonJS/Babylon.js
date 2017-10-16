@@ -9,12 +9,12 @@ module BABYLON {
         destroy(): void;
 
         //Update meshes and geometries
-        onMeshAdded(mesh: AbstractMesh);
-        onMeshUpdated(mesh: AbstractMesh);
-        onMeshRemoved(mesh: AbstractMesh);
-        onGeometryAdded(geometry: Geometry);
-        onGeometryUpdated(geometry: Geometry);
-        onGeometryDeleted(geometry: Geometry);
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
     }
 
     export interface SerializedMesh {

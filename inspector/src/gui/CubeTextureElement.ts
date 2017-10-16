@@ -78,8 +78,6 @@
             this._engine           = new BABYLON.Engine(this._canvas);
             this._scene            = new BABYLON.Scene(this._engine);
             this._scene.clearColor = new BABYLON.Color4(0,0,0, 0);
-            let cam                = new BABYLON.FreeCamera('cam', new BABYLON.Vector3(0,0,-20), this._scene);
-            let light              = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0,1,0), this._scene);
             
             this._engine.runRenderLoop(() => {
                 if (!this._pause) {

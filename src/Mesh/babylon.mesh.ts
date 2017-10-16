@@ -117,7 +117,7 @@
 
         // Private
         public _geometry: Geometry;
-        public _delayInfo; //ANY
+        public _delayInfo: Array<string>;
         public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
 
         public _visibleInstances: any = {};
@@ -193,7 +193,7 @@
 
                         if (mesh.parent === source) {
                             // doNotCloneChildren is always going to be False
-                            var newChild = mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
+                             mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
                         }
                     }
                 }
@@ -436,7 +436,7 @@
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
-        public getVertexBuffer(kind): VertexBuffer {
+        public getVertexBuffer(kind: string): VertexBuffer {
             if (!this._geometry) {
                 return undefined;
             }
@@ -486,7 +486,7 @@
          */
         public getVerticesDataKinds(): string[] {
             if (!this._geometry) {
-                var result = [];
+                var result = new Array<string>();
                 if (this._delayInfo) {
                     this._delayInfo.forEach(function (kind, index, array) {
                         result.push(kind);
@@ -614,7 +614,7 @@
          */
         public refreshBoundingInfo(): Mesh {
             if (this._boundingInfo.isLocked) {
-                return;
+                return this;
             }
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
@@ -661,7 +661,7 @@
                 }
 
                 if (!needToRecreate) {
-                    return;
+                    return this.subMeshes[0];
                 }
             }
 
@@ -786,7 +786,7 @@
          */
         public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
             if (!makeItUnique) {
                 this._geometry.updateVerticesData(kind, data, updateExtends);
@@ -805,7 +805,7 @@
          * The parameter `computeNormals` is a boolean (default true) to enable/disable the mesh normal recomputation after the vertex position update.     
          * Returns the Mesh.  
          */
-        public updateMeshPositions(positionFunction, computeNormals: boolean = true): Mesh {
+        public updateMeshPositions(positionFunction: (data: number[] | Float32Array) => void, computeNormals: boolean = true): Mesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             positionFunction(positions);
             this.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
@@ -824,7 +824,7 @@
          */
         public makeGeometryUnique(): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
             var oldGeometry = this._geometry;
             var geometry = this._geometry.copy(Geometry.RandomId());
@@ -840,20 +840,35 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: number): Mesh {
+        public setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): Mesh {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.indices = indices;
 
                 var scene = this.getScene();
 
-                new Geometry(Geometry.RandomId(), scene, vertexData, false, this);
+                new Geometry(Geometry.RandomId(), scene, vertexData, updatable, this);
             }
             else {
-                this._geometry.setIndices(indices, totalVertices);
+                this._geometry.setIndices(indices, totalVertices, updatable);
             }
             return this;
         }
+
+        /**
+         * Update the current index buffer
+         * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array)
+         * Returns the Mesh. 
+         */
+        public updateIndices(indices: IndicesArray, offset?: number): Mesh {
+            if (!this._geometry) {
+                return this;
+            }
+
+            this._geometry.updateIndices(indices, offset);
+            return this;
+        }
+        
 
         /**
          * Invert the geometry to move from a right handed system to a left handed one.  
@@ -861,7 +876,7 @@
          */
         public toLeftHanded(): Mesh {
             if (!this._geometry) {
-                return;
+                return this;
             }
             this._geometry.toLeftHanded();
             return this;
@@ -1120,7 +1135,7 @@
 
             this.checkOcclusionQuery();
             if (this._isOccluded) {
-                return;
+                return this;
             }
 
             var scene = this.getScene();
@@ -1137,7 +1152,6 @@
                 return this;
             }
 
-            var callbackIndex: number;
             this.onBeforeRenderObservable.notifyObservers(this);
 
             var engine = scene.getEngine();
@@ -1358,7 +1372,7 @@
          * Returns as a new array populated with the mesh material and/or skeleton, if any.
          */
         public getAnimatables(): IAnimatable[] {
-            var results = [];
+            var results = new Array<IAnimatable>();
 
             if (this.material) {
                 results.push(this.material);
@@ -1390,7 +1404,7 @@
             this._resetPointsArrayCache();
 
             var data = this.getVerticesData(VertexBuffer.PositionKind);
-            var temp = [];
+            var temp = new Array<number>();
             var index: number;
             for (index = 0; index < data.length; index += 3) {
                 Vector3.TransformCoordinates(Vector3.FromArray(data, index), transform).toArray(temp, index);
@@ -1531,7 +1545,7 @@
         public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2): Mesh {
             var scene = this.getScene();
 
-            var onload = img => {
+            var onload = (img: HTMLImageElement) => {
                 // Getting height map data
                 var canvas = document.createElement("canvas");
                 var context = canvas.getContext("2d");
@@ -1629,9 +1643,9 @@
             /// <summary>Warning: This may imply adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
 
             var kinds = this.getVerticesDataKinds();
-            var vbs = [];
-            var data = [];
-            var newdata = [];
+            var vbs:{ [key: string]: VertexBuffer } = {};
+            var data:{ [key: string]: number[] | Float32Array } = {};
+            var newdata: { [key: string]: Array<number> } = {};
             var updatableNormals = false;
             var kindIndex: number;
             var kind: string;
@@ -1710,7 +1724,7 @@
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
-                var subMesh = new SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+                SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
 
             this.synchronizeInstances();
@@ -1728,10 +1742,9 @@
             /// <summary>Warning: This implies adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
 
             var kinds = this.getVerticesDataKinds();
-            var vbs = [];
-            var data = [];
-            var newdata = [];
-            var updatableNormals = false;
+            var vbs:{ [key: string]: VertexBuffer } = {};
+            var data:{ [key: string]: number[] | Float32Array } = {};
+            var newdata: { [key: string]: Array<number> } = {};
             var kindIndex: number;
             var kind: string;
             for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
@@ -1782,7 +1795,7 @@
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
-                var subMesh = new SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+                SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
 
             this._unIndexed = true;
@@ -1876,11 +1889,11 @@
         public optimizeIndices(successCallback?: (mesh?: Mesh) => void): Mesh {
             var indices = this.getIndices();
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
-            var vectorPositions = [];
+            var vectorPositions = new Array<Vector3>();
             for (var pos = 0; pos < positions.length; pos = pos + 3) {
                 vectorPositions.push(Vector3.FromArray(positions, pos));
             }
-            var dupes = [];
+            var dupes = new Array<number>();
 
             AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, (iteration) => {
                 var realPos = vectorPositions.length - 1 - iteration;
@@ -3040,7 +3053,7 @@
         /**
          * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
-        public static Center(meshesOrMinMaxVector): Vector3 {
+        public static Center(meshesOrMinMaxVector: { min: Vector3; max: Vector3 } | AbstractMesh[]): Vector3 {
             var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? BABYLON.Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
             return Vector3.Center(minMaxVector.min, minMaxVector.max);
         }

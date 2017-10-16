@@ -143,8 +143,6 @@ module BABYLON {
         private _refractionRTT: RenderTargetTexture;
         private _reflectionRTT: RenderTargetTexture;
 
-        private _material: ShaderMaterial;
-
         private _reflectionTransform: Matrix = Matrix.Zero();
         private _lastTime: number = 0;
         private _lastDeltaTime: number = 0;
@@ -352,7 +350,7 @@ module BABYLON {
                     // Water
                     "refractionSampler", "reflectionSampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -487,8 +485,8 @@ module BABYLON {
             this._reflectionRTT.ignoreCameraViewport = true;
 
             var isVisible: boolean;
-            var clipPlane = null;
-            var savedViewMatrix;
+            var clipPlane: Plane = null;
+            var savedViewMatrix: Matrix;
             var mirrorMatrix = Matrix.Zero();
 
             this._refractionRTT.onBeforeRender = () => {

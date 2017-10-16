@@ -6,7 +6,7 @@
     // Screenshots
     var screenshotCanvas: HTMLCanvasElement;
 
-    var cloneValue = (source, destinationObject) => {
+    var cloneValue = (source: any, destinationObject: any) => {
         if (!source)
             return null;
 
@@ -54,7 +54,7 @@
 
             var arr = className.split(".");
 
-            var fn = (window || this);
+            var fn: any = (window || this);
             for (var i = 0, len = arr.length; i < len; i++) {
                 fn = fn[arr[i]];
             }
@@ -302,7 +302,7 @@
             };
         }
 
-        public static MakeArray(obj, allowsNullUndefined?: boolean): Array<any> {
+        public static MakeArray(obj: any, allowsNullUndefined?: boolean): Array<any> {
             if (allowsNullUndefined !== true && (obj === undefined || obj == null))
                 return undefined;
 
@@ -314,7 +314,7 @@
             var eventPrefix = "pointer";
 
             // Check if pointer events are supported
-            if (!window.PointerEvent && !navigator.pointerEnabled) {
+            if (Tools.IsWindowObjectExist() && !window.PointerEvent && !navigator.pointerEnabled) {
                 eventPrefix = "mouse";
             }
 
@@ -325,7 +325,15 @@
          * @param func - the function to be called
          * @param requester - the object that will request the next frame. Falls back to window.
          */
-        public static QueueNewFrame(func, requester: any = window): number {
+        public static QueueNewFrame(func: () => void, requester?: any): number {
+            if (!Tools.IsWindowObjectExist()) {
+                return setTimeout(func, 16);
+            }
+
+            if (!requester) {
+                requester = window;
+            }
+
             if (requester.requestAnimationFrame) {
                 return requester.requestAnimationFrame(func);
             }
@@ -346,8 +354,8 @@
             }
         }
 
-        public static RequestFullscreen(element): void {
-            var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
+        public static RequestFullscreen(element: HTMLElement): void {
+            var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || element.webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
             if (!requestFunction) return;
             requestFunction.call(element);
         }
@@ -394,7 +402,7 @@
             return url;
         }
 
-        public static LoadImage(url: any, onLoad, onError: (message?: string, exception?: any) => void, database): HTMLImageElement {
+        public static LoadImage(url: any, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, database: Database): HTMLImageElement {
             if (url instanceof ArrayBuffer) {
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
@@ -470,7 +478,7 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest, exception?: any) => void): void {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest, exception?: any) => void): void {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
@@ -491,7 +499,7 @@
                     if (request.readyState === (XMLHttpRequest.DONE || 4)) {
                         request.onreadystatechange = null;//some browsers have issues where onreadystatechange can be called multiple times with the same value
 
-                        if (request.status >= 200 && request.status < 300 || (navigator.isCocoonJS && (request.status === 0))) {
+                        if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else { // Failed
                             let e = new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
@@ -547,7 +555,6 @@
             script.type = 'text/javascript';
             script.src = scriptUrl;
 
-            var self = this;
             script.onload = () => {
                 if (onSuccess) {
                     onSuccess();
@@ -563,17 +570,17 @@
             head.appendChild(script);
         }
 
-        public static ReadFileAsDataURL(fileToLoad, callback, progressCallback): void {
+        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): void {
             var reader = new FileReader();
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
-                callback(e.target['result']);
+                callback((<any>e.target)['result']);
             };
             reader.onprogress = progressCallback;
             reader.readAsDataURL(fileToLoad);
         }
 
-        public static ReadFile(fileToLoad, callback, progressCallBack, useArrayBuffer?: boolean): void {
+        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): void {
             var reader = new FileReader();
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
@@ -581,7 +588,7 @@
             };
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
-                callback(e.target['result']);
+                callback((<any>e.target)['result']);
             };
             reader.onprogress = progressCallBack;
             if (!useArrayBuffer) {
@@ -622,7 +629,7 @@
                 max.z = v.z;
         }
 
-        public static DeepCopy(source, destination, doNotCopyList?: string[], mustCopyList?: string[]): void {
+        public static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void {
             for (var prop in source) {
 
                 if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {
@@ -665,9 +672,11 @@
             }
         }
 
-        public static IsEmpty(obj): boolean {
+        public static IsEmpty(obj: any): boolean {
             for (var i in obj) {
-                return false;
+                if (obj.hasOwnProperty(i)) {
+                    return false;                    
+                }
             }
             return true;
         }
@@ -987,7 +996,7 @@
         }
 
         private static _FormatMessage(message: string): string {
-            var padStr = i => (i < 10) ? "0" + i : "" + i;
+            var padStr = (i: number) => (i < 10) ? "0" + i : "" + i;
 
             var date = new Date();
             return "[" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
@@ -1065,12 +1074,16 @@
             }
         }
 
+        public static IsWindowObjectExist(): boolean {
+            return (typeof window) !== "undefined";
+        }
+
         // Performances
         private static _PerformanceNoneLogLevel = 0;
         private static _PerformanceUserMarkLogLevel = 1;
         private static _PerformanceConsoleLogLevel = 2;
 
-        private static _performance: Performance = window.performance;
+        private static _performance: Performance;
 
         static get PerformanceNoneLogLevel(): number {
             return Tools._PerformanceNoneLogLevel;
@@ -1108,6 +1121,13 @@
         }
 
         static _StartUserMark(counterName: string, condition = true): void {
+            if (!Tools._performance) {
+                if (!Tools.IsWindowObjectExist()) {
+                    return;
+                }
+                Tools._performance = window.performance;
+            }
+
             if (!condition || !Tools._performance.mark) {
                 return;
             }
@@ -1150,7 +1170,7 @@
         public static EndPerformanceCounter: (counterName: string, condition?: boolean) => void = Tools._EndPerformanceCounterDisabled;
 
         public static get Now(): number {
-            if (window.performance && window.performance.now) {
+            if (Tools.IsWindowObjectExist() && window.performance && window.performance.now) {
                 return window.performance.now();
             }
 
@@ -1163,7 +1183,7 @@
          * @param object the object to get the class name from
          * @return the name of the class, will be "object" for a custom data type not using the @className decorator
          */
-        public static GetClassName(object, isType: boolean = false): string {
+        public static GetClassName(object: any, isType: boolean = false): string {
             let name = null;
 
             if (!isType && object.getClassName) {
@@ -1180,12 +1200,14 @@
             return name;
         }
 
-        public static first<T>(array: Array<T>, predicate: (item: T) => boolean) {
+        public static First<T>(array: Array<T>, predicate: (item: T) => boolean): T {
             for (let el of array) {
                 if (predicate(el)) {
                     return el;
                 }
             }
+
+            return null;
         }
 
         /**
@@ -1194,7 +1216,7 @@
          * @param object the object to get the class name from
          * @return a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
          */
-        public static getFullClassName(object, isType: boolean = false): string {
+        public static getFullClassName(object: any, isType: boolean = false): string {
             let className = null;
             let moduleName = null;
 
@@ -1420,8 +1442,8 @@
      */
     export function className(name: string, module?: string): (target: Object) => void {
         return (target: Object) => {
-            target["__bjsclassName__"] = name;
-            target["__bjsmoduleName__"] = (module != null) ? module : null;
+            (<any>target)["__bjsclassName__"] = name;
+            (<any>target)["__bjsmoduleName__"] = (module != null) ? module : null;
         }
     }
 

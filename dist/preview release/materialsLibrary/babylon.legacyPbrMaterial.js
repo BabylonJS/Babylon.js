@@ -366,13 +366,11 @@ var BABYLON;
              */
             _this.twoSidedLighting = false;
             _this._renderTargets = new BABYLON.SmartArray(16);
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
             _this._tempColor = new BABYLON.Color3();
             _this._defines = new LegacyPBRMaterialDefines();
             _this._cachedDefines = new LegacyPBRMaterialDefines();
             _this._myScene = null;
-            _this._myShadowGenerator = null;
             _this._cachedDefines.BonesPerMesh = -1;
             _this.getRenderTargetTextures = function () {
                 _this._renderTargets.reset();
@@ -466,6 +464,7 @@ var BABYLON;
             }
         };
         LegacyPBRMaterial.prototype.isReady = function (mesh, useInstances) {
+            var _this = this;
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -865,11 +864,11 @@ var BABYLON;
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
                 var onCompiled = function (effect) {
-                    if (this.onCompiled) {
-                        this.onCompiled(effect);
+                    if (_this.onCompiled) {
+                        _this.onCompiled(effect);
                     }
-                    this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
+                    _this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                };
                 this._effect = scene.getEngine().createEffect("legacyPbr", {
                     attributes: attribs,
                     uniformsNames: uniforms,

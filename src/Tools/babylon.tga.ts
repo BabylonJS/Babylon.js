@@ -6,7 +6,7 @@
     */
     export class TGATools {
 
-        private static _TYPE_NO_DATA = 0;
+        //private static _TYPE_NO_DATA = 0;
         private static _TYPE_INDEXED = 1;
         private static _TYPE_RGB = 2;
         private static _TYPE_GREY = 3;
@@ -91,7 +91,7 @@
 
             var pixel_data;
 
-            var numAlphaBits = header.flags & 0xf;
+           // var numAlphaBits = header.flags & 0xf;
             var pixel_size = header.pixel_size >> 3;
             var pixel_total = header.width * header.height * pixel_size;
 
@@ -190,7 +190,7 @@
 
             // Load the specify method
             var func = '_getImageData' + (use_grey ? 'Grey' : '') + (header.pixel_size) + 'bits';
-            var imageData = TGATools[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
+            var imageData = (<any>TGATools)[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
 
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, header.width, header.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData);
 

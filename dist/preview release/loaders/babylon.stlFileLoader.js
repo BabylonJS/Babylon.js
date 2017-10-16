@@ -82,7 +82,7 @@ var BABYLON;
             // check characters higher than ASCII to confirm binary
             var fileLength = reader.byteLength;
             for (var index = 0; index < fileLength; index++) {
-                if (reader.getUint8(index, false) > 127) {
+                if (reader.getUint8(index) > 127) {
                     return true;
                 }
             }
