@@ -1,8 +1,12 @@
 ﻿module BABYLON {
     var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: string, shaderVersion: string): WebGLShader => {
+        return compileRawShader(gl, shaderVersion + (defines ? defines + "\n" : "") + source, type);
+    };
+
+    var compileRawShader = (gl: WebGLRenderingContext, source: string, type: string): WebGLShader => {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
-        gl.shaderSource(shader, shaderVersion + (defines ? defines + "\n" : "") + source);
+        gl.shaderSource(shader, source);
         gl.compileShader(shader);
 
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
@@ -2280,9 +2284,15 @@
         public _releaseEffect(effect: Effect): void {
             if (this._compiledEffects[effect._key]) {
                 delete this._compiledEffects[effect._key];
-                if (effect.getProgram()) {
-                    this._gl.deleteProgram(effect.getProgram());
-                }
+
+                this._deleteProgram(effect.getProgram());
+            }
+        }
+
+        public _deleteProgram(program) {
+            if (program) {
+                program[Effect.rebuildProgramFunctionName] = null;
+                this._gl.deleteProgram(program);
             }
         }
 
@@ -2325,6 +2335,15 @@
                 ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         }
 
+        public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext): WebGLProgram {
+            context = context || this._gl;
+
+            var vertexShader = compileRawShader(context, vertexCode, "vertex");
+            var fragmentShader = compileRawShader(context, fragmentCode, "fragment");
+
+            return this._createShaderProgram(vertexShader, fragmentShader, context);
+        }
+
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
             context = context || this._gl;
 
@@ -2332,6 +2351,10 @@
             var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
             var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
 
+            return this._createShaderProgram(vertexShader, fragmentShader, context);
+        }
+
+        private _createShaderProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader, context?: WebGLRenderingContext): WebGLProgram {
             var shaderProgram = context.createProgram();
             context.attachShader(shaderProgram, vertexShader);
             context.attachShader(shaderProgram, fragmentShader);
@@ -4372,7 +4395,7 @@
 
         public releaseEffects() {
             for (var name in this._compiledEffects) {
-                this._gl.deleteProgram(this._compiledEffects[name]._program);
+                this._deleteProgram(this._compiledEffects[name]._program)
             }
 
             this._compiledEffects = {};
