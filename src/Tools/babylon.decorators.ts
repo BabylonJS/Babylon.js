@@ -24,15 +24,15 @@
                     case 6:     // Mesh reference
                         (<any>destination)[property] = sourceProperty;
                         break;
+                    case 1:     // Texture
+                        (<any>destination)[property] = (instanciate||sourceProperty.isRenderTarget)?sourceProperty:sourceProperty.clone();
+                        break;
                     case 2:     // Color3
                     case 3:     // FresnelParameters
                     case 4:     // Vector2
                     case 5:     // Vector3
                     case 7:     // Color Curves
                         (<any>destination)[property] = instanciate?sourceProperty:sourceProperty.clone();
-                        break;
-                    case 1:     // Texture
-                        (<any>destination)[property] = (instanciate||sourceProperty.isRenderTarget)?sourceProperty:sourceProperty.clone();
                         break;
                 }
             }
