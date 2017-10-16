@@ -6,8 +6,6 @@ declare module 'babylonjs-materials' {
 
 declare module BABYLON {
     class ShadowOnlyMaterial extends PushMaterial {
-        private _worldViewProjectionMatrix;
-        private _scaledDiffuse;
         private _renderId;
         private _activeLight;
         constructor(name: string, scene: Scene);
@@ -36,7 +34,6 @@ declare module BABYLON {
         offset: number;
         smoothness: number;
         disableLighting: boolean;
-        private _worldViewProjectionMatrix;
         private _scaledDiffuse;
         private _renderId;
         constructor(name: string, scene: Scene);
@@ -64,8 +61,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _worldViewProjectionMatrix;
-        private _scaledDiffuse;
         private _renderId;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
@@ -101,7 +96,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _worldViewProjectionMatrix;
         private _scaledDiffuse;
         private _renderId;
         constructor(name: string, scene: Scene);
@@ -131,8 +125,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _worldViewProjectionMatrix;
-        private _scaledDiffuse;
         private _renderId;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
@@ -223,7 +215,6 @@ declare module BABYLON {
         private _mesh;
         private _refractionRTT;
         private _reflectionRTT;
-        private _material;
         private _reflectionTransform;
         private _lastTime;
         private _lastDeltaTime;
@@ -312,7 +303,6 @@ declare module BABYLON {
         maxSimultaneousLights: number;
         highLevelFur: boolean;
         _meshes: AbstractMesh[];
-        private _worldViewProjectionMatrix;
         private _renderId;
         private _furTime;
         constructor(name: string, scene: Scene);
@@ -360,7 +350,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _worldViewProjectionMatrix;
         private _renderId;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
@@ -403,7 +392,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _worldViewProjectionMatrix;
         private _renderId;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
@@ -851,8 +839,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _worldViewProjectionMatrix;
-        private _scaledDiffuse;
         private _renderId;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
@@ -1166,7 +1152,6 @@ declare module BABYLON {
          */
         twoSidedLighting: boolean;
         private _renderTargets;
-        private _worldViewProjectionMatrix;
         private _globalAmbientColor;
         private _tempColor;
         private _renderId;
@@ -1199,7 +1184,6 @@ declare module BABYLON {
         unbind(): void;
         bindOnlyWorldMatrix(world: Matrix): void;
         private _myScene;
-        private _myShadowGenerator;
         bind(world: Matrix, mesh?: Mesh): void;
         getAnimatables(): IAnimatable[];
         dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;

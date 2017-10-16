@@ -1,6 +1,5 @@
 ﻿module BABYLON {
     export class PostProcessRenderPass {
-        private _enabled: boolean = true;
         private _renderList: Mesh[];
         private _renderTexture: RenderTargetTexture;
         private _scene: Scene;

@@ -21,7 +21,6 @@ declare module BABYLON {
         maxSimultaneousLights: number;
         highLevelFur: boolean;
         _meshes: AbstractMesh[];
-        private _worldViewProjectionMatrix;
         private _renderId;
         private _furTime;
         constructor(name: string, scene: Scene);

@@ -193,7 +193,7 @@
 
                         if (mesh.parent === source) {
                             // doNotCloneChildren is always going to be False
-                            var newChild = mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
+                             mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
                         }
                     }
                 }
@@ -1152,7 +1152,6 @@
                 return this;
             }
 
-            var callbackIndex: number;
             this.onBeforeRenderObservable.notifyObservers(this);
 
             var engine = scene.getEngine();
@@ -1725,7 +1724,7 @@
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
-                var subMesh = new SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+                SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
 
             this.synchronizeInstances();
@@ -1746,7 +1745,6 @@
             var vbs:{ [key: string]: VertexBuffer } = {};
             var data:{ [key: string]: number[] | Float32Array } = {};
             var newdata: { [key: string]: Array<number> } = {};
-            var updatableNormals = false;
             var kindIndex: number;
             var kind: string;
             for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
@@ -1797,7 +1795,7 @@
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
-                var subMesh = new SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+                SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
 
             this._unIndexed = true;

@@ -1,8 +1,6 @@
 
 declare module BABYLON {
     class ShadowOnlyMaterial extends PushMaterial {
-        private _worldViewProjectionMatrix;
-        private _scaledDiffuse;
         private _renderId;
         private _activeLight;
         constructor(name: string, scene: Scene);

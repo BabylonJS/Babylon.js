@@ -530,7 +530,6 @@ module BABYLON {
         public twoSidedLighting = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _globalAmbientColor = new Color3(0, 0, 0);
         private _tempColor = new Color3();
         private _renderId: number;
@@ -1166,13 +1165,13 @@ module BABYLON {
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
 
-                var onCompiled = function(effect: Effect) {
+                var onCompiled = (effect: Effect) => {
                     if (this.onCompiled) {
                         this.onCompiled(effect);
                     }
 
                     this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
+                };
                 
                 this._effect = scene.getEngine().createEffect("legacyPbr", <EffectCreationOptions>{
                     attributes: attribs,
@@ -1264,7 +1263,6 @@ module BABYLON {
         }
 
         private _myScene: BABYLON.Scene = null;
-        private _myShadowGenerator: BABYLON.ShadowGenerator = null;
 
         public bind(world: Matrix, mesh?: Mesh): void {
             this._myScene = this.getScene();

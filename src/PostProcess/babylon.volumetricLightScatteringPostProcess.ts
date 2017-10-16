@@ -146,7 +146,6 @@
             var defines = [];
             var attribs = [VertexBuffer.PositionKind];
             var material: any = subMesh.getMaterial();
-            var needUV: boolean = false;
 
             // Alpha test
             if (material) {

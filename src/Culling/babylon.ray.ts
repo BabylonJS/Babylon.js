@@ -7,7 +7,6 @@
         private _qvec: Vector3;
 
         private _tmpRay: Ray;
-        private _rayHelper: RayHelper;
 
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }

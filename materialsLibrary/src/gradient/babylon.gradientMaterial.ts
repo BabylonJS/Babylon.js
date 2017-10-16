@@ -86,8 +86,6 @@ module BABYLON {
 
         @serialize()
         public disableLighting = false;
-
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3();
         private _renderId: number;
 

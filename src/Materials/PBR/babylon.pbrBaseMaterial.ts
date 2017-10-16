@@ -445,10 +445,7 @@
         }
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _globalAmbientColor = new Color3(0, 0, 0);
-        private _tempColor = new Color3();
-        private _renderId: number;
         private _useLogarithmicDepth: boolean;
 
         /**
@@ -947,14 +944,13 @@
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
 
-                var onCompiled = function(effect: Effect) {
+                var onCompiled = (effect: Effect) => {
                     if (this.onCompiled) {
                         this.onCompiled(effect);
                     }
 
                     this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
-
+                };
 
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect("pbr", <EffectCreationOptions>{

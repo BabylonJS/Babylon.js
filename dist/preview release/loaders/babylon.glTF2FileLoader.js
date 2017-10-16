@@ -618,7 +618,7 @@ var BABYLON;
                             node.babylonMesh.subMeshes = [];
                             for (var index = 0; index < subMeshInfos.length; index++) {
                                 var info = subMeshInfos[index];
-                                new BABYLON.SubMesh(index, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, node.babylonMesh);
+                                BABYLON.SubMesh.AddToMesh(index, info.verticesStart, info.verticesCount, info.indicesStart, info.indicesCount, node.babylonMesh);
                                 info.loadMaterial(index);
                             }
                         }

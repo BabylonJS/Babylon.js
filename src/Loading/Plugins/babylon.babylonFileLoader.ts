@@ -343,7 +343,7 @@
                 // Morph targets
                 if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
                     for (var managerData of parsedData.morphTargetManagers) {
-                        var parsedManager = MorphTargetManager.Parse(managerData, scene);
+                        MorphTargetManager.Parse(managerData, scene);
                     }
                 }
 
@@ -489,7 +489,7 @@
                                 Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
                             }
                         } else {
-                            var emptySound = new Sound(parsedSound.name, null, scene);
+                            new Sound(parsedSound.name, null, scene);
                         }
                     }
                 }

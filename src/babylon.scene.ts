@@ -670,7 +670,7 @@
         public reflectionProbes = new Array<ReflectionProbe>();
 
         // Database
-        public database: any;
+        public database: Database;
 
         /**
          * This scene's action manager
@@ -1145,7 +1145,7 @@
                     }
 
                     if (actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
-                        window.setTimeout((function () {
+                        window.setTimeout(() => {
                             var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY,
                                 (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger) && mesh == this._pickedDownMesh,
                                 false, this.cameraToUseForPointers);
@@ -1159,7 +1159,7 @@
                                     actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 }
                             }
-                        }).bind(this), Scene.LongPressDelay);
+                        }, Scene.LongPressDelay);
                     }
                 }
             }
@@ -1497,7 +1497,7 @@
 
                 this._updatePointerPosition(evt);
 
-                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (function (clickInfo: ClickInfo, pickResult: PickingInfo) {
+                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: PickingInfo) => {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
@@ -1569,7 +1569,7 @@
                         }
                     }
                     this._previousPickResult = this._currentPickResult;
-                }).bind(this));
+                });
             };
 
             this._onKeyDown = (evt: KeyboardEvent) => {
@@ -1972,7 +1972,7 @@
         }
 
         public addMesh(newMesh: AbstractMesh) {
-            var position = this.meshes.push(newMesh);
+            this.meshes.push(newMesh);
 
             //notify the collision coordinator
             if (this.collisionCoordinator) {
@@ -2067,7 +2067,7 @@
         }
 
         public addCamera(newCamera: Camera) {
-            var position = this.cameras.push(newCamera);
+            this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
 
@@ -2761,7 +2761,6 @@
 
             // Particle systems
             this._particlesDuration.beginMonitoring();
-            var beforeParticlesDate = Tools.Now;
             if (this.particlesEnabled) {
                 Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
@@ -2835,7 +2834,6 @@
             }
 
             var engine = this._engine;
-            var startTime = Tools.Now;
 
             this.activeCamera = camera;
 
@@ -2877,8 +2875,6 @@
             // Render targets
             this._renderTargetsDuration.beginMonitoring();
             var needsRestoreFrameBuffer = false;
-
-            var beforeRenderTargetDate = Tools.Now;
 
             if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
                 this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
@@ -3177,7 +3173,6 @@
 
             // Customs render targets
             this._renderTargetsDuration.beginMonitoring();
-            var beforeRenderTargetDate = Tools.Now;
             var engine = this.getEngine();
             var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {

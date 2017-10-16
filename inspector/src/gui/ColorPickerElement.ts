@@ -52,7 +52,7 @@ module INSPECTOR {
                 let b = (color.b * 255) | 0;
                 let a = 1;
                 if (color instanceof BABYLON.Color4) {
-                    let a = (color as BABYLON.Color4).a;
+                    a = (color as BABYLON.Color4).a;
                 }
                 return `rgba(${r}, ${g}, ${b}, ${a})`;
             } else {

@@ -10,7 +10,6 @@ declare module BABYLON {
         offset: number;
         smoothness: number;
         disableLighting: boolean;
-        private _worldViewProjectionMatrix;
         private _scaledDiffuse;
         private _renderId;
         constructor(name: string, scene: Scene);

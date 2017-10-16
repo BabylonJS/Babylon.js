@@ -78,7 +78,6 @@ module INSPECTOR {
          */
         private _drawAxis() {
             this._obj.computeWorldMatrix();
-            var m = this._obj.getWorldMatrix();
 
             // Axis
             var x = new BABYLON.Vector3(8 / (this._obj as BABYLON.AbstractMesh).scaling.x, 0, 0);

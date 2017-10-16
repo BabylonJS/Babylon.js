@@ -362,10 +362,6 @@
             return csg;
         }
 
-        private toPolygons(): Polygon[] {
-            return this.polygons;
-        }
-
         public union(csg: CSG): CSG {
             var a = new Node(this.clone().polygons);
             var b = new Node(csg.clone().polygons);

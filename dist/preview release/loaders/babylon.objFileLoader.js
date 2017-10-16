@@ -8,165 +8,165 @@ var BABYLON;
         function MTLFileLoader() {
             // All material loaded from the mtl will be set here
             this.materials = [];
-            /**
-             * This function will read the mtl file and create each material described inside
-             * This function could be improve by adding :
-             * -some component missing (Ni, Tf...)
-             * -including the specific options available
-             *
-             * @param scene
-             * @param data
-             * @param rootUrl
-             */
-            this.parseMTL = function (scene, data, rootUrl) {
-                //Split the lines from the file
-                var lines = data.split('\n');
-                //Space char
-                var delimiter_pattern = /\s+/;
-                //Array with RGB colors
-                var color;
-                //New material
-                var material;
-                //Look at each line
-                for (var i = 0; i < lines.length; i++) {
-                    var line = lines[i].trim();
-                    // Blank line or comment
-                    if (line.length === 0 || line.charAt(0) === '#') {
-                        continue;
+        }
+        /**
+         * This function will read the mtl file and create each material described inside
+         * This function could be improve by adding :
+         * -some component missing (Ni, Tf...)
+         * -including the specific options available
+         *
+         * @param scene
+         * @param data
+         * @param rootUrl
+         */
+        MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl) {
+            //Split the lines from the file
+            var lines = data.split('\n');
+            //Space char
+            var delimiter_pattern = /\s+/;
+            //Array with RGB colors
+            var color;
+            //New material
+            var material;
+            //Look at each line
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim();
+                // Blank line or comment
+                if (line.length === 0 || line.charAt(0) === '#') {
+                    continue;
+                }
+                //Get the first parameter (keyword)
+                var pos = line.indexOf(' ');
+                var key = (pos >= 0) ? line.substring(0, pos) : line;
+                key = key.toLowerCase();
+                //Get the data following the key
+                var value = (pos >= 0) ? line.substring(pos + 1).trim() : "";
+                //This mtl keyword will create the new material
+                if (key === "newmtl") {
+                    //Check if it is the first material.
+                    // Materials specifications are described after this keyword.
+                    if (material) {
+                        //Add the previous material in the material array.
+                        this.materials.push(material);
                     }
-                    //Get the first parameter (keyword)
-                    var pos = line.indexOf(' ');
-                    var key = (pos >= 0) ? line.substring(0, pos) : line;
-                    key = key.toLowerCase();
-                    //Get the data following the key
-                    var value = (pos >= 0) ? line.substring(pos + 1).trim() : "";
-                    //This mtl keyword will create the new material
-                    if (key === "newmtl") {
-                        //Check if it is the first material.
-                        // Materials specifications are described after this keyword.
-                        if (material) {
-                            //Add the previous material in the material array.
-                            this.materials.push(material);
-                        }
-                        //Create a new material.
-                        // value is the name of the material read in the mtl file
-                        material = new BABYLON.StandardMaterial(value, scene);
+                    //Create a new material.
+                    // value is the name of the material read in the mtl file
+                    material = new BABYLON.StandardMaterial(value, scene);
+                }
+                else if (key === "kd") {
+                    // Diffuse color (color under white light) using RGB values
+                    //value  = "r g b"
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
+                    //color = [r,g,b]
+                    //Set tghe color into the material
+                    material.diffuseColor = BABYLON.Color3.FromArray(color);
+                }
+                else if (key === "ka") {
+                    // Ambient color (color under shadow) using RGB values
+                    //value = "r g b"
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
+                    //color = [r,g,b]
+                    //Set tghe color into the material
+                    material.ambientColor = BABYLON.Color3.FromArray(color);
+                }
+                else if (key === "ks") {
+                    // Specular color (color when light is reflected from shiny surface) using RGB values
+                    //value = "r g b"
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
+                    //color = [r,g,b]
+                    //Set the color into the material
+                    material.specularColor = BABYLON.Color3.FromArray(color);
+                }
+                else if (key === "ke") {
+                    // Emissive color using RGB values
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
+                    material.emissiveColor = BABYLON.Color3.FromArray(color);
+                }
+                else if (key === "ns") {
+                    //value = "Integer"
+                    material.specularPower = parseFloat(value);
+                }
+                else if (key === "d") {
+                    //d is dissolve for current material. It mean alpha for BABYLON
+                    material.alpha = parseFloat(value);
+                    //Texture
+                    //This part can be improved by adding the possible options of texture
+                }
+                else if (key === "map_ka") {
+                    // ambient texture map with a loaded image
+                    //We must first get the folder of the image
+                    material.ambientTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                }
+                else if (key === "map_kd") {
+                    // Diffuse texture map with a loaded image
+                    material.diffuseTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                }
+                else if (key === "map_ks") {
+                    // Specular texture map with a loaded image
+                    //We must first get the folder of the image
+                    material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                }
+                else if (key === "map_ns") {
+                    //Specular
+                    //Specular highlight component
+                    //We must first get the folder of the image
+                    //
+                    //Not supported by BABYLON
+                    //
+                    //    continue;
+                }
+                else if (key === "map_bump") {
+                    //The bump texture
+                    material.bumpTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                }
+                else if (key === "map_d") {
+                    // The dissolve of the material
+                    material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                    //Options for illumination
+                }
+                else if (key === "illum") {
+                    //Illumination
+                    if (value === "0") {
+                        //That mean Kd == Kd
                     }
-                    else if (key === "kd") {
-                        // Diffuse color (color under white light) using RGB values
-                        //value  = "r g b"
-                        color = value.split(delimiter_pattern, 3).map(parseFloat);
-                        //color = [r,g,b]
-                        //Set tghe color into the material
-                        material.diffuseColor = BABYLON.Color3.FromArray(color);
+                    else if (value === "1") {
+                        //Color on and Ambient on
                     }
-                    else if (key === "ka") {
-                        // Ambient color (color under shadow) using RGB values
-                        //value = "r g b"
-                        color = value.split(delimiter_pattern, 3).map(parseFloat);
-                        //color = [r,g,b]
-                        //Set tghe color into the material
-                        material.ambientColor = BABYLON.Color3.FromArray(color);
+                    else if (value === "2") {
+                        //Highlight on
                     }
-                    else if (key === "ks") {
-                        // Specular color (color when light is reflected from shiny surface) using RGB values
-                        //value = "r g b"
-                        color = value.split(delimiter_pattern, 3).map(parseFloat);
-                        //color = [r,g,b]
-                        //Set the color into the material
-                        material.specularColor = BABYLON.Color3.FromArray(color);
+                    else if (value === "3") {
+                        //Reflection on and Ray trace on
                     }
-                    else if (key === "ke") {
-                        // Emissive color using RGB values
-                        color = value.split(delimiter_pattern, 3).map(parseFloat);
-                        material.emissiveColor = BABYLON.Color3.FromArray(color);
+                    else if (value === "4") {
+                        //Transparency: Glass on, Reflection: Ray trace on
                     }
-                    else if (key === "ns") {
-                        //value = "Integer"
-                        material.specularPower = parseFloat(value);
+                    else if (value === "5") {
+                        //Reflection: Fresnel on and Ray trace on
                     }
-                    else if (key === "d") {
-                        //d is dissolve for current material. It mean alpha for BABYLON
-                        material.alpha = parseFloat(value);
-                        //Texture
-                        //This part can be improved by adding the possible options of texture
+                    else if (value === "6") {
+                        //Transparency: Refraction on, Reflection: Fresnel off and Ray trace on
                     }
-                    else if (key === "map_ka") {
-                        // ambient texture map with a loaded image
-                        //We must first get the folder of the image
-                        material.ambientTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                    else if (value === "7") {
+                        //Transparency: Refraction on, Reflection: Fresnel on and Ray trace on
                     }
-                    else if (key === "map_kd") {
-                        // Diffuse texture map with a loaded image
-                        material.diffuseTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                    else if (value === "8") {
+                        //Reflection on and Ray trace off
                     }
-                    else if (key === "map_ks") {
-                        // Specular texture map with a loaded image
-                        //We must first get the folder of the image
-                        material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                    else if (value === "9") {
+                        //Transparency: Glass on, Reflection: Ray trace off
                     }
-                    else if (key === "map_ns") {
-                        //Specular
-                        //Specular highlight component
-                        //We must first get the folder of the image
-                        //
-                        //Not supported by BABYLON
-                        //
-                        //    continue;
-                    }
-                    else if (key === "map_bump") {
-                        //The bump texture
-                        material.bumpTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
-                    }
-                    else if (key === "map_d") {
-                        // The dissolve of the material
-                        material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
-                        //Options for illumination
-                    }
-                    else if (key === "illum") {
-                        //Illumination
-                        if (value === "0") {
-                            //That mean Kd == Kd
-                        }
-                        else if (value === "1") {
-                            //Color on and Ambient on
-                        }
-                        else if (value === "2") {
-                            //Highlight on
-                        }
-                        else if (value === "3") {
-                            //Reflection on and Ray trace on
-                        }
-                        else if (value === "4") {
-                            //Transparency: Glass on, Reflection: Ray trace on
-                        }
-                        else if (value === "5") {
-                            //Reflection: Fresnel on and Ray trace on
-                        }
-                        else if (value === "6") {
-                            //Transparency: Refraction on, Reflection: Fresnel off and Ray trace on
-                        }
-                        else if (value === "7") {
-                            //Transparency: Refraction on, Reflection: Fresnel on and Ray trace on
-                        }
-                        else if (value === "8") {
-                            //Reflection on and Ray trace off
-                        }
-                        else if (value === "9") {
-                            //Transparency: Glass on, Reflection: Ray trace off
-                        }
-                        else if (value === "10") {
-                            //Casts shadows onto invisible surfaces
-                        }
-                    }
-                    else {
-                        // console.log("Unhandled expression at line : " + i +'\n' + "with value : " + line);
+                    else if (value === "10") {
+                        //Casts shadows onto invisible surfaces
                     }
                 }
-                //At the end of the file, add the last material
-                this.materials.push(material);
-            };
-        }
+                else {
+                    // console.log("Unhandled expression at line : " + i +'\n' + "with value : " + line);
+                }
+            }
+            //At the end of the file, add the last material
+            this.materials.push(material);
+        };
         /**
          * Gets the texture for the material.
          *

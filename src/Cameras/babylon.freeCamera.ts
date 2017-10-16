@@ -165,7 +165,6 @@
 
                 this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
 
-                var oldPosition = this.position.clone();
                 if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
                     this.position.addInPlace(this._diffPosition);
                     if (this.onCollide && collidedMesh) {

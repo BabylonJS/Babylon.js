@@ -51,8 +51,6 @@ var BABYLON;
             _this._computeHighLevel = false;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
         CellMaterial.prototype.needAlphaBlending = function () {
