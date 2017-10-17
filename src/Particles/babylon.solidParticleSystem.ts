@@ -121,6 +121,7 @@
                     return (p2.sqDistance - p1.sqDistance);
                 };
             private _depthSortedIndices: IndicesArray;
+            private _needs32Bits: boolean = false;
             public _bSphereOnly: boolean = false;
             public _bSphereRadiusFactor: number = 1.0;
     
@@ -182,7 +183,7 @@
                 }
                 var vertexData = new VertexData();
                 if (this._depthSort) {
-                    this._depthSortedIndices = this._indices.slice();
+                    this._depthSortedIndices = (this._needs32Bits) ? new Uint32Array(this._indices) : new Uint16Array(this._indices);
                     vertexData.indices = this._depthSortedIndices;
                 }
                 else {
@@ -436,7 +437,11 @@
                 }
     
                 for (i = 0; i < meshInd.length; i++) {
-                    indices.push(p + meshInd[i]);
+                    var current_ind = p + meshInd[i];
+                    indices.push(current_ind);
+                    if (current_ind > 65535) {
+                        this._needs32Bits = true;
+                    }
                 }
     
                 if (this._pickable) {
@@ -718,7 +723,7 @@
                             var dsp = this.depthSortedParticles[p];
                             dsp.ind = this._particle._ind;
                             dsp.indicesLength = this._particle._model._indicesLength;
-                            dsp.sqDistance = Vector3.DistanceSquared(this._particle.position, this._camera.position);
+                            dsp.sqDistance = Vector3.DistanceSquared(this._particle.position, this._camera.globalPosition);
                         }
     
                         // particle vertex loop
