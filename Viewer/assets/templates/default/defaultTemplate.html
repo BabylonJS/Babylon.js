@@ -1,0 +1,24 @@
+<style>
+    loading-screen {
+        display: flex;
+        flex: 1;
+        z-index: 100;
+        justify-content: center;
+        align-items: center;
+        background-color: black;
+    }
+
+    viewer {
+        display: none;
+        position: relative;
+        overflow: hidden;
+        /* Start stage */
+        flex: 1;
+        z-index: 1;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+
+<viewer></viewer>
+<loading-screen></loading-screen>
