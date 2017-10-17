@@ -4,9 +4,8 @@
         private _oneGamepadConnected: boolean = false;
 
         private _isMonitoring: boolean = false;
-        private _gamepadEventSupported: boolean = 'GamepadEvent' in window;
-        private _gamepadSupport: () => Array<any> = (navigator.getGamepads ||
-            navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
+        private _gamepadEventSupported: boolean;
+        private _gamepadSupport: () => Array<any>;
 
         public onGamepadConnectedObservable: Observable<Gamepad>;
         public onGamepadDisconnectedObservable = new Observable<Gamepad>();
@@ -15,6 +14,15 @@
         private _onGamepadDisconnectedEvent: (evt: any) => void;
 
         constructor() {
+            if (!Tools.IsWindowObjectExist()) {
+                this._gamepadEventSupported = false;
+            } else  {
+                this._gamepadEventSupported = 'GamepadEvent' in window;
+                this._gamepadSupport = (navigator.getGamepads ||
+                    navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
+            }
+
+
             this.onGamepadConnectedObservable = new Observable<Gamepad>((observer) => {
                 // This will be used to raise the onGamepadConnected for all gamepads ALREADY connected
                 for (var i in this._babylonGamepads) {
