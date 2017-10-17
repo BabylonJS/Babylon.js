@@ -90,6 +90,7 @@
             private _camera: TargetCamera;
             private _particle: SolidParticle;
             private _camDir: Vector3 = Vector3.Zero();
+            private _camInvertedPosition: Vector3 = Vector3.Zero();
             private _rotMatrix: Matrix = new Matrix();
             private _invertMatrix: Matrix = new Matrix();
             private _rotated: Vector3 = Vector3.Zero();
@@ -631,9 +632,12 @@
                 this._cam_axisZ.y = 0.0;
                 this._cam_axisZ.z = 1.0;
     
+                // cases when the World Matrix is to be computed first
+                if (this.billboard || this._depthSort) {
+                    this.mesh.computeWorldMatrix(true);
+                }
                 // if the particles will always face the camera
                 if (this.billboard) {
-                    this.mesh.computeWorldMatrix(true);
                     // compute the camera position and un-rotate it by the current mesh rotation
                     if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
                         this._quaternionToRotationMatrix();
@@ -650,6 +654,12 @@
                     }             
                 }
     
+                // if depthSort, apply the inverted SPS WM to the camera global position
+                if (this._depthSort) {
+                    this.mesh._worldMatrix.invertToRef(this._invertMatrix);
+                    Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertMatrix, this._camInvertedPosition);
+                }
+
                 Matrix.IdentityToRef(this._rotMatrix);
                 var idx = 0;            // current position index in the global array positions32
                 var index = 0;          // position start index in the global array positions32 of the current particle
@@ -723,7 +733,7 @@
                             var dsp = this.depthSortedParticles[p];
                             dsp.ind = this._particle._ind;
                             dsp.indicesLength = this._particle._model._indicesLength;
-                            dsp.sqDistance = Vector3.DistanceSquared(this._particle.position, this._camera.globalPosition);
+                            dsp.sqDistance = Vector3.DistanceSquared(this._particle.position, this._camInvertedPosition);
                         }
     
                         // particle vertex loop
