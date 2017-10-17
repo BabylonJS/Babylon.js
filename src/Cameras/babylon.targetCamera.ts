@@ -270,11 +270,11 @@ module BABYLON {
         protected _updateCameraRotationMatrix() {
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(this._cameraRotationMatrix);
-                //update the up vector!
-                BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
             } else {
                 Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
             }
+            //update the up vector!
+            BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
         }
 
         public _getViewMatrix(): Matrix {
