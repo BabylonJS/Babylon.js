@@ -112,8 +112,6 @@
             private _mustUnrotateFixedNormals = false;
             private _minimum: Vector3 = Tmp.Vector3[0];
             private _maximum: Vector3 = Tmp.Vector3[1];
-            private _scale: Vector3 = Tmp.Vector3[2];
-            private _translation: Vector3 = Tmp.Vector3[3];
             private _minBbox: Vector3 = Tmp.Vector3[4];
             private _maxBbox: Vector3 = Tmp.Vector3[5];
             private _particlesIntersect: boolean = false;
@@ -635,29 +633,25 @@
                 // cases when the World Matrix is to be computed first
                 if (this.billboard || this._depthSort) {
                     this.mesh.computeWorldMatrix(true);
+                    this.mesh._worldMatrix.invertToRef(this._invertMatrix);
                 }
                 // if the particles will always face the camera
                 if (this.billboard) {
                     // compute the camera position and un-rotate it by the current mesh rotation
-                    if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
-                        this._quaternionToRotationMatrix();
-                        this._rotMatrix.invertToRef(this._invertMatrix);
-                        this._camera.getDirectionToRef(this._axisZ, this._camDir);
-                        Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, this._cam_axisZ);                  
-                        this._cam_axisZ.normalize();
-                        // same for camera up vector extracted from the cam view matrix
-                        var view = this._camera.getViewMatrix(true);
-                        Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, this._cam_axisY);
-                        Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
-                        this._cam_axisY.normalize();
-                        this._cam_axisX.normalize();
-                    }             
+                    this._camera.getDirectionToRef(this._axisZ, this._camDir);
+                    Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, this._cam_axisZ);                  
+                    this._cam_axisZ.normalize();
+                    // same for camera up vector extracted from the cam view matrix
+                    var view = this._camera.getViewMatrix(true);
+                    Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, this._cam_axisY);
+                    Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
+                    this._cam_axisY.normalize();
+                    this._cam_axisX.normalize();
                 }
     
-                // if depthSort, apply the inverted SPS WM to the camera global position
+                // if depthSort, compute the camera global position in the mesh local system
                 if (this._depthSort) {
-                    this.mesh._worldMatrix.invertToRef(this._invertMatrix);
-                    Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertMatrix, this._camInvertedPosition);
+                    Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertMatrix, this._camInvertedPosition); // then un-rotate the camera
                 }
 
                 Matrix.IdentityToRef(this._rotMatrix);
