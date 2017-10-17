@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "noResolve": true,
+        "noImplicitAny": false, //mainly due to usage of external libs without typings.
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "experimentalDecorators": true,
+        "isolatedModules": false,
+        "lib": [
+            "dom",
+            "es2015.promise",
+            "es5"
+        ],
+        //"declaration": true,
+        "outDir": "./temp/",
+        "types": [
+            "node",
+            "babylonjs",
+            "babylonjs-loaders",
+            "babylonjs-materials"
+        ]
+    }
+}
