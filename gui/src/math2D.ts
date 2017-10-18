@@ -1,6 +1,12 @@
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    export class Vector2WithInfo extends Vector2 {        
+        public constructor(source: Vector2, public buttonIndex: number = 0) {
+            super(source.x, source.y);
+        }
+    }
+
     export class Matrix2D {
         public m = new Float32Array(6);
 

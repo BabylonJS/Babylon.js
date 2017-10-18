@@ -141,6 +141,8 @@ module INSPECTOR {
                     return tab;
                 }
             }
+
+            return null;
         }
 
         public getActiveTabIndex(): number {

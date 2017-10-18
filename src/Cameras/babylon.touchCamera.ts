@@ -8,6 +8,8 @@ module BABYLON {
             var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
             if (touch)
                 return touch.touchAngularSensibility;
+
+            return null;
         }
         
         public set touchAngularSensibility(value) {
@@ -20,6 +22,8 @@ module BABYLON {
             var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
             if (touch)
                 return touch.touchMoveSensibility;
+
+            return null;
         }
         
         public set touchMoveSensibility(value) {

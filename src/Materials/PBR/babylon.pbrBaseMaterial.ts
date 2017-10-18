@@ -445,10 +445,7 @@
         }
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _globalAmbientColor = new Color3(0, 0, 0);
-        private _tempColor = new Color3();
-        private _renderId: number;
         private _useLogarithmicDepth: boolean;
 
         /**
@@ -467,11 +464,11 @@
                 this._renderTargets.reset();
 
                 if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._reflectionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
                 }
 
                 if (StandardMaterial.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._refractionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
                 }
 
                 return this._renderTargets;
@@ -947,14 +944,13 @@
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
 
-                var onCompiled = function(effect) {
+                var onCompiled = (effect: Effect) => {
                     if (this.onCompiled) {
                         this.onCompiled(effect);
                     }
 
                     this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
-
+                };
 
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect("pbr", <EffectCreationOptions>{

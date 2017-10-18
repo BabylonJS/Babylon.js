@@ -89,5 +89,5 @@ module BABYLON {
         }
     }
 
-    CameraInputTypes["FreeCameraGamepadInput"] = FreeCameraGamepadInput;
+    (<any>CameraInputTypes)["FreeCameraGamepadInput"] = FreeCameraGamepadInput;
 }

@@ -5,7 +5,7 @@ module BABYLON {
         private _offsetX: number = null;
         private _offsetY: number = null;
         private _pointerCount: number = 0;
-        private _pointerPressed = [];
+        private _pointerPressed = new Array<number>();
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
         private _observer: Observer<PointerInfo>;
         private _onLostFocus: (e: FocusEvent) => any;
@@ -17,7 +17,7 @@ module BABYLON {
         public touchMoveSensibility: number = 250.0;
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
-            var previousPosition;
+            var previousPosition: {x: number, y: number};
 
             if (this._pointerInput === undefined) {
                 this._onLostFocus = (evt) => {
@@ -137,5 +137,5 @@ module BABYLON {
         }
     }
 
-    CameraInputTypes["FreeCameraTouchInput"] = FreeCameraTouchInput;
+    (<any>CameraInputTypes)["FreeCameraTouchInput"] = FreeCameraTouchInput;
 }

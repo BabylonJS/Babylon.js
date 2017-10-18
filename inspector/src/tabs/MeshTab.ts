@@ -1,3 +1,5 @@
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
 module INSPECTOR{
     
     export class MeshTab extends PropertyTab {
@@ -8,9 +10,9 @@ module INSPECTOR{
 
         /* Overrides super */
         protected _getTree() : Array<TreeItem> {
-            let arr = [];
-            // Tab containign mesh already in results
-            let alreadyIn = [];
+            let arr = new Array<TreeItem>();
+            // Tab containing mesh already in results
+            let alreadyIn = new Array<BABYLON.AbstractMesh>();
 
             // Recursive method building the tree panel
             let createNode = (obj : BABYLON.AbstractMesh) => {

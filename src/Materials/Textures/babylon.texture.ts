@@ -1,12 +1,12 @@
 ﻿module BABYLON {
     export class Texture extends BaseTexture {
         // Constants
-        public static NEAREST_SAMPLINGMODE = 1;        
+        public static NEAREST_SAMPLINGMODE = 1;
         public static NEAREST_NEAREST_MIPLINEAR = 1; // nearest is mag = nearest and min = nearest and mip = linear
-        
+
         public static BILINEAR_SAMPLINGMODE = 2;
         public static LINEAR_LINEAR_MIPNEAREST = 2; // Bilinear is mag = linear and min = linear and mip = nearest
-        
+
         public static TRILINEAR_SAMPLINGMODE = 3;
         public static LINEAR_LINEAR_MIPLINEAR = 3; // Trilinear is mag = linear and min = linear and mip = linear
 
@@ -103,7 +103,7 @@
             return this._samplingMode;
         }
 
-        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
+        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: (message?: string, esception?: any) => void = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
             super(scene);
 
             this.name = url;
@@ -270,13 +270,13 @@
                 this.uScale === this._cachedUScale &&
                 this.vScale === this._cachedVScale &&
                 this.coordinatesMode === this._cachedCoordinatesMode) {
-                    if (this.coordinatesMode === Texture.PROJECTION_MODE) {
-                        if (this._cachedProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
-                            return this._cachedTextureMatrix;
-                        }
-                    } else {
+                if (this.coordinatesMode === Texture.PROJECTION_MODE) {
+                    if (this._cachedProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
                         return this._cachedTextureMatrix;
                     }
+                } else {
+                    return this._cachedTextureMatrix;
+                }
             }
 
             if (!this._cachedTextureMatrix) {
@@ -293,10 +293,10 @@
             switch (this.coordinatesMode) {
                 case Texture.PLANAR_MODE:
                     Matrix.IdentityToRef(this._cachedTextureMatrix);
-                    this._cachedTextureMatrix[0] = this.uScale;
-                    this._cachedTextureMatrix[5] = this.vScale;
-                    this._cachedTextureMatrix[12] = this.uOffset;
-                    this._cachedTextureMatrix[13] = this.vOffset;
+                    (<any>this._cachedTextureMatrix)[0] = this.uScale;
+                    (<any>this._cachedTextureMatrix)[5] = this.vScale;
+                    (<any>this._cachedTextureMatrix)[12] = this.uOffset;
+                    (<any>this._cachedTextureMatrix)[13] = this.vOffset;
                     break;
                 case Texture.PROJECTION_MODE:
                     Matrix.IdentityToRef(this._projectionModeMatrix);
@@ -317,7 +317,7 @@
                     Matrix.IdentityToRef(this._cachedTextureMatrix);
                     break;
             }
-            
+
             scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
                 return (mat.getActiveTextures().indexOf(this) !== -1);
             });
@@ -340,7 +340,7 @@
 
         public serialize(): any {
             var serializationObject = super.serialize();
-            
+
             if (typeof this._buffer === "string" && this._buffer.substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
@@ -371,10 +371,10 @@
         }
 
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
-            if (parsedTexture.customType) { 
+            if (parsedTexture.customType) {
                 var customTexture = Tools.Instantiate(parsedTexture.customType);
                 // Update Sampling Mode
-                var parsedCustomTexture:any = customTexture.Parse(parsedTexture, scene, rootUrl);
+                var parsedCustomTexture: any = customTexture.Parse(parsedTexture, scene, rootUrl);
                 if (parsedTexture.samplingMode && parsedCustomTexture.updateSamplingMode && parsedCustomTexture._samplingMode) {
                     if (parsedCustomTexture._samplingMode !== parsedTexture.samplingMode) {
                         parsedCustomTexture.updateSamplingMode(parsedTexture.samplingMode);
@@ -417,7 +417,7 @@
 
             // Update Sampling Mode
             if (parsedTexture.samplingMode) {
-                var sampling:number = parsedTexture.samplingMode;
+                var sampling: number = parsedTexture.samplingMode;
                 if (texture._samplingMode !== sampling) {
                     texture.updateSamplingMode(sampling);
                 }
@@ -435,7 +435,7 @@
             return texture;
         }
 
-        public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
+        public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: (message?: string, exception?: any) => void = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
             if (name.substr(0, 5) !== "data:") {
                 name = "data:" + name;
             }

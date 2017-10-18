@@ -17,10 +17,6 @@ module BABYLON {
     }
 
     export class ShadowOnlyMaterial extends PushMaterial {
-        @serialize()
-
-        private _worldViewProjectionMatrix = Matrix.Zero();
-        private _scaledDiffuse = new Color3();
         private _renderId: number;
         private _activeLight: IShadowLight;
 
@@ -134,9 +130,9 @@ module BABYLON {
                                 "mBones",
                                 "vClipPlane"
                 ];
-                var samplers = [];
+                var samplers = new Array<string>();
                 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

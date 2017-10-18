@@ -16,8 +16,9 @@
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
-        public _delayInfo; //ANY
+        public _delayInfo: Array<string>;
         private _indexBuffer: WebGLBuffer;
+        private _indexBufferIsUpdatable = false;
         public _boundingInfo: BoundingInfo;
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
         public _softwareSkinningRenderId: number;
@@ -314,7 +315,19 @@
             return result;
         }
 
-        public setIndices(indices: IndicesArray, totalVertices?: number): void {
+        public updateIndices(indices: IndicesArray, offset?: number): void {
+            if (!this._indexBuffer) {
+                return;
+            }
+
+            if (!this._indexBufferIsUpdatable) {
+                this.setIndices(indices, null, true);
+            } else {
+                this._engine.updateDynamicIndexBuffer(this._indexBuffer, indices, offset);
+            }
+        }
+
+        public setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): void {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
@@ -322,11 +335,12 @@
             this._disposeVertexArrayObjects();
 
             this._indices = indices;
+            this._indexBufferIsUpdatable = updatable;
             if (this._meshes.length !== 0 && this._indices) {
-                this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+                this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
             }
 
-            if (totalVertices !== undefined) {
+            if (totalVertices != undefined) { // including null and undefined
                 this._totalVertices = totalVertices;
             }
 
@@ -425,7 +439,7 @@
             }
         }
 
-        private updateExtend(data = null, stride? : number) {
+        private updateExtend(data: number[] | Float32Array = null, stride? : number) {
             if (!data) {
                 data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }
@@ -882,7 +896,7 @@
                         var indexStart = subMeshesData[(i * 5) + 3];
                         var indexCount = subMeshesData[(i * 5) + 4];
 
-                        var subMesh = new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
+                        SubMesh.AddToMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
                     }
                 }
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
@@ -959,12 +973,11 @@
                 }
 
                 if (parsedGeometry.matricesWeights) {
-                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeights, parsedGeometry.numBoneInfluencers);
+                    Geometry._CleanMatricesWeights(parsedGeometry, mesh);
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
                 }
 
-                if (parsedGeometry.matricesWeightsExtra) {                    
-                    Geometry._CleanMatricesWeights(parsedGeometry.matricesWeightsExtra, parsedGeometry.numBoneInfluencers);
+                if (parsedGeometry.matricesWeightsExtra) {       
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
 
@@ -977,7 +990,7 @@
                 for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
                     var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
 
-                    var subMesh = new SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                    SubMesh.AddToMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
                 }
             }
 
@@ -996,25 +1009,71 @@
             }
         }
 
-        private static _CleanMatricesWeights(matricesWeights: number[], influencers: number): void {
+        private static _CleanMatricesWeights(parsedGeometry:any, mesh:Mesh): void {
+            const epsilon: number = 1e-3;
             if (!SceneLoader.CleanBoneMatrixWeights) {
                 return;
             }
+            let noInfluenceBoneIndex = 0.0;
+            if (parsedGeometry.skeletonId > -1) {
+                let skeleton = mesh.getScene().getLastSkeletonByID(parsedGeometry.skeletonId);
+                noInfluenceBoneIndex = skeleton.bones.length;
+            } else {
+                return;
+            }
+            let matricesIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+            let matricesIndicesExtra = mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
+            let matricesWeights = parsedGeometry.matricesWeights;
+            let matricesWeightsExtra = parsedGeometry.matricesWeightsExtra;
+            let influencers = parsedGeometry.numBoneInfluencer;
             let size = matricesWeights.length;
-            for (var i = 0; i < size; i += influencers) {
-                let weight = 0;
-                let biggerIndex = i;
-                let biggerWeight = 0;
-                for (var j = 0; j < influencers - 1; j++) {
-                    weight += matricesWeights[i + j];
 
-                    if (matricesWeights[i + j] > biggerWeight) {
-                        biggerWeight = matricesWeights[i + j];
-                        biggerIndex = i + j;
+            for (var i = 0; i < size; i += 4) {
+                let weight = 0.0;
+                let firstZeroWeight = -1;
+                for (var j = 0; j < 4; j++) {
+                    let w = matricesWeights[i + j];
+                    weight += w;
+                    if (w < epsilon && firstZeroWeight < 0) {
+                        firstZeroWeight = j;
                     }
                 }
+                if (matricesWeightsExtra) {
+                    for (var j = 0; j < 4; j++) {
+                        let w = matricesWeightsExtra[i + j];
+                        weight += w;
+                        if (w < epsilon && firstZeroWeight < 0) {
+                            firstZeroWeight = j + 4;
+                        }
+                    }
+                }
+                if (firstZeroWeight < 0  || firstZeroWeight > (influencers - 1)) {
+                    firstZeroWeight = influencers - 1;
+                }
+                if (weight > epsilon) {
+                    let mweight = 1.0 / weight;
+                    for (var j = 0; j < 4; j++) {
+                        matricesWeights[i + j] *= mweight;
+                    }
+                    if (matricesWeightsExtra) {
+                        for (var j = 0; j < 4; j++) {
+                            matricesWeightsExtra[i + j] *= mweight;
+                        }    
+                    }
+                } else {
+                    if (firstZeroWeight >= 4) {
+                        matricesWeightsExtra[i + firstZeroWeight - 4] = 1.0 - weight;
+                        matricesIndicesExtra[i + firstZeroWeight - 4] = noInfluenceBoneIndex;
+                    } else {
+                        matricesWeights[i + firstZeroWeight] = 1.0 - weight;
+                        matricesIndices[i + firstZeroWeight] = noInfluenceBoneIndex;
+                    }
+                }
+            }
 
-                matricesWeights[biggerIndex] += Math.max(0, 1.0 - weight);
+            mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
+            if (parsedGeometry.matricesWeightsExtra) {       
+                mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
             }
         }
 

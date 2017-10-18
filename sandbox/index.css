@@ -54,7 +54,7 @@ a {
 #renderCanvas {
     position: absolute;
     width: 100%;
-    height: 93.3%;
+    height: 100%;
     top: 0;
     margin-bottom: 70px;
     touch-action: none;
@@ -261,4 +261,31 @@ li {
 #btnFullscreen:hover, #btnPerf:hover, #btnFiles:hover {
     -webkit-transform: scale(0.9);
     transform: scale(0.9);
+}
+
+#errorZone {
+    display:none;
+    position: absolute;
+    width: 50%;
+    left: 25%;
+    bottom: 80px;
+    background-color: #C73228;
+    padding:20px;
+    border-radius: 5px;
+    color:white;
+    font-family: 'Inconsolata';
+}
+#errorZone button {
+    position: absolute;
+    top: 3px;
+    right: 10px;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    -webkit-appearance: none;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    opacity: .4;
+    font-size: 1.8em;
 }

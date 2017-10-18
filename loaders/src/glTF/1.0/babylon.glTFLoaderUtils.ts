@@ -192,7 +192,7 @@ module BABYLON.GLTF1 {
             var length = view.byteLength;
 
             for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode(view[i]);
+                result += String.fromCharCode((<any>view)[i]);
             }
 
             return result;
@@ -238,7 +238,7 @@ module BABYLON.GLTF1 {
                 var options = {
                     attributes: ["position"],
                     uniforms: ["worldView", "projection", "u_emission"],
-                    samplers: [],
+                    samplers: new Array<string>(),
                     needAlphaBlending: false
                 };
 

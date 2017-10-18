@@ -1,7 +1,4 @@
 ﻿module BABYLON {
-
-    declare var SIMD;
-
     export const ToGammaSpace = 1 / 2.2;
     export const ToLinearSpace = 2.2;
     export const Epsilon = 0.001;
@@ -64,7 +61,7 @@
          * Returns a new array populated with 3 numeric elements : red, green and blue values.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -316,7 +313,7 @@
          * Adds in place the passed Color4 values to the current Color4.  
          * Returns the updated Color4.  
          */
-        public addInPlace(right): Color4 {
+        public addInPlace(right: Color4): Color4 {
             this.r += right.r;
             this.g += right.g;
             this.b += right.b;
@@ -328,7 +325,7 @@
          * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -636,7 +633,7 @@
          * Returns a new array with 2 elements : the Vector2 coordinates.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -1387,7 +1384,7 @@
         /**
          * 
          */
-        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size) {
+        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number) {
             var d0 = Vector3.Dot(vector0, axis) - size;
             var d1 = Vector3.Dot(vector1, axis) - size;
 
@@ -1825,7 +1822,7 @@
          * Returns a new array populated with 4 elements : the Vector4 coordinates.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
 
             this.toArray(result, 0);
 
@@ -3918,7 +3915,7 @@
         /**
          * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
          */
-        public static OrthoOffCenterRHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+        public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
             result.m[10] *= -1.0;
         }
@@ -4012,7 +4009,7 @@
         /**
          * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
          */
-        public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+        public static PerspectiveFovWebVRToRef(fov: {upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number}, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
 
             var rightHandedFactor = rightHanded ? -1 : 1;
 
@@ -4292,7 +4289,7 @@
         /**
          * Returns the dot product (float) of the point coordinates and the plane normal.  
          */
-        public dotCoordinate(point): number {
+        public dotCoordinate(point: Vector3): number {
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
         }
 
@@ -4353,7 +4350,7 @@
         /**
          * Returns a new Plane defined by the three passed points.  
          */
-        static FromPoints(point1, point2, point3): Plane {
+        static FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
             var result = new Plane(0.0, 0.0, 0.0, 0.0);
             result.copyFromPoints(point1, point2, point3);
             return result;
@@ -4415,51 +4412,75 @@
             return frustumPlanes;
         }
 
+        public static GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] + transform.m[2];
+            frustumPlane.normal.y = transform.m[7] + transform.m[6];
+            frustumPlane.normal.z = transform.m[11] + transform.m[10];
+            frustumPlane.d = transform.m[15] + transform.m[14];
+            frustumPlane.normalize();
+        }
+
+        public static GetFarPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] - transform.m[2];
+            frustumPlane.normal.y = transform.m[7] - transform.m[6];
+            frustumPlane.normal.z = transform.m[11] - transform.m[10];
+            frustumPlane.d = transform.m[15] - transform.m[14];
+            frustumPlane.normalize();
+        }
+
+        public static GetLeftPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] + transform.m[0];
+            frustumPlane.normal.y = transform.m[7] + transform.m[4];
+            frustumPlane.normal.z = transform.m[11] + transform.m[8];
+            frustumPlane.d = transform.m[15] + transform.m[12];
+            frustumPlane.normalize();
+        }       
+        
+        public static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] - transform.m[0];
+            frustumPlane.normal.y = transform.m[7] - transform.m[4];
+            frustumPlane.normal.z = transform.m[11] - transform.m[8];
+            frustumPlane.d = transform.m[15] - transform.m[12];
+            frustumPlane.normalize();
+        }     
+        
+        public static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] - transform.m[1];
+            frustumPlane.normal.y = transform.m[7] - transform.m[5];
+            frustumPlane.normal.z = transform.m[11] - transform.m[9];
+            frustumPlane.d = transform.m[15] - transform.m[13];
+            frustumPlane.normalize();
+        }      
+        
+        public static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] + transform.m[1];
+            frustumPlane.normal.y = transform.m[7] + transform.m[5];
+            frustumPlane.normal.z = transform.m[11] + transform.m[9];
+            frustumPlane.d = transform.m[15] + transform.m[13];
+            frustumPlane.normalize();
+        }           
+
         /**
          * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.  
          */
         public static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void {
             // Near
-            frustumPlanes[0].normal.x = transform.m[3] + transform.m[2];
-            frustumPlanes[0].normal.y = transform.m[7] + transform.m[6];
-            frustumPlanes[0].normal.z = transform.m[11] + transform.m[10];
-            frustumPlanes[0].d = transform.m[15] + transform.m[14];
-            frustumPlanes[0].normalize();
+            Frustum.GetNearPlaneToRef(transform, frustumPlanes[0]);
 
             // Far
-            frustumPlanes[1].normal.x = transform.m[3] - transform.m[2];
-            frustumPlanes[1].normal.y = transform.m[7] - transform.m[6];
-            frustumPlanes[1].normal.z = transform.m[11] - transform.m[10];
-            frustumPlanes[1].d = transform.m[15] - transform.m[14];
-            frustumPlanes[1].normalize();
+            Frustum.GetFarPlaneToRef(transform, frustumPlanes[1]);
 
             // Left
-            frustumPlanes[2].normal.x = transform.m[3] + transform.m[0];
-            frustumPlanes[2].normal.y = transform.m[7] + transform.m[4];
-            frustumPlanes[2].normal.z = transform.m[11] + transform.m[8];
-            frustumPlanes[2].d = transform.m[15] + transform.m[12];
-            frustumPlanes[2].normalize();
+            Frustum.GetLeftPlaneToRef(transform, frustumPlanes[2]);
 
             // Right
-            frustumPlanes[3].normal.x = transform.m[3] - transform.m[0];
-            frustumPlanes[3].normal.y = transform.m[7] - transform.m[4];
-            frustumPlanes[3].normal.z = transform.m[11] - transform.m[8];
-            frustumPlanes[3].d = transform.m[15] - transform.m[12];
-            frustumPlanes[3].normalize();
+            Frustum.GetRightPlaneToRef(transform, frustumPlanes[3]);
 
             // Top
-            frustumPlanes[4].normal.x = transform.m[3] - transform.m[1];
-            frustumPlanes[4].normal.y = transform.m[7] - transform.m[5];
-            frustumPlanes[4].normal.z = transform.m[11] - transform.m[9];
-            frustumPlanes[4].d = transform.m[15] - transform.m[13];
-            frustumPlanes[4].normalize();
+            Frustum.GetTopPlaneToRef(transform, frustumPlanes[4]);
 
             // Bottom
-            frustumPlanes[5].normal.x = transform.m[3] + transform.m[1];
-            frustumPlanes[5].normal.y = transform.m[7] + transform.m[5];
-            frustumPlanes[5].normal.z = transform.m[11] + transform.m[9];
-            frustumPlanes[5].d = transform.m[15] + transform.m[13];
-            frustumPlanes[5].normalize();
+            Frustum.GetBottomPlaneToRef(transform, frustumPlanes[5]);
         }
     }
 
@@ -4801,7 +4822,7 @@
         }
 
         // private function compute() : computes tangents, normals and binormals
-        private _compute(firstNormal) {
+        private _compute(firstNormal: Vector3): void {
             var l = this._curve.length;
 
             // first and last tangents

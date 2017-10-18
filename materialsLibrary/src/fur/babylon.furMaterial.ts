@@ -82,7 +82,6 @@ module BABYLON {
                
         public _meshes: AbstractMesh[];
 
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _renderId: number;
         
         private _furTime: number = 0;
@@ -247,7 +246,7 @@ module BABYLON {
                     "heightTexture", "furTexture"
                 ];
                 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

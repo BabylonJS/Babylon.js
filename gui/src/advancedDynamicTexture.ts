@@ -30,6 +30,7 @@ module BABYLON.GUI {
         private _idealHeight = 0;
         private _renderAtIdealSize = false;
         private _focusedControl: IFocusableControl;
+        private _blockNextFocusCheck = false;
 
         public get background(): string {
             return this._background;
@@ -102,10 +103,12 @@ module BABYLON.GUI {
                 return;
             }
 
-            if (!this._focusedControl) {
-                control.onFocus();
-            } else {
+            if (this._focusedControl) {
                 this._focusedControl.onBlur();
+            }
+
+            if (control) {
+                control.onFocus();
             }
 
             this._focusedControl = control;
@@ -279,7 +282,6 @@ module BABYLON.GUI {
         }
 
         private _render(): void {
-            var engine = this.getScene().getEngine();
             var textureSize = this.getSize();
             var renderWidth = textureSize.width;
             var renderHeight = textureSize.height;
@@ -301,7 +303,7 @@ module BABYLON.GUI {
             this._rootContainer._draw(measure, context);
         }
 
-        private _doPicking(x: number, y: number, type: number): void {
+        private _doPicking(x: number, y: number, type: number, buttonIndex: number): void {
             var scene = this.getScene();
             var engine = scene.getEngine();
             var textureSize = this.getSize();
@@ -312,15 +314,15 @@ module BABYLON.GUI {
             }
             
             if (this._capturingControl) {
-                this._capturingControl._processObservables(type, x, y);
+                this._capturingControl._processObservables(type, x, y, buttonIndex);
                 return;
             }
 
-            if (!this._rootContainer._processPicking(x, y, type)) {
+            if (!this._rootContainer._processPicking(x, y, type, buttonIndex)) {
 
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                     if (this._lastControlOver) {
-                        this._lastControlOver._onPointerOut();
+                        this._lastControlOver._onPointerOut(this._lastControlOver);
                     }
                     
                     this._lastControlOver = null;
@@ -346,7 +348,7 @@ module BABYLON.GUI {
                 let y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
 
                 this._shouldBlockPointer = false;
-                this._doPicking(x, y, pi.type);
+                this._doPicking(x, y, pi.type, pi.event.button);
 
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
             });
@@ -366,7 +368,7 @@ module BABYLON.GUI {
                 if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                     var uv = pi.pickInfo.getTextureCoordinates();
                     var size = this.getSize();
-                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type);
+                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pi.event.button);
                 } else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
                     if (this._lastControlDown) {
                         this._lastControlDown.forcePointerUp();
@@ -376,7 +378,7 @@ module BABYLON.GUI {
                     this.focusedControl = null;
                 } else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                     if (this._lastControlOver) {
-                        this._lastControlOver._onPointerOut();
+                        this._lastControlOver._onPointerOut(this._lastControlOver);
                     }              
                     this._lastControlOver = null;
                 }
@@ -385,8 +387,20 @@ module BABYLON.GUI {
             mesh.enablePointerMoveEvents = supportPointerMove;
             this._attachToOnPointerOut(scene);
         }
-
+        
+        public moveFocusToControl(control: IFocusableControl): void {
+            this.focusedControl = control;
+            this._lastPickedControl = <any>control;
+            this._blockNextFocusCheck = true;
+        }
+        
         private _manageFocus(): void {
+            if (this._blockNextFocusCheck) {
+                this._blockNextFocusCheck = false;
+                this._lastPickedControl = <any>this._focusedControl;
+                return;
+            }
+
             // Focus management
             if (this._focusedControl) {
                 if (this._focusedControl !== (<any>this._lastPickedControl)) {
@@ -402,7 +416,7 @@ module BABYLON.GUI {
         private _attachToOnPointerOut(scene: Scene): void {
             this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(() => {
                 if (this._lastControlOver) {
-                    this._lastControlOver._onPointerOut();
+                    this._lastControlOver._onPointerOut(this._lastControlOver);
                 }            
                 this._lastControlOver = null;
 

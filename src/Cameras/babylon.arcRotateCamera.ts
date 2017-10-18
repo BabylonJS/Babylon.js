@@ -33,10 +33,10 @@ module BABYLON {
         public inertialRadiusOffset = 0;
 
         @serialize()
-        public lowerAlphaLimit = null;
+        public lowerAlphaLimit: number = null;
 
         @serialize()
-        public upperAlphaLimit = null;
+        public upperAlphaLimit: number = null;
 
         @serialize()
         public lowerBetaLimit = 0.01;
@@ -45,10 +45,10 @@ module BABYLON {
         public upperBetaLimit = Math.PI;
 
         @serialize()
-        public lowerRadiusLimit = null;
+        public lowerRadiusLimit: number = null;
 
         @serialize()
-        public upperRadiusLimit = null;
+        public upperRadiusLimit: number = null;
 
         @serialize()
         public inertialPanningX: number = 0;
@@ -69,117 +69,164 @@ module BABYLON {
         public panningInertia = 0.9;
 
         //-- begin properties for backward compatibility for inputs
-        public get angularSensibilityX() {
+        public get angularSensibilityX(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityX;
+
+            return null;
         }
 
-        public set angularSensibilityX(value) {
+        public set angularSensibilityX(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.angularSensibilityX = value;
             }
         }
 
-        public get angularSensibilityY() {
+        public get angularSensibilityY(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityY;
+            
+            return null;
         }
 
-        public set angularSensibilityY(value) {
+        public set angularSensibilityY(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.angularSensibilityY = value;
             }
         }
 
-        public get pinchPrecision() {
+        public get pinchPrecision(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.pinchPrecision;
+
+            return null;
         }
 
-        public set pinchPrecision(value) {
+        public set pinchPrecision(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.pinchPrecision = value;
             }
         }
 
-        public get panningSensibility() {
+        public get pinchDeltaPercentage(): number {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.pinchDeltaPercentage;
+
+            return null;
+        }
+
+        public set pinchDeltaPercentage(value: number) {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers) {
+                pointers.pinchDeltaPercentage = value;
+            }
+        }        
+
+        public get panningSensibility(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.panningSensibility;
+
+            return null;
         }
 
-        public set panningSensibility(value) {
+        public set panningSensibility(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.panningSensibility = value;
             }
         }
 
-        public get keysUp() {
+        public get keysUp(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysUp;
+
+            return null;
         }
 
-        public set keysUp(value) {
+        public set keysUp(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysUp = value;
         }
 
-        public get keysDown() {
+        public get keysDown(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysDown;
+
+            return null;
         }
 
-        public set keysDown(value) {
+        public set keysDown(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysDown = value;
         }
 
-        public get keysLeft() {
+        public get keysLeft(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysLeft;
+
+            return null;
         }
 
-        public set keysLeft(value) {
+        public set keysLeft(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysLeft = value;
         }
 
-        public get keysRight() {
+        public get keysRight(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysRight;
+
+            return null;
         }
 
-        public set keysRight(value) {
+        public set keysRight(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysRight = value;
         }
 
-        public get wheelPrecision() {
+        public get wheelPrecision(): number {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 return mousewheel.wheelPrecision;
+
+            return null;
         }
 
-        public set wheelPrecision(value) {
+        public set wheelPrecision(value: number) {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 mousewheel.wheelPrecision = value;
         }
+
+        public get wheelDeltaPercentage(): number {
+            var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+            if (mousewheel)
+                return mousewheel.wheelDeltaPercentage;
+
+            return null;
+        }
+
+        public set wheelDeltaPercentage(value: number) {
+            var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+            if (mousewheel)
+                mousewheel.wheelDeltaPercentage = value;
+        }        
 
         //-- end properties for backward compatibility for inputs
 
@@ -692,18 +739,19 @@ module BABYLON {
             this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance }, doNotUpdateMaxZ);
         }
 
-        public focusOn(meshesOrMinMaxVectorAndDistance, doNotUpdateMaxZ = false): void {
-            var meshesOrMinMaxVector;
-            var distance;
+        public focusOn(meshesOrMinMaxVectorAndDistance: AbstractMesh[] | { min: Vector3, max: Vector3, distance: number }, doNotUpdateMaxZ = false): void {
+            var meshesOrMinMaxVector: { min: Vector3, max: Vector3};
+            var distance: number;
 
-            if (meshesOrMinMaxVectorAndDistance.min === undefined) { // meshes
-                meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance || this.getScene().meshes;
-                meshesOrMinMaxVector = Mesh.MinMax(meshesOrMinMaxVector);
+            if ((<any>meshesOrMinMaxVectorAndDistance).min === undefined) { // meshes
+                var meshes = (<AbstractMesh[]>meshesOrMinMaxVectorAndDistance) || this.getScene().meshes;
+                meshesOrMinMaxVector = Mesh.MinMax(meshes);
                 distance = Vector3.Distance(meshesOrMinMaxVector.min, meshesOrMinMaxVector.max);
             }
             else { //minMaxVector and distance
-                meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance;
-                distance = meshesOrMinMaxVectorAndDistance.distance;
+                var minMaxVectorAndDistance = <any>meshesOrMinMaxVectorAndDistance;
+                meshesOrMinMaxVector = minMaxVectorAndDistance;
+                distance = minMaxVectorAndDistance.distance;
             }
 
             this._target = Mesh.Center(meshesOrMinMaxVector);
