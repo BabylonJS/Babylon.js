@@ -142,7 +142,7 @@ export class Template {
 
     }
 
-    public show(visibilityFunction?: (template) => Promise<Template>): Promise<Template> {
+    public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
         if (visibilityFunction) {
             return visibilityFunction(this).then(() => {
                 this.onStateChange.notifyObservers(this);
@@ -156,7 +156,7 @@ export class Template {
         }
     }
 
-    public hide(visibilityFunction?: (template) => Promise<Template>): Promise<Template> {
+    public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
         if (visibilityFunction) {
             return visibilityFunction(this).then(() => {
                 this.onStateChange.notifyObservers(this);
