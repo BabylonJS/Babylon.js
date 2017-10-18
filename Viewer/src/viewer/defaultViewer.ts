@@ -74,13 +74,10 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     public onModelLoaded(meshes) {
-        this.hideLoadingScreen();
-
         this.scene.createDefaultCameraOrLight(true, true, true);
 
         // TODO do it better, no casting!
         let camera: ArcRotateCamera = <ArcRotateCamera>this.scene.activeCamera;
-
         // We want framing to move the camera at the best spot
         camera.useFramingBehavior = true;
         camera.useAutoRotationBehavior = true;
@@ -98,8 +95,11 @@ export class DefaultViewer extends AbstractViewer {
 
         // TODO - move it away from here.
 
-        let ground = this.scene.getMeshByName('ground');
-        ground.position.y = bounding.min.y;
+        var ground = Mesh.CreatePlane('ground', 100, this.scene)
+        ground.rotation.x = Math.PI / 2
+        ground.receiveShadows = true;
+        ground.material = new ShadowOnlyMaterial('shadow-only-mat', this.scene)
+        ground.material.alpha = 0.4;
 
         var shadowGenerator = new BABYLON.ShadowGenerator(512, light)
         shadowGenerator.useBlurExponentialShadowMap = true;
@@ -111,6 +111,8 @@ export class DefaultViewer extends AbstractViewer {
         for (var index = 0; index < meshes.length; index++) {
             shadowGenerator.getShadowMap().renderList.push(meshes[index]);
         }
+
+        this.hideLoadingScreen();
 
         return Promise.resolve(this.scene);
     }
@@ -142,11 +144,7 @@ export class DefaultViewer extends AbstractViewer {
         backgroundImageProcessingConfiguration.colorCurves = curve;
         backgroundImageProcessingConfiguration.colorCurvesEnabled = true;*/
 
-        var ground = Mesh.CreatePlane('ground', 100, this.scene)
-        ground.rotation.x = Math.PI / 2
-        ground.receiveShadows = true;
-        ground.material = new ShadowOnlyMaterial('shadow-only-mat', this.scene)
-        ground.material.alpha = 0.4;
+        /**/
 
         // Our skybox with the color curve
         /*var box = this.scene.createDefaultSkybox(hdrTexture, true, (this.scene.activeCamera.maxZ - this.scene.activeCamera.minZ) / 2, 0.7);
