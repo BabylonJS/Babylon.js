@@ -1,15 +1,18 @@
 <style>
     loading-screen {
-        display: flex;
-        flex: 1;
+        position: absolute;
         z-index: 100;
+        opacity: 1;
+        pointer-events: none;
+        display: flex;
         justify-content: center;
         align-items: center;
-        background-color: black;
+        -webkit-transition: opacity 1.5s ease;
+        -moz-transition: opacity 1.5s ease;
+        transition: opacity 1.5s ease;
     }
 
     viewer {
-        display: none;
         position: relative;
         overflow: hidden;
         /* Start stage */
