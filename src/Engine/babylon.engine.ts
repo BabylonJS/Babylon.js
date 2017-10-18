@@ -4523,6 +4523,9 @@
 
         // Loading screen
         public displayLoadingUI(): void {
+            if (!Tools.IsWindowObjectExist()) {
+                return;
+            }
             const loadingScreen = this.loadingScreen;
             if (loadingScreen) {
                 loadingScreen.displayLoadingUI();
@@ -4530,6 +4533,9 @@
         }
 
         public hideLoadingUI(): void {
+            if (!Tools.IsWindowObjectExist()) {
+                return;
+            }            
             const loadingScreen = this.loadingScreen;
             if (loadingScreen) {
                 loadingScreen.hideLoadingUI();

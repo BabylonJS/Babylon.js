@@ -568,7 +568,7 @@ module BABYLON.GLTF2 {
                 for (var index = 0; index < numTargets; index++) {
                     var vertexData = new VertexData();
                     for (var primitive of mesh.primitives) {
-                        vertexData.merge(primitive.targetsVertexData[index]);
+                        vertexData.merge(primitive.targetsVertexData[index], { tangentLength: 3 });
                     }
 
                     var target = morphTargetManager.getTarget(index);

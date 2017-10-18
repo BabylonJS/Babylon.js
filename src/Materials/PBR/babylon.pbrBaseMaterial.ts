@@ -519,7 +519,7 @@
         private static _scaledReflectivity = new Color3();
 
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean { 
-            if (this.isFrozen) {
+            if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
                 }
