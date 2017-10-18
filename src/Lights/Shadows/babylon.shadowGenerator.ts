@@ -270,6 +270,42 @@
         }
 
         /**
+         * Helper function to add a mesh and its descendants to the list of shadow casters
+         * @param mesh Mesh to add
+         * @param includeDescendants boolean indicating if the descendants should be added. Default to true
+         */
+        public addShadowCaster(mesh: AbstractMesh, includeDescendants = true): ShadowGenerator {
+            this._shadowMap.renderList.push(mesh);
+
+            if (includeDescendants) {
+                this._shadowMap.renderList.push(...mesh.getChildMeshes());
+            }
+
+            return this;
+        }
+
+        /**
+         * Helper function to remove a mesh and its descendants from the list of shadow casters
+         * @param mesh Mesh to remove
+         * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
+         */
+        public removeShadowCaster(mesh: AbstractMesh, includeDescendants = true): ShadowGenerator {
+            var index = this._shadowMap.renderList.indexOf(mesh);
+
+            if (index !== -1) {
+                this._shadowMap.renderList.splice(index, 1);
+            }
+
+            if (includeDescendants) {
+                for (var child of mesh.getChildren()) {
+                    this.removeShadowCaster(<any>child);
+                }
+            }
+
+            return this;
+        }
+
+        /**
 		 * Controls the extent to which the shadows fade out at the edge of the frustum
          * Used only by directionals and spots
 		 */
@@ -293,7 +329,6 @@
         private _viewMatrix = Matrix.Zero();
         private _projectionMatrix = Matrix.Zero();
         private _transformMatrix = Matrix.Zero();
-        private _worldViewProjection = Matrix.Zero();
         private _cachedPosition: Vector3;
         private _cachedDirection: Vector3;
         private _cachedDefines: string;
@@ -307,7 +342,6 @@
         private _currentFaceIndex = 0;
         private _currentFaceIndexCache = 0;
         private _textureType: number;
-        private _isCube = false;
         private _defaultTextureMatrix = Matrix.Identity();
 
         /**
@@ -542,8 +576,6 @@
          * Force shader compilation including textures ready check
          */
         public forceCompilation(onCompiled: (generator: ShadowGenerator) => void, options?: { useInstances: boolean }): void {
-            var scene = this._scene;
-            var engine = scene.getEngine();
             var subMeshes = new Array<SubMesh>();
             var currentIndex = 0;
 
@@ -651,7 +683,7 @@
         /**
          * This creates the defines related to the standard BJS materials.
          */
-        public prepareDefines(defines: MaterialDefines, lightIndex: number): void {
+        public prepareDefines(defines: any, lightIndex: number): void {
             var scene = this._scene;
             var light = this._light;
 
@@ -857,7 +889,7 @@
             else if (parsedShadowGenerator.useCloseExponentialShadowMap) {
                 shadowGenerator.useCloseExponentialShadowMap = true;
             }
-            else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
+            else if (parsedShadowGenerator.useBlurCloseExponentialShadowMap) {
                 shadowGenerator.useBlurCloseExponentialShadowMap = true;
             }
 

@@ -145,7 +145,6 @@ module BABYLON {
 		private _onMeshTargetChangedObserver: Observer<AbstractMesh>;
         private _attachedCamera: ArcRotateCamera;
         private _isPointerDown = false;
-        private _lastFrameTime: number = null;
         private _lastInteractionTime = -Infinity;
 
         public attach(camera: ArcRotateCamera): void {
@@ -197,7 +196,6 @@ module BABYLON {
 		private _betaTransition: Animation;
 		private _radiusTransition: Animation;
 		private _vectorTransition: Animation;
-		private _lastFrameRadius = 0;
 		
 		/**
 		 * Targets the given mesh and updates zoom level accordingly.
@@ -248,7 +246,6 @@ module BABYLON {
 
 			// sets the radius and lower radius bounds
 			// Small delta ensures camera is not always at lower zoom limit.
-			let delta = 0.1;
 			let radius = 0;
 			if (this._mode === FramingBehavior.FitFrustumSidesMode) {
 				let position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);

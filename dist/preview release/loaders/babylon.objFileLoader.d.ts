@@ -15,7 +15,7 @@ declare module BABYLON {
          * @param data
          * @param rootUrl
          */
-        parseMTL: (scene: Scene, data: string, rootUrl: string) => void;
+        parseMTL(scene: BABYLON.Scene, data: string, rootUrl: string): void;
         /**
          * Gets the texture for the material.
          *

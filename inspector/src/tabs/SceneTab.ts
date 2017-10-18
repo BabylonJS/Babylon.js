@@ -1,3 +1,4 @@
+declare function Split(elements: HTMLElement[], options: any): void;
 module INSPECTOR {
     
     export class SceneTab extends Tab {
@@ -169,7 +170,7 @@ module INSPECTOR {
          * the clicked element is set as active, all others elements are deactivated
          */
         private _generateRadioAction(arr:Array<HTMLElement>) {
-            let active = (elem, evt) => {
+            let active = (elem: HTMLElement, evt: any) => {
                 for (let e of arr) {
                     e.classList.remove('active');
                 }

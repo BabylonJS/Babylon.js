@@ -95,7 +95,6 @@ module BABYLON {
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public maxSimultaneousLights: number; 
 
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3();
         private _renderId: number;
 
@@ -220,7 +219,7 @@ module BABYLON {
                 var samplers = ["diffuseSampler",
                     "noiseTexture"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 

@@ -293,7 +293,6 @@ declare module BABYLON {
          */
         twoSidedLighting: boolean;
         private _renderTargets;
-        private _worldViewProjectionMatrix;
         private _globalAmbientColor;
         private _tempColor;
         private _renderId;
@@ -326,7 +325,6 @@ declare module BABYLON {
         unbind(): void;
         bindOnlyWorldMatrix(world: Matrix): void;
         private _myScene;
-        private _myShadowGenerator;
         bind(world: Matrix, mesh?: Mesh): void;
         getAnimatables(): IAnimatable[];
         dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;

@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var TriPlanarMaterialDefines = (function (_super) {
+    var TriPlanarMaterialDefines = /** @class */ (function (_super) {
         __extends(TriPlanarMaterialDefines, _super);
         function TriPlanarMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -44,7 +44,7 @@ var BABYLON;
         }
         return TriPlanarMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var TriPlanarMaterial = (function (_super) {
+    var TriPlanarMaterial = /** @class */ (function (_super) {
         __extends(TriPlanarMaterial, _super);
         function TriPlanarMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -54,7 +54,6 @@ var BABYLON;
             _this.specularPower = 64;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             return _this;
         }
         TriPlanarMaterial.prototype.needAlphaBlending = function () {
@@ -160,7 +159,7 @@ var BABYLON;
                 var samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ",
                     "normalSamplerX", "normalSamplerY", "normalSamplerZ"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

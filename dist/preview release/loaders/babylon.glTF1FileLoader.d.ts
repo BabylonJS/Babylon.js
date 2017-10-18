@@ -27,13 +27,17 @@ declare module BABYLON {
          */
         onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
         /**
-         * Raised when all LODs are complete (or if there is no LOD and model is complete)
+         * Raised when the visible components (geometry, materials, textures, etc.) are first ready to be rendered.
+         * For assets with LODs, raised when the first LOD is complete.
+         * For assets without LODs, raised when the model is complete just before onComplete.
+         */
+        onReady: () => void;
+        /**
+         * Raised when the asset is completely loaded, just before the loader is disposed.
+         * For assets with LODs, raised when all of the LODs are complete.
+         * For assets without LODs, raised when the model is complete just after onReady.
          */
         onComplete: () => void;
-        /**
-         * Raised when first LOD complete (or if there is no LOD and model is complete)
-         */
-        onFirstLODComplete: () => void;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
@@ -46,7 +50,7 @@ declare module BABYLON {
         private static _parseV2(binaryReader, onError);
         private static _parseVersion(version);
         private static _compareVersion(a, b);
-        private static _decodeBufferToText(view);
+        private static _decodeBufferToText(buffer);
     }
 }
 
@@ -135,7 +139,9 @@ declare module BABYLON.GLTF1 {
     * Interfaces
     */
     interface IGLTFProperty {
-        extensions?: Object;
+        extensions?: {
+            [key: string]: any;
+        };
         extras?: Object;
     }
     interface IGLTFChildRootProperty extends IGLTFProperty {
@@ -199,10 +205,16 @@ declare module BABYLON.GLTF1 {
         functions: IGLTFTechniqueStatesFunctions;
     }
     interface IGLTFTechnique extends IGLTFChildRootProperty {
-        parameters: Object;
+        parameters: {
+            [key: string]: IGLTFTechniqueParameter;
+        };
         program: string;
-        attributes: Object;
-        uniforms: Object;
+        attributes: {
+            [key: string]: string;
+        };
+        uniforms: {
+            [key: string]: string;
+        };
         states: IGLTFTechniqueStates;
     }
     interface IGLTFMaterial extends IGLTFChildRootProperty {
@@ -210,7 +222,9 @@ declare module BABYLON.GLTF1 {
         values: string[];
     }
     interface IGLTFMeshPrimitive extends IGLTFProperty {
-        attributes: Object;
+        attributes: {
+            [key: string]: string;
+        };
         indices: string;
         material: string;
         mode?: number;
@@ -289,8 +303,12 @@ declare module BABYLON.GLTF1 {
     }
     interface IGLTFAnimation extends IGLTFChildRootProperty {
         channels?: IGLTFAnimationChannel[];
-        parameters?: Object;
-        samplers?: Object;
+        parameters?: {
+            [key: string]: string;
+        };
+        samplers?: {
+            [key: string]: IGLTFAnimationSampler;
+        };
     }
     interface IGLTFNodeInstanceSkin {
         skeletons: string[];
@@ -324,25 +342,61 @@ declare module BABYLON.GLTF1 {
     * Runtime
     */
     interface IGLTFRuntime {
-        extensions: Object;
-        accessors: Object;
-        buffers: Object;
-        bufferViews: Object;
-        meshes: Object;
-        lights: Object;
-        cameras: Object;
-        nodes: Object;
-        images: Object;
-        textures: Object;
-        shaders: Object;
-        programs: Object;
-        samplers: Object;
-        techniques: Object;
-        materials: Object;
-        animations: Object;
-        skins: Object;
+        extensions: {
+            [key: string]: any;
+        };
+        accessors: {
+            [key: string]: IGLTFAccessor;
+        };
+        buffers: {
+            [key: string]: IGLTFBuffer;
+        };
+        bufferViews: {
+            [key: string]: IGLTFBufferView;
+        };
+        meshes: {
+            [key: string]: IGLTFMesh;
+        };
+        lights: {
+            [key: string]: IGLTFLight;
+        };
+        cameras: {
+            [key: string]: IGLTFCamera;
+        };
+        nodes: {
+            [key: string]: IGLTFNode;
+        };
+        images: {
+            [key: string]: IGLTFImage;
+        };
+        textures: {
+            [key: string]: IGLTFTexture;
+        };
+        shaders: {
+            [key: string]: IGLTFShader;
+        };
+        programs: {
+            [key: string]: IGLTFProgram;
+        };
+        samplers: {
+            [key: string]: IGLTFSampler;
+        };
+        techniques: {
+            [key: string]: IGLTFTechnique;
+        };
+        materials: {
+            [key: string]: IGLTFMaterial;
+        };
+        animations: {
+            [key: string]: IGLTFAnimation;
+        };
+        skins: {
+            [key: string]: IGLTFSkins;
+        };
         currentScene?: Object;
-        scenes: Object;
+        scenes: {
+            [key: string]: IGLTFScene;
+        };
         extensionsUsed: string[];
         extensionsRequired?: string[];
         buffersCount: number;

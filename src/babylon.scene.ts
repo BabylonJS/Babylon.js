@@ -96,6 +96,8 @@
         private static _FOGMODE_EXP2 = 2;
         private static _FOGMODE_LINEAR = 3;
 
+        private static _uniqueIdCounter = 0;        
+
         public static MinDeltaTime = 1.0;
         public static MaxDeltaTime = 1000.0;
 
@@ -179,6 +181,11 @@
 
         public hoverCursor = "pointer";
         public defaultCursor: string = "";
+        /**
+         * This is used to call preventDefault() on pointer down
+         * in order to block unwanted artifacts like system double clicks
+         */
+        public preventDefaultOnPointerDown = true;
 
         // Metadata
         public metadata: any = null;
@@ -390,18 +397,18 @@
         /** If you need to check double click without raising a single click at first click, enable this flag */
         public static ExclusiveDoubleClickMode = false;
 
-        private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => void;
+        private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void) => void;
         private _initActionManager: (act: ActionManager, clickInfo: ClickInfo) => ActionManager;
-        private _delayedSimpleClick: (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => void;
-        private _delayedSimpleClickTimeout;
-        private _previousDelayedSimpleClickTimeout;
+        private _delayedSimpleClick: (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void) => void;
+        private _delayedSimpleClickTimeout: number;
+        private _previousDelayedSimpleClickTimeout: number;
         private _meshPickProceed = false;
 
-        private _previousButtonPressed;
+        private _previousButtonPressed: number;
         private _previousHasSwiped = false;
-        private _currentPickResult = null;
-        private _previousPickResult = null;
-        private _isButtonPressed = false;
+        private _currentPickResult: PickingInfo = null;
+        private _previousPickResult: PickingInfo = null;
+        private _totalPointersPressed = 0;
         private _doubleClickOccured = false;
 
         /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
@@ -634,7 +641,7 @@
 
         // Collisions
         public collisionsEnabled = true;
-        private _workerCollisions;
+        private _workerCollisions: boolean;
         public collisionCoordinator: ICollisionCoordinator;
         /** Defines the gravity applied to this scene */
         public gravity = new Vector3(0, -9.807, 0);
@@ -668,7 +675,7 @@
         public reflectionProbes = new Array<ReflectionProbe>();
 
         // Database
-        public database; //ANY
+        public database: Database;
 
         /**
          * This scene's action manager
@@ -743,9 +750,9 @@
         private _alternateProjectionUpdateFlag = -1;
 
         public _toBeDisposed = new SmartArray<IDisposable>(256);
-        private _pendingData = [];//ANY
+        private _pendingData = new Array();
 
-        private _activeMeshes = new SmartArray<Mesh>(256);
+        private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArray<RenderTargetTexture>(256);
         public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
@@ -795,8 +802,6 @@
         private _depthRenderer: DepthRenderer;
         private _geometryBufferRenderer: GeometryBufferRenderer;
 
-        private _uniqueIdCounter = 0;
-
         private _pickedDownMesh: AbstractMesh;
         private _pickedUpMesh: AbstractMesh;
         private _pickedDownSprite: Sprite;
@@ -821,7 +826,9 @@
                 this._outlineRenderer = new OutlineRenderer(this);
             }
 
-            this.attachControl();
+            if (Tools.IsWindowObjectExist()) {
+                this.attachControl();
+            }
 
             //simplification queue
             if (SimplificationQueue) {
@@ -984,7 +991,7 @@
             return this._evaluateActiveMeshesDuration;
         }
 
-        public getActiveMeshes(): SmartArray<Mesh> {
+        public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
         }
 
@@ -1143,13 +1150,13 @@
                     }
 
                     if (actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
-                        window.setTimeout((function () {
+                        window.setTimeout(() => {
                             var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY,
                                 (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger) && mesh == this._pickedDownMesh,
                                 false, this.cameraToUseForPointers);
 
                             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                                if (this._isButtonPressed &&
+                                if (this._totalPointersPressed !== 0 &&
                                     ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                     (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
                                         Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
@@ -1157,7 +1164,7 @@
                                     actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 }
                             }
-                        }).bind(this), Scene.LongPressDelay);
+                        }, Scene.LongPressDelay);
                     }
                 }
             }
@@ -1267,7 +1274,7 @@
                 return act;
             };
 
-            this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void) => {
+            this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void) => {
                 // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
                 if ((new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
                     btn !== this._previousButtonPressed) {
@@ -1278,7 +1285,7 @@
                 }
             }
 
-            this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PointerInfo) => void): void => {
+            this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void): void => {
                 let clickInfo = new ClickInfo();
                 this._currentPickResult = null;
                 let act;
@@ -1346,8 +1353,9 @@
                                     this._doubleClickOccured = true;
                                     clickInfo.doubleClick = true;
                                     clickInfo.ignore = false;
-                                    if (Scene.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout)
-                                        this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                    if (Scene.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout) {
+                                        clearTimeout(this._previousDelayedSimpleClickTimeout);
+                                    }
                                     this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
                                     cb(clickInfo, this._currentPickResult);
                                 }
@@ -1360,8 +1368,8 @@
                                     this._previousButtonPressed = btn;
                                     this._previousHasSwiped = clickInfo.hasSwiped;
                                     if (Scene.ExclusiveDoubleClickMode) {
-                                        if (this._previousDelayedSimpleClickTimeout && this._previousDelayedSimpleClickTimeout.clearTimeout) {
-                                            this._previousDelayedSimpleClickTimeout.clearTimeout();
+                                        if (this._previousDelayedSimpleClickTimeout) {
+                                            clearTimeout(this._previousDelayedSimpleClickTimeout);
                                         }
                                         this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
                                         cb(clickInfo, this._previousPickResult);
@@ -1420,11 +1428,16 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
-                this._isButtonPressed = true;
+                this._totalPointersPressed++;
                 this._pickedDownMesh = null;
                 this._meshPickProceed = false;
 
                 this._updatePointerPosition(evt);
+
+                if (this.preventDefaultOnPointerDown) {
+                    evt.preventDefault();
+                    canvas.focus();
+                }
 
                 // PreObservable support
                 if (this.onPrePointerObservable.hasObservers()) {
@@ -1484,17 +1497,17 @@
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
-                if (!this._isButtonPressed) {   // We are attaching the pointer up to windows because of a bug in FF                    
-                    return;                     // So we need to test it the pointer down was pressed before.
+                if (this._totalPointersPressed === 0) {  // We are attaching the pointer up to windows because of a bug in FF                    
+                    return;                             // So we need to test it the pointer down was pressed before.
                 }
 
-                this._isButtonPressed = false;
+                this._totalPointersPressed--;
                 this._pickedUpMesh = null;
                 this._meshPickProceed = false;
 
-                this._updatePointerPosition(evt);
+                this._updatePointerPosition(evt);      
 
-                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (function (clickInfo, pickResult) {
+                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: PickingInfo) => {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
@@ -1566,7 +1579,7 @@
                         }
                     }
                     this._previousPickResult = this._currentPickResult;
-                }).bind(this));
+                });
             };
 
             this._onKeyDown = (evt: KeyboardEvent) => {
@@ -1732,11 +1745,11 @@
             this.onAfterRenderObservable.removeCallback(func);
         }
 
-        public _addPendingData(data): void {
+        public _addPendingData(data: any): void {
             this._pendingData.push(data);
         }
 
-        public _removePendingData(data): void {
+        public _removePendingData(data: any): void {
             var index = this._pendingData.indexOf(data);
 
             if (index !== -1) {
@@ -1916,6 +1929,12 @@
                 Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
 
+            if (this.activeCamera._alternateCamera) {
+                let otherCamera = this.activeCamera._alternateCamera;
+                otherCamera.getViewMatrix().multiplyToRef(otherCamera.getProjectionMatrix(), Tmp.Matrix[0]);
+                Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
+            }
+
             if (this._sceneUbo.useUbo) {
                 this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
                 this._sceneUbo.updateMatrix("view", this._viewMatrix);
@@ -1957,14 +1976,13 @@
         // Methods
 
         public getUniqueId() {
-            var result = this._uniqueIdCounter;
-            this._uniqueIdCounter++;
+            var result = Scene._uniqueIdCounter;
+            Scene._uniqueIdCounter++;
             return result;
         }
 
         public addMesh(newMesh: AbstractMesh) {
-            newMesh.uniqueId = this.getUniqueId();
-            var position = this.meshes.push(newMesh);
+            this.meshes.push(newMesh);
 
             //notify the collision coordinator
             if (this.collisionCoordinator) {
@@ -2046,7 +2064,6 @@
         }
 
         public addLight(newLight: Light) {
-            newLight.uniqueId = this.getUniqueId();
             this.lights.push(newLight);
             this.sortLightsByPriority();
 
@@ -2060,8 +2077,7 @@
         }
 
         public addCamera(newCamera: Camera) {
-            newCamera.uniqueId = this.getUniqueId();
-            var position = this.cameras.push(newCamera);
+            this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
 
@@ -2631,7 +2647,7 @@
          * @param key the unique key that identifies the data
          * @return true if the data was successfully removed, false if it doesn't exist
          */
-        public removeExternalData(key): boolean {
+        public removeExternalData(key: string): boolean {
             return this._externalData.remove(key);
         }
 
@@ -2755,7 +2771,6 @@
 
             // Particle systems
             this._particlesDuration.beginMonitoring();
-            var beforeParticlesDate = Tools.Now;
             if (this.particlesEnabled) {
                 Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
@@ -2784,7 +2799,7 @@
                 }
 
                 if (!mesh.computeBonesUsingShaders) {
-                    this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
+                    this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh);
                 }
             }
 
@@ -2829,7 +2844,6 @@
             }
 
             var engine = this._engine;
-            var startTime = Tools.Now;
 
             this.activeCamera = camera;
 
@@ -2871,8 +2885,6 @@
             // Render targets
             this._renderTargetsDuration.beginMonitoring();
             var needsRestoreFrameBuffer = false;
-
-            var beforeRenderTargetDate = Tools.Now;
 
             if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
                 this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
@@ -3171,7 +3183,6 @@
 
             // Customs render targets
             this._renderTargetsDuration.beginMonitoring();
-            var beforeRenderTargetDate = Tools.Now;
             var engine = this.getEngine();
             var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
@@ -4095,7 +4106,7 @@
 
             if (!this.environmentTexture) {
                 Tools.Warn("Can not create default skybox without environment texture.");
-                return;
+                return null;
             }
 
             // Skybox
@@ -4124,8 +4135,8 @@
             return hdrSkybox;
         }
 
-        public createDefaultVRExperience() {
-            this.VRHelper = new BABYLON.VRExperienceHelper(this, null);
+        public createDefaultVRExperience(webVROptions: WebVROptions = {}) {
+            this.VRHelper = new BABYLON.VRExperienceHelper(this, webVROptions);
         }
 
         // Tags

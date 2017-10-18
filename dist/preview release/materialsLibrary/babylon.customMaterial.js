@@ -18,7 +18,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var BABYLON;
 (function (BABYLON) {
     // old version of standard material updated every 3 months
-    var StandardMaterialDefines_OldVer = (function (_super) {
+    var StandardMaterialDefines_OldVer = /** @class */ (function (_super) {
         __extends(StandardMaterialDefines_OldVer, _super);
         function StandardMaterialDefines_OldVer() {
             var _this = _super.call(this) || this;
@@ -111,7 +111,7 @@ var BABYLON;
         return StandardMaterialDefines_OldVer;
     }(BABYLON.MaterialDefines));
     BABYLON.StandardMaterialDefines_OldVer = StandardMaterialDefines_OldVer;
-    var StandardMaterial_OldVer = (function (_super) {
+    var StandardMaterial_OldVer = /** @class */ (function (_super) {
         __extends(StandardMaterial_OldVer, _super);
         function StandardMaterial_OldVer(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -796,10 +796,10 @@ var BABYLON;
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             }
                             else {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? -1.0 : 1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
                         if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
@@ -1382,19 +1382,19 @@ var BABYLON;
         return StandardMaterial_OldVer;
     }(BABYLON.PushMaterial));
     BABYLON.StandardMaterial_OldVer = StandardMaterial_OldVer;
-    var CustomShaderStructure = (function () {
+    var CustomShaderStructure = /** @class */ (function () {
         function CustomShaderStructure() {
         }
         return CustomShaderStructure;
     }());
     BABYLON.CustomShaderStructure = CustomShaderStructure;
-    var ShaderSpecialParts = (function () {
+    var ShaderSpecialParts = /** @class */ (function () {
         function ShaderSpecialParts() {
         }
         return ShaderSpecialParts;
     }());
     BABYLON.ShaderSpecialParts = ShaderSpecialParts;
-    var ShaderForVer3_0 = (function (_super) {
+    var ShaderForVer3_0 = /** @class */ (function (_super) {
         __extends(ShaderForVer3_0, _super);
         function ShaderForVer3_0() {
             var _this = _super.call(this) || this;
@@ -1895,13 +1895,14 @@ vColor=color;\n\
         return ShaderForVer3_0;
     }(CustomShaderStructure));
     BABYLON.ShaderForVer3_0 = ShaderForVer3_0;
-    var StandardShaderVersions = (function () {
+    var StandardShaderVersions = /** @class */ (function () {
         function StandardShaderVersions() {
         }
+        StandardShaderVersions.Ver3_0 = "3.0.0";
         return StandardShaderVersions;
     }());
     BABYLON.StandardShaderVersions = StandardShaderVersions;
-    var CustomMaterial = (function (_super) {
+    var CustomMaterial = /** @class */ (function (_super) {
         __extends(CustomMaterial, _super);
         function CustomMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -1944,6 +1945,7 @@ vColor=color;\n\
             return arr;
         };
         CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+            var _this = this;
             if (this._isCreatedShader)
                 return this._createdShaderName;
             this._isCreatedShader = false;
@@ -1953,7 +1955,7 @@ vColor=color;\n\
             this.ReviewUniform("sampler", samplers);
             var fn_afterBind = this._afterBind;
             this._afterBind = function (m, e) {
-                this.AttachAfterBind(m, e);
+                _this.AttachAfterBind(m, e);
                 try {
                     fn_afterBind(m, e);
                 }
@@ -1996,7 +1998,7 @@ vColor=color;\n\
                     this._newUniformInstances[kind + "-" + name] = param;
                 }
                 else {
-                    this._newSamplerInstances[kind + "-" + name] = param;
+                    this._newUniformInstances[kind + "-" + name] = param;
                 }
             }
             this._customUniform.push("uniform " + kind + " " + name + ";");

@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var LavaMaterialDefines = (function (_super) {
+    var LavaMaterialDefines = /** @class */ (function (_super) {
         __extends(LavaMaterialDefines, _super);
         function LavaMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -73,7 +73,7 @@ var BABYLON;
         }
         return LavaMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var LavaMaterial = (function (_super) {
+    var LavaMaterial = /** @class */ (function (_super) {
         __extends(LavaMaterial, _super);
         function LavaMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -85,7 +85,6 @@ var BABYLON;
             _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
@@ -182,7 +181,7 @@ var BABYLON;
                 var samplers = ["diffuseSampler",
                     "noiseTexture"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

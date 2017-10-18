@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var BABYLON;
 (function (BABYLON) {
-    var BrickProceduralTexture = (function (_super) {
+    var BrickProceduralTexture = /** @class */ (function (_super) {
         __extends(BrickProceduralTexture, _super);
         function BrickProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;

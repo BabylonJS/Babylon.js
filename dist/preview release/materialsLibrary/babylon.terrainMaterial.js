@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var TerrainMaterialDefines = (function (_super) {
+    var TerrainMaterialDefines = /** @class */ (function (_super) {
         __extends(TerrainMaterialDefines, _super);
         function TerrainMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -42,7 +42,7 @@ var BABYLON;
         }
         return TerrainMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var TerrainMaterial = (function (_super) {
+    var TerrainMaterial = /** @class */ (function (_super) {
         __extends(TerrainMaterial, _super);
         function TerrainMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -51,7 +51,6 @@ var BABYLON;
             _this.specularPower = 64;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             return _this;
         }
         TerrainMaterial.prototype.needAlphaBlending = function () {
@@ -148,7 +147,7 @@ var BABYLON;
                 var samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler",
                     "bump1Sampler", "bump2Sampler", "bump3Sampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

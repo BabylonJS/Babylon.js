@@ -26,7 +26,7 @@ module BABYLON {
             this.lockedTarget = lockedTarget;
         }
 
-        private getRadians(degrees): number {
+        private getRadians(degrees: number): number {
             return degrees * Math.PI / 180;
         }
 

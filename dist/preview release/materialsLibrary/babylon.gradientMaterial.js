@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var GradientMaterialDefines = (function (_super) {
+    var GradientMaterialDefines = /** @class */ (function (_super) {
         __extends(GradientMaterialDefines, _super);
         function GradientMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -73,7 +73,7 @@ var BABYLON;
         }
         return GradientMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var GradientMaterial = (function (_super) {
+    var GradientMaterial = /** @class */ (function (_super) {
         __extends(GradientMaterial, _super);
         function GradientMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -88,7 +88,6 @@ var BABYLON;
             _this.offset = 0;
             _this.smoothness = 1.0;
             _this.disableLighting = false;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
@@ -164,7 +163,7 @@ var BABYLON;
                     "topColor", "bottomColor", "offset", "smoothness"
                 ];
                 var samplers = ["diffuseSampler"];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

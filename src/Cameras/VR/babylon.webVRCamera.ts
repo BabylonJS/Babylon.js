@@ -1,6 +1,6 @@
-declare var HMDVRDevice;
-declare var VRDisplay;
-declare var VRFrameData;
+declare var HMDVRDevice: any;
+declare var VRDisplay: any;
+declare var VRFrameData: any;
 
 module BABYLON {
     /**
@@ -26,7 +26,7 @@ module BABYLON {
         deviceRotationQuaternion: Quaternion;
         rawPose: DevicePose;
         deviceScaleFactor: number;
-        updateFromDevice(poseData: DevicePose);
+        updateFromDevice(poseData: DevicePose): void;
     }
 
     export interface WebVROptions {
@@ -38,29 +38,23 @@ module BABYLON {
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-        public _vrDevice = null;
+        public _vrDevice: any = null;
         public rawPose: DevicePose = null;
         private _onVREnabled: (success: boolean) => void;
         private _specsVersion: string = "1.1";
         private _attached: boolean = false;
 
-        private _oldSize: BABYLON.Size;
-        private _oldHardwareScaleFactor: number;
-
-        private _frameData;
-
-        private _quaternionCache: Quaternion;
-
-        private _positionOffset: Vector3 = Vector3.Zero();
+        private _frameData: any;
 
         protected _descendants: Array<Node> = [];
 
         public devicePosition = Vector3.Zero();
-        public deviceRotationQuaternion;
+        public deviceRotationQuaternion: Quaternion;
         public deviceScaleFactor: number = 1;
 
         public controllers: Array<WebVRController> = [];
         public onControllersAttachedObservable = new Observable<Array<WebVRController>>();
+        public onControllerMeshLoadedObservable = new Observable<WebVRController>();
 
         public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
@@ -359,6 +353,7 @@ module BABYLON {
                         } else {
                             // Load the meshes
                             webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
+                                this.onControllerMeshLoadedObservable.notifyObservers(webVrController);
                                 if (this.webVROptions.defaultLightingOnControllers) {
                                     if (!this._lightOnControllers) {
                                         this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), this.getScene());

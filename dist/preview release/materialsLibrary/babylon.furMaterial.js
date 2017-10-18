@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var FurMaterialDefines = (function (_super) {
+    var FurMaterialDefines = /** @class */ (function (_super) {
         __extends(FurMaterialDefines, _super);
         function FurMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -42,7 +42,7 @@ var BABYLON;
         }
         return FurMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var FurMaterial = (function (_super) {
+    var FurMaterial = /** @class */ (function (_super) {
         __extends(FurMaterial, _super);
         function FurMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -58,7 +58,6 @@ var BABYLON;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
             _this.highLevelFur = true;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._furTime = 0;
             return _this;
         }
@@ -193,7 +192,7 @@ var BABYLON;
                 var samplers = ["diffuseSampler",
                     "heightTexture", "furTexture"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

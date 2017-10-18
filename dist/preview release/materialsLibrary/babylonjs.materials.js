@@ -1,4 +1,5 @@
-var BABYLON = BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
+var babylonDependency; try { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("../babylon.max")); } catch (e) { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("babylonjs")); } 
+var BABYLON = babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -17,10 +18,9 @@ var __extends = (this && this.__extends) || (function () {
         })();
         
 
-
 var BABYLON;
 (function (BABYLON) {
-    var ShadowOnlyMaterialDefines = (function (_super) {
+    var ShadowOnlyMaterialDefines = /** @class */ (function (_super) {
         __extends(ShadowOnlyMaterialDefines, _super);
         function ShadowOnlyMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -36,13 +36,10 @@ var BABYLON;
         }
         return ShadowOnlyMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var ShadowOnlyMaterial = (function (_super) {
+    var ShadowOnlyMaterial = /** @class */ (function (_super) {
         __extends(ShadowOnlyMaterial, _super);
         function ShadowOnlyMaterial(name, scene) {
-            var _this = _super.call(this, name, scene) || this;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._scaledDiffuse = new BABYLON.Color3();
-            return _this;
+            return _super.call(this, name, scene) || this;
         }
         ShadowOnlyMaterial.prototype.needAlphaBlending = function () {
             return true;
@@ -130,8 +127,8 @@ var BABYLON;
                     "mBones",
                     "vClipPlane"
                 ];
-                var samplers = [];
-                var uniformBuffers = [];
+                var samplers = new Array();
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -209,9 +206,6 @@ var BABYLON;
         ShadowOnlyMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new ShadowOnlyMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serialize()
-        ], ShadowOnlyMaterial.prototype, "_worldViewProjectionMatrix", void 0);
         return ShadowOnlyMaterial;
     }(BABYLON.PushMaterial));
     BABYLON.ShadowOnlyMaterial = ShadowOnlyMaterial;
@@ -227,7 +221,7 @@ BABYLON.Effect.ShadersStore['shadowOnlyPixelShader'] = "precision highp float;\n
 
 var BABYLON;
 (function (BABYLON) {
-    var GradientMaterialDefines = (function (_super) {
+    var GradientMaterialDefines = /** @class */ (function (_super) {
         __extends(GradientMaterialDefines, _super);
         function GradientMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -283,7 +277,7 @@ var BABYLON;
         }
         return GradientMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var GradientMaterial = (function (_super) {
+    var GradientMaterial = /** @class */ (function (_super) {
         __extends(GradientMaterial, _super);
         function GradientMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -298,7 +292,6 @@ var BABYLON;
             _this.offset = 0;
             _this.smoothness = 1.0;
             _this.disableLighting = false;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
@@ -374,7 +367,7 @@ var BABYLON;
                     "topColor", "bottomColor", "offset", "smoothness"
                 ];
                 var samplers = ["diffuseSampler"];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -503,7 +496,7 @@ BABYLON.Effect.ShadersStore['gradientPixelShader'] = "precision highp float;\n\n
 
 var BABYLON;
 (function (BABYLON) {
-    var NormalMaterialDefines = (function (_super) {
+    var NormalMaterialDefines = /** @class */ (function (_super) {
         __extends(NormalMaterialDefines, _super);
         function NormalMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -559,15 +552,13 @@ var BABYLON;
         }
         return NormalMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var NormalMaterial = (function (_super) {
+    var NormalMaterial = /** @class */ (function (_super) {
         __extends(NormalMaterial, _super);
         function NormalMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
         NormalMaterial.prototype.needAlphaBlending = function () {
@@ -658,7 +649,7 @@ var BABYLON;
                     "vClipPlane", "diffuseMatrix"
                 ];
                 var samplers = ["diffuseSampler"];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -807,7 +798,7 @@ BABYLON.Effect.ShadersStore['normalPixelShader'] = "precision highp float;\n\nun
 
 var BABYLON;
 (function (BABYLON) {
-    var LavaMaterialDefines = (function (_super) {
+    var LavaMaterialDefines = /** @class */ (function (_super) {
         __extends(LavaMaterialDefines, _super);
         function LavaMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -863,7 +854,7 @@ var BABYLON;
         }
         return LavaMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var LavaMaterial = (function (_super) {
+    var LavaMaterial = /** @class */ (function (_super) {
         __extends(LavaMaterial, _super);
         function LavaMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -875,7 +866,6 @@ var BABYLON;
             _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
@@ -972,7 +962,7 @@ var BABYLON;
                 var samplers = ["diffuseSampler",
                     "noiseTexture"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -1156,7 +1146,7 @@ BABYLON.Effect.ShadersStore['lavaPixelShader'] = "precision highp float;\n\nunif
 
 var BABYLON;
 (function (BABYLON) {
-    var SimpleMaterialDefines = (function (_super) {
+    var SimpleMaterialDefines = /** @class */ (function (_super) {
         __extends(SimpleMaterialDefines, _super);
         function SimpleMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -1179,15 +1169,13 @@ var BABYLON;
         }
         return SimpleMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var SimpleMaterial = (function (_super) {
+    var SimpleMaterial = /** @class */ (function (_super) {
         __extends(SimpleMaterial, _super);
         function SimpleMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
         SimpleMaterial.prototype.needAlphaBlending = function () {
@@ -1278,7 +1266,7 @@ var BABYLON;
                     "vClipPlane", "diffuseMatrix"
                 ];
                 var samplers = ["diffuseSampler"];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -1427,7 +1415,7 @@ BABYLON.Effect.ShadersStore['simplePixelShader'] = "precision highp float;\n\nun
 
 var BABYLON;
 (function (BABYLON) {
-    var WaterMaterialDefines = (function (_super) {
+    var WaterMaterialDefines = /** @class */ (function (_super) {
         __extends(WaterMaterialDefines, _super);
         function WaterMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -1456,7 +1444,7 @@ var BABYLON;
         }
         return WaterMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var WaterMaterial = (function (_super) {
+    var WaterMaterial = /** @class */ (function (_super) {
         __extends(WaterMaterial, _super);
         /**
         * Constructor
@@ -1697,7 +1685,7 @@ var BABYLON;
                     // Water
                     "refractionSampler", "reflectionSampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -2019,7 +2007,7 @@ BABYLON.Effect.ShadersStore['waterPixelShader'] = "#ifdef LOGARITHMICDEPTH\n#ext
 
 var BABYLON;
 (function (BABYLON) {
-    var FireMaterialDefines = (function (_super) {
+    var FireMaterialDefines = /** @class */ (function (_super) {
         __extends(FireMaterialDefines, _super);
         function FireMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -2040,7 +2028,7 @@ var BABYLON;
         }
         return FireMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var FireMaterial = (function (_super) {
+    var FireMaterial = /** @class */ (function (_super) {
         __extends(FireMaterial, _super);
         function FireMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -2334,7 +2322,7 @@ BABYLON.Effect.ShadersStore['firePixelShader'] = "precision highp float;\n\nunif
 
 var BABYLON;
 (function (BABYLON) {
-    var FurMaterialDefines = (function (_super) {
+    var FurMaterialDefines = /** @class */ (function (_super) {
         __extends(FurMaterialDefines, _super);
         function FurMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -2359,7 +2347,7 @@ var BABYLON;
         }
         return FurMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var FurMaterial = (function (_super) {
+    var FurMaterial = /** @class */ (function (_super) {
         __extends(FurMaterial, _super);
         function FurMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -2375,7 +2363,6 @@ var BABYLON;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
             _this.highLevelFur = true;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._furTime = 0;
             return _this;
         }
@@ -2510,7 +2497,7 @@ var BABYLON;
                 var samplers = ["diffuseSampler",
                     "heightTexture", "furTexture"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -2791,7 +2778,7 @@ BABYLON.Effect.ShadersStore['furPixelShader'] = "precision highp float;\n\nunifo
 
 var BABYLON;
 (function (BABYLON) {
-    var TerrainMaterialDefines = (function (_super) {
+    var TerrainMaterialDefines = /** @class */ (function (_super) {
         __extends(TerrainMaterialDefines, _super);
         function TerrainMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -2816,7 +2803,7 @@ var BABYLON;
         }
         return TerrainMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var TerrainMaterial = (function (_super) {
+    var TerrainMaterial = /** @class */ (function (_super) {
         __extends(TerrainMaterial, _super);
         function TerrainMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -2825,7 +2812,6 @@ var BABYLON;
             _this.specularPower = 64;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             return _this;
         }
         TerrainMaterial.prototype.needAlphaBlending = function () {
@@ -2922,7 +2908,7 @@ var BABYLON;
                 var samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler",
                     "bump1Sampler", "bump2Sampler", "bump3Sampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -3176,7 +3162,7 @@ BABYLON.Effect.ShadersStore['terrainPixelShader'] = "precision highp float;\n\nu
 
 var BABYLON;
 (function (BABYLON) {
-    var TriPlanarMaterialDefines = (function (_super) {
+    var TriPlanarMaterialDefines = /** @class */ (function (_super) {
         __extends(TriPlanarMaterialDefines, _super);
         function TriPlanarMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -3203,7 +3189,7 @@ var BABYLON;
         }
         return TriPlanarMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var TriPlanarMaterial = (function (_super) {
+    var TriPlanarMaterial = /** @class */ (function (_super) {
         __extends(TriPlanarMaterial, _super);
         function TriPlanarMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -3213,7 +3199,6 @@ var BABYLON;
             _this.specularPower = 64;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             return _this;
         }
         TriPlanarMaterial.prototype.needAlphaBlending = function () {
@@ -3319,7 +3304,7 @@ var BABYLON;
                 var samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ",
                     "normalSamplerX", "normalSamplerY", "normalSamplerZ"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -3556,7 +3541,7 @@ BABYLON.Effect.ShadersStore['triplanarPixelShader'] = "precision highp float;\n\
 
 var BABYLON;
 (function (BABYLON) {
-    var SkyMaterialDefines = (function (_super) {
+    var SkyMaterialDefines = /** @class */ (function (_super) {
         __extends(SkyMaterialDefines, _super);
         function SkyMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -3570,7 +3555,7 @@ var BABYLON;
         }
         return SkyMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var SkyMaterial = (function (_super) {
+    var SkyMaterial = /** @class */ (function (_super) {
         __extends(SkyMaterial, _super);
         function SkyMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -3615,7 +3600,6 @@ var BABYLON;
                     return true;
                 }
             }
-            var engine = scene.getEngine();
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
@@ -3769,7 +3753,7 @@ BABYLON.Effect.ShadersStore['skyPixelShader'] = "precision highp float;\n\nvaryi
 
 var BABYLON;
 (function (BABYLON) {
-    var GridMaterialDefines = (function (_super) {
+    var GridMaterialDefines = /** @class */ (function (_super) {
         __extends(GridMaterialDefines, _super);
         function GridMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -3785,7 +3769,7 @@ var BABYLON;
      * The grid materials allows you to wrap any shape with a grid.
      * Colors are customizable.
      */
-    var GridMaterial = (function (_super) {
+    var GridMaterial = /** @class */ (function (_super) {
         __extends(GridMaterial, _super);
         /**
          * constructor
@@ -3851,7 +3835,6 @@ var BABYLON;
                     return true;
                 }
             }
-            var engine = scene.getEngine();
             if (defines.TRANSPARENT !== (this.opacity < 1.0)) {
                 defines.TRANSPARENT = !defines.TRANSPARENT;
                 defines.markAsUnprocessed();
@@ -3964,7 +3947,7 @@ BABYLON.Effect.ShadersStore['gridPixelShader'] = "#extension GL_OES_standard_der
 var BABYLON;
 (function (BABYLON) {
     // old version of standard material updated every 3 months
-    var StandardMaterialDefines_OldVer = (function (_super) {
+    var StandardMaterialDefines_OldVer = /** @class */ (function (_super) {
         __extends(StandardMaterialDefines_OldVer, _super);
         function StandardMaterialDefines_OldVer() {
             var _this = _super.call(this) || this;
@@ -4057,7 +4040,7 @@ var BABYLON;
         return StandardMaterialDefines_OldVer;
     }(BABYLON.MaterialDefines));
     BABYLON.StandardMaterialDefines_OldVer = StandardMaterialDefines_OldVer;
-    var StandardMaterial_OldVer = (function (_super) {
+    var StandardMaterial_OldVer = /** @class */ (function (_super) {
         __extends(StandardMaterial_OldVer, _super);
         function StandardMaterial_OldVer(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -4742,10 +4725,10 @@ var BABYLON;
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             }
                             else {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? -1.0 : 1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
                         if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
@@ -5328,19 +5311,19 @@ var BABYLON;
         return StandardMaterial_OldVer;
     }(BABYLON.PushMaterial));
     BABYLON.StandardMaterial_OldVer = StandardMaterial_OldVer;
-    var CustomShaderStructure = (function () {
+    var CustomShaderStructure = /** @class */ (function () {
         function CustomShaderStructure() {
         }
         return CustomShaderStructure;
     }());
     BABYLON.CustomShaderStructure = CustomShaderStructure;
-    var ShaderSpecialParts = (function () {
+    var ShaderSpecialParts = /** @class */ (function () {
         function ShaderSpecialParts() {
         }
         return ShaderSpecialParts;
     }());
     BABYLON.ShaderSpecialParts = ShaderSpecialParts;
-    var ShaderForVer3_0 = (function (_super) {
+    var ShaderForVer3_0 = /** @class */ (function (_super) {
         __extends(ShaderForVer3_0, _super);
         function ShaderForVer3_0() {
             var _this = _super.call(this) || this;
@@ -5841,13 +5824,14 @@ vColor=color;\n\
         return ShaderForVer3_0;
     }(CustomShaderStructure));
     BABYLON.ShaderForVer3_0 = ShaderForVer3_0;
-    var StandardShaderVersions = (function () {
+    var StandardShaderVersions = /** @class */ (function () {
         function StandardShaderVersions() {
         }
+        StandardShaderVersions.Ver3_0 = "3.0.0";
         return StandardShaderVersions;
     }());
     BABYLON.StandardShaderVersions = StandardShaderVersions;
-    var CustomMaterial = (function (_super) {
+    var CustomMaterial = /** @class */ (function (_super) {
         __extends(CustomMaterial, _super);
         function CustomMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -5890,6 +5874,7 @@ vColor=color;\n\
             return arr;
         };
         CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+            var _this = this;
             if (this._isCreatedShader)
                 return this._createdShaderName;
             this._isCreatedShader = false;
@@ -5899,7 +5884,7 @@ vColor=color;\n\
             this.ReviewUniform("sampler", samplers);
             var fn_afterBind = this._afterBind;
             this._afterBind = function (m, e) {
-                this.AttachAfterBind(m, e);
+                _this.AttachAfterBind(m, e);
                 try {
                     fn_afterBind(m, e);
                 }
@@ -5942,7 +5927,7 @@ vColor=color;\n\
                     this._newUniformInstances[kind + "-" + name] = param;
                 }
                 else {
-                    this._newSamplerInstances[kind + "-" + name] = param;
+                    this._newUniformInstances[kind + "-" + name] = param;
                 }
             }
             this._customUniform.push("uniform " + kind + " " + name + ";");
@@ -6006,7 +5991,7 @@ vColor=color;\n\
 
 var BABYLON;
 (function (BABYLON) {
-    var CellMaterialDefines = (function (_super) {
+    var CellMaterialDefines = /** @class */ (function (_super) {
         __extends(CellMaterialDefines, _super);
         function CellMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -6032,7 +6017,7 @@ var BABYLON;
         }
         return CellMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var CellMaterial = (function (_super) {
+    var CellMaterial = /** @class */ (function (_super) {
         __extends(CellMaterial, _super);
         function CellMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -6040,8 +6025,6 @@ var BABYLON;
             _this._computeHighLevel = false;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
         CellMaterial.prototype.needAlphaBlending = function () {
@@ -6134,7 +6117,7 @@ var BABYLON;
                     "vClipPlane", "diffuseMatrix"
                 ];
                 var samplers = ["diffuseSampler"];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -6286,7 +6269,7 @@ BABYLON.Effect.ShadersStore['cellPixelShader'] = "precision highp float;\n\nunif
 
 var BABYLON;
 (function (BABYLON) {
-    var LegacyPBRMaterialDefines = (function (_super) {
+    var LegacyPBRMaterialDefines = /** @class */ (function (_super) {
         __extends(LegacyPBRMaterialDefines, _super);
         function LegacyPBRMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -6379,7 +6362,7 @@ var BABYLON;
      * For more information, please refer to the documentation :
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
-    var LegacyPBRMaterial = (function (_super) {
+    var LegacyPBRMaterial = /** @class */ (function (_super) {
         __extends(LegacyPBRMaterial, _super);
         /**
          * Instantiates a new PBRMaterial instance.
@@ -6635,13 +6618,11 @@ var BABYLON;
              */
             _this.twoSidedLighting = false;
             _this._renderTargets = new BABYLON.SmartArray(16);
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
             _this._tempColor = new BABYLON.Color3();
             _this._defines = new LegacyPBRMaterialDefines();
             _this._cachedDefines = new LegacyPBRMaterialDefines();
             _this._myScene = null;
-            _this._myShadowGenerator = null;
             _this._cachedDefines.BonesPerMesh = -1;
             _this.getRenderTargetTextures = function () {
                 _this._renderTargets.reset();
@@ -6735,6 +6716,7 @@ var BABYLON;
             }
         };
         LegacyPBRMaterial.prototype.isReady = function (mesh, useInstances) {
+            var _this = this;
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -7134,11 +7116,11 @@ var BABYLON;
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
                 var onCompiled = function (effect) {
-                    if (this.onCompiled) {
-                        this.onCompiled(effect);
+                    if (_this.onCompiled) {
+                        _this.onCompiled(effect);
                     }
-                    this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
+                    _this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                };
                 this._effect = scene.getEngine().createEffect("legacyPbr", {
                     attributes: attribs,
                     uniformsNames: uniforms,

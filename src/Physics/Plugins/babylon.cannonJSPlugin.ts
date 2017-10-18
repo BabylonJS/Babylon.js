@@ -1,15 +1,14 @@
 ﻿module BABYLON {
-    declare var require;
-    declare var CANNON;
+    declare var require: any;
+    declare var CANNON: any;
 
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
         public world: any; //this.BJSCANNON.World
         public name: string = "CannonJSPlugin";
-        private _physicsMaterials = [];
+        private _physicsMaterials = new Array();
         private _fixedTimeStep: number = 1 / 60;
         //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
-        private _currentCollisionGroup = 2;
         public BJSCANNON = typeof CANNON !== 'undefined' ? CANNON : (typeof require !== 'undefined' ? require('cannon') : undefined);
 
 
@@ -88,7 +87,7 @@
                 var nativeOptions = impostor.getParam("nativeOptions");
                 for (var key in nativeOptions) {
                     if (nativeOptions.hasOwnProperty(key)) {
-                        bodyCreationObject[key] = nativeOptions[key];
+                        (<any>bodyCreationObject)[key] = nativeOptions[key];
                     }
                 }
                 impostor.physicsBody = new this.BJSCANNON.Body(bodyCreationObject);
@@ -135,9 +134,9 @@
                         }
                     }
                     currentRotation.multiplyInPlace(mesh.rotationQuaternion);
-                    mesh.getChildMeshes(true).forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
+                    mesh.getChildMeshes(true).filter(m => !!m.physicsImpostor).forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
                 }
-                meshChildren.forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
+                meshChildren.filter(m => !!m.physicsImpostor).forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
             }
         }
 
@@ -154,7 +153,7 @@
             if (!mainBody || !connectedBody) {
                 return;
             }
-            var constraint;
+            var constraint: any;
             var jointData = impostorJoint.joint.jointData;
             //TODO - https://github.com/schteppe/this.BJSCANNON.js/blob/gh-pages/demos/collisionFilter.html
             var constraintData = {
@@ -278,7 +277,7 @@
 
         private _createHeightmap(object: IPhysicsEnabledObject, pointDepth?: number) {
             var pos = object.getVerticesData(VertexBuffer.PositionKind);
-            var matrix = [];
+            var matrix = new Array<Array<any>>();
 
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
@@ -339,9 +338,7 @@
         private _minus90X = new Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
         private _plus90X = new Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
         private _tmpPosition: Vector3 = Vector3.Zero();
-        private _tmpQuaternion: Quaternion = new Quaternion();
         private _tmpDeltaPosition: Vector3 = Vector3.Zero();
-        private _tmpDeltaRotation: Quaternion = new Quaternion();
         private _tmpUnityRotation: Quaternion = new Quaternion();
 
         private _updatePhysicsBodyTransformation(impostor: PhysicsImpostor) {
@@ -474,17 +471,17 @@
             joint.physicsJoint.distance = maxDistance;
         }
 
-        private enableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
-            if (!motorIndex) {
-                joint.physicsJoint.enableMotor();
-            }
-        }
+        // private enableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
+        //     if (!motorIndex) {
+        //         joint.physicsJoint.enableMotor();
+        //     }
+        // }
 
-        private disableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
-            if (!motorIndex) {
-                joint.physicsJoint.disableMotor();
-            }
-        }
+        // private disableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
+        //     if (!motorIndex) {
+        //         joint.physicsJoint.disableMotor();
+        //     }
+        // }
 
         public setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number) {
             if (!motorIndex) {

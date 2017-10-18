@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var GridMaterialDefines = (function (_super) {
+    var GridMaterialDefines = /** @class */ (function (_super) {
         __extends(GridMaterialDefines, _super);
         function GridMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -33,7 +33,7 @@ var BABYLON;
      * The grid materials allows you to wrap any shape with a grid.
      * Colors are customizable.
      */
-    var GridMaterial = (function (_super) {
+    var GridMaterial = /** @class */ (function (_super) {
         __extends(GridMaterial, _super);
         /**
          * constructor
@@ -99,7 +99,6 @@ var BABYLON;
                     return true;
                 }
             }
-            var engine = scene.getEngine();
             if (defines.TRANSPARENT !== (this.opacity < 1.0)) {
                 defines.TRANSPARENT = !defines.TRANSPARENT;
                 defines.markAsUnprocessed();

@@ -14,11 +14,11 @@
             return new CubeTexture("", scene, null, noMipmap, files);
         }
 
-        public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension = null) {
+        public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null) {
             return new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension);
         }
 
-        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA, prefiltered = false, forcedExtension = null) {
+        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad: () => void = null, onError: (message?: string, exception?: any) => void = null, format: number = Engine.TEXTUREFORMAT_RGBA, prefiltered = false, forcedExtension: any = null) {
             super(scene);
 
             this.name = rootUrl;

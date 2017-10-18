@@ -17,7 +17,7 @@ module BABYLON {
     }
 
     export class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target, interaxialDistance: number, scene: Scene) {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene) {
             super(name, alpha, beta, radius, target, scene);
             this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
@@ -66,7 +66,7 @@ module BABYLON {
     }
 
     export class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene:Scene) {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene:Scene) {
             super(name, alpha, beta, radius, target, scene);
             this.interaxialDistance = interaxialDistance;
             this.isStereoscopicSideBySide = isStereoscopicSideBySide;

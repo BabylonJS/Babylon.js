@@ -46,8 +46,8 @@ interface WebGLRenderingContext {
 
     // Occlusion Query
     createQuery(): WebGLQuery;
-    deleteQuery(query: WebGLQuery);
-    beginQuery(target: number, query: WebGLQuery);
+    deleteQuery(query: WebGLQuery): void;
+    beginQuery(target: number, query: WebGLQuery): void;
     endQuery(target: number): void;
     getQueryParameter(query: WebGLQuery, pname: number): any;
 
@@ -81,7 +81,7 @@ interface WebGLRenderingContext {
 }
 
 interface HTMLURL {
-    createObjectURL(param1: any, param2?: any);
+    createObjectURL(param1: any, param2?: any): string;
 }
 
 interface Document {
@@ -116,6 +116,10 @@ interface WebGLBuffer {
     references: number;
     capacity: number;
     is32Bits: boolean;
+}
+
+interface WebGLProgram {
+    __SPECTOR_rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void): void;
 }
 
 interface MouseEvent {

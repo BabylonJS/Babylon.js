@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var WaterMaterialDefines = (function (_super) {
+    var WaterMaterialDefines = /** @class */ (function (_super) {
         __extends(WaterMaterialDefines, _super);
         function WaterMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -46,7 +46,7 @@ var BABYLON;
         }
         return WaterMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var WaterMaterial = (function (_super) {
+    var WaterMaterial = /** @class */ (function (_super) {
         __extends(WaterMaterial, _super);
         /**
         * Constructor
@@ -287,7 +287,7 @@ var BABYLON;
                     // Water
                     "refractionSampler", "reflectionSampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

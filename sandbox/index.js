@@ -1,4 +1,6 @@
-﻿if (BABYLON.Engine.isSupported()) {
+﻿/// <reference path="../dist/preview release/babylon.d.ts" />
+
+if (BABYLON.Engine.isSupported()) {
     var canvas = document.getElementById("renderCanvas");
     var engine = new BABYLON.Engine(canvas, true);
     var divFps = document.getElementById("fps");
@@ -60,32 +62,40 @@
             enableDebugLayer = false;
             currentScene.debugLayer.hide();
         };
+
         if (enableDebugLayer) {
             hideDebugLayerAndLogs();
         }
+
+        // Clear the error
+        document.getElementById("errorZone").style.display = 'none';
+
         currentScene = babylonScene;
         document.title = "BabylonJS - " + sceneFile.name;
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
         // Attach camera to canvas inputs
-        if (!currentScene.activeCamera || currentScene.lights.length === 0) {     
+        if (!currentScene.activeCamera || currentScene.lights.length === 0) {
             currentScene.createDefaultCameraOrLight(true);
             // Enable camera's behaviors
-            currentScene.activeCamera.useBouncingBehavior = true;
             currentScene.activeCamera.useFramingBehavior = true;
 
             var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
             framingBehavior.framingTime = 0;
             framingBehavior.elevationReturnTime = -1;
 
-            var bouncingBehavior = currentScene.activeCamera.getBehaviorByName("Bouncing");
-            bouncingBehavior.autoTransitionRange = true;        
-
             if (currentScene.meshes.length) {
                 var worldExtends = currentScene.getWorldExtends();
+                currentScene.activeCamera.lowerRadiusLimit = null;
                 framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
             }
+
+            currentScene.activeCamera.pinchPrecision = 200 / currentScene.activeCamera.radius;
+            currentScene.activeCamera.upperRadiusLimit = 5 * currentScene.activeCamera.radius;
+
+            currentScene.activeCamera.wheelDeltaPercentage = 0.01;
+            currentScene.activeCamera.pinchDeltaPercentage = 0.01;
         }
 
         currentScene.activeCamera.attachControl(canvas); 
@@ -120,7 +130,23 @@
         }
     };
 
-    filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded);
+    var sceneError = function (sceneFile, babylonScene, message) {
+        document.title = "BabylonJS - " + sceneFile.name;
+        document.getElementById("logo").className = "";
+        canvas.style.opacity = 0;
+
+        var errorContent = '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>' + message.replace("file:[object File]", "'" + sceneFile.name + "'") + '</div>';
+
+        document.getElementById("errorZone").style.display = 'block';
+        document.getElementById("errorZone").innerHTML = errorContent;
+
+        // Close button error
+        document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
+            document.getElementById("errorZone").style.display = 'none';
+        });
+    };
+
+    filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
     filesInput.onProcessFileCallback = (function (file, name, extension) {
         if (extension === "dds") {
             BABYLON.FilesInput.FilesToLoad[name] = file;
@@ -180,5 +206,20 @@
                 localStorage.setItem("helpcounter", currentHelpCounter + 1);
             }, 5000);
         }, 5000);
+    }
+
+    sizeScene();
+
+    window.onresize = function () {
+        sizeScene();
+    }
+}
+
+function sizeScene () {
+    let divInspWrapper = document.getElementsByClassName('insp-wrapper')[0];
+    if (divInspWrapper) {
+        let divFooter = document.getElementsByClassName('footer')[0];
+        divInspWrapper.style.height = (document.body.clientHeight - divFooter.clientHeight) + "px";
+        divInspWrapper.style['max-width'] = document.body.clientWidth + "px";
     }
 }

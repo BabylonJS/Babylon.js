@@ -19,7 +19,6 @@
         private _toIndex = 0;
         private _delay = 0;
         private _direction = 1;
-        private _frameCount = 0;
         private _manager: SpriteManager;
         private _time = 0;
         private _onAnimationEnd: () => void;

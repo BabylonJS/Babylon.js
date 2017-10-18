@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var SkyMaterialDefines = (function (_super) {
+    var SkyMaterialDefines = /** @class */ (function (_super) {
         __extends(SkyMaterialDefines, _super);
         function SkyMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -31,7 +31,7 @@ var BABYLON;
         }
         return SkyMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var SkyMaterial = (function (_super) {
+    var SkyMaterial = /** @class */ (function (_super) {
         __extends(SkyMaterial, _super);
         function SkyMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -76,7 +76,6 @@ var BABYLON;
                     return true;
                 }
             }
-            var engine = scene.getEngine();
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
