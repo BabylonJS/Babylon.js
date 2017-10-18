@@ -62,6 +62,9 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         }
     },
+    engine: {
+        antialiasing: true
+    },
     scene: {
 
     }
