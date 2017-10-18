@@ -2877,7 +2877,7 @@ var BABYLON;
                         var vertexData = new BABYLON.VertexData();
                         for (var _i = 0, _a = mesh.primitives; _i < _a.length; _i++) {
                             var primitive = _a[_i];
-                            vertexData.merge(primitive.targetsVertexData[index]);
+                            vertexData.merge(primitive.targetsVertexData[index], { tangentLength: 3 });
                         }
                         var target = morphTargetManager.getTarget(index);
                         target.setNormals(vertexData.normals);

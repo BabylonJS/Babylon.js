@@ -11352,12 +11352,18 @@ var BABYLON;
         };
         // Loading screen
         Engine.prototype.displayLoadingUI = function () {
+            if (!BABYLON.Tools.IsWindowObjectExist()) {
+                return;
+            }
             var loadingScreen = this.loadingScreen;
             if (loadingScreen) {
                 loadingScreen.displayLoadingUI();
             }
         };
         Engine.prototype.hideLoadingUI = function () {
+            if (!BABYLON.Tools.IsWindowObjectExist()) {
+                return;
+            }
             var loadingScreen = this.loadingScreen;
             if (loadingScreen) {
                 loadingScreen.hideLoadingUI();
@@ -27325,7 +27331,8 @@ var BABYLON;
          * Merges the passed VertexData into the current one.
          * Returns the modified VertexData.
          */
-        VertexData.prototype.merge = function (other) {
+        VertexData.prototype.merge = function (other, options) {
+            options = options || {};
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
@@ -27339,7 +27346,7 @@ var BABYLON;
             this.positions = this._mergeElement(this.positions, other.positions);
             var count = this.positions.length / 3;
             this.normals = this._mergeElement(this.normals, other.normals, count * 3);
-            this.tangents = this._mergeElement(this.tangents, other.tangents, count * 4);
+            this.tangents = this._mergeElement(this.tangents, other.tangents, count * (options.tangentLength || 4));
             this.uvs = this._mergeElement(this.uvs, other.uvs, count * 2);
             this.uvs2 = this._mergeElement(this.uvs2, other.uvs2, count * 2);
             this.uvs3 = this._mergeElement(this.uvs3, other.uvs3, count * 2);
@@ -32537,7 +32544,7 @@ var BABYLON;
          * Child classes can use it to update shaders
          */
         StandardMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
-            if (this.isFrozen) {
+            if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
@@ -33997,7 +34004,7 @@ var BABYLON;
         };
         PBRBaseMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             var _this = this;
-            if (this.isFrozen) {
+            if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
                 }
@@ -36510,12 +36517,12 @@ var BABYLON;
         TargetCamera.prototype._updateCameraRotationMatrix = function () {
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(this._cameraRotationMatrix);
-                //update the up vector!
-                BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
             }
             else {
                 BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
             }
+            //update the up vector!
+            BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
         };
         TargetCamera.prototype._getViewMatrix = function () {
             if (!this.lockedTarget) {
@@ -39355,12 +39362,32 @@ var BABYLON;
             }
             for (index = 0; index < parsedAnimation.keys.length; index++) {
                 var key = parsedAnimation.keys[index];
+                var inTangent;
+                var outTangent;
                 switch (dataType) {
                     case Animation.ANIMATIONTYPE_FLOAT:
                         data = key.values[0];
+                        if (key.values.length >= 1) {
+                            inTangent = key.values[1];
+                        }
+                        if (key.values.length >= 2) {
+                            outTangent = key.values[2];
+                        }
                         break;
                     case Animation.ANIMATIONTYPE_QUATERNION:
                         data = BABYLON.Quaternion.FromArray(key.values);
+                        if (key.values.length >= 8) {
+                            var _inTangent = BABYLON.Quaternion.FromArray(key.values.slice(4, 8));
+                            if (!_inTangent.equals(BABYLON.Quaternion.Zero())) {
+                                inTangent = _inTangent;
+                            }
+                        }
+                        if (key.values.length >= 12) {
+                            var _outTangent = BABYLON.Quaternion.FromArray(key.values.slice(8, 12));
+                            if (!_outTangent.equals(BABYLON.Quaternion.Zero())) {
+                                outTangent = _outTangent;
+                            }
+                        }
                         break;
                     case Animation.ANIMATIONTYPE_MATRIX:
                         data = BABYLON.Matrix.FromArray(key.values);
@@ -39373,10 +39400,16 @@ var BABYLON;
                         data = BABYLON.Vector3.FromArray(key.values);
                         break;
                 }
-                keys.push({
-                    frame: key.frame,
-                    value: data
-                });
+                var keyData = {};
+                keyData.frame = key.frame;
+                keyData.value = data;
+                if (inTangent != undefined) {
+                    keyData.inTangent = inTangent;
+                }
+                if (outTangent != undefined) {
+                    keyData.outTangent = outTangent;
+                }
+                keys.push(keyData);
             }
             animation.setKeys(keys);
             if (parsedAnimation.ranges) {
@@ -43682,6 +43715,7 @@ var BABYLON;
             this._cam_axisX = BABYLON.Vector3.Zero();
             this._axisZ = BABYLON.Axis.Z;
             this._camDir = BABYLON.Vector3.Zero();
+            this._camInvertedPosition = BABYLON.Vector3.Zero();
             this._rotMatrix = new BABYLON.Matrix();
             this._invertMatrix = new BABYLON.Matrix();
             this._rotated = BABYLON.Vector3.Zero();
@@ -43703,14 +43737,13 @@ var BABYLON;
             this._mustUnrotateFixedNormals = false;
             this._minimum = BABYLON.Tmp.Vector3[0];
             this._maximum = BABYLON.Tmp.Vector3[1];
-            this._scale = BABYLON.Tmp.Vector3[2];
-            this._translation = BABYLON.Tmp.Vector3[3];
             this._minBbox = BABYLON.Tmp.Vector3[4];
             this._maxBbox = BABYLON.Tmp.Vector3[5];
             this._particlesIntersect = false;
             this._depthSortFunction = function (p1, p2) {
                 return (p2.sqDistance - p1.sqDistance);
             };
+            this._needs32Bits = false;
             this._bSphereOnly = false;
             this._bSphereRadiusFactor = 1.0;
             this.name = name;
@@ -43757,7 +43790,7 @@ var BABYLON;
             }
             var vertexData = new BABYLON.VertexData();
             if (this._depthSort) {
-                this._depthSortedIndices = this._indices.slice();
+                this._depthSortedIndices = (this._needs32Bits) ? new Uint32Array(this._indices) : new Uint16Array(this._indices);
                 vertexData.indices = this._depthSortedIndices;
             }
             else {
@@ -43989,7 +44022,11 @@ var BABYLON;
                 }
             }
             for (i = 0; i < meshInd.length; i++) {
-                indices.push(p + meshInd[i]);
+                var current_ind = p + meshInd[i];
+                indices.push(current_ind);
+                if (current_ind > 65535) {
+                    this._needs32Bits = true;
+                }
             }
             if (this._pickable) {
                 var nbfaces = meshInd.length / 3;
@@ -44157,23 +44194,27 @@ var BABYLON;
             this._cam_axisZ.x = 0.0;
             this._cam_axisZ.y = 0.0;
             this._cam_axisZ.z = 1.0;
+            // cases when the World Matrix is to be computed first
+            if (this.billboard || this._depthSort) {
+                this.mesh.computeWorldMatrix(true);
+                this.mesh._worldMatrix.invertToRef(this._invertMatrix);
+            }
             // if the particles will always face the camera
             if (this.billboard) {
-                this.mesh.computeWorldMatrix(true);
                 // compute the camera position and un-rotate it by the current mesh rotation
-                if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
-                    this._quaternionToRotationMatrix();
-                    this._rotMatrix.invertToRef(this._invertMatrix);
-                    this._camera.getDirectionToRef(this._axisZ, this._camDir);
-                    BABYLON.Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
-                    this._cam_axisZ.normalize();
-                    // same for camera up vector extracted from the cam view matrix
-                    var view = this._camera.getViewMatrix(true);
-                    BABYLON.Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, this._cam_axisY);
-                    BABYLON.Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
-                    this._cam_axisY.normalize();
-                    this._cam_axisX.normalize();
-                }
+                this._camera.getDirectionToRef(this._axisZ, this._camDir);
+                BABYLON.Vector3.TransformNormalToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
+                this._cam_axisZ.normalize();
+                // same for camera up vector extracted from the cam view matrix
+                var view = this._camera.getViewMatrix(true);
+                BABYLON.Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], this._invertMatrix, this._cam_axisY);
+                BABYLON.Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
+                this._cam_axisY.normalize();
+                this._cam_axisX.normalize();
+            }
+            // if depthSort, compute the camera global position in the mesh local system
+            if (this._depthSort) {
+                BABYLON.Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertMatrix, this._camInvertedPosition); // then un-rotate the camera
             }
             BABYLON.Matrix.IdentityToRef(this._rotMatrix);
             var idx = 0; // current position index in the global array positions32
@@ -44241,7 +44282,7 @@ var BABYLON;
                         var dsp = this.depthSortedParticles[p];
                         dsp.ind = this._particle._ind;
                         dsp.indicesLength = this._particle._model._indicesLength;
-                        dsp.sqDistance = BABYLON.Vector3.DistanceSquared(this._particle.position, this._camera.position);
+                        dsp.sqDistance = BABYLON.Vector3.DistanceSquared(this._particle.position, this._camInvertedPosition);
                     }
                     // particle vertex loop
                     for (pt = 0; pt < this._shape.length; pt++) {
@@ -53586,10 +53627,15 @@ var BABYLON;
             this._babylonGamepads = [];
             this._oneGamepadConnected = false;
             this._isMonitoring = false;
-            this._gamepadEventSupported = 'GamepadEvent' in window;
-            this._gamepadSupport = (navigator.getGamepads ||
-                navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
             this.onGamepadDisconnectedObservable = new BABYLON.Observable();
+            if (!BABYLON.Tools.IsWindowObjectExist()) {
+                this._gamepadEventSupported = false;
+            }
+            else {
+                this._gamepadEventSupported = 'GamepadEvent' in window;
+                this._gamepadSupport = (navigator.getGamepads ||
+                    navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
+            }
             this.onGamepadConnectedObservable = new BABYLON.Observable(function (observer) {
                 // This will be used to raise the onGamepadConnected for all gamepads ALREADY connected
                 for (var i in _this._babylonGamepads) {
