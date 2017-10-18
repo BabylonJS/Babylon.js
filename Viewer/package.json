@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "description": "A viewer using BabylonJS to display 3D elements natively",
     "scripts": {
+        "start:server": "webpack-dev-server",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
@@ -27,8 +28,9 @@
         "json-loader": "^0.5.7",
         "ts-loader": "^2.3.7",
         "typescript": "^2.5.3",
-        "uglifyjs-webpack-plugin": "^0.4.6",
-        "webpack": "^3.6.0"
+        "uglifyjs-webpack-plugin": "^1.0.0-beta.3",
+        "webpack": "^3.6.0",
+        "webpack-dev-server": "^2.9.2"
     },
     "dependencies": {
         "babylonjs": "^3.1.0-alpha3.5",
