@@ -32543,7 +32543,7 @@ var BABYLON;
          * Child classes can use it to update shaders
          */
         StandardMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
-            if (this.isFrozen) {
+            if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
@@ -34003,7 +34003,7 @@ var BABYLON;
         };
         PBRBaseMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             var _this = this;
-            if (this.isFrozen) {
+            if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
                 }
