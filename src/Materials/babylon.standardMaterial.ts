@@ -511,7 +511,7 @@ module BABYLON {
          * Child classes can use it to update shaders
          */
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {            
-            if (this.isFrozen) {
+            if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
