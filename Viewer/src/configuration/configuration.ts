@@ -1,6 +1,9 @@
 import { TemplateConfiguration } from './../templateManager';
 export interface ViewerConfiguration {
 
+    // configuration version
+    version?: string;
+
     defaultViewer?: boolean; // indicates no configuration (except for initial configuration) should be changed. Will load the defaultCOnfiguration variable.
 
     configuration?: string | {
@@ -23,13 +26,36 @@ export interface ViewerConfiguration {
 
     canvasElement?: string; // if there is a need to override the standard implementation - ID of HTMLCanvasElement
 
-    model?: string | {
+    model?: {
         url: string;
         loader: string; // obj, gltf?
-    },
+        position?: { x: number, y: number, z: number };
+        rotation?: { x: number, y: number, z: number, w: number };
+        scaling?: { x: number, y: number, z: number };
+    } | string,
     scene?: {
-
+        autoRotate?: boolean;
+        rotationSpeed?: number;
+        defaultCamera?: boolean;
+        defaultLight?: boolean;
+        clearColor?: { r: number, g: number, b: number, a: number };
     },
+    // at the moment, support only a single camera.
+    camera?: {
+        position?: { x: number, y: number, z: number };
+        rotation?: { x: number, y: number, z: number, w: number };
+        fieldOfView?: number;
+        minZ?: number;
+        maxZ?: number;
+        behavior?: {
+            type?: number;
+            [propName: string]: any;
+        }
+    },
+    lights?: Array<{
+        type?: number;
+        [propName: string]: any;
+    }>
     // engine configuration. optional!
     engine?: {
         antialiasing?: boolean;
@@ -39,6 +65,7 @@ export interface ViewerConfiguration {
 }
 
 export let defaultConfiguration: ViewerConfiguration = {
+    version: "0.1",
     eventPrefix: 'babylonviewer-',
     events: true,
     defaultViewer: true,
@@ -66,6 +93,7 @@ export let defaultConfiguration: ViewerConfiguration = {
         antialiasing: true
     },
     scene: {
-
+        autoRotate: true,
+        rotationSpeed: 0.1
     }
 }
