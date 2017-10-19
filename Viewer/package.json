@@ -4,6 +4,7 @@
     "description": "A viewer using BabylonJS to display 3D elements natively",
     "scripts": {
         "start:server": "webpack-dev-server",
+        "build": "webpack",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {

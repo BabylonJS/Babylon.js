@@ -27,11 +27,12 @@ export interface ViewerConfiguration {
     canvasElement?: string; // if there is a need to override the standard implementation - ID of HTMLCanvasElement
 
     model?: {
-        url: string;
-        loader: string; // obj, gltf?
+        url?: string;
+        loader?: string; // obj, gltf?
         position?: { x: number, y: number, z: number };
         rotation?: { x: number, y: number, z: number, w: number };
         scaling?: { x: number, y: number, z: number };
+        parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
     } | string,
     scene?: {
         autoRotate?: boolean;
@@ -47,13 +48,14 @@ export interface ViewerConfiguration {
         fieldOfView?: number;
         minZ?: number;
         maxZ?: number;
-        behavior?: {
+        behaviors?: Array<number | {
             type?: number;
             [propName: string]: any;
-        }
+        }>
     },
     lights?: Array<{
-        type?: number;
+        type: number;
+        name?: string;
         [propName: string]: any;
     }>
     // engine configuration. optional!
