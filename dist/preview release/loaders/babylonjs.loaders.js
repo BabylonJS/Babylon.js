@@ -3692,19 +3692,20 @@ var BABYLON;
                             if (!material) {
                                 throw new Error(context + ": Failed to find material " + primitive.material);
                             }
+                            var capturedIndex = index;
                             _this._loadMaterial("#/materials/" + material.index, material, function (babylonMaterial, isNew) {
                                 if (isNew && _this._parent.onMaterialLoaded) {
                                     _this._parent.onMaterialLoaded(babylonMaterial);
                                 }
                                 if (_this._parent.onBeforeMaterialReadyAsync) {
                                     _this._addLoaderPendingData(material);
-                                    _this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[index] != null, function () {
-                                        subMaterials[index] = babylonMaterial;
+                                    _this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[capturedIndex] != null, function () {
+                                        subMaterials[capturedIndex] = babylonMaterial;
                                         _this._removeLoaderPendingData(material);
                                     });
                                 }
                                 else {
-                                    subMaterials[index] = babylonMaterial;
+                                    subMaterials[capturedIndex] = babylonMaterial;
                                 }
                             });
                         }
