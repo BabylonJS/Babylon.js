@@ -32,7 +32,6 @@
     "style-loader": "^0.13.1",
     "exports-loader": "^0.6.3",
     "imports-loader": "^0.7.0",
-    "gulp-zip": "~3.2.0",
     "del": "2.2.2"
   },
   "scripts": {

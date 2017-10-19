@@ -323,26 +323,28 @@
          * @param {number} trigger - the trigger to process
          * @param evt {BABYLON.ActionEvent} the event details to be processed
          */
-        public processTrigger(trigger: number, evt: ActionEvent): void {
+        public processTrigger(trigger: number, evt?: ActionEvent): void {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
-                    if (trigger === ActionManager.OnKeyUpTrigger
-                        || trigger === ActionManager.OnKeyDownTrigger) {
-                        var parameter = action.getTriggerParameter();
+                    if (evt) {
+                        if (trigger === ActionManager.OnKeyUpTrigger
+                            || trigger === ActionManager.OnKeyDownTrigger) {
+                            var parameter = action.getTriggerParameter();
 
-                        if (parameter && parameter !== evt.sourceEvent.keyCode) {
-                            if (!parameter.toLowerCase) {
-                                continue;
-                            }
-                            var lowerCase = parameter.toLowerCase();
-
-                            if (lowerCase !== evt.sourceEvent.key) {
-                                var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
-                                var actualkey = String.fromCharCode(unicode).toLowerCase();
-                                if (actualkey !== lowerCase) {
+                            if (parameter && parameter !== evt.sourceEvent.keyCode) {
+                                if (!parameter.toLowerCase) {
                                     continue;
+                                }
+                                var lowerCase = parameter.toLowerCase();
+
+                                if (lowerCase !== evt.sourceEvent.key) {
+                                    var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
+                                    var actualkey = String.fromCharCode(unicode).toLowerCase();
+                                    if (actualkey !== lowerCase) {
+                                        continue;
+                                    }
                                 }
                             }
                         }
