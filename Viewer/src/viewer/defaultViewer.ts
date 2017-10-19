@@ -1,12 +1,15 @@
 import { Template } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { Observable, Engine, Scene, AbstractMesh, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { Observable, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { CameraBehavior } from '../interfaces';
 
 // A small hack for the inspector. to be removed!
 import * as BABYLON from 'babylonjs';
 window['BABYLON'] = BABYLON;
 
 export class DefaultViewer extends AbstractViewer {
+
+    private camera: ArcRotateCamera;
 
     protected onTemplatesLoaded() {
 
@@ -43,23 +46,19 @@ export class DefaultViewer extends AbstractViewer {
 
         // recreate the camera
         this.scene.createDefaultCameraOrLight(true, true, true);
+        this.camera = <ArcRotateCamera>this.scene.activeCamera;
 
-        // TODO do it better, no casting!
-        let camera: ArcRotateCamera = <ArcRotateCamera>this.scene.activeCamera;
-        // We want framing to move the camera at the best spot
-        camera.useFramingBehavior = true;
-        camera.useAutoRotationBehavior = true;
+        meshes[0].rotation.y += Math.PI;
+
+        this.setupCamera(meshes);
 
         // Get the bounding vectors of the mesh hierarchy (meshes[0] = root node in gltf)
-        meshes[0].rotation.y += Math.PI;
-        let bounding = meshes[0].getHierarchyBoundingVectors();
-        camera.framingBehavior.zoomOnBoundingInfo(bounding.min, bounding.max);
 
         // Remove default light and create a new one to have a dynamic shadow                            
-        this.scene.lights[0].dispose();
-        var light = new BABYLON.DirectionalLight('light', new BABYLON.Vector3(-0.2, -1, 0), this.scene)
-        light.position = new BABYLON.Vector3(bounding.max.x * 0.2, bounding.max.y * 2, 0)
-        light.intensity = 4.5;
+        //this.scene.lights[0].dispose();
+        //var light = new BABYLON.DirectionalLight('light', new BABYLON.Vector3(-0.2, -1, 0), this.scene)
+        //light.position = new BABYLON.Vector3(bounding.max.x * 0.2, bounding.max.y * 2, 0)
+        //light.intensity = 4.5;
 
         // TODO - move it away from here.
 
@@ -68,17 +67,6 @@ export class DefaultViewer extends AbstractViewer {
         ground.receiveShadows = true;
         ground.material = new ShadowOnlyMaterial('shadow-only-mat', this.scene)
         ground.material.alpha = 0.4;
-
-        var shadowGenerator = new BABYLON.ShadowGenerator(512, light)
-        shadowGenerator.useBlurExponentialShadowMap = true;
-        shadowGenerator.useKernelBlur = true;
-        shadowGenerator.blurKernel = 64;
-        shadowGenerator.blurScale = 4;
-
-        // Add the bus in the casters
-        for (var index = 0; index < meshes.length; index++) {
-            shadowGenerator.getShadowMap().renderList.push(meshes[index]);
-        }
 
         return Promise.resolve(this.scene);
     }
@@ -146,5 +134,109 @@ export class DefaultViewer extends AbstractViewer {
             template.parent.addEventListener("transitionend", onTransitionEnd);
             return Promise.resolve(template);
         }));
+    }
+
+    private setupLights(focusMeshes: Array<AbstractMesh> = []) {
+        if (!this.configuration.scene.defaultLight && (this.configuration.lights && this.configuration.lights.length)) {
+            // remove old lights
+            this.scene.lights.forEach(l => {
+                l.dispose();
+            });
+
+            this.configuration.lights.forEach((lightConfig, idx) => {
+                lightConfig.name = lightConfig.name || 'light-' + idx;
+
+                //let light = Light.Parse(lightConfig, this.scene);
+
+                /*
+                // TODO fix the shadow mechanism
+                var shadowGenerator = new BABYLON.ShadowGenerator(512, light)
+                shadowGenerator.useBlurExponentialShadowMap = true;
+                shadowGenerator.useKernelBlur = true;
+                shadowGenerator.blurKernel = 64;
+                shadowGenerator.blurScale = 4;
+                
+        
+                // Add the bus in the casters
+                for (var index = 0; index < focusMeshes.length; index++) {
+                    shadowGenerator.getShadowMap().renderList.push(focusMeshes[index]);
+                }
+
+                */
+            });
+        }
+    }
+
+    private setupCamera(focusMeshes: Array<AbstractMesh> = []) {
+        if (this.configuration.scene.defaultCamera) {
+            return;
+        }
+
+        let cameraConfig = this.configuration.camera || {};
+
+        if (cameraConfig.position) {
+            this.camera.position.copyFromFloats(cameraConfig.position.x || 0, cameraConfig.position.y || 0, cameraConfig.position.z || 0);
+        }
+
+        if (cameraConfig.rotation) {
+            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
+        }
+
+        this.camera.minZ = cameraConfig.minZ || this.camera.minZ;
+        this.camera.maxZ = cameraConfig.maxZ || this.camera.maxZ;
+
+        if (cameraConfig.behaviors) {
+            cameraConfig.behaviors.forEach((behaviorConfig) => {
+
+            });
+        };
+
+        if (this.configuration.scene.autoRotate) {
+            this.camera.useAutoRotationBehavior = true;
+        }
+    }
+
+    private setCameraBehavior(behaviorConfig: {
+        type: number;
+        [propName: string]: any;
+    }, payload: any) {
+
+
+
+        let behavior: Behavior<ArcRotateCamera>;
+        let type = (typeof behaviorConfig !== "object") ? behaviorConfig : behaviorConfig.type;
+
+        switch (type) {
+            case CameraBehavior.AUTOROTATION:
+                behavior = new AutoRotationBehavior();
+                break;
+            case CameraBehavior.BOUNCING:
+                behavior = new BouncingBehavior();
+                break;
+            case CameraBehavior.FRAMING:
+                behavior = new FramingBehavior();
+                if (behaviorConfig.zoomOnBoundingInfo) {
+                    //payload is an array of meshes
+                    let meshes = <Array<AbstractMesh>>payload;
+                    let bounding = meshes[0].getHierarchyBoundingVectors();
+                    (<FramingBehavior>behavior).zoomOnBoundingInfo(bounding.min, bounding.max);
+                }
+                break;
+        }
+
+        if (behavior) {
+            if (typeof behaviorConfig === "object") {
+                this.extendClassWithConfig(behavior, behaviorConfig);
+            }
+            this.camera.addBehavior(behavior);
+        }
+    }
+
+    private extendClassWithConfig(object: any, config: any) {
+        Object.keys(config).forEach(key => {
+            if (object.hasOwnProperty(key)) {
+                object[key] = config[key];
+            }
+        })
     }
 }
