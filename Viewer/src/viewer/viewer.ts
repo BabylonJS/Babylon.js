@@ -25,9 +25,12 @@ export abstract class AbstractViewer {
 
         this.prepareContainerElement();
 
+        // extend the configuration
         configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
             this.configuration = configuration;
+            // initialize the templates
             this.templateManager.initTemplate(this.configuration.template);
+            // when done, execute onTemplatesLoaded()
             this.templateManager.onAllLoaded.add(() => {
                 this.onTemplatesLoaded();
             })
@@ -39,25 +42,22 @@ export abstract class AbstractViewer {
         return this.baseId;
     }
 
-    protected prepareContainerElement() {
-        // nothing to see here, go home!
-    }
+    protected abstract prepareContainerElement();
 
+    /**
+     * This function will execute when the HTML templates finished initializing.
+     * It should initialize the engine and continue execution.
+     * 
+     * @protected
+     * @returns {Promise<AbstractViewer>} The viewer object will be returned after the object was loaded.
+     * @memberof AbstractViewer
+     */
     protected onTemplatesLoaded(): Promise<AbstractViewer> {
         return this.initEngine().then(() => {
-            return this.initScene();
-        }).then(() => {
-            return this.initCameras();
-        }).then(() => {
-            return this.initLights();
-        }).then(() => {
-            return this.initEnvironment();
-        }).then(() => {
             return this.loadModel();
         }).then(() => {
             return this;
         });
-
     }
 
     /**
@@ -77,6 +77,10 @@ export abstract class AbstractViewer {
             this.engine.resize();
         });
 
+        this.engine.runRenderLoop(() => {
+            this.scene && this.scene.render();
+        });
+
         var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
         this.engine.setHardwareScalingLevel(scale);
 
@@ -84,18 +88,41 @@ export abstract class AbstractViewer {
     }
 
     protected initScene(): Promise<Scene> {
+
+        // if the scen exists, dispose it.
+        if (this.scene) {
+            this.scene.dispose();
+        }
+
+        // create a new scene
         this.scene = new Scene(this.engine);
-        this.engine.runRenderLoop(() => {
-            this.scene.render();
-        });
+        // make sure there is a default camera and light.
+        this.scene.createDefaultCameraOrLight(true, true, true);
         return Promise.resolve(this.scene);
     }
 
-    protected abstract initCameras(): Promise<Scene>;
+    public loadModel(model: any = this.configuration.model, clearScene: boolean = true): Promise<Scene> {
+        let modelUrl = (typeof model === 'string') ? model : model.url;
+        let parts = modelUrl.split('/');
+        let filename = parts.pop();
+        let base = parts.join('/') + '/';
 
-    protected abstract initLights(): Promise<Scene>;
-
-    public abstract loadModel(model?: string): Promise<Scene>;
+        return Promise.resolve().then(() => {
+            if (!this.scene || clearScene) return this.initScene();
+            else return this.scene;
+        }).then(() => {
+            return new Promise<Array<AbstractMesh>>((resolve, reject) => {
+                SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
+                    resolve(meshes);
+                }, undefined, (e, m, exception) => {
+                    console.log(m, exception);
+                    reject(m);
+                });
+            });
+        }).then((meshes: Array<AbstractMesh>) => {
+            return this.onModelLoaded(meshes);
+        });
+    }
 
     protected onModelLoaded(meshes: Array<AbstractMesh>): Promise<Scene> {
         console.log("model loaded");

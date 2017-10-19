@@ -1,19 +1,12 @@
 import { Template } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { Observable, Engine, Scene, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { Observable, Engine, Scene, AbstractMesh, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 
 // A small hack for the inspector. to be removed!
 import * as BABYLON from 'babylonjs';
 window['BABYLON'] = BABYLON;
 
 export class DefaultViewer extends AbstractViewer {
-
-    protected initScene() {
-        return super.initScene().then(() => {
-            this.scene.createDefaultCameraOrLight(true, true, true);
-            return this.scene;
-        });
-    }
 
     protected onTemplatesLoaded() {
 
@@ -39,41 +32,16 @@ export class DefaultViewer extends AbstractViewer {
         this.containerElement.style.display = 'flex';
     }
 
-    protected initCameras(): Promise<Scene> {
-        return Promise.resolve(this.scene);
-    }
-
-    protected initLights(): Promise<Scene> {
-        var light = new HemisphericLight("light1", new Vector3(0, 1, 0), this.scene);
-        return Promise.resolve(this.scene);
-    }
-
     public loadModel(model: any = this.configuration.model): Promise<Scene> {
         this.showLoadingScreen();
-
-        //TODO should the scene be cleared?
-
-        let modelUrl = (typeof model === 'string') ? model : model.url;
-        let parts = modelUrl.split('/');
-        let filename = parts.pop();
-        let base = parts.join('/') + '/';
-
-        return new Promise((resolve, reject) => {
-            SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
-                console.log("model loaded");
-
-                this.onModelLoaded(meshes).then(() => {
-                    resolve(this.scene);
-                });
-
-            }, undefined, (e, m, exception) => {
-                console.log(m, exception);
-                reject(m);
-            });
-        })
+        return super.loadModel(model, true);
     }
 
-    public onModelLoaded(meshes) {
+    public onModelLoaded(meshes: Array<AbstractMesh>) {
+
+        this.hideLoadingScreen();
+
+        // recreate the camera
         this.scene.createDefaultCameraOrLight(true, true, true);
 
         // TODO do it better, no casting!
@@ -84,7 +52,7 @@ export class DefaultViewer extends AbstractViewer {
 
         // Get the bounding vectors of the mesh hierarchy (meshes[0] = root node in gltf)
         meshes[0].rotation.y += Math.PI;
-        var bounding = meshes[0].getHierarchyBoundingVectors();
+        let bounding = meshes[0].getHierarchyBoundingVectors();
         camera.framingBehavior.zoomOnBoundingInfo(bounding.min, bounding.max);
 
         // Remove default light and create a new one to have a dynamic shadow                            
@@ -111,8 +79,6 @@ export class DefaultViewer extends AbstractViewer {
         for (var index = 0; index < meshes.length; index++) {
             shadowGenerator.getShadowMap().renderList.push(meshes[index]);
         }
-
-        this.hideLoadingScreen();
 
         return Promise.resolve(this.scene);
     }
