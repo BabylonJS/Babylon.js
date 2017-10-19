@@ -428,6 +428,7 @@ module BABYLON.GLTF2 {
                             throw new Error(context + ": Failed to find material " + primitive.material);
                         }
 
+                        var capturedIndex = index;
                         this._loadMaterial("#/materials/" + material.index, material, (babylonMaterial, isNew) => {
                             if (isNew && this._parent.onMaterialLoaded) {
                                 this._parent.onMaterialLoaded(babylonMaterial);
@@ -435,12 +436,12 @@ module BABYLON.GLTF2 {
 
                             if (this._parent.onBeforeMaterialReadyAsync) {
                                 this._addLoaderPendingData(material);
-                                this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[index] != null, () => {
-                                    subMaterials[index] = babylonMaterial;
+                                this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[capturedIndex] != null, () => {
+                                    subMaterials[capturedIndex] = babylonMaterial;
                                     this._removeLoaderPendingData(material);
                                 });
                             } else {
-                                subMaterials[index] = babylonMaterial;
+                                subMaterials[capturedIndex] = babylonMaterial;
                             }
                         });
                     }
