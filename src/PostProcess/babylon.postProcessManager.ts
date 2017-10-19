@@ -48,7 +48,7 @@
         }
         
         // Methods
-        public _prepareFrame(sourceTexture?: InternalTexture, postProcesses?: PostProcess[]): boolean {
+        public _prepareFrame(sourceTexture: Nullable<InternalTexture> = null, postProcesses: Nullable<PostProcess[]> = null): boolean {
             var postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
 
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {

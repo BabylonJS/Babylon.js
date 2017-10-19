@@ -335,7 +335,7 @@
         public actionManager: ActionManager;
 
         // Physics
-        public physicsImpostor: BABYLON.PhysicsImpostor;
+        public physicsImpostor: Nullable<PhysicsImpostor>;
 
         // Collisions
         private _checkCollisions = false;

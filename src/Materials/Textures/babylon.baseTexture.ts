@@ -104,8 +104,8 @@
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
 
         private _scene: Scene;
-        public _texture: InternalTexture;
-        private _uid: string;
+        public _texture: Nullable<InternalTexture>;
+        private _uid: Nullable<string>;
 
         public get isBlocking(): boolean {
             return true;
@@ -121,15 +121,15 @@
             return this._scene;
         }
 
-        public getTextureMatrix(): Matrix {
+        public getTextureMatrix(): Nullable<Matrix> {
             return null;
         }
 
-        public getReflectionTextureMatrix(): Matrix {
+        public getReflectionTextureMatrix(): Nullable<Matrix> {
             return null;
         }
 
-        public getInternalTexture(): InternalTexture {
+        public getInternalTexture(): Nullable<InternalTexture> {
             return this._texture;
         }
 
@@ -151,11 +151,11 @@
         }
 
         public getSize(): ISize {
-            if (this._texture.width) {
+            if (this._texture && this._texture.width) {
                 return new Size(this._texture.width, this._texture.height);
             }
 
-            if (this._texture._size) {
+            if (this._texture && this._texture._size) {
                 return new Size(this._texture._size, this._texture._size);
             }
 
@@ -180,7 +180,7 @@
             return false;
         }
 
-        public _getFromCache(url: string, noMipmap: boolean, sampling?: number): InternalTexture {
+        public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number): Nullable<InternalTexture> {
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
@@ -203,7 +203,7 @@
         public delayLoad(): void {
         }
 
-        public clone(): BaseTexture {
+        public clone(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -223,7 +223,7 @@
             return (this._texture.format !== undefined) ? this._texture.format : Engine.TEXTUREFORMAT_RGBA;
         }
 
-        public readPixels(faceIndex = 0): ArrayBufferView {
+        public readPixels(faceIndex = 0): Nullable<ArrayBufferView> {
             if (!this._texture) {
                 return null;
             }
@@ -245,7 +245,7 @@
             }
         }
 
-        public get sphericalPolynomial(): SphericalPolynomial {
+        public get sphericalPolynomial(): Nullable<SphericalPolynomial> {
             if (!this._texture || !Internals.CubeMapToSphericalPolynomialTools || !this.isReady()) {
                 return null;
             }
@@ -258,27 +258,27 @@
             return this._texture._sphericalPolynomial;
         }
 
-        public set sphericalPolynomial(value: SphericalPolynomial) {
+        public set sphericalPolynomial(value: Nullable<SphericalPolynomial>) {
             if (this._texture) {
                 this._texture._sphericalPolynomial = value;
             }
         }
 
-        public get _lodTextureHigh(): BaseTexture {
+        public get _lodTextureHigh(): Nullable<BaseTexture> {
             if (this._texture) {
                 return this._texture._lodTextureHigh;
             }
             return null;
         }
 
-        public get _lodTextureMid(): BaseTexture {
+        public get _lodTextureMid(): Nullable<BaseTexture> {
             if (this._texture) {
                 return this._texture._lodTextureMid;
             }
             return null;
         }
 
-        public get _lodTextureLow(): BaseTexture {
+        public get _lodTextureLow(): Nullable<BaseTexture> {
             if (this._texture) {
                 return this._texture._lodTextureLow;
             }
