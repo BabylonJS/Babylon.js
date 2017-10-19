@@ -3690,15 +3690,13 @@
             var isKTX = false;
             var isDDS = false;
             var lastDot = rootUrl.lastIndexOf('.');
-            if (lastDot > -1) {
-                var extension = forcedExtension ? forcedExtension : rootUrl.substring(lastDot).toLowerCase();
-                if (this._textureFormatInUse) {
-                    extension = this._textureFormatInUse;
-                    rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
-                    isKTX = true;
-                } else {
-                    isDDS = (extension === ".dds");
-                }
+            var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
+            if (this._textureFormatInUse) {
+                extension = this._textureFormatInUse;
+                rootUrl = (lastDot > -1 ? rootUrl.substring(0, lastDot) : rootUrl) + this._textureFormatInUse;
+                isKTX = true;
+            } else {
+                isDDS = (extension === ".dds");
             }
 
             let onerror = (request: XMLHttpRequest, exception: any) => {
