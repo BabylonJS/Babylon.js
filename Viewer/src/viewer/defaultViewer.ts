@@ -187,7 +187,7 @@ export class DefaultViewer extends AbstractViewer {
 
         if (cameraConfig.behaviors) {
             cameraConfig.behaviors.forEach((behaviorConfig) => {
-
+                this.setCameraBehavior(behaviorConfig, focusMeshes);
             });
         };
 
@@ -196,16 +196,17 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    private setCameraBehavior(behaviorConfig: {
+    private setCameraBehavior(behaviorConfig: number | {
         type: number;
         [propName: string]: any;
     }, payload: any) {
 
-
-
         let behavior: Behavior<ArcRotateCamera>;
         let type = (typeof behaviorConfig !== "object") ? behaviorConfig : behaviorConfig.type;
 
+        let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
+
+        // constructing behavior
         switch (type) {
             case CameraBehavior.AUTOROTATION:
                 behavior = new AutoRotationBehavior();
@@ -215,12 +216,6 @@ export class DefaultViewer extends AbstractViewer {
                 break;
             case CameraBehavior.FRAMING:
                 behavior = new FramingBehavior();
-                if (behaviorConfig.zoomOnBoundingInfo) {
-                    //payload is an array of meshes
-                    let meshes = <Array<AbstractMesh>>payload;
-                    let bounding = meshes[0].getHierarchyBoundingVectors();
-                    (<FramingBehavior>behavior).zoomOnBoundingInfo(bounding.min, bounding.max);
-                }
                 break;
         }
 
@@ -229,6 +224,23 @@ export class DefaultViewer extends AbstractViewer {
                 this.extendClassWithConfig(behavior, behaviorConfig);
             }
             this.camera.addBehavior(behavior);
+        }
+
+        // post attach configuration
+        switch (type) {
+            case CameraBehavior.AUTOROTATION:
+                break;
+            case CameraBehavior.BOUNCING:
+                break;
+            case CameraBehavior.FRAMING:
+                if (config.zoomOnBoundingInfo) {
+                    //payload is an array of meshes
+                    let meshes = <Array<AbstractMesh>>payload;
+                    let bounding = meshes[0].getHierarchyBoundingVectors();
+                    console.log(bounding);
+                    (<FramingBehavior>behavior).zoomOnBoundingInfo(bounding.min, bounding.max);
+                }
+                break;
         }
     }
 
