@@ -10,16 +10,16 @@
     export class PickingInfo {
         public hit = false;
         public distance = 0;
-        public pickedPoint: Vector3 = null;
-        public pickedMesh: AbstractMesh = null;
+        public pickedPoint: Nullable<Vector3> = null;
+        public pickedMesh: Nullable<AbstractMesh> = null;
         public bu = 0;
         public bv = 0;
         public faceId = -1;
         public subMeshId = 0;
-        public pickedSprite: Sprite = null;
+        public pickedSprite: Nullable<Sprite> = null;
 
         // Methods
-        public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Vector3 {
+        public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Nullable<Vector3> {
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 return null;
             }
@@ -59,7 +59,7 @@
             return BABYLON.Vector3.Normalize(result);
         }
 
-        public getTextureCoordinates(): Vector2 {
+        public getTextureCoordinates(): Nullable<Vector2> {
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 return null;
             }
