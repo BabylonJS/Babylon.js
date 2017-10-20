@@ -144,19 +144,11 @@ export class DefaultViewer extends AbstractViewer {
                     light.setEnabled(!lightConfig.disabled);
                 }
 
-                light.intensity = lightConfig.intensity || light.intensity;
+                this.extendClassWithConfig(light, lightConfig);
 
-                //position. Some lights don't have position!!
+                //position. Some lights don'T support shadows
                 if (light instanceof ShadowLight) {
-                    if (lightConfig.position && light.position) {
-                        this.extendClassWithConfig(light.position, lightConfig.position);
-                    }
-
-                    if (lightConfig.direction) {
-                        this.extendClassWithConfig(light.direction, lightConfig.direction);
-                    }
-
-                    if (lightConfig.enableShadows) {
+                    if (lightConfig.shadowEnabled) {
                         var shadowGenerator = new BABYLON.ShadowGenerator(512, light)
                         this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                         // add the focues meshes to the shadow list
@@ -166,8 +158,6 @@ export class DefaultViewer extends AbstractViewer {
                         console.log("shadows enabled");
                     }
                 }
-
-                console.log(light);
             });
         }
     }
@@ -242,7 +232,6 @@ export class DefaultViewer extends AbstractViewer {
                     //payload is an array of meshes
                     let meshes = <Array<AbstractMesh>>payload;
                     let bounding = meshes[0].getHierarchyBoundingVectors();
-                    console.log(bounding);
                     (<FramingBehavior>behavior).zoomOnBoundingInfo(bounding.min, bounding.max);
                 }
                 break;
@@ -252,7 +241,13 @@ export class DefaultViewer extends AbstractViewer {
     private extendClassWithConfig(object: any, config: any) {
         Object.keys(config).forEach(key => {
             if (key in object && typeof object[key] !== 'function') {
-                object[key] = config[key];
+                if (typeof object[key] === 'function') return;
+                // if it is an object, iterate internally until reaching basic types
+                if (typeof object[key] === 'object') {
+                    this.extendClassWithConfig(object[key], config[key]);
+                } else {
+                    object[key] = config[key];
+                }
             }
         });
     }

@@ -40,6 +40,25 @@ export interface ViewerConfiguration {
         defaultCamera?: boolean;
         defaultLight?: boolean;
         clearColor?: { r: number, g: number, b: number, a: number };
+        imageProcessingConfiguration?: {
+            colorGradingEnabled?: boolean;
+            colorCurvesEnabled?: boolean;
+            colorGradingWithGreenDepth?: boolean;
+            colorGradingBGR?: boolean;
+            exposure?: number;
+            toneMappingEnabled?: boolean;
+            contrast?: number;
+            vignetteEnabled?: boolean;
+            vignetteStretch?: number;
+            vignetteCentreX?: number;
+            vignetteCentreY?: number;
+            vignetteWeight?: number;
+            vignetteColor?: { r: number, g: number, b: number, a: number };
+            vignetteCameraFov?: number;
+            vignetteBlendMode?: number;
+            applyByPostProcess?: boolean;
+
+        }
     },
     // at the moment, support only a single camera.
     camera?: {
@@ -130,7 +149,7 @@ export let defaultConfiguration: ViewerConfiguration = {
     lights: [
         {
             type: 1,
-            enableShadows: true,
+            shadowEnabled: true,
             direction: { x: -0.2, y: -1, z: 0 },
             position: { x: 0.017, y: 0.5, z: 0 },
             intensity: 4.5,
