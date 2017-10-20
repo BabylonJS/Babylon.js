@@ -1,6 +1,6 @@
 import { Template } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { Observable, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { Observable, ShadowLight, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
 
 // A small hack for the inspector. to be removed!
@@ -51,16 +51,7 @@ export class DefaultViewer extends AbstractViewer {
         meshes[0].rotation.y += Math.PI;
 
         this.setupCamera(meshes);
-
-        // Get the bounding vectors of the mesh hierarchy (meshes[0] = root node in gltf)
-
-        // Remove default light and create a new one to have a dynamic shadow                            
-        //this.scene.lights[0].dispose();
-        //var light = new BABYLON.DirectionalLight('light', new BABYLON.Vector3(-0.2, -1, 0), this.scene)
-        //light.position = new BABYLON.Vector3(bounding.max.x * 0.2, bounding.max.y * 2, 0)
-        //light.intensity = 4.5;
-
-        // TODO - move it away from here.
+        this.setupLights(meshes);
 
         var ground = Mesh.CreatePlane('ground', 100, this.scene)
         ground.rotation.x = Math.PI / 2
@@ -145,24 +136,38 @@ export class DefaultViewer extends AbstractViewer {
 
             this.configuration.lights.forEach((lightConfig, idx) => {
                 lightConfig.name = lightConfig.name || 'light-' + idx;
+                let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
+                let light = constructor();
 
-                //let light = Light.Parse(lightConfig, this.scene);
-
-                /*
-                // TODO fix the shadow mechanism
-                var shadowGenerator = new BABYLON.ShadowGenerator(512, light)
-                shadowGenerator.useBlurExponentialShadowMap = true;
-                shadowGenerator.useKernelBlur = true;
-                shadowGenerator.blurKernel = 64;
-                shadowGenerator.blurScale = 4;
-                
-        
-                // Add the bus in the casters
-                for (var index = 0; index < focusMeshes.length; index++) {
-                    shadowGenerator.getShadowMap().renderList.push(focusMeshes[index]);
+                //enabled
+                if (light.isEnabled() !== !lightConfig.disabled) {
+                    light.setEnabled(!lightConfig.disabled);
                 }
 
-                */
+                light.intensity = lightConfig.intensity || light.intensity;
+
+                //position. Some lights don't have position!!
+                if (light instanceof ShadowLight) {
+                    if (lightConfig.position && light.position) {
+                        this.extendClassWithConfig(light.position, lightConfig.position);
+                    }
+
+                    if (lightConfig.direction) {
+                        this.extendClassWithConfig(light.direction, lightConfig.direction);
+                    }
+
+                    if (lightConfig.enableShadows) {
+                        var shadowGenerator = new BABYLON.ShadowGenerator(512, light)
+                        this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
+                        // add the focues meshes to the shadow list
+                        for (var index = 0; index < focusMeshes.length; index++) {
+                            shadowGenerator.getShadowMap().renderList.push(focusMeshes[index]);
+                        }
+                        console.log("shadows enabled");
+                    }
+                }
+
+                console.log(light);
             });
         }
     }
@@ -226,7 +231,7 @@ export class DefaultViewer extends AbstractViewer {
             this.camera.addBehavior(behavior);
         }
 
-        // post attach configuration
+        // post attach configuration. Some functionalities require the attached camera.
         switch (type) {
             case CameraBehavior.AUTOROTATION:
                 break;
@@ -246,9 +251,9 @@ export class DefaultViewer extends AbstractViewer {
 
     private extendClassWithConfig(object: any, config: any) {
         Object.keys(config).forEach(key => {
-            if (object.hasOwnProperty(key)) {
+            if (key in object && typeof object[key] !== 'function') {
                 object[key] = config[key];
             }
-        })
+        });
     }
 }
