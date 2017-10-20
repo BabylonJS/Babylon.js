@@ -137,7 +137,8 @@
             return this._texelSize;
         }
 
-        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
+        constructor(public name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, 
+                    samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -146,7 +147,7 @@
 
                 this._scene.postProcesses.push(this);
             }
-            else {
+            else if (engine) {
                 this._engine = engine;
                 this._engine.postProcesses.push(this);
             }
@@ -195,7 +196,7 @@
                 uniforms || this._parameters,
                 samplers || this._samplers, 
                 defines !== undefined ? defines : "",
-                null,
+                undefined,
                 onCompiled,
                 onError,
                 indexParameters || this._indexParameters
@@ -212,18 +213,19 @@
         }
 
         public activate(camera: Camera, sourceTexture?: InternalTexture, forceDepthStencil?: boolean): void {            
+            camera = camera || this._camera;
+            
+            var scene = camera.getScene();
+            var engine = scene.getEngine();
+            var maxSize = engine.getCaps().maxTextureSize;
+
+            var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this._options) | 0;
+            var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
+
+            var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
+            var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
+
             if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
-                camera = camera || this._camera;
-
-                var scene = camera.getScene();
-                var engine = scene.getEngine();
-                var maxSize = engine.getCaps().maxTextureSize;
-
-                var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this._options) | 0;
-                var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
-
-                var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
-                var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
                 if (this.adaptScaleToCurrentViewport) {
                     let currentViewport = engine.currentViewport;
@@ -330,7 +332,7 @@
             return this.width / this.height;
         }
         
-        public apply(): Effect {
+        public apply(): Nullable<Effect> {
             // Check
             if (!this._effect || !this._effect.isReady())
                 return null;

@@ -24,7 +24,7 @@ module BABYLON {
         public doNotSerialize = false;
 
         public animations = new Array<Animation>();
-        private _ranges: { [name: string]: AnimationRange; } = {};
+        private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
         public onReady: (node: Node) => void;
 
@@ -38,10 +38,10 @@ module BABYLON {
         private _scene: Scene;
         public _cache: any;
 
-        private _parentNode: Node;
+        private _parentNode: Nullable<Node>;
         private _children: Node[];
 
-        public set parent(parent: Node) {
+        public set parent(parent: Nullable<Node>) {
             if (this._parentNode === parent) {
                 return;
             }
@@ -63,7 +63,7 @@ module BABYLON {
             }
         }
 
-        public get parent(): Node {
+        public get parent(): Nullable<Node> {
             return this._parentNode;
         }
 
@@ -139,7 +139,7 @@ module BABYLON {
             return this._behaviors;
         }
 
-        public getBehaviorByName(name: string): Behavior<Node> {
+        public getBehaviorByName(name: string): Nullable<Behavior<Node>> {
             for (var behavior of this._behaviors) {
                 if (behavior.name === name) {
                     return behavior;
@@ -181,7 +181,9 @@ module BABYLON {
         }
 
         public _markSyncedWithParent() {
-            this._parentRenderId = this.parent._currentRenderId;
+            if (this.parent) {
+                this._parentRenderId = this.parent._currentRenderId;
+            }
         }
 
         public isSynchronizedWithParent(): boolean {
@@ -343,7 +345,7 @@ module BABYLON {
             }
         }
 
-        public getAnimationByName(name: string): Animation {
+        public getAnimationByName(name: string): Nullable<Animation> {
             for (var i = 0; i < this.animations.length; i++) {
                 var animation = this.animations[i];
 
@@ -373,10 +375,10 @@ module BABYLON {
                     this.animations[i].deleteRange(name, deleteFrames);
                 }
             }
-            this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
         }
 
-        public getAnimationRange(name: string): AnimationRange {
+        public getAnimationRange(name: string): Nullable<AnimationRange> {
             return this._ranges[name];
         }
 
@@ -384,7 +386,7 @@ module BABYLON {
             var range = this.getAnimationRange(name);
 
             if (!range) {
-                return null;
+                return;
             }
 
             this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
@@ -393,10 +395,14 @@ module BABYLON {
         public serializeAnimationRanges(): any {
             var serializationRanges = [];
             for (var name in this._ranges) {
+                var localRange = this._ranges[name];
+                if (!localRange) {
+                    continue;
+                }
                 var range: any = {};
                 range.name = name;
-                range.from = this._ranges[name].from;
-                range.to = this._ranges[name].to;
+                range.from = localRange.from;
+                range.to = localRange.to;
                 serializationRanges.push(range);
             }
             return serializationRanges;

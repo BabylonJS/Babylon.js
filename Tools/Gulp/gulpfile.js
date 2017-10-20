@@ -21,8 +21,6 @@ var path = require('path');
 var sass = require('gulp-sass');
 var webpack = require('webpack-stream');
 
-var zip = require('gulp-zip');
-
 var config = require("./config.json");
 
 var del = require('del');
@@ -516,13 +514,6 @@ gulp.task('webserver', function () {
  * Combine Webserver and Watch as long as vscode does not handle multi tasks.
  */
 gulp.task('run', ['watch', 'webserver'], function () {
-});
-
-
-gulp.task("zip-blender", function () {
-    return gulp.src('../../Exporters/Blender/src/**')
-        .pipe(zip('Blender2Babylon-5.4.zip'))
-        .pipe(gulp.dest('../../Exporters/Blender'));
 });
 
 gulp.task('clean-JS-MAP', function () {

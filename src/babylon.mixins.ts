@@ -34,7 +34,7 @@ interface WebGLRenderingContext {
     vertexAttribDivisor(index: number, divisor: number): void;
 
     createVertexArray(): any;
-    bindVertexArray(vao: WebGLVertexArrayObject): void;
+    bindVertexArray(vao: Nullable<WebGLVertexArrayObject>): void;
     deleteVertexArray(vao: WebGLVertexArrayObject): void;
 
     blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
@@ -119,7 +119,7 @@ interface WebGLBuffer {
 }
 
 interface WebGLProgram {
-    __SPECTOR_rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void): void;
+    __SPECTOR_rebuildProgram: Nullable<(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void>;
 }
 
 interface MouseEvent {
@@ -139,7 +139,6 @@ interface MSStyleCSSProperties {
 interface Navigator {
     getVRDisplays: () => any;
     mozGetVRDevices: (any: any) => any;
-    isCocoonJS: boolean;
     getUserMedia: any;
     webkitGetUserMedia: any;
     mozGetUserMedia: any;

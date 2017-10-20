@@ -160,6 +160,7 @@
     "workloads": {
         "core": {
             "files": [
+                "../../src/babylon.types.js",
                 "../../src/Events/babylon.keyboardEvents.js",
                 "../../src/Events/babylon.pointerEvents.js",
                 "../../src/Math/babylon.math.js",
