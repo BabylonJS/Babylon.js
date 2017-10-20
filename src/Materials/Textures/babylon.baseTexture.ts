@@ -12,7 +12,9 @@
                 return;
             }
             this._hasAlpha = value;
-            this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            if (this._scene) {
+                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            }
         }
         public get hasAlpha(): boolean {
             return this._hasAlpha;
@@ -34,7 +36,9 @@
                 return;
             }
             this._coordinatesMode = value;
-            this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            if (this._scene) {
+                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            }
         }
         public get coordinatesMode(): number {
             return this._coordinatesMode;
@@ -103,7 +107,7 @@
 
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
 
-        private _scene: Scene;
+        private _scene: Nullable<Scene>;
         public _texture: Nullable<InternalTexture>;
         private _uid: Nullable<string>;
 
@@ -111,13 +115,15 @@
             return true;
         }
 
-        constructor(scene: Scene) {
+        constructor(scene: Nullable<Scene>) {
             this._scene = scene || Engine.LastCreatedScene;
-            this._scene.textures.push(this);
+            if (this._scene) {
+                this._scene.textures.push(this);
+            }
             this._uid = null;
         }
 
-        public getScene(): Scene {
+        public getScene(): Nullable<Scene> {
             return this._scene;
         }
 
@@ -181,6 +187,10 @@
         }
 
         public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number): Nullable<InternalTexture> {
+            if (!this._scene) {
+                return null
+            }
+
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
@@ -229,7 +239,13 @@
             }
 
             var size = this.getSize();
-            var engine = this.getScene().getEngine();
+            let scene = this.getScene();
+
+            if (!scene) {
+                return null;
+            }
+
+            var engine = scene.getEngine();
 
             if (this._texture.isCube) {
                 return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
@@ -286,8 +302,12 @@
         }
 
         public dispose(): void {
+            if (!this._scene) {
+                return;
+            }
+            
             // Animations
-            this.getScene().stopAnimation(this);
+            this._scene.stopAnimation(this);
 
             // Remove from scene
             this._scene._removePendingData(this);

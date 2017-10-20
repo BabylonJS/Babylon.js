@@ -116,9 +116,13 @@
             return this._renderTargetOptions;
         }
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
+        constructor(name: string, size: any, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
 
             this.name = name;
             this.isRenderTarget = true;
@@ -165,7 +169,13 @@
                 return;
             }
 
-            this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
+            let scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+
+            this._samples = scene.getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
         }
 
         public resetRefreshCounter(): void {
@@ -184,7 +194,12 @@
 
         public addPostProcess(postProcess: PostProcess): void {
             if (!this._postProcessManager) {
-                this._postProcessManager = new PostProcessManager(this.getScene());
+                let scene = this.getScene();
+                
+                if (!scene) {
+                    return;
+                }                
+                this._postProcessManager = new PostProcessManager(scene);
                 this._postProcesses = new Array<PostProcess>();
             }
 
@@ -263,10 +278,16 @@
 
         public resize(size: any) {
             this.releaseInternalTexture();
+            let scene = this.getScene();
+            
+            if (!scene) {
+                return;
+            } 
+
             if (this.isCube) {
-                this._texture = this.getScene().getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
             } else {
-                this._texture = this.getScene().getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
+                this._texture = scene.getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
 
             this._size = size;
@@ -274,6 +295,11 @@
 
         public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false) {
             var scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+
             var engine = scene.getEngine();
 
             if (this.useCameraPostProcesses !== undefined) {
@@ -301,7 +327,13 @@
                     this.renderList = [];
                 }
 
-                var sceneMeshes = this.getScene().meshes;
+                var scene = this.getScene();
+                
+                if (!scene) {
+                    return;
+                }
+
+                var sceneMeshes = scene.meshes;
 
                 for (var index = 0; index < sceneMeshes.length; index++) {
                     var mesh = sceneMeshes[index];
@@ -405,6 +437,11 @@
 
         private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength: number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
             var scene = this.getScene();
+            
+            if (!scene) {
+                return;
+            }
+
             var engine = scene.getEngine();
 
             if (!this._texture) {
@@ -550,8 +587,9 @@
         // This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
         public disposeFramebufferObjects(): void {
             let objBuffer = this.getInternalTexture();
-            if (objBuffer) {
-                this.getScene().getEngine()._releaseFramebufferObjects(objBuffer);
+            let scene = this.getScene();
+            if (objBuffer && scene) {
+                scene.getEngine()._releaseFramebufferObjects(objBuffer);
             }
         }
 
@@ -567,6 +605,11 @@
 
             // Remove from custom render targets
             var scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+
             var index = scene.customRenderTargets.indexOf(this);
 
             if (index >= 0) {
