@@ -36131,7 +36131,7 @@ var BABYLON;
         CameraInputsManager.prototype.remove = function (inputToRemove) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input === inputToRemove && this.attachedElement) {
+                if (input === inputToRemove) {
                     input.detachControl(this.attachedElement);
                     input.camera = null;
                     delete this.attached[cam];
@@ -36142,7 +36142,7 @@ var BABYLON;
         CameraInputsManager.prototype.removeByType = function (inputType) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.getClassName() === inputType && this.attachedElement) {
+                if (input.getClassName() === inputType) {
                     input.detachControl(this.attachedElement);
                     input.camera = null;
                     delete this.attached[cam];
