@@ -1,6 +1,6 @@
 import { Template } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { Observable, ShadowLight, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
 
 // A small hack for the inspector. to be removed!
@@ -10,6 +10,13 @@ window['BABYLON'] = BABYLON;
 export class DefaultViewer extends AbstractViewer {
 
     private camera: ArcRotateCamera;
+
+    public initScene(): Promise<Scene> {
+        return super.initScene().then(() => {
+            this.extendClassWithConfig(this.scene, this.configuration.scene);
+            return this.scene;
+        })
+    }
 
     protected onTemplatesLoaded() {
 
@@ -59,42 +66,37 @@ export class DefaultViewer extends AbstractViewer {
         ground.material = new ShadowOnlyMaterial('shadow-only-mat', this.scene)
         ground.material.alpha = 0.4;
 
-        return Promise.resolve(this.scene);
+        return this.initEnvironment();
     }
 
     public initEnvironment(): Promise<Scene> {
-        this.scene.imageProcessingConfiguration.exposure = 1.4;
-        this.scene.imageProcessingConfiguration.contrast = 1.66;
-        this.scene.imageProcessingConfiguration.toneMappingEnabled = true;
+        if (this.configuration.skybox) {
+            // Define a general environment textue
+            let texture;
+            // this is obligatory, but still - making sure it is there.
+            if (this.configuration.skybox.cubeTexture) {
+                if (typeof this.configuration.skybox.cubeTexture.url === 'string') {
+                    texture = CubeTexture.CreateFromPrefilteredData(this.configuration.skybox.cubeTexture.url, this.scene);
+                } else {
+                    texture = CubeTexture.CreateFromImages(this.configuration.skybox.cubeTexture.url, this.scene, this.configuration.skybox.cubeTexture.noMipMap);
+                }
+            }
+            if (texture) {
 
-        // Define a general environment textue
-        /*var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("https://playground.babylonjs.com/textures/environment.dds", this.scene);
-        hdrTexture.gammaSpace = false;
+                this.extendClassWithConfig(texture, this.configuration.skybox.cubeTexture);
 
-        // Let's create a color curve to play with background color
-        var curve = new BABYLON.ColorCurves();
-        curve.globalHue = 58.88;
-        curve.globalDensity = 89;
-        curve.globalSaturation = 94;
+                console.log((this.scene.activeCamera.maxZ - this.scene.activeCamera.minZ) / 2);
 
-        // Create a dedicated background configuration 
-        var backgroundImageProcessingConfiguration = new ImageProcessingConfiguration();
-        backgroundImageProcessingConfiguration.exposure = 1.5;
-        backgroundImageProcessingConfiguration.contrast = 1.66;
-        backgroundImageProcessingConfiguration.toneMappingEnabled = true;
-        backgroundImageProcessingConfiguration.vignetteEnabled = true;
-        //backgroundImageProcessingConfiguration.vignetteM = true;
-        backgroundImageProcessingConfiguration.vignetteWeight = 5;
-        //backgroundImageProcessingConfiguration.vignetteColor = new Color3(0.8, 0.6, 0.4);
-        backgroundImageProcessingConfiguration.colorCurves = curve;
-        backgroundImageProcessingConfiguration.colorCurvesEnabled = true;*/
+                let box = this.scene.createDefaultSkybox(texture, this.configuration.skybox.pbr, this.configuration.skybox.scale, this.configuration.skybox.blur);
 
-        /**/
+                // before extending, set the material's imageprocessing configuration object, if needed:
+                if (this.configuration.skybox.material && this.configuration.skybox.material.imageProcessingConfiguration) {
+                    (<StandardMaterial>box.material).imageProcessingConfiguration = new ImageProcessingConfiguration();
+                }
 
-        // Our skybox with the color curve
-        /*var box = this.scene.createDefaultSkybox(hdrTexture, true, (this.scene.activeCamera.maxZ - this.scene.activeCamera.minZ) / 2, 0.7);
-        box.infiniteDistance = false;
-        (<StandardMaterial>box.material).imageProcessingConfiguration = backgroundImageProcessingConfiguration;*/
+                this.extendClassWithConfig(box, this.configuration.skybox);
+            }
+        }
 
         return Promise.resolve(this.scene);
     }
