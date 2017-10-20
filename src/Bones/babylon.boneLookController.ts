@@ -277,7 +277,7 @@ module BABYLON {
             var upAxis = BoneLookController._tmpVecs[1];
             upAxis.copyFrom(this.upAxis);
 
-            if(this.upAxisSpace == Space.BONE){
+            if(this.upAxisSpace == Space.BONE && parentBone){
                 if (this._transformYawPitch){
                     Vector3.TransformCoordinatesToRef(upAxis, this._transformYawPitchInv, upAxis);
                 }
@@ -304,7 +304,7 @@ module BABYLON {
                 var spaceMat = BoneLookController._tmpMats[2];
                 var spaceMatInv = BoneLookController._tmpMats[3];
 
-                if(this.upAxisSpace == Space.BONE && upAxis.y == 1){
+                if(this.upAxisSpace == Space.BONE && upAxis.y == 1 && parentBone){
 
                     parentBone.getRotationMatrixToRef(Space.WORLD, this.mesh, spaceMat);
                     
@@ -337,14 +337,14 @@ module BABYLON {
 
                 spaceMat.invertToRef(spaceMatInv);
                 
-                var xzlen:number;
+                var xzlen: Nullable<number> = null;
 
                 if(checkPitch){
                     var localTarget = BoneLookController._tmpVecs[3];
                     target.subtractToRef(bonePos, localTarget);
                     Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
-                    var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
+                    xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                     var pitch = Math.atan2(localTarget.y, xzlen);
                     var newPitch = pitch;
 

@@ -2,7 +2,7 @@ module BABYLON {
     export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
 
-        public gamepad: Gamepad;
+        public gamepad: Nullable<Gamepad>;
         private _onGamepadConnectedObserver : Observer<Gamepad>;
         private _onGamepadDisconnectedObserver : Observer<Gamepad>;
 

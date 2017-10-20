@@ -42,9 +42,9 @@ module BABYLON {
         }
 
         private _deviceOrientation = (evt: DeviceOrientationEvent) => {
-            this._alpha = evt.alpha;
-            this._beta = evt.beta;
-            this._gamma = evt.gamma;
+            this._alpha = evt.alpha !== null ? evt.alpha : 0;
+            this._beta = evt.beta !== null ? evt.beta : 0;
+            this._gamma = evt.gamma !== null ? evt.gamma : 0;
         }
 
         detachControl(element: HTMLElement) {

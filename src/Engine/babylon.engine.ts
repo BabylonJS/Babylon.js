@@ -232,14 +232,14 @@
         public maxVertexUniformVectors: number;
         public maxFragmentUniformVectors: number;
         public standardDerivatives: boolean;
-        public s3tc: WEBGL_compressed_texture_s3tc;
+        public s3tc: Nullable<WEBGL_compressed_texture_s3tc>;
         public pvrtc: any; //WEBGL_compressed_texture_pvrtc;
         public etc1: any; //WEBGL_compressed_texture_etc1;
         public etc2: any; //WEBGL_compressed_texture_etc;
         public astc: any; //WEBGL_compressed_texture_astc;
         public textureFloat: boolean;
         public vertexArrayObject: boolean;
-        public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
+        public textureAnisotropicFilterExtension: Nullable<EXT_texture_filter_anisotropic>;
         public maxAnisotropy: number;
         public instancedArrays: boolean;
         public uintIndices: boolean;
@@ -769,7 +769,7 @@
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvasOrContext: HTMLCanvasElement | WebGLRenderingContext, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             let canvas: Nullable<HTMLCanvasElement> = null;
             Engine.Instances.push(this);
 
@@ -1078,8 +1078,12 @@
 
             // Constants
             this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
-            this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
+            if (this._gl.RGBA16F !== 0x881A) {
+                this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
+            }
+            if (this._gl.RGBA32F !== 0x8814) {
+                this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
+            }
             this._gl.DEPTH24_STENCIL8 = 35056;
 
             // Extensions
