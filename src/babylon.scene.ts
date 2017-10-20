@@ -1290,9 +1290,7 @@
                     this._doubleClickOccured = false;
                     clickInfo.singleClick = true;
                     clickInfo.ignore = false;
-                    if (this._currentPickResult) {
-                        cb(clickInfo, this._currentPickResult);
-                    }
+                    cb(clickInfo, this._currentPickResult);
                 }
             }
 
@@ -1334,9 +1332,7 @@
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
 
-                                if (this._currentPickResult) {
-                                    cb(clickInfo, this._currentPickResult);
-                                }
+                                cb(clickInfo, this._currentPickResult);
                             }
                         }
                         // at least one double click is required to be check and exclusive double click is enabled
@@ -1371,9 +1367,7 @@
                                         clearTimeout(this._previousDelayedSimpleClickTimeout);
                                     }
                                     this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-                                    if (this._currentPickResult) {
-                                        cb(clickInfo, this._currentPickResult);
-                                    }
+                                    cb(clickInfo, this._currentPickResult);
                                 }
                                 // if the two successive clicks are too far, it's just two simple clicks
                                 else {
@@ -1389,14 +1383,10 @@
                                         }
                                         this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
 
-                                        if (this._previousPickResult) {
-                                            cb(clickInfo, this._previousPickResult);
-                                        }
+                                        cb(clickInfo, this._previousPickResult);
                                     }
                                     else {
-                                        if (this._currentPickResult) {
-                                            cb(clickInfo, this._currentPickResult);
-                                        }
+                                        cb(clickInfo, this._currentPickResult);
                                     }
                                 }
                             }
@@ -1413,9 +1403,7 @@
                     }
                 }
                 clickInfo.ignore = true;
-                if (this._currentPickResult) {
-                    cb(clickInfo, this._currentPickResult);
-                }
+                cb(clickInfo, this._currentPickResult);
             };
 
             this._spritePredicate = (sprite: Sprite): boolean => {
@@ -1577,7 +1565,7 @@
                     if (!this._meshPickProceed && (BABYLON.ActionManager && ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
                         this._initActionManager(null, clickInfo);
                     }
-                    if (!pickResult && this._currentPickResult) {
+                    if (!pickResult) {
                         pickResult = this._currentPickResult;
                     }
 

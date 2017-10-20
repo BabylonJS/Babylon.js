@@ -47,8 +47,7 @@ var tsConfig = {
     noImplicitAny: true,
     noImplicitReturns: true,
     noImplicitThis: true,
-    noUnusedLocals: true,
-    strictNullChecks: true
+    noUnusedLocals: true
 };
 var tsProject = typescript.createProject(tsConfig);
 
@@ -62,8 +61,7 @@ var externalTsConfig = {
     noImplicitAny: true,
     noImplicitReturns: true,
     noImplicitThis: true,
-    noUnusedLocals: true,
-    strictNullChecks: true
+    noUnusedLocals: true
 };
 
 function processDependency(kind, dependency, filesToLoad) {
