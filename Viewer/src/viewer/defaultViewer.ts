@@ -60,12 +60,6 @@ export class DefaultViewer extends AbstractViewer {
         this.setupCamera(meshes);
         this.setupLights(meshes);
 
-        var ground = Mesh.CreatePlane('ground', 100, this.scene)
-        ground.rotation.x = Math.PI / 2
-        ground.receiveShadows = true;
-        ground.material = new ShadowOnlyMaterial('shadow-only-mat', this.scene)
-        ground.material.alpha = 0.4;
-
         return this.initEnvironment();
     }
 
@@ -82,12 +76,11 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
             if (texture) {
-
                 this.extendClassWithConfig(texture, this.configuration.skybox.cubeTexture);
 
-                console.log((this.scene.activeCamera.maxZ - this.scene.activeCamera.minZ) / 2);
+                let scale = this.configuration.skybox.scale || (this.scene.activeCamera.maxZ - this.scene.activeCamera.minZ) / 2;
 
-                let box = this.scene.createDefaultSkybox(texture, this.configuration.skybox.pbr, this.configuration.skybox.scale, this.configuration.skybox.blur);
+                let box = this.scene.createDefaultSkybox(texture, this.configuration.skybox.pbr, scale, this.configuration.skybox.blur);
 
                 // before extending, set the material's imageprocessing configuration object, if needed:
                 if (this.configuration.skybox.material && this.configuration.skybox.material.imageProcessingConfiguration) {
@@ -96,6 +89,25 @@ export class DefaultViewer extends AbstractViewer {
 
                 this.extendClassWithConfig(box, this.configuration.skybox);
             }
+        }
+
+        if (this.configuration.ground) {
+            let groundConfig = (typeof this.configuration.ground === 'boolean') ? {} : this.configuration.ground;
+
+            var ground = Mesh.CreateGround('ground', groundConfig.size || 100, groundConfig.size || 100, 8, this.scene);
+            if (this.configuration.ground === true || groundConfig.shadowOnly) {
+                ground.material = new BABYLON.ShadowOnlyMaterial('groundmat', this.scene);
+            } else {
+                ground.material = new StandardMaterial('groundmat', this.scene);
+            }
+            //default configuration
+            if (this.configuration.ground === true) {
+                ground.receiveShadows = true;
+                ground.material.alpha = 0.4;
+            }
+
+
+            this.extendClassWithConfig(ground, groundConfig);
         }
 
         return Promise.resolve(this.scene);
@@ -148,7 +160,7 @@ export class DefaultViewer extends AbstractViewer {
 
                 this.extendClassWithConfig(light, lightConfig);
 
-                //position. Some lights don'T support shadows
+                //position. Some lights don't support shadows
                 if (light instanceof ShadowLight) {
                     if (lightConfig.shadowEnabled) {
                         var shadowGenerator = new BABYLON.ShadowGenerator(512, light)
@@ -157,7 +169,6 @@ export class DefaultViewer extends AbstractViewer {
                         for (var index = 0; index < focusMeshes.length; index++) {
                             shadowGenerator.getShadowMap().renderList.push(focusMeshes[index]);
                         }
-                        console.log("shadows enabled");
                     }
                 }
             });

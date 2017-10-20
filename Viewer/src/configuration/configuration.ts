@@ -72,7 +72,16 @@ export interface ViewerConfiguration {
         };
         infiniteDIstance?: boolean;
 
-    },
+    };
+
+    ground?: boolean | {
+        size?: number;
+        receiveShadows?: boolean;
+        shadowOnly?: boolean;
+        material?: {
+            [propName: string]: any;
+        }
+    };
     lights?: Array<{
         type: number;
         name?: string;
@@ -200,7 +209,7 @@ export let defaultConfiguration: ViewerConfiguration = {
     skybox: {
         cubeTexture: {
             url: 'http://localhost:9000/environment.dds',
-
+            gammaSpace: false
         },
         pbr: true,
         blur: 0.7,
@@ -224,6 +233,7 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         }
     },
+    ground: true,
     engine: {
         antialiasing: true
     },
