@@ -2,7 +2,7 @@ module BABYLON {
     export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
         camera: FreeCamera;
 
-        public gamepad: Gamepad;        
+        public gamepad: Nullable<Gamepad>;        
         private _onGamepadConnectedObserver : Observer<Gamepad>;
         private _onGamepadDisconnectedObserver : Observer<Gamepad>;
 

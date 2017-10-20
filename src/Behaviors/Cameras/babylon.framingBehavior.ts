@@ -143,7 +143,7 @@ module BABYLON {
         private _onPrePointerObservableObserver: Observer<PointerInfoPre>;
 		private _onAfterCheckInputsObserver: Observer<Camera>;
 		private _onMeshTargetChangedObserver: Observer<AbstractMesh>;
-        private _attachedCamera: ArcRotateCamera;
+        private _attachedCamera: Nullable<ArcRotateCamera>;
         private _isPointerDown = false;
         private _lastInteractionTime = -Infinity;
 
@@ -181,6 +181,10 @@ module BABYLON {
         }
              
         public detach(): void {
+			if (!this._attachedCamera) {
+				return;
+			}
+
             let scene = this._attachedCamera.getScene();
             
             scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
@@ -205,7 +209,7 @@ module BABYLON {
 		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
 		 * @param onAnimationEnd Callback triggered at the end of the framing animation
 		 */
-		public zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ: boolean = false, onAnimationEnd: () => void = null): void {
+		public zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): void {
 			mesh.computeWorldMatrix(true);
 
 			let boundingBox = mesh.getBoundingInfo().boundingBox;
@@ -220,8 +224,12 @@ module BABYLON {
 		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
 		 * @param onAnimationEnd Callback triggered at the end of the framing animation
 		 */
-		public zoomOnBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, focusOnOriginXZ: boolean = false, onAnimationEnd: () => void = null): void {
+		public zoomOnBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): void {
 			let zoomTarget: BABYLON.Vector3;
+
+			if (!this._attachedCamera) {
+				return;
+			}
 
 			// Find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
 			let bottom = minimumWorld.y;
@@ -241,8 +249,10 @@ module BABYLON {
 			}			
 
 			this._betaIsAnimating = true;
-			this._animatables.push(Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 
-									60, this._vectorTransition, this._framingTime));
+			let animatable = Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 60, this._vectorTransition, this._framingTime);
+			if (animatable) {
+				this._animatables.push(animatable);
+			}
 
 			// sets the radius and lower radius bounds
 			// Small delta ensures camera is not always at lower zoom limit.
@@ -268,14 +278,20 @@ module BABYLON {
 				this._radiusTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
 			}
 
-			this._animatables.push(Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
-				60, this._radiusTransition, this._framingTime, () => {
-					if (onAnimationEnd) {
-						onAnimationEnd();
-					}
+			animatable = Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 
+			60, this._radiusTransition, this._framingTime, () => {
+				if (onAnimationEnd) {
+					onAnimationEnd();
+				}
 
+				if (this._attachedCamera) {
 					this._attachedCamera.storeState();
-				}));
+				}
+			});
+
+			if (animatable) {
+				this._animatables.push(animatable);
+			}
 		}
 		
 		/**
@@ -300,6 +316,10 @@ module BABYLON {
 			let distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
 			let distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
 			let camera = this._attachedCamera;
+
+			if (!camera) {
+				return 0;
+			}
 
 			if (camera.lowerRadiusLimit && this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
 				// Don't exceed the requested limit
@@ -328,7 +348,7 @@ module BABYLON {
 			let limitBeta = Math.PI * 0.5;
 			
 			// Bring the camera back up if below the ground plane
-			if (!this._betaIsAnimating && this._attachedCamera.beta > limitBeta && timeSinceInteraction >= this._elevationReturnWaitTime) {
+			if (this._attachedCamera && !this._betaIsAnimating && this._attachedCamera.beta > limitBeta && timeSinceInteraction >= this._elevationReturnWaitTime) {
                 this._betaIsAnimating = true;
                 
 				//Transition to new position
@@ -336,14 +356,18 @@ module BABYLON {
                 
                 if (!this._betaTransition) {
                     this._betaTransition = Animation.CreateAnimation("beta", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
-                }
+				}
+				
+				let animatabe = Animation.TransitionTo("beta", defaultBeta, this._attachedCamera, this._attachedCamera.getScene(), 60,
+				this._betaTransition, this._elevationReturnTime, 
+				() => {
+					this._clearAnimationLocks();
+					this.stopAllAnimations();
+				});
 
-				this._animatables.push(Animation.TransitionTo("beta", defaultBeta, this._attachedCamera, this._attachedCamera.getScene(), 60,
-                    this._betaTransition, this._elevationReturnTime, 
-                    () => {
-						this._clearAnimationLocks();
-						this.stopAllAnimations();
-					}));
+				if (animatabe) {
+					this._animatables.push(animatabe);
+				}
 			}
 		}        
 
@@ -355,6 +379,11 @@ module BABYLON {
 			// Calculate the viewport ratio
 			// Aspect Ratio is Height/Width.
 			let camera = this._attachedCamera;
+
+			if (!camera) {
+				return Vector2.Zero();
+			}
+
 			let engine = camera.getScene().getEngine();
 			var aspectRatio = engine.getAspectRatio(camera);
 
@@ -392,7 +421,10 @@ module BABYLON {
 		 * Stops and removes all animations that have been applied to the camera
 		 */        
         public stopAllAnimations(): void {
-			this._attachedCamera.animations = [];
+			if (this._attachedCamera) {
+				this._attachedCamera.animations = [];
+			}
+
 			while (this._animatables.length) {
 				if (this._animatables[0]) {
 					this._animatables[0].onAnimationEnd = null;
@@ -406,6 +438,10 @@ module BABYLON {
 		 * Gets a value indicating if the user is moving the camera
 		 */
         public get isUserIsMoving(): boolean {
+			if (!this._attachedCamera) {
+				return false;
+			}
+			
 			return this._attachedCamera.inertialAlphaOffset !== 0 ||
 				this._attachedCamera.inertialBetaOffset !== 0 ||
 				this._attachedCamera.inertialRadiusOffset !== 0 ||
