@@ -49,7 +49,7 @@ export interface ViewerConfiguration {
         minZ?: number;
         maxZ?: number;
         behaviors?: Array<number | {
-            type?: number;
+            type: number;
             [propName: string]: any;
         }>
     },
@@ -91,11 +91,20 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         }
     },
+    camera: {
+        behaviors: [
+            0,
+            {
+                type: 2,
+                zoomOnBoundingInfo: true
+            }
+        ]
+    },
     engine: {
         antialiasing: true
     },
     scene: {
-        autoRotate: true,
-        rotationSpeed: 0.1
+        //autoRotate: true,
+        //rotationSpeed: 0.1
     }
 }
