@@ -40,25 +40,7 @@ export interface ViewerConfiguration {
         defaultCamera?: boolean;
         defaultLight?: boolean;
         clearColor?: { r: number, g: number, b: number, a: number };
-        imageProcessingConfiguration?: {
-            colorGradingEnabled?: boolean;
-            colorCurvesEnabled?: boolean;
-            colorGradingWithGreenDepth?: boolean;
-            colorGradingBGR?: boolean;
-            exposure?: number;
-            toneMappingEnabled?: boolean;
-            contrast?: number;
-            vignetteEnabled?: boolean;
-            vignetteStretch?: number;
-            vignetteCentreX?: number;
-            vignetteCentreY?: number;
-            vignetteWeight?: number;
-            vignetteColor?: { r: number, g: number, b: number, a: number };
-            vignetteCameraFov?: number;
-            vignetteBlendMode?: number;
-            applyByPostProcess?: boolean;
-
-        }
+        imageProcessingConfiguration?: IImageProcessingConfiguration;
     },
     // at the moment, support only a single camera.
     camera?: {
@@ -75,6 +57,21 @@ export interface ViewerConfiguration {
         }>;
 
         [propName: string]: any;
+    },
+    skybox?: {
+        cubeTexture: {
+            noMipMap?: boolean;
+            gammaSpace?: boolean;
+            url: string | Array<string>;
+        };
+        pbr?: boolean;
+        scale?: number;
+        blur?: number;
+        material?: {
+            imageProcessingConfiguration?: IImageProcessingConfiguration;
+        };
+        infiniteDIstance?: boolean;
+
     },
     lights?: Array<{
         type: number;
@@ -109,6 +106,45 @@ export interface ViewerConfiguration {
     },
     template?: TemplateConfiguration
     // nodes?
+}
+
+export interface IImageProcessingConfiguration {
+    colorGradingEnabled?: boolean;
+    colorCurvesEnabled?: boolean;
+    colorCurves?: {
+        globalHue?: number;
+        globalDensity?: number;
+        globalSaturation?: number;
+        globalExposure?: number;
+        highlightsHue?: number;
+        highlightsDensity?: number;
+        highlightsSaturation?: number;
+        highlightsExposure?: number;
+        midtonesHue?: number;
+        midtonesDensity?: number;
+        midtonesSaturation?: number;
+        midtonesExposure?: number;
+        shadowsHue?: number;
+        shadowsDensity?: number;
+        shadowsSaturation?: number;
+        shadowsExposure?: number;
+    };
+    colorGradingWithGreenDepth?: boolean;
+    colorGradingBGR?: boolean;
+    exposure?: number;
+    toneMappingEnabled?: boolean;
+    contrast?: number;
+    vignetteEnabled?: boolean;
+    vignetteStretch?: number;
+    vignetteCentreX?: number;
+    vignetteCentreY?: number;
+    vignetteWeight?: number;
+    vignetteColor?: { r: number, g: number, b: number, a?: number };
+    vignetteCameraFov?: number;
+    vignetteBlendMode?: number;
+    vignetteM?: boolean;
+    applyByPostProcess?: boolean;
+
 }
 
 export let defaultConfiguration: ViewerConfiguration = {
@@ -161,10 +197,42 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         }
     ],
+    skybox: {
+        cubeTexture: {
+            url: 'http://localhost:9000/environment.dds',
+
+        },
+        pbr: true,
+        blur: 0.7,
+        scale: 32,
+        infiniteDIstance: false,
+        material: {
+            imageProcessingConfiguration: {
+                colorCurves: {
+                    globalDensity: 89,
+                    globalHue: 58.88,
+                    globalSaturation: 94
+                },
+                colorCurvesEnabled: true,
+                exposure: 1.5,
+                contrast: 1.66,
+                toneMappingEnabled: true,
+                vignetteEnabled: true,
+                vignetteWeight: 5,
+                vignetteColor: { r: 0.8, g: 0.6, b: 0.4 },
+                vignetteM: true
+            }
+        }
+    },
     engine: {
         antialiasing: true
     },
     scene: {
+        imageProcessingConfiguration: {
+            exposure: 1.4,
+            contrast: 1.66,
+            toneMappingEnabled: true
+        }
         //autoRotate: true,
         //rotationSpeed: 0.1
     }
