@@ -17903,9 +17903,7 @@ var BABYLON;
                     _this._doubleClickOccured = false;
                     clickInfo.singleClick = true;
                     clickInfo.ignore = false;
-                    if (_this._currentPickResult) {
-                        cb(clickInfo, _this._currentPickResult);
-                    }
+                    cb(clickInfo, _this._currentPickResult);
                 }
             };
             this._initClickEvent = function (obs1, obs2, evt, cb) {
@@ -17940,9 +17938,7 @@ var BABYLON;
                             if (new Date().getTime() - _this._previousStartingPointerTime > Scene.DoubleClickDelay ||
                                 btn !== _this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
-                                if (_this._currentPickResult) {
-                                    cb(clickInfo, _this._currentPickResult);
-                                }
+                                cb(clickInfo, _this._currentPickResult);
                             }
                         }
                         else {
@@ -17974,9 +17970,7 @@ var BABYLON;
                                         clearTimeout(_this._previousDelayedSimpleClickTimeout);
                                     }
                                     _this._previousDelayedSimpleClickTimeout = _this._delayedSimpleClickTimeout;
-                                    if (_this._currentPickResult) {
-                                        cb(clickInfo, _this._currentPickResult);
-                                    }
+                                    cb(clickInfo, _this._currentPickResult);
                                 }
                                 else {
                                     _this._doubleClickOccured = false;
@@ -17990,14 +17984,10 @@ var BABYLON;
                                             clearTimeout(_this._previousDelayedSimpleClickTimeout);
                                         }
                                         _this._previousDelayedSimpleClickTimeout = _this._delayedSimpleClickTimeout;
-                                        if (_this._previousPickResult) {
-                                            cb(clickInfo, _this._previousPickResult);
-                                        }
+                                        cb(clickInfo, _this._previousPickResult);
                                     }
                                     else {
-                                        if (_this._currentPickResult) {
-                                            cb(clickInfo, _this._currentPickResult);
-                                        }
+                                        cb(clickInfo, _this._currentPickResult);
                                     }
                                 }
                             }
@@ -18013,9 +18003,7 @@ var BABYLON;
                     }
                 }
                 clickInfo.ignore = true;
-                if (_this._currentPickResult) {
-                    cb(clickInfo, _this._currentPickResult);
-                }
+                cb(clickInfo, _this._currentPickResult);
             };
             this._spritePredicate = function (sprite) {
                 return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
@@ -18151,7 +18139,7 @@ var BABYLON;
                     if (!_this._meshPickProceed && (BABYLON.ActionManager && BABYLON.ActionManager.HasTriggers || _this.onPointerObservable.hasObservers())) {
                         _this._initActionManager(null, clickInfo);
                     }
-                    if (!pickResult && _this._currentPickResult) {
+                    if (!pickResult) {
                         pickResult = _this._currentPickResult;
                     }
                     _this._processPointerUp(pickResult, evt, clickInfo);
