@@ -362,7 +362,7 @@
          * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.      
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateLineSystem(name: string, options: { lines: Vector3[][], updatable: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh {
+        public static CreateLineSystem(name: string, options: { lines: Vector3[][], updatable: boolean, instance?: LinesMesh }, scene: Nullable<Scene>): LinesMesh {
             var instance = options.instance;
             var lines = options.lines;
 
@@ -400,7 +400,7 @@
          * When updating an instance, remember that only point positions can change, not the number of points.      
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateLines(name: string, options: { points: Vector3[], updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh {
+        public static CreateLines(name: string, options: { points: Vector3[], updatable: boolean, instance: Nullable<LinesMesh> }, scene: Nullable<Scene> = null): LinesMesh {
             var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance }, scene);
             return lines;
         }

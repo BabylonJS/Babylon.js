@@ -2,7 +2,7 @@ module BABYLON {
     export var CameraInputTypes = {};
 
     export interface ICameraInput<TCamera extends BABYLON.Camera> {
-        camera: TCamera;
+        camera: Nullable<TCamera>;
         getClassName(): string;
         getSimpleName(): string;
         attachControl: (element: HTMLElement, noPreventDefault?: boolean) => void;
@@ -17,7 +17,7 @@ module BABYLON {
 
     export class CameraInputsManager<TCamera extends BABYLON.Camera> {
         attached: CameraInputsMap<TCamera>;
-        public attachedElement: HTMLElement;
+        public attachedElement: Nullable<HTMLElement>;
         public noPreventDefault: boolean;
         camera: TCamera;
         checkInputs: () => void;
@@ -53,7 +53,7 @@ module BABYLON {
         public remove(inputToRemove: ICameraInput<TCamera>) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input === inputToRemove) {
+                if (input === inputToRemove && this.attachedElement) {
                     input.detachControl(this.attachedElement);
                     input.camera = null;
                     delete this.attached[cam];
@@ -65,7 +65,7 @@ module BABYLON {
         public removeByType(inputType: string) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.getClassName() === inputType) {
+                if (input.getClassName() === inputType && this.attachedElement) {
                     input.detachControl(this.attachedElement);
                     input.camera = null;
                     delete this.attached[cam];
@@ -83,10 +83,12 @@ module BABYLON {
         }
 
         public attachInput(input: ICameraInput<TCamera>) {
-            input.attachControl(this.attachedElement, this.noPreventDefault);
+            if (this.attachedElement) {
+                input.attachControl(this.attachedElement, this.noPreventDefault);
+            }
         }
 
-        public attachElement(element: HTMLElement, noPreventDefault?: boolean) {
+        public attachElement(element: HTMLElement, noPreventDefault: boolean = false) {
             if (this.attachedElement) {
                 return;
             }

@@ -24,7 +24,7 @@ module BABYLON {
         rotationQuaternion: Quaternion;
         devicePosition?: Vector3;
         deviceRotationQuaternion: Quaternion;
-        rawPose: DevicePose;
+        rawPose: Nullable<DevicePose>;
         deviceScaleFactor: number;
         updateFromDevice(poseData: DevicePose): void;
     }
@@ -39,7 +39,7 @@ module BABYLON {
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         public _vrDevice: any = null;
-        public rawPose: DevicePose = null;
+        public rawPose: Nullable<DevicePose> = null;
         private _onVREnabled: (success: boolean) => void;
         private _specsVersion: string = "1.1";
         private _attached: boolean = false;
@@ -149,18 +149,18 @@ module BABYLON {
             super.dispose();
         }
 
-        public getControllerByName(name: string): WebVRController {
+        public getControllerByName(name: string): Nullable<WebVRController> {
             for (var gp of this.controllers) {
                 if (gp.hand === name) {
                     return gp;
                 }
             }
 
-            return undefined;
+            return null;
         }
 
-        private _leftController: WebVRController;
-        public get leftController(): WebVRController {
+        private _leftController: Nullable<WebVRController>;
+        public get leftController(): Nullable<WebVRController> {
             if (!this._leftController) {
                 this._leftController = this.getControllerByName("left");
             }
@@ -168,8 +168,8 @@ module BABYLON {
             return this._leftController;
         };
 
-        private _rightController: WebVRController;
-        public get rightController(): WebVRController {
+        private _rightController: Nullable<WebVRController>;
+        public get rightController(): Nullable<WebVRController> {
             if (!this._rightController) {
                 this._rightController = this.getControllerByName("right");
             }
@@ -199,7 +199,7 @@ module BABYLON {
         updateFromDevice(poseData: DevicePose) {
             if (poseData && poseData.orientation) {
                 this.rawPose = poseData;
-                this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
+                this.deviceRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
 
                 if (this.getScene().useRightHandedSystem) {
                     this.deviceRotationQuaternion.z *= -1;
