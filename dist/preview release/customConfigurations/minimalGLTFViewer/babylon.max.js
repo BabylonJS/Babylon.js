@@ -8687,6 +8687,9 @@ var BABYLON;
             return this._renderingCanvas;
         };
         Engine.prototype.getRenderingCanvasClientRect = function () {
+            if (!this._renderingCanvas) {
+                return null;
+            }
             return this._renderingCanvas.getBoundingClientRect();
         };
         Engine.prototype.setHardwareScalingLevel = function (level) {
@@ -8863,7 +8866,9 @@ var BABYLON;
             }
             else {
                 this._pointerLockRequested = requestPointerLock;
-                BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
+                if (this._renderingCanvas) {
+                    BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
+                }
             }
         };
         Engine.prototype.clear = function (color, backBuffer, depth, stencil) {
@@ -8952,8 +8957,8 @@ var BABYLON;
         Engine.prototype.resize = function () {
             // We're not resizing the size of the canvas while in VR mode & presenting
             if (!(this._vrDisplay && this._vrDisplay.isPresenting)) {
-                var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
-                var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+                var width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
+                var height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
                 this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
             }
         };
@@ -8963,6 +8968,9 @@ var BABYLON;
          * @param {number} height - the new canvas' height
          */
         Engine.prototype.setSize = function (width, height) {
+            if (!this._renderingCanvas) {
+                return;
+            }
             if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
                 return;
             }
@@ -10328,7 +10336,11 @@ var BABYLON;
                 if (!this._videoTextureSupported) {
                     if (!texture._workingCanvas) {
                         texture._workingCanvas = document.createElement("canvas");
-                        texture._workingContext = texture._workingCanvas.getContext("2d");
+                        var context = texture._workingCanvas.getContext("2d");
+                        if (!context) {
+                            throw new Error("Unable to get 2d context");
+                        }
+                        texture._workingContext = context;
                         texture._workingCanvas.width = texture.width;
                         texture._workingCanvas.height = texture.height;
                     }
@@ -10380,7 +10392,7 @@ var BABYLON;
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             var width = size.width || size;
             var height = size.height || size;
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
@@ -10394,7 +10406,7 @@ var BABYLON;
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, width, height);
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, width, height);
             if (fullOptions.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
@@ -10409,11 +10421,11 @@ var BABYLON;
             texture.height = height;
             texture.isReady = true;
             texture.samples = 1;
-            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
             this.resetTextureCache();
             this._internalTexturesCache.push(texture);
             return texture;
@@ -10577,9 +10589,16 @@ var BABYLON;
                 gl.deleteRenderbuffer(texture._MSAARenderBuffer);
             }
             if (samples > 1) {
-                texture._MSAAFramebuffer = gl.createFramebuffer();
+                var framebuffer = gl.createFramebuffer();
+                if (!framebuffer) {
+                    throw new Error("Unable to create multi sampled framebuffer");
+                }
+                texture._MSAAFramebuffer = framebuffer;
                 this.bindUnboundFramebuffer(texture._MSAAFramebuffer);
                 var colorRenderbuffer = gl.createRenderbuffer();
+                if (!colorRenderbuffer) {
+                    throw new Error("Unable to create multi sampled framebuffer");
+                }
                 gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
                 gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture.width, texture.height);
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
@@ -10610,7 +10629,7 @@ var BABYLON;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
+                generateStencilBuffer = (generateDepthBuffer && options.generateStencilBuffer) ? true : false;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
@@ -10766,7 +10785,7 @@ var BABYLON;
                     texture.width = ktx.pixelWidth;
                     texture.height = ktx.pixelHeight;
                     texture.isReady = true;
-                }, null, null, true, onerror);
+                }, undefined, undefined, true, onerror);
             }
             else if (isDDS) {
                 BABYLON.Tools.LoadFile(rootUrl, function (data) {
@@ -10791,13 +10810,19 @@ var BABYLON;
                     if (onLoad) {
                         onLoad({ isDDS: true, width: info.width, info: info, data: data, texture: texture });
                     }
-                }, null, null, true, onerror);
+                }, undefined, undefined, true, onerror);
             }
             else {
+                if (!files) {
+                    throw new Error("Cannot load cubemap because files were not defined");
+                }
                 cascadeLoad(rootUrl, scene, function (imgs) {
                     var width = _this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
                     _this._prepareWorkingCanvas();
+                    if (!_this._workingCanvas || !_this._workingContext) {
+                        return;
+                    }
                     _this._workingCanvas.width = width;
                     _this._workingCanvas.height = height;
                     var faces = [
@@ -10823,7 +10848,9 @@ var BABYLON;
                     texture.width = width;
                     texture.height = height;
                     texture.isReady = true;
-                    texture.format = format;
+                    if (format) {
+                        texture.format = format;
+                    }
                     texture.onLoadedObservable.notifyObservers(texture);
                     texture.onLoadedObservable.clear();
                     if (onLoad) {
@@ -11179,7 +11206,7 @@ var BABYLON;
             if (!alreadyActivated) {
                 this.activateTexture(this._gl["TEXTURE" + channel]);
             }
-            if (internalTexture.isCube) {
+            if (internalTexture && internalTexture.isCube) {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture);
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
@@ -11192,7 +11219,7 @@ var BABYLON;
             }
             else {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture);
-                if (internalTexture._cachedWrapU !== texture.wrapU) {
+                if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
                     switch (texture.wrapU) {
                         case BABYLON.Texture.WRAP_ADDRESSMODE:
@@ -11206,7 +11233,7 @@ var BABYLON;
                             break;
                     }
                 }
-                if (internalTexture._cachedWrapV !== texture.wrapV) {
+                if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
                     switch (texture.wrapV) {
                         case BABYLON.Texture.WRAP_ADDRESSMODE:
@@ -11369,7 +11396,6 @@ var BABYLON;
             if (this._dummyFramebuffer) {
                 this._gl.deleteFramebuffer(this._dummyFramebuffer);
             }
-            this._gl = null;
             //WebVR
             this.disableVR();
             // Events
@@ -11377,12 +11403,14 @@ var BABYLON;
             window.removeEventListener("focus", this._onFocus);
             window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
             window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
-            this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
-            if (!this._doNotHandleContextLost) {
-                this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
-                this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+            if (this._renderingCanvas) {
+                this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+                this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+                this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
+                if (!this._doNotHandleContextLost) {
+                    this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+                    this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+                }
             }
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
@@ -11394,10 +11422,14 @@ var BABYLON;
             document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
             if (this._onVrDisplayConnect) {
                 window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-                window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-                window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
-                this._onVrDisplayConnect = undefined;
-                this._onVrDisplayDisconnect = undefined;
+                if (this._onVrDisplayDisconnect) {
+                    window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                }
+                if (this._onVrDisplayPresentChange) {
+                    window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+                }
+                this._onVrDisplayConnect = null;
+                this._onVrDisplayDisconnect = null;
             }
             // Remove from Instances
             var index = Engine.Instances.indexOf(this);
@@ -11406,7 +11438,7 @@ var BABYLON;
             }
             this._workingCanvas = null;
             this._workingContext = null;
-            this._currentBufferPointers = null;
+            this._currentBufferPointers = [];
             this._renderingCanvas = null;
             this._currentProgram = null;
             this.onResizeObservable.clear();
@@ -11436,7 +11468,7 @@ var BABYLON;
         };
         Object.defineProperty(Engine.prototype, "loadingScreen", {
             get: function () {
-                if (!this._loadingScreen && BABYLON.DefaultLoadingScreen)
+                if (!this._loadingScreen && BABYLON.DefaultLoadingScreen && this._renderingCanvas)
                     this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
                 return this._loadingScreen;
             },
@@ -11461,17 +11493,27 @@ var BABYLON;
             configurable: true
         });
         Engine.prototype.attachContextLostEvent = function (callback) {
-            this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+            if (this._renderingCanvas) {
+                this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+            }
         };
         Engine.prototype.attachContextRestoredEvent = function (callback) {
-            this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+            if (this._renderingCanvas) {
+                this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+            }
         };
         Engine.prototype.getVertexShaderSource = function (program) {
             var shaders = this._gl.getAttachedShaders(program);
+            if (!shaders) {
+                return null;
+            }
             return this._gl.getShaderSource(shaders[0]);
         };
         Engine.prototype.getFragmentShaderSource = function (program) {
             var shaders = this._gl.getAttachedShaders(program);
+            if (!shaders) {
+                return null;
+            }
             return this._gl.getShaderSource(shaders[1]);
         };
         Engine.prototype.getError = function () {
@@ -11493,7 +11535,11 @@ var BABYLON;
             if (faceIndex === void 0) { faceIndex = -1; }
             var gl = this._gl;
             if (!this._dummyFramebuffer) {
-                this._dummyFramebuffer = gl.createFramebuffer();
+                var dummy = gl.createFramebuffer();
+                if (!dummy) {
+                    throw new Error("Unable to create dummy framebuffer");
+                }
+                this._dummyFramebuffer = dummy;
             }
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
             if (faceIndex > -1) {
@@ -11622,10 +11668,6 @@ var BABYLON;
         // Statics
         Engine.isSupported = function () {
             try {
-                // Avoid creating an unsized context for CocoonJS, since size determined on first creation.  Is not resizable
-                if (navigator.isCocoonJS) {
-                    return true;
-                }
                 var tempcanvas = document.createElement("canvas");
                 var gl = tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl");
                 return gl != null && !!window.WebGLRenderingContext;
@@ -15795,7 +15837,10 @@ var BABYLON;
             // Remove from scene
             this.getScene().removeCamera(this);
             while (this._rigCameras.length > 0) {
-                this._rigCameras.pop().dispose();
+                var camera = this._rigCameras.pop();
+                if (camera) {
+                    camera.dispose();
+                }
             }
             // Postprocesses
             if (this._rigPostProcess) {
@@ -15827,7 +15872,7 @@ var BABYLON;
             // ---- Camera rigs section ----
             get: function () {
                 if (this._rigCameras.length < 1) {
-                    return undefined;
+                    return null;
                 }
                 return this._rigCameras[0];
             },
@@ -15837,7 +15882,7 @@ var BABYLON;
         Object.defineProperty(Camera.prototype, "rightCamera", {
             get: function () {
                 if (this._rigCameras.length < 2) {
-                    return undefined;
+                    return null;
                 }
                 return this._rigCameras[1];
             },
@@ -15846,13 +15891,13 @@ var BABYLON;
         });
         Camera.prototype.getLeftTarget = function () {
             if (this._rigCameras.length < 1) {
-                return undefined;
+                return null;
             }
             return this._rigCameras[0].getTarget();
         };
         Camera.prototype.getRightTarget = function () {
             if (this._rigCameras.length < 2) {
-                return undefined;
+                return null;
             }
             return this._rigCameras[1].getTarget();
         };
@@ -15861,7 +15906,10 @@ var BABYLON;
                 return;
             }
             while (this._rigCameras.length > 0) {
-                this._rigCameras.pop().dispose();
+                var camera = this._rigCameras.pop();
+                if (camera) {
+                    camera.dispose();
+                }
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
@@ -15871,8 +15919,12 @@ var BABYLON;
             this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
             // create the rig cameras, unless none
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
-                this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
-                this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                var leftCamera = this.createRigCamera(this.name + "_L", 0);
+                var rightCamera = this.createRigCamera(this.name + "_R", 1);
+                if (leftCamera && rightCamera) {
+                    this._rigCameras.push(leftCamera);
+                    this._rigCameras.push(rightCamera);
+                }
             }
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
@@ -20925,7 +20977,9 @@ var BABYLON;
             this.onDisposeObservable = new BABYLON.Observable();
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
-            this._scene.textures.push(this);
+            if (this._scene) {
+                this._scene.textures.push(this);
+            }
             this._uid = null;
         }
         Object.defineProperty(BaseTexture.prototype, "hasAlpha", {
@@ -20937,7 +20991,9 @@ var BABYLON;
                     return;
                 }
                 this._hasAlpha = value;
-                this._scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
+                if (this._scene) {
+                    this._scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
+                }
             },
             enumerable: true,
             configurable: true
@@ -20951,7 +21007,9 @@ var BABYLON;
                     return;
                 }
                 this._coordinatesMode = value;
-                this._scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
+                if (this._scene) {
+                    this._scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
+                }
             },
             enumerable: true,
             configurable: true
@@ -21041,6 +21099,9 @@ var BABYLON;
             configurable: true
         });
         BaseTexture.prototype._getFromCache = function (url, noMipmap, sampling) {
+            if (!this._scene) {
+                return null;
+            }
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
@@ -21086,7 +21147,11 @@ var BABYLON;
                 return null;
             }
             var size = this.getSize();
-            var engine = this.getScene().getEngine();
+            var scene = this.getScene();
+            if (!scene) {
+                return null;
+            }
+            var engine = scene.getEngine();
             if (this._texture.isCube) {
                 return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
             }
@@ -21148,8 +21213,11 @@ var BABYLON;
             configurable: true
         });
         BaseTexture.prototype.dispose = function () {
+            if (!this._scene) {
+                return;
+            }
             // Animations
-            this.getScene().stopAnimation(this);
+            this._scene.stopAnimation(this);
             // Remove from scene
             this._scene._removePendingData(this);
             var index = this._scene.textures.indexOf(this);
@@ -21297,6 +21365,9 @@ var BABYLON;
                 _this._format = format;
             }
             scene = _this.getScene();
+            if (!scene) {
+                return _this;
+            }
             scene.getEngine().onBeforeTextureInitObservable.notifyObservers(_this);
             var load = function () {
                 if (_this._onLoadObservable && _this._onLoadObservable.hasObservers()) {
@@ -21305,7 +21376,7 @@ var BABYLON;
                 if (onLoad) {
                     onLoad();
                 }
-                if (!_this.isBlocking) {
+                if (!_this.isBlocking && scene) {
                     scene.resetCachedMaterial();
                 }
             };
@@ -21372,10 +21443,14 @@ var BABYLON;
             if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
+                this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
@@ -21400,8 +21475,12 @@ var BABYLON;
             if (!this._texture) {
                 return;
             }
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             this._samplingMode = samplingMode;
-            this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
+            scene.getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         };
         Texture.prototype._prepareRowForTextureGeneration = function (x, y, z, t) {
             x *= this.uScale;
@@ -21455,7 +21534,11 @@ var BABYLON;
             this._cachedTextureMatrix.m[8] = this._t0.x;
             this._cachedTextureMatrix.m[9] = this._t0.y;
             this._cachedTextureMatrix.m[10] = this._t0.z;
-            this.getScene().markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
+            var scene = this.getScene();
+            if (!scene) {
+                return this._cachedTextureMatrix;
+            }
+            scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
                 return mat.hasTexture(_this);
             });
             return this._cachedTextureMatrix;
@@ -21463,6 +21546,9 @@ var BABYLON;
         Texture.prototype.getReflectionTextureMatrix = function () {
             var _this = this;
             var scene = this.getScene();
+            if (!scene) {
+                return this._cachedTextureMatrix;
+            }
             if (this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
                 this.uScale === this._cachedUScale &&
@@ -30772,6 +30858,8 @@ var BABYLON;
         };
         // Methods
         PostProcessManager.prototype._prepareFrame = function (sourceTexture, postProcesses) {
+            if (sourceTexture === void 0) { sourceTexture = null; }
+            if (postProcesses === void 0) { postProcesses = null; }
             var postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return false;
@@ -39161,10 +39249,16 @@ var BABYLON;
         };
         Animation.CreateAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
             var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+            if (!animation) {
+                return null;
+            }
             return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
         Animation.CreateMergeAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
             var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+            if (!animation) {
+                return null;
+            }
             node.animations.push(animation);
             return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
@@ -39280,19 +39374,21 @@ var BABYLON;
         };
         Animation.prototype.deleteRange = function (name, deleteFrames) {
             if (deleteFrames === void 0) { deleteFrames = true; }
-            if (this._ranges[name]) {
-                if (deleteFrames) {
-                    var from = this._ranges[name].from;
-                    var to = this._ranges[name].to;
-                    // this loop MUST go high to low for multiple splices to work
-                    for (var key = this._keys.length - 1; key >= 0; key--) {
-                        if (this._keys[key].frame >= from && this._keys[key].frame <= to) {
-                            this._keys.splice(key, 1);
-                        }
+            var range = this._ranges[name];
+            if (!range) {
+                return;
+            }
+            if (deleteFrames) {
+                var from = range.from;
+                var to = range.to;
+                // this loop MUST go high to low for multiple splices to work
+                for (var key = this._keys.length - 1; key >= 0; key--) {
+                    if (this._keys[key].frame >= from && this._keys[key].frame <= to) {
+                        this._keys.splice(key, 1);
                     }
                 }
-                this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
             }
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
         };
         Animation.prototype.getRange = function (name) {
             return this._ranges[name];
@@ -39358,7 +39454,11 @@ var BABYLON;
             if (this._ranges) {
                 clone._ranges = {};
                 for (var name in this._ranges) {
-                    clone._ranges[name] = this._ranges[name].clone();
+                    var range = this._ranges[name];
+                    if (!range) {
+                        continue;
+                    }
+                    clone._ranges[name] = range.clone();
                 }
             }
             return clone;
@@ -39397,10 +39497,14 @@ var BABYLON;
             }
             serializationObject.ranges = [];
             for (var name in this._ranges) {
+                var source = this._ranges[name];
+                if (!source) {
+                    continue;
+                }
                 var range = {};
                 range.name = name;
-                range.from = this._ranges[name].from;
-                range.to = this._ranges[name].to;
+                range.from = source.from;
+                range.to = source.to;
                 serializationObject.ranges.push(range);
             }
             return serializationObject;
@@ -40034,6 +40138,9 @@ var BABYLON;
                 var currentFrame = runtimeAnimations[0].currentFrame;
                 var adjustTime = frame - currentFrame;
                 var delay = adjustTime * 1000 / fps;
+                if (this._localDelayOffset === null) {
+                    this._localDelayOffset = 0;
+                }
                 this._localDelayOffset -= delay;
             }
             for (var index = 0; index < runtimeAnimations.length; index++) {
@@ -48324,6 +48431,9 @@ var BABYLON;
             _this._refreshRate = 1;
             _this._samples = 1;
             scene = _this.getScene();
+            if (!scene) {
+                return _this;
+            }
             _this.name = name;
             _this.isRenderTarget = true;
             _this._size = size;
@@ -48431,7 +48541,11 @@ var BABYLON;
                 if (this._samples === value) {
                     return;
                 }
-                this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
+                var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
+                this._samples = scene.getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
             },
             enumerable: true,
             configurable: true
@@ -48453,7 +48567,11 @@ var BABYLON;
         });
         RenderTargetTexture.prototype.addPostProcess = function (postProcess) {
             if (!this._postProcessManager) {
-                this._postProcessManager = new BABYLON.PostProcessManager(this.getScene());
+                var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
+                this._postProcessManager = new BABYLON.PostProcessManager(scene);
                 this._postProcesses = new Array();
             }
             this._postProcesses.push(postProcess);
@@ -48518,16 +48636,25 @@ var BABYLON;
         };
         RenderTargetTexture.prototype.resize = function (size) {
             this.releaseInternalTexture();
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             if (this.isCube) {
-                this._texture = this.getScene().getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
             }
             else {
-                this._texture = this.getScene().getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
+                this._texture = scene.getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
             this._size = size;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
+            if (useCameraPostProcess === void 0) { useCameraPostProcess = false; }
+            if (dumpForDebug === void 0) { dumpForDebug = false; }
             var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             var engine = scene.getEngine();
             if (this.useCameraPostProcesses !== undefined) {
                 useCameraPostProcess = this.useCameraPostProcesses;
@@ -48551,7 +48678,11 @@ var BABYLON;
                 else {
                     this.renderList = [];
                 }
-                var sceneMeshes = this.getScene().meshes;
+                var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
+                var sceneMeshes = scene.meshes;
                 for (var index = 0; index < sceneMeshes.length; index++) {
                     var mesh = sceneMeshes[index];
                     if (this.renderListPredicate(mesh)) {
@@ -48591,7 +48722,7 @@ var BABYLON;
                     }
                     mesh._preActivateForIntermediateRendering(sceneRenderId);
                     var isMasked = void 0;
-                    if (!this.renderList) {
+                    if (!this.renderList && camera) {
                         isMasked = ((mesh.layerMask & camera.layerMask) === 0);
                     }
                     else {
@@ -48628,22 +48759,32 @@ var BABYLON;
                 this.renderToTarget(0, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
             }
             this.onAfterUnbindObservable.notifyObservers(this);
-            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
-                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+            if (scene.activeCamera) {
+                if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                    scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+                }
+                engine.setViewport(scene.activeCamera.viewport);
             }
-            engine.setViewport(scene.activeCamera.viewport);
             scene.resetCachedMaterial();
         };
         RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug) {
             var _this = this;
             var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             var engine = scene.getEngine();
+            if (!this._texture) {
+                return;
+            }
             // Bind
             if (this._postProcessManager) {
                 this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
             else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-                engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport);
+                if (this._texture) {
+                    engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport);
+                }
             }
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
             // Clear
@@ -48718,7 +48859,9 @@ var BABYLON;
             newTexture.level = this.level;
             // RenderTarget Texture
             newTexture.coordinatesMode = this.coordinatesMode;
-            newTexture.renderList = this.renderList.slice(0);
+            if (this.renderList) {
+                newTexture.renderList = this.renderList.slice(0);
+            }
             return newTexture;
         };
         RenderTargetTexture.prototype.serialize = function () {
@@ -48728,14 +48871,20 @@ var BABYLON;
             var serializationObject = _super.prototype.serialize.call(this);
             serializationObject.renderTargetSize = this.getRenderSize();
             serializationObject.renderList = [];
-            for (var index = 0; index < this.renderList.length; index++) {
-                serializationObject.renderList.push(this.renderList[index].id);
+            if (this.renderList) {
+                for (var index = 0; index < this.renderList.length; index++) {
+                    serializationObject.renderList.push(this.renderList[index].id);
+                }
             }
             return serializationObject;
         };
         // This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
         RenderTargetTexture.prototype.disposeFramebufferObjects = function () {
-            this.getScene().getEngine()._releaseFramebufferObjects(this.getInternalTexture());
+            var objBuffer = this.getInternalTexture();
+            var scene = this.getScene();
+            if (objBuffer && scene) {
+                scene.getEngine()._releaseFramebufferObjects(objBuffer);
+            }
         };
         RenderTargetTexture.prototype.dispose = function () {
             if (this._postProcessManager) {
@@ -48746,6 +48895,9 @@ var BABYLON;
             this.renderList = null;
             // Remove from custom render targets
             var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             var index = scene.customRenderTargets.indexOf(this);
             if (index >= 0) {
                 scene.customRenderTargets.splice(index, 1);
@@ -55249,6 +55401,7 @@ var BABYLON;
     var FollowCamera = /** @class */ (function (_super) {
         __extends(FollowCamera, _super);
         function FollowCamera(name, position, scene, lockedTarget) {
+            if (lockedTarget === void 0) { lockedTarget = null; }
             var _this = _super.call(this, name, position, scene) || this;
             _this.radius = 12;
             _this.rotationOffset = 0;
@@ -55297,7 +55450,9 @@ var BABYLON;
         };
         FollowCamera.prototype._checkInputs = function () {
             _super.prototype._checkInputs.call(this);
-            this.follow(this.lockedTarget);
+            if (this.lockedTarget) {
+                this.follow(this.lockedTarget);
+            }
         };
         FollowCamera.prototype.getClassName = function () {
             return "FollowCamera";
@@ -55336,6 +55491,9 @@ var BABYLON;
             return _this;
         }
         ArcFollowCamera.prototype.follow = function () {
+            if (!this.target) {
+                return;
+            }
             this._cartesianCoordinates.x = this.radius * Math.cos(this.alpha) * Math.cos(this.beta);
             this._cartesianCoordinates.y = this.radius * Math.sin(this.beta);
             this._cartesianCoordinates.z = this.radius * Math.sin(this.alpha) * Math.cos(this.beta);
