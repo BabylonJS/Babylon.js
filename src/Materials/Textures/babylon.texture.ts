@@ -103,7 +103,7 @@
             return this._samplingMode;
         }
 
-        constructor(url: Nullable<string>, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, esception?: any) => void> = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
+        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, esception?: any) => void> = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
             super(scene);
 
             this.name = url || "";
@@ -119,6 +119,9 @@
 
             scene = this.getScene();
 
+            if (!scene) {
+                return;
+            }
             scene.getEngine().onBeforeTextureInitObservable.notifyObservers(this);
 
             let load = () => {
@@ -129,7 +132,7 @@
                     onLoad();
                 }
 
-                if (!this.isBlocking) {
+                if (!this.isBlocking && scene) {
                     scene.resetCachedMaterial();
                 }
             }
@@ -174,11 +177,17 @@
                 return;
             }
 
+            let scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+            
             this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
+                this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
@@ -203,8 +212,14 @@
                 return;
             }
 
+            let scene = this.getScene();
+            
+            if (!scene) {
+                return;
+            }            
+
             this._samplingMode = samplingMode;
-            this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
+            scene.getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         }
 
         private _prepareRowForTextureGeneration(x: number, y: number, z: number, t: Vector3): void {
@@ -264,7 +279,13 @@
             this._cachedTextureMatrix.m[4] = this._t2.x; this._cachedTextureMatrix.m[5] = this._t2.y; this._cachedTextureMatrix.m[6] = this._t2.z;
             this._cachedTextureMatrix.m[8] = this._t0.x; this._cachedTextureMatrix.m[9] = this._t0.y; this._cachedTextureMatrix.m[10] = this._t0.z;
 
-            this.getScene().markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
+            let scene = this.getScene();
+            
+            if (!scene) {
+                return this._cachedTextureMatrix;
+            }
+
+            scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
 
@@ -273,6 +294,11 @@
 
         public getReflectionTextureMatrix(): Matrix {
             let scene = this.getScene();
+
+            if (!scene) {
+                return this._cachedTextureMatrix;
+            }
+
             if (
                 this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&

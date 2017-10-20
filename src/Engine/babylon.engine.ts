@@ -116,7 +116,7 @@
         }
     }
 
-    var partialLoad = (url: string, index: number, loadedImages: any, scene: Scene,
+    var partialLoad = (url: string, index: number, loadedImages: any, scene: Nullable<Scene>,
         onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) => {
 
         var img: HTMLImageElement;
@@ -150,7 +150,7 @@
         }
     }
 
-    var cascadeLoad = (rootUrl: string, scene: Scene,
+    var cascadeLoad = (rootUrl: string, scene: Nullable<Scene>,
         onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) => {
 
         var loadedImages: any = [];
@@ -597,7 +597,7 @@
 
         // Private Members
         private _gl: WebGLRenderingContext;
-        private _renderingCanvas: HTMLCanvasElement;
+        private _renderingCanvas: Nullable<HTMLCanvasElement>;
         private _windowIsBackground = false;
         private _webGLVersion = 1.0;
 
@@ -632,9 +632,9 @@
         private _onVRDisplayPointerUnrestricted: () => void;
 
         // VRDisplay connection
-        private _onVrDisplayConnect: (display: any) => void;
-        private _onVrDisplayDisconnect: () => void;
-        private _onVrDisplayPresentChange: () => void;
+        private _onVrDisplayConnect: Nullable<(display: any) => void>;
+        private _onVrDisplayDisconnect: Nullable<() => void>;
+        private _onVrDisplayPresentChange: Nullable<() => void>;
         public onVRDisplayChangedObservable = new Observable<IDisplayChangedEventArgs>();
         public onVRRequestPresentComplete = new Observable<boolean>();
         public onVRRequestPresentStart = new Observable<Engine>();
@@ -712,8 +712,8 @@
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
         private _textureUnits: Int32Array;
 
-        private _workingCanvas: HTMLCanvasElement;
-        private _workingContext: CanvasRenderingContext2D;
+        private _workingCanvas: Nullable<HTMLCanvasElement>;
+        private _workingContext: Nullable<CanvasRenderingContext2D>;
         private _rescalePostProcess: PassPostProcess;
 
         private _dummyFramebuffer: WebGLFramebuffer;
@@ -724,8 +724,8 @@
         private _vaoRecordInProgress = false;
         private _mustWipeVertexAttributes = false;
 
-        private _emptyTexture: InternalTexture;
-        private _emptyCubeTexture: InternalTexture;
+        private _emptyTexture: Nullable<InternalTexture>;
+        private _emptyCubeTexture: Nullable<InternalTexture>;
 
         private _frameHandler: number;
 
@@ -1267,11 +1267,14 @@
             return this._gl.drawingBufferHeight;
         }
 
-        public getRenderingCanvas(): HTMLCanvasElement {
+        public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
             return this._renderingCanvas;
         }
 
-        public getRenderingCanvasClientRect(): ClientRect {
+        public getRenderingCanvasClientRect(): Nullable<ClientRect> {
+            if (!this._renderingCanvas) {
+                return null;
+            }
             return this._renderingCanvas.getBoundingClientRect();
         }
 
@@ -1479,7 +1482,9 @@
                 Tools.ExitFullscreen();
             } else {
                 this._pointerLockRequested = requestPointerLock;
-                Tools.RequestFullscreen(this._renderingCanvas);
+                if (this._renderingCanvas) {
+                    Tools.RequestFullscreen(this._renderingCanvas);
+                }
             }
         }
 
@@ -1584,8 +1589,8 @@
         public resize(): void {
             // We're not resizing the size of the canvas while in VR mode & presenting
             if (!(this._vrDisplay && this._vrDisplay.isPresenting)) {
-                var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
-                var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+                var width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
+                var height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
 
                 this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
             }
@@ -1597,6 +1602,10 @@
          * @param {number} height - the new canvas' height
          */
         public setSize(width: number, height: number): void {
+            if (!this._renderingCanvas) {
+                return;
+            }
+
             if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
                 return;
             }
@@ -3232,7 +3241,13 @@
                 if (!this._videoTextureSupported) {
                     if (!texture._workingCanvas) {
                         texture._workingCanvas = document.createElement("canvas");
-                        texture._workingContext = texture._workingCanvas.getContext("2d");
+                        let context = texture._workingCanvas.getContext("2d");
+
+                        if (!context) {
+                            throw new Error("Unable to get 2d context");
+                        }
+
+                        texture._workingContext = context;
                         texture._workingCanvas.width = texture.width;
                         texture._workingCanvas.height = texture.height;
                     }
@@ -3292,7 +3307,7 @@
             var width = size.width || size;
             var height = size.height || size;
 
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -3311,7 +3326,7 @@
             this.bindUnboundFramebuffer(framebuffer);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
 
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, width, height);
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, width, height);
 
             if (fullOptions.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -3329,11 +3344,11 @@
             texture.height = height;
             texture.isReady = true;
             texture.samples = 1;
-            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
             this.resetTextureCache();
 
@@ -3498,8 +3513,8 @@
             return textures;
         }
 
-        private _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): WebGLRenderbuffer {
-            var depthStencilBuffer: WebGLRenderbuffer = null;
+        private _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): Nullable<WebGLRenderbuffer> {
+            var depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
             var gl = this._gl;
 
             // Create the depth/stencil buffer
@@ -3558,10 +3573,21 @@
             }
 
             if (samples > 1) {
-                texture._MSAAFramebuffer = gl.createFramebuffer();
+                let framebuffer = gl.createFramebuffer();
+
+                if (!framebuffer) {
+                    throw new Error("Unable to create multi sampled framebuffer");
+                }
+
+                texture._MSAAFramebuffer = framebuffer;
                 this.bindUnboundFramebuffer(texture._MSAAFramebuffer);
 
                 var colorRenderbuffer = gl.createRenderbuffer();
+
+                if (!colorRenderbuffer) {
+                    throw new Error("Unable to create multi sampled framebuffer");
+                }
+
                 gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
                 gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture.width, texture.height);
 
@@ -3602,7 +3628,7 @@
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
+                generateStencilBuffer = (generateDepthBuffer && options.generateStencilBuffer) ? true : false;
 
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
@@ -3795,7 +3821,7 @@
                     texture.width = ktx.pixelWidth;
                     texture.height = ktx.pixelHeight;
                     texture.isReady = true;
-                }, null, null, true, onerror);
+                }, undefined, undefined, true, onerror);
             } else if (isDDS) {
                 Tools.LoadFile(rootUrl, data => {
                     var info = Internals.DDSTools.GetDDSInfo(data);
@@ -3828,13 +3854,20 @@
                     if (onLoad) {
                         onLoad({ isDDS: true, width: info.width, info, data, texture });
                     }
-                }, null, null, true, onerror);
+                }, undefined, undefined, true, onerror);
             } else {
+                if (!files) {
+                    throw new Error("Cannot load cubemap because files were not defined");
+                }
+
                 cascadeLoad(rootUrl, scene, imgs => {
                     var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
 
                     this._prepareWorkingCanvas();
+                    if (!this._workingCanvas || !this._workingContext) {
+                        return;
+                    }
                     this._workingCanvas.width = width;
                     this._workingCanvas.height = height;
 
@@ -3868,7 +3901,9 @@
                     texture.width = width;
                     texture.height = height;
                     texture.isReady = true;
-                    texture.format = format;
+                    if (format) {
+                        texture.format = format;
+                    }
 
                     texture.onLoadedObservable.notifyObservers(texture);
                     texture.onLoadedObservable.clear();
@@ -3884,7 +3919,7 @@
             return texture;
         }
 
-        public updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: string = null, level = 0): void {
+        public updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level = 0): void {
             texture._bufferViewArray = data;
             texture.format = format;
             texture.type = type;
@@ -3933,7 +3968,7 @@
             texture.isReady = true;
         }
 
-        public createRawCubeTexture(data: ArrayBufferView[], size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null): InternalTexture {
+        public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null): InternalTexture {
             var gl = this._gl;
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBERAW);
             texture.isCube = true;
@@ -4001,8 +4036,8 @@
         public createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer: ArrayBuffer) => ArrayBufferView[],
             mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][]),
-            onLoad: () => void = null,
-            onError: (message?: string, exception?: any) => void = null,
+            onLoad: Nullable<() => void> = null,
+            onError: Nullable<(message?: string, exception?: any) => void> = null,
             samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
             invertY = false): InternalTexture {
 
@@ -4303,7 +4338,7 @@
                 this.activateTexture((<any>this._gl)["TEXTURE" + channel]);
             }
 
-            if (internalTexture.isCube) {
+            if (internalTexture && internalTexture.isCube) {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture);
 
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
@@ -4318,7 +4353,7 @@
             } else {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture);
 
-                if (internalTexture._cachedWrapU !== texture.wrapU) {
+                if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
 
                     switch (texture.wrapU) {
@@ -4334,7 +4369,7 @@
                     }
                 }
 
-                if (internalTexture._cachedWrapV !== texture.wrapV) {
+                if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
                     switch (texture.wrapV) {
                         case Texture.WRAP_ADDRESSMODE:
@@ -4530,8 +4565,6 @@
                 this._gl.deleteFramebuffer(this._dummyFramebuffer);
             }
 
-            this._gl = null;
-
             //WebVR
             this.disableVR();
 
@@ -4540,13 +4573,15 @@
             window.removeEventListener("focus", this._onFocus);
             window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
             window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
-            this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
+            if (this._renderingCanvas) {
+                this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+                this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+                this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
 
-            if (!this._doNotHandleContextLost) {
-                this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
-                this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+                if (!this._doNotHandleContextLost) {
+                    this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+                    this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+                }
             }
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
@@ -4559,10 +4594,15 @@
 
             if (this._onVrDisplayConnect) {
                 window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-                window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-                window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
-                this._onVrDisplayConnect = undefined;
-                this._onVrDisplayDisconnect = undefined;
+                if (this._onVrDisplayDisconnect) {
+                    window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                }
+
+                if (this._onVrDisplayPresentChange) {
+                    window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+                }
+                this._onVrDisplayConnect = null;
+                this._onVrDisplayDisconnect = null;
             }
 
             // Remove from Instances
@@ -4574,7 +4614,7 @@
 
             this._workingCanvas = null;
             this._workingContext = null;
-            this._currentBufferPointers = null;
+            this._currentBufferPointers = [];
             this._renderingCanvas = null;
             this._currentProgram = null;
 
@@ -4608,7 +4648,7 @@
         }
 
         public get loadingScreen(): ILoadingScreen {
-            if (!this._loadingScreen && DefaultLoadingScreen)
+            if (!this._loadingScreen && DefaultLoadingScreen && this._renderingCanvas)
                 this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas)
             return this._loadingScreen;
         }
@@ -4626,21 +4666,33 @@
         }
 
         public attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void {
-            this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+            if (this._renderingCanvas) {
+                this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+            }
         }
 
         public attachContextRestoredEvent(callback: ((event: WebGLContextEvent) => void)): void {
-            this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+            if (this._renderingCanvas) {
+                this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+            }
         }
 
-        public getVertexShaderSource(program: WebGLProgram): string {
+        public getVertexShaderSource(program: WebGLProgram): Nullable<string> {
             var shaders = this._gl.getAttachedShaders(program);
+
+            if (!shaders) {
+                return null;
+            }
 
             return this._gl.getShaderSource(shaders[0]);
         }
 
-        public getFragmentShaderSource(program: WebGLProgram): string {
+        public getFragmentShaderSource(program: WebGLProgram): Nullable<string> {
             var shaders = this._gl.getAttachedShaders(program);
+
+            if (!shaders) {
+                return null;
+            }
 
             return this._gl.getShaderSource(shaders[1]);
         }
@@ -4667,7 +4719,13 @@
         public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1): ArrayBufferView {
             let gl = this._gl;
             if (!this._dummyFramebuffer) {
-                this._dummyFramebuffer = gl.createFramebuffer();
+                let dummy = gl.createFramebuffer();
+
+                if (!dummy) {
+                    throw new Error("Unable to create dummy framebuffer");
+                }
+
+                this._dummyFramebuffer = dummy;
             }
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
 
@@ -4826,10 +4884,6 @@
         // Statics
         public static isSupported(): boolean {
             try {
-                // Avoid creating an unsized context for CocoonJS, since size determined on first creation.  Is not resizable
-                if (navigator.isCocoonJS) {
-                    return true;
-                }
                 var tempcanvas = document.createElement("canvas");
                 var gl = tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl");
 
