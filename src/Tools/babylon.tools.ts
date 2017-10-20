@@ -136,6 +136,7 @@
                     pot = Tools.NearestPOT(value);
                     break;
                 case Engine.SCALEMODE_CEILING:
+                default:
                     pot = Tools.CeilingPOT(value);
                     break;
             }
@@ -202,7 +203,7 @@
             return "data:image/png;base64," + output;
         }
 
-        public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: IndicesArray, indexStart: number, indexCount: number, bias: Vector2 = null): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: IndicesArray, indexStart: number, indexCount: number, bias: Nullable<Vector2> = null): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -228,7 +229,7 @@
             };
         }
 
-        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number, bias: Vector2 = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -258,7 +259,7 @@
             };
         }
 
-        public static Vector2ArrayFeeder(array: Array<Vector2> | Float32Array): (i: number) => Vector2 {
+        public static Vector2ArrayFeeder(array: Array<Vector2> | Float32Array): (i: number) => Nullable<Vector2> {
             return (index: number) => {
                 let isFloatArray = ((<Float32Array>array).BYTES_PER_ELEMENT !== undefined);
                 let length = isFloatArray ? array.length / 2 : array.length;
@@ -276,7 +277,7 @@
             };
         }
 
-        public static ExtractMinAndMaxVector2(feeder: (index: number) => Vector2, bias: Vector2 = null): { minimum: Vector2; maximum: Vector2 } {
+        public static ExtractMinAndMaxVector2(feeder: (index: number) => Vector2, bias: Nullable<Vector2> = null): { minimum: Vector2; maximum: Vector2 } {
             var minimum = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector2(-Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -302,9 +303,9 @@
             };
         }
 
-        public static MakeArray(obj: any, allowsNullUndefined?: boolean): Array<any> {
+        public static MakeArray(obj: any, allowsNullUndefined?: boolean): Nullable<Array<any>> {
             if (allowsNullUndefined !== true && (obj === undefined || obj == null))
-                return undefined;
+                return null;
 
             return Array.isArray(obj) ? obj : [obj];
         }
@@ -402,7 +403,7 @@
             return url;
         }
 
-        public static LoadImage(url: any, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, database: Database): HTMLImageElement {
+        public static LoadImage(url: any, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, database: Nullable<Database>): HTMLImageElement {
             if (url instanceof ArrayBuffer) {
                 url = Tools.EncodeArrayBufferTobase64(url);
             }
@@ -437,7 +438,9 @@
             };
 
             var loadFromIndexedDB = () => {
-                database.loadImageFromDB(url, img);
+                if (database) {
+                    database.loadImageFromDB(url, img);
+                }
             };
 
 
@@ -464,7 +467,7 @@
                             img.src = blobURL;
                         }
                         catch (e) {
-                            img.src = null;
+                            img.src = "";
                         }
                     }
                     else {
@@ -478,7 +481,7 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request: XMLHttpRequest, exception?: any) => void): void {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): void {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
@@ -492,12 +495,14 @@
                     request.responseType = "arraybuffer";
                 }
 
-                request.onprogress = progressCallBack;
+                if (progressCallBack) {
+                    request.onprogress = progressCallBack;
+                }
 
                 request.onreadystatechange = () => {
                     // In case of undefined state in some browsers.
                     if (request.readyState === (XMLHttpRequest.DONE || 4)) {
-                        request.onreadystatechange = null;//some browsers have issues where onreadystatechange can be called multiple times with the same value
+                        request.onreadystatechange = () => {};//some browsers have issues where onreadystatechange can be called multiple times with the same value
 
                         if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
@@ -516,7 +521,9 @@
             };
 
             var loadFromIndexedDB = () => {
-                database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
+                if (database) {
+                    database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
+                }
             };
 
             if (url.indexOf("file:") !== -1) {
@@ -580,7 +587,7 @@
             reader.readAsDataURL(fileToLoad);
         }
 
-        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): void {
+        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): void {
             var reader = new FileReader();
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
@@ -590,7 +597,10 @@
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
-            reader.onprogress = progressCallBack;
+
+            if (progressCallBack) {
+                reader.onprogress = progressCallBack;
+            }
             if (!useArrayBuffer) {
                 // Asynchronous read
                 reader.readAsText(fileToLoad);
@@ -740,13 +750,15 @@
             screenshotCanvas.height = height;
             var context = screenshotCanvas.getContext('2d');
 
-            // Copy the pixels to a 2D canvas
-            var imageData = context.createImageData(width, height);
-            var castData = <any>(imageData.data);
-            castData.set(data);
-            context.putImageData(imageData, 0, 0);
+            if (context) {
+                // Copy the pixels to a 2D canvas
+                var imageData = context.createImageData(width, height);
+                var castData = <any>(imageData.data);
+                castData.set(data);
+                context.putImageData(imageData, 0, 0);
 
-            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+            }
         }
 
         static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png") {
@@ -766,7 +778,9 @@
                     window.document.body.appendChild(a);
 
                     a.addEventListener("click", () => {
-                        a.parentElement.removeChild(a);
+                        if (a.parentElement) {
+                            a.parentElement.removeChild(a);
+                        }
                     });
                     a.click();
 
@@ -833,7 +847,9 @@
             var offsetX = Math.max(0, width - newWidth) / 2;
             var offsetY = Math.max(0, height - newHeight) / 2;
 
-            renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
+            if (renderContext) {
+                renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
+            }
 
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
@@ -875,7 +891,7 @@
             }
 
             var scene = camera.getScene();
-            var previousCamera: Camera = null;
+            var previousCamera: Nullable<Camera> = null;
 
             if (scene.activeCamera !== camera) {
                 previousCamera = scene.activeCamera;
@@ -1200,7 +1216,7 @@
             return name;
         }
 
-        public static First<T>(array: Array<T>, predicate: (item: T) => boolean): T {
+        public static First<T>(array: Array<T>, predicate: (item: T) => boolean): Nullable<T> {
             for (let el of array) {
                 if (predicate(el)) {
                     return el;
@@ -1216,7 +1232,7 @@
          * @param object the object to get the class name from
          * @return a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
          */
-        public static getFullClassName(object: any, isType: boolean = false): string {
+        public static getFullClassName(object: any, isType: boolean = false): Nullable<string> {
             let className = null;
             let moduleName = null;
 
