@@ -15,6 +15,10 @@ var __extends = (this && this.__extends) || (function () {
             };
         })();
         
+
+//# sourceMappingURL=babylon.types.js.map
+
+
 var BABYLON;
 (function (BABYLON) {
     var KeyboardEventTypes = /** @class */ (function () {
@@ -5737,6 +5741,7 @@ var BABYLON;
                     pot = Tools.NearestPOT(value);
                     break;
                 case BABYLON.Engine.SCALEMODE_CEILING:
+                default:
                     pot = Tools.CeilingPOT(value);
                     break;
             }
@@ -5876,7 +5881,7 @@ var BABYLON;
         };
         Tools.MakeArray = function (obj, allowsNullUndefined) {
             if (allowsNullUndefined !== true && (obj === undefined || obj == null))
-                return undefined;
+                return null;
             return Array.isArray(obj) ? obj : [obj];
         };
         // Misc.
@@ -5986,7 +5991,9 @@ var BABYLON;
                 img.src = url;
             };
             var loadFromIndexedDB = function () {
-                database.loadImageFromDB(url, img);
+                if (database) {
+                    database.loadImageFromDB(url, img);
+                }
             };
             //ANY database to do!
             if (url.substr(0, 5) !== "data:" && database && database.enableTexturesOffline && BABYLON.Database.IsUASupportingBlobStorage) {
@@ -6011,7 +6018,7 @@ var BABYLON;
                             img.src = blobURL;
                         }
                         catch (e) {
-                            img.src = null;
+                            img.src = "";
                         }
                     }
                     else {
@@ -6033,11 +6040,13 @@ var BABYLON;
                 if (useArrayBuffer) {
                     request.responseType = "arraybuffer";
                 }
-                request.onprogress = progressCallBack;
+                if (progressCallBack) {
+                    request.onprogress = progressCallBack;
+                }
                 request.onreadystatechange = function () {
                     // In case of undefined state in some browsers.
                     if (request.readyState === (XMLHttpRequest.DONE || 4)) {
-                        request.onreadystatechange = null; //some browsers have issues where onreadystatechange can be called multiple times with the same value
+                        request.onreadystatechange = function () { }; //some browsers have issues where onreadystatechange can be called multiple times with the same value
                         if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         }
@@ -6055,7 +6064,9 @@ var BABYLON;
                 request.send(null);
             };
             var loadFromIndexedDB = function () {
-                database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
+                if (database) {
+                    database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
+                }
             };
             if (url.indexOf("file:") !== -1) {
                 var fileName = decodeURIComponent(url.substring(5).toLowerCase());
@@ -6123,7 +6134,9 @@ var BABYLON;
                 //target doesn't have result from ts 1.3
                 callback(e.target['result']);
             };
-            reader.onprogress = progressCallBack;
+            if (progressCallBack) {
+                reader.onprogress = progressCallBack;
+            }
             if (!useArrayBuffer) {
                 // Asynchronous read
                 reader.readAsText(fileToLoad);
@@ -6258,12 +6271,14 @@ var BABYLON;
             screenshotCanvas.width = width;
             screenshotCanvas.height = height;
             var context = screenshotCanvas.getContext('2d');
-            // Copy the pixels to a 2D canvas
-            var imageData = context.createImageData(width, height);
-            var castData = (imageData.data);
-            castData.set(data);
-            context.putImageData(imageData, 0, 0);
-            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+            if (context) {
+                // Copy the pixels to a 2D canvas
+                var imageData = context.createImageData(width, height);
+                var castData = (imageData.data);
+                castData.set(data);
+                context.putImageData(imageData, 0, 0);
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+            }
         };
         Tools.EncodeScreenshotCanvasData = function (successCallback, mimeType) {
             if (mimeType === void 0) { mimeType = "image/png"; }
@@ -6281,7 +6296,9 @@ var BABYLON;
                     a.setAttribute("download", "screenshot_" + stringDate + ".png");
                     window.document.body.appendChild(a);
                     a.addEventListener("click", function () {
-                        a.parentElement.removeChild(a);
+                        if (a.parentElement) {
+                            a.parentElement.removeChild(a);
+                        }
                     });
                     a.click();
                     //Or opening a new tab with the image if it is not possible to automatically start download.
@@ -6338,7 +6355,9 @@ var BABYLON;
             }
             var offsetX = Math.max(0, width - newWidth) / 2;
             var offsetY = Math.max(0, height - newHeight) / 2;
-            renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
+            if (renderContext) {
+                renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
+            }
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         };
         Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples) {
@@ -7536,7 +7555,13 @@ var BABYLON;
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            throw new Error(gl.getShaderInfoLog(shader));
+            var log = gl.getShaderInfoLog(shader);
+            if (log) {
+                throw new Error(log);
+            }
+        }
+        if (!shader) {
+            throw new Error("Something went wrong while compile the shader.");
         }
         return shader;
     };
@@ -7814,7 +7839,7 @@ var BABYLON;
                     _this.setSize(_this._oldSize.width, _this._oldSize.height);
                 }
             };
-            var canvas;
+            var canvas = null;
             Engine.Instances.push(this);
             if (!canvasOrContext) {
                 return;
@@ -7843,7 +7868,7 @@ var BABYLON;
                 }
                 this._deterministicLockstep = options.deterministicLockstep;
                 this._lockstepMaxSteps = options.lockstepMaxSteps;
-                this._doNotHandleContextLost = options.doNotHandleContextLost;
+                this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
                 // GL
                 if (!options.disableWebGL2Support) {
                     try {
@@ -7938,7 +7963,7 @@ var BABYLON;
             var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
             this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
-            this._isStencilEnable = options.stencil;
+            this._isStencilEnable = options.stencil ? true : false;
             this._initGLContext();
             if (canvas) {
                 // Fullscreen
@@ -7956,7 +7981,7 @@ var BABYLON;
                         _this.isFullscreen = document.msIsFullScreen;
                     }
                     // Pointer lock
-                    if (_this.isFullscreen && _this._pointerLockRequested) {
+                    if (_this.isFullscreen && _this._pointerLockRequested && canvas) {
                         canvas.requestPointerLock = canvas.requestPointerLock ||
                             canvas.msRequestPointerLock ||
                             canvas.mozRequestPointerLock ||
@@ -7982,7 +8007,9 @@ var BABYLON;
                 document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
                 this._onVRDisplayPointerRestricted = function () {
-                    canvas.requestPointerLock();
+                    if (canvas) {
+                        canvas.requestPointerLock();
+                    }
                 };
                 this._onVRDisplayPointerUnrestricted = function () {
                     document.exitPointerLock();
@@ -8583,7 +8610,9 @@ var BABYLON;
                 this.texturesSupported.push('-etc1.ktx');
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
-                this._caps.highPrecisionShaderSupported = highp.precision !== 0;
+                if (highp) {
+                    this._caps.highPrecisionShaderSupported = highp.precision !== 0;
+                }
             }
             // Depth buffer
             this.setDepthBuffer(true);
@@ -8612,7 +8641,10 @@ var BABYLON;
                 return;
             }
             this._workingCanvas = document.createElement("canvas");
-            this._workingContext = this._workingCanvas.getContext("2d");
+            var context = this._workingCanvas.getContext("2d");
+            if (context) {
+                this._workingContext = context;
+            }
         };
         Engine.prototype.resetTextureCache = function () {
             for (var key in this._activeTexturesCache) {
@@ -8655,6 +8687,9 @@ var BABYLON;
             return this._renderingCanvas;
         };
         Engine.prototype.getRenderingCanvasClientRect = function () {
+            if (!this._renderingCanvas) {
+                return null;
+            }
             return this._renderingCanvas.getBoundingClientRect();
         };
         Engine.prototype.setHardwareScalingLevel = function (level) {
@@ -8831,7 +8866,9 @@ var BABYLON;
             }
             else {
                 this._pointerLockRequested = requestPointerLock;
-                BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
+                if (this._renderingCanvas) {
+                    BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
+                }
             }
         };
         Engine.prototype.clear = function (color, backBuffer, depth, stencil) {
@@ -8920,8 +8957,8 @@ var BABYLON;
         Engine.prototype.resize = function () {
             // We're not resizing the size of the canvas while in VR mode & presenting
             if (!(this._vrDisplay && this._vrDisplay.isPresenting)) {
-                var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
-                var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+                var width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
+                var height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
                 this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
             }
         };
@@ -8931,6 +8968,9 @@ var BABYLON;
          * @param {number} height - the new canvas' height
          */
         Engine.prototype.setSize = function (width, height) {
+            if (!this._renderingCanvas) {
+                return;
+            }
             if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
                 return;
             }
@@ -9034,6 +9074,9 @@ var BABYLON;
             this.bindUnboundFramebuffer(texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer);
             var gl = this._gl;
             if (texture.isCube) {
+                if (faceIndex === undefined) {
+                    faceIndex = 0;
+                }
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, 0);
             }
             if (this._cachedViewport && !forceFullscreenViewport) {
@@ -9100,6 +9143,9 @@ var BABYLON;
         // UBOs
         Engine.prototype.createUniformBuffer = function (elements) {
             var ubo = this._gl.createBuffer();
+            if (!ubo) {
+                throw new Error("Unable to create uniform buffer");
+            }
             this.bindUniformBuffer(ubo);
             if (elements instanceof Float32Array) {
                 this._gl.bufferData(this._gl.UNIFORM_BUFFER, elements, this._gl.STATIC_DRAW);
@@ -9113,6 +9159,9 @@ var BABYLON;
         };
         Engine.prototype.createDynamicUniformBuffer = function (elements) {
             var ubo = this._gl.createBuffer();
+            if (!ubo) {
+                throw new Error("Unable to create dynamic uniform buffer");
+            }
             this.bindUniformBuffer(ubo);
             if (elements instanceof Float32Array) {
                 this._gl.bufferData(this._gl.UNIFORM_BUFFER, elements, this._gl.DYNAMIC_DRAW);
@@ -9154,6 +9203,9 @@ var BABYLON;
         };
         Engine.prototype.createVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
+            if (!vbo) {
+                throw new Error("Unable to create vertex buffer");
+            }
             this.bindArrayBuffer(vbo);
             if (vertices instanceof Float32Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.STATIC_DRAW);
@@ -9167,6 +9219,9 @@ var BABYLON;
         };
         Engine.prototype.createDynamicVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
+            if (!vbo) {
+                throw new Error("Unable to create dynamic vertex buffer");
+            }
             this.bindArrayBuffer(vbo);
             if (vertices instanceof Float32Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.DYNAMIC_DRAW);
@@ -9220,6 +9275,9 @@ var BABYLON;
         };
         Engine.prototype.createIndexBuffer = function (indices, updatable) {
             var vbo = this._gl.createBuffer();
+            if (!vbo) {
+                throw new Error("Unable to create index buffer");
+            }
             this.bindIndexBuffer(vbo);
             // Check for 32 bits indices
             var arrayBuffer;
@@ -9457,6 +9515,9 @@ var BABYLON;
         };
         Engine.prototype.createInstancesBuffer = function (capacity) {
             var buffer = this._gl.createBuffer();
+            if (!buffer) {
+                throw new Error("Unable to create instance buffer");
+            }
             buffer.capacity = capacity;
             this.bindArrayBuffer(buffer);
             this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
@@ -9597,6 +9658,9 @@ var BABYLON;
         };
         Engine.prototype._createShaderProgram = function (vertexShader, fragmentShader, context) {
             var shaderProgram = context.createProgram();
+            if (!shaderProgram) {
+                throw new Error("Unable to create program");
+            }
             context.attachShader(shaderProgram, vertexShader);
             context.attachShader(shaderProgram, fragmentShader);
             context.linkProgram(shaderProgram);
@@ -9917,10 +9981,15 @@ var BABYLON;
             }
             // actively set format to nothing, to allow this to be called more than once
             // and possibly fail the 2nd time
-            return this._textureFormatInUse = null;
+            this._textureFormatInUse = null;
+            return null;
         };
         Engine.prototype._createTexture = function () {
-            return this._gl.createTexture();
+            var texture = this._gl.createTexture();
+            if (!texture) {
+                throw new Error("Unable to create texture");
+            }
+            return texture;
         };
         /**
          * Usually called from BABYLON.Texture.ts.  Passed information to create a WebGLTexture.
@@ -9947,6 +10016,8 @@ var BABYLON;
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
             if (buffer === void 0) { buffer = null; }
+            if (fallBack === void 0) { fallBack = null; }
+            if (format === void 0) { format = null; }
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
@@ -9991,7 +10062,7 @@ var BABYLON;
                     onError();
                 }
             };
-            var callback;
+            var callback = null;
             // processing for non-image formats
             if (isKTX || isTGA || isDDS) {
                 if (isKTX) {
@@ -10025,11 +10096,15 @@ var BABYLON;
                 }
                 if (!buffer) {
                     BABYLON.Tools.LoadFile(url, function (data) {
-                        callback(data);
-                    }, null, scene ? scene.database : null, true, onerror);
+                        if (callback) {
+                            callback(data);
+                        }
+                    }, undefined, scene ? scene.database : undefined, true, onerror);
                 }
                 else {
-                    callback(buffer);
+                    if (callback) {
+                        callback(buffer);
+                    }
                 }
                 // image format processing
             }
@@ -10261,7 +10336,11 @@ var BABYLON;
                 if (!this._videoTextureSupported) {
                     if (!texture._workingCanvas) {
                         texture._workingCanvas = document.createElement("canvas");
-                        texture._workingContext = texture._workingCanvas.getContext("2d");
+                        var context = texture._workingCanvas.getContext("2d");
+                        if (!context) {
+                            throw new Error("Unable to get 2d context");
+                        }
+                        texture._workingContext = context;
                         texture._workingCanvas.width = texture.width;
                         texture._workingCanvas.height = texture.height;
                     }
@@ -10313,7 +10392,7 @@ var BABYLON;
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             var width = size.width || size;
             var height = size.height || size;
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
@@ -10327,7 +10406,7 @@ var BABYLON;
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, width, height);
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, width, height);
             if (fullOptions.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
@@ -10342,11 +10421,11 @@ var BABYLON;
             texture.height = height;
             texture.isReady = true;
             texture.samples = 1;
-            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
             this.resetTextureCache();
             this._internalTexturesCache.push(texture);
             return texture;
@@ -10491,7 +10570,7 @@ var BABYLON;
             return depthStencilBuffer;
         };
         Engine.prototype.updateRenderTargetTextureSampleCount = function (texture, samples) {
-            if (this.webGLVersion < 2) {
+            if (this.webGLVersion < 2 || !texture) {
                 return 1;
             }
             if (texture.samples === samples) {
@@ -10510,9 +10589,16 @@ var BABYLON;
                 gl.deleteRenderbuffer(texture._MSAARenderBuffer);
             }
             if (samples > 1) {
-                texture._MSAAFramebuffer = gl.createFramebuffer();
+                var framebuffer = gl.createFramebuffer();
+                if (!framebuffer) {
+                    throw new Error("Unable to create multi sampled framebuffer");
+                }
+                texture._MSAAFramebuffer = framebuffer;
                 this.bindUnboundFramebuffer(texture._MSAAFramebuffer);
                 var colorRenderbuffer = gl.createRenderbuffer();
+                if (!colorRenderbuffer) {
+                    throw new Error("Unable to create multi sampled framebuffer");
+                }
                 gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
                 gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture.width, texture.height);
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
@@ -10543,7 +10629,7 @@ var BABYLON;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
+                generateStencilBuffer = (generateDepthBuffer && options.generateStencilBuffer) ? true : false;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
@@ -10699,7 +10785,7 @@ var BABYLON;
                     texture.width = ktx.pixelWidth;
                     texture.height = ktx.pixelHeight;
                     texture.isReady = true;
-                }, null, null, true, onerror);
+                }, undefined, undefined, true, onerror);
             }
             else if (isDDS) {
                 BABYLON.Tools.LoadFile(rootUrl, function (data) {
@@ -10724,13 +10810,19 @@ var BABYLON;
                     if (onLoad) {
                         onLoad({ isDDS: true, width: info.width, info: info, data: data, texture: texture });
                     }
-                }, null, null, true, onerror);
+                }, undefined, undefined, true, onerror);
             }
             else {
+                if (!files) {
+                    throw new Error("Cannot load cubemap because files were not defined");
+                }
                 cascadeLoad(rootUrl, scene, function (imgs) {
                     var width = _this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
                     _this._prepareWorkingCanvas();
+                    if (!_this._workingCanvas || !_this._workingContext) {
+                        return;
+                    }
                     _this._workingCanvas.width = width;
                     _this._workingCanvas.height = height;
                     var faces = [
@@ -10756,7 +10848,9 @@ var BABYLON;
                     texture.width = width;
                     texture.height = height;
                     texture.isReady = true;
-                    texture.format = format;
+                    if (format) {
+                        texture.format = format;
+                    }
                     texture.onLoadedObservable.notifyObservers(texture);
                     texture.onLoadedObservable.clear();
                     if (onLoad) {
@@ -11112,7 +11206,7 @@ var BABYLON;
             if (!alreadyActivated) {
                 this.activateTexture(this._gl["TEXTURE" + channel]);
             }
-            if (internalTexture.isCube) {
+            if (internalTexture && internalTexture.isCube) {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture);
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
@@ -11125,7 +11219,7 @@ var BABYLON;
             }
             else {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture);
-                if (internalTexture._cachedWrapU !== texture.wrapU) {
+                if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
                     switch (texture.wrapU) {
                         case BABYLON.Texture.WRAP_ADDRESSMODE:
@@ -11139,7 +11233,7 @@ var BABYLON;
                             break;
                     }
                 }
-                if (internalTexture._cachedWrapV !== texture.wrapV) {
+                if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
                     switch (texture.wrapV) {
                         case BABYLON.Texture.WRAP_ADDRESSMODE:
@@ -11302,7 +11396,6 @@ var BABYLON;
             if (this._dummyFramebuffer) {
                 this._gl.deleteFramebuffer(this._dummyFramebuffer);
             }
-            this._gl = null;
             //WebVR
             this.disableVR();
             // Events
@@ -11310,12 +11403,14 @@ var BABYLON;
             window.removeEventListener("focus", this._onFocus);
             window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
             window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
-            this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
-            if (!this._doNotHandleContextLost) {
-                this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
-                this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+            if (this._renderingCanvas) {
+                this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+                this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+                this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
+                if (!this._doNotHandleContextLost) {
+                    this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+                    this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+                }
             }
             document.removeEventListener("fullscreenchange", this._onFullscreenChange);
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
@@ -11327,10 +11422,14 @@ var BABYLON;
             document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
             if (this._onVrDisplayConnect) {
                 window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-                window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-                window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
-                this._onVrDisplayConnect = undefined;
-                this._onVrDisplayDisconnect = undefined;
+                if (this._onVrDisplayDisconnect) {
+                    window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                }
+                if (this._onVrDisplayPresentChange) {
+                    window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+                }
+                this._onVrDisplayConnect = null;
+                this._onVrDisplayDisconnect = null;
             }
             // Remove from Instances
             var index = Engine.Instances.indexOf(this);
@@ -11339,7 +11438,7 @@ var BABYLON;
             }
             this._workingCanvas = null;
             this._workingContext = null;
-            this._currentBufferPointers = null;
+            this._currentBufferPointers = [];
             this._renderingCanvas = null;
             this._currentProgram = null;
             this.onResizeObservable.clear();
@@ -11369,7 +11468,7 @@ var BABYLON;
         };
         Object.defineProperty(Engine.prototype, "loadingScreen", {
             get: function () {
-                if (!this._loadingScreen && BABYLON.DefaultLoadingScreen)
+                if (!this._loadingScreen && BABYLON.DefaultLoadingScreen && this._renderingCanvas)
                     this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
                 return this._loadingScreen;
             },
@@ -11394,17 +11493,27 @@ var BABYLON;
             configurable: true
         });
         Engine.prototype.attachContextLostEvent = function (callback) {
-            this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+            if (this._renderingCanvas) {
+                this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+            }
         };
         Engine.prototype.attachContextRestoredEvent = function (callback) {
-            this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+            if (this._renderingCanvas) {
+                this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+            }
         };
         Engine.prototype.getVertexShaderSource = function (program) {
             var shaders = this._gl.getAttachedShaders(program);
+            if (!shaders) {
+                return null;
+            }
             return this._gl.getShaderSource(shaders[0]);
         };
         Engine.prototype.getFragmentShaderSource = function (program) {
             var shaders = this._gl.getAttachedShaders(program);
+            if (!shaders) {
+                return null;
+            }
             return this._gl.getShaderSource(shaders[1]);
         };
         Engine.prototype.getError = function () {
@@ -11426,7 +11535,11 @@ var BABYLON;
             if (faceIndex === void 0) { faceIndex = -1; }
             var gl = this._gl;
             if (!this._dummyFramebuffer) {
-                this._dummyFramebuffer = gl.createFramebuffer();
+                var dummy = gl.createFramebuffer();
+                if (!dummy) {
+                    throw new Error("Unable to create dummy framebuffer");
+                }
+                this._dummyFramebuffer = dummy;
             }
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
             if (faceIndex > -1) {
@@ -11555,10 +11668,6 @@ var BABYLON;
         // Statics
         Engine.isSupported = function () {
             try {
-                // Avoid creating an unsized context for CocoonJS, since size determined on first creation.  Is not resizable
-                if (navigator.isCocoonJS) {
-                    return true;
-                }
                 var tempcanvas = document.createElement("canvas");
                 var gl = tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl");
                 return gl != null && !!window.WebGLRenderingContext;
@@ -11763,7 +11872,9 @@ var BABYLON;
             return true;
         };
         Node.prototype._markSyncedWithParent = function () {
-            this._parentRenderId = this.parent._currentRenderId;
+            if (this.parent) {
+                this._parentRenderId = this.parent._currentRenderId;
+            }
         };
         Node.prototype.isSynchronizedWithParent = function () {
             if (!this.parent) {
@@ -11922,7 +12033,7 @@ var BABYLON;
                     this.animations[i].deleteRange(name, deleteFrames);
                 }
             }
-            this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
         };
         Node.prototype.getAnimationRange = function (name) {
             return this._ranges[name];
@@ -11930,17 +12041,21 @@ var BABYLON;
         Node.prototype.beginAnimation = function (name, loop, speedRatio, onAnimationEnd) {
             var range = this.getAnimationRange(name);
             if (!range) {
-                return null;
+                return;
             }
             this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
         };
         Node.prototype.serializeAnimationRanges = function () {
             var serializationRanges = [];
             for (var name in this._ranges) {
+                var localRange = this._ranges[name];
+                if (!localRange) {
+                    continue;
+                }
                 var range = {};
                 range.name = name;
-                range.from = this._ranges[name].from;
-                range.to = this._ranges[name].to;
+                range.from = localRange.from;
+                range.to = localRange.to;
                 serializationRanges.push(range);
             }
             return serializationRanges;
@@ -15722,7 +15837,10 @@ var BABYLON;
             // Remove from scene
             this.getScene().removeCamera(this);
             while (this._rigCameras.length > 0) {
-                this._rigCameras.pop().dispose();
+                var camera = this._rigCameras.pop();
+                if (camera) {
+                    camera.dispose();
+                }
             }
             // Postprocesses
             if (this._rigPostProcess) {
@@ -15754,7 +15872,7 @@ var BABYLON;
             // ---- Camera rigs section ----
             get: function () {
                 if (this._rigCameras.length < 1) {
-                    return undefined;
+                    return null;
                 }
                 return this._rigCameras[0];
             },
@@ -15764,7 +15882,7 @@ var BABYLON;
         Object.defineProperty(Camera.prototype, "rightCamera", {
             get: function () {
                 if (this._rigCameras.length < 2) {
-                    return undefined;
+                    return null;
                 }
                 return this._rigCameras[1];
             },
@@ -15773,13 +15891,13 @@ var BABYLON;
         });
         Camera.prototype.getLeftTarget = function () {
             if (this._rigCameras.length < 1) {
-                return undefined;
+                return null;
             }
             return this._rigCameras[0].getTarget();
         };
         Camera.prototype.getRightTarget = function () {
             if (this._rigCameras.length < 2) {
-                return undefined;
+                return null;
             }
             return this._rigCameras[1].getTarget();
         };
@@ -15788,7 +15906,10 @@ var BABYLON;
                 return;
             }
             while (this._rigCameras.length > 0) {
-                this._rigCameras.pop().dispose();
+                var camera = this._rigCameras.pop();
+                if (camera) {
+                    camera.dispose();
+                }
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
@@ -15798,8 +15919,12 @@ var BABYLON;
             this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
             // create the rig cameras, unless none
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
-                this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
-                this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                var leftCamera = this.createRigCamera(this.name + "_L", 0);
+                var rightCamera = this.createRigCamera(this.name + "_R", 1);
+                if (leftCamera && rightCamera) {
+                    this._rigCameras.push(leftCamera);
+                    this._rigCameras.push(rightCamera);
+                }
             }
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
@@ -16162,7 +16287,7 @@ var BABYLON;
                 this._currentIndex = index;
                 var renderingGroupMask = 0;
                 // Fire PRECLEAR stage
-                if (observable) {
+                if (observable && info) {
                     renderingGroupMask = Math.pow(2, index);
                     info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PRECLEAR;
                     info.renderingGroupId = index;
@@ -16175,7 +16300,7 @@ var BABYLON;
                         this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
                     }
                 }
-                if (observable) {
+                if (observable && info) {
                     // Fire PREOPAQUE stage
                     info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PREOPAQUE;
                     observable.notifyObservers(info, renderingGroupMask);
@@ -16186,7 +16311,7 @@ var BABYLON;
                 if (renderingGroup)
                     renderingGroup.render(customRenderFunction, renderSprites, renderParticles, activeMeshes);
                 // Fire POSTTRANSPARENT stage
-                if (observable) {
+                if (observable && info) {
                     info.renderStage = BABYLON.RenderingGroupInfo.STAGE_POSTTRANSPARENT;
                     observable.notifyObservers(info, renderingGroupMask);
                 }
@@ -16428,21 +16553,21 @@ var BABYLON;
          * @param subMeshes The submeshes to render
          */
         RenderingGroup.prototype.renderOpaqueSorted = function (subMeshes) {
-            return RenderingGroup.renderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera.globalPosition, false);
+            return RenderingGroup.renderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false);
         };
         /**
          * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
          * @param subMeshes The submeshes to render
          */
         RenderingGroup.prototype.renderAlphaTestSorted = function (subMeshes) {
-            return RenderingGroup.renderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera.globalPosition, false);
+            return RenderingGroup.renderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false);
         };
         /**
          * Renders the opaque submeshes in the order from the transparentSortCompareFn.
          * @param subMeshes The submeshes to render
          */
         RenderingGroup.prototype.renderTransparentSorted = function (subMeshes) {
-            return RenderingGroup.renderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera.globalPosition, true);
+            return RenderingGroup.renderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true);
         };
         /**
          * Renders the submeshes in a specified order.
@@ -16451,16 +16576,19 @@ var BABYLON;
          * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
          * @param transparent Specifies to activate blending if true
          */
-        RenderingGroup.renderSorted = function (subMeshes, sortCompareFn, cameraPosition, transparent) {
+        RenderingGroup.renderSorted = function (subMeshes, sortCompareFn, camera, transparent) {
             var subIndex = 0;
             var subMesh;
+            var cameraPosition = camera ? camera.globalPosition : BABYLON.Vector3.Zero();
             for (; subIndex < subMeshes.length; subIndex++) {
                 subMesh = subMeshes.data[subIndex];
                 subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
                 subMesh._distanceToCamera = subMesh.getBoundingInfo().boundingSphere.centerWorld.subtract(cameraPosition).length();
             }
             var sortedArray = subMeshes.data.slice(0, subMeshes.length);
-            sortedArray.sort(sortCompareFn);
+            if (sortCompareFn) {
+                sortedArray.sort(sortCompareFn);
+            }
             for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                 subMesh = sortedArray[subIndex];
                 if (transparent) {
@@ -16605,7 +16733,7 @@ var BABYLON;
             this._scene._particlesDuration.beginMonitoring();
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
-                if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
+                if ((activeCamera && activeCamera.layerMask & particleSystem.layerMask) === 0) {
                     continue;
                 }
                 var emitter = particleSystem.emitter;
@@ -16624,7 +16752,7 @@ var BABYLON;
             this._scene._spritesDuration.beginMonitoring();
             for (var id = 0; id < this._spriteManagers.length; id++) {
                 var spriteManager = this._spriteManagers.data[id];
-                if (((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
+                if (((activeCamera && activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
                     spriteManager.render();
                 }
             }
@@ -17119,7 +17247,9 @@ var BABYLON;
                 if (this._onBeforeRenderObserver) {
                     this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
                 }
-                this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+                if (callback) {
+                    this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+                }
             },
             enumerable: true,
             configurable: true
@@ -17130,7 +17260,9 @@ var BABYLON;
                 if (this._onAfterRenderObserver) {
                     this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
                 }
-                this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+                if (callback) {
+                    this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+                }
             },
             enumerable: true,
             configurable: true
@@ -17553,12 +17685,12 @@ var BABYLON;
             this._unTranslatedPointerY = this._pointerY;
         };
         Scene.prototype._createUbo = function () {
-            this._sceneUbo = new BABYLON.UniformBuffer(this._engine, null, true);
+            this._sceneUbo = new BABYLON.UniformBuffer(this._engine, undefined, true);
             this._sceneUbo.addUniform("viewProjection", 16);
             this._sceneUbo.addUniform("view", 16);
         };
         Scene.prototype._createAlternateUbo = function () {
-            this._alternateSceneUbo = new BABYLON.UniformBuffer(this._engine, null, true);
+            this._alternateSceneUbo = new BABYLON.UniformBuffer(this._engine, undefined, true);
             this._alternateSceneUbo.addUniform("viewProjection", 16);
             this._alternateSceneUbo.addUniform("view", 16);
         };
@@ -17576,7 +17708,7 @@ var BABYLON;
             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
                 this.setPointerOverSprite(null);
                 this.setPointerOverMesh(pickResult.pickedMesh);
-                if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
+                if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
                     if (this._pointerOverMesh.actionManager.hoverCursor) {
                         canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
                     }
@@ -17591,10 +17723,10 @@ var BABYLON;
             else {
                 this.setPointerOverMesh(null);
                 // Sprites
-                pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers);
+                pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
                 if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                     this.setPointerOverSprite(pickResult.pickedSprite);
-                    if (this._pointerOverSprite.actionManager && this._pointerOverSprite.actionManager.hoverCursor) {
+                    if (this._pointerOverSprite && this._pointerOverSprite.actionManager && this._pointerOverSprite.actionManager.hoverCursor) {
                         canvas.style.cursor = this._pointerOverSprite.actionManager.hoverCursor;
                     }
                     else {
@@ -17607,13 +17739,15 @@ var BABYLON;
                     canvas.style.cursor = this.defaultCursor;
                 }
             }
-            if (this.onPointerMove) {
-                this.onPointerMove(evt, pickResult);
-            }
-            if (this.onPointerObservable.hasObservers()) {
-                var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? BABYLON.PointerEventTypes.POINTERWHEEL : BABYLON.PointerEventTypes.POINTERMOVE;
-                var pi = new BABYLON.PointerInfo(type, evt, pickResult);
-                this.onPointerObservable.notifyObservers(pi, type);
+            if (pickResult) {
+                if (this.onPointerMove) {
+                    this.onPointerMove(evt, pickResult);
+                }
+                if (this.onPointerObservable.hasObservers()) {
+                    var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? BABYLON.PointerEventTypes.POINTERWHEEL : BABYLON.PointerEventTypes.POINTERMOVE;
+                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
+                    this.onPointerObservable.notifyObservers(pi, type);
+                }
             }
             return this;
         };
@@ -17661,13 +17795,15 @@ var BABYLON;
                     }
                 }
             }
-            if (this.onPointerDown) {
-                this.onPointerDown(evt, pickResult);
-            }
-            if (this.onPointerObservable.hasObservers()) {
-                var type = BABYLON.PointerEventTypes.POINTERDOWN;
-                var pi = new BABYLON.PointerInfo(type, evt, pickResult);
-                this.onPointerObservable.notifyObservers(pi, type);
+            if (pickResult) {
+                if (this.onPointerDown) {
+                    this.onPointerDown(evt, pickResult);
+                }
+                if (this.onPointerObservable.hasObservers()) {
+                    var type = BABYLON.PointerEventTypes.POINTERDOWN;
+                    var pi = new BABYLON.PointerInfo(type, evt, pickResult);
+                    this.onPointerObservable.notifyObservers(pi, type);
+                }
             }
             return this;
         };
@@ -17773,7 +17909,7 @@ var BABYLON;
             this._initClickEvent = function (obs1, obs2, evt, cb) {
                 var clickInfo = new ClickInfo();
                 _this._currentPickResult = null;
-                var act;
+                var act = null;
                 var checkPicking = obs1.hasSpecificMask(BABYLON.PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(BABYLON.PointerEventTypes.POINTERPICK)
                     || obs1.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(BABYLON.PointerEventTypes.POINTERTAP)
                     || obs1.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(BABYLON.PointerEventTypes.POINTERDOUBLETAP);
@@ -17929,7 +18065,7 @@ var BABYLON;
                 // Sprites
                 _this._pickedDownSprite = null;
                 if (_this.spriteManagers.length > 0) {
-                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this._spritePredicate, false, _this.cameraToUseForPointers);
+                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this._spritePredicate, false, _this.cameraToUseForPointers || undefined);
                     if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
                             _this._pickedDownSprite = pickResult.pickedSprite;
@@ -18009,19 +18145,21 @@ var BABYLON;
                     _this._processPointerUp(pickResult, evt, clickInfo);
                     // Sprites
                     if (_this.spriteManagers.length > 0) {
-                        pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this._spritePredicate, false, _this.cameraToUseForPointers);
-                        if (pickResult.hit && pickResult.pickedSprite) {
-                            if (pickResult.pickedSprite.actionManager) {
-                                pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
-                                if (pickResult.pickedSprite.actionManager) {
-                                    if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < Scene.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < Scene.DragMovementThreshold) {
-                                        pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                        var spritePickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this._spritePredicate, false, _this.cameraToUseForPointers || undefined);
+                        if (spritePickResult) {
+                            if (spritePickResult.hit && spritePickResult.pickedSprite) {
+                                if (spritePickResult.pickedSprite.actionManager) {
+                                    spritePickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, _this, evt));
+                                    if (spritePickResult.pickedSprite.actionManager) {
+                                        if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < Scene.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < Scene.DragMovementThreshold) {
+                                            spritePickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, _this, evt));
+                                        }
                                     }
                                 }
                             }
-                        }
-                        if (_this._pickedDownSprite && _this._pickedDownSprite.actionManager && _this._pickedDownSprite !== pickResult.pickedSprite) {
-                            _this._pickedDownSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(_this._pickedDownSprite, _this, evt));
+                            if (_this._pickedDownSprite && _this._pickedDownSprite.actionManager && _this._pickedDownSprite !== spritePickResult.pickedSprite) {
+                                _this._pickedDownSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(_this._pickedDownSprite, _this, evt));
+                            }
                         }
                     }
                     _this._previousPickResult = _this._currentPickResult;
@@ -18314,7 +18452,7 @@ var BABYLON;
             else {
                 BABYLON.Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
-            if (this.activeCamera._alternateCamera) {
+            if (this.activeCamera && this.activeCamera._alternateCamera) {
                 var otherCamera = this.activeCamera._alternateCamera;
                 otherCamera.getViewMatrix().multiplyToRef(otherCamera.getProjectionMatrix(), BABYLON.Tmp.Matrix[0]);
                 BABYLON.Frustum.GetRightPlaneToRef(BABYLON.Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
@@ -18448,7 +18586,9 @@ var BABYLON;
         Scene.prototype.switchActiveCamera = function (newCamera, attachControl) {
             if (attachControl === void 0) { attachControl = true; }
             var canvas = this._engine.getRenderingCanvas();
-            this.activeCamera.detachControl(canvas);
+            if (this.activeCamera) {
+                this.activeCamera.detachControl(canvas);
+            }
             this.activeCamera = newCamera;
             if (attachControl) {
                 newCamera.attachControl(canvas);
@@ -18963,6 +19103,9 @@ var BABYLON;
             if (this._activeMeshesFrozen && this._activeMeshes.length) {
                 return;
             }
+            if (!this.activeCamera) {
+                return;
+            }
             this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
             this._renderingManager.reset();
@@ -19067,6 +19210,9 @@ var BABYLON;
             }
         };
         Scene.prototype.updateTransformMatrix = function (force) {
+            if (!this.activeCamera) {
+                return;
+            }
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
         };
         Scene.prototype.updateAlternateTransformMatrix = function (alternateCamera) {
@@ -19232,7 +19378,9 @@ var BABYLON;
                 return;
             }
             // Update camera
-            this.activeCamera.update();
+            if (this.activeCamera) {
+                this.activeCamera.update();
+            }
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
                 this._renderForCamera(camera._rigCameras[index]);
@@ -19252,7 +19400,7 @@ var BABYLON;
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
                         if (areIntersecting && currentIntersectionInProgress === -1) {
                             if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, null, otherMesh));
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, undefined, otherMesh));
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             }
                             else if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
@@ -19263,7 +19411,7 @@ var BABYLON;
                             //They intersected, and now they don't.
                             //is this trigger an exit trigger? execute an event.
                             if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, null, otherMesh));
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, undefined, otherMesh));
                             }
                             //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
                             if (!sourceMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger) || action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
@@ -19295,7 +19443,7 @@ var BABYLON;
             BABYLON.Tools.StartPerformanceCounter("Scene rendering");
             // Actions
             if (this.actionManager) {
-                this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger, null);
+                this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger);
             }
             //Simplification Queue
             if (this.simplificationQueue && !this.simplificationQueue.running) {
@@ -19444,7 +19592,10 @@ var BABYLON;
             this.onAfterRenderObservable.notifyObservers(this);
             // Cleaning
             for (var index = 0; index < this._toBeDisposed.length; index++) {
-                this._toBeDisposed.data[index].dispose();
+                var data = this._toBeDisposed.data[index];
+                if (data) {
+                    data.dispose();
+                }
                 this._toBeDisposed[index] = null;
             }
             this._toBeDisposed.reset();
@@ -19741,10 +19892,6 @@ var BABYLON;
                 this._engine.scenes.splice(index, 1);
             }
             this._engine.wipeCaches();
-            this._engine = null;
-            this.defaultMaterial = null;
-            this.multiMaterials = null;
-            this.materials = null;
         };
         Object.defineProperty(Scene.prototype, "isDisposed", {
             get: function () {
@@ -19887,7 +20034,12 @@ var BABYLON;
                 return null;
             }
             var pickingInfo = null;
-            camera = camera || this.activeCamera;
+            if (!camera) {
+                if (!this.activeCamera) {
+                    return null;
+                }
+                camera = this.activeCamera;
+            }
             if (this.spriteManagers.length > 0) {
                 for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
                     var spriteManager = this.spriteManagers[spriteIndex];
@@ -19916,7 +20068,7 @@ var BABYLON;
          */
         Scene.prototype.pick = function (x, y, predicate, fastCheck, camera) {
             var _this = this;
-            return this._internalPick(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate, fastCheck);
+            return this._internalPick(function (world) { return _this.createPickingRay(x, y, world, camera || null); }, predicate, fastCheck);
         };
         /** Launch a ray to try to pick a sprite in the scene
          * @param x position on screen
@@ -19926,7 +20078,11 @@ var BABYLON;
          * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         Scene.prototype.pickSprite = function (x, y, predicate, fastCheck, camera) {
-            return this._internalPickSprites(this.createPickingRayInCameraSpace(x, y, camera), predicate, fastCheck, camera);
+            var ray = this.createPickingRayInCameraSpace(x, y, camera);
+            if (!ray) {
+                return null;
+            }
+            return this._internalPickSprites(ray, predicate, fastCheck, camera);
         };
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
@@ -19952,7 +20108,7 @@ var BABYLON;
          */
         Scene.prototype.multiPick = function (x, y, predicate, camera) {
             var _this = this;
-            return this._internalMultiPick(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate);
+            return this._internalMultiPick(function (world) { return _this.createPickingRay(x, y, world, camera || null); }, predicate);
         };
         /**
          * Launch a ray to try to pick a mesh in the scene
@@ -20027,15 +20183,17 @@ var BABYLON;
                 return;
             }
             this._physicsEngine.dispose();
-            this._physicsEngine = undefined;
+            this._physicsEngine = null;
         };
         Scene.prototype.isPhysicsEnabled = function () {
             return this._physicsEngine !== undefined;
         };
         Scene.prototype.deleteCompoundImpostor = function (compound) {
             var mesh = compound.parts[0].mesh;
-            mesh.physicsImpostor.dispose();
-            mesh.physicsImpostor = null;
+            if (mesh.physicsImpostor) {
+                mesh.physicsImpostor.dispose();
+                mesh.physicsImpostor = null;
+            }
         };
         // Misc.
         Scene.prototype._rebuildGeometries = function () {
@@ -20666,7 +20824,7 @@ var BABYLON;
                 case InternalTexture.DATASOURCE_URL:
                     proxy = this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, function () {
                         _this.isReady = true;
-                    }, null, this._buffer, null, this.format);
+                    }, null, this._buffer, undefined, this.format);
                     proxy._swapAndDie(this);
                     return;
                 case InternalTexture.DATASOURCE_RAW:
@@ -20712,7 +20870,9 @@ var BABYLON;
                     return;
                 case InternalTexture.DATASOURCE_CUBEPREFILTERED:
                     proxy = this._engine.createPrefilteredCubeTexture(this.url, null, this._lodGenerationScale, this._lodGenerationOffset, function (proxy) {
-                        proxy._swapAndDie(_this);
+                        if (proxy) {
+                            proxy._swapAndDie(_this);
+                        }
                         _this.isReady = true;
                     }, null, this.format, this._extension);
                     return;
@@ -20805,7 +20965,9 @@ var BABYLON;
             this.onDisposeObservable = new BABYLON.Observable();
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
-            this._scene.textures.push(this);
+            if (this._scene) {
+                this._scene.textures.push(this);
+            }
             this._uid = null;
         }
         Object.defineProperty(BaseTexture.prototype, "hasAlpha", {
@@ -20817,7 +20979,9 @@ var BABYLON;
                     return;
                 }
                 this._hasAlpha = value;
-                this._scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
+                if (this._scene) {
+                    this._scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
+                }
             },
             enumerable: true,
             configurable: true
@@ -20831,7 +20995,9 @@ var BABYLON;
                     return;
                 }
                 this._coordinatesMode = value;
-                this._scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
+                if (this._scene) {
+                    this._scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
+                }
             },
             enumerable: true,
             configurable: true
@@ -20895,10 +21061,10 @@ var BABYLON;
             return false;
         };
         BaseTexture.prototype.getSize = function () {
-            if (this._texture.width) {
+            if (this._texture && this._texture.width) {
                 return new BABYLON.Size(this._texture.width, this._texture.height);
             }
-            if (this._texture._size) {
+            if (this._texture && this._texture._size) {
                 return new BABYLON.Size(this._texture._size, this._texture._size);
             }
             return BABYLON.Size.Zero();
@@ -20921,6 +21087,9 @@ var BABYLON;
             configurable: true
         });
         BaseTexture.prototype._getFromCache = function (url, noMipmap, sampling) {
+            if (!this._scene) {
+                return null;
+            }
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
@@ -20966,7 +21135,11 @@ var BABYLON;
                 return null;
             }
             var size = this.getSize();
-            var engine = this.getScene().getEngine();
+            var scene = this.getScene();
+            if (!scene) {
+                return null;
+            }
+            var engine = scene.getEngine();
             if (this._texture.isCube) {
                 return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
             }
@@ -21028,8 +21201,11 @@ var BABYLON;
             configurable: true
         });
         BaseTexture.prototype.dispose = function () {
+            if (!this._scene) {
+                return;
+            }
             // Animations
-            this.getScene().stopAnimation(this);
+            this._scene.stopAnimation(this);
             // Remove from scene
             this._scene._removePendingData(this);
             var index = this._scene.textures.indexOf(this);
@@ -21166,15 +21342,20 @@ var BABYLON;
             _this.vAng = 0;
             _this.wAng = 0;
             _this._isBlocking = true;
-            _this.name = url;
+            _this.name = url || "";
             _this.url = url;
             _this._noMipmap = noMipmap;
             _this._invertY = invertY;
             _this._samplingMode = samplingMode;
             _this._buffer = buffer;
             _this._deleteBuffer = deleteBuffer;
-            _this._format = format;
+            if (format) {
+                _this._format = format;
+            }
             scene = _this.getScene();
+            if (!scene) {
+                return _this;
+            }
             scene.getEngine().onBeforeTextureInitObservable.notifyObservers(_this);
             var load = function () {
                 if (_this._onLoadObservable && _this._onLoadObservable.hasObservers()) {
@@ -21183,7 +21364,7 @@ var BABYLON;
                 if (onLoad) {
                     onLoad();
                 }
-                if (!_this.isBlocking) {
+                if (!_this.isBlocking && scene) {
                     scene.resetCachedMaterial();
                 }
             };
@@ -21195,7 +21376,7 @@ var BABYLON;
             _this._texture = _this._getFromCache(_this.url, noMipmap, samplingMode);
             if (!_this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    _this._texture = scene.getEngine().createTexture(_this.url, noMipmap, invertY, scene, _this._samplingMode, load, onError, _this._buffer, null, _this._format);
+                    _this._texture = scene.getEngine().createTexture(_this.url, noMipmap, invertY, scene, _this._samplingMode, load, onError, _this._buffer, undefined, _this._format);
                     if (deleteBuffer) {
                         delete _this._buffer;
                     }
@@ -21250,20 +21431,31 @@ var BABYLON;
             if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
+                this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
             }
             else {
                 if (this._texture.isReady) {
-                    BABYLON.Tools.SetImmediate(function () { return _this._delayedOnLoad(); });
+                    BABYLON.Tools.SetImmediate(function () {
+                        if (!_this._delayedOnLoad) {
+                            return;
+                        }
+                        _this._delayedOnLoad();
+                    });
                 }
                 else {
-                    this._texture.onLoadedObservable.add(this._delayedOnLoad);
+                    if (this._delayedOnLoad) {
+                        this._texture.onLoadedObservable.add(this._delayedOnLoad);
+                    }
                 }
             }
         };
@@ -21271,8 +21463,12 @@ var BABYLON;
             if (!this._texture) {
                 return;
             }
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             this._samplingMode = samplingMode;
-            this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
+            scene.getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         };
         Texture.prototype._prepareRowForTextureGeneration = function (x, y, z, t) {
             x *= this.uScale;
@@ -21326,7 +21522,11 @@ var BABYLON;
             this._cachedTextureMatrix.m[8] = this._t0.x;
             this._cachedTextureMatrix.m[9] = this._t0.y;
             this._cachedTextureMatrix.m[10] = this._t0.z;
-            this.getScene().markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
+            var scene = this.getScene();
+            if (!scene) {
+                return this._cachedTextureMatrix;
+            }
+            scene.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag, function (mat) {
                 return mat.hasTexture(_this);
             });
             return this._cachedTextureMatrix;
@@ -21334,6 +21534,9 @@ var BABYLON;
         Texture.prototype.getReflectionTextureMatrix = function () {
             var _this = this;
             var scene = this.getScene();
+            if (!scene) {
+                return this._cachedTextureMatrix;
+            }
             if (this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
                 this.uScale === this._cachedUScale &&
@@ -21390,7 +21593,7 @@ var BABYLON;
         Texture.prototype.clone = function () {
             var _this = this;
             return BABYLON.SerializationHelper.Clone(function () {
-                return new Texture(_this._texture.url, _this.getScene(), _this._noMipmap, _this._invertY, _this._samplingMode);
+                return new Texture(_this._texture ? _this._texture.url : null, _this.getScene(), _this._noMipmap, _this._invertY, _this._samplingMode);
             }, this);
         };
         Object.defineProperty(Texture.prototype, "onLoadObservable", {
@@ -26660,7 +26863,7 @@ var BABYLON;
          * update the underlying WebGL uniform buffer to the GPU.
          */
         UniformBuffer.prototype.isDynamic = function () {
-            return this._dynamic;
+            return this._dynamic !== undefined;
         };
         /**
          * The data cache on JS side.
@@ -27024,7 +27227,7 @@ var BABYLON;
          */
         UniformBuffer.prototype.bindToEffect = function (effect, name) {
             this._currentEffect = effect;
-            if (this._noUBO) {
+            if (this._noUBO || !this._buffer) {
                 return;
             }
             effect.bindUniformBuffer(this._buffer, name);
@@ -30643,6 +30846,8 @@ var BABYLON;
         };
         // Methods
         PostProcessManager.prototype._prepareFrame = function (sourceTexture, postProcesses) {
+            if (sourceTexture === void 0) { sourceTexture = null; }
+            if (postProcesses === void 0) { postProcesses = null; }
             var postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return false;
@@ -39032,10 +39237,16 @@ var BABYLON;
         };
         Animation.CreateAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
             var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+            if (!animation) {
+                return null;
+            }
             return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
         Animation.CreateMergeAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
             var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+            if (!animation) {
+                return null;
+            }
             node.animations.push(animation);
             return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
@@ -39151,19 +39362,21 @@ var BABYLON;
         };
         Animation.prototype.deleteRange = function (name, deleteFrames) {
             if (deleteFrames === void 0) { deleteFrames = true; }
-            if (this._ranges[name]) {
-                if (deleteFrames) {
-                    var from = this._ranges[name].from;
-                    var to = this._ranges[name].to;
-                    // this loop MUST go high to low for multiple splices to work
-                    for (var key = this._keys.length - 1; key >= 0; key--) {
-                        if (this._keys[key].frame >= from && this._keys[key].frame <= to) {
-                            this._keys.splice(key, 1);
-                        }
+            var range = this._ranges[name];
+            if (!range) {
+                return;
+            }
+            if (deleteFrames) {
+                var from = range.from;
+                var to = range.to;
+                // this loop MUST go high to low for multiple splices to work
+                for (var key = this._keys.length - 1; key >= 0; key--) {
+                    if (this._keys[key].frame >= from && this._keys[key].frame <= to) {
+                        this._keys.splice(key, 1);
                     }
                 }
-                this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
             }
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
         };
         Animation.prototype.getRange = function (name) {
             return this._ranges[name];
@@ -39229,7 +39442,11 @@ var BABYLON;
             if (this._ranges) {
                 clone._ranges = {};
                 for (var name in this._ranges) {
-                    clone._ranges[name] = this._ranges[name].clone();
+                    var range = this._ranges[name];
+                    if (!range) {
+                        continue;
+                    }
+                    clone._ranges[name] = range.clone();
                 }
             }
             return clone;
@@ -39268,10 +39485,14 @@ var BABYLON;
             }
             serializationObject.ranges = [];
             for (var name in this._ranges) {
+                var source = this._ranges[name];
+                if (!source) {
+                    continue;
+                }
                 var range = {};
                 range.name = name;
-                range.from = this._ranges[name].from;
-                range.to = this._ranges[name].to;
+                range.from = source.from;
+                range.to = source.to;
                 serializationObject.ranges.push(range);
             }
             return serializationObject;
@@ -39905,6 +40126,9 @@ var BABYLON;
                 var currentFrame = runtimeAnimations[0].currentFrame;
                 var adjustTime = frame - currentFrame;
                 var delay = adjustTime * 1000 / fps;
+                if (this._localDelayOffset === null) {
+                    this._localDelayOffset = 0;
+                }
                 this._localDelayOffset -= delay;
             }
             for (var index = 0; index < runtimeAnimations.length; index++) {
@@ -40897,19 +41121,21 @@ var BABYLON;
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
                 if (action.trigger === trigger) {
-                    if (trigger === ActionManager.OnKeyUpTrigger
-                        || trigger === ActionManager.OnKeyDownTrigger) {
-                        var parameter = action.getTriggerParameter();
-                        if (parameter && parameter !== evt.sourceEvent.keyCode) {
-                            if (!parameter.toLowerCase) {
-                                continue;
-                            }
-                            var lowerCase = parameter.toLowerCase();
-                            if (lowerCase !== evt.sourceEvent.key) {
-                                var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
-                                var actualkey = String.fromCharCode(unicode).toLowerCase();
-                                if (actualkey !== lowerCase) {
+                    if (evt) {
+                        if (trigger === ActionManager.OnKeyUpTrigger
+                            || trigger === ActionManager.OnKeyDownTrigger) {
+                            var parameter = action.getTriggerParameter();
+                            if (parameter && parameter !== evt.sourceEvent.keyCode) {
+                                if (!parameter.toLowerCase) {
                                     continue;
+                                }
+                                var lowerCase = parameter.toLowerCase();
+                                if (lowerCase !== evt.sourceEvent.key) {
+                                    var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
+                                    var actualkey = String.fromCharCode(unicode).toLowerCase();
+                                    if (actualkey !== lowerCase) {
+                                        continue;
+                                    }
                                 }
                             }
                         }
@@ -48193,10 +48419,13 @@ var BABYLON;
             _this._refreshRate = 1;
             _this._samples = 1;
             scene = _this.getScene();
+            if (!scene) {
+                return _this;
+            }
             _this.name = name;
             _this.isRenderTarget = true;
             _this._size = size;
-            _this._generateMipMaps = generateMipMaps;
+            _this._generateMipMaps = generateMipMaps ? true : false;
             _this._doNotChangeAspectRatio = doNotChangeAspectRatio;
             // Rendering groups
             _this._renderingManager = new BABYLON.RenderingManager(scene);
@@ -48300,7 +48529,11 @@ var BABYLON;
                 if (this._samples === value) {
                     return;
                 }
-                this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
+                var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
+                this._samples = scene.getEngine().updateRenderTargetTextureSampleCount(this._texture, value);
             },
             enumerable: true,
             configurable: true
@@ -48322,7 +48555,11 @@ var BABYLON;
         });
         RenderTargetTexture.prototype.addPostProcess = function (postProcess) {
             if (!this._postProcessManager) {
-                this._postProcessManager = new BABYLON.PostProcessManager(this.getScene());
+                var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
+                this._postProcessManager = new BABYLON.PostProcessManager(scene);
                 this._postProcesses = new Array();
             }
             this._postProcesses.push(postProcess);
@@ -48336,7 +48573,6 @@ var BABYLON;
                 for (var _i = 0, _a = this._postProcesses; _i < _a.length; _i++) {
                     var postProcess = _a[_i];
                     postProcess.dispose();
-                    postProcess = null;
                 }
             }
             this._postProcesses = [];
@@ -48388,16 +48624,25 @@ var BABYLON;
         };
         RenderTargetTexture.prototype.resize = function (size) {
             this.releaseInternalTexture();
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             if (this.isCube) {
-                this._texture = this.getScene().getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
             }
             else {
-                this._texture = this.getScene().getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
+                this._texture = scene.getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
             this._size = size;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
+            if (useCameraPostProcess === void 0) { useCameraPostProcess = false; }
+            if (dumpForDebug === void 0) { dumpForDebug = false; }
             var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             var engine = scene.getEngine();
             if (this.useCameraPostProcesses !== undefined) {
                 useCameraPostProcess = this.useCameraPostProcesses;
@@ -48406,14 +48651,26 @@ var BABYLON;
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
                     var id = this._waitingRenderList[index];
-                    this.renderList.push(scene.getMeshByID(id));
+                    var mesh_1 = scene.getMeshByID(id);
+                    if (mesh_1) {
+                        this.renderList.push(mesh_1);
+                    }
                 }
                 delete this._waitingRenderList;
             }
             // Is predicate defined?
             if (this.renderListPredicate) {
-                this.renderList.splice(0); // Clear previous renderList
-                var sceneMeshes = this.getScene().meshes;
+                if (this.renderList) {
+                    this.renderList.splice(0); // Clear previous renderList
+                }
+                else {
+                    this.renderList = [];
+                }
+                var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
+                var sceneMeshes = scene.meshes;
                 for (var index = 0; index < sceneMeshes.length; index++) {
                     var mesh = sceneMeshes[index];
                     if (this.renderListPredicate(mesh)) {
@@ -48434,7 +48691,9 @@ var BABYLON;
             }
             else {
                 camera = scene.activeCamera;
-                engine.setViewport(scene.activeCamera.viewport, this._size, this._size);
+                if (camera) {
+                    engine.setViewport(camera.viewport, this._size, this._size);
+                }
             }
             // Prepare renderingManager
             this._renderingManager.reset();
@@ -48451,7 +48710,7 @@ var BABYLON;
                     }
                     mesh._preActivateForIntermediateRendering(sceneRenderId);
                     var isMasked = void 0;
-                    if (!this.renderList) {
+                    if (!this.renderList && camera) {
                         isMasked = ((mesh.layerMask & camera.layerMask) === 0);
                     }
                     else {
@@ -48488,22 +48747,32 @@ var BABYLON;
                 this.renderToTarget(0, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
             }
             this.onAfterUnbindObservable.notifyObservers(this);
-            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
-                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+            if (scene.activeCamera) {
+                if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                    scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+                }
+                engine.setViewport(scene.activeCamera.viewport);
             }
-            engine.setViewport(scene.activeCamera.viewport);
             scene.resetCachedMaterial();
         };
         RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug) {
             var _this = this;
             var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             var engine = scene.getEngine();
+            if (!this._texture) {
+                return;
+            }
             // Bind
             if (this._postProcessManager) {
                 this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
             else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-                engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport);
+                if (this._texture) {
+                    engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport);
+                }
             }
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
             // Clear
@@ -48578,7 +48847,9 @@ var BABYLON;
             newTexture.level = this.level;
             // RenderTarget Texture
             newTexture.coordinatesMode = this.coordinatesMode;
-            newTexture.renderList = this.renderList.slice(0);
+            if (this.renderList) {
+                newTexture.renderList = this.renderList.slice(0);
+            }
             return newTexture;
         };
         RenderTargetTexture.prototype.serialize = function () {
@@ -48588,14 +48859,20 @@ var BABYLON;
             var serializationObject = _super.prototype.serialize.call(this);
             serializationObject.renderTargetSize = this.getRenderSize();
             serializationObject.renderList = [];
-            for (var index = 0; index < this.renderList.length; index++) {
-                serializationObject.renderList.push(this.renderList[index].id);
+            if (this.renderList) {
+                for (var index = 0; index < this.renderList.length; index++) {
+                    serializationObject.renderList.push(this.renderList[index].id);
+                }
             }
             return serializationObject;
         };
         // This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
         RenderTargetTexture.prototype.disposeFramebufferObjects = function () {
-            this.getScene().getEngine()._releaseFramebufferObjects(this.getInternalTexture());
+            var objBuffer = this.getInternalTexture();
+            var scene = this.getScene();
+            if (objBuffer && scene) {
+                scene.getEngine()._releaseFramebufferObjects(objBuffer);
+            }
         };
         RenderTargetTexture.prototype.dispose = function () {
             if (this._postProcessManager) {
@@ -48606,6 +48883,9 @@ var BABYLON;
             this.renderList = null;
             // Remove from custom render targets
             var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
             var index = scene.customRenderTargets.indexOf(this);
             if (index >= 0) {
                 scene.customRenderTargets.splice(index, 1);
@@ -49341,7 +49621,7 @@ var BABYLON;
                 this._engine = this._scene.getEngine();
                 this._scene.postProcesses.push(this);
             }
-            else {
+            else if (engine) {
                 this._engine = engine;
                 this._engine.postProcesses.push(this);
             }
@@ -49448,7 +49728,7 @@ var BABYLON;
             return this;
         };
         PostProcess.prototype.updateEffect = function (defines, uniforms, samplers, indexParameters, onCompiled, onError) {
-            this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl }, ["position"], uniforms || this._parameters, samplers || this._samplers, defines !== undefined ? defines : "", null, onCompiled, onError, indexParameters || this._indexParameters);
+            this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl }, ["position"], uniforms || this._parameters, samplers || this._samplers, defines !== undefined ? defines : "", undefined, onCompiled, onError, indexParameters || this._indexParameters);
         };
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
@@ -49459,15 +49739,15 @@ var BABYLON;
         };
         PostProcess.prototype.activate = function (camera, sourceTexture, forceDepthStencil) {
             var _this = this;
+            camera = camera || this._camera;
+            var scene = camera.getScene();
+            var engine = scene.getEngine();
+            var maxSize = engine.getCaps().maxTextureSize;
+            var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * this._options) | 0;
+            var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * this._options) | 0;
+            var desiredWidth = (this._options.width || requiredWidth);
+            var desiredHeight = this._options.height || requiredHeight;
             if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
-                camera = camera || this._camera;
-                var scene = camera.getScene();
-                var engine = scene.getEngine();
-                var maxSize = engine.getCaps().maxTextureSize;
-                var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * this._options) | 0;
-                var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * this._options) | 0;
-                var desiredWidth = (this._options.width || requiredWidth);
-                var desiredHeight = this._options.height || requiredHeight;
                 if (this.adaptScaleToCurrentViewport) {
                     var currentViewport = engine.currentViewport;
                     if (currentViewport) {
@@ -49647,7 +49927,7 @@ var BABYLON;
         __extends(PassPostProcess, _super);
         function PassPostProcess(name, options, camera, samplingMode, engine, reusable, textureType) {
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
-            return _super.call(this, name, "pass", null, null, options, camera, samplingMode, engine, reusable, null, textureType) || this;
+            return _super.call(this, name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType) || this;
         }
         return PassPostProcess;
     }(BABYLON.PostProcess));
@@ -52268,14 +52548,16 @@ var BABYLON;
                     // Initialization of the DB. Creating Scenes & Textures stores
                     request.onupgradeneeded = function (event) {
                         _this.db = (event.target).result;
-                        try {
-                            _this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
-                            _this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
-                            _this.db.createObjectStore("textures", { keyPath: "textureUrl" });
-                        }
-                        catch (ex) {
-                            BABYLON.Tools.Error("Error while creating object stores. Exception: " + ex.message);
-                            handleError();
+                        if (_this.db) {
+                            try {
+                                _this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
+                                _this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
+                                _this.db.createObjectStore("textures", { keyPath: "textureUrl" });
+                            }
+                            catch (ex) {
+                                BABYLON.Tools.Error("Error while creating object stores. Exception: " + ex.message);
+                                handleError();
+                            }
                         }
                     };
                 }
@@ -52356,14 +52638,16 @@ var BABYLON;
                             blobTextureURL = URL.createObjectURL(blob);
                         }
                     }
-                    image.src = blobTextureURL;
+                    if (blobTextureURL) {
+                        image.src = blobTextureURL;
+                    }
                 };
                 if (Database.IsUASupportingBlobStorage) {
                     var xhr = new XMLHttpRequest(), blob;
                     xhr.open("GET", url, true);
                     xhr.responseType = "blob";
                     xhr.addEventListener("load", function () {
-                        if (xhr.status === 200) {
+                        if (xhr.status === 200 && _this.db) {
                             // Blob as response (XHR2)
                             blob = xhr.response;
                             var transaction = _this.db.transaction(["textures"], "readwrite");
@@ -52429,7 +52713,7 @@ var BABYLON;
         };
         Database.prototype._loadVersionFromDBAsync = function (url, callback, updateInDBCallback) {
             var _this = this;
-            if (this.isSupported) {
+            if (this.isSupported && this.db) {
                 var version;
                 try {
                     var transaction = this.db.transaction(["versions"]);
@@ -52473,7 +52757,7 @@ var BABYLON;
         };
         Database.prototype._saveVersionIntoDBAsync = function (url, callback) {
             var _this = this;
-            if (this.isSupported && !this.hasReachedQuota) {
+            if (this.isSupported && !this.hasReachedQuota && this.db) {
                 try {
                     // Open a transaction to the database
                     var transaction = this.db.transaction(["versions"], "readwrite");
@@ -52526,12 +52810,14 @@ var BABYLON;
                     }
                 }
                 else {
-                    errorCallback();
+                    if (errorCallback) {
+                        errorCallback();
+                    }
                 }
             });
         };
         Database.prototype._loadFileFromDBAsync = function (url, callback, notInDBCallback, useArrayBuffer) {
-            if (this.isSupported) {
+            if (this.isSupported && this.db) {
                 var targetStore;
                 if (url.indexOf(".babylon") !== -1) {
                     targetStore = "scenes";
@@ -52583,13 +52869,15 @@ var BABYLON;
                 if (useArrayBuffer) {
                     xhr.responseType = "arraybuffer";
                 }
-                xhr.onprogress = progressCallback;
+                if (progressCallback) {
+                    xhr.onprogress = progressCallback;
+                }
                 xhr.addEventListener("load", function () {
                     if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
                         // Blob as response (XHR2)
                         //fileData = xhr.responseText;
                         fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
-                        if (!_this.hasReachedQuota) {
+                        if (!_this.hasReachedQuota && _this.db) {
                             // Open a transaction to the database
                             var transaction = _this.db.transaction([targetStore], "readwrite");
                             // the transaction could abort because of a QuotaExceededError error
@@ -55101,6 +55389,7 @@ var BABYLON;
     var FollowCamera = /** @class */ (function (_super) {
         __extends(FollowCamera, _super);
         function FollowCamera(name, position, scene, lockedTarget) {
+            if (lockedTarget === void 0) { lockedTarget = null; }
             var _this = _super.call(this, name, position, scene) || this;
             _this.radius = 12;
             _this.rotationOffset = 0;
@@ -55149,7 +55438,9 @@ var BABYLON;
         };
         FollowCamera.prototype._checkInputs = function () {
             _super.prototype._checkInputs.call(this);
-            this.follow(this.lockedTarget);
+            if (this.lockedTarget) {
+                this.follow(this.lockedTarget);
+            }
         };
         FollowCamera.prototype.getClassName = function () {
             return "FollowCamera";
@@ -55188,6 +55479,9 @@ var BABYLON;
             return _this;
         }
         ArcFollowCamera.prototype.follow = function () {
+            if (!this.target) {
+                return;
+            }
             this._cartesianCoordinates.x = this.radius * Math.cos(this.alpha) * Math.cos(this.beta);
             this._cartesianCoordinates.y = this.radius * Math.sin(this.beta);
             this._cartesianCoordinates.z = this.radius * Math.sin(this.alpha) * Math.cos(this.beta);

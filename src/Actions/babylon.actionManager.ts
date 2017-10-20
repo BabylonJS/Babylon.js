@@ -11,7 +11,7 @@
          * @param meshUnderPointer The mesh that is currently pointed at (can be null)
          * @param sourceEvent the original (browser) event that triggered the ActionEvent
          */
-        constructor(public source: any, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh, public sourceEvent?: any, public additionalData?: any) {
+        constructor(public source: any, public pointerX: number, public pointerY: number, public meshUnderPointer: Nullable<AbstractMesh>, public sourceEvent?: any, public additionalData?: any) {
 
         }
 
@@ -295,7 +295,7 @@
          * @param {BABYLON.Action} action - the action to be registered
          * @return {BABYLON.Action} the action amended (prepared) after registration
          */
-        public registerAction(action: Action): Action {
+        public registerAction(action: Action): Nullable<Action> {
             if (action.trigger === ActionManager.OnEveryFrameTrigger) {
                 if (this.getScene().actionManager !== this) {
                     Tools.Warn("OnEveryFrameTrigger can only be used with scene.actionManager");
@@ -342,26 +342,28 @@
          * @param {number} trigger - the trigger to process
          * @param evt {BABYLON.ActionEvent} the event details to be processed
          */
-        public processTrigger(trigger: number, evt: ActionEvent): void {
+        public processTrigger(trigger: number, evt?: ActionEvent): void {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
-                    if (trigger === ActionManager.OnKeyUpTrigger
-                        || trigger === ActionManager.OnKeyDownTrigger) {
-                        var parameter = action.getTriggerParameter();
+                    if (evt) {
+                        if (trigger === ActionManager.OnKeyUpTrigger
+                            || trigger === ActionManager.OnKeyDownTrigger) {
+                            var parameter = action.getTriggerParameter();
 
-                        if (parameter && parameter !== evt.sourceEvent.keyCode) {
-                            if (!parameter.toLowerCase) {
-                                continue;
-                            }
-                            var lowerCase = parameter.toLowerCase();
-
-                            if (lowerCase !== evt.sourceEvent.key) {
-                                var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
-                                var actualkey = String.fromCharCode(unicode).toLowerCase();
-                                if (actualkey !== lowerCase) {
+                            if (parameter && parameter !== evt.sourceEvent.keyCode) {
+                                if (!parameter.toLowerCase) {
                                     continue;
+                                }
+                                var lowerCase = parameter.toLowerCase();
+
+                                if (lowerCase !== evt.sourceEvent.key) {
+                                    var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
+                                    var actualkey = String.fromCharCode(unicode).toLowerCase();
+                                    if (actualkey !== lowerCase) {
+                                        continue;
+                                    }
                                 }
                             }
                         }
@@ -446,7 +448,7 @@
                 return newInstance;
             };
 
-            var parseParameter = (name: string, value: string, target: any, propertyPath: string): any => {
+            var parseParameter = (name: string, value: string, target: any, propertyPath: Nullable<string>): any => {
                 if (propertyPath === null) {
                     // String, boolean or float
                     var floatValue = parseFloat(value);
@@ -493,13 +495,13 @@
             };
 
             // traverse graph per trigger
-            var traverse = (parsedAction: any, trigger: any, condition: Condition, action: Action, combineArray: Array<Action> = null) => {
+            var traverse = (parsedAction: any, trigger: any, condition: Nullable<Condition>, action: Nullable<Action>, combineArray: Nullable<Array<Action>> = null) => {
                 if (parsedAction.detached)
                     return;
 
                 var parameters = new Array<any>();
                 var target: any = null;
-                var propertyPath: string = null;
+                var propertyPath: Nullable<string> = null;
                 var combine = parsedAction.combine && parsedAction.combine.length > 0;
 
                 // Parameters

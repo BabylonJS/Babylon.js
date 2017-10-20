@@ -2,7 +2,7 @@ module BABYLON {
     export class Database {
         private callbackManifestChecked: (check: boolean) => any;
         private currentSceneUrl: string;
-        private db: IDBDatabase;
+        private db: Nullable<IDBDatabase>;
         private _enableSceneOffline: boolean;
         private _enableTexturesOffline: boolean;
         private manifestVersionFound: number;
@@ -163,14 +163,16 @@ module BABYLON {
                     // Initialization of the DB. Creating Scenes & Textures stores
                     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
                         this.db = (<any>(event.target)).result;
-                        try {
-                            this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
-                            this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
-                            this.db.createObjectStore("textures", { keyPath: "textureUrl" });
-                        }
-                        catch (ex) {
-                            Tools.Error("Error while creating object stores. Exception: " + ex.message);
-                            handleError();
+                        if (this.db) {
+                            try {
+                                this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
+                                this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
+                                this.db.createObjectStore("textures", { keyPath: "textureUrl" });
+                            }
+                            catch (ex) {
+                                Tools.Error("Error while creating object stores. Exception: " + ex.message);
+                                handleError();
+                            }
                         }
                     };
                 }
@@ -264,7 +266,9 @@ module BABYLON {
                         }
                     }
 
-                    image.src = blobTextureURL;
+                    if (blobTextureURL) {
+                        image.src = blobTextureURL;
+                    }
                 };
 
                 if (Database.IsUASupportingBlobStorage) { // Create XHR
@@ -275,7 +279,7 @@ module BABYLON {
                     xhr.responseType = "blob";
 
                     xhr.addEventListener("load",() => {
-                        if (xhr.status === 200) {
+                        if (xhr.status === 200 && this.db) {
                             // Blob as response (XHR2)
                             blob = xhr.response;
 
@@ -348,7 +352,7 @@ module BABYLON {
         }
 
         private _loadVersionFromDBAsync(url: string, callback: (version: number) => void, updateInDBCallback: () => void) {
-            if (this.isSupported) {
+            if (this.isSupported && this.db) {
                 var version: any;
                 try {
                     var transaction = this.db.transaction(["versions"]);
@@ -397,7 +401,7 @@ module BABYLON {
         }
 
         private _saveVersionIntoDBAsync(url: string, callback: (version: number) => void) {
-            if (this.isSupported && !this.hasReachedQuota) {
+            if (this.isSupported && !this.hasReachedQuota && this.db) {
                 try {
                     // Open a transaction to the database
                     var transaction = this.db.transaction(["versions"], "readwrite");
@@ -438,7 +442,7 @@ module BABYLON {
             }
         }
 
-        public loadFileFromDB(url: string, sceneLoaded: (data: any) => void, progressCallBack: (data: any) => void, errorCallback: () => void, useArrayBuffer?: boolean) {
+        public loadFileFromDB(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean) {
             var completeUrl = Database.ReturnFullUrlLocation(url);
 
             var saveAndLoadFile = () => {
@@ -456,13 +460,15 @@ module BABYLON {
                     }
                 }
                 else {
-                    errorCallback();
+                    if (errorCallback) {
+                        errorCallback();
+                    }
                 }
             });
         }
 
         private _loadFileFromDBAsync(url: string, callback: (data?: any) => void, notInDBCallback: () => void, useArrayBuffer?: boolean) {
-            if (this.isSupported) {
+            if (this.isSupported && this.db) {
                 var targetStore: string;
                 if (url.indexOf(".babylon") !== -1) {
                     targetStore = "scenes";
@@ -504,7 +510,7 @@ module BABYLON {
             }
         }
 
-        private _saveFileIntoDBAsync(url: string, callback: (data?: any) => void, progressCallback: (this: XMLHttpRequestEventTarget, ev: ProgressEvent) => any, useArrayBuffer?: boolean) {
+        private _saveFileIntoDBAsync(url: string, callback: (data?: any) => void, progressCallback?: (this: XMLHttpRequestEventTarget, ev: ProgressEvent) => any, useArrayBuffer?: boolean) {
             if (this.isSupported) {
                 var targetStore: string;
                 if (url.indexOf(".babylon") !== -1) {
@@ -523,7 +529,9 @@ module BABYLON {
                     xhr.responseType = "arraybuffer";
                 }
 
-                xhr.onprogress = progressCallback;
+                if (progressCallback) {
+                    xhr.onprogress = progressCallback;
+                }
 
                 xhr.addEventListener("load",() => {
                     if (xhr.status === 200 || Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
@@ -531,7 +539,7 @@ module BABYLON {
                         //fileData = xhr.responseText;
                         fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
 
-                        if (!this.hasReachedQuota) {
+                        if (!this.hasReachedQuota && this.db) {
                             // Open a transaction to the database
                             var transaction = this.db.transaction([targetStore], "readwrite");
 
