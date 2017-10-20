@@ -49640,6 +49640,7 @@ var BABYLON;
     var PostProcess = /** @class */ (function () {
         function PostProcess(name, fragmentUrl, parameters, samplers, options, camera, samplingMode, engine, reusable, defines, textureType, vertexUrl, indexParameters, blockCompilation) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE; }
+            if (defines === void 0) { defines = null; }
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             if (vertexUrl === void 0) { vertexUrl = "postprocess"; }
             if (blockCompilation === void 0) { blockCompilation = false; }
@@ -49802,7 +49803,10 @@ var BABYLON;
             return this;
         };
         PostProcess.prototype.updateEffect = function (defines, uniforms, samplers, indexParameters, onCompiled, onError) {
-            this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl }, ["position"], uniforms || this._parameters, samplers || this._samplers, defines !== undefined ? defines : "", undefined, onCompiled, onError, indexParameters || this._indexParameters);
+            if (defines === void 0) { defines = null; }
+            if (uniforms === void 0) { uniforms = null; }
+            if (samplers === void 0) { samplers = null; }
+            this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl }, ["position"], uniforms || this._parameters, samplers || this._samplers, defines !== null ? defines : "", undefined, onCompiled, onError, indexParameters || this._indexParameters);
         };
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
@@ -51113,7 +51117,9 @@ var BABYLON;
             };
             var manifestChecked = function (success) {
                 BABYLON.Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress, database, useArrayBuffer, function (request) {
-                    onError(request.status + " " + request.statusText);
+                    if (request) {
+                        onError(request.status + " " + request.statusText);
+                    }
                 });
             };
             if (directLoad) {
@@ -51176,6 +51182,9 @@ var BABYLON;
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
         SceneLoader.ImportMesh = function (meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError) {
+            if (onSuccess === void 0) { onSuccess = null; }
+            if (onProgress === void 0) { onProgress = null; }
+            if (onError === void 0) { onError = null; }
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
@@ -54077,8 +54086,12 @@ var BABYLON;
         };
         GamepadManager.prototype.dispose = function () {
             if (this._gamepadEventSupported) {
-                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent);
-                window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
+                if (this._onGamepadConnectedEvent) {
+                    window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent);
+                }
+                if (this._onGamepadDisconnectedEvent) {
+                    window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
+                }
                 this._onGamepadConnectedEvent = null;
                 this._onGamepadDisconnectedEvent = null;
             }
@@ -54681,8 +54694,9 @@ var BABYLON;
                     this.devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
                 }
-                if (poseData.orientation) {
-                    this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
+                var pose = this.rawPose;
+                if (poseData.orientation && pose.orientation) {
+                    this.deviceRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
                     if (this._mesh) {
                         if (this._mesh.getScene().useRightHandedSystem) {
                             this.deviceRotationQuaternion.z *= -1;
@@ -54699,7 +54713,7 @@ var BABYLON;
         };
         PoseEnabledController.prototype.attachToMesh = function (mesh) {
             if (this._mesh) {
-                this._mesh.parent = undefined;
+                this._mesh.parent = null;
             }
             this._mesh = mesh;
             if (this._poseControlledCamera) {
@@ -54719,7 +54733,7 @@ var BABYLON;
             if (this._mesh) {
                 this._mesh.dispose();
             }
-            this._mesh = undefined;
+            this._mesh = null;
             _super.prototype.dispose.call(this);
         };
         Object.defineProperty(PoseEnabledController.prototype, "mesh", {
@@ -55253,6 +55267,9 @@ var BABYLON;
             BABYLON.Vector3.LerpToRef(meshInfo.unpressed.position, meshInfo.pressed.position, buttonValue, meshInfo.value.position);
         };
         WindowsMotionController.prototype.lerpAxisTransform = function (axis, axisValue) {
+            if (!this._loadedMeshInfo) {
+                return;
+            }
             var meshInfo = this._loadedMeshInfo.axisMeshes[axis];
             if (!meshInfo) {
                 return;
@@ -71376,7 +71393,8 @@ var BABYLON;
                 blurTextureSizeRatio: 0.5,
                 blurHorizontalSize: 1.0,
                 blurVerticalSize: 1.0,
-                alphaBlendingMode: BABYLON.Engine.ALPHA_COMBINE
+                alphaBlendingMode: BABYLON.Engine.ALPHA_COMBINE,
+                camera: null
             };
             this._options.mainTextureRatio = this._options.mainTextureRatio || 0.5;
             this._options.blurTextureSizeRatio = this._options.blurTextureSizeRatio || 1.0;
@@ -71454,7 +71472,10 @@ var BABYLON;
             this._indexBuffer = engine.createIndexBuffer(indices);
         };
         HighlightLayer.prototype._rebuild = function () {
-            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind]._rebuild();
+            var vb = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
+            if (vb) {
+                vb._rebuild();
+            }
             this._createIndexBuffer();
         };
         /**
@@ -71514,11 +71535,17 @@ var BABYLON;
             }
             this._mainTexture.onAfterUnbindObservable.add(function () {
                 _this.onBeforeBlurObservable.notifyObservers(_this);
-                _this._scene.postProcessManager.directRender([_this._downSamplePostprocess, _this._horizontalBlurPostprocess, _this._verticalBlurPostprocess], _this._blurTexture.getInternalTexture(), true);
+                var internalTexture = _this._blurTexture.getInternalTexture();
+                if (internalTexture) {
+                    _this._scene.postProcessManager.directRender([_this._downSamplePostprocess, _this._horizontalBlurPostprocess, _this._verticalBlurPostprocess], internalTexture, true);
+                }
                 _this.onAfterBlurObservable.notifyObservers(_this);
             });
             // Custom render function
             var renderSubMesh = function (subMesh) {
+                if (!_this._meshes) {
+                    return;
+                }
                 var mesh = subMesh.getRenderingMesh();
                 var scene = _this._scene;
                 var engine = scene.getEngine();
@@ -71530,7 +71557,7 @@ var BABYLON;
                     return;
                 }
                 // Excluded Mesh
-                if (_this._excludedMeshes[mesh.uniqueId]) {
+                if (_this._excludedMeshes && _this._excludedMeshes[mesh.uniqueId]) {
                     return;
                 }
                 ;
@@ -71556,7 +71583,10 @@ var BABYLON;
                         var alphaTexture = material.getAlphaTestTexture();
                         if (alphaTexture) {
                             _this._glowMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
-                            _this._glowMapGenerationEffect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                            var textureMatrix = alphaTexture.getTextureMatrix();
+                            if (textureMatrix) {
+                                _this._glowMapGenerationEffect.setMatrix("diffuseMatrix", textureMatrix);
+                            }
                         }
                     }
                     // Glow emissive only
@@ -71754,6 +71784,9 @@ var BABYLON;
          * @param mesh The mesh to exclude from the highlight layer
          */
         HighlightLayer.prototype.addExcludedMesh = function (mesh) {
+            if (!this._excludedMeshes) {
+                return;
+            }
             var meshExcluded = this._excludedMeshes[mesh.uniqueId];
             if (!meshExcluded) {
                 this._excludedMeshes[mesh.uniqueId] = {
@@ -71772,12 +71805,19 @@ var BABYLON;
           * @param mesh The mesh to highlight
           */
         HighlightLayer.prototype.removeExcludedMesh = function (mesh) {
+            if (!this._excludedMeshes) {
+                return;
+            }
             var meshExcluded = this._excludedMeshes[mesh.uniqueId];
             if (meshExcluded) {
-                mesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
-                mesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
+                if (meshExcluded.beforeRender) {
+                    mesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
+                }
+                if (meshExcluded.afterRender) {
+                    mesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
+                }
             }
-            this._excludedMeshes[mesh.uniqueId] = undefined;
+            this._excludedMeshes[mesh.uniqueId] = null;
         };
         /**
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.
@@ -71788,6 +71828,9 @@ var BABYLON;
         HighlightLayer.prototype.addMesh = function (mesh, color, glowEmissiveOnly) {
             var _this = this;
             if (glowEmissiveOnly === void 0) { glowEmissiveOnly = false; }
+            if (!this._meshes) {
+                return;
+            }
             var meshHighlight = this._meshes[mesh.uniqueId];
             if (meshHighlight) {
                 meshHighlight.color = color;
@@ -71798,7 +71841,7 @@ var BABYLON;
                     color: color,
                     // Lambda required for capture due to Observable this context
                     observerHighlight: mesh.onBeforeRenderObservable.add(function (mesh) {
-                        if (_this._excludedMeshes[mesh.uniqueId]) {
+                        if (_this._excludedMeshes && _this._excludedMeshes[mesh.uniqueId]) {
                             _this.defaultStencilReference(mesh);
                         }
                         else {
@@ -71816,12 +71859,19 @@ var BABYLON;
          * @param mesh The mesh to highlight
          */
         HighlightLayer.prototype.removeMesh = function (mesh) {
+            if (!this._meshes) {
+                return;
+            }
             var meshHighlight = this._meshes[mesh.uniqueId];
             if (meshHighlight) {
-                mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
-                mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
+                if (meshHighlight.observerHighlight) {
+                    mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
+                }
+                if (meshHighlight.observerDefault) {
+                    mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
+                }
             }
-            this._meshes[mesh.uniqueId] = undefined;
+            this._meshes[mesh.uniqueId] = null;
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
                 if (meshHighlightToCheck) {
@@ -71883,23 +71933,35 @@ var BABYLON;
             }
             // Clean textures and post processes
             this.disposeTextureAndPostProcesses();
-            // Clean mesh references 
-            for (var id in this._meshes) {
-                var meshHighlight = this._meshes[id];
-                if (meshHighlight && meshHighlight.mesh) {
-                    meshHighlight.mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
-                    meshHighlight.mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
+            if (this._meshes) {
+                // Clean mesh references 
+                for (var id in this._meshes) {
+                    var meshHighlight = this._meshes[id];
+                    if (meshHighlight && meshHighlight.mesh) {
+                        if (meshHighlight.observerHighlight) {
+                            meshHighlight.mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
+                        }
+                        if (meshHighlight.observerDefault) {
+                            meshHighlight.mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
+                        }
+                    }
                 }
+                this._meshes = null;
             }
-            this._meshes = null;
-            for (var id in this._excludedMeshes) {
-                var meshHighlight = this._excludedMeshes[id];
-                if (meshHighlight) {
-                    meshHighlight.mesh.onBeforeRenderObservable.remove(meshHighlight.beforeRender);
-                    meshHighlight.mesh.onAfterRenderObservable.remove(meshHighlight.afterRender);
+            if (this._excludedMeshes) {
+                for (var id in this._excludedMeshes) {
+                    var meshHighlight = this._excludedMeshes[id];
+                    if (meshHighlight) {
+                        if (meshHighlight.beforeRender) {
+                            meshHighlight.mesh.onBeforeRenderObservable.remove(meshHighlight.beforeRender);
+                        }
+                        if (meshHighlight.afterRender) {
+                            meshHighlight.mesh.onAfterRenderObservable.remove(meshHighlight.afterRender);
+                        }
+                    }
                 }
+                this._excludedMeshes = null;
             }
-            this._excludedMeshes = null;
             // Remove from scene
             var index = this._scene.highlightLayers.indexOf(this, 0);
             if (index > -1) {
@@ -73140,7 +73202,10 @@ var BABYLON;
             this._indexBuffer = engine.createIndexBuffer(indices);
         };
         Layer.prototype._rebuild = function () {
-            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind]._rebuild();
+            var vb = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
+            if (vb) {
+                vb._rebuild();
+            }
             this._createIndexBuffer();
         };
         Layer.prototype.render = function () {
