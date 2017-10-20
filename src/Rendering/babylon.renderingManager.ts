@@ -33,10 +33,10 @@
         private _currentIndex: number;
 
         private _autoClearDepthStencil: { [id:number]: RenderingManageAutoClearOptions } = {};
-        private _customOpaqueSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
-        private _customAlphaTestSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
-        private _customTransparentSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
-        private _renderinGroupInfo: RenderingGroupInfo = null;
+        private _customOpaqueSortCompareFn: { [id:number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
+        private _customAlphaTestSortCompareFn: { [id:number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
+        private _customTransparentSortCompareFn: { [id:number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
+        private _renderinGroupInfo: Nullable<RenderingGroupInfo> = null;
 
         constructor(scene: Scene) {
             this._scene = scene;
@@ -55,12 +55,12 @@
             this._depthStencilBufferAlreadyCleaned = true;
         }
 
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void,
-            activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void {          
+        public render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>,
+            activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void {          
                   
             // Check if there's at least on observer on the onRenderingGroupObservable and initialize things to fire it
             let observable = this._scene.onRenderingGroupObservable.hasObservers() ? this._scene.onRenderingGroupObservable : null;
-            let info: RenderingGroupInfo = null;
+            let info: Nullable<RenderingGroupInfo> = null;
             if (observable) {
                 if (!this._renderinGroupInfo) {
                     this._renderinGroupInfo = new RenderingGroupInfo();
@@ -90,7 +90,7 @@
                 let renderingGroupMask = 0;
 
                 // Fire PRECLEAR stage
-                if (observable) {
+                if (observable && info) {
                     renderingGroupMask = Math.pow(2, index);
                     info.renderStage = RenderingGroupInfo.STAGE_PRECLEAR;
                     info.renderingGroupId = index;
@@ -105,7 +105,7 @@
                     }
                 }
 
-                if (observable) {
+                if (observable && info) {
                     // Fire PREOPAQUE stage
                     info.renderStage = RenderingGroupInfo.STAGE_PREOPAQUE;
                     observable.notifyObservers(info, renderingGroupMask);
@@ -118,7 +118,7 @@
                     renderingGroup.render(customRenderFunction, renderSprites, renderParticles, activeMeshes);
 
                 // Fire POSTTRANSPARENT stage
-                if (observable) {
+                if (observable && info) {
                     info.renderStage = RenderingGroupInfo.STAGE_POSTTRANSPARENT;
                     observable.notifyObservers(info, renderingGroupMask);
                 }
@@ -190,9 +190,9 @@
          * @param transparentSortCompareFn The transparent queue comparison function use to sort.
          */
         public setRenderingOrder(renderingGroupId: number,
-            opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
-            alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
-            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null) {
+            opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null,
+            alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null,
+            transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null) {
 
             this._customOpaqueSortCompareFn[renderingGroupId] = opaqueSortCompareFn;
             this._customAlphaTestSortCompareFn[renderingGroupId] = alphaTestSortCompareFn;

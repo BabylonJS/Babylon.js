@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class Animatable {
-        private _localDelayOffset: number = null;
-        private _pausedDelay: number = null;
+        private _localDelayOffset: Nullable<number> = null;
+        private _pausedDelay: Nullable<number> = null;
         private _runtimeAnimations = new Array<RuntimeAnimation>();
         private _paused = false;
         private _scene: Scene;
@@ -22,7 +22,7 @@
             this._speedRatio = value;
         }
 
-        constructor(scene: Scene, public target: any, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, speedRatio: number = 1.0, public onAnimationEnd?: () => void, animations?: any) {
+        constructor(scene: Scene, public target: any, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, speedRatio: number = 1.0, public onAnimationEnd?: Nullable<() => void>, animations?: any) {
             if (animations) {
                 this.appendAnimations(target, animations);
             }
@@ -45,7 +45,7 @@
             }
         }
 
-        public getAnimationByTargetProperty(property: string): Animation {
+        public getAnimationByTargetProperty(property: string): Nullable<Animation> {
             var runtimeAnimations = this._runtimeAnimations;
 
             for (var index = 0; index < runtimeAnimations.length; index++) {
@@ -57,7 +57,7 @@
             return null;
         }
 
-        public getRuntimeAnimationByTargetProperty(property: string): RuntimeAnimation {
+        public getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation> {
             var runtimeAnimations = this._runtimeAnimations;
 
             for (var index = 0; index < runtimeAnimations.length; index++) {
@@ -105,6 +105,9 @@
                 var currentFrame = runtimeAnimations[0].currentFrame;
                 var adjustTime = frame - currentFrame;
                 var delay = adjustTime * 1000 / fps;
+                if (this._localDelayOffset === null) {
+                    this._localDelayOffset = 0;
+                }
                 this._localDelayOffset -= delay;
             }
 
