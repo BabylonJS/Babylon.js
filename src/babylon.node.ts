@@ -77,7 +77,7 @@ module BABYLON {
         */
         public onDisposeObservable = new Observable<Node>();
 
-        private _onDisposeObserver: Observer<Node>;
+        private _onDisposeObserver: Nullable<Observer<Node>>;
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);

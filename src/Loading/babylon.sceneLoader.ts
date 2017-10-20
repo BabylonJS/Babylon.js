@@ -130,7 +130,7 @@
         }
 
         // use babylon file loader directly if sceneFilename is prefixed with "data:"
-        private static _getDirectLoad(sceneFilename: string): string {
+        private static _getDirectLoad(sceneFilename: string): Nullable<string> {
             if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
                 return sceneFilename.substr(5);
             }
@@ -138,7 +138,7 @@
             return null;
         }
 
-        private static _loadData(rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any) => void, onProgress: (event: ProgressEvent) => void, onError: (message?: string, exception?: any) => void): void {
+        private static _loadData(rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any) => void, onProgress: (event: ProgressEvent) => void, onError: (message: Nullable<string>, exception?: any) => void): void {
             var directLoad = SceneLoader._getDirectLoad(sceneFilename);
             var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
             var plugin = registeredPlugin.plugin;
@@ -165,7 +165,9 @@
 
             var manifestChecked = (success: any) => {
                 Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress, database, useArrayBuffer, request => {
-                    onError(request.status + " " + request.statusText);
+                    if (request) {
+                        onError(request.status + " " + request.statusText);
+                    }
                 });
             };
 
@@ -232,7 +234,7 @@
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void {
+        public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void> = null, onProgress: Nullable<(event: ProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
                 return;
@@ -241,7 +243,7 @@
             var loadingToken = {};
             scene._addPendingData(loadingToken);
 
-            var errorHandler = (message?: string, exception?: any) => {
+            var errorHandler = (message: Nullable<string>, exception?: any) => {
                 let errorMessage = "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : "");
                 if (onError) {
                     onError(scene, errorMessage, exception);
@@ -333,7 +335,7 @@
             var loadingToken = {};
             scene._addPendingData(loadingToken);
 
-            var errorHandler = (message?: string, exception?: any) => {
+            var errorHandler = (message: Nullable<string>, exception?: any) => {
                 let errorMessage = "Unable to load from " + rootUrl + sceneFilename + (message ? ": " + message : "");
                 if (onError) {
                     onError(scene, errorMessage, exception);

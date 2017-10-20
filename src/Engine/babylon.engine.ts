@@ -2091,7 +2091,7 @@
             }
         }
 
-        private _bindIndexBufferWithCache(indexBuffer: WebGLBuffer): void {
+        private _bindIndexBufferWithCache(indexBuffer: Nullable<WebGLBuffer>): void {
             if (indexBuffer == null) {
                 return;
             }
@@ -2102,7 +2102,7 @@
             }
         }
 
-        private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: VertexBuffer; }, effect: Effect) {
+        private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect) {
             var attributes = effect.getAttributesNames();
 
             if (!this._vaoRecordInProgress) {
@@ -2211,7 +2211,7 @@
             this._gl.bindVertexArray(null);
         }
 
-        public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
+        public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer>; }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
