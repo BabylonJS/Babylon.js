@@ -45,18 +45,44 @@ export interface ViewerConfiguration {
     camera?: {
         position?: { x: number, y: number, z: number };
         rotation?: { x: number, y: number, z: number, w: number };
-        fieldOfView?: number;
+        fov?: number;
+        fovMode?: number;
         minZ?: number;
         maxZ?: number;
+        inertia?: number;
         behaviors?: Array<number | {
             type: number;
             [propName: string]: any;
-        }>
+        }>;
+
+        [propName: string]: any;
     },
     lights?: Array<{
         type: number;
         name?: string;
+        disabled?: boolean;
+        position?: { x: number, y: number, z: number };
+        target?: { x: number, y: number, z: number };
+        direction?: { x: number, y: number, z: number };
+        diffuse?: { r: number, g: number, b: number };
+        specular?: { r: number, g: number, b: number };
+        intensity?: number;
+        radius?: number;
+        shadownEnabled?: boolean; // only on specific lights!
+        shadowConfig?: {
+            useBlurExponentialShadowMap?: boolean;
+            useKernelBlur?: boolean;
+            blurKernel?: number;
+            blurScale?: number;
+            [propName: string]: any;
+        }
         [propName: string]: any;
+
+        // no behaviors for light at the moment, but allowing configuration for future reference.
+        behaviors?: Array<number | {
+            type: number;
+            [propName: string]: any;
+        }>
     }>
     // engine configuration. optional!
     engine?: {
@@ -96,10 +122,26 @@ export let defaultConfiguration: ViewerConfiguration = {
             0,
             {
                 type: 2,
-                zoomOnBoundingInfo: true
+                zoomOnBoundingInfo: true,
+                zoomStopsAnimation: false
             }
         ]
     },
+    lights: [
+        {
+            type: 1,
+            enableShadows: true,
+            direction: { x: -0.2, y: -1, z: 0 },
+            position: { x: 0.017, y: 0.5, z: 0 },
+            intensity: 4.5,
+            shadowConfig: {
+                useBlurExponentialShadowMap: true,
+                useKernelBlur: true,
+                blurKernel: 64,
+                blurScale: 4
+            }
+        }
+    ],
     engine: {
         antialiasing: true
     },
