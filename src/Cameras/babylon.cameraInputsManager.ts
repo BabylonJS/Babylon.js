@@ -6,7 +6,7 @@ module BABYLON {
         getClassName(): string;
         getSimpleName(): string;
         attachControl: (element: HTMLElement, noPreventDefault?: boolean) => void;
-        detachControl: (element: HTMLElement) => void;
+        detachControl: (element: Nullable<HTMLElement>) => void;
         checkInputs?: () => void;
     }
 
@@ -53,7 +53,7 @@ module BABYLON {
         public remove(inputToRemove: ICameraInput<TCamera>) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input === inputToRemove && this.attachedElement) {
+                if (input === inputToRemove) {
                     input.detachControl(this.attachedElement);
                     input.camera = null;
                     delete this.attached[cam];
@@ -65,7 +65,7 @@ module BABYLON {
         public removeByType(inputType: string) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.getClassName() === inputType && this.attachedElement) {
+                if (input.getClassName() === inputType) {
                     input.detachControl(this.attachedElement);
                     input.camera = null;
                     delete this.attached[cam];
