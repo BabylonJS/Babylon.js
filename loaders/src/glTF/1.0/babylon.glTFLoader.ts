@@ -1512,6 +1512,10 @@ module BABYLON.GLTF1 {
             GLTFLoader.Extensions[extension.name] = extension;
         }
 
+        public dispose(): void {
+            // do nothing
+        }
+
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
 

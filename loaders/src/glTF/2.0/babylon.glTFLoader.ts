@@ -33,7 +33,7 @@ module BABYLON.GLTF2 {
         readonly BYTES_PER_ELEMENT: number;
     }
 
-    export class GLTFLoader implements IGLTFLoader, IDisposable {
+    export class GLTFLoader implements IGLTFLoader {
         public _gltf: IGLTF;
         public _babylonScene: Scene;
 
@@ -181,10 +181,6 @@ module BABYLON.GLTF2 {
             this._startAnimations();
             this._successCallback();
             this._renderReadyObservable.notifyObservers(this);
-
-            if (this._parent.onReady) {
-                this._parent.onReady();
-            }
         }
 
         private _onComplete(): void {
@@ -416,7 +412,7 @@ module BABYLON.GLTF2 {
                 var multiMaterial = new MultiMaterial(node.babylonMesh.name, this._babylonScene);
                 node.babylonMesh.material = multiMaterial;
                 var subMaterials = multiMaterial.subMaterials;
-                for (var index = 0; index < primitives.length; index++) {
+                for (let index = 0; index < primitives.length; index++) {
                     var primitive = primitives[index];
 
                     if (primitive.material == null) {
@@ -428,7 +424,6 @@ module BABYLON.GLTF2 {
                             throw new Error(context + ": Failed to find material " + primitive.material);
                         }
 
-                        var capturedIndex = index;
                         this._loadMaterial("#/materials/" + material.index, material, (babylonMaterial, isNew) => {
                             if (isNew && this._parent.onMaterialLoaded) {
                                 this._parent.onMaterialLoaded(babylonMaterial);
@@ -436,12 +431,12 @@ module BABYLON.GLTF2 {
 
                             if (this._parent.onBeforeMaterialReadyAsync) {
                                 this._addLoaderPendingData(material);
-                                this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[capturedIndex] != null, () => {
-                                    subMaterials[capturedIndex] = babylonMaterial;
+                                this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[index] != null, () => {
+                                    subMaterials[index] = babylonMaterial;
                                     this._removeLoaderPendingData(material);
                                 });
                             } else {
-                                subMaterials[capturedIndex] = babylonMaterial;
+                                subMaterials[index] = babylonMaterial;
                             }
                         });
                     }
