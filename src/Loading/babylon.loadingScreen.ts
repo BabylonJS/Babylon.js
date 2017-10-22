@@ -11,7 +11,7 @@ module BABYLON {
 
     export class DefaultLoadingScreen implements ILoadingScreen {
 
-        private _loadingDiv: HTMLDivElement;
+        private _loadingDiv: Nullable<HTMLDivElement>;
         private _loadingTextDiv: HTMLDivElement;
 
         constructor(private _renderingCanvas: HTMLCanvasElement, private _loadingText = "", private _loadingDivBackgroundColor = "black") {
@@ -136,6 +136,10 @@ module BABYLON {
         private _resizeLoadingUI = () => {
             var canvasRect = this._renderingCanvas.getBoundingClientRect();
             var canvasPositioning = window.getComputedStyle(this._renderingCanvas).position;
+
+            if (!this._loadingDiv) {
+                return;
+            }
 
             this._loadingDiv.style.position = (canvasPositioning === "fixed") ? "fixed" : "absolute";
             this._loadingDiv.style.left = canvasRect.left + "px";

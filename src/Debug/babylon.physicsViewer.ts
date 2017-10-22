@@ -2,11 +2,11 @@
 
     export class PhysicsViewer {
         
-        protected _impostors:Array<PhysicsImpostor> = [];
-        protected _meshes:Array<AbstractMesh> = [];
-        protected _scene:Scene;
+        protected _impostors: Array<Nullable<PhysicsImpostor>> = [];
+        protected _meshes: Array<Nullable<AbstractMesh>> = [];
+        protected _scene: Nullable<Scene>;
         protected _numMeshes = 0;
-        protected _physicsEnginePlugin:IPhysicsEnginePlugin;
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
         private _renderFunction: () => void;
 
         private _debugBoxMesh:Mesh;
@@ -14,27 +14,43 @@
         private _debugMaterial:StandardMaterial;
 
         constructor(scene:Scene){
-
             this._scene = scene || Engine.LastCreatedScene;
-            this._physicsEnginePlugin = this._scene.getPhysicsEngine().getPhysicsPlugin();
+            let physicEngine = this._scene.getPhysicsEngine();
 
+            if (physicEngine) {
+                this._physicsEnginePlugin = physicEngine.getPhysicsPlugin();
+            }
         }
 
-        protected _updateDebugMeshes():void{
+        protected _updateDebugMeshes(): void{
 
             var plugin = this._physicsEnginePlugin;
 
-            for (var i = 0; i < this._numMeshes; i++){
-                if(this._impostors[i].isDisposed){
+            for (var i = 0; i < this._numMeshes; i++) {
+                let impostor = this._impostors[i];
+
+                if (!impostor) {
+                    continue;
+                }
+
+                if (impostor.isDisposed) {
                     this.hideImpostor(this._impostors[i--]);
-                }else{
-                    plugin.syncMeshWithImpostor(this._meshes[i], this._impostors[i]);
+                } else {
+                    let mesh = this._meshes[i];
+
+                    if (mesh && plugin) {
+                        plugin.syncMeshWithImpostor(mesh, impostor);
+                    }
                 }
             }
 
         }
 
-        public showImpostor(impostor:PhysicsImpostor):void{
+        public showImpostor(impostor:PhysicsImpostor):void {
+
+            if (!this._scene) {
+                return;
+            }
 
             for (var i = 0; i < this._numMeshes; i++){
                 if(this._impostors[i] == impostor){
@@ -58,14 +74,24 @@
 
         }
 
-        public hideImpostor(impostor:PhysicsImpostor){
+        public hideImpostor(impostor: Nullable<PhysicsImpostor>){
+
+            if (!impostor || !this._scene) {
+                return;
+            }
 
             var removed = false;
 
             for (var i = 0; i < this._numMeshes; i++){
                 if(this._impostors[i] == impostor){
-                    this._scene.removeMesh(this._meshes[i]);
-                    this._meshes[i].dispose();
+                    let mesh = this._meshes[i];
+
+                    if (!mesh) {
+                        continue;
+                    }
+
+                    this._scene.removeMesh(mesh);
+                    mesh.dispose();
                     this._numMeshes--;
                     if(this._numMeshes > 0){
                         this._meshes[i] = this._meshes[this._numMeshes];
@@ -120,10 +146,8 @@
             return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
         }
 
-        private _getDebugMesh(impostor:PhysicsImpostor, scene:Scene):AbstractMesh{
-            var body = impostor.physicsBody;
-            var shape = body.shapes[0];
-            var mesh:AbstractMesh;
+        private _getDebugMesh(impostor:PhysicsImpostor, scene:Scene): Nullable<AbstractMesh> {
+            var mesh: Nullable<AbstractMesh> = null;
             
             if (impostor.type == PhysicsImpostor.BoxImpostor) {
                 mesh = this._getDebugBoxMesh(scene);

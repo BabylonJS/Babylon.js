@@ -4,17 +4,25 @@
         private _oneGamepadConnected: boolean = false;
 
         private _isMonitoring: boolean = false;
-        private _gamepadEventSupported: boolean = 'GamepadEvent' in window;
-        private _gamepadSupport: () => Array<any> = (navigator.getGamepads ||
-            navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
+        private _gamepadEventSupported: boolean;
+        private _gamepadSupport: () => Array<any>;
 
         public onGamepadConnectedObservable: Observable<Gamepad>;
         public onGamepadDisconnectedObservable = new Observable<Gamepad>();
 
-        private _onGamepadConnectedEvent: (evt) => void;
-        private _onGamepadDisconnectedEvent: (evt) => void;
+        private _onGamepadConnectedEvent: Nullable<(evt: any) => void>;
+        private _onGamepadDisconnectedEvent: Nullable<(evt: any) => void>;
 
         constructor() {
+            if (!Tools.IsWindowObjectExist()) {
+                this._gamepadEventSupported = false;
+            } else  {
+                this._gamepadEventSupported = 'GamepadEvent' in window;
+                this._gamepadSupport = (navigator.getGamepads ||
+                    navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
+            }
+
+
             this.onGamepadConnectedObservable = new Observable<Gamepad>((observer) => {
                 // This will be used to raise the onGamepadConnected for all gamepads ALREADY connected
                 for (var i in this._babylonGamepads) {
@@ -83,7 +91,7 @@
             return this._babylonGamepads;
         }
 
-        public getGamepadByType(type: number = Gamepad.XBOX): Gamepad {
+        public getGamepadByType(type: number = Gamepad.XBOX): Nullable<Gamepad> {
             for (var gamepad of this._babylonGamepads) {
                 if (gamepad && gamepad.type === type) {
                     return gamepad;
@@ -95,8 +103,13 @@
 
         public dispose() {
             if (this._gamepadEventSupported) {
-                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent);
-                window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
+                if (this._onGamepadConnectedEvent) {
+                    window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent);
+                }
+
+                if (this._onGamepadDisconnectedEvent) {
+                    window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
+                }
                 this._onGamepadConnectedEvent = null;
                 this._onGamepadDisconnectedEvent = null;
             }
@@ -113,7 +126,7 @@
             this._babylonGamepads = [];
         }
 
-        private _addNewGamepad(gamepad): Gamepad {
+        private _addNewGamepad(gamepad: any): Gamepad {
             if (!this._oneGamepadConnected) {
                 this._oneGamepadConnected = true;
             }

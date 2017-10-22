@@ -84,6 +84,10 @@ module BABYLON {
         protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix): void {
             var activeCamera = this.getScene().activeCamera;
 
+            if (!activeCamera) {
+                return;
+            }
+
             Matrix.OrthoLHToRef(this.shadowFrustumSize, this.shadowFrustumSize,
                 this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
         }
@@ -94,6 +98,10 @@ module BABYLON {
          */
         protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
+
+            if (!activeCamera) {
+                return;
+            }
 
             // Check extends
             if (this.autoUpdateExtends || this._orthoLeft === Number.MAX_VALUE) {

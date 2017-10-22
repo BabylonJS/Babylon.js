@@ -29,10 +29,24 @@ module BABYLON.GLTF2 {
             return bufferView.buffer;
         }
 
-        public static ForEach(view: Uint16Array | Uint32Array | Float32Array, func: (nvalue: number, index: number) => void): void {
-            for (var index = 0; index < view.length; index++) {
-                func(view[index], index);
+        public static ValidateUri(uri: string): boolean {
+            return (uri.indexOf("..") === -1);
+        }
+
+        public static AssignIndices(array: Array<{index?: number}>): void {
+            if (array) {
+                for (var index = 0; index < array.length; index++) {
+                    array[index].index = index;
+                }
             }
+        }
+
+        public static GetArrayItem<T>(array: ArrayLike<T>, index: number): T {
+            if (!array || !array[index]) {
+                return null;
+            }
+
+            return array[index];
         }
 
         public static GetTextureWrapMode(mode: ETextureWrapMode): number {
@@ -84,21 +98,6 @@ module BABYLON.GLTF2 {
                         return Texture.NEAREST_NEAREST_MIPNEAREST;
                 }
             }
-        }
-
-        /**
-         * Decodes a buffer view into a string
-         * @param view: the buffer view
-         */
-        public static DecodeBufferToText(view: ArrayBufferView): string {
-            var result = "";
-            var length = view.byteLength;
-
-            for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode(view[i]);
-            }
-
-            return result;
         }
     }
 }

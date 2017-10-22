@@ -1,6 +1,6 @@
 ﻿module BABYLON.Internals {
 
-    var parseMaterialById = (id, parsedData, scene, rootUrl) => {
+    var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];
             if (parsedMaterial.id === id) {
@@ -10,7 +10,7 @@
         return null;
     };
 
-    var isDescendantOf = (mesh, names: Array<any>, hierarchyIds) => {
+    var isDescendantOf = (mesh: any, names: Array<any>, hierarchyIds: Array<number>) => {
         for (var i in names) {
             if (mesh.name === names[i]) {
                 hierarchyIds.push(mesh.id);
@@ -24,7 +24,7 @@
         return false;
     };
 
-    var logOperation = (operation, producer) => {
+    var logOperation = (operation: string, producer: {file: string, name: string, version: string, exporter_version: string}) => {
         return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
     }
 
@@ -38,7 +38,7 @@
 
             return false;
         },
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean => {
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean => {
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
             // when SceneLoader.debugLogging = true (default), or exception encountered.
             // Everything stored in var log instead of writing separate lines to support only writing in exception,
@@ -53,11 +53,11 @@
                 } else if (!Array.isArray(meshesNames)) {
                     meshesNames = [meshesNames];
                 }
-                
+
+                var hierarchyIds = new Array<number>();
                 if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                     var loadedSkeletonsIds = [];
                     var loadedMaterialsIds = [];
-                    var hierarchyIds = [];
                     var index: number;
                     var cache: number;
                     for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
@@ -68,7 +68,7 @@
                                 // Remove found mesh name from list.
                                 delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
                             }
-        
+
                             //Geometry?
                             if (parsedMesh.geometryId !== undefined && parsedMesh.geometryId !== null) {
                                 //does the file contain geometries?
@@ -79,7 +79,7 @@
                                         if (found === true || !parsedData.geometries[geometryType] || !(Array.isArray(parsedData.geometries[geometryType]))) {
                                             return;
                                         } else {
-                                            parsedData.geometries[geometryType].forEach((parsedGeometryData) => {
+                                            parsedData.geometries[geometryType].forEach((parsedGeometryData: any) => {
                                                 if (parsedGeometryData.id === parsedMesh.geometryId) {
                                                     switch (geometryType) {
                                                         case "boxes":
@@ -118,7 +118,7 @@
                                     }
                                 }
                             }
-        
+
                             // Material ?
                             if (parsedMesh.materialId) {
                                 var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
@@ -151,7 +151,7 @@
                                     }
                                 }
                             }
-        
+
                             // Skeleton ?
                             if (parsedMesh.skeletonId > -1 && parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
                                 var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
@@ -173,29 +173,29 @@
                             log += "\n\tMesh " + mesh.toString(fullDetails);
                         }
                     }
-        
+
                     // Connecting parents
                     var currentMesh: AbstractMesh;
                     for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                         currentMesh = scene.meshes[index];
                         if (currentMesh._waitingParentId) {
                             currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
-                            currentMesh._waitingParentId = undefined;
+                            currentMesh._waitingParentId = null;
                         }
                     }
-        
+
                     // freeze and compute world matrix application
                     for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                         currentMesh = scene.meshes[index];
                         if (currentMesh._waitingFreezeWorldMatrix) {
                             currentMesh.freezeWorldMatrix();
-                            currentMesh._waitingFreezeWorldMatrix = undefined;
+                            currentMesh._waitingFreezeWorldMatrix = null;
                         } else {
                             currentMesh.computeWorldMatrix(true);
                         }
                     }
                 }
-    
+
                 // Particles
                 if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
                     for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
@@ -209,17 +209,22 @@
                 return true;
 
             } catch (err) {
-                Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + log);
-                log = null;
-                throw err;
-
+                let msg = logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + log;
+                if (onError) {
+                    onError(msg, err);
+                } else {
+                    Tools.Log(msg);
+                    throw err;
+                }
             } finally {
                 if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
                     Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
+
+            return false;
         },
-        load: (scene: Scene, data: string, rootUrl: string): boolean => {
+        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean => {
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
             // when SceneLoader.debugLogging = true (default), or exception encountered.
             // Everything stored in var log instead of writing separate lines to support only writing in exception,
@@ -229,7 +234,7 @@
                 var parsedData = JSON.parse(data);
                 log = "";
                 var fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
-                
+
                 // Scene
                 if (parsedData.useDelayedTextureLoading !== undefined && parsedData.useDelayedTextureLoading !== null) {
                     scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
@@ -246,7 +251,7 @@
                 if (parsedData.gravity !== undefined && parsedData.gravity !== null) {
                     scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
                 }
-                
+
                 // Fog
                 if (parsedData.fogMode && parsedData.fogMode !== 0) {
                     scene.fogMode = parsedData.fogMode;
@@ -262,7 +267,7 @@
                         case 3: log += "linear\n"; break;
                     }
                 }
-                
+
                 //Physics
                 if (parsedData.physicsEnabled) {
                     var physicsPlugin;
@@ -276,12 +281,12 @@
                     var physicsGravity = parsedData.physicsGravity ? BABYLON.Vector3.FromArray(parsedData.physicsGravity) : null;
                     scene.enablePhysics(physicsGravity, physicsPlugin);
                 }
-                
+
                 // Metadata
                 if (parsedData.metadata !== undefined && parsedData.metadata !== null) {
                     scene.metadata = parsedData.metadata;
                 }
-                
+
                 //collisions, if defined. otherwise, default is true
                 if (parsedData.collisionsEnabled !== undefined && parsedData.collisionsEnabled !== null) {
                     scene.collisionsEnabled = parsedData.collisionsEnabled;
@@ -295,11 +300,13 @@
                     for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
                         var parsedLight = parsedData.lights[index];
                         var light = Light.Parse(parsedLight, scene);
-                        log += (index === 0 ? "\n\tLights:" : "");
-                        log += "\n\t\t" + light.toString(fullDetails);
+                        if (light) {
+                            log += (index === 0 ? "\n\tLights:" : "");
+                            log += "\n\t\t" + light.toString(fullDetails);
+                        }
                     }
                 }
-    
+
                 // Animations
                 if (parsedData.animations !== undefined && parsedData.animations !== null) {
                     for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
@@ -314,7 +321,7 @@
                 if (parsedData.autoAnimate) {
                     scene.beginAnimation(scene, parsedData.autoAnimateFrom, parsedData.autoAnimateTo, parsedData.autoAnimateLoop, parsedData.autoAnimateSpeed || 1.0);
                 }
-    
+
                 // Materials
                 if (parsedData.materials !== undefined && parsedData.materials !== null) {
                     for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
@@ -337,10 +344,10 @@
                 // Morph targets
                 if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
                     for (var managerData of parsedData.morphTargetManagers) {
-                        var parsedManager = MorphTargetManager.Parse(managerData, scene);
+                        MorphTargetManager.Parse(managerData, scene);
                     }
                 }
-    
+
                 // Skeletons
                 if (parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
                     for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
@@ -350,7 +357,7 @@
                         log += "\n\t\t" + skeleton.toString(fullDetails);
                     }
                 }
-    
+
                 // Geometries
                 var geometries = parsedData.geometries;
                 if (geometries !== undefined && geometries !== null) {
@@ -362,7 +369,7 @@
                             Geometry.Primitives.Box.Parse(parsedBox, scene);
                         }
                     }
-    
+
                     // Spheres
                     var spheres = geometries.spheres;
                     if (spheres !== undefined && spheres !== null) {
@@ -371,7 +378,7 @@
                             Geometry.Primitives.Sphere.Parse(parsedSphere, scene);
                         }
                     }
-    
+
                     // Cylinders
                     var cylinders = geometries.cylinders;
                     if (cylinders !== undefined && cylinders !== null) {
@@ -380,7 +387,7 @@
                             Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene);
                         }
                     }
-    
+
                     // Toruses
                     var toruses = geometries.toruses;
                     if (toruses !== undefined && toruses !== null) {
@@ -389,7 +396,7 @@
                             Geometry.Primitives.Torus.Parse(parsedTorus, scene);
                         }
                     }
-    
+
                     // Grounds
                     var grounds = geometries.grounds;
                     if (grounds !== undefined && grounds !== null) {
@@ -398,7 +405,7 @@
                             Geometry.Primitives.Ground.Parse(parsedGround, scene);
                         }
                     }
-    
+
                     // Planes
                     var planes = geometries.planes;
                     if (planes !== undefined && planes !== null) {
@@ -407,7 +414,7 @@
                             Geometry.Primitives.Plane.Parse(parsedPlane, scene);
                         }
                     }
-    
+
                     // TorusKnots
                     var torusKnots = geometries.torusKnots;
                     if (torusKnots !== undefined && torusKnots !== null) {
@@ -416,7 +423,7 @@
                             Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene);
                         }
                     }
-    
+
                     // VertexData
                     var vertexData = geometries.vertexData;
                     if (vertexData !== undefined && vertexData !== null) {
@@ -426,7 +433,7 @@
                         }
                     }
                 }
-    
+
                 // Meshes
                 if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                     for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
@@ -436,7 +443,7 @@
                         log += "\n\t\t" + mesh.toString(fullDetails);
                     }
                 }
-    
+
                 // Cameras
                 if (parsedData.cameras !== undefined && parsedData.cameras !== null) {
                     for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
@@ -449,24 +456,24 @@
                 if (parsedData.activeCameraID !== undefined && parsedData.activeCameraID !== null) {
                     scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
-    
+
                 // Browsing all the graph to connect the dots
                 for (index = 0, cache = scene.cameras.length; index < cache; index++) {
                     var camera = scene.cameras[index];
                     if (camera._waitingParentId) {
                         camera.parent = scene.getLastEntryByID(camera._waitingParentId);
-                        camera._waitingParentId = undefined;
+                        camera._waitingParentId = null;
                     }
                 }
 
                 for (index = 0, cache = scene.lights.length; index < cache; index++) {
-                    var light = scene.lights[index];
-                    if (light._waitingParentId) {
+                    let light = scene.lights[index];
+                    if (light && light._waitingParentId) {
                         light.parent = scene.getLastEntryByID(light._waitingParentId);
-                        light._waitingParentId = undefined;
+                        light._waitingParentId = null;
                     }
                 }
-    
+
                 // Sounds
                 var loadedSounds: Sound[] = [];
                 var loadedSound: Sound;
@@ -483,37 +490,37 @@
                                 Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
                             }
                         } else {
-                            var emptySound = new Sound(parsedSound.name, null, scene);
+                            new Sound(parsedSound.name, null, scene);
                         }
                     }
                 }
 
                 loadedSounds = [];
-    
+
                 // Connect parents & children and parse actions
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     var mesh = scene.meshes[index];
                     if (mesh._waitingParentId) {
                         mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
-                        mesh._waitingParentId = undefined;
+                        mesh._waitingParentId = null;
                     }
                     if (mesh._waitingActions) {
                         ActionManager.Parse(mesh._waitingActions, mesh, scene);
-                        mesh._waitingActions = undefined;
+                        mesh._waitingActions = null;
                     }
                 }
-    
+
                 // freeze world matrix application
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     var currentMesh = scene.meshes[index];
                     if (currentMesh._waitingFreezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
-                        currentMesh._waitingFreezeWorldMatrix = undefined;
+                        currentMesh._waitingFreezeWorldMatrix = null;
                     } else {
                         currentMesh.computeWorldMatrix(true);
                     }
                 }
-    
+
                 // Particles Systems
                 if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
                     for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
@@ -521,7 +528,7 @@
                         ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
                     }
                 }
-    
+
                 // Lens flares
                 if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
                     for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
@@ -529,7 +536,7 @@
                         LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
                     }
                 }
-    
+
                 // Shadows
                 if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
                     for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
@@ -537,10 +544,10 @@
                         ShadowGenerator.Parse(parsedShadowGenerator, scene);
                     }
                 }
-                
+
                 // Lights exclusions / inclusions
                 for (index = 0, cache = scene.lights.length; index < cache; index++) {
-                    var light = scene.lights[index];
+                    let light = scene.lights[index];
                     // Excluded check
                     if (light._excludedMeshesIds.length > 0) {
                         for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
@@ -567,25 +574,30 @@
                         light._includedOnlyMeshesIds = [];
                     }
                 }
-    
+
                 // Actions (scene)
                 if (parsedData.actions !== undefined && parsedData.actions !== null) {
                     ActionManager.Parse(parsedData.actions, null, scene);
                 }
-    
+
                 // Finish
                 return true;
 
             } catch (err) {
-                Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + log);
-                log = null;
-                throw err;
-
+                let msg = logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + log;
+                if (onError) {
+                    onError(msg, err);
+                } else {
+                    Tools.Log(msg);
+                    throw err;
+                }
             } finally {
                 if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
                     Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
+
+            return false;
         }
     });
 }

@@ -102,10 +102,6 @@ module BABYLON {
             return serializationObject;
         }
 
-        private _onInfluenceChanged(needUpdate: boolean): void {
-            this._syncActiveTargets(needUpdate);
-        }
-
         private _syncActiveTargets(needUpdate: boolean): void {
             let influenceCount = 0;
             this._activeTargets.reset();            

@@ -99,7 +99,7 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
-                if (this[prop] !== other[prop]) {
+                if ((<any>this)[prop] !== (<any>other)[prop]) {
                     return false;
                 }
             }
@@ -115,7 +115,7 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
-                other[prop] = this[prop];
+                (<any>other)[prop] = (<any>this)[prop];
             }
         }
 
@@ -123,11 +123,11 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
-                if (typeof (this[prop]) === "number") {
-                    this[prop] = 0;
+                if (typeof ((<any>this)[prop]) === "number") {
+                    (<any>this)[prop] = 0;
 
                 } else {
-                    this[prop] = false;
+                    (<any>this)[prop] = false;
                 }
             }
         }
@@ -136,10 +136,10 @@
             var result = "";
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
-                var value = this[prop];
+                var value = (<any>this)[prop];
 
                 if (typeof (value) === "number") {
-                    result += "#define " + prop + " " + this[prop] + "\n";
+                    result += "#define " + prop + " " + (<any>this)[prop] + "\n";
 
                 } else if (value) {
                     result += "#define " + prop + "\n";
@@ -150,7 +150,7 @@
         }
     }
 
-    export class Material {
+    export class Material implements IAnimatable {
         private static _TriangleFillMode = 0;
         private static _WireFrameFillMode = 1;
         private static _PointFillMode = 2;
@@ -245,6 +245,8 @@
         public doNotSerialize = false;
 
         public storeEffectOnSubMeshes = false;
+
+        public animations: Array<Animation>;
 
         /**
         * An event triggered when the material is disposed.
@@ -451,13 +453,16 @@
             this._wasPreviouslyReady = false;
         }
 
-        public _preBind(effect?: Effect): void {
+        public _preBind(effect?: Effect, overrideOrientation? : number): boolean {
             var engine = this._scene.getEngine();
 
-            var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
+            var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
+            var reverse = orientation === Material.ClockWiseSideOrientation;
 
             engine.enableEffect(effect ? effect : this._effect);
             engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
+
+            return reverse;
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {

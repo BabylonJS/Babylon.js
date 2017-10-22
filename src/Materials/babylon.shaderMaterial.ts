@@ -46,7 +46,7 @@
             return this._options.needAlphaTesting;
         }
 
-        private _checkUniform(uniformName): void {
+        private _checkUniform(uniformName: string): void {
             if (this._options.uniforms.indexOf(uniformName) === -1) {
                 this._options.uniforms.push(uniformName);
             }
@@ -579,14 +579,14 @@
 
             // Color3 arrays
             for (name in source.colors3Arrays) {
-                const colors: Color3[] = source.colors3Arrays[name].reduce((arr, num, i) => {
+                const colors: Color3[] = source.colors3Arrays[name].reduce((arr: Array<Array<number>>, num: number, i: number) => {
                     if (i % 3 === 0) {
                         arr.push([num]);
                     } else {
                         arr[arr.length - 1].push(num);
                     }
                     return arr;
-                }, []).map(color => Color3.FromArray(color));
+                }, []).map((color: ArrayLike<number>) => Color3.FromArray(color));
                 material.setColor3Array(name, colors);
             }
 

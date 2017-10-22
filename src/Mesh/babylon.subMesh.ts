@@ -1,16 +1,16 @@
 ﻿module BABYLON {
     export class BaseSubMesh {
-        public _materialDefines: MaterialDefines;
-        public _materialEffect: Effect;
+        public _materialDefines: Nullable<MaterialDefines>;
+        public _materialEffect: Nullable<Effect>;
 
-        public get effect(): Effect {
+        public get effect(): Nullable<Effect> {
             return this._materialEffect;
         }       
 
-        public setEffect(effect: Effect, defines?: MaterialDefines) {
+        public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null) {
             if (this._materialEffect === effect) {
                 if (!effect) {
-                    this._materialDefines = undefined;
+                    this._materialDefines = null;
                 }
                 return;
             }
@@ -25,8 +25,8 @@
         private _mesh: AbstractMesh;
         private _renderingMesh: Mesh;
         private _boundingInfo: BoundingInfo;
-        private _linesIndexBuffer: WebGLBuffer;
-        public _lastColliderWorldVertices: Vector3[];
+        private _linesIndexBuffer: Nullable<WebGLBuffer>;
+        public _lastColliderWorldVertices: Nullable<Vector3[]>;
         public _trianglePlanes: Plane[];
         public _lastColliderTransformMatrix: Matrix;
 
@@ -37,7 +37,11 @@
 
         private _currentMaterial: Material;
 
-        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
+        public static AddToMesh(materialIndex: number, verticesStart: number, verticesCount: number, indexStart: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true): SubMesh {
+            return new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox);
+        }
+
+        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart: number, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
             super();
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || <Mesh>mesh;
@@ -103,7 +107,7 @@
 
                 if (this._currentMaterial !== effectiveMaterial) {
                     this._currentMaterial = effectiveMaterial;
-                    this._materialDefines = undefined;
+                    this._materialDefines = null;
                 }
 
                 return effectiveMaterial;
@@ -125,13 +129,13 @@
             this._lastColliderWorldVertices = null;
 
             if (this.IsGlobal) {
-                return;
+                return this;
             }
             var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
-                return;
+                return this;
             }
 
             var indices = this._renderingMesh.getIndices();
@@ -220,8 +224,8 @@
         /**
          * Returns an object IntersectionInfo.  
          */
-        public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): IntersectionInfo {
-            var intersectInfo: IntersectionInfo = null;
+        public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+            var intersectInfo: Nullable<IntersectionInfo> = null;
 
             // LineMesh first as it's also a Mesh...
             if (this._mesh instanceof LinesMesh) {

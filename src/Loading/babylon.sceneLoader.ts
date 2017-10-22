@@ -8,8 +8,8 @@
     export interface ISceneLoaderPlugin {
         name: string;
         extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError: (message: string) => void) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string, onError: (message: string) => void) => boolean;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
         canDirectLoad?: (data: string) => boolean;
     }
 
@@ -17,7 +17,7 @@
         name: string;
         extensions: string | ISceneLoaderPluginExtensions;
         importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string, exception?: any) => void) => void;
         canDirectLoad?: (data: string) => boolean;
     }
 
@@ -80,7 +80,7 @@
 
         public static set CleanBoneMatrixWeights(value: boolean) {
             SceneLoader._CleanBoneMatrixWeights = value;
-        }        
+        }
 
         // Members
         public static OnPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>();
@@ -130,7 +130,7 @@
         }
 
         // use babylon file loader directly if sceneFilename is prefixed with "data:"
-        private static _getDirectLoad(sceneFilename: string): string {
+        private static _getDirectLoad(sceneFilename: string): Nullable<string> {
             if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
                 return sceneFilename.substr(5);
             }
@@ -138,7 +138,7 @@
             return null;
         }
 
-        private static _loadData(rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any) => void, onProgress: (event: ProgressEvent) => void, onError: (message?: string, exception?: any) => void): void {
+        private static _loadData(rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any) => void, onProgress: (event: ProgressEvent) => void, onError: (message: Nullable<string>, exception?: any) => void): void {
             var directLoad = SceneLoader._getDirectLoad(sceneFilename);
             var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
             var plugin = registeredPlugin.plugin;
@@ -147,7 +147,7 @@
 
             SceneLoader.OnPluginActivatedObservable.notifyObservers(registeredPlugin.plugin);
 
-            var dataCallback = data => {
+            var dataCallback = (data: any) => {
                 if (scene.isDisposed) {
                     onError("Scene has been disposed");
                     return;
@@ -163,9 +163,11 @@
                 }
             };
 
-            var manifestChecked = success => {
+            var manifestChecked = (success: any) => {
                 Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress, database, useArrayBuffer, request => {
-                    onError(request.status + " " + request.statusText);
+                    if (request) {
+                        onError(request.status + " " + request.statusText);
+                    }
                 });
             };
 
@@ -185,7 +187,16 @@
             }
             // Loading file from disk via input file or drag'n'drop
             else {
-                Tools.ReadFile(sceneFilename, dataCallback, onProgress, useArrayBuffer);
+                var fileOrString = <any> sceneFilename;
+
+                if (fileOrString.name) { // File
+                    Tools.ReadFile(fileOrString, dataCallback, onProgress, useArrayBuffer);
+                } else if (FilesInput.FilesToLoad[sceneFilename]) {
+                    Tools.ReadFile(FilesInput.FilesToLoad[sceneFilename], dataCallback, onProgress, useArrayBuffer);
+                } else {
+                    onError("Unable to find file named " + sceneFilename);
+                    return;
+                }
             }
         }
 
@@ -223,7 +234,7 @@
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void {
+        public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void> = null, onProgress: Nullable<(event: ProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
                 return;
@@ -232,9 +243,13 @@
             var loadingToken = {};
             scene._addPendingData(loadingToken);
 
-            var errorHandler = (message?: string, exception?: any) => {
+            var errorHandler = (message: Nullable<string>, exception?: any) => {
+                let errorMessage = "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : "");
                 if (onError) {
-                    onError(scene, "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : ""));
+                    onError(scene, errorMessage, exception);
+                } else {
+                    Tools.Error(errorMessage);
+                    // should the exception be thrown?
                 }
                 scene._removePendingData(loadingToken);
             };
@@ -248,26 +263,37 @@
             SceneLoader._loadData(rootUrl, sceneFilename, scene, (plugin, data) => {
                 if ((<any>plugin).importMesh) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
-                    var meshes = [];
-                    var particleSystems = [];
-                    var skeletons = [];
+                    var meshes = new Array<AbstractMesh>();
+                    var particleSystems = new Array<ParticleSystem>();
+                    var skeletons = new Array<Skeleton>();
                     if (!syncedPlugin.importMesh(meshNames, scene, data, rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;
                     }
 
                     if (onSuccess) {
-                        scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                        onSuccess(meshes, particleSystems, skeletons);
-                        scene._removePendingData(loadingToken);
+                        // wrap onSuccess with try-catch to know if something went wrong.
+                        try {
+                            scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                            onSuccess(meshes, particleSystems, skeletons);
+                            scene._removePendingData(loadingToken);
+                        } catch (e) {
+                            let message = 'Error in onSuccess callback.';
+                            errorHandler(message, e);
+                        }
                     }
                 }
                 else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
                         if (onSuccess) {
-                            scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                            onSuccess(meshes, particleSystems, skeletons);
-                            scene._removePendingData(loadingToken);
+                            try {
+                                scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                                onSuccess(meshes, particleSystems, skeletons);
+                                scene._removePendingData(loadingToken);
+                            } catch (e) {
+                                let message = 'Error in onSuccess callback.';
+                                errorHandler(message, e);
+                            }
                         }
                     }, progressHandler, errorHandler);
                 }
@@ -309,9 +335,13 @@
             var loadingToken = {};
             scene._addPendingData(loadingToken);
 
-            var errorHandler = (message?: string, exception?: any) => {
+            var errorHandler = (message: Nullable<string>, exception?: any) => {
+                let errorMessage = "Unable to load from " + rootUrl + sceneFilename + (message ? ": " + message : "");
                 if (onError) {
-                    onError(scene, "Unable to load from " + rootUrl + sceneFilename + (message ? ": " + message : ""));
+                    onError(scene, errorMessage, exception);
+                } else {
+                    Tools.Error(errorMessage);
+                    // should the exception be thrown?
                 }
                 scene._removePendingData(loadingToken);
                 scene.getEngine().hideLoadingUI();
@@ -331,7 +361,11 @@
                     }
 
                     if (onSuccess) {
-                        onSuccess(scene);
+                        try {
+                            onSuccess(scene);
+                        } catch (e) {
+                            errorHandler("Error in onSuccess callback", e);
+                        }
                     }
 
                     scene.loadingPluginName = plugin.name;
@@ -342,7 +376,7 @@
                         if (onSuccess) {
                             onSuccess(scene);
                         }
-                        
+
                         scene.loadingPluginName = plugin.name;
                         scene._removePendingData(loadingToken);
                     }, progressHandler, errorHandler);

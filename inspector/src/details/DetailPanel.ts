@@ -80,11 +80,15 @@
                 this._headerRow.querySelector(`#sort-direction-${property}`).classList.add('fa-chevron-down');
             }
 
-            let isString = (s) => {
+            let isString = (s: any) => {
                 return typeof(s) === 'string' || s instanceof String;
             };
 
-            this._detailRows.sort((detail1, detail2) : number => {
+            this._detailRows.forEach((property) => {
+                property.closeDetails();
+            })
+
+            this._detailRows.sort((detail1: any, detail2: any) : number => {
                 let str1 = String(detail1[property]);
                 let str2 = String(detail2[property]);
                 if (!isString(str1)) {

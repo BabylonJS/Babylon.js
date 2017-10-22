@@ -88,8 +88,6 @@ module BABYLON {
                 }
             }
 
-            var engine = scene.getEngine();
-
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             
             // Attribs

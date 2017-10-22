@@ -162,5 +162,9 @@ module INSPECTOR {
                 this._div.classList.add('active');
             }
         }
+
+        public getDiv() {
+            return this._div;
+        }
     }
 }

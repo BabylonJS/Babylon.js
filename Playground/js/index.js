@@ -23,6 +23,22 @@
         });
     };
 
+    var editorOptions = {
+        value: "",
+        language: "javascript",
+        lineNumbers: true,
+        tabSize: "auto",
+        insertSpaces: "auto",
+        roundedSelection: true,
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        readOnly: false,
+        theme: "vs",
+        contextmenu: false,
+        folding: true,
+        showFoldingControls: "always",
+        renderIndentGuides: true
+    };
 
     var fontSize = 14;
 
@@ -685,19 +701,8 @@
 
             var oldCode = jsEditor.getValue();
             jsEditor.dispose();
-            jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
-                value: "",
-                language: "javascript",
-                lineNumbers: true,
-                tabSize: "auto",
-                insertSpaces: "auto",
-                roundedSelection: true,
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                readOnly: false,
-                theme: vsTheme,
-                contextmenu: false
-            });
+            editorOptions.theme = vsTheme;
+            jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
 
@@ -977,20 +982,7 @@
                 require(['vs/editor/editor.main'], function () {
                     monaco.languages.typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
 
-                    jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
-                        value: "",
-                        language: "javascript",
-                        lineNumbers: true,
-                        tabSize: "auto",
-                        insertSpaces: "auto",
-                        roundedSelection: true,
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                        readOnly: false,
-                        theme: "vs",
-                        contextmenu: false,
-                        folding: true
-                    });
+                    jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
 
                     run();
                 });

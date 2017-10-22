@@ -20,7 +20,7 @@ module BABYLON {
          * @param data
          * @param rootUrl
          */
-        public parseMTL = function (scene: BABYLON.Scene, data: string, rootUrl: string) {
+        public parseMTL(scene: BABYLON.Scene, data: string, rootUrl: string) {
             //Split the lines from the file
             var lines = data.split('\n');
             //Space char
@@ -796,7 +796,7 @@ module BABYLON {
 
             //Create a BABYLON.Mesh list
             var babylonMeshesArray: Array<BABYLON.Mesh> = []; //The mesh for babylon
-            var materialToUse = [];
+            var materialToUse = new Array<string>();
 
             //Set data for each mesh
             for (var j = 0; j < meshesFromObj.length; j++) {

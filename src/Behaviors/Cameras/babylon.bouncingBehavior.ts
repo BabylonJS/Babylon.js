@@ -53,6 +53,9 @@ module BABYLON {
 			this._autoTransitionRange = value;
 
 			let camera = this._attachedCamera;
+			if (!camera) {
+				return;
+			}
 
 			if (value) {
 				this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((mesh) => {
@@ -72,12 +75,16 @@ module BABYLON {
 		}
         
         // Connection
-        private _attachedCamera: ArcRotateCamera;
-		private _onAfterCheckInputsObserver: Observer<Camera>;	
-		private _onMeshTargetChangedObserver: Observer<AbstractMesh>;
+        private _attachedCamera: Nullable<ArcRotateCamera>;
+		private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;	
+		private _onMeshTargetChangedObserver: Nullable<Observer<AbstractMesh>>;
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
+				if (!this._attachedCamera) {
+					return;
+				}
+
 				// Add the bounce animation to the lower radius limit
 				if (this._isRadiusAtLimit(this._attachedCamera.lowerRadiusLimit)) {
 					this._applyBoundRadiusAnimation(this.lowerRadiusTransitionRange);
@@ -91,7 +98,12 @@ module BABYLON {
         }
         
         public detach(): void {
-			this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			if (!this._attachedCamera) {
+				return;
+			}			
+			if (this._onAfterCheckInputsObserver) {
+				this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			}
 			if (this._onMeshTargetChangedObserver) {
 				this._attachedCamera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
 			}
@@ -100,7 +112,7 @@ module BABYLON {
 
         // Animations
         private _radiusIsAnimating: boolean = false;
-        private _radiusBounceTransition: Animation = null;
+        private _radiusBounceTransition: Nullable<Animation> = null;
         private _animatables = new Array<BABYLON.Animatable>();
         private _cachedWheelPrecision: number;
 
@@ -109,7 +121,11 @@ module BABYLON {
 		 * @param radiusLimit The limit to check against.
 		 * @return Bool to indicate if at limit.
 		 */
-		private _isRadiusAtLimit(radiusLimit: number): boolean {
+		private _isRadiusAtLimit(radiusLimit: Nullable<number>): boolean {
+			if (!this._attachedCamera) {
+				return false;
+			}
+
 			if (this._attachedCamera.radius === radiusLimit && !this._radiusIsAnimating) {
 				return true;
 			}
@@ -121,6 +137,10 @@ module BABYLON {
 		 * @param radiusDelta The delta by which to animate to. Can be negative.
 		 */
 		private _applyBoundRadiusAnimation(radiusDelta: number): void {
+			if (!this._attachedCamera) {
+				return;
+			}
+
 			if (!this._radiusBounceTransition) {
 				BouncingBehavior.EasingFunction.setEasingMode(BouncingBehavior.EasingMode);
 				this._radiusBounceTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, BouncingBehavior.EasingFunction);
@@ -133,8 +153,12 @@ module BABYLON {
 			// Animate to the radius limit
 			this.stopAllAnimations();
 			this._radiusIsAnimating = true;
-            this._animatables.push(Animation.TransitionTo("radius", this._attachedCamera.radius + radiusDelta, this._attachedCamera, this._attachedCamera.getScene(), 60, 
-                                    this._radiusBounceTransition, this.transitionDuration, () => this._clearAnimationLocks()));
+			let animatable = Animation.TransitionTo("radius", this._attachedCamera.radius + radiusDelta, this._attachedCamera, this._attachedCamera.getScene(), 60, 
+			this._radiusBounceTransition, this.transitionDuration, () => this._clearAnimationLocks());
+
+			if (animatable) {
+				this._animatables.push(animatable);
+			}
         }
 
         /**
@@ -142,14 +166,19 @@ module BABYLON {
 		 */
 		protected _clearAnimationLocks(): void {
 			this._radiusIsAnimating = false;
-			this._attachedCamera.wheelPrecision = this._cachedWheelPrecision;
+
+			if (this._attachedCamera) {
+				this._attachedCamera.wheelPrecision = this._cachedWheelPrecision;
+			}			
 		}        
         
 		/**
 		 * Stops and removes all animations that have been applied to the camera
 		 */        
         public stopAllAnimations(): void {
-			this._attachedCamera.animations = [];
+			if (this._attachedCamera) {
+				this._attachedCamera.animations = [];
+			}
 			while (this._animatables.length) {
 				this._animatables[0].onAnimationEnd = null;
 				this._animatables[0].stop();

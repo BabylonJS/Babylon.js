@@ -68,13 +68,6 @@
         }
 
         // used by animation engine
-        private markAsDirty(propertyName: string): PathCursor {
-            this.ensureLimits();
-            this.raiseOnChange();
-
-            return this;
-        }
-
         private raiseOnChange(): PathCursor {
             this._onchange.forEach(f => f(this));
 
@@ -103,10 +96,10 @@
 
         public blendingSpeed = 0.01;
 
-        private _ranges: { [name: string]: AnimationRange; } = {};
+        private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
         static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number,
-            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation {
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation> {
             var dataType = undefined;
 
             if (!isNaN(parseFloat(from)) && isFinite(from)) {
@@ -160,18 +153,26 @@
 
         public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
             framePerSecond: number, totalFrame: number,
-            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable> {
 
             var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+            if (!animation) {
+                return null;
+            }
 
             return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         }
 
         public static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string,
             framePerSecond: number, totalFrame: number,
-            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable> {
 
             var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+            if (!animation) {
+                return null;
+            }
 
             node.animations.push(animation);
 
@@ -189,14 +190,14 @@
 		 * @param duration The duration of the animation, in milliseconds
 		 * @param onAnimationEnd Call back trigger at the end of the animation.
 		 */
-		public static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number,	onAnimationEnd: () => void = null): Animatable {
+		public static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number,	onAnimationEnd: Nullable<() => void> = null): Nullable<Animatable> {
 
 			if (duration <= 0) {
 				host[property] = targetValue;
 				if (onAnimationEnd) {
                     onAnimationEnd();
                 }
-				return;
+				return null;
 			}
 
 			var endFrame: number = frameRate * (duration / 1000);
@@ -300,23 +301,27 @@
         }
 
         public deleteRange(name: string, deleteFrames = true): void {
-            if (this._ranges[name]) {
-                if (deleteFrames) {
-                    var from = this._ranges[name].from;
-                    var to = this._ranges[name].to;
- 
-                    // this loop MUST go high to low for multiple splices to work
-                    for (var key = this._keys.length - 1; key >= 0; key--) {
-                        if (this._keys[key].frame >= from && this._keys[key].frame <= to) {
-                            this._keys.splice(key, 1);
-                        }
+            let range = this._ranges[name];
+            if (!range) {
+                return;
+
+            }
+            if (deleteFrames) {
+                var from = range.from;
+                var to = range.to;
+
+                // this loop MUST go high to low for multiple splices to work
+                for (var key = this._keys.length - 1; key >= 0; key--) {
+                    if (this._keys[key].frame >= from && this._keys[key].frame <= to) {
+                        this._keys.splice(key, 1);
                     }
                 }
-                this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
             }
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
+        
         }
 
-        public getRange(name: string): AnimationRange {
+        public getRange(name: string): Nullable<AnimationRange> {
             return this._ranges[name];
         }
 
@@ -401,7 +406,11 @@
             if (this._ranges) {
                 clone._ranges = {};
                 for (var name in this._ranges) {
-                    clone._ranges[name] = this._ranges[name].clone();
+                    let range = this._ranges[name];
+                    if (!range) {
+                        continue;
+                    }
+                    clone._ranges[name] = range.clone();
                 }
             }
 
@@ -449,10 +458,15 @@
 
             serializationObject.ranges = [];
             for (var name in this._ranges) {
+                let source  =this._ranges[name];
+
+                if (!source) {
+                    continue;
+                }
                 var range: any = {};
                 range.name = name;
-                range.from = this._ranges[name].from;
-                range.to = this._ranges[name].to;
+                range.from = source.from;
+                range.to = source.to;
                 serializationObject.ranges.push(range);
             }
 
@@ -515,7 +529,7 @@
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
 
             var dataType = parsedAnimation.dataType;
-            var keys: Array<{ frame: number, value: any }> = [];
+            var keys: Array<{ frame: number, value: any, inTangent:any, outTangent:any }> = [];
             var data;
             var index: number;
 
@@ -529,14 +543,33 @@
 
             for (index = 0; index < parsedAnimation.keys.length; index++) {
                 var key = parsedAnimation.keys[index];
-
+                var inTangent:any;
+                var outTangent:any;
 
                 switch (dataType) {
                     case Animation.ANIMATIONTYPE_FLOAT:
                         data = key.values[0];
+                        if (key.values.length >= 1) {
+                            inTangent = key.values[1];
+                        }
+                        if (key.values.length >= 2) {
+                            outTangent = key.values[2];
+                        }
                         break;
                     case Animation.ANIMATIONTYPE_QUATERNION:
                         data = Quaternion.FromArray(key.values);
+                        if (key.values.length >= 8) {
+                            var _inTangent = Quaternion.FromArray(key.values.slice(4, 8));
+                            if (!_inTangent.equals(Quaternion.Zero())) {
+                                inTangent = _inTangent;
+                            }
+                        }
+                        if (key.values.length >= 12) {
+                            var _outTangent = Quaternion.FromArray(key.values.slice(8, 12));
+                            if (!_outTangent.equals(Quaternion.Zero())) {
+                                outTangent = _outTangent;
+                            }
+                        }
                         break;
                     case Animation.ANIMATIONTYPE_MATRIX:
                         data = Matrix.FromArray(key.values);
@@ -550,10 +583,17 @@
                         break;
                 }
 
-                keys.push({
-                    frame: key.frame,
-                    value: data
-                });
+                var keyData:any = {};
+                keyData.frame = key.frame;
+                keyData.value = data;
+
+                if (inTangent != undefined) {
+                    keyData.inTangent = inTangent;
+                }
+                if (outTangent != undefined) {
+                    keyData.outTangent = outTangent;
+                }
+                keys.push(keyData)
             }
 
             animation.setKeys(keys);

@@ -3,13 +3,31 @@
 module BABYLON.GUI {
     export class TextBlock extends Control {
         private _text = "";
-        private _textY: number;
         private _textWrapping = false;
         private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
 
         private _lines: any[];
-        private _totalHeight: number;
+        private _resizeToFit: boolean = false;
+
+        /**
+        * An event triggered after the text is changed
+        * @type {BABYLON.Observable}
+        */
+        public onTextChangedObservable = new Observable<TextBlock>();
+
+        get resizeToFit(): boolean {
+            return this._resizeToFit;
+        }
+
+        set resizeToFit(value: boolean) {
+            this._resizeToFit = value;
+
+            if (this._resizeToFit) {
+                this._width.ignoreAdaptiveScaling = true;
+                this._height.ignoreAdaptiveScaling = true;
+            }
+        }
 
         public get textWrapping(): boolean {
             return this._textWrapping;
@@ -33,6 +51,8 @@ module BABYLON.GUI {
             }
             this._text = value;
             this._markAsDirty();
+
+            this.onTextChangedObservable.notifyObservers(this);
         }
 
         public get textHorizontalAlignment(): number {
@@ -86,6 +106,7 @@ module BABYLON.GUI {
                     break;
             }
 
+
             context.fillText(text, this._currentMeasure.left + x, y);
         }
 
@@ -105,7 +126,7 @@ module BABYLON.GUI {
             this._lines = [];
             var _lines = this.text.split("\n");
 
-            if (this._textWrapping) {
+            if (this._textWrapping && !this._resizeToFit) {
                 for(var _line of _lines) {
                     this._lines.push(this._parseLineWithTextWrapping(_line, context));
                 }
@@ -144,7 +165,6 @@ module BABYLON.GUI {
         }
 
         protected _renderLines(context: CanvasRenderingContext2D): void {
-            var width = this._currentMeasure.width;
             var height = this._currentMeasure.height;
 
             if (!this._fontOffset) {
@@ -165,10 +185,25 @@ module BABYLON.GUI {
 
             rootY += this._currentMeasure.top;
 
+            var maxLineWidth: number = 0;
+
             for (var line of this._lines) {
                 this._drawText(line.text, line.width, rootY, context);
                 rootY += this._fontOffset.height;
+
+                if (line.width > maxLineWidth) maxLineWidth = line.width;
             }
+
+            if (this._resizeToFit) {
+                this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
+                this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
+            }
+        }
+
+        dispose(): void {
+            super.dispose();
+
+            this.onTextChangedObservable.clear();
         }
     }
 }

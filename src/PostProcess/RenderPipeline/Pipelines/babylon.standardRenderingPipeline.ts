@@ -395,17 +395,17 @@
         private _createBlurPostProcesses(scene: Scene, ratio: number, indice: number, blurWidthKey: string = "blurWidth"): void {
             var engine = scene.getEngine();
 
-            var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), this[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
-            var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), this[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), (<any>this)[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), (<any>this)[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
 
             blurX.onActivateObservable.add(() => {
                 let dw = blurX.width / engine.getRenderingCanvas().width;
-                blurX.kernel = this[blurWidthKey] * dw;
+                blurX.kernel = (<any>this)[blurWidthKey] * dw;
             });
 
             blurY.onActivateObservable.add(() => {
                 let dw = blurY.height / engine.getRenderingCanvas().height;
-                blurY.kernel = this.horizontalBlur ? 64 * dw : this[blurWidthKey] * dw;
+                blurY.kernel = this.horizontalBlur ? 64 * dw : (<any>this)[blurWidthKey] * dw;
             });
 
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBlurH" + indice, () => { return blurX; }, true));

@@ -9,12 +9,6 @@ module BABYLON {
      * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table/
      */
     export class ColorGradingTexture extends BaseTexture {
-
-        /**
-         * The current internal texture size.
-         */
-        private _size: number;
-
         /**
          * The current texture matrix. (will always be identity in color grading texture)
          */
@@ -75,9 +69,6 @@ module BABYLON {
          * Occurs when the file being loaded is a .3dl LUT file.
          */
         private load3dlTexture() {
-
-            var mipLevels = 0;
-            var floatArrayView: Float32Array = null;
             var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
             this._texture = texture;
 

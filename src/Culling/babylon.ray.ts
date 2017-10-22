@@ -7,7 +7,6 @@
         private _qvec: Vector3;
 
         private _tmpRay: Ray;
-        private _rayHelper: RayHelper;
 
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
@@ -130,7 +129,7 @@
             return temp <= rr;
         }
 
-        public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo {
+        public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo> {
             if (!this._edge1) {
                 this._edge1 = Vector3.Zero();
                 this._edge2 = Vector3.Zero();
@@ -175,7 +174,7 @@
             return new IntersectionInfo(bu, bv, distance);
         }
 
-        public intersectsPlane(plane: Plane): number {
+        public intersectsPlane(plane: Plane): Nullable<number> {
             var distance: number;
             var result1 = Vector3.Dot(plane.normal, this.direction);
             if (Math.abs(result1) < 9.99999997475243E-07) {

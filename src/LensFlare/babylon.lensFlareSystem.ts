@@ -9,8 +9,8 @@
 
         private _scene: Scene;
         private _emitter: any;
-        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
-        private _indexBuffer: WebGLBuffer;
+        private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
+        private _indexBuffer: Nullable<WebGLBuffer>;
         private _effect: Effect;
         private _positionX: number;
         private _positionY: number;
@@ -23,7 +23,7 @@
             this.id = name;
             scene.lensFlareSystems.push(this);
 
-            this.meshesSelectionPredicate = m => m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0);
+            this.meshesSelectionPredicate = m => scene.activeCamera !== null && m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0);
 
             var engine = scene.getEngine();
 
@@ -112,7 +112,7 @@
         }
 
         public _isVisible(): boolean {
-            if (!this._isEnabled) {
+            if (!this._isEnabled || !this._scene.activeCamera) {
                 return false;
             }
 
@@ -124,11 +124,11 @@
             var ray = new Ray(this._scene.activeCamera.globalPosition, direction);
             var pickInfo = this._scene.pickWithRay(ray, this.meshesSelectionPredicate, true);
 
-            return !pickInfo.hit || pickInfo.distance > distance;
+            return !pickInfo || !pickInfo.hit || pickInfo.distance > distance;
         }
 
         public render(): boolean {
-            if (!this._effect.isReady())
+            if (!this._effect.isReady() || !this._scene.activeCamera)
                 return false;
 
             var engine = this._scene.getEngine();
@@ -275,7 +275,7 @@
 
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
                 var parsedFlare = parsedLensFlareSystem.flares[index];
-                var flare = new LensFlare(parsedFlare.size, parsedFlare.position, Color3.FromArray(parsedFlare.color), parsedFlare.textureName ? rootUrl + parsedFlare.textureName : "", lensFlareSystem);
+                LensFlare.AddFlare(parsedFlare.size, parsedFlare.position, Color3.FromArray(parsedFlare.color), parsedFlare.textureName ? rootUrl + parsedFlare.textureName : "", lensFlareSystem);
             }
 
             return lensFlareSystem;
@@ -298,7 +298,7 @@
                     size: flare.size,
                     position: flare.position,
                     color: flare.color.asArray(),
-                    textureName: Tools.GetFilename(flare.texture.name)
+                    textureName: Tools.GetFilename(flare.texture ? flare.texture.name : "")
                 });
             }
 

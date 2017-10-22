@@ -530,7 +530,6 @@ module BABYLON {
         public twoSidedLighting = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _globalAmbientColor = new Color3(0, 0, 0);
         private _tempColor = new Color3();
         private _renderId: number;
@@ -555,11 +554,11 @@ module BABYLON {
                 this._renderTargets.reset();
 
                 if (StandardMaterial.ReflectionTextureEnabled && this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
-                    this._renderTargets.push(this.reflectionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this.reflectionTexture);
                 }
 
                 if (StandardMaterial.RefractionTextureEnabled && this.refractionTexture && this.refractionTexture.isRenderTarget) {
-                    this._renderTargets.push(this.refractionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this.refractionTexture);
                 }
 
                 return this._renderTargets;
@@ -646,7 +645,7 @@ module BABYLON {
                 LegacyPBRMaterial._scaledAlbedo.scaleToRef(light.intensity, LegacyPBRMaterial._scaledAlbedo);
                 light._uniformBuffer.updateColor4(useUbo ? "vLightDiffuse" : "vLightDiffuse" + lightIndex, LegacyPBRMaterial._scaledAlbedo, usePhysicalLightFalloff ? light.radius : light.range);
 
-                if (defines["SPECULARTERM"]) {
+                if ((<any>defines)["SPECULARTERM"]) {
                     this.convertColorToLinearSpaceToRef(light.specular, LegacyPBRMaterial._scaledReflectivity, useScalarInLinearSpace);
 
                     LegacyPBRMaterial._scaledReflectivity.scaleToRef(light.intensity, LegacyPBRMaterial._scaledReflectivity);
@@ -1166,13 +1165,13 @@ module BABYLON {
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
 
-                var onCompiled = function(effect) {
+                var onCompiled = (effect: Effect) => {
                     if (this.onCompiled) {
                         this.onCompiled(effect);
                     }
 
                     this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-                }.bind(this);
+                };
                 
                 this._effect = scene.getEngine().createEffect("legacyPbr", <EffectCreationOptions>{
                     attributes: attribs,
@@ -1264,7 +1263,6 @@ module BABYLON {
         }
 
         private _myScene: BABYLON.Scene = null;
-        private _myShadowGenerator: BABYLON.ShadowGenerator = null;
 
         public bind(world: Matrix, mesh?: Mesh): void {
             this._myScene = this.getScene();

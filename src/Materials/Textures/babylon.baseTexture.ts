@@ -12,7 +12,9 @@
                 return;
             }
             this._hasAlpha = value;
-            this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            if (this._scene) {
+                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            }
         }
         public get hasAlpha(): boolean {
             return this._hasAlpha;
@@ -34,7 +36,9 @@
                 return;
             }
             this._coordinatesMode = value;
-            this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            if (this._scene) {
+                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            }
         }
         public get coordinatesMode(): number {
             return this._coordinatesMode;
@@ -93,7 +97,7 @@
         */
         public onDisposeObservable = new Observable<BaseTexture>();
 
-        private _onDisposeObserver: Observer<BaseTexture>;
+        private _onDisposeObserver: Nullable<Observer<BaseTexture>>;
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -103,33 +107,35 @@
 
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
 
-        private _scene: Scene;
-        public _texture: InternalTexture;
-        private _uid: string;
+        private _scene: Nullable<Scene>;
+        public _texture: Nullable<InternalTexture>;
+        private _uid: Nullable<string>;
 
         public get isBlocking(): boolean {
             return true;
         }
 
-        constructor(scene: Scene) {
+        constructor(scene: Nullable<Scene>) {
             this._scene = scene || Engine.LastCreatedScene;
-            this._scene.textures.push(this);
+            if (this._scene) {
+                this._scene.textures.push(this);
+            }
             this._uid = null;
         }
 
-        public getScene(): Scene {
+        public getScene(): Nullable<Scene> {
             return this._scene;
         }
 
         public getTextureMatrix(): Matrix {
-            return null;
+            return Matrix.IdentityReadOnly;
         }
 
         public getReflectionTextureMatrix(): Matrix {
-            return null;
+            return Matrix.IdentityReadOnly;
         }
 
-        public getInternalTexture(): InternalTexture {
+        public getInternalTexture(): Nullable<InternalTexture> {
             return this._texture;
         }
 
@@ -151,11 +157,11 @@
         }
 
         public getSize(): ISize {
-            if (this._texture.width) {
+            if (this._texture && this._texture.width) {
                 return new Size(this._texture.width, this._texture.height);
             }
 
-            if (this._texture._size) {
+            if (this._texture && this._texture._size) {
                 return new Size(this._texture._size, this._texture._size);
             }
 
@@ -180,7 +186,11 @@
             return false;
         }
 
-        public _getFromCache(url: string, noMipmap: boolean, sampling?: number): InternalTexture {
+        public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number): Nullable<InternalTexture> {
+            if (!this._scene) {
+                return null
+            }
+
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
@@ -203,7 +213,7 @@
         public delayLoad(): void {
         }
 
-        public clone(): BaseTexture {
+        public clone(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -223,13 +233,19 @@
             return (this._texture.format !== undefined) ? this._texture.format : Engine.TEXTUREFORMAT_RGBA;
         }
 
-        public readPixels(faceIndex = 0): ArrayBufferView {
+        public readPixels(faceIndex = 0): Nullable<ArrayBufferView> {
             if (!this._texture) {
                 return null;
             }
 
             var size = this.getSize();
-            var engine = this.getScene().getEngine();
+            let scene = this.getScene();
+
+            if (!scene) {
+                return null;
+            }
+
+            var engine = scene.getEngine();
 
             if (this._texture.isCube) {
                 return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
@@ -245,7 +261,7 @@
             }
         }
 
-        public get sphericalPolynomial(): SphericalPolynomial {
+        public get sphericalPolynomial(): Nullable<SphericalPolynomial> {
             if (!this._texture || !Internals.CubeMapToSphericalPolynomialTools || !this.isReady()) {
                 return null;
             }
@@ -258,27 +274,27 @@
             return this._texture._sphericalPolynomial;
         }
 
-        public set sphericalPolynomial(value: SphericalPolynomial) {
+        public set sphericalPolynomial(value: Nullable<SphericalPolynomial>) {
             if (this._texture) {
                 this._texture._sphericalPolynomial = value;
             }
         }
 
-        public get _lodTextureHigh(): BaseTexture {
+        public get _lodTextureHigh(): Nullable<BaseTexture> {
             if (this._texture) {
                 return this._texture._lodTextureHigh;
             }
             return null;
         }
 
-        public get _lodTextureMid(): BaseTexture {
+        public get _lodTextureMid(): Nullable<BaseTexture> {
             if (this._texture) {
                 return this._texture._lodTextureMid;
             }
             return null;
         }
 
-        public get _lodTextureLow(): BaseTexture {
+        public get _lodTextureLow(): Nullable<BaseTexture> {
             if (this._texture) {
                 return this._texture._lodTextureLow;
             }
@@ -286,8 +302,12 @@
         }
 
         public dispose(): void {
+            if (!this._scene) {
+                return;
+            }
+            
             // Animations
-            this.getScene().stopAnimation(this);
+            this._scene.stopAnimation(this);
 
             // Remove from scene
             this._scene._removePendingData(this);

@@ -1,11 +1,11 @@
 ﻿module BABYLON {
     export class EffectFallbacks {
-        private _defines = {};
+        private _defines: {[key: string]: Array<String>} = {};
 
         private _currentRank = 32;
         private _maxRank = -1;
 
-        private _mesh: AbstractMesh;
+        private _mesh: Nullable<AbstractMesh>;
         private _meshRank: number;
 
         public unBindMesh() {
@@ -91,9 +91,9 @@
     export class Effect {
         public name: any;
         public defines: string;
-        public onCompiled: (effect: Effect) => void;
-        public onError: (effect: Effect, errors: string) => void;
-        public onBind: (effect: Effect) => void;
+        public onCompiled: Nullable<(effect: Effect) => void>;
+        public onError: Nullable<(effect: Effect, errors: string) => void>;
+        public onBind: Nullable<(effect: Effect) => void>;
         public uniqueId = 0;
         public onCompileObservable = new Observable<Effect>();
         public onErrorObservable = new Observable<Effect>();
@@ -108,18 +108,21 @@
         private _compilationError = "";
         private _attributesNames: string[];
         private _attributes: number[];
-        private _uniforms: WebGLUniformLocation[];
+        private _uniforms: Nullable<WebGLUniformLocation>[];
         public _key: string;
         private _indexParameters: any;
-        private _fallbacks: EffectFallbacks;
+        private _fallbacks: Nullable<EffectFallbacks>;
         private _vertexSourceCode: string;
         private _fragmentSourceCode: string;
+        private _vertexSourceCodeOverride: string;
+        private _fragmentSourceCodeOverride: string;
 
-        private _program: WebGLProgram;
+        public _program: WebGLProgram;
         private _valueCache: { [key: string]: any };
         private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], engine?: Engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null, 
+                    fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
             this.name = baseName;
 
             if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
@@ -141,10 +144,10 @@
                     }          
                 }    
             } else {
-                this._engine = engine;
-                this.defines = defines;
-                this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(samplers);
-                this._samplers = samplers;
+                this._engine = <Engine>engine;
+                this.defines = <string>defines;
+                this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
+                this._samplers = <string[]>samplers;
                 this._attributesNames = (<string[]>attributesNamesOrOptions);
 
                 this.onError = onError;
@@ -156,8 +159,8 @@
         
             this.uniqueId = Effect._uniqueIdSeed++;
 
-            var vertexSource;
-            var fragmentSource;
+            var vertexSource: any;
+            var fragmentSource: any;
 
             if (baseName.vertexElement) {
                 vertexSource = document.getElementById(baseName.vertexElement);
@@ -243,7 +246,7 @@
             return this._uniformsNames.indexOf(uniformName);
         }
 
-        public getUniform(uniformName: string): WebGLUniformLocation {
+        public getUniform(uniformName: string): Nullable<WebGLUniformLocation> {
             return this._uniforms[this._uniformsNames.indexOf(uniformName)];
         }
 
@@ -268,11 +271,13 @@
         }
 
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
-            // DOM element ?
-            if (vertex instanceof HTMLElement) {
-                var vertexCode = Tools.GetDOMTextContent(vertex);
-                callback(vertexCode);
-                return;
+            if (Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (vertex instanceof HTMLElement) {
+                    var vertexCode = Tools.GetDOMTextContent(vertex);
+                    callback(vertexCode);
+                    return;
+                }
             }
 
             // Base64 encoded ?
@@ -301,11 +306,13 @@
         }
 
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
-            // DOM element ?
-            if (fragment instanceof HTMLElement) {
-                var fragmentCode = Tools.GetDOMTextContent(fragment);
-                callback(fragmentCode);
-                return;
+            if (Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (fragment instanceof HTMLElement) {
+                    var fragmentCode = Tools.GetDOMTextContent(fragment);
+                    callback(fragmentCode);
+                    return;
+                }
             }
 
             // Base64 encoded ?
@@ -465,7 +472,7 @@
                                         return p1 + "{X}";
                                     });
                                 }
-                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
+                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
                             }
                         } else {
                             if (!this._engine.supportsUniformBuffers) {
@@ -512,15 +519,48 @@
             return source;
         }
 
+        public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) {
+            this._isReady = false;
+
+            this._vertexSourceCodeOverride = vertexSourceCode;
+            this._fragmentSourceCodeOverride = fragmentSourceCode;
+            this.onError = (effect, error) => {
+                if (onError) {
+                    onError(error);
+                }
+            };
+            this.onCompiled = () => {
+                var scenes = this.getEngine().scenes;
+                for (var i = 0; i < scenes.length; i++) {
+                    scenes[i].markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                }
+
+                if (onCompiled) {
+                    onCompiled(this._program);
+                }
+            };
+            this._fallbacks = null;
+            this._prepareEffect();
+        }
+
         public _prepareEffect() {
             let attributesNames = this._attributesNames;
             let defines = this.defines;
             let fallbacks = this._fallbacks;
             this._valueCache = {};
 
+            var previousProgram = this._program;
+
             try {
                 var engine = this._engine;
-                this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
+
+                if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
+                    this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride);
+                }
+                else {
+                    this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
+                }
+                this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 
                 if (engine.webGLVersion > 1) {
                     for (var name in this._uniformBuffersNames) {
@@ -555,6 +595,10 @@
                 if (this._fallbacks) {
                     this._fallbacks.unBindMesh();
                 }
+
+                if (previousProgram) {
+                    this.getEngine()._deleteProgram(previousProgram);
+                }
             } catch (e) {
                 this._compilationError = e.message;
 
@@ -568,6 +612,14 @@
                 }));
                 this._dumpShadersSource(this._vertexSourceCode, this._fragmentSourceCode, defines);
                 Tools.Error("Error: " + this._compilationError);
+                if (previousProgram) {
+                    this._program = previousProgram;
+                    this._isReady = true;
+                    if (this.onError) {
+                        this.onError(this, this._compilationError);
+                    }
+                    this.onErrorObservable.notifyObservers(this);
+                }
 
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     Tools.Error("Trying next fallback.");
@@ -597,7 +649,7 @@
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         }
 
-        public setTexture(channel: string, texture: BaseTexture): void {
+        public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
             this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
         }
 
@@ -801,7 +853,7 @@
 
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
             if (!matrices) {
-                return;
+                return this;
             }
 
             this._valueCache[uniformName] = null;
@@ -913,8 +965,8 @@
         }
 
         // Statics
-        public static ShadersStore = {};
-        public static IncludesShadersStore = {};
+        public static ShadersStore: { [key: string]: string } = {};
+        public static IncludesShadersStore: { [key: string]: string } = {};
 
         public static ResetCache() {
             Effect._baseCache = {};

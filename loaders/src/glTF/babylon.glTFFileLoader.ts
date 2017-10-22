@@ -38,18 +38,25 @@ module BABYLON {
         public coordinateSystemMode: GLTFLoaderCoordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
         public onTextureLoaded: (texture: BaseTexture) => void;
         public onMaterialLoaded: (material: Material) => void;
+
         /**
          * Let the user decides if he needs to process the material (like precompilation) before affecting it to meshes
          */
         public onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
+
         /**
-         * Raised when all LODs are complete (or if there is no LOD and model is complete)
+         * Raised when the visible components (geometry, materials, textures, etc.) are first ready to be rendered.
+         * For assets with LODs, raised when the first LOD is complete.
+         * For assets without LODs, raised when the model is complete just before onComplete.
+         */
+        public onReady: () => void;
+
+        /**
+         * Raised when the asset is completely loaded, just before the loader is disposed.
+         * For assets with LODs, raised when all of the LODs are complete.
+         * For assets without LODs, raised when the model is complete just after onReady.
          */
         public onComplete: () => void;
-        /**
-         * Raised when first LOD complete (or if there is no LOD and model is complete)
-         */
-        public onFirstLODComplete: () => void;
 
         public name = "gltf";
 
@@ -99,11 +106,11 @@ module BABYLON {
         }
 
         private static _parse(data: string | ArrayBuffer, onError: (message: string) => void): IGLTFLoaderData {
-            if (data instanceof ArrayBuffer) {
-                return GLTFFileLoader._parseBinary(data, onError);
-            }
-
             try {
+                if (data instanceof ArrayBuffer) {
+                    return GLTFFileLoader._parseBinary(data, onError);
+                }
+
                 return {
                     json: JSON.parse(data),
                     bin: null
@@ -139,7 +146,7 @@ module BABYLON {
                 }
             }
 
-            var createLoaders = {
+            var createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
                 1: GLTFFileLoader.CreateGLTFLoaderV1,
                 2: GLTFFileLoader.CreateGLTFLoaderV2
             };
@@ -180,7 +187,7 @@ module BABYLON {
             const ContentFormat = {
                 JSON: 0
             };
-            
+
             var length = binaryReader.readUint32();
             if (length != binaryReader.getLength()) {
                 onError("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
@@ -256,28 +263,14 @@ module BABYLON {
         }
 
         private static _parseVersion(version: string): { major: number, minor: number } {
-            if (!version) {
-                return null;
-            }
-
-            var parts = version.split(".");
-            if (parts.length != 2) {
-                return null;
-            }
-
-            var major = +parts[0];
-            if (isNaN(major)) {
-                return null;
-            }
-
-            var minor = +parts[1];
-            if (isNaN(minor)) {
+            var match = (version + "").match(/^(\d+)\.(\d+)$/);
+            if (!match) {
                 return null;
             }
 
             return {
-                major: major,
-                minor: minor
+                major: parseInt(match[1]),
+                minor: parseInt(match[2])
             };
         }
 
@@ -289,12 +282,12 @@ module BABYLON {
             return 0;
         }
 
-        private static _decodeBufferToText(view: ArrayBufferView): string {
+        private static _decodeBufferToText(buffer: Uint8Array): string {
             var result = "";
-            var length = view.byteLength;
+            var length = buffer.byteLength;
 
             for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode(view[i]);
+                result += String.fromCharCode(buffer[i]);
             }
 
             return result;
