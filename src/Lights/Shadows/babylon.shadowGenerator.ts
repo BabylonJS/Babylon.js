@@ -429,7 +429,7 @@
                     return;
                 }
 
-                if (!this._blurPostProcesses) {
+                if (!this._blurPostProcesses || !this._blurPostProcesses.length) {
                     this._initializeBlurRTTAndPostProcesses();
                 }
                 let shadowMap = this.getShadowMapForRendering();
