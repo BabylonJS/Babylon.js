@@ -54,7 +54,6 @@ var BABYLON;
             _this.specularPower = 64;
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             return _this;
         }
         TriPlanarMaterial.prototype.needAlphaBlending = function () {
@@ -160,7 +159,7 @@ var BABYLON;
                 var samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ",
                     "normalSamplerX", "normalSamplerY", "normalSamplerZ"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

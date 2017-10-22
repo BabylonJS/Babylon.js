@@ -6,8 +6,8 @@
         public color: Color3 = Color3.White();
 
         private _scene: Scene;
-        private _debugLines = []; 
-        private _debugMesh: LinesMesh;
+        private _debugLines = new Array<Array<Vector3>>(); 
+        private _debugMesh: Nullable<LinesMesh>;
         private _isEnabled = false;
         private _renderFunction: () => void;
 
@@ -114,10 +114,10 @@
             }
 
             if (!this._debugMesh) {
-                this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true }, this._scene);
+                this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true }, this._scene);
                 this._debugMesh.renderingGroupId = this.renderingGroupId;
             } else {
-                BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
+                BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
             }
             this._debugMesh.position.copyFrom(this.mesh.position);
             this._debugMesh.color = this.color;

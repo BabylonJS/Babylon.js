@@ -11,8 +11,7 @@ module BABYLON {
         private _gamma = 0;
         private _dirty = false;
 
-        private _offsetOrientation: { yaw: number; pitch: number; roll: number };
-        private _deviceOrientationHandler;
+        private _deviceOrientationHandler: () => void;
 
         constructor() {
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
@@ -24,10 +23,17 @@ module BABYLON {
         }
 
         public _onOrientationEvent(evt: DeviceOrientationEvent): void {
-            var camera = this.camera;
-            this._alpha = +evt.alpha | 0;
-            this._beta = +evt.beta | 0;
-            this._gamma = +evt.gamma | 0;
+            if (evt.alpha !== null) {
+                this._alpha = +evt.alpha | 0;
+            }
+
+            if (evt.beta !== null) {
+                this._beta = +evt.beta | 0;
+            }
+
+            if (evt.gamma !== null) {               
+                this._gamma = +evt.gamma | 0;
+            }
             this._dirty = true;
         }
 
@@ -57,5 +63,5 @@ module BABYLON {
         }
     }
 
-    CameraInputTypes["ArcRotateCameraVRDeviceOrientationInput"] = ArcRotateCameraVRDeviceOrientationInput;
+    (<any>CameraInputTypes)["ArcRotateCameraVRDeviceOrientationInput"] = ArcRotateCameraVRDeviceOrientationInput;
 }

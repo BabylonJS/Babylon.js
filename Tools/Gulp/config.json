@@ -60,7 +60,6 @@
             "textureFormats",
             "debug",
             "morphTargets",
-            "colorCurves",
             "octrees",
             "simd",
             "vr",
@@ -68,14 +67,12 @@
             "optimizations",
             "highlights",
             "assetsManager",
-            "mapTexture",
-            "dynamicFloatArray",
-            "imageProcessing",
             "serialization",
             "probes",
             "layer",
             "textureTools",
-            "cameraBehaviors"
+            "cameraBehaviors",
+            "nullEngine"
         ],
         "minimal": [
             "standardMaterial",
@@ -137,7 +134,6 @@
             "textureFormats",
             "debug",
             "morphTargets",
-            "colorCurves",
             "octrees",
             "simd",
             "vr",
@@ -145,9 +141,6 @@
             "optimizations",
             "highlights",
             "assetsManager",
-            "mapTexture",
-            "dynamicFloatArray",
-            "imageProcessing",
             "serialization",
             "probes",
             "layer",
@@ -163,6 +156,7 @@
     "workloads": {
         "core": {
             "files": [
+                "../../src/babylon.types.js",
                 "../../src/Events/babylon.keyboardEvents.js",
                 "../../src/Events/babylon.pointerEvents.js",
                 "../../src/Math/babylon.math.js",
@@ -175,7 +169,7 @@
                 "../../src/States/babylon.alphaCullingState.js",
                 "../../src/States/babylon.depthCullingState.js",
                 "../../src/States/babylon.stencilState.js",
-                "../../src/babylon.engine.js",
+                "../../src/Engine/babylon.engine.js",
                 "../../src/babylon.node.js",
                 "../../src/Culling/babylon.boundingSphere.js",
                 "../../src/Culling/babylon.boundingBox.js",
@@ -201,7 +195,10 @@
                 "../../src/Mesh/babylon.mesh.vertexData.js",
                 "../../src/Mesh/babylon.geometry.js",
                 "../../src/PostProcess/babylon.postProcessManager.js",
-                "../../src/Tools/babylon.performanceMonitor.js"
+                "../../src/Tools/babylon.performanceMonitor.js",
+                "../../src/Materials/babylon.imageProcessingConfiguration.js",
+                "../../src/Materials/Textures/babylon.colorGradingTexture.js",
+                "../../src/Materials/babylon.colorCurves.js"
             ],
             "shaderIncludes": [
                 "depthPrePass"
@@ -220,6 +217,14 @@
                 "particles.fragment"
             ]
         },
+        "nullEngine": {
+            "files": [
+                "../../src/Engine/babylon.nullEngine.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },        
         "cameraBehaviors": {
             "files": [
                 "../../src/Behaviors/Cameras/babylon.framingBehavior.js",
@@ -372,7 +377,7 @@
                 "defaultUboDeclaration",
                 "shadowsFragmentFunctions",
                 "fresnelFunction",
-                "reflectionFunction",
+                "reflectionFunction",                
                 "imageProcessingDeclaration",
                 "imageProcessingFunctions",
                 "bumpFragmentFunctions",
@@ -428,7 +433,7 @@
                 "shadowsFragmentFunctions",
                 "pbrFunctions",
                 "imageProcessingDeclaration",
-                "imageProcessingFunctions",
+                "imageProcessingFunctions",                
                 "harmonicsFunctions",
                 "pbrLightFunctions",
                 "helperFunctions",
@@ -915,7 +920,6 @@
                 "additionalMeshes",
                 "standardMaterial",
                 "stringDictionary",
-                "dynamicFloatArray",
                 "actions"
             ],
             "shaders": [
@@ -930,27 +934,6 @@
             ],
             "dependUpon": [
                 "core"
-            ]
-        },
-        "colorCurves": {
-            "files": [
-                "../../src/Materials/Textures/babylon.colorGradingTexture.js",
-                "../../src/Materials/babylon.colorCurves.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "imageProcessing": {
-            "files": [
-                "../../src/Materials/babylon.imageProcessingConfiguration.js"
-            ],
-            "dependUpon": [
-                "colorCurves"
-            ],
-            "shaderIncludes": [
-                "imageProcessingDeclaration",
-                "imageProcessingFunctions"
             ]
         },
         "octrees": {
@@ -1037,23 +1020,6 @@
         "assetsManager": {
             "files": [
                 "../../src/Tools/babylon.assetsManager.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "mapTexture": {
-            "files": [
-                "../../src/Materials/Textures/babylon.mapTexture.js",
-                "../../src/Tools/babylon.rectPackingMap.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "dynamicFloatArray": {
-            "files": [
-                "../../src/Tools/babylon.dynamicFloatArray.js"
             ],
             "dependUpon": [
                 "core"

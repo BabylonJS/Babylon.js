@@ -40,7 +40,6 @@ var INSPECTOR;
                 // Get canvas and its DOM parent
                 var canvas = this._scene.getEngine().getRenderingCanvas();
                 var canvasParent = canvas.parentElement;
-                var canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);
                 // get canvas style                
                 var canvasComputedStyle = Inspector.WINDOW.getComputedStyle(canvas);
                 this._canvasStyle = {
@@ -330,6 +329,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=Inspector.js.map
 
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
 var INSPECTOR;
 (function (INSPECTOR) {
     INSPECTOR.PROPERTIES = {
@@ -346,7 +346,7 @@ var INSPECTOR;
             }
         },
         'type_not_defined': {
-            properties: [],
+            properties: new Array(),
             format: function () { return ''; }
         },
         'Vector2': {
@@ -362,7 +362,22 @@ var INSPECTOR;
         'Color3': {
             type: BABYLON.Color3,
             properties: ['r', 'g', 'b'],
-            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; }
+            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            slider: {
+                r: { min: 0, max: 1, step: 0.01 },
+                g: { min: 0, max: 1, step: 0.01 },
+                b: { min: 0, max: 1, step: 0.01 }
+            }
+        },
+        'Color4': {
+            type: BABYLON.Color4,
+            properties: ['r', 'g', 'b'],
+            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            slider: {
+                r: { min: 0, max: 1, step: 0.01 },
+                g: { min: 0, max: 1, step: 0.01 },
+                b: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'Quaternion': {
             type: BABYLON.Quaternion,
@@ -391,9 +406,6 @@ var INSPECTOR;
             ],
             format: function (tex) { return tex.name; }
         },
-        'MapTexture': {
-            type: BABYLON.MapTexture
-        },
         'RenderTargetTexture': {
             type: BABYLON.RenderTargetTexture
         },
@@ -408,9 +420,6 @@ var INSPECTOR;
         },
         'HDRCubeTexture': {
             type: BABYLON.HDRCubeTexture
-        },
-        'FontTexture': {
-            type: BABYLON.FontTexture
         },
         'Sound': {
             type: BABYLON.Sound,
@@ -449,7 +458,12 @@ var INSPECTOR;
                 'wheelPrecision',
                 'allowUpsideDown',
                 'checkCollisions'
-            ]
+            ],
+            slider: {
+                alpha: { min: 0, max: 2 * Math.PI, step: 0.01 },
+                beta: { min: -Math.PI, max: Math.PI, step: 0.01 },
+                fov: { min: 0, max: 180, step: 1 }
+            }
         },
         'FreeCamera': {
             type: BABYLON.FreeCamera,
@@ -479,7 +493,10 @@ var INSPECTOR;
                 'orthoTop',
                 'orthoLeft',
                 'orthoRight'
-            ]
+            ],
+            slider: {
+                fov: { min: 0, max: 180, step: 1 }
+            }
         },
         'Scene': {
             type: BABYLON.Scene,
@@ -541,7 +558,10 @@ var INSPECTOR;
                 'checkCollisions',
                 'hasLODLevels'
             ],
-            format: function (m) { return m.name; }
+            format: function (m) { return m.name; },
+            slider: {
+                visibility: { min: 0, max: 1, step: 0.1 }
+            }
         },
         'StandardMaterial': {
             type: BABYLON.StandardMaterial,
@@ -575,27 +595,10 @@ var INSPECTOR;
                 'reflectionTexture',
                 'refractionTexture'
             ],
-            format: function (mat) { return mat.name; }
-        },
-        'PrimitiveAlignment': {
-            type: BABYLON.PrimitiveAlignment,
-            properties: ['horizontal', 'vertical']
-        },
-        'PrimitiveThickness': {
-            type: BABYLON.PrimitiveThickness,
-            properties: ['topPixels', 'leftPixels', 'rightPixels', 'bottomPixels']
-        },
-        'BoundingInfo2D': {
-            type: BABYLON.BoundingInfo2D,
-            properties: ['radius', 'center', 'extent']
-        },
-        'SolidColorBrush2D': {
-            type: BABYLON.SolidColorBrush2D,
-            properties: ['color']
-        },
-        'GradientColorBrush2D': {
-            type: BABYLON.GradientColorBrush2D,
-            properties: ['color1', 'color2', 'translation', 'rotation', 'scale']
+            format: function (mat) { return mat.name; },
+            slider: {
+                alpha: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'PBRMaterial': {
             type: BABYLON.PBRMaterial,
@@ -633,97 +636,10 @@ var INSPECTOR;
                 'cameraContrast',
                 'cameraColorGradingTexture',
                 'cameraColorCurves'
-            ]
-        },
-        'Canvas2D': {
-            type: BABYLON.Canvas2D
-        },
-        'Canvas2DEngineBoundData': {
-            type: BABYLON.Canvas2DEngineBoundData
-        },
-        'Ellipse2D': {
-            type: BABYLON.Ellipse2D
-        },
-        'Ellipse2DInstanceData': {
-            type: BABYLON.Ellipse2DInstanceData
-        },
-        'Ellipse2DRenderCache': {
-            type: BABYLON.Ellipse2DRenderCache
-        },
-        'Group2D': {
-            type: BABYLON.Group2D
-        },
-        'IntersectInfo2D': {
-            type: BABYLON.IntersectInfo2D
-        },
-        'Lines2D': {
-            type: BABYLON.Lines2D
-        },
-        'Lines2DInstanceData': {
-            type: BABYLON.Lines2DInstanceData
-        },
-        'Lines2DRenderCache': {
-            type: BABYLON.Lines2DRenderCache
-        },
-        'PrepareRender2DContext': {
-            type: BABYLON.PrepareRender2DContext
-        },
-        'Prim2DBase': {
-            type: BABYLON.Prim2DBase
-        },
-        'Prim2DClassInfo': {
-            type: BABYLON.Prim2DClassInfo
-        },
-        'Prim2DPropInfo': {
-            type: BABYLON.Prim2DPropInfo
-        },
-        'Rectangle2D': {
-            type: BABYLON.Rectangle2D
-        },
-        'Rectangle2DInstanceData': {
-            type: BABYLON.Rectangle2DInstanceData
-        },
-        'Rectangle2DRenderCache': {
-            type: BABYLON.Rectangle2DRenderCache
-        },
-        'Render2DContext': {
-            type: BABYLON.Render2DContext
-        },
-        'RenderablePrim2D': {
-            type: BABYLON.RenderablePrim2D
-        },
-        'ScreenSpaceCanvas2D': {
-            type: BABYLON.ScreenSpaceCanvas2D
-        },
-        'Shape2D': {
-            type: BABYLON.Shape2D
-        },
-        'Shape2DInstanceData': {
-            type: BABYLON.Shape2DInstanceData
-        },
-        'Sprite2D': {
-            type: BABYLON.Sprite2D
-        },
-        'Sprite2DInstanceData': {
-            type: BABYLON.Sprite2DInstanceData
-        },
-        'Sprite2DRenderCache': {
-            type: BABYLON.Sprite2DRenderCache
-        },
-        'Text2D': {
-            type: BABYLON.Text2D
-        },
-        'Text2DInstanceData': {
-            type: BABYLON.Text2DInstanceData
-        },
-        'Text2DRenderCache': {
-            type: BABYLON.Text2DRenderCache
-        },
-        'WorldSpaceCanvas2D': {
-            type: BABYLON.WorldSpaceCanvas2D
-        },
-        'WorldSpaceCanvas2DNode': {
-            type: BABYLON.WorldSpaceCanvas2DNode
+            ],
+            slider: {
+                alpha: { min: 0, max: 1, step: 0.01 }
+            }
         },
         'PhysicsImpostor': {
             type: BABYLON.PhysicsImpostor,
@@ -738,6 +654,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=properties.js.map
 
+/// <reference path="../../dist/preview release/gui/babylon.gui.d.ts"/>
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -772,7 +689,7 @@ var INSPECTOR;
             },
             'Button': {
                 type: BABYLON.GUI.Button,
-                properties: [],
+                properties: new Array(),
                 format: function (button) { return button.name; }
             },
             'ColorPicker': {
@@ -1185,7 +1102,7 @@ var INSPECTOR;
             return [];
         };
         TextureAdapter.prototype.getTools = function () {
-            var tools = [];
+            var tools = new Array();
             // tools.push(new CameraPOV(this));
             return tools;
         };
@@ -1306,10 +1223,7 @@ var INSPECTOR;
     var MeshAdapter = (function (_super) {
         __extends(MeshAdapter, _super);
         function MeshAdapter(obj) {
-            var _this = _super.call(this, obj) || this;
-            /** Keep track of the axis of the actual object */
-            _this._axis = [];
-            return _this;
+            return _super.call(this, obj) || this;
         }
         /** Returns the name displayed in the tree */
         MeshAdapter.prototype.id = function () {
@@ -1352,13 +1266,13 @@ var INSPECTOR;
         };
         MeshAdapter.prototype.debug = function (b) {
             // Draw axis the first time
-            if (this._axis.length == 0) {
+            if (!this._axesViewer) {
                 this._drawAxis();
             }
             // Display or hide axis
-            for (var _i = 0, _a = this._axis; _i < _a.length; _i++) {
-                var ax = _a[_i];
-                ax.setEnabled(b);
+            if (!b && this._axesViewer) {
+                this._axesViewer.dispose();
+                this._axesViewer = null;
             }
         };
         /** Returns some information about this mesh */
@@ -1369,35 +1283,13 @@ var INSPECTOR;
          * Should be called only one time as it will fill this._axis
          */
         MeshAdapter.prototype._drawAxis = function () {
-            var _this = this;
             this._obj.computeWorldMatrix();
-            var m = this._obj.getWorldMatrix();
             // Axis
             var x = new BABYLON.Vector3(8 / this._obj.scaling.x, 0, 0);
             var y = new BABYLON.Vector3(0, 8 / this._obj.scaling.y, 0);
             var z = new BABYLON.Vector3(0, 0, 8 / this._obj.scaling.z);
-            // Draw an axis of the given color
-            var _drawAxis = function (color, start, end) {
-                var axis = BABYLON.Mesh.CreateLines("###axis###", [
-                    start,
-                    end
-                ], _this._obj.getScene());
-                axis.color = color;
-                axis.renderingGroupId = 1;
-                return axis;
-            };
-            // X axis
-            var xAxis = _drawAxis(BABYLON.Color3.Red(), BABYLON.Vector3.Zero(), x);
-            xAxis.parent = this._obj;
-            this._axis.push(xAxis);
-            // Y axis        
-            var yAxis = _drawAxis(BABYLON.Color3.Green(), BABYLON.Vector3.Zero(), y);
-            yAxis.parent = this._obj;
-            this._axis.push(yAxis);
-            // Z axis
-            var zAxis = _drawAxis(BABYLON.Color3.Blue(), BABYLON.Vector3.Zero(), z);
-            zAxis.parent = this._obj;
-            this._axis.push(zAxis);
+            this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
+            this._axesViewer.update(this._obj.position, x, y, z);
         };
         return MeshAdapter;
     }(INSPECTOR.Adapter));
@@ -1491,6 +1383,9 @@ var INSPECTOR;
             var isString = function (s) {
                 return typeof (s) === 'string' || s instanceof String;
             };
+            this._detailRows.forEach(function (property) {
+                property.closeDetails();
+            });
             this._detailRows.sort(function (detail1, detail2) {
                 var str1 = String(detail1[property]);
                 var str2 = String(detail2[property]);
@@ -1620,35 +1515,7 @@ var INSPECTOR;
         PropertyFormatter.format = function (obj, prop) {
             // Get original value;
             var value = obj[prop];
-            // test if type PrimitiveAlignment is available (only included in canvas2d)
-            if (BABYLON.PrimitiveAlignment) {
-                if (obj instanceof BABYLON.PrimitiveAlignment) {
-                    if (prop === 'horizontal') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignLeft:
-                                return 'left';
-                            case BABYLON.PrimitiveAlignment.AlignRight:
-                                return 'right';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    }
-                    else if (prop === 'vertical') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignTop:
-                                return 'top';
-                            case BABYLON.PrimitiveAlignment.AlignBottom:
-                                return 'bottom';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    }
-                }
-            }
+            // test if type PrimitiveAlignment is available (only included in canvas2d)           
             return value;
         };
         return PropertyFormatter;
@@ -1683,7 +1550,9 @@ var INSPECTOR;
             propName.textContent = "" + this.name;
             // Value
             this._valueDiv = INSPECTOR.Helpers.CreateDiv('prop-value', this._div);
-            this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+            }
             this._createElements();
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
@@ -1691,16 +1560,22 @@ var INSPECTOR;
             }
             this._updateValue();
             // If the property type is not simple, add click event to unfold its children
-            if (!this._isSimple()) {
+            if (typeof this.value === 'boolean') {
+                this._checkboxInput();
+            }
+            else if (this._isSliderType()) {
+                this._rangeInput();
+            }
+            else if (!this._isSimple()) {
                 this._valueDiv.classList.add('clickable');
                 this._valueDiv.addEventListener('click', this._addDetails.bind(this));
             }
             else {
                 this._initInput();
                 this._valueDiv.addEventListener('click', this._displayInputHandler);
-                this._input.addEventListener('keypress', this._validateInputHandler);
-                this._input.addEventListener('keydown', this._escapeInputHandler);
                 this._input.addEventListener('focusout', this._focusOutInputHandler);
+                this._input.addEventListener('keydown', this._validateInputHandler);
+                this._input.addEventListener('keydown', this._escapeInputHandler);
             }
             // Add this property to the scheduler
             INSPECTOR.Scheduler.getInstance().add(this);
@@ -1728,7 +1603,12 @@ var INSPECTOR;
          * On escape : removes the input
          */
         PropertyLine.prototype._validateInput = function (e) {
+            this._input.removeEventListener('focusout', this._focusOutInputHandler);
             if (e.keyCode == 13) {
+                this.validateInput(this._input.value);
+            }
+            else if (e.keyCode == 9) {
+                e.preventDefault();
                 this.validateInput(this._input.value);
             }
             else if (e.keyCode == 27) {
@@ -1736,7 +1616,8 @@ var INSPECTOR;
                 this.update();
             }
         };
-        PropertyLine.prototype.validateInput = function (value) {
+        PropertyLine.prototype.validateInput = function (value, forceupdate) {
+            if (forceupdate === void 0) { forceupdate = true; }
             this.updateObject();
             if (typeof this._property.value === 'number') {
                 this._property.value = parseFloat(value);
@@ -1745,9 +1626,11 @@ var INSPECTOR;
                 this._property.value = value;
             }
             // Remove input
-            this.update();
-            // resume scheduler
-            INSPECTOR.Scheduler.getInstance().pause = false;
+            if (forceupdate) {
+                this.update();
+                // resume scheduler
+                INSPECTOR.Scheduler.getInstance().pause = false;
+            }
         };
         /**
          * On escape : removes the input
@@ -1763,13 +1646,17 @@ var INSPECTOR;
         /** Removes the input without validating the new value */
         PropertyLine.prototype._removeInputWithoutValidating = function () {
             INSPECTOR.Helpers.CleanDiv(this._valueDiv);
-            this._valueDiv.textContent = "-";
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.textContent = "-";
+            }
             // restore elements
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
                 this._valueDiv.appendChild(elem.toHtml());
             }
-            this._valueDiv.addEventListener('click', this._displayInputHandler);
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.addEventListener('click', this._displayInputHandler);
+            }
         };
         /** Replaces the default display with an input */
         PropertyLine.prototype._displayInput = function (e) {
@@ -1781,10 +1668,12 @@ var INSPECTOR;
             this._input.value = valueTxt;
             this._valueDiv.appendChild(this._input);
             this._input.focus();
-            if (typeof this.value === 'number') {
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._input.addEventListener('focusout', this._focusOutInputHandler);
+            }
+            else if (typeof this.value === 'number') {
                 this._input.addEventListener('mousedown', this._onMouseDownHandler);
             }
-            this._input.addEventListener('focusout', this._focusOutInputHandler);
             // Pause the scheduler
             INSPECTOR.Scheduler.getInstance().pause = true;
         };
@@ -1802,6 +1691,10 @@ var INSPECTOR;
         Object.defineProperty(PropertyLine.prototype, "name", {
             // Returns the property name
             get: function () {
+                // let arrayName = Helpers.Capitalize(this._property.name).match(/[A-Z][a-z]+|[0-9]+/g)
+                // if (arrayName) {
+                //     return arrayName.join(" ");
+                // }
                 return this._property.name;
             },
             enumerable: true,
@@ -1888,7 +1781,15 @@ var INSPECTOR;
             this.updateObject();
             // Then update its value
             // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
-            this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            if (typeof this.value === 'boolean') {
+                this._checkboxInput();
+            }
+            else if (this._isSliderType()) {
+                this._rangeInput();
+            }
+            else {
+                this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            }
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
                 elem.update(this.value);
@@ -1901,13 +1802,6 @@ var INSPECTOR;
         PropertyLine.prototype.update = function () {
             this._removeInputWithoutValidating();
             this._updateValue();
-        };
-        /**
-         * Returns true if the given instance is a simple type
-         */
-        PropertyLine._IS_TYPE_SIMPLE = function (inst) {
-            var type = INSPECTOR.Helpers.GET_TYPE(inst);
-            return PropertyLine._SIMPLE_TYPE.indexOf(type) != -1;
         };
         /**
          * Returns true if the type of this property is simple, false otherwise.
@@ -1931,6 +1825,17 @@ var INSPECTOR;
         PropertyLine.prototype.toHtml = function () {
             return this._div;
         };
+        PropertyLine.prototype.closeDetails = function () {
+            if (this._div.classList.contains('unfolded')) {
+                // Remove class unfolded
+                this._div.classList.remove('unfolded');
+                // remove html children
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    this._div.parentNode.removeChild(child.toHtml());
+                }
+            }
+        };
         /**
          * Add sub properties in case of a complex type
          */
@@ -1949,8 +1854,7 @@ var INSPECTOR;
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
                     var objToDetail = this.value;
-                    var propToDisplay = INSPECTOR.PROPERTIES[INSPECTOR.Helpers.GET_TYPE(objToDetail)].properties.reverse();
-                    var propertyLine = null;
+                    var propToDisplay = INSPECTOR.PROPERTIES[INSPECTOR.Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
                         var infos = new INSPECTOR.Property(prop, this._property.value);
@@ -1991,6 +1895,56 @@ var INSPECTOR;
             this._preValue = this.value;
             window.addEventListener('mousemove', this._onMouseDragHandler);
             window.addEventListener('mouseup', this._onMouseUpHandler);
+        };
+        /**
+         * Create input entry
+         */
+        PropertyLine.prototype._checkboxInput = function () {
+            var _this = this;
+            if (this._valueDiv.childElementCount < 1) {
+                this._input = INSPECTOR.Helpers.CreateInput('checkbox-element', this._valueDiv);
+                this._input.type = 'checkbox';
+                this._input.checked = this.value;
+                this._input.addEventListener('change', function () {
+                    INSPECTOR.Scheduler.getInstance().pause = true;
+                    _this.validateInput(!_this.value);
+                });
+            }
+        };
+        PropertyLine.prototype._rangeInput = function () {
+            if (this._valueDiv.childElementCount < 1) {
+                this._input = INSPECTOR.Helpers.CreateInput('slider-element', this._valueDiv);
+                this._input.type = 'range';
+                this._input.style.display = 'inline-block';
+                this._input.min = this._getSliderProperty().min;
+                this._input.max = this._getSliderProperty().max;
+                this._input.step = this._getSliderProperty().step;
+                this._input.value = this.value;
+                this._validateInputHandler = this._rangeHandler.bind(this);
+                this._input.addEventListener('input', this._validateInputHandler);
+                this._input.addEventListener('change', function () {
+                    INSPECTOR.Scheduler.getInstance().pause = false;
+                });
+                this._textValue = INSPECTOR.Helpers.CreateDiv('value-text', this._valueDiv);
+                this._textValue.innerText = INSPECTOR.Helpers.Trunc(this.value).toString();
+                this._textValue.style.paddingLeft = '10px';
+                this._textValue.style.display = 'inline-block';
+            }
+        };
+        PropertyLine.prototype._rangeHandler = function () {
+            INSPECTOR.Scheduler.getInstance().pause = true;
+            //this._input.style.backgroundSize = ((parseFloat(this._input.value) - parseFloat(this._input.min)) * 100 / ( parseFloat(this._input.max) - parseFloat(this._input.min))) + '% 100%'
+            this._textValue.innerText = this._input.value;
+            this.validateInput(this._input.value, false);
+        };
+        PropertyLine.prototype._isSliderType = function () {
+            return this._property &&
+                INSPECTOR.PROPERTIES.hasOwnProperty(this._property.obj.constructor.name) &&
+                INSPECTOR.PROPERTIES[this._property.obj.constructor.name].hasOwnProperty('slider') &&
+                INSPECTOR.PROPERTIES[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
+        };
+        PropertyLine.prototype._getSliderProperty = function () {
+            return INSPECTOR.PROPERTIES[this._property.obj.constructor.name].slider[this.name];
         };
         // Array representing the simple type. All others are considered 'complex'
         PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
@@ -2039,7 +1993,7 @@ var INSPECTOR;
                 var b = (color.b * 255) | 0;
                 var a = 1;
                 if (color instanceof BABYLON.Color4) {
-                    var a_1 = color.a;
+                    a = color.a;
                 }
                 return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
             }
@@ -2109,7 +2063,7 @@ var INSPECTOR;
                 var b = (color.b * 255) | 0;
                 var a = 1;
                 if (color instanceof BABYLON.Color4) {
-                    var a_1 = color.a;
+                    a = color.a;
                 }
                 return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
             }
@@ -2200,8 +2154,6 @@ var INSPECTOR;
             this._engine = new BABYLON.Engine(this._canvas);
             this._scene = new BABYLON.Scene(this._engine);
             this._scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
-            var cam = new BABYLON.FreeCamera('cam', new BABYLON.Vector3(0, 0, -20), this._scene);
-            var light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this._scene);
             this._engine.runRenderLoop(function () {
                 if (!_this._pause) {
                     _this._scene.render();
@@ -2410,6 +2362,9 @@ var INSPECTOR;
          * uses getClassName. If nothing is returned, used the type of the constructor
          */
         Helpers.GET_TYPE = function (obj) {
+            if (typeof obj === 'boolean') {
+                return 'boolean';
+            }
             if (obj != null && obj != undefined) {
                 var classname = BABYLON.Tools.GetClassName(obj);
                 if (!classname || classname === 'object') {
@@ -2575,6 +2530,9 @@ var INSPECTOR;
                 }
             }
             return propertiesLines;
+        };
+        Helpers.Capitalize = function (str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
         };
         return Helpers;
     }());
@@ -2790,6 +2748,7 @@ var INSPECTOR;
                     node.active(false);
                 }
             }
+            item.getDiv().scrollIntoView();
             item.active(true);
         };
         /** Returns the treeitem corersponding to the given obj, null if not found */
@@ -2814,6 +2773,7 @@ var INSPECTOR;
                         return null;
                     }
                 }
+                return null;
             };
             for (var _i = 0, _a = this._treeItems; _i < _a.length; _i++) {
                 var item = _a[_i];
@@ -2952,7 +2912,7 @@ var INSPECTOR;
         }
         /* Overrides super */
         PhysicsTab.prototype._getTree = function () {
-            var arr = [];
+            var arr = new Array();
             var scene = this._inspector.scene;
             if (!scene.isPhysicsEnabled()) {
                 return arr;
@@ -2993,7 +2953,7 @@ var INSPECTOR;
         /* Overrides super */
         SoundTab.prototype._getTree = function () {
             var _this = this;
-            var arr = [];
+            var arr = new Array();
             // get all cameras from the first scene
             var instances = this._inspector.scene;
             for (var _i = 0, _a = instances.soundTracks; _i < _a.length; _i++) {
@@ -3091,13 +3051,7 @@ var INSPECTOR;
             for (var i = 0; i < 5; i++) {
                 imgs.push(INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel));
             }
-            if (texture instanceof BABYLON.MapTexture) {
-                // instance of Map texture
-                texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
-                BABYLON.Tools.DumpFramebuffer(texture.getSize().width, texture.getSize().height, this._inspector.scene.getEngine(), function (data) { return img.src = data; });
-                texture.unbindTexture();
-            }
-            else if (texture instanceof BABYLON.RenderTargetTexture) {
+            if (texture instanceof BABYLON.RenderTargetTexture) {
                 // RenderTarget textures
                 var scene = this._inspector.scene;
                 var engine_1 = scene.getEngine();
@@ -3251,6 +3205,7 @@ var INSPECTOR;
     INSPECTOR.MaterialTab = MaterialTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3271,9 +3226,9 @@ var INSPECTOR;
         /* Overrides super */
         MeshTab.prototype._getTree = function () {
             var _this = this;
-            var arr = [];
-            // Tab containign mesh already in results
-            var alreadyIn = [];
+            var arr = new Array();
+            // Tab containing mesh already in results
+            var alreadyIn = new Array();
             // Recursive method building the tree panel
             var createNode = function (obj) {
                 var descendants = obj.getDescendants(true);
@@ -4064,6 +4019,7 @@ var INSPECTOR;
                     return tab;
                 }
             }
+            return null;
         };
         TabBar.prototype.getActiveTabIndex = function () {
             for (var i = 0; i < this._tabs.length; i++) {
@@ -4689,6 +4645,9 @@ var INSPECTOR;
             if (b) {
                 this._div.classList.add('active');
             }
+        };
+        TreeItem.prototype.getDiv = function () {
+            return this._div;
         };
         return TreeItem;
     }(INSPECTOR.BasicElement));

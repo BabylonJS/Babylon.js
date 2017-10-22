@@ -8,34 +8,7 @@ module INSPECTOR {
         public static format(obj: any, prop: string): string {
             // Get original value;
             let value = obj[prop];
-            // test if type PrimitiveAlignment is available (only included in canvas2d)
-            if (BABYLON.PrimitiveAlignment) {
-                if (obj instanceof BABYLON.PrimitiveAlignment) {
-                    if (prop === 'horizontal') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignLeft:
-                                return 'left';
-                            case BABYLON.PrimitiveAlignment.AlignRight:
-                                return 'right';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    } else if (prop === 'vertical') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignTop:
-                                return 'top';
-                            case BABYLON.PrimitiveAlignment.AlignBottom:
-                                return 'bottom';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    }
-                }
-            }
+            // test if type PrimitiveAlignment is available (only included in canvas2d)           
             return value;
         }
 
@@ -87,6 +60,8 @@ module INSPECTOR {
         private _onMouseDownHandler: EventListener;
         private _onMouseDragHandler: EventListener;
         private _onMouseUpHandler: EventListener;
+
+        private _textValue: HTMLElement;
         /** Save previous Y mouse position */
         private _prevY: number;
         /**Save value while slider is on */
@@ -106,7 +81,10 @@ module INSPECTOR {
 
             // Value
             this._valueDiv = Helpers.CreateDiv('prop-value', this._div);
-            this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.textContent = this._displayValueContent() || '-'; // Init value text node
+            }
 
             this._createElements();
 
@@ -115,19 +93,21 @@ module INSPECTOR {
             }
 
             this._updateValue();
-
             // If the property type is not simple, add click event to unfold its children
-            if (!this._isSimple()) {
+            if (typeof this.value === 'boolean') {
+                this._checkboxInput();
+            } else if (this._isSliderType()) {
+                this._rangeInput();
+            } else if (!this._isSimple()) {
                 this._valueDiv.classList.add('clickable');
                 this._valueDiv.addEventListener('click', this._addDetails.bind(this));
             } else {
                 this._initInput();
                 this._valueDiv.addEventListener('click', this._displayInputHandler);
-                this._input.addEventListener('keypress', this._validateInputHandler);
-                this._input.addEventListener('keydown', this._escapeInputHandler);
                 this._input.addEventListener('focusout', this._focusOutInputHandler);
+                this._input.addEventListener('keydown', this._validateInputHandler);
+                this._input.addEventListener('keydown', this._escapeInputHandler);
             }
-
             // Add this property to the scheduler
             Scheduler.getInstance().add(this);
         }
@@ -158,7 +138,11 @@ module INSPECTOR {
          * On escape : removes the input
          */
         private _validateInput(e: KeyboardEvent) {
-            if (e.keyCode == 13) {
+            this._input.removeEventListener('focusout', this._focusOutInputHandler);
+            if (e.keyCode == 13) { // Enter
+                this.validateInput(this._input.value);
+            } else if (e.keyCode == 9) { // Tab
+                e.preventDefault();
                 this.validateInput(this._input.value);
             } else if (e.keyCode == 27) {
                 // Esc : remove input
@@ -166,18 +150,19 @@ module INSPECTOR {
             }
         }
 
-        public validateInput(value: any): void {
+        public validateInput(value: any, forceupdate:boolean = true): void {
             this.updateObject();
-
-            if(typeof this._property.value === 'number'){
+            if (typeof this._property.value === 'number') {
                 this._property.value = parseFloat(value);
-            }else{
+            } else {
                 this._property.value = value;
             }
             // Remove input
-            this.update();
-            // resume scheduler
-            Scheduler.getInstance().pause = false;
+            if (forceupdate) {
+                this.update();
+                // resume scheduler
+                Scheduler.getInstance().pause = false;
+            }
         }
 
         /** 
@@ -195,19 +180,23 @@ module INSPECTOR {
         /** Removes the input without validating the new value */
         private _removeInputWithoutValidating() {
             Helpers.CleanDiv(this._valueDiv);
-            this._valueDiv.textContent = "-";
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.textContent = "-";
+            } 
             // restore elements
             for (let elem of this._elements) {
                 this._valueDiv.appendChild(elem.toHtml());
             }
-            this._valueDiv.addEventListener('click', this._displayInputHandler);
+
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._valueDiv.addEventListener('click', this._displayInputHandler);
+            }
         }
 
         /** Replaces the default display with an input */
-        private _displayInput(e) {
+        private _displayInput(e: any) {
             // Remove the displayInput event listener
             this._valueDiv.removeEventListener('click', this._displayInputHandler);
-
             // Set input value
             let valueTxt = this._valueDiv.textContent;
             this._valueDiv.textContent = "";
@@ -215,10 +204,12 @@ module INSPECTOR {
             this._valueDiv.appendChild(this._input);
             this._input.focus();
 
-            if(typeof this.value === 'number') {
+            if (typeof this.value !== 'boolean' && !this._isSliderType()) {
+                this._input.addEventListener('focusout', this._focusOutInputHandler);
+            } else if (typeof this.value === 'number') {
                 this._input.addEventListener('mousedown', this._onMouseDownHandler);
             }
-            this._input.addEventListener('focusout', this._focusOutInputHandler);
+
             // Pause the scheduler
             Scheduler.getInstance().pause = true;
         }
@@ -237,6 +228,10 @@ module INSPECTOR {
 
         // Returns the property name
         public get name(): string {
+            // let arrayName = Helpers.Capitalize(this._property.name).match(/[A-Z][a-z]+|[0-9]+/g)
+            // if (arrayName) {
+            //     return arrayName.join(" ");
+            // }
             return this._property.name;
         }
 
@@ -283,12 +278,12 @@ module INSPECTOR {
             if (typeof value === 'number') {
                 return Helpers.Trunc(value);
             }
+
             // If it's a string or a boolean, display its value
             if (typeof value === 'string' || typeof value === 'boolean') {
                 return value;
             }
             return PROPERTIES.format(value);
-
         }
 
         /** Delete properly this property line. 
@@ -317,7 +312,13 @@ module INSPECTOR {
             this.updateObject();
             // Then update its value
             // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
-            this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            if (typeof this.value === 'boolean') {
+                 this._checkboxInput();
+            } else if (this._isSliderType()) { // Add slider when parent have slider property
+                this._rangeInput();
+            } else {
+                this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+            }
             for (let elem of this._elements) {
                 elem.update(this.value);
             }
@@ -330,14 +331,6 @@ module INSPECTOR {
         public update() {
             this._removeInputWithoutValidating();
             this._updateValue();
-        }
-
-        /**
-         * Returns true if the given instance is a simple type  
-         */
-        private static _IS_TYPE_SIMPLE(inst: any) {
-            let type = Helpers.GET_TYPE(inst);
-            return PropertyLine._SIMPLE_TYPE.indexOf(type) != -1;
         }
 
         /**
@@ -362,6 +355,17 @@ module INSPECTOR {
             return this._div;
         }
 
+        public closeDetails() {
+            if (this._div.classList.contains('unfolded')) {
+                // Remove class unfolded
+                this._div.classList.remove('unfolded');
+                // remove html children
+                for (let child of this._children) {
+                    this._div.parentNode.removeChild(child.toHtml());
+                }
+            }
+        }
+
         /**
          * Add sub properties in case of a complex type
          */
@@ -378,8 +382,7 @@ module INSPECTOR {
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
                     let objToDetail = this.value;
-                    let propToDisplay = PROPERTIES[Helpers.GET_TYPE(objToDetail)].properties.reverse();
-                    let propertyLine = null;
+                    let propToDisplay = (<any>PROPERTIES)[Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
 
                     for (let prop of propToDisplay) {
                         let infos = new Property(prop, this._property.value);
@@ -394,12 +397,11 @@ module INSPECTOR {
             }
         }
 
-
         /**
          * Refresh mouse position on y axis
          * @param e 
          */
-        private _onMouseDrag(e: MouseEvent): void {      
+        private _onMouseDrag(e: MouseEvent): void {
             const diff = this._prevY - e.clientY;
             this._input.value = (this._preValue + diff).toString();
         }
@@ -413,7 +415,7 @@ module INSPECTOR {
             window.removeEventListener('mouseup', this._onMouseUpHandler);
             this._prevY = e.clientY;
         }
-      
+
         /**
          * Start record mouse position
          * @param e 
@@ -423,6 +425,62 @@ module INSPECTOR {
             this._preValue = this.value;
             window.addEventListener('mousemove', this._onMouseDragHandler);
             window.addEventListener('mouseup', this._onMouseUpHandler);
+        }
+
+        /**
+         * Create input entry
+         */
+        private _checkboxInput() {
+            if(this._valueDiv.childElementCount < 1) { // Prevent display two checkbox
+                this._input = Helpers.CreateInput('checkbox-element', this._valueDiv);
+                this._input.type = 'checkbox'
+                this._input.checked = this.value;
+                this._input.addEventListener('change', () => {
+                    Scheduler.getInstance().pause = true;
+                    this.validateInput(!this.value)
+                })
+            }            
+        }
+
+        private _rangeInput() {
+            if(this._valueDiv.childElementCount < 1) { // Prevent display two input range
+                this._input = Helpers.CreateInput('slider-element', this._valueDiv);
+                this._input.type = 'range';
+                this._input.style.display = 'inline-block';
+                this._input.min = this._getSliderProperty().min;
+                this._input.max = this._getSliderProperty().max;
+                this._input.step = this._getSliderProperty().step;
+                this._input.value = this.value;
+                
+                this._validateInputHandler = this._rangeHandler.bind(this)
+                this._input.addEventListener('input', this._validateInputHandler)
+                this._input.addEventListener('change', () => {
+                    Scheduler.getInstance().pause = false;
+                })
+
+                this._textValue = Helpers.CreateDiv('value-text', this._valueDiv);
+                this._textValue.innerText = Helpers.Trunc(this.value).toString();
+                this._textValue.style.paddingLeft = '10px';
+                this._textValue.style.display = 'inline-block';
+            }
+        }
+
+        private _rangeHandler() {
+            Scheduler.getInstance().pause = true;
+            //this._input.style.backgroundSize = ((parseFloat(this._input.value) - parseFloat(this._input.min)) * 100 / ( parseFloat(this._input.max) - parseFloat(this._input.min))) + '% 100%'
+            this._textValue.innerText = this._input.value;
+            this.validateInput(this._input.value, false);
+        }
+
+        private _isSliderType() { //Check if property have slider definition
+            return this._property  && 
+            PROPERTIES.hasOwnProperty(this._property.obj.constructor.name) &&
+            (<any>PROPERTIES)[this._property.obj.constructor.name].hasOwnProperty('slider') && 
+            (<any>PROPERTIES)[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
+        }
+
+        private _getSliderProperty() {
+            return (<any>PROPERTIES)[this._property.obj.constructor.name].slider[this.name]
         }
     }
 }

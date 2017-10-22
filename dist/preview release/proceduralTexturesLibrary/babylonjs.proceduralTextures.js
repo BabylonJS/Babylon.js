@@ -1,4 +1,5 @@
-var BABYLON = BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
+var babylonDependency; try { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("../babylon.max")); } catch (e) { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("babylonjs")); } 
+var BABYLON = babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -262,9 +263,6 @@ var BABYLON;
         __extends(GrassProceduralTexture, _super);
         function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "grassProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
-            _this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
-            _this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
-            _this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);
             _this._groundColor = new BABYLON.Color3(1, 1, 1);
             _this._grassColors = [
                 new BABYLON.Color3(0.29, 0.38, 0.02),

@@ -85,7 +85,6 @@ var BABYLON;
             _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             _this._disableLighting = false;
             _this._maxSimultaneousLights = 4;
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             _this._scaledDiffuse = new BABYLON.Color3();
             return _this;
         }
@@ -182,7 +181,7 @@ var BABYLON;
                 var samplers = ["diffuseSampler",
                     "noiseTexture"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

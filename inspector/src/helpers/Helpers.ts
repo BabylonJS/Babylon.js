@@ -7,6 +7,10 @@ module INSPECTOR {
          * uses getClassName. If nothing is returned, used the type of the constructor
          */
         public static GET_TYPE(obj: any): string {
+            if(typeof obj === 'boolean') {
+                return 'boolean';
+            }
+
             if (obj != null && obj != undefined) {
                 let classname = BABYLON.Tools.GetClassName(obj);
                 if (!classname || classname === 'object') {
@@ -20,8 +24,10 @@ module INSPECTOR {
                 if (!this._CheckIfTypeExists(classname)) {
                     return this._GetTypeFor(obj);
                 }
+                
                 return classname;
             } else {
+                
                 return 'type_not_defined';
             }
         }
@@ -30,7 +36,7 @@ module INSPECTOR {
          * Check if some properties are defined for the given type.
          */
         private static _CheckIfTypeExists(type: string) {
-            let properties = PROPERTIES[type];
+            let properties = (<any>PROPERTIES)[type];
             if (properties) {
                 return true;
             }
@@ -53,7 +59,7 @@ module INSPECTOR {
          */
         private static _GetTypeFor(obj: any) {
             for (let type in PROPERTIES) {
-                let typeBlock = PROPERTIES[type];
+                let typeBlock = (<any>PROPERTIES)[type];
                 if (typeBlock.type) {
                     if (obj instanceof typeBlock.type) {
                         return type;
@@ -65,7 +71,7 @@ module INSPECTOR {
         /**
          * Returns the name of a function (workaround to get object type for IE11)
          */
-        private static _GetFnName(fn) {
+        private static _GetFnName(fn: any) {
             var f = typeof fn == 'function';
             var s = f && ((fn.name && ['', fn.name]) || fn.toString().match(/function ([^\(]+)/));
             return (!f && 'not a function') || (s && s[1] || 'anonymous');
@@ -84,9 +90,9 @@ module INSPECTOR {
         }
 
         /** Returns the given number with 2 decimal number max if a decimal part exists */
-        public static Trunc(nb): number {
+        public static Trunc(nb: number): number {
             if (Math.round(nb) !== nb) {
-                return nb.toFixed(2);
+                return (<any>nb.toFixed(2));
             }
             return nb;
         };
@@ -134,7 +140,7 @@ module INSPECTOR {
             let div = Helpers.CreateDiv('', Inspector.DOCUMENT.body);
             div.style.display = 'none';
             div.appendChild(clone);
-            let value = Inspector.WINDOW.getComputedStyle(clone)[cssAttribute];
+            let value = (<any>Inspector.WINDOW.getComputedStyle(clone))[cssAttribute];
             div.parentNode.removeChild(div);
             return value;
         }
@@ -188,6 +194,10 @@ module INSPECTOR {
                 }
             }
             return propertiesLines;
+        }
+
+        public static Capitalize (str : string) : string {
+            return str.charAt(0).toUpperCase() + str.slice(1);
         }
     }
 }

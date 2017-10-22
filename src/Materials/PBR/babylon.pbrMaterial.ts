@@ -106,7 +106,7 @@
 
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public reflectionTexture: BaseTexture;
+        public reflectionTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -402,7 +402,7 @@
          */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public environmentBRDFTexture: BaseTexture = null;
+        public environmentBRDFTexture: Nullable<BaseTexture> = null;
 
         /**
          * Force normal to face away from face.
@@ -648,7 +648,12 @@
         }         
 
         public clone(name: string): PBRMaterial {
-            return SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
+            var clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
+
+            clone.id = name;
+            clone.name = name;
+
+            return clone;
         }
 
         public serialize(): any {

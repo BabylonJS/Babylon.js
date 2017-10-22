@@ -70,7 +70,6 @@ declare module BABYLON {
         private _mesh;
         private _refractionRTT;
         private _reflectionRTT;
-        private _material;
         private _reflectionTransform;
         private _lastTime;
         private _lastDeltaTime;

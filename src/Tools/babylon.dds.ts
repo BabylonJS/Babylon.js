@@ -4,43 +4,45 @@
     // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
     var DDS_MAGIC = 0x20534444;
 
-    var DDSD_CAPS = 0x1,
-        DDSD_HEIGHT = 0x2,
-        DDSD_WIDTH = 0x4,
-        DDSD_PITCH = 0x8,
-        DDSD_PIXELFORMAT = 0x1000,
-        DDSD_MIPMAPCOUNT = 0x20000,
-        DDSD_LINEARSIZE = 0x80000,
-        DDSD_DEPTH = 0x800000;
+    var 
+        //DDSD_CAPS = 0x1,
+        //DDSD_HEIGHT = 0x2,
+        //DDSD_WIDTH = 0x4,
+        //DDSD_PITCH = 0x8,
+        //DDSD_PIXELFORMAT = 0x1000,
+        DDSD_MIPMAPCOUNT = 0x20000
+        //DDSD_LINEARSIZE = 0x80000,
+        //DDSD_DEPTH = 0x800000;
 
-    var DDSCAPS_COMPLEX = 0x8,
-        DDSCAPS_MIPMAP = 0x400000,
-        DDSCAPS_TEXTURE = 0x1000;
+    // var DDSCAPS_COMPLEX = 0x8,
+    //     DDSCAPS_MIPMAP = 0x400000,
+    //     DDSCAPS_TEXTURE = 0x1000;
 
-    var DDSCAPS2_CUBEMAP = 0x200,
-        DDSCAPS2_CUBEMAP_POSITIVEX = 0x400,
-        DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800,
-        DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000,
-        DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000,
-        DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000,
-        DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000,
-        DDSCAPS2_VOLUME = 0x200000;
+    var DDSCAPS2_CUBEMAP = 0x200
+        // DDSCAPS2_CUBEMAP_POSITIVEX = 0x400,
+        // DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800,
+        // DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000,
+        // DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000,
+        // DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000,
+        // DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000,
+        // DDSCAPS2_VOLUME = 0x200000;
 
-    var DDPF_ALPHAPIXELS = 0x1,
-        DDPF_ALPHA = 0x2,
+    var 
+        //DDPF_ALPHAPIXELS = 0x1,
+        //DDPF_ALPHA = 0x2,
         DDPF_FOURCC = 0x4,
         DDPF_RGB = 0x40,
-        DDPF_YUV = 0x200,
+        //DDPF_YUV = 0x200,
         DDPF_LUMINANCE = 0x20000;
 
-    function FourCCToInt32(value) {
+    function FourCCToInt32(value: string) {
         return value.charCodeAt(0) +
             (value.charCodeAt(1) << 8) +
             (value.charCodeAt(2) << 16) +
             (value.charCodeAt(3) << 24);
     }
 
-    function Int32ToFourCC(value) {
+    function Int32ToFourCC(value: number) {
         return String.fromCharCode(
             value & 0xff,
             (value >> 8) & 0xff,
@@ -74,14 +76,14 @@
     var off_pfFlags = 20;
     var off_pfFourCC = 21;
     var off_RGBbpp = 22;
-    var off_RMask = 23;
-    var off_GMask = 24;
-    var off_BMask = 25;
-    var off_AMask = 26;
-    var off_caps1 = 27;
+    // var off_RMask = 23;
+    // var off_GMask = 24;
+    // var off_BMask = 25;
+    // var off_AMask = 26;
+    // var off_caps1 = 27;
     var off_caps2 = 28;
-    var off_caps3 = 29;
-    var off_caps4 = 30;
+    // var off_caps3 = 29;
+    // var off_caps4 = 30;
     var off_dxgiFormat = 32
 
     export interface DDSInfo {
@@ -363,9 +365,11 @@
             var ext = engine.getCaps().s3tc;
 
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt),
-                fourCC, blockBytes, internalFormat, format,
-                width, height, dataLength, dataOffset,
+                fourCC, width, height, dataLength, dataOffset,
                 byteArray, mipmapCount, mip;
+            let internalFormat = 0;
+            let format = 0;
+            let blockBytes = 1;
 
             if (header[off_magic] != DDS_MAGIC) {
                 Tools.Error("Invalid magic number in DDS header");
@@ -387,7 +391,7 @@
 
             let computeFormats = false;
 
-            if (info.isFourCC) {
+            if (info.isFourCC && ext) {
                 fourCC = header[off_pfFourCC];
                 switch (fourCC) {
                 case FOURCC_DXT1:
@@ -458,7 +462,7 @@
 
                         if (!info.isCompressed && info.isFourCC) {
                             dataLength = width * height * 4;
-                            var floatArray: ArrayBufferView;
+                            var floatArray: Nullable<ArrayBufferView> = null;
 
                             if (engine.badOS || engine.badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
                                 if (bpp === 128) {
@@ -486,7 +490,9 @@
                                 }
                             }
 
-                            engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
+                            if (floatArray) {
+                                engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
+                            }
                         } else if (info.isRGB) {
                             if (bpp === 24) {
                                 dataLength = width * height * 3;

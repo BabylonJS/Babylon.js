@@ -120,7 +120,9 @@ body {
     color:white;
     padding:5px;
     border-radius: 3px;
-    font-family: 'Montserrat'
+    font-family: 'Montserrat';
+    pointer-events: none;
+    user-select: none;
 }
 .navbar {
     height: 40px;
@@ -403,41 +405,6 @@ body {
     display: inline-block;
 }
 
-/* MONACO */
-
-.monaco-editor .container:before,
-.monaco-editor .row:before {
-    content: "";
-    display: inherit;
-}
-.monaco-editor .container:after,
-.monaco-editor .row:after {
-    clear: inherit;
-}
-.monaco-editor .container {
-    width: auto;
-    margin: inherit;
-    padding: inherit;
-}
-.monaco-editor .close {
-    float: none;
-    font-size: inherit;
-    font-weight: inherit;
-    line-height: inherit;
-    color: inherit;
-    text-shadow: inherit;
-    opacity: inherit;
-    filter: inherit;
-}
-.monaco-editor .row {
-    margin: inherit;
-}
-.monaco-editor .invisible {
-    visibility: visible;
-}
-.monaco-editor .view-lines {
-    font-family: 'Inconsolata' !important;
-}
 /* Save form & co */
 
 .save-message {
@@ -541,3 +508,4 @@ body {
         column-count: 1;
     }
 }
+

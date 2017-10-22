@@ -27,7 +27,7 @@ module BABYLON {
             return this._defaultModel;
         }
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
             this._buttons = new Array<ExtendedGamepadButton>(vrGamepad.buttons.length);
             this.hand = vrGamepad.hand;
@@ -45,9 +45,9 @@ module BABYLON {
             }
         }
 
-        protected abstract handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges);
+        protected abstract handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
 
-        public abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void);
+        public abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
 
         private _setButtonValue(newState: ExtendedGamepadButton, currentState: ExtendedGamepadButton, buttonIndex: number) {
             if (!newState) {

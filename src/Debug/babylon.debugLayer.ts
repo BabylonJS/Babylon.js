@@ -5,8 +5,7 @@ module BABYLON {
 
     export class DebugLayer {
         private _scene: Scene;
-        // Get protocol used - http or https
-        public static InspectorURL = window.location.href.split('/')[0] + '//preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
+        public static InspectorURL = 'https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
         // The inspector instance
         private _inspector: any;
 

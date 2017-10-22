@@ -8,13 +8,15 @@
         /**
         * If the callback of a given Observer set skipNextObservers to true the following observers will be ignored
         */
-        constructor(mask: number, skipNextObservers = false) {
-            this.initalize(mask, skipNextObservers);
+        constructor(mask: number, skipNextObservers = false, target?: any, currentTarget?: any) {
+            this.initalize(mask, skipNextObservers, target, currentTarget);
         }
 
-        public initalize(mask: number, skipNextObservers = false): EventState {
+        public initalize(mask: number, skipNextObservers = false, target?: any, currentTarget?: any): EventState {
             this.mask = mask;
             this.skipNextObservers = skipNextObservers;
+            this.target = target;
+            this.currentTarget = currentTarget;
             return this;
         }
 
@@ -27,13 +29,58 @@
          * Get the mask value that were used to trigger the event corresponding to this EventState object
          */
         public mask: number;
+
+        /**
+         * The object that originally notified the event
+         */
+        public target?: any;
+        
+        /**
+         * The current object in the bubbling phase
+         */
+        public currentTarget?: any;
     }
 
     /**
      * Represent an Observer registered to a given Observable object.
      */
     export class Observer<T> {
-        constructor(public callback: (eventData: T, eventState: EventState) => void, public mask: number) {
+        constructor(public callback: (eventData: Nullable<T>, eventState: EventState) => void, public mask: number, public scope: any = null) {
+        }
+    }
+
+    /**
+     * Represent a list of observers registered to multiple Observables object.
+     */
+    export class MultiObserver<T> {
+        private _observers: Nullable<Observer<T>[]>;
+        private _observables: Nullable<Observable<T>[]>;
+        
+        public dispose(): void {
+            if (this._observers && this._observables) {
+                for (var index = 0; index < this._observers.length; index++) {
+                    this._observables[index].remove(this._observers[index]);
+                }
+            }
+
+            this._observers = null;
+            this._observables = null;
+        }
+
+        public static Watch<T>(observables: Observable<T>[], callback: (eventData: T, eventState: EventState) => void, mask: number = -1, scope: any = null): MultiObserver<T> {
+            let result = new MultiObserver<T>();
+
+            result._observers = new Array<Observer<T>>();
+            result._observables = observables;            
+
+            for (var observable of observables) {
+                let observer = observable.add(callback, mask, false, scope);
+                if (observer) {
+                    result._observers.push(observer);
+                }
+            }
+
+            return result;
         }
     }
 
@@ -49,12 +96,14 @@
 
         private _eventState: EventState;
 
-        private _onObserverAdded: (observer: Observer<T>) => void;
+        private _onObserverAdded: Nullable<(observer: Observer<T>) => void>;
 
         constructor(onObserverAdded?: (observer: Observer<T>) => void) {
             this._eventState = new EventState(0);
 
-            this._onObserverAdded = onObserverAdded;
+            if (onObserverAdded) {
+                this._onObserverAdded = onObserverAdded;
+            }
         }
 
         /**
@@ -62,13 +111,14 @@
          * @param callback the callback that will be executed for that Observer
          * @param mask the mask used to filter observers
          * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
+         * @param scope optional scope for the callback to be called from
          */
-        public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false): Observer<T> {
+        public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope: any = null): Nullable<Observer<T>> {
             if (!callback) {
                 return null;
             }
 
-            var observer = new Observer(callback, mask);
+            var observer = new Observer(callback, mask, scope);
 
             if (insertFirst) {
                 this._observers.unshift(observer);
@@ -87,7 +137,11 @@
          * Remove an Observer from the Observable object
          * @param observer the instance of the Observer to remove. If it doesn't belong to this Observable, false will be returned.
          */
-        public remove(observer: Observer<T>): boolean {
+        public remove(observer: Nullable<Observer<T>>): boolean {
+            if (!observer) {
+                return false;
+            }
+
             var index = this._observers.indexOf(observer);
 
             if (index !== -1) {
@@ -122,14 +176,20 @@
          * @param eventData
          * @param mask
          */
-        public notifyObservers(eventData: T, mask: number = -1): boolean {
+        public notifyObservers(eventData: Nullable<T>, mask: number = -1, target?: any, currentTarget?: any): boolean {
             let state = this._eventState;
             state.mask = mask;
+            state.target = target;
+            state.currentTarget = currentTarget;
             state.skipNextObservers = false;
 
             for (var obs of this._observers) {
                 if (obs.mask & mask) {
-                    obs.callback(eventData, state);
+                    if(obs.scope){
+                        obs.callback.apply(obs.scope, [eventData, state])
+                    }else{
+                        obs.callback(eventData, state);
+                    }
                 }
                 if (state.skipNextObservers) {
                     return false;

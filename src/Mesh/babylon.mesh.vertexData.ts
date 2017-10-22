@@ -4,11 +4,11 @@
     export interface IGetSetVerticesData
     {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array;
-        getIndices(copyWhenShared?: boolean): IndicesArray;
+        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<number[] | Float32Array>;
+        getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
         setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: IndicesArray): void;
+        setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): void;
     }
 
     export class VertexData {
@@ -171,7 +171,7 @@
             }
 
             if (this.indices) {
-                meshOrGeometry.setIndices(this.indices);
+                meshOrGeometry.setIndices(this.indices, null, updatable);
             }
             return this;
         }
@@ -294,7 +294,9 @@
          * Merges the passed VertexData into the current one.  
          * Returns the modified VertexData.  
          */
-        public merge(other: VertexData): VertexData {
+        public merge(other: VertexData, options?: { tangentLength?: number }): VertexData {
+            options = options || {};
+
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
@@ -312,7 +314,7 @@
             var count = this.positions.length / 3;
 
             this.normals = this._mergeElement(this.normals, other.normals, count * 3);
-            this.tangents = this._mergeElement(this.tangents, other.tangents, count * 4);
+            this.tangents = this._mergeElement(this.tangents, other.tangents, count * (options.tangentLength || 4));
             this.uvs = this._mergeElement(this.uvs, other.uvs, count * 2);
             this.uvs2 = this._mergeElement(this.uvs2, other.uvs2, count * 2);
             this.uvs3 = this._mergeElement(this.uvs3, other.uvs3, count * 2);
@@ -337,7 +339,7 @@
             }
 
             if (!source) {
-                if (length === other.length) {
+                if (length === 0 || length === other.length) {
                     return other;
                 }
 
@@ -963,11 +965,11 @@
                 }
             }
 
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
-            var colors = [];
+            var indices = new Array<number>();
+            var positions = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
+            var colors = new Array<number>();
 
             var angle_step = Math.PI * 2 * arc / tessellation;
             var angle: number;
@@ -1106,7 +1108,7 @@
             }
 
             // Caps
-            var createCylinderCap = isTop => {
+            var createCylinderCap = (isTop: boolean) => {
                 var radius = isTop ? diameterTop / 2 : diameterBottom / 2;
                 if (radius === 0) {
                     return;
@@ -1386,10 +1388,10 @@
             var subdivisions = options.subdivisions || { w: 1, h: 1 };
             var precision = options.precision || { w: 1, h: 1 };
 
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
+            var indices = new Array<number>();
+            var positions = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
             var row: number, col: number, tileRow: number, tileCol: number;
 
             subdivisions.h = (subdivisions.h < 1) ? 1 : subdivisions.h;
@@ -1585,10 +1587,10 @@
          * Creates the VertexData of the Disc or regular Polygon.  
          */
         public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-            var positions = [];
-            var indices = [];
-            var normals = [];
-            var uvs = [];
+            var positions = new Array<number>();
+            var indices = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
 
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
@@ -1637,7 +1639,7 @@
         /**
          * Re-creates the VertexData of the Polygon for sideOrientation.  
          */
-        public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?, fColors?, frontUVs?: Vector4, backUVs?: Vector4) {
+        public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?:Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4) {
 			var faceUV: Vector4[] = fUV || new Array<Vector4>(3);
             var faceColors: Color4[] = fColors;
             var colors = [];
@@ -1823,10 +1825,10 @@
                 0, 1, 1, 1, 0 //  15 - 19
             ];
 
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
+            var indices = new Array<number>();
+            var positions = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
 
             var current_indice = 0;
             // prepare array of 3 vector (empty) (to be worked in place, shared for each face)
@@ -2012,14 +2014,14 @@
             var flat = (options.flat === undefined) ? true : options.flat;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
-            var positions = [];
-            var indices = [];
-            var normals = [];
-            var uvs = [];
-            var colors = [];
+            var positions = new Array<number>();
+            var indices = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
+            var colors = new Array<number>();
             var index = 0;
             var faceIdx = 0;  // face cursor in the array "indexes"
-            var indexes = [];
+            var indexes = new Array<number>();
             var i = 0;
             var f = 0;
             var u: number, v: number, ang: number, x: number, y: number, tmp: number;
@@ -2103,10 +2105,10 @@
          * Creates the VertexData of the Torus Knot.  
          */
         public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
+            var indices = new Array<number>();
+            var positions = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
 
             var radius = options.radius || 2;
             var tube = options.tube || 0.5;
@@ -2117,7 +2119,7 @@
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // Helper
-            var getPos = (angle) => {
+            var getPos = (angle: number) => {
 
                 var cu = Math.cos(angle);
                 var su = Math.sin(angle);

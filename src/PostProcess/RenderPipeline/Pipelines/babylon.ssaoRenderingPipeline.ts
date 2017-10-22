@@ -160,8 +160,7 @@
                 2.0, 4.0, 6.0, 8.0
             ];
             */
-            var samples = 16;
-            var samplerOffsets = [];
+            var samplerOffsets = new Array<number>();
 
             for (var i = -8; i < 8; i++) {
                 samplerOffsets.push(i * 2);
@@ -226,8 +225,6 @@
                                                     this._scene.getEngine(), false,
                                                     "#define SAMPLES " + numSamples + "\n#define SSAO");
 
-            var viewport = new Vector2(0, 0);
-
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
@@ -265,7 +262,7 @@
 
             var context = this._randomTexture.getContext();
 
-            var rand = (min, max) => {
+            var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
             }
 

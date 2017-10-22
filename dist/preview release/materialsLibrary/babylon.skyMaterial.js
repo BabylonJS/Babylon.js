@@ -76,7 +76,6 @@ var BABYLON;
                     return true;
                 }
             }
-            var engine = scene.getEngine();
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);

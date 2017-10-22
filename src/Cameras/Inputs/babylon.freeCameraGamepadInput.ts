@@ -2,9 +2,9 @@ module BABYLON {
     export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
         camera: FreeCamera;
 
-        public gamepad: Gamepad;        
-        private _onGamepadConnectedObserver : Observer<Gamepad>;
-        private _onGamepadDisconnectedObserver : Observer<Gamepad>;
+        public gamepad: Nullable<Gamepad>;        
+        private _onGamepadConnectedObserver : Nullable<Observer<Gamepad>>;
+        private _onGamepadDisconnectedObserver : Nullable<Observer<Gamepad>>;
 
         @serialize()
         public gamepadAngularSensibility = 200;
@@ -89,5 +89,5 @@ module BABYLON {
         }
     }
 
-    CameraInputTypes["FreeCameraGamepadInput"] = FreeCameraGamepadInput;
+    (<any>CameraInputTypes)["FreeCameraGamepadInput"] = FreeCameraGamepadInput;
 }

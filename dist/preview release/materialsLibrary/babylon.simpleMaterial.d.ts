@@ -8,8 +8,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _worldViewProjectionMatrix;
-        private _scaledDiffuse;
         private _renderId;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;

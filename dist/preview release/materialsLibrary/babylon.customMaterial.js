@@ -796,10 +796,10 @@ var BABYLON;
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             }
                             else {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? -1.0 : 1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
                         if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
@@ -1898,6 +1898,7 @@ vColor=color;\n\
     var StandardShaderVersions = (function () {
         function StandardShaderVersions() {
         }
+        StandardShaderVersions.Ver3_0 = "3.0.0";
         return StandardShaderVersions;
     }());
     BABYLON.StandardShaderVersions = StandardShaderVersions;
@@ -1944,6 +1945,7 @@ vColor=color;\n\
             return arr;
         };
         CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+            var _this = this;
             if (this._isCreatedShader)
                 return this._createdShaderName;
             this._isCreatedShader = false;
@@ -1953,7 +1955,7 @@ vColor=color;\n\
             this.ReviewUniform("sampler", samplers);
             var fn_afterBind = this._afterBind;
             this._afterBind = function (m, e) {
-                this.AttachAfterBind(m, e);
+                _this.AttachAfterBind(m, e);
                 try {
                     fn_afterBind(m, e);
                 }
@@ -1996,7 +1998,7 @@ vColor=color;\n\
                     this._newUniformInstances[kind + "-" + name] = param;
                 }
                 else {
-                    this._newSamplerInstances[kind + "-" + name] = param;
+                    this._newUniformInstances[kind + "-" + name] = param;
                 }
             }
             this._customUniform.push("uniform " + kind + " " + name + ";");
