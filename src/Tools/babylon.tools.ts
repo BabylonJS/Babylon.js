@@ -481,13 +481,15 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): void {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): XMLHttpRequest {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
 
+            var request: XMLHttpRequest;
+
             var noIndexedDB = () => {
-                var request = new XMLHttpRequest();
+                request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;
                 request.open('GET', loadUrl, true);
 
@@ -550,6 +552,8 @@
                     noIndexedDB();
                 }
             }
+
+            return request;
         }
 
         /** 
