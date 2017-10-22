@@ -415,7 +415,7 @@
             return root;
         }
 
-        public static Parse(parsedActions: any, object: AbstractMesh, scene: Scene) {
+        public static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene) {
             var actionManager = new BABYLON.ActionManager(scene);
             if (object === null)
                 scene.actionManager = actionManager;

@@ -33,7 +33,7 @@ module BABYLON {
         public _currentRenderId = -1;
         private _parentRenderId = -1;
 
-        public _waitingParentId: string;
+        public _waitingParentId: Nullable<string>;
 
         private _scene: Scene;
         public _cache: any;

@@ -3,7 +3,7 @@
         public faceId = 0;
         public subMeshId = 0;
 
-        constructor(public bu: number, public bv: number, public distance: number) {
+        constructor(public bu: Nullable<number>, public bv: Nullable<number>, public distance: number) {
         }
     }
 
@@ -25,10 +25,15 @@
             }
 
             var indices = this.pickedMesh.getIndices();
+
+            if (!indices) {
+                return null;
+            }
+
             var result: Vector3;
 
             if (useVerticesNormals) {
-                var normals = this.pickedMesh.getVerticesData(VertexBuffer.NormalKind);
+                var normals = (<number[] | Float32Array>this.pickedMesh.getVerticesData(VertexBuffer.NormalKind));
 
                 var normal0 = Vector3.FromArray(normals, indices[this.faceId * 3] * 3);
                 var normal1 = Vector3.FromArray(normals, indices[this.faceId * 3 + 1] * 3);
@@ -40,7 +45,7 @@
 
                 result = new Vector3(normal0.x + normal1.x + normal2.x, normal0.y + normal1.y + normal2.y, normal0.z + normal1.z + normal2.z);
             } else {
-                var positions = this.pickedMesh.getVerticesData(VertexBuffer.PositionKind);
+                var positions = (<number[] | Float32Array>this.pickedMesh.getVerticesData(VertexBuffer.PositionKind));
 
                 var vertex1 = Vector3.FromArray(positions, indices[this.faceId * 3] * 3);
                 var vertex2 = Vector3.FromArray(positions, indices[this.faceId * 3 + 1] * 3);
@@ -65,7 +70,14 @@
             }
 
             var indices = this.pickedMesh.getIndices();
+            if (!indices) {
+                return null;
+            }
+
             var uvs = this.pickedMesh.getVerticesData(VertexBuffer.UVKind);
+            if (!uvs) {
+                return null;
+            }            
 
             var uv0 = Vector2.FromArray(uvs, indices[this.faceId * 3] * 2);
             var uv1 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 1] * 2);

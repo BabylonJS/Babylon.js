@@ -73,8 +73,8 @@ module BABYLON {
 		}
         
         // Default behavior functions
-        private _onPrePointerObservableObserver: Observer<PointerInfoPre>;
-        private _onAfterCheckInputsObserver: Observer<Camera>;
+        private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
+        private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
         private _attachedCamera: Nullable<ArcRotateCamera>;
         private _isPointerDown = false;
         private _lastFrameTime: Nullable<number> = null;
@@ -123,8 +123,11 @@ module BABYLON {
 				return;
 			}
             let scene = this._attachedCamera.getScene();
-            
-            scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
+			
+			if (this._onPrePointerObservableObserver) {
+				scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
+			}
+			
 			this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
 			this._attachedCamera = null;
 		}

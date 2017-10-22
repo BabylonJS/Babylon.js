@@ -43,3 +43,4 @@
 
 ## Breaking changes
 - `Gamepads` was removed in favor of `scene.gamepadManager`
+- `DynamicFloatArray`, `MapTexture` and `RectPakingMap` were removed because there were not used anymore
