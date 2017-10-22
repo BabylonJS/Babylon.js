@@ -3,7 +3,7 @@
         // Members
         public id: string;
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
-        public delayLoadingFile: string;
+        public delayLoadingFile: Nullable<string>;
         public onGeometryUpdated: (geometry: Geometry, kind?: string) => void;
 
         // Private
@@ -17,16 +17,16 @@
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
         public _delayInfo: Array<string>;
-        private _indexBuffer: WebGLBuffer;
+        private _indexBuffer: Nullable<WebGLBuffer>;
         private _indexBufferIsUpdatable = false;
-        public _boundingInfo: BoundingInfo;
-        public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
+        public _boundingInfo: Nullable<BoundingInfo>;
+        public _delayLoadingFunction: Nullable<(any: any, geometry: Geometry) => void>;
         public _softwareSkinningRenderId: number;
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
         private _updatable: boolean;
 
         // Cache
-        public _positions: Vector3[];
+        public _positions: Nullable<Vector3[]>;
 
         /**
          *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
@@ -46,7 +46,7 @@
             this.updateBoundingInfo(true, null);
         }
 
-        constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
+        constructor(id: string, scene: Scene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null) {
             this.id = id;
             this._engine = scene.getEngine();
             this._meshes = [];
@@ -129,7 +129,7 @@
             this.notifyUpdate();
         }
 
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): void {
+        public setVerticesData(kind: string, data: number[] | Float32Array, updatable: boolean = false, stride?: number): void {
             var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
             this.setVerticesBuffer(buffer);
@@ -189,7 +189,7 @@
             this.notifyUpdate(kind);
         }
 
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean): void {
+        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends: boolean = false): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
             if (!vertexBuffer) {
@@ -208,7 +208,7 @@
             this.notifyUpdate(kind);
         }
 
-        private updateBoundingInfo(updateExtends: boolean, data: number[] | Float32Array) {
+        private updateBoundingInfo(updateExtends: boolean, data: Nullable<number[] | Float32Array>) {
             if (updateExtends) {
                 this.updateExtend(data);
             }
@@ -231,19 +231,24 @@
             }
         }
 
-        public _bind(effect: Effect, indexToBind: WebGLBuffer = undefined): void {
+        public _bind(effect: Effect, indexToBind?: Nullable<WebGLBuffer>): void {
             if (indexToBind === undefined) {
                 indexToBind = this._indexBuffer;
             }
+            let vbs = this.getVertexBuffers();
+
+            if (!vbs) {
+                return;
+            }
 
             if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
-                this._engine.bindBuffers(this.getVertexBuffers(), indexToBind, effect);
+                this._engine.bindBuffers(vbs, indexToBind, effect);
                 return;
             }
 
             // Using VAO
             if (!this._vertexArrayObjects[effect.key]) {
-                this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(this.getVertexBuffers(), indexToBind, effect);
+                this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect);
             }
 
             this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
@@ -257,7 +262,7 @@
             return this._totalVertices;
         }
 
-        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array {
+        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<number[] | Float32Array> {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
@@ -275,14 +280,24 @@
             }
         }
 
-        public getVertexBuffer(kind: string): VertexBuffer {
+        public isVertexBufferUpdatable(kind: string): boolean {
+            let vb = this._vertexBuffers[kind];
+
+            if (!vb) {
+                return false;
+            }
+
+            return vb.isUpdatable();
+        }
+
+        public getVertexBuffer(kind: string): Nullable<VertexBuffer> {
             if (!this.isReady()) {
                 return null;
             }
             return this._vertexBuffers[kind];
         }
 
-        public getVertexBuffers(): { [key: string]: VertexBuffer; } {
+        public getVertexBuffers(): Nullable<{ [key: string]: VertexBuffer; }> {
             if (!this.isReady()) {
                 return null;
             }
@@ -327,7 +342,7 @@
             }
         }
 
-        public setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): void {
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): void {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
@@ -360,7 +375,7 @@
             return this._indices.length;
         }
 
-        public getIndices(copyWhenShared?: boolean): IndicesArray {
+        public getIndices(copyWhenShared?: boolean): Nullable<IndicesArray> {
             if (!this.isReady()) {
                 return null;
             }
@@ -377,7 +392,7 @@
             }
         }
 
-        public getIndexBuffer(): WebGLBuffer {
+        public getIndexBuffer(): Nullable<WebGLBuffer> {
             if (!this.isReady()) {
                 return null;
             }
@@ -439,7 +454,7 @@
             }
         }
 
-        private updateExtend(data: number[] | Float32Array = null, stride? : number) {
+        private updateExtend(data: Nullable<number[] | Float32Array> = null, stride? : number) {
             if (!data) {
                 data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }
@@ -509,8 +524,16 @@
         }
 
         private _queueLoad(scene: Scene, onLoaded?: () => void): void {
+            if (!this.delayLoadingFile) {
+                return;
+            }
+
             scene._addPendingData(this);
             Tools.LoadFile(this.delayLoadingFile, data => {
+                if (!this._delayLoadingFunction) {
+                    return;
+                }
+
                 this._delayLoadingFunction(JSON.parse(data), this);
 
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
@@ -644,8 +667,10 @@
             vertexData.indices = [];
 
             var indices = this.getIndices();
-            for (var index = 0; index < indices.length; index++) {
-                (<number[]>vertexData.indices).push(indices[index]);
+            if (indices) {
+                for (var index = 0; index < indices.length; index++) {
+                    (<number[]>vertexData.indices).push(indices[index]);
+                }
             }
 
             var updatable = false;
@@ -661,12 +686,16 @@
                     vertexData.set((<number[]>data).slice(0), kind);
                 }
                 if (!stopChecking) {
-                    updatable = this.getVertexBuffer(kind).isUpdatable();
-                    stopChecking = !updatable;
+                    let vb = this.getVertexBuffer(kind);
+
+                    if (vb) {
+                        updatable = vb.isUpdatable();
+                        stopChecking = !updatable;
+                    }
                 }
             }
 
-            var geometry = new Geometry(id, this._scene, vertexData, updatable, null);
+            var geometry = new Geometry(id, this._scene, vertexData, updatable);
 
             geometry.delayLoadState = this.delayLoadState;
             geometry.delayLoadingFile = this.delayLoadingFile;
@@ -696,7 +725,7 @@
             return serializationObject;
         }
 
-        private toNumberArray(origin: Float32Array | IndicesArray) : number[] {
+        private toNumberArray(origin: Nullable<Float32Array | IndicesArray>) : number[] {
             if (Array.isArray(origin)) {
                 return origin;
             } else {
@@ -709,63 +738,63 @@
 
             if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
                 serializationObject.positions = this.toNumberArray(this.getVerticesData(VertexBuffer.PositionKind));
-                if (this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.PositionKind)) {
                     serializationObject.positions._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 serializationObject.normals = this.toNumberArray(this.getVerticesData(VertexBuffer.NormalKind));
-                if (this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.NormalKind)) {
                     serializationObject.normals._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 serializationObject.uvs = this.toNumberArray(this.getVerticesData(VertexBuffer.UVKind));
-                if (this.getVertexBuffer(VertexBuffer.UVKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UVKind)) {
                     serializationObject.uvs._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
                 serializationObject.uv2s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV2Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV2Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV2Kind)) {
                     serializationObject.uv2s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
                 serializationObject.uv3s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV3Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV3Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV3Kind)) {
                     serializationObject.uv3s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
                 serializationObject.uv4s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV4Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV4Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV4Kind)) {
                     serializationObject.uv4s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
                 serializationObject.uv5s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV5Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV5Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV5Kind)) {
                     serializationObject.uv5s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
                 serializationObject.uv6s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV6Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV6Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV6Kind)) {
                     serializationObject.uv6s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
                 serializationObject.colors = this.toNumberArray(this.getVerticesData(VertexBuffer.ColorKind));
-                if (this.getVertexBuffer(VertexBuffer.ColorKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.ColorKind)) {
                     serializationObject.colors._updatable = true;
                 }
             }
@@ -773,14 +802,14 @@
             if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
                 serializationObject.matricesIndices = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesIndicesKind));
                 serializationObject.matricesIndices._isExpanded = true;
-                if (this.getVertexBuffer(VertexBuffer.MatricesIndicesKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.MatricesIndicesKind)) {
                     serializationObject.matricesIndices._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 serializationObject.matricesWeights = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesWeightsKind));
-                if (this.getVertexBuffer(VertexBuffer.MatricesWeightsKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.MatricesWeightsKind)) {
                     serializationObject.matricesWeights._updatable = true;
                 }
             }
@@ -791,7 +820,7 @@
         }
 
         // Statics
-        public static ExtractFromMesh(mesh: Mesh, id: string): Geometry {
+        public static ExtractFromMesh(mesh: Mesh, id: string): Nullable<Geometry> {
             var geometry = mesh._geometry;
 
             if (!geometry) {
@@ -896,7 +925,7 @@
                         var indexStart = subMeshesData[(i * 5) + 3];
                         var indexCount = subMeshesData[(i * 5) + 4];
 
-                        SubMesh.AddToMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
+                        SubMesh.AddToMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, <AbstractMesh>mesh);
                     }
                 }
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
@@ -990,7 +1019,7 @@
                 for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
                     var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
 
-                    SubMesh.AddToMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                    SubMesh.AddToMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, <AbstractMesh>mesh);
                 }
             }
 
@@ -1005,7 +1034,7 @@
 
             // Octree
             if (scene['_selectionOctree']) {
-                scene['_selectionOctree'].addMesh(mesh);
+                scene['_selectionOctree'].addMesh(<AbstractMesh>mesh);
             }
         }
 
@@ -1017,6 +1046,10 @@
             let noInfluenceBoneIndex = 0.0;
             if (parsedGeometry.skeletonId > -1) {
                 let skeleton = mesh.getScene().getLastSkeletonByID(parsedGeometry.skeletonId);
+
+                if (!skeleton) {
+                    return;
+                }
                 noInfluenceBoneIndex = skeleton.bones.length;
             } else {
                 return;
@@ -1077,12 +1110,12 @@
             }
         }
 
-        public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Geometry {
+        public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Nullable<Geometry> {
             if (scene.getGeometryByID(parsedVertexData.id)) {
                 return null; // null since geometry could be something else than a box...
             }
 
-            var geometry = new Geometry(parsedVertexData.id, scene, null, parsedVertexData.updatable);
+            var geometry = new Geometry(parsedVertexData.id, scene, undefined, parsedVertexData.updatable);
 
             if (Tags) {
                 Tags.AddTagsTo(geometry, parsedVertexData.tags);
@@ -1149,8 +1182,8 @@
 
             private _beingRegenerated: boolean;
 
-            constructor(id: string, scene: Scene, private _canBeRegenerated?: boolean, mesh?: Mesh) {
-                super(id, scene, null, false, mesh); // updatable = false to be sure not to update vertices
+            constructor(id: string, scene: Scene, private _canBeRegenerated: boolean = false, mesh: Nullable<Mesh> = null) {
+                super(id, scene, undefined, false, mesh); // updatable = false to be sure not to update vertices
                 this._beingRegenerated = true;
                 this.regenerate();
                 this._beingRegenerated = false;
@@ -1219,13 +1252,13 @@
             }
 
             public copy(id: string): Geometry {
-                return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), null, this.side);
+                return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), undefined, this.side);
             }
         }
 
         export class Box extends _Primitive {
             // Members
-            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1234,7 +1267,7 @@
             }
 
             public copy(id: string): Geometry {
-                return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
+                return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), undefined, this.side);
             }
 
             public serialize(): any {
@@ -1245,7 +1278,7 @@
                 return serializationObject;
             }
 
-            public static Parse(parsedBox: any, scene: Scene): Box {
+            public static Parse(parsedBox: any, scene: Scene): Nullable<Box> {
                 if (scene.getGeometryByID(parsedBox.id)) {
                     return null; // null since geometry could be something else than a box...
                 }
@@ -1263,7 +1296,7 @@
 
         export class Sphere extends _Primitive {
 
-            constructor(id: string, scene: Scene, public segments: number, public diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+            constructor(id: string, scene: Scene, public segments: number, public diameter: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1284,7 +1317,7 @@
                 return serializationObject;
             }
 
-            public static Parse(parsedSphere: any, scene: Scene): Geometry.Primitives.Sphere {
+            public static Parse(parsedSphere: any, scene: Scene): Nullable<Geometry.Primitives.Sphere> {
                 if (scene.getGeometryByID(parsedSphere.id)) {
                     return null; // null since geometry could be something else than a sphere...
                 }
@@ -1303,7 +1336,7 @@
         export class Disc extends _Primitive {
             // Members
 
-            constructor(id: string, scene: Scene, public radius: number, public tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+            constructor(id: string, scene: Scene, public radius: number, public tessellation: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1319,7 +1352,7 @@
 
         export class Cylinder extends _Primitive {
 
-            constructor(id: string, scene: Scene, public height: number, public diameterTop: number, public diameterBottom: number, public tessellation: number, public subdivisions: number = 1, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+            constructor(id: string, scene: Scene, public height: number, public diameterTop: number, public diameterBottom: number, public tessellation: number, public subdivisions: number = 1, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1342,7 +1375,7 @@
                 return serializationObject;
             }
 
-            public static Parse(parsedCylinder: any, scene: Scene): Geometry.Primitives.Cylinder {
+            public static Parse(parsedCylinder: any, scene: Scene): Nullable<Geometry.Primitives.Cylinder> {
                 if (scene.getGeometryByID(parsedCylinder.id)) {
                     return null; // null since geometry could be something else than a cylinder...
                 }
@@ -1360,7 +1393,7 @@
 
         export class Torus extends _Primitive {
 
-            constructor(id: string, scene: Scene, public diameter: number, public thickness: number, public tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+            constructor(id: string, scene: Scene, public diameter: number, public thickness: number, public tessellation: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1382,7 +1415,7 @@
                 return serializationObject;
             }
 
-            public static Parse(parsedTorus: any, scene: Scene): Geometry.Primitives.Torus {
+            public static Parse(parsedTorus: any, scene: Scene): Nullable<Geometry.Primitives.Torus> {
                 if (scene.getGeometryByID(parsedTorus.id)) {
                     return null; // null since geometry could be something else than a torus...
                 }
@@ -1400,7 +1433,7 @@
 
         export class Ground extends _Primitive {
 
-            constructor(id: string, scene: Scene, public width: number, public height: number, public subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, public width: number, public height: number, public subdivisions: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1422,7 +1455,7 @@
                 return serializationObject;
             }
 
-            public static Parse(parsedGround: any, scene: Scene): Geometry.Primitives.Ground {
+            public static Parse(parsedGround: any, scene: Scene): Nullable<Geometry.Primitives.Ground> {
                 if (scene.getGeometryByID(parsedGround.id)) {
                     return null; // null since geometry could be something else than a ground...
                 }
@@ -1440,7 +1473,7 @@
 
         export class TiledGround extends _Primitive {
 
-            constructor(id: string, scene: Scene, public xmin: number, public zmin: number, public xmax: number, public zmax: number, public subdivisions: { w: number; h: number; }, public precision: { w: number; h: number; }, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, public xmin: number, public zmin: number, public xmax: number, public zmax: number, public subdivisions: { w: number; h: number; }, public precision: { w: number; h: number; }, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1455,7 +1488,7 @@
 
         export class Plane extends _Primitive {
 
-            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1475,7 +1508,7 @@
                 return serializationObject;
             }
 
-            public static Parse(parsedPlane: any, scene: Scene): Geometry.Primitives.Plane {
+            public static Parse(parsedPlane: any, scene: Scene): Nullable<Geometry.Primitives.Plane> {
                 if (scene.getGeometryByID(parsedPlane.id)) {
                     return null; // null since geometry could be something else than a ground...
                 }
@@ -1493,7 +1526,7 @@
 
         export class TorusKnot extends _Primitive {
 
-            constructor(id: string, scene: Scene, public radius: number, public tube: number, public radialSegments: number, public tubularSegments: number, public p: number, public q: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+            constructor(id: string, scene: Scene, public radius: number, public tube: number, public radialSegments: number, public tubularSegments: number, public p: number, public q: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1518,7 +1551,7 @@
                 return serializationObject;
             };
 
-            public static Parse(parsedTorusKnot: any, scene: Scene): Geometry.Primitives.TorusKnot {
+            public static Parse(parsedTorusKnot: any, scene: Scene): Nullable<Geometry.Primitives.TorusKnot> {
                 if (scene.getGeometryByID(parsedTorusKnot.id)) {
                     return null; // null since geometry could be something else than a ground...
                 }

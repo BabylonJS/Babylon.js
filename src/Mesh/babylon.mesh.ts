@@ -116,7 +116,7 @@
         }
 
         // Private
-        public _geometry: Geometry;
+        public _geometry: Nullable<Geometry>;
         public _delayInfo: Array<string>;
         public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
 
@@ -136,7 +136,7 @@
         // Use by builder only to know what orientation were the mesh build in.
         public _originalBuilderSideOrientation: number = Mesh._DEFAULTSIDE;
 
-        public overrideMaterialSideOrientation: number = null;
+        public overrideMaterialSideOrientation: Nullable<number> = null;
 
         private _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
 
@@ -144,8 +144,8 @@
         private _sourceNormals: Float32Array;   // Will be used to save original normals when using software skinning
 
         // Will be used to save a source mesh reference, If any
-        private _source: BABYLON.Mesh = null;
-        public get source(): BABYLON.Mesh {
+        private _source: Nullable<Mesh> = null;
+        public get source(): Nullable<Mesh> {
             return this._source;
         }
 
@@ -722,7 +722,7 @@
          * 
          * Returns the Mesh.  
          */
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): Mesh {
+        public setVerticesData(kind: string, data: number[] | Float32Array, updatable: boolean = false, stride?: number): Mesh {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.set(data, kind);
