@@ -1,16 +1,16 @@
 ﻿module BABYLON {
     export class BaseSubMesh {
-        public _materialDefines: MaterialDefines;
-        public _materialEffect: Effect;
+        public _materialDefines: Nullable<MaterialDefines>;
+        public _materialEffect: Nullable<Effect>;
 
-        public get effect(): Effect {
+        public get effect(): Nullable<Effect> {
             return this._materialEffect;
         }       
 
-        public setEffect(effect: Effect, defines?: MaterialDefines) {
+        public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null) {
             if (this._materialEffect === effect) {
                 if (!effect) {
-                    this._materialDefines = undefined;
+                    this._materialDefines = null;
                 }
                 return;
             }
@@ -25,8 +25,8 @@
         private _mesh: AbstractMesh;
         private _renderingMesh: Mesh;
         private _boundingInfo: BoundingInfo;
-        private _linesIndexBuffer: WebGLBuffer;
-        public _lastColliderWorldVertices: Vector3[];
+        private _linesIndexBuffer: Nullable<WebGLBuffer>;
+        public _lastColliderWorldVertices: Nullable<Vector3[]>;
         public _trianglePlanes: Plane[];
         public _lastColliderTransformMatrix: Matrix;
 
@@ -107,7 +107,7 @@
 
                 if (this._currentMaterial !== effectiveMaterial) {
                     this._currentMaterial = effectiveMaterial;
-                    this._materialDefines = undefined;
+                    this._materialDefines = null;
                 }
 
                 return effectiveMaterial;
@@ -224,8 +224,8 @@
         /**
          * Returns an object IntersectionInfo.  
          */
-        public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): IntersectionInfo {
-            var intersectInfo: IntersectionInfo = null;
+        public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+            var intersectInfo: Nullable<IntersectionInfo> = null;
 
             // LineMesh first as it's also a Mesh...
             if (this._mesh instanceof LinesMesh) {

@@ -137,7 +137,11 @@
          * Remove an Observer from the Observable object
          * @param observer the instance of the Observer to remove. If it doesn't belong to this Observable, false will be returned.
          */
-        public remove(observer: Observer<T>): boolean {
+        public remove(observer: Nullable<Observer<T>>): boolean {
+            if (!observer) {
+                return false;
+            }
+
             var index = this._observers.indexOf(observer);
 
             if (index !== -1) {

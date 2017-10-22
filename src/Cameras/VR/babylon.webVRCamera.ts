@@ -326,8 +326,8 @@ module BABYLON {
             return this._projectionMatrix;
         }
 
-        private _onGamepadConnectedObserver: Observer<Gamepad>;
-        private _onGamepadDisconnectedObserver: Observer<Gamepad>;
+        private _onGamepadConnectedObserver: Nullable<Observer<Gamepad>>;
+        private _onGamepadDisconnectedObserver: Nullable<Observer<Gamepad>>;
 
         public initControllers() {
             this.controllers = [];

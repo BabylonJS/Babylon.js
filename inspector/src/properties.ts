@@ -75,9 +75,6 @@ module INSPECTOR {
             ],
             format: (tex: BABYLON.Texture) => { return tex.name }
         },
-        'MapTexture': {
-            type: BABYLON.MapTexture
-        },
         'RenderTargetTexture': {
             type: BABYLON.RenderTargetTexture
         },

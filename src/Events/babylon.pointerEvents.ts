@@ -62,7 +62,7 @@ module BABYLON {
      * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
      */
     export class PointerInfo extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, public pickInfo: PickingInfo) {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, public pickInfo: Nullable<PickingInfo>) {
             super(type, event);
         }
     }    

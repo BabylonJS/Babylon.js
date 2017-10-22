@@ -76,8 +76,8 @@ module BABYLON {
         
         // Connection
         private _attachedCamera: Nullable<ArcRotateCamera>;
-		private _onAfterCheckInputsObserver: Observer<Camera>;	
-		private _onMeshTargetChangedObserver: Observer<AbstractMesh>;
+		private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;	
+		private _onMeshTargetChangedObserver: Nullable<Observer<AbstractMesh>>;
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
@@ -101,7 +101,9 @@ module BABYLON {
 			if (!this._attachedCamera) {
 				return;
 			}			
-			this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			if (this._onAfterCheckInputsObserver) {
+				this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
+			}
 			if (this._onMeshTargetChangedObserver) {
 				this._attachedCamera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
 			}
@@ -119,7 +121,7 @@ module BABYLON {
 		 * @param radiusLimit The limit to check against.
 		 * @return Bool to indicate if at limit.
 		 */
-		private _isRadiusAtLimit(radiusLimit: number): boolean {
+		private _isRadiusAtLimit(radiusLimit: Nullable<number>): boolean {
 			if (!this._attachedCamera) {
 				return false;
 			}

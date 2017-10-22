@@ -3,8 +3,8 @@ module BABYLON {
         camera: FreeCamera;
 
         public gamepad: Nullable<Gamepad>;        
-        private _onGamepadConnectedObserver : Observer<Gamepad>;
-        private _onGamepadDisconnectedObserver : Observer<Gamepad>;
+        private _onGamepadConnectedObserver : Nullable<Observer<Gamepad>>;
+        private _onGamepadDisconnectedObserver : Nullable<Observer<Gamepad>>;
 
         @serialize()
         public gamepadAngularSensibility = 200;

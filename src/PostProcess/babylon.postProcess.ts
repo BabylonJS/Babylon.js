@@ -212,7 +212,7 @@
             this.width = -1;
         }
 
-        public activate(camera: Camera, sourceTexture?: InternalTexture, forceDepthStencil?: boolean): void {            
+        public activate(camera: Camera, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): void {            
             camera = camera || this._camera;
             
             var scene = camera.getScene();

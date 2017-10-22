@@ -85,14 +85,7 @@ module INSPECTOR {
                 imgs.push(Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement);
             }
             
-            if (texture instanceof BABYLON.MapTexture) {
-                // instance of Map texture
-                texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
-                BABYLON.Tools.DumpFramebuffer(texture.getSize().width, texture.getSize().height, this._inspector.scene.getEngine(), (data) => img.src = data);
-                texture.unbindTexture();
-
-            }
-            else if (texture instanceof BABYLON.RenderTargetTexture) {
+            if (texture instanceof BABYLON.RenderTargetTexture) {
                 // RenderTarget textures
                 let scene = this._inspector.scene;
                 let engine = scene.getEngine();

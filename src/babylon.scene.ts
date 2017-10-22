@@ -201,7 +201,7 @@
         */
         public onDisposeObservable = new Observable<Scene>();
 
-        private _onDisposeObserver: Observer<Scene>;
+        private _onDisposeObserver: Nullable<Observer<Scene>>;
         /** A function to be executed when this scene is disposed. */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
@@ -216,7 +216,7 @@
         */
         public onBeforeRenderObservable = new Observable<Scene>();
 
-        private _onBeforeRenderObserver: Observer<Scene>;
+        private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
         /** A function to be executed before rendering this scene */
         public set beforeRender(callback: Nullable<() => void>) {
             if (this._onBeforeRenderObserver) {
@@ -233,7 +233,7 @@
         */
         public onAfterRenderObservable = new Observable<Scene>();
 
-        private _onAfterRenderObserver: Observer<Scene>;
+        private _onAfterRenderObserver: Nullable<Observer<Scene>>;
         /** A function to be executed after rendering this scene */
         public set afterRender(callback: Nullable<() => void>) {
             if (this._onAfterRenderObserver) {
@@ -257,7 +257,7 @@
         */
         public onBeforeCameraRenderObservable = new Observable<Camera>();
 
-        private _onBeforeCameraRenderObserver: Observer<Camera>;
+        private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>>;
         public set beforeCameraRender(callback: () => void) {
             if (this._onBeforeCameraRenderObserver) {
                 this.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
@@ -272,7 +272,7 @@
         */
         public onAfterCameraRenderObservable = new Observable<Camera>();
 
-        private _onAfterCameraRenderObserver: Observer<Camera>;
+        private _onAfterCameraRenderObserver: Nullable<Observer<Camera>>;
         public set afterCameraRender(callback: () => void) {
             if (this._onAfterCameraRenderObserver) {
                 this.onAfterCameraRenderObservable.remove(this._onAfterCameraRenderObserver);
@@ -363,7 +363,7 @@
         /** Deprecated. Use onPointerObservable instead */
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         /** Deprecated. Use onPointerObservable instead */
-        public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>) => void;
         /** Deprecated. Use onPointerObservable instead */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
@@ -402,9 +402,9 @@
         /** If you need to check double click without raising a single click at first click, enable this flag */
         public static ExclusiveDoubleClickMode = false;
 
-        private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void) => void;
+        private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
         private _initActionManager: (act: Nullable<ActionManager>, clickInfo: ClickInfo) => Nullable<ActionManager>;
-        private _delayedSimpleClick: (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void) => void;
+        private _delayedSimpleClick: (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
         private _delayedSimpleClickTimeout: number;
         private _previousDelayedSimpleClickTimeout: number;
         private _meshPickProceed = false;
@@ -449,8 +449,8 @@
         public onKeyboardObservable = new Observable<KeyboardInfo>();
         private _onKeyDown: (evt: Event) => void;
         private _onKeyUp: (evt: Event) => void;
-        private _onCanvasFocusObserver: Observer<Engine>;
-        private _onCanvasBlurObserver: Observer<Engine>;
+        private _onCanvasFocusObserver: Nullable<Observer<Engine>>;
+        private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
 
         // Coordinate system
         /**
@@ -1043,6 +1043,10 @@
         private _updatePointerPosition(evt: PointerEvent): void {
             var canvasRect = this._engine.getRenderingCanvasClientRect();
 
+            if (!canvasRect) {
+                return;
+            }
+
             this._pointerX = evt.clientX - canvasRect.left;
             this._pointerY = evt.clientY - canvasRect.top;
 
@@ -1077,6 +1081,10 @@
         private _processPointerMove(pickResult: Nullable<PickingInfo>, evt: PointerEvent): Scene {
             
             var canvas = this._engine.getRenderingCanvas();
+
+            if (!canvas) {
+                return this;
+            }
 
             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
                 this.setPointerOverSprite(null);
@@ -1203,7 +1211,7 @@
             return this._processPointerUp(pickResult, evt, clickInfo);
         }    
 
-        private _processPointerUp(pickResult: PickingInfo, evt: PointerEvent, clickInfo: ClickInfo): Scene {            
+        private _processPointerUp(pickResult: Nullable<PickingInfo>, evt: PointerEvent, clickInfo: ClickInfo): Scene {            
             if (pickResult && pickResult && pickResult.pickedMesh) {
                 this._pickedUpMesh = pickResult.pickedMesh;
                 if (this._pickedDownMesh === this._pickedUpMesh) {
@@ -1283,7 +1291,7 @@
                 return act;
             };
 
-            this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void) => {
+            this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void) => {
                 // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
                 if ((new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
                     btn !== this._previousButtonPressed) {
@@ -1294,7 +1302,7 @@
                 }
             }
 
-            this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: PickingInfo) => void): void => {
+            this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void): void => {
                 let clickInfo = new ClickInfo();
                 this._currentPickResult = null;
                 let act: Nullable<ActionManager> = null;
@@ -1445,7 +1453,7 @@
 
                 this._updatePointerPosition(evt);
 
-                if (this.preventDefaultOnPointerDown) {
+                if (this.preventDefaultOnPointerDown && canvas) {
                     evt.preventDefault();
                     canvas.focus();
                 }
@@ -1518,7 +1526,7 @@
 
                 this._updatePointerPosition(evt);      
 
-                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: PickingInfo) => {
+                this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
@@ -1637,17 +1645,28 @@
 
             let engine = this.getEngine();
             this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(()=>{
+                if (!canvas) {
+                    return;
+                }
                 canvas.addEventListener("keydown", this._onKeyDown, false);
                 canvas.addEventListener("keyup", this._onKeyUp, false);   
             });
 
-            this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(()=>{                
+            this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(()=>{       
+                if (!canvas) {
+                    return;
+                }                         
                 canvas.removeEventListener("keydown", this._onKeyDown);
                 canvas.removeEventListener("keyup", this._onKeyUp);
             });
 
             var eventPrefix = Tools.GetPointerPrefix();
             var canvas = this._engine.getRenderingCanvas();
+
+            if (!canvas) {
+                return;
+            }
+
             if (attachMove) {
                 canvas.addEventListener(eventPrefix + "move", this._onPointerMove, false);
                 // Wheel
@@ -1671,12 +1690,21 @@
             var eventPrefix = Tools.GetPointerPrefix();
             var canvas = engine.getRenderingCanvas();
 
+            if (!canvas) {
+                return;
+            }
+
             canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
             canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
             window.removeEventListener(eventPrefix + "up", this._onPointerUp);
 
-            engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
-            engine.onCanvasFocusObservable.remove(this._onCanvasFocusObserver);
+            if (this._onCanvasBlurObserver) {
+                engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+            }
+
+            if (this._onCanvasFocusObserver) {
+                engine.onCanvasFocusObservable.remove(this._onCanvasFocusObserver);
+            }
 
             // Wheel
             canvas.removeEventListener('mousewheel', this._onPointerMove);
@@ -2101,6 +2129,10 @@
          */
         public switchActiveCamera(newCamera: Camera, attachControl = true) {
             var canvas = this._engine.getRenderingCanvas();
+
+            if (!canvas) {
+                return;
+            }
 
             if (this.activeCamera) {
                 this.activeCamera.detachControl(canvas);
@@ -2922,7 +2954,7 @@
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
-                        renderTarget.render(hasSpecialRenderTargetCamera, this.dumpNextRenderTargets);
+                        renderTarget.render((<boolean>hasSpecialRenderTargetCamera), this.dumpNextRenderTargets);
                     }
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -3271,7 +3303,7 @@
 
                     if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
                         var shadowMap = shadowGenerator.getShadowMap();
-                        if (shadowMap.getScene().textures.indexOf(shadowMap) !== -1) {
+                        if (this.textures.indexOf(shadowMap) !== -1) {
                             this._renderTargets.push(shadowMap);
                         }
                     }
@@ -3366,7 +3398,7 @@
                 listeningCamera = this.activeCamera;
             }
 
-            if (listeningCamera && audioEngine.canUseWebAudio) {
+            if (listeningCamera && audioEngine.canUseWebAudio && audioEngine.audioContext) {
                 audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
                 // for VR cameras
                 if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
@@ -3592,9 +3624,12 @@
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
-            var index;
-            for (index = 0; index < this.cameras.length; index++) {
-                this.cameras[index].detachControl(canvas);
+
+            if (canvas) {
+                var index;
+                for (index = 0; index < this.cameras.length; index++) {
+                    this.cameras[index].detachControl(canvas);
+                }
             }
 
             // Release lights
@@ -4007,7 +4042,7 @@
          * @param {BABYLON.IPhysicsEnginePlugin} [plugin] - The physics engine to be used. defaults to OimoJS.
          * @return {boolean} was the physics engine initialized
          */
-        public enablePhysics(gravity?: Vector3, plugin?: IPhysicsEnginePlugin): boolean {
+        public enablePhysics(gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
             if (this._physicsEngine) {
                 return true;
             }
@@ -4131,8 +4166,9 @@
                 camera.speed = radius * 0.2;
                 this.activeCamera = camera;
 
-                if (attachCameraControls) {
-                    camera.attachControl(this.getEngine().getRenderingCanvas());
+                let canvas = this.getEngine().getRenderingCanvas();
+                if (attachCameraControls && canvas) {
+                    camera.attachControl(canvas);
                 }
             }
         }
@@ -4153,7 +4189,9 @@
                 let hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
                 hdrSkyboxMaterial.reflectionTexture = this.environmentTexture.clone();
-                hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                if (hdrSkyboxMaterial.reflectionTexture) {
+                    hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                }
                 hdrSkyboxMaterial.microSurface = 1.0 - blur;
                 hdrSkyboxMaterial.disableLighting = true;
                 hdrSkyboxMaterial.twoSidedLighting = true;
@@ -4164,7 +4202,9 @@
                 let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this);
                 skyboxMaterial.backFaceCulling = false;
                 skyboxMaterial.reflectionTexture = this.environmentTexture.clone();
-                skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                if (skyboxMaterial.reflectionTexture) {
+                    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                }
                 skyboxMaterial.disableLighting = true;
                 hdrSkybox.infiniteDistance = true;
                 hdrSkybox.material = skyboxMaterial;

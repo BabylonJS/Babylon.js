@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: string, shaderVersion: string): WebGLShader => {
+    var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader => {
         return compileRawShader(gl, shaderVersion + (defines ? defines + "\n" : "") + source, type);
     };
 
@@ -2424,7 +2424,7 @@
             return this._createShaderProgram(vertexShader, fragmentShader, context);
         }
 
-        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
+        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext): WebGLProgram {
             context = context || this._gl;
 
             var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n" : "";
@@ -2463,7 +2463,7 @@
         }
 
         public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
-            var results = [];
+            var results = new Array<Nullable<WebGLUniformLocation>>();
 
             for (var index = 0; index < uniformsNames.length; index++) {
                 results.push(this._gl.getUniformLocation(shaderProgram, uniformsNames[index]));
@@ -2498,161 +2498,161 @@
             effect.onBindObservable.notifyObservers(effect);
         }
 
-        public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+        public setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1iv(uniform, array);
         }
 
-        public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+        public setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
             if (!uniform || array.length % 2 !== 0)
                 return;
 
             this._gl.uniform2iv(uniform, array);
         }
 
-        public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+        public setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
             if (!uniform || array.length % 3 !== 0)
                 return;
 
             this._gl.uniform3iv(uniform, array);
         }
 
-        public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+        public setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
             if (!uniform || array.length % 4 !== 0)
                 return;
 
             this._gl.uniform4iv(uniform, array);
         }
 
-        public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+        public setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1fv(uniform, array);
         }
 
-        public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+        public setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
             if (!uniform || array.length % 2 !== 0)
                 return;
 
             this._gl.uniform2fv(uniform, array);
         }
 
-        public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+        public setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
             if (!uniform || array.length % 3 !== 0)
                 return;
 
             this._gl.uniform3fv(uniform, array);
         }
 
-        public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+        public setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
             if (!uniform || array.length % 4 !== 0)
                 return;
 
             this._gl.uniform4fv(uniform, array);
         }
 
-        public setArray(uniform: WebGLUniformLocation, array: number[]): void {
+        public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1fv(uniform, <any>array);
         }
 
-        public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+        public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
             if (!uniform || array.length % 2 !== 0)
                 return;
 
             this._gl.uniform2fv(uniform, <any>array);
         }
 
-        public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+        public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
             if (!uniform || array.length % 3 !== 0)
                 return;
 
             this._gl.uniform3fv(uniform, <any>array);
         }
 
-        public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+        public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
             if (!uniform || array.length % 4 !== 0)
                 return;
 
             this._gl.uniform4fv(uniform, <any>array);
         }
 
-        public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
+        public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniformMatrix4fv(uniform, false, matrices);
         }
 
-        public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
+        public setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void {
             if (!uniform)
                 return;
 
             this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
         }
 
-        public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+        public setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniformMatrix3fv(uniform, false, matrix);
         }
 
-        public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+        public setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniformMatrix2fv(uniform, false, matrix);
         }
 
-        public setFloat(uniform: WebGLUniformLocation, value: number): void {
+        public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1f(uniform, value);
         }
 
-        public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void {
+        public setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform2f(uniform, x, y);
         }
 
-        public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
+        public setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform3f(uniform, x, y, z);
         }
 
-        public setBool(uniform: WebGLUniformLocation, bool: number): void {
+        public setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1i(uniform, bool);
         }
 
-        public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
+        public setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform4f(uniform, x, y, z, w);
         }
 
-        public setColor3(uniform: WebGLUniformLocation, color3: Color3): void {
+        public setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void {
             if (!uniform)
                 return;
 
             this._gl.uniform3f(uniform, color3.r, color3.g, color3.b);
         }
 
-        public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
+        public setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void {
             if (!uniform)
                 return;
 
@@ -4300,7 +4300,7 @@
             }
         }
 
-        public setTexture(channel: number, uniform: WebGLUniformLocation, texture: BaseTexture): void {
+        public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void {
             if (channel < 0) {
                 return;
             }
@@ -4309,7 +4309,7 @@
             this._setTexture(channel, texture);
         }
 
-        private _setTexture(channel: number, texture: BaseTexture): void {
+        private _setTexture(channel: number, texture: Nullable<BaseTexture>): void {
             // Not ready?
             if (!texture) {
                 if (this._activeTexturesCache[channel] != null) {
@@ -4392,8 +4392,8 @@
             }
         }
 
-        public setTextureArray(channel: number, uniform: WebGLUniformLocation, textures: BaseTexture[]): void {
-            if (channel < 0) {
+        public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void {
+            if (channel < 0 || !uniform) {
                 return;
             }
 

@@ -106,7 +106,7 @@
 
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public reflectionTexture: BaseTexture;
+        public reflectionTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -402,7 +402,7 @@
          */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public environmentBRDFTexture: BaseTexture = null;
+        public environmentBRDFTexture: Nullable<BaseTexture> = null;
 
         /**
          * Force normal to face away from face.

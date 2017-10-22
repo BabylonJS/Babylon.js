@@ -112,7 +112,7 @@
         }
     }
 
-    function generateExpandMember(setCallback: string, targetKey?: string) {
+    function generateExpandMember(setCallback: string, targetKey: Nullable<string> = null) {
         return (target: any, propertyKey: string) => {
             var key = targetKey || ("_" + propertyKey);
             Object.defineProperty(target, propertyKey, {
@@ -133,7 +133,7 @@
         }
     }
 
-    export function expandToProperty(callback: string, targetKey?: string) {
+    export function expandToProperty(callback: string, targetKey: Nullable<string> = null) {
         return generateExpandMember(callback, targetKey);
     }
 

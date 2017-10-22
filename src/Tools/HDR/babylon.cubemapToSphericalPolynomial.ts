@@ -46,8 +46,8 @@ module BABYLON.Internals {
             var right = texture.readPixels(0);
             var left = texture.readPixels(1);
 
-            var up: ArrayBufferView;
-            var down: ArrayBufferView;
+            var up: Nullable<ArrayBufferView>;
+            var down: Nullable<ArrayBufferView>;
             if (texture.isRenderTarget) {
                 up = texture.readPixels(3);
                 down = texture.readPixels(2);

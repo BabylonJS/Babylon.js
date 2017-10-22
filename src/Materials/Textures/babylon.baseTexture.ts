@@ -97,7 +97,7 @@
         */
         public onDisposeObservable = new Observable<BaseTexture>();
 
-        private _onDisposeObserver: Observer<BaseTexture>;
+        private _onDisposeObserver: Nullable<Observer<BaseTexture>>;
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -127,12 +127,12 @@
             return this._scene;
         }
 
-        public getTextureMatrix(): Nullable<Matrix> {
-            return null;
+        public getTextureMatrix(): Matrix {
+            return Matrix.IdentityReadOnly;
         }
 
-        public getReflectionTextureMatrix(): Nullable<Matrix> {
-            return null;
+        public getReflectionTextureMatrix(): Matrix {
+            return Matrix.IdentityReadOnly;
         }
 
         public getInternalTexture(): Nullable<InternalTexture> {

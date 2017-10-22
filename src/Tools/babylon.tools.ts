@@ -847,8 +847,9 @@
             var offsetX = Math.max(0, width - newWidth) / 2;
             var offsetY = Math.max(0, height - newHeight) / 2;
 
-            if (renderContext) {
-                renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
+            var renderingCanvas = engine.getRenderingCanvas();
+            if (renderContext && renderingCanvas) {
+                renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
             }
 
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
