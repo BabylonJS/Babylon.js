@@ -9,11 +9,11 @@ declare module BABYLON {
         json: Object;
         bin: ArrayBufferView;
     }
-    interface IGLTFLoader {
+    interface IGLTFLoader extends IDisposable {
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
     }
-    class GLTFFileLoader implements ISceneLoaderPluginAsync {
+    class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync {
         static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
         onParsed: (data: IGLTFLoaderData) => void;
@@ -27,19 +27,15 @@ declare module BABYLON {
          */
         onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
         /**
-         * Raised when the visible components (geometry, materials, textures, etc.) are first ready to be rendered.
-         * For assets with LODs, raised when the first LOD is complete.
-         * For assets without LODs, raised when the model is complete just before onComplete.
-         */
-        onReady: () => void;
-        /**
          * Raised when the asset is completely loaded, just before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
-         * For assets without LODs, raised when the model is complete just after onReady.
+         * For assets without LODs, raised when the model is complete just after onSuccess.
          */
         onComplete: () => void;
+        private _loader;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
+        dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         canDirectLoad(data: string): boolean;
@@ -447,6 +443,7 @@ declare module BABYLON.GLTF1 {
             [name: string]: GLTFLoaderExtension;
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
+        dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         private _loadShadersAsync(gltfRuntime, onload);
@@ -851,9 +848,10 @@ declare module BABYLON.GLTF2 {
 
 
 declare module BABYLON.GLTF2 {
-    class GLTFLoader implements IGLTFLoader, IDisposable {
+    class GLTFLoader implements IGLTFLoader {
         _gltf: IGLTF;
         _babylonScene: Scene;
+        private _disposed;
         private _parent;
         private _rootUrl;
         private _defaultMaterial;
@@ -862,7 +860,7 @@ declare module BABYLON.GLTF2 {
         private _progressCallback;
         private _errorCallback;
         private _renderReady;
-        private _disposed;
+        private _requests;
         private _renderReadyObservable;
         private _renderPendingCount;
         private _loaderPendingCount;
@@ -910,7 +908,7 @@ declare module BABYLON.GLTF2 {
         private _loadBufferViewAsync(context, bufferView, onSuccess);
         private _loadAccessorAsync(context, accessor, onSuccess);
         private _getNumComponentsOfType(type);
-        private _buildArrayBuffer<T>(typedArray, context, data, byteOffset, count, numComponents, byteStride);
+        private _buildArrayBuffer<T>(typedArray, data, byteOffset, count, numComponents, byteStride);
         _addPendingData(data: any): void;
         _removePendingData(data: any): void;
         _addLoaderPendingData(data: any): void;
@@ -924,6 +922,7 @@ declare module BABYLON.GLTF2 {
         _loadMaterialAlphaProperties(context: string, material: IGLTFMaterial, colorFactor: number[]): void;
         _loadTexture(context: string, texture: IGLTFTexture, coordinatesIndex: number): Texture;
         private _loadImage(context, image, onSuccess);
+        _loadUri(context: string, uri: string, onSuccess: (data: ArrayBufferView) => void): void;
         _tryCatchOnError(handler: () => void): void;
     }
 }

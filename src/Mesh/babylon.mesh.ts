@@ -840,7 +840,7 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: Nullable<number>, updatable?: boolean): Mesh {
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): Mesh {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.indices = indices;

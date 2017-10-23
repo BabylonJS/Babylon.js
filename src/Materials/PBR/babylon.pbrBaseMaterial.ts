@@ -90,6 +90,8 @@
         
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
+        
+        public NONUNIFORMSCALING = false;
 
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
