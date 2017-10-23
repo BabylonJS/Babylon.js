@@ -7,8 +7,8 @@ module BABYLON {
 
         private _singleInstance: boolean;
 
-        private _cameras: Camera[];
-        private _indicesForCamera: number[][];
+        private _cameras: { [key:string]: Camera};
+        private _indicesForCamera: { [key:string]: number[]};
 
         private _renderPasses: any;
         private _renderEffectAsPasses: any;
@@ -25,8 +25,8 @@ module BABYLON {
 
             this._getPostProcess = getPostProcess;
 
-            this._cameras = [];
-            this._indicesForCamera = [];
+            this._cameras = {};
+            this._indicesForCamera = {};
 
             this._postProcesses = {};
 
@@ -112,7 +112,7 @@ module BABYLON {
 
                 this._indicesForCamera[cameraName].push(index);
 
-                if (this._cameras.indexOf(camera) === -1) {
+                if (!this._cameras[cameraName]) {
                     this._cameras[cameraName] = camera;
                 }
 
@@ -131,15 +131,15 @@ module BABYLON {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
-                var cameraName = camera.name;
+                var camera: Camera = _cam[i];
+                var cameraName: string = camera.name;
 
-                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName]);
+                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName]);
 
-                var index = this._cameras.indexOf(cameraName);
-
-                this._indicesForCamera.splice(index, 1);
-                this._cameras.splice(index, 1);
+                if (this._cameras[cameraName]) {
+                    //this._indicesForCamera.splice(index, 1);
+                    this._cameras[cameraName] = null;
+                }
 
                 for (var passName in this._renderPasses) {
                     this._renderPasses[passName]._decRefCount();
@@ -179,7 +179,7 @@ module BABYLON {
                 var camera = _cam[i];
                 var cameraName = camera.Name;
 
-                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName]);
+                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName]);
 
                 for (var passName in this._renderPasses) {
                     this._renderPasses[passName]._decRefCount();
