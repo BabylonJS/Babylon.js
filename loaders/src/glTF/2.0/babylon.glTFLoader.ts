@@ -83,9 +83,11 @@ module BABYLON.GLTF2 {
 
             this._disposed = true;
 
-            // Abort requests created during load
-            for (let request of this._requests) {
-                request.abort();
+            // Abort requests that are not complete
+            for (const request of this._requests) {
+                if (request.readyState !== (XMLHttpRequest.DONE || 4)) {
+                    request.abort();
+                }
             }
 
             // Revoke object urls created during load
