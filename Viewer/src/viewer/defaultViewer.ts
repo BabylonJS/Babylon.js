@@ -26,12 +26,17 @@ export class DefaultViewer extends AbstractViewer {
         let viewerElement = this.templateManager.getTemplate('viewer');
         let navbar = this.templateManager.getTemplate('navBar');
 
+        let nextHeight: string = '0px';
+
         viewerElement.parent.addEventListener('pointerover', () => {
-            navbar.parent.style.bottom = '0px';
+            let currentHeight = navbar.parent.style.bottom;
+            navbar.parent.style.bottom = nextHeight;
+            nextHeight = '-' + currentHeight;
         });
 
         viewerElement.parent.addEventListener('pointerout', () => {
-            navbar.parent.style.bottom = '-80px';
+            navbar.parent.style.bottom = nextHeight;
+            nextHeight = '0px';
         });
 
         return super.onTemplatesLoaded();
