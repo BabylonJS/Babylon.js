@@ -69,6 +69,7 @@ module BABYLON {
         public MORPHTARGETS_NORMAL = false;
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
+        public NONUNIFORMSCALING = false;
 
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;

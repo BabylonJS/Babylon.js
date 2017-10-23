@@ -1935,6 +1935,8 @@
         }
 
         public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
+            // Force cache update
+            this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
             this.bindIndexBuffer(indexBuffer);
             var arrayBuffer;
 

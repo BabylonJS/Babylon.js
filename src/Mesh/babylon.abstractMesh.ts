@@ -81,6 +81,19 @@
             return this._facetDataEnabled;
         }
 
+        // Normal matrix
+        private _nonUniformScaling = false;
+        public get nonUniformScaling(): boolean {
+            return this._nonUniformScaling;
+        }
+
+        public set nonUniformScaling(value: boolean) {
+            if (this._nonUniformScaling === value) {
+                return;
+            }
+            this._nonUniformScaling = true;
+            this._markSubMeshesAsMiscDirty();
+        }
 
         // Events
 
@@ -1376,6 +1389,15 @@
             // Post multiply inverse of pivotMatrix
             if (this._postMultiplyPivotMatrix) {
                 this._worldMatrix.multiplyToRef(this._pivotMatrixInverse, this._worldMatrix);
+            }
+
+            // Normal matrix
+            if (this.scaling.isNonUniform) {
+                this.nonUniformScaling = true;
+            } else if (this.parent && (<AbstractMesh>this.parent)._nonUniformScaling) {
+                this.nonUniformScaling = (<AbstractMesh>this.parent)._nonUniformScaling;
+            } else {
+                this.nonUniformScaling = false;
             }
 
             // Bounding info

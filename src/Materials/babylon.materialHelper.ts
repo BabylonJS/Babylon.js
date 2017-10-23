@@ -29,6 +29,7 @@
                 defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
                 defines["POINTSIZE"] = (pointsCloud || scene.forcePointsCloud);
                 defines["FOG"] = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && fogEnabled);
+                defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             }
         }
 

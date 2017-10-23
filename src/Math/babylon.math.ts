@@ -1311,6 +1311,25 @@
             return this;
         }
 
+        /**
+         * Return true is the vector is non uniform meaning x, y or z are not all the same.
+         */
+        public get isNonUniform(): boolean {
+            if (this.x !== this.y) {
+                return true;
+            }
+
+            if (this.x !== this.z) {
+                return true;
+            }
+
+            if (this.y !== this.z) {
+                return true;
+            }
+
+            return false;
+        }
+
         // Properties
         /**
          * Returns the length of the Vector3 (float).  
@@ -3411,6 +3430,24 @@
         }
 
         /**
+         * Compute the transpose of the matrix.  
+         * Returns a new Matrix.  
+         */        
+        public transpose(): Matrix {
+            return Matrix.Transpose(this);
+        }
+
+        /**
+         * Compute the transpose of the matrix.  
+         * Returns the current matrix.  
+         */        
+        public transposeToRef(result: Matrix): Matrix {
+            Matrix.TransposeToRef(this, result);
+
+            return this;
+        }
+
+        /**
          * Sets the index-th row of the current matrix with the passed 4 x float values.
          * Returns the updated Matrix.    
          */
@@ -4089,6 +4126,15 @@
         public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
 
+            Matrix.TransposeToRef(matrix, result);
+
+            return result;
+        }
+
+        /**
+         * Compute the transpose of the passed Matrix and store it in the result matrix.  
+         */
+        public static TransposeToRef(matrix: Matrix, result: Matrix): void {
             result.m[0] = matrix.m[0];
             result.m[1] = matrix.m[4];
             result.m[2] = matrix.m[8];
@@ -4108,8 +4154,6 @@
             result.m[13] = matrix.m[7];
             result.m[14] = matrix.m[11];
             result.m[15] = matrix.m[15];
-
-            return result;
         }
 
         /**

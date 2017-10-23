@@ -17,6 +17,8 @@ attribute vec2 uv2;
 attribute vec4 color;
 #endif
 
+#include<helperFunctions>
+
 #include<bonesDeclaration>
 
 // Uniforms
@@ -112,7 +114,13 @@ void main(void) {
 	vPositionW = vec3(worldPos);
 
 #ifdef NORMAL
-	vNormalW = normalize(vec3(finalWorld * vec4(normalUpdated, 0.0)));
+	mat3 normalWorld = mat3(finalWorld);
+
+	#ifdef NONUNIFORMSCALING
+		normalWorld = transposeMat3(inverseMat3(normalWorld));
+	#endif
+
+	vNormalW = normalize(normalWorld * normalUpdated);
 #endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
