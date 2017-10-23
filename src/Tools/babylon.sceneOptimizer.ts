@@ -326,8 +326,8 @@
             // Let's the system running for a specific amount of time before checking FPS
             scene.executeWhenReady(() => {
                 setTimeout(() => {
-                    SceneOptimizer._CheckCurrentState(scene, options, 0, onSuccess, onFailure);
-                }, options.trackerDuration);
+                    SceneOptimizer._CheckCurrentState(scene, <SceneOptimizerOptions>options, 0, onSuccess, onFailure);
+                }, (<SceneOptimizerOptions>options).trackerDuration);
             });
         }
     }

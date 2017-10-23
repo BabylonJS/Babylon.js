@@ -138,9 +138,13 @@
 
             //Physics
             if (scene.isPhysicsEnabled()) {
-                serializationObject.physicsEnabled = true;
-                serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
-                serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
+                let physicEngine = scene.getPhysicsEngine();
+
+                if (physicEngine) {
+                    serializationObject.physicsEnabled = true;
+                    serializationObject.physicsGravity = physicEngine.gravity.asArray();
+                    serializationObject.physicsEngine = physicEngine.getPhysicsPluginName();
+                }
             }
 
             // Metadata

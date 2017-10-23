@@ -11,7 +11,7 @@ var BABYLON;
         // Sets the useRightHandedSystem flag on the scene.
         GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 2] = "FORCE_RIGHT_HANDED";
     })(GLTFLoaderCoordinateSystemMode = BABYLON.GLTFLoaderCoordinateSystemMode || (BABYLON.GLTFLoaderCoordinateSystemMode = {}));
-    var GLTFFileLoader = (function () {
+    var GLTFFileLoader = /** @class */ (function () {
         function GLTFFileLoader() {
             // V2 options
             this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
@@ -21,6 +21,12 @@ var BABYLON;
                 ".glb": { isBinary: true }
             };
         }
+        GLTFFileLoader.prototype.dispose = function () {
+            if (this._loader) {
+                this._loader.dispose();
+                this._loader = null;
+            }
+        };
         GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
             var loaderData = GLTFFileLoader._parse(data, onError);
             if (!loaderData) {
@@ -29,11 +35,11 @@ var BABYLON;
             if (this.onParsed) {
                 this.onParsed(loaderData);
             }
-            var loader = this._getLoader(loaderData, onError);
-            if (!loader) {
+            this._loader = this._getLoader(loaderData, onError);
+            if (!this._loader) {
                 return;
             }
-            loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
+            this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         };
         GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
             var loaderData = GLTFFileLoader._parse(data, onError);
@@ -43,11 +49,11 @@ var BABYLON;
             if (this.onParsed) {
                 this.onParsed(loaderData);
             }
-            var loader = this._getLoader(loaderData, onError);
-            if (!loader) {
+            this._loader = this._getLoader(loaderData, onError);
+            if (!this._loader) {
                 return;
             }
-            return loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
+            return this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         };
         GLTFFileLoader.prototype.canDirectLoad = function (data) {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
@@ -163,18 +169,18 @@ var BABYLON;
             // Look for BIN chunk
             var bin = null;
             while (binaryReader.getPosition() < binaryReader.getLength()) {
-                chunkLength = binaryReader.readUint32();
-                chunkFormat = binaryReader.readUint32();
-                switch (chunkFormat) {
+                var chunkLength_1 = binaryReader.readUint32();
+                var chunkFormat_1 = binaryReader.readUint32();
+                switch (chunkFormat_1) {
                     case ChunkFormat.JSON:
                         onError("Unexpected JSON chunk");
                         return null;
                     case ChunkFormat.BIN:
-                        bin = binaryReader.readUint8Array(chunkLength);
+                        bin = binaryReader.readUint8Array(chunkLength_1);
                         break;
                     default:
                         // ignore unrecognized chunkFormat
-                        binaryReader.skipBytes(chunkLength);
+                        binaryReader.skipBytes(chunkLength_1);
                         break;
                 }
             }
@@ -207,7 +213,7 @@ var BABYLON;
         GLTFFileLoader._decodeBufferToText = function (buffer) {
             var result = "";
             var length = buffer.byteLength;
-            for (var i = 0; i < length; ++i) {
+            for (var i = 0; i < length; i++) {
                 result += String.fromCharCode(buffer[i]);
             }
             return result;
@@ -218,7 +224,7 @@ var BABYLON;
         return GLTFFileLoader;
     }());
     BABYLON.GLTFFileLoader = GLTFFileLoader;
-    var BinaryReader = (function () {
+    var BinaryReader = /** @class */ (function () {
         function BinaryReader(arrayBuffer) {
             this._arrayBuffer = arrayBuffer;
             this._dataView = new DataView(arrayBuffer);
@@ -364,7 +370,7 @@ var BABYLON;
             ETokenType[ETokenType["UNKNOWN"] = 2] = "UNKNOWN";
             ETokenType[ETokenType["END_OF_INPUT"] = 3] = "END_OF_INPUT";
         })(ETokenType || (ETokenType = {}));
-        var Tokenizer = (function () {
+        var Tokenizer = /** @class */ (function () {
             function Tokenizer(toParse) {
                 this._pos = 0;
                 this.isLetterOrDigitPattern = /^[a-zA-Z0-9]+$/;
@@ -1292,7 +1298,7 @@ var BABYLON;
         /**
         * Implementation of the base glTF spec
         */
-        var GLTFLoaderBase = (function () {
+        var GLTFLoaderBase = /** @class */ (function () {
             function GLTFLoaderBase() {
             }
             GLTFLoaderBase.CreateRuntime = function (parsedData, scene, rootUrl) {
@@ -1587,7 +1593,7 @@ var BABYLON;
         /**
         * glTF V1 Loader
         */
-        var GLTFLoader = (function () {
+        var GLTFLoader = /** @class */ (function () {
             function GLTFLoader() {
             }
             GLTFLoader.RegisterExtension = function (extension) {
@@ -1596,6 +1602,9 @@ var BABYLON;
                     return;
                 }
                 GLTFLoader.Extensions[extension.name] = extension;
+            };
+            GLTFLoader.prototype.dispose = function () {
+                // do nothing
             };
             GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
                 var _this = this;
@@ -1771,7 +1780,7 @@ var BABYLON;
         /**
         * Utils functions for GLTF
         */
-        var GLTFUtils = (function () {
+        var GLTFUtils = /** @class */ (function () {
             function GLTFUtils() {
             }
             /**
@@ -2021,7 +2030,7 @@ var BABYLON;
 (function (BABYLON) {
     var GLTF1;
     (function (GLTF1) {
-        var GLTFLoaderExtension = (function () {
+        var GLTFLoaderExtension = /** @class */ (function () {
             function GLTFLoaderExtension(name) {
                 this._name = name;
             }
@@ -2175,7 +2184,7 @@ var BABYLON;
         var BinaryExtensionBufferName = "binary_glTF";
         ;
         ;
-        var GLTFBinaryExtension = (function (_super) {
+        var GLTFBinaryExtension = /** @class */ (function (_super) {
             __extends(GLTFBinaryExtension, _super);
             function GLTFBinaryExtension() {
                 return _super.call(this, "KHR_binary_glTF") || this;
@@ -2252,7 +2261,7 @@ var BABYLON;
         ;
         ;
         ;
-        var GLTFMaterialsCommonExtension = (function (_super) {
+        var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
             __extends(GLTFMaterialsCommonExtension, _super);
             function GLTFMaterialsCommonExtension() {
                 return _super.call(this, "KHR_materials_common") || this;

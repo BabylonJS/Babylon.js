@@ -54,7 +54,7 @@ module BABYLON {
 
         public rawPose: DevicePose; //GamepadPose;
 
-        public _mesh: AbstractMesh; // a node that will be attached to this Gamepad
+        public _mesh: Nullable<AbstractMesh>; // a node that will be attached to this Gamepad
         private _poseControlledCamera: TargetCamera;
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
@@ -97,8 +97,9 @@ module BABYLON {
                     this._calculatedPosition.addInPlace(this.position);
 
                 }
-                if (poseData.orientation) {
-                    this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
+                let pose = this.rawPose;
+                if (poseData.orientation && pose.orientation) {
+                    this.deviceRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
                     if (this._mesh) {
                         if (this._mesh.getScene().useRightHandedSystem) {
                             this.deviceRotationQuaternion.z *= -1;
@@ -117,7 +118,7 @@ module BABYLON {
 
         public attachToMesh(mesh: AbstractMesh) {
             if (this._mesh) {
-                this._mesh.parent = undefined;
+                this._mesh.parent = null;
             }
             this._mesh = mesh;
             if (this._poseControlledCamera) {
@@ -139,12 +140,12 @@ module BABYLON {
             if (this._mesh) {
                 this._mesh.dispose();
             }
-            this._mesh = undefined;
+            this._mesh = null;
 
             super.dispose();
         }
 
-        public get mesh(): AbstractMesh {
+        public get mesh(): Nullable<AbstractMesh> {
             return this._mesh;
         }
 

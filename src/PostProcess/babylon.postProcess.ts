@@ -49,7 +49,7 @@
         */
         public onActivateObservable = new Observable<Camera>();
 
-        private _onActivateObserver: Observer<Camera>;
+        private _onActivateObserver: Nullable<Observer<Camera>>;
         public set onActivate(callback: (camera: Camera) => void) {
             if (this._onActivateObserver) {
                 this.onActivateObservable.remove(this._onActivateObserver);
@@ -63,7 +63,7 @@
         */
         public onSizeChangedObservable = new Observable<PostProcess>();
 
-        private _onSizeChangedObserver: Observer<PostProcess>;
+        private _onSizeChangedObserver: Nullable<Observer<PostProcess>>;
         public set onSizeChanged(callback: (postProcess: PostProcess) => void) {
             if (this._onSizeChangedObserver) {
                 this.onSizeChangedObservable.remove(this._onSizeChangedObserver);
@@ -77,7 +77,7 @@
         */
         public onApplyObservable = new Observable<Effect>();
 
-        private _onApplyObserver: Observer<Effect>;
+        private _onApplyObserver: Nullable<Observer<Effect>>;
         public set onApply(callback: (effect: Effect) => void) {
             if (this._onApplyObserver) {
                 this.onApplyObservable.remove(this._onApplyObserver);
@@ -91,7 +91,7 @@
         */
         public onBeforeRenderObservable = new Observable<Effect>();
 
-        private _onBeforeRenderObserver: Observer<Effect>;
+        private _onBeforeRenderObserver: Nullable<Observer<Effect>>;
         public set onBeforeRender(callback: (effect: Effect) => void) {
             if (this._onBeforeRenderObserver) {
                 this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -105,7 +105,7 @@
         */
         public onAfterRenderObservable = new Observable<Effect>();
 
-        private _onAfterRenderObserver: Observer<Effect>;
+        private _onAfterRenderObserver: Nullable<Observer<Effect>>;
         public set onAfterRender(callback: (efect: Effect) => void) {
             if (this._onAfterRenderObserver) {
                 this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -138,7 +138,7 @@
         }
 
         constructor(public name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, 
-                    samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
+                    samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -189,13 +189,13 @@
             return this;
         }
         
-        public updateEffect(defines?: string, uniforms?: string[], samplers?: string[], indexParameters?: any,
+        public updateEffect(defines: Nullable<string> = null, uniforms: Nullable<string[]> = null, samplers: Nullable<string[]> = null, indexParameters?: any,
                             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
             this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl },
                 ["position"],
                 uniforms || this._parameters,
                 samplers || this._samplers, 
-                defines !== undefined ? defines : "",
+                defines !== null ? defines : "",
                 undefined,
                 onCompiled,
                 onError,
@@ -212,7 +212,7 @@
             this.width = -1;
         }
 
-        public activate(camera: Camera, sourceTexture?: InternalTexture, forceDepthStencil?: boolean): void {            
+        public activate(camera: Camera, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): void {            
             camera = camera || this._camera;
             
             var scene = camera.getScene();

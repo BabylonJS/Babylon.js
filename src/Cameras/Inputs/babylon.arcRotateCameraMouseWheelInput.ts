@@ -2,8 +2,8 @@ module BABYLON {
     export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
 
-        private _wheel: (p: PointerInfo, s: EventState) => void;
-        private _observer: Observer<PointerInfo>;
+        private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
+        private _observer: Nullable<Observer<PointerInfo>>;
 
         @serialize()
         public wheelPrecision = 3.0;

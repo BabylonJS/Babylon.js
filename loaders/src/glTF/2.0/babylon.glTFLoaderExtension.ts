@@ -17,7 +17,7 @@ module BABYLON.GLTF2 {
                 return false;
             }
 
-            var extension = property.extensions[this.name] as T;
+            const extension = property.extensions[this.name] as T;
             if (!extension) {
                 return false;
             }
@@ -52,13 +52,12 @@ module BABYLON.GLTF2 {
         }
 
         private static _ApplyExtensions(action: (extension: GLTFLoaderExtension) => boolean) {
-            var extensions = GLTFLoaderExtension._Extensions;
+            const extensions = GLTFLoaderExtension._Extensions;
             if (!extensions) {
                 return false;
             }
 
-            for (var i = 0; i < extensions.length; i++) {
-                var extension = extensions[i];
+            for (const extension of extensions) {
                 if (extension.enabled && action(extension)) {
                     return true;
                 }

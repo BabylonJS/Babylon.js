@@ -76,6 +76,7 @@
     },
     {
       "title": "Charting",
+      "renderCount": 3,
       "scriptToRun": "/Demos/Charting/charting.js",
       "functionToCall": "CreateChartingTestScene",
       "referenceImage": "charting.png"

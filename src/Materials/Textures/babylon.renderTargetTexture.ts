@@ -29,7 +29,7 @@
         public renderParticles = true;
         public renderSprites = false;
         public coordinatesMode = Texture.PROJECTION_MODE;
-        public activeCamera: Camera;
+        public activeCamera: Nullable<Camera>;
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
         public useCameraPostProcesses: boolean;
         public ignoreCameraViewport: boolean = false;
@@ -51,7 +51,7 @@
         */
         public onAfterUnbindObservable = new Observable<RenderTargetTexture>();
 
-        private _onAfterUnbindObserver: Observer<RenderTargetTexture>;
+        private _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
         public set onAfterUnbind(callback: () => void) {
             if (this._onAfterUnbindObserver) {
                 this.onAfterUnbindObservable.remove(this._onAfterUnbindObserver);
@@ -65,7 +65,7 @@
         */
         public onBeforeRenderObservable = new Observable<number>();
 
-        private _onBeforeRenderObserver: Observer<number>;
+        private _onBeforeRenderObserver: Nullable<Observer<number>>;
         public set onBeforeRender(callback: (faceIndex: number) => void) {
             if (this._onBeforeRenderObserver) {
                 this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -79,7 +79,7 @@
         */
         public onAfterRenderObservable = new Observable<number>();
 
-        private _onAfterRenderObserver: Observer<number>;
+        private _onAfterRenderObserver: Nullable<Observer<number>>;
         public set onAfterRender(callback: (faceIndex: number) => void) {
             if (this._onAfterRenderObserver) {
                 this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -93,7 +93,7 @@
         */
         public onClearObservable = new Observable<Engine>();
 
-        private _onClearObserver: Observer<Engine>;
+        private _onClearObserver: Nullable<Observer<Engine>>;
         public set onClear(callback: (Engine: Engine) => void) {
             if (this._onClearObserver) {
                 this.onClearObservable.remove(this._onClearObserver);

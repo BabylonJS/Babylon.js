@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var BABYLON;
 (function (BABYLON) {
-    var StarfieldProceduralTexture = (function (_super) {
+    var StarfieldProceduralTexture = /** @class */ (function (_super) {
         __extends(StarfieldProceduralTexture, _super);
         function StarfieldProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "starfieldProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
