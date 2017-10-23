@@ -182,7 +182,12 @@ export let defaultConfiguration: ViewerConfiguration = {
                 html: require("../../assets/templates/default/defaultViewer.html"),
                 children: {
                     navBar: {
-                        html: require("../../assets/templates/default/navbar.html")
+                        html: require("../../assets/templates/default/navbar.html"),
+                        config: {
+                            thumbnail: require('../../assets/img/loading.png'),
+                            title: "Title",
+                            subtitle: "Subtitle"
+                        }
                     }
                 }
             }

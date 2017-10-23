@@ -1,1 +1,72 @@
-<span>BabylonJS Viewer</span>
+<style>
+    div.flex-container {
+        display: flex;
+    }
+
+    div.thumbnail {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        width: 90px;
+    }
+
+    div.thumbnail img {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        height: 100%;
+        width: auto;
+        border-radius: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+    }
+
+    div.title-container {
+        flex-direction: column;
+        display: flex;
+    }
+
+    span.model-title {
+        font-size: 125%;
+    }
+
+    div.button-container {
+        align-items: center;
+        display: flex;
+    }
+
+    div.button {
+        cursor: pointer;
+        height: 30px;
+        margin: 0 10px;
+    }
+
+    div.button img {
+        height: 100%;
+    }
+</style>
+
+<div class="flex-container">
+    <!-- holding the description -->
+    <div class="thumbnail">
+        <!-- holding the thumbnail -->
+        <img src="{{thumbnail}}" alt="{{title}}">
+    </div>
+    <div class="title-container">
+        <span class="model-title">{{title}}</span>
+        <span class="model-subtitle">{{subtitle}}</span>
+    </div>
+</div>
+<div class="button-container">
+    <!-- holding the buttons -->
+    <div class="button">
+        <img src="{{thumbnail}}" alt="{{title}}">
+    </div>
+    <div class="button">
+        <img src="{{thumbnail}}" alt="{{title}}">
+    </div>
+    <div class="button">
+        <img src="{{thumbnail}}" alt="{{title}}">
+    </div>
+</div>

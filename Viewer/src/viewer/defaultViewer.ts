@@ -29,9 +29,10 @@ export class DefaultViewer extends AbstractViewer {
         let nextHeight: string = '0px';
 
         viewerElement.parent.addEventListener('pointerover', () => {
-            let currentHeight = navbar.parent.style.bottom;
+            let currentHeight = navbar.parent.clientHeight + 'px';
             navbar.parent.style.bottom = nextHeight;
             nextHeight = '-' + currentHeight;
+            console.log(nextHeight, currentHeight);
         });
 
         viewerElement.parent.addEventListener('pointerout', () => {
