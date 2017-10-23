@@ -381,14 +381,6 @@
         public twoSidedLighting = false;
 
         /**
-         * Specifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
-         * in your scene composition.
-         */
-        @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public preMultiplyAlpha = false;
-
-        /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
          * And/Or occlude the blended part.
          */
