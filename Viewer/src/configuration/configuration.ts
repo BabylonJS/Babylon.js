@@ -34,6 +34,13 @@ export interface ViewerConfiguration {
         scaling?: { x: number, y: number, z: number };
         parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
     } | string,
+
+    description?: string | {
+        title: string;
+        subtitle?: string;
+        thumbnail?: string; // URL or data-url
+    };
+
     scene?: {
         autoRotate?: boolean;
         rotationSpeed?: number;
