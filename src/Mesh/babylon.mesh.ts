@@ -193,7 +193,7 @@
 
                         if (mesh.parent === source) {
                             // doNotCloneChildren is always going to be False
-                             mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
+                            mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
                         }
                     }
                 }
@@ -840,7 +840,7 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): Mesh {
+        public setIndices(indices: IndicesArray, totalVertices?: Nullable<number>, updatable?: boolean): Mesh {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.indices = indices;
@@ -868,7 +868,7 @@
             this._geometry.updateIndices(indices, offset);
             return this;
         }
-        
+
 
         /**
          * Invert the geometry to move from a right handed system to a left handed one.  
@@ -1643,8 +1643,8 @@
             /// <summary>Warning: This may imply adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
 
             var kinds = this.getVerticesDataKinds();
-            var vbs:{ [key: string]: VertexBuffer } = {};
-            var data:{ [key: string]: number[] | Float32Array } = {};
+            var vbs: { [key: string]: VertexBuffer } = {};
+            var data: { [key: string]: number[] | Float32Array } = {};
             var newdata: { [key: string]: Array<number> } = {};
             var updatableNormals = false;
             var kindIndex: number;
@@ -1742,8 +1742,8 @@
             /// <summary>Warning: This implies adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
 
             var kinds = this.getVerticesDataKinds();
-            var vbs:{ [key: string]: VertexBuffer } = {};
-            var data:{ [key: string]: number[] | Float32Array } = {};
+            var vbs: { [key: string]: VertexBuffer } = {};
+            var data: { [key: string]: number[] | Float32Array } = {};
             var newdata: { [key: string]: Array<number> } = {};
             var kindIndex: number;
             var kind: string;
