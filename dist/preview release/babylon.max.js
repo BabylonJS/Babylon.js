@@ -15804,31 +15804,12 @@ var BABYLON;
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated            
             return this._postProcesses.indexOf(postProcess);
         };
-        Camera.prototype.detachPostProcess = function (postProcess, atIndices) {
-            if (atIndices === void 0) { atIndices = null; }
-            var result = [];
-            var i;
-            var index;
-            if (!atIndices) {
-                var idx = this._postProcesses.indexOf(postProcess);
-                if (idx !== -1) {
-                    this._postProcesses.splice(idx, 1);
-                }
-            }
-            else {
-                atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
-                // iterate descending, so can just splice as we go
-                for (i = atIndices.length - 1; i >= 0; i--) {
-                    if (this._postProcesses[atIndices[i]] !== postProcess) {
-                        result.push(i);
-                        continue;
-                    }
-                    index = atIndices[i];
-                    this._postProcesses.splice(index, 1);
-                }
+        Camera.prototype.detachPostProcess = function (postProcess) {
+            var idx = this._postProcesses.indexOf(postProcess);
+            if (idx !== -1) {
+                this._postProcesses.splice(idx, 1);
             }
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
-            return result;
         };
         Camera.prototype.getWorldMatrix = function () {
             if (!this._worldMatrix) {
@@ -56222,8 +56203,8 @@ var BABYLON;
             this._name = name;
             this._singleInstance = singleInstance || true;
             this._getPostProcess = getPostProcess;
-            this._cameras = [];
-            this._indicesForCamera = [];
+            this._cameras = {};
+            this._indicesForCamera = {};
             this._postProcesses = {};
             this._renderPasses = {};
             this._renderEffectAsPasses = {};
@@ -56287,7 +56268,7 @@ var BABYLON;
                     this._indicesForCamera[cameraName] = [];
                 }
                 this._indicesForCamera[cameraName].push(index);
-                if (this._cameras.indexOf(camera) === -1) {
+                if (!this._cameras[cameraName]) {
                     this._cameras[cameraName] = camera;
                 }
                 for (var passName in this._renderPasses) {
@@ -56301,10 +56282,11 @@ var BABYLON;
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
                 var cameraName = camera.name;
-                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName]);
-                var index = this._cameras.indexOf(cameraName);
-                this._indicesForCamera.splice(index, 1);
-                this._cameras.splice(index, 1);
+                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName]);
+                if (this._cameras[cameraName]) {
+                    //this._indicesForCamera.splice(index, 1);
+                    this._cameras[cameraName] = null;
+                }
                 for (var passName in this._renderPasses) {
                     this._renderPasses[passName]._decRefCount();
                 }
@@ -56330,7 +56312,7 @@ var BABYLON;
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
                 var cameraName = camera.Name;
-                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName]);
+                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName]);
                 for (var passName in this._renderPasses) {
                     this._renderPasses[passName]._decRefCount();
                 }
@@ -56377,7 +56359,7 @@ var BABYLON;
         function PostProcessRenderPipeline(engine, name) {
             this._engine = engine;
             this._name = name;
-            this._renderEffects = new Array();
+            this._renderEffects = {};
             this._renderEffectsForIsolatedPass = new Array();
             this._cameras = [];
         }
@@ -56512,7 +56494,7 @@ var BABYLON;
             }
         };
         PostProcessRenderPipeline.prototype._reset = function () {
-            this._renderEffects = new Array();
+            this._renderEffects = {};
             this._renderEffectsForIsolatedPass = new Array();
         };
         PostProcessRenderPipeline.prototype.dispose = function () {
