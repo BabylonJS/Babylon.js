@@ -90,6 +90,8 @@
         
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
+        
+        public NONUNIFORMSCALING = false;
 
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
@@ -374,12 +376,6 @@
          * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
          */
         protected _forceAlphaTest = false;
-
-        /**
-         * Specifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
-         * in your scene composition.
-         */
-        protected _preMultiplyAlpha = false;
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
@@ -793,7 +789,7 @@
                 }
 
                 defines.ALPHATESTVALUE = this._alphaCutOff;
-                defines.PREMULTIPLYALPHA = this._preMultiplyAlpha;
+                defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.ALPHABLEND = this.needAlphaBlending();
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;
             }

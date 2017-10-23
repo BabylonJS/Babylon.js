@@ -29,8 +29,8 @@ module BABYLON {
 
         private _ctrlPressed: boolean;
         private _altPressed: boolean;
-        private _onCanvasBlurObserver: Observer<Engine>;
-        private _onKeyboardObserver: Observer<KeyboardInfo>;
+        private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
+        private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
         private _engine: Engine;
         private _scene: Scene;
 
@@ -95,8 +95,12 @@ module BABYLON {
 
         public detachControl(element: HTMLElement) {
             if (this._scene) {
-                this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
-                this._engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+                if (this._onKeyboardObserver) {
+                    this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
+                }
+                if (this._onCanvasBlurObserver) {
+                    this._engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+                }
                 this._onKeyboardObserver = null;
                 this._onCanvasBlurObserver = null;
             }

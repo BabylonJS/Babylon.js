@@ -7,8 +7,8 @@ namespace BABYLON {
 
 		private _enabled: boolean = true;
 		private _rollingFrameTime: RollingAverage;
-		private _lastFrameTimeMs: number;
-		private _lastChangeTimeMs: number;
+		private _lastFrameTimeMs: Nullable<number>;
+		private _lastChangeTimeMs: Nullable<number>;
 
 		/**
 		 * constructor
@@ -70,7 +70,13 @@ namespace BABYLON {
 		 * @return Framerate in frames per second
 		 */
 		public get instantaneousFPS(): number {
-			return 1000.0 / this._rollingFrameTime.history(0);
+			let history = this._rollingFrameTime.history(0);
+
+			if (history === 0) {
+				return 0;
+			}
+
+			return 1000.0 / history;
 		}
 
 		/**
@@ -190,7 +196,7 @@ namespace BABYLON {
 		 */
 		public history(i: number): number {
 			if ((i >= this._sampleCount) || (i >= this._samples.length)) {
-				return null;
+				return 0;
 			}
 
 			let i0 = this._wrapPosition(this._pos - 1.0);

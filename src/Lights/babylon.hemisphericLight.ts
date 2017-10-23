@@ -44,7 +44,7 @@
             return this.direction;
         }
 
-        public getShadowGenerator(): ShadowGenerator {
+        public getShadowGenerator(): Nullable<ShadowGenerator> {
             return null;
         }
 

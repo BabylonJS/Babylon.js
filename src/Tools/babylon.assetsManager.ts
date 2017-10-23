@@ -113,8 +113,10 @@
             Tools.LoadFile(this.url, (data) => {
                 this.text = data;
                 onSuccess();
-            }, null, scene.database, false, (request, exception) => {
-                onError(request.status + " " + request.statusText, exception);
+            }, undefined, scene.database, false, (request, exception) => {
+                if (request) {
+                    onError(request.status + " " + request.statusText, exception);
+                }
             });
         }
     }
@@ -131,8 +133,10 @@
 
                 this.data = data;
                 onSuccess();
-            }, null, scene.database, true, (request, exception) => {
-                onError(request.status + " " + request.statusText, exception);
+            }, undefined, scene.database, true, (request, exception) => {
+                if (request) {
+                    onError(request.status + " " + request.statusText, exception);
+                }
             });
         }
     }

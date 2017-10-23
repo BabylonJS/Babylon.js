@@ -365,9 +365,11 @@
             var ext = engine.getCaps().s3tc;
 
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt),
-                fourCC, blockBytes, internalFormat, format,
-                width, height, dataLength, dataOffset,
+                fourCC, width, height, dataLength, dataOffset,
                 byteArray, mipmapCount, mip;
+            let internalFormat = 0;
+            let format = 0;
+            let blockBytes = 1;
 
             if (header[off_magic] != DDS_MAGIC) {
                 Tools.Error("Invalid magic number in DDS header");
@@ -389,7 +391,7 @@
 
             let computeFormats = false;
 
-            if (info.isFourCC) {
+            if (info.isFourCC && ext) {
                 fourCC = header[off_pfFourCC];
                 switch (fourCC) {
                 case FOURCC_DXT1:
@@ -460,7 +462,7 @@
 
                         if (!info.isCompressed && info.isFourCC) {
                             dataLength = width * height * 4;
-                            var floatArray: ArrayBufferView;
+                            var floatArray: Nullable<ArrayBufferView> = null;
 
                             if (engine.badOS || engine.badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
                                 if (bpp === 128) {
@@ -488,7 +490,9 @@
                                 }
                             }
 
-                            engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
+                            if (floatArray) {
+                                engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
+                            }
                         } else if (info.isRGB) {
                             if (bpp === 24) {
                                 dataLength = width * height * 3;

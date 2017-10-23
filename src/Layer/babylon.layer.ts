@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class Layer {
-        public texture: Texture;
+        public texture: Nullable<Texture>;
         public isBackground: boolean;
         public color: Color4;
         public scale = new Vector2(1, 1);
@@ -10,8 +10,8 @@
         public layerMask: number = 0x0FFFFFFF;
         
         private _scene: Scene;
-        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
-        private _indexBuffer: WebGLBuffer;
+        private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
+        private _indexBuffer: Nullable<WebGLBuffer>;
         private _effect: Effect;
         private _alphaTestEffect: Effect;
 
@@ -24,7 +24,7 @@
         */
         public onDisposeObservable = new Observable<Layer>();
 
-        private _onDisposeObserver: Observer<Layer>;
+        private _onDisposeObserver: Nullable<Observer<Layer>>;
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -38,7 +38,7 @@
         */
         public onBeforeRenderObservable = new Observable<Layer>();
 
-        private _onBeforeRenderObserver: Observer<Layer>;
+        private _onBeforeRenderObserver: Nullable<Observer<Layer>>;
         public set onBeforeRender(callback: () => void) {
             if (this._onBeforeRenderObserver) {
                 this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -52,7 +52,7 @@
         */
         public onAfterRenderObservable = new Observable<Layer>();
 
-        private _onAfterRenderObserver: Observer<Layer>;
+        private _onAfterRenderObserver: Nullable<Observer<Layer>>;
         public set onAfterRender(callback: () => void) {
             if (this._onAfterRenderObserver) {
                 this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -111,7 +111,11 @@
         }
 
         public _rebuild(): void {
-            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+            let vb = this._vertexBuffers[VertexBuffer.PositionKind];
+
+            if (vb) {
+                vb._rebuild();
+            }
 
             this._createIndexBuffer();
         }

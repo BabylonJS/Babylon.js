@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: string, shaderVersion: string): WebGLShader => {
+    var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader => {
         return compileRawShader(gl, shaderVersion + (defines ? defines + "\n" : "") + source, type);
     };
 
@@ -232,14 +232,14 @@
         public maxVertexUniformVectors: number;
         public maxFragmentUniformVectors: number;
         public standardDerivatives: boolean;
-        public s3tc: WEBGL_compressed_texture_s3tc;
+        public s3tc: Nullable<WEBGL_compressed_texture_s3tc>;
         public pvrtc: any; //WEBGL_compressed_texture_pvrtc;
         public etc1: any; //WEBGL_compressed_texture_etc1;
         public etc2: any; //WEBGL_compressed_texture_etc;
         public astc: any; //WEBGL_compressed_texture_astc;
         public textureFloat: boolean;
         public vertexArrayObject: boolean;
-        public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
+        public textureAnisotropicFilterExtension: Nullable<EXT_texture_filter_anisotropic>;
         public maxAnisotropy: number;
         public instancedArrays: boolean;
         public uintIndices: boolean;
@@ -769,7 +769,7 @@
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvasOrContext: HTMLCanvasElement | WebGLRenderingContext, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             let canvas: Nullable<HTMLCanvasElement> = null;
             Engine.Instances.push(this);
 
@@ -1078,8 +1078,12 @@
 
             // Constants
             this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
-            this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
+            if (this._gl.RGBA16F !== 0x881A) {
+                this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
+            }
+            if (this._gl.RGBA32F !== 0x8814) {
+                this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
+            }
             this._gl.DEPTH24_STENCIL8 = 35056;
 
             // Extensions
@@ -1931,6 +1935,8 @@
         }
 
         public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
+            // Force cache update
+            this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
             this.bindIndexBuffer(indexBuffer);
             var arrayBuffer;
 
@@ -2087,7 +2093,7 @@
             }
         }
 
-        private _bindIndexBufferWithCache(indexBuffer: WebGLBuffer): void {
+        private _bindIndexBufferWithCache(indexBuffer: Nullable<WebGLBuffer>): void {
             if (indexBuffer == null) {
                 return;
             }
@@ -2098,7 +2104,7 @@
             }
         }
 
-        private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: VertexBuffer; }, effect: Effect) {
+        private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect): void {
             var attributes = effect.getAttributesNames();
 
             if (!this._vaoRecordInProgress) {
@@ -2136,7 +2142,7 @@
             }
         }
 
-        public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): WebGLVertexArrayObject {
+        public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): WebGLVertexArrayObject {
             var vao = this._gl.createVertexArray();
 
             this._vaoRecordInProgress = true;
@@ -2154,7 +2160,7 @@
             return vao;
         }
 
-        public bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: WebGLBuffer): void {
+        public bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: Nullable<WebGLBuffer>): void {
             if (this._cachedVertexArrayObject !== vertexArrayObject) {
                 this._cachedVertexArrayObject = vertexArrayObject;
 
@@ -2207,7 +2213,7 @@
             this._gl.bindVertexArray(null);
         }
 
-        public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
+        public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
@@ -2420,7 +2426,7 @@
             return this._createShaderProgram(vertexShader, fragmentShader, context);
         }
 
-        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
+        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext): WebGLProgram {
             context = context || this._gl;
 
             var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n" : "";
@@ -2459,7 +2465,7 @@
         }
 
         public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
-            var results = [];
+            var results = new Array<Nullable<WebGLUniformLocation>>();
 
             for (var index = 0; index < uniformsNames.length; index++) {
                 results.push(this._gl.getUniformLocation(shaderProgram, uniformsNames[index]));
@@ -2494,161 +2500,161 @@
             effect.onBindObservable.notifyObservers(effect);
         }
 
-        public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+        public setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1iv(uniform, array);
         }
 
-        public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+        public setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
             if (!uniform || array.length % 2 !== 0)
                 return;
 
             this._gl.uniform2iv(uniform, array);
         }
 
-        public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+        public setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
             if (!uniform || array.length % 3 !== 0)
                 return;
 
             this._gl.uniform3iv(uniform, array);
         }
 
-        public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+        public setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
             if (!uniform || array.length % 4 !== 0)
                 return;
 
             this._gl.uniform4iv(uniform, array);
         }
 
-        public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+        public setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1fv(uniform, array);
         }
 
-        public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+        public setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
             if (!uniform || array.length % 2 !== 0)
                 return;
 
             this._gl.uniform2fv(uniform, array);
         }
 
-        public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+        public setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
             if (!uniform || array.length % 3 !== 0)
                 return;
 
             this._gl.uniform3fv(uniform, array);
         }
 
-        public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+        public setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
             if (!uniform || array.length % 4 !== 0)
                 return;
 
             this._gl.uniform4fv(uniform, array);
         }
 
-        public setArray(uniform: WebGLUniformLocation, array: number[]): void {
+        public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1fv(uniform, <any>array);
         }
 
-        public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+        public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
             if (!uniform || array.length % 2 !== 0)
                 return;
 
             this._gl.uniform2fv(uniform, <any>array);
         }
 
-        public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+        public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
             if (!uniform || array.length % 3 !== 0)
                 return;
 
             this._gl.uniform3fv(uniform, <any>array);
         }
 
-        public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+        public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
             if (!uniform || array.length % 4 !== 0)
                 return;
 
             this._gl.uniform4fv(uniform, <any>array);
         }
 
-        public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
+        public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniformMatrix4fv(uniform, false, matrices);
         }
 
-        public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
+        public setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void {
             if (!uniform)
                 return;
 
             this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
         }
 
-        public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+        public setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniformMatrix3fv(uniform, false, matrix);
         }
 
-        public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+        public setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
             if (!uniform)
                 return;
 
             this._gl.uniformMatrix2fv(uniform, false, matrix);
         }
 
-        public setFloat(uniform: WebGLUniformLocation, value: number): void {
+        public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1f(uniform, value);
         }
 
-        public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void {
+        public setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform2f(uniform, x, y);
         }
 
-        public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
+        public setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform3f(uniform, x, y, z);
         }
 
-        public setBool(uniform: WebGLUniformLocation, bool: number): void {
+        public setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform1i(uniform, bool);
         }
 
-        public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
+        public setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void {
             if (!uniform)
                 return;
 
             this._gl.uniform4f(uniform, x, y, z, w);
         }
 
-        public setColor3(uniform: WebGLUniformLocation, color3: Color3): void {
+        public setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void {
             if (!uniform)
                 return;
 
             this._gl.uniform3f(uniform, color3.r, color3.g, color3.b);
         }
 
-        public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
+        public setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void {
             if (!uniform)
                 return;
 
@@ -4296,7 +4302,7 @@
             }
         }
 
-        public setTexture(channel: number, uniform: WebGLUniformLocation, texture: BaseTexture): void {
+        public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void {
             if (channel < 0) {
                 return;
             }
@@ -4305,7 +4311,7 @@
             this._setTexture(channel, texture);
         }
 
-        private _setTexture(channel: number, texture: BaseTexture): void {
+        private _setTexture(channel: number, texture: Nullable<BaseTexture>): void {
             // Not ready?
             if (!texture) {
                 if (this._activeTexturesCache[channel] != null) {
@@ -4388,8 +4394,8 @@
             }
         }
 
-        public setTextureArray(channel: number, uniform: WebGLUniformLocation, textures: BaseTexture[]): void {
-            if (channel < 0) {
+        public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void {
+            if (channel < 0 || !uniform) {
                 return;
             }
 

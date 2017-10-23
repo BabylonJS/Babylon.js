@@ -51,7 +51,7 @@ module BABYLON {
 
         }
 
-        public collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number) {
+        public collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>) {
 
             //TODO CollisionsEpsilon should be defined here and not in the engine.
             const closeDistance = 0.01; //is initializing here correct? A quick look - looks like it is fine.
@@ -192,7 +192,7 @@ module BABYLON {
                 error: WorkerReplyType.SUCCESS,
                 taskType: WorkerTaskType.INIT
             }
-            postMessage(reply, undefined);
+            postMessage(reply, "");
         }
 
         public onUpdate(payload: UpdatePayload) {
@@ -226,7 +226,7 @@ module BABYLON {
             }
 
 
-            postMessage(replay, undefined);
+            postMessage(replay, "");
         }
 
         public onCollision(payload: CollidePayload) {
@@ -247,7 +247,7 @@ module BABYLON {
                 taskType: WorkerTaskType.COLLIDE,
                 payload: replyPayload
             }
-            postMessage(reply, undefined);
+            postMessage(reply, "");
         }
     }
 

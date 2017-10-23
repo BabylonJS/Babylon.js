@@ -67,8 +67,6 @@
             "optimizations",
             "highlights",
             "assetsManager",
-            "mapTexture",
-            "dynamicFloatArray",
             "serialization",
             "probes",
             "layer",
@@ -143,8 +141,6 @@
             "optimizations",
             "highlights",
             "assetsManager",
-            "mapTexture",
-            "dynamicFloatArray",
             "serialization",
             "probes",
             "layer",
@@ -924,7 +920,6 @@
                 "additionalMeshes",
                 "standardMaterial",
                 "stringDictionary",
-                "dynamicFloatArray",
                 "actions"
             ],
             "shaders": [
@@ -1025,23 +1020,6 @@
         "assetsManager": {
             "files": [
                 "../../src/Tools/babylon.assetsManager.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "mapTexture": {
-            "files": [
-                "../../src/Materials/Textures/babylon.mapTexture.js",
-                "../../src/Tools/babylon.rectPackingMap.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "dynamicFloatArray": {
-            "files": [
-                "../../src/Tools/babylon.dynamicFloatArray.js"
             ],
             "dependUpon": [
                 "core"
