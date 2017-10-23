@@ -282,9 +282,18 @@
         */
         public onUnBindObservable = new Observable<Material>();
 
-
-        @serialize()
-        public alphaMode = Engine.ALPHA_COMBINE;
+        @serialize("alphaMode")
+        private _alphaMode: number = Engine.ALPHA_COMBINE;
+        public set alphaMode(value : number) {
+            if (this._alphaMode === value) {
+                return;
+            }
+            this._alphaMode = value;
+            this.markAsDirty(Material.TextureDirtyFlag);
+        }
+        public get alphaMode(): number {
+            return this._alphaMode;
+        }
 
         @serialize()
         private _needDepthPrePass = false;
