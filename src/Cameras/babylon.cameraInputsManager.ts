@@ -2,11 +2,11 @@ module BABYLON {
     export var CameraInputTypes = {};
 
     export interface ICameraInput<TCamera extends BABYLON.Camera> {
-        camera: TCamera;
+        camera: Nullable<TCamera>;
         getClassName(): string;
         getSimpleName(): string;
         attachControl: (element: HTMLElement, noPreventDefault?: boolean) => void;
-        detachControl: (element: HTMLElement) => void;
+        detachControl: (element: Nullable<HTMLElement>) => void;
         checkInputs?: () => void;
     }
 
@@ -17,7 +17,7 @@ module BABYLON {
 
     export class CameraInputsManager<TCamera extends BABYLON.Camera> {
         attached: CameraInputsMap<TCamera>;
-        public attachedElement: HTMLElement;
+        public attachedElement: Nullable<HTMLElement>;
         public noPreventDefault: boolean;
         camera: TCamera;
         checkInputs: () => void;
@@ -83,10 +83,12 @@ module BABYLON {
         }
 
         public attachInput(input: ICameraInput<TCamera>) {
-            input.attachControl(this.attachedElement, this.noPreventDefault);
+            if (this.attachedElement) {
+                input.attachControl(this.attachedElement, this.noPreventDefault);
+            }
         }
 
-        public attachElement(element: HTMLElement, noPreventDefault?: boolean) {
+        public attachElement(element: HTMLElement, noPreventDefault: boolean = false) {
             if (this.attachedElement) {
                 return;
             }

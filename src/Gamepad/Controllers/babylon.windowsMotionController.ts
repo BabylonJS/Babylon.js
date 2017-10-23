@@ -30,7 +30,7 @@ module BABYLON {
         public static readonly GAMEPAD_ID_PREFIX:string = 'Spatial Controller (Spatial Interaction Source) ';
         private static readonly GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
 
-        private _loadedMeshInfo: LoadedMeshInfo;
+        private _loadedMeshInfo: Nullable<LoadedMeshInfo>;
         private readonly _mapping = {
             // Semantic button names
             buttons: ['thumbstick', 'trigger', 'grip', 'menu', 'trackpad'],
@@ -151,6 +151,10 @@ module BABYLON {
         }
         
         protected lerpAxisTransform(axis:number, axisValue: number) {
+            if (!this._loadedMeshInfo) {
+                return;
+            }
+
             let meshInfo = this._loadedMeshInfo.axisMeshes[axis];
             if (!meshInfo) {
                 return;
@@ -235,14 +239,14 @@ module BABYLON {
          * @param meshes list of meshes that make up the controller model to process
          * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
          */
-        private processModel(scene: Scene, meshes: AbstractMesh[]) : LoadedMeshInfo {
+        private processModel(scene: Scene, meshes: AbstractMesh[]) : Nullable<LoadedMeshInfo> {
             let loadedMeshInfo = null;
 
             // Create a new mesh to contain the glTF hierarchy
             let parentMesh = new BABYLON.Mesh(this.id + " " + this.hand, scene);
 
             // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
-            let childMesh : AbstractMesh = null;
+            let childMesh : Nullable<AbstractMesh> = null;
             for (let i = 0; i < meshes.length; i++) {
                 let mesh = meshes[i];
 

@@ -14,7 +14,7 @@ module BABYLON {
 
         @serializeAsVector3("target")
         protected _target: Vector3;
-        protected _targetHost: AbstractMesh;
+        protected _targetHost: Nullable<AbstractMesh>;
 
         public get target(): Vector3 {
             return this._target;
@@ -33,10 +33,10 @@ module BABYLON {
         public inertialRadiusOffset = 0;
 
         @serialize()
-        public lowerAlphaLimit: number = null;
+        public lowerAlphaLimit: Nullable<number> = null;
 
         @serialize()
-        public upperAlphaLimit: number = null;
+        public upperAlphaLimit: Nullable<number> = null;
 
         @serialize()
         public lowerBetaLimit = 0.01;
@@ -45,10 +45,10 @@ module BABYLON {
         public upperBetaLimit = Math.PI;
 
         @serialize()
-        public lowerRadiusLimit: number = null;
+        public lowerRadiusLimit: Nullable<number> = null;
 
         @serialize()
-        public upperRadiusLimit: number = null;
+        public upperRadiusLimit: Nullable<number> = null;
 
         @serialize()
         public inertialPanningX: number = 0;
@@ -60,7 +60,7 @@ module BABYLON {
         public pinchToPanMaxDistance: number = 20;
 
         @serialize()
-        public panningDistanceLimit: number = null;
+        public panningDistanceLimit: Nullable<number> = null;
 
         @serializeAsVector3()
         public panningOriginTarget: Vector3 = Vector3.Zero();
@@ -74,7 +74,7 @@ module BABYLON {
             if (pointers)
                 return pointers.angularSensibilityX;
 
-            return null;
+            return 0;
         }
 
         public set angularSensibilityX(value: number) {
@@ -89,7 +89,7 @@ module BABYLON {
             if (pointers)
                 return pointers.angularSensibilityY;
             
-            return null;
+            return 0;
         }
 
         public set angularSensibilityY(value: number) {
@@ -104,7 +104,7 @@ module BABYLON {
             if (pointers)
                 return pointers.pinchPrecision;
 
-            return null;
+            return 0;
         }
 
         public set pinchPrecision(value: number) {
@@ -119,7 +119,7 @@ module BABYLON {
             if (pointers)
                 return pointers.pinchDeltaPercentage;
 
-            return null;
+            return 0;
         }
 
         public set pinchDeltaPercentage(value: number) {
@@ -134,7 +134,7 @@ module BABYLON {
             if (pointers)
                 return pointers.panningSensibility;
 
-            return null;
+            return 0;
         }
 
         public set panningSensibility(value: number) {
@@ -149,7 +149,7 @@ module BABYLON {
             if (keyboard)
                 return keyboard.keysUp;
 
-            return null;
+            return [];
         }
 
         public set keysUp(value: number[]) {
@@ -163,7 +163,7 @@ module BABYLON {
             if (keyboard)
                 return keyboard.keysDown;
 
-            return null;
+            return [];
         }
 
         public set keysDown(value: number[]) {
@@ -177,7 +177,7 @@ module BABYLON {
             if (keyboard)
                 return keyboard.keysLeft;
 
-            return null;
+            return [];
         }
 
         public set keysLeft(value: number[]) {
@@ -191,7 +191,7 @@ module BABYLON {
             if (keyboard)
                 return keyboard.keysRight;
 
-            return null;
+            return [];
         }
 
         public set keysRight(value: number[]) {
@@ -205,7 +205,7 @@ module BABYLON {
             if (mousewheel)
                 return mousewheel.wheelPrecision;
 
-            return null;
+            return 0;
         }
 
         public set wheelPrecision(value: number) {
@@ -219,7 +219,7 @@ module BABYLON {
             if (mousewheel)
                 return mousewheel.wheelDeltaPercentage;
 
-            return null;
+            return 0;
         }
 
         public set wheelDeltaPercentage(value: number) {
@@ -251,9 +251,9 @@ module BABYLON {
         protected _transformedDirection: Vector3;
 
         // Behaviors
-        private _bouncingBehavior: BouncingBehavior;
+        private _bouncingBehavior: Nullable<BouncingBehavior>;
 
-        public get bouncingBehavior(): BouncingBehavior {
+        public get bouncingBehavior(): Nullable<BouncingBehavior> {
             return this._bouncingBehavior;
         }
 
@@ -269,15 +269,15 @@ module BABYLON {
             if (value) {
                 this._bouncingBehavior = new BouncingBehavior();
                 this.addBehavior(this._bouncingBehavior);
-            } else {
+            } else if (this._bouncingBehavior) {
                 this.removeBehavior(this._bouncingBehavior);
                 this._bouncingBehavior = null;
             }
         }
 
-        private _framingBehavior: FramingBehavior;
+        private _framingBehavior: Nullable<FramingBehavior>;
 
-        public get framingBehavior(): FramingBehavior {
+        public get framingBehavior(): Nullable<FramingBehavior> {
             return this._framingBehavior;
         }        
 
@@ -293,15 +293,15 @@ module BABYLON {
             if (value) {
                 this._framingBehavior = new FramingBehavior();
                 this.addBehavior(this._framingBehavior);
-            } else {
+            } else if (this._framingBehavior) {
                 this.removeBehavior(this._framingBehavior);
                 this._framingBehavior = null;
             }
         }        
 
-        private _autoRotationBehavior: AutoRotationBehavior;
+        private _autoRotationBehavior: Nullable<AutoRotationBehavior>;
 
-        public get autoRotationBehavior(): AutoRotationBehavior {
+        public get autoRotationBehavior(): Nullable<AutoRotationBehavior> {
             return this._autoRotationBehavior;
         }   
 
@@ -317,7 +317,7 @@ module BABYLON {
             if (value) {
                 this._autoRotationBehavior = new AutoRotationBehavior();
                 this.addBehavior(this._autoRotationBehavior);
-            } else {
+            } else if(this._autoRotationBehavior) {
                 this.removeBehavior(this._autoRotationBehavior);
                 this._autoRotationBehavior = null;
             }
@@ -339,7 +339,7 @@ module BABYLON {
         //due to async collision inspection
         protected _collisionTriggered: boolean;
 
-        protected _targetBoundingCenter: Vector3;
+        protected _targetBoundingCenter: Nullable<Vector3>;
 
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
@@ -685,7 +685,7 @@ module BABYLON {
             return this._viewMatrix;
         }
 
-        protected _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+        protected _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
 
             if (this.getScene().workerCollisions && this.checkCollisions) {
                 newPosition.multiplyInPlace(this._collider.radius);
@@ -766,7 +766,7 @@ module BABYLON {
          * Override Camera.createRigCamera
          */
         public createRigCamera(name: string, cameraIndex: number): Camera {
-            var alphaShift : number;
+            var alphaShift : number = 0;
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:

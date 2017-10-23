@@ -2884,6 +2884,7 @@
         private static _yAxis: Vector3 = Vector3.Zero();
         private static _zAxis: Vector3 = Vector3.Zero();
         private static _updateFlagSeed = 0;
+        private static _identityReadOnly = Matrix.Identity();
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
@@ -3383,7 +3384,7 @@
         /**
          * Returns the index-th row of the current matrix as a new Vector4.  
          */
-        public getRow(index: number): Vector4 {
+        public getRow(index: number): Nullable<Vector4> {
             if (index < 0 || index > 3) {
                 return null;
             }
@@ -3426,6 +3427,15 @@
             this._markAsUpdated();
             return this;
         }
+
+        /**
+         * Static identity matrix to be used as readonly matrix
+         * Must not be updated.
+         */
+        public static get IdentityReadOnly(): Matrix {
+            return Matrix._identityReadOnly;
+        }
+
         /**
          * Returns a new Matrix set from the 16 passed floats.  
          */
@@ -4760,7 +4770,7 @@
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
         */
-        constructor(public path: Vector3[], firstNormal?: Vector3, raw?: boolean) {
+        constructor(public path: Vector3[], firstNormal: Nullable<Vector3> = null, raw?: boolean) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p] = path[p].clone(); // hard copy
             }
@@ -4811,7 +4821,7 @@
          * Forces the Path3D tangent, normal, binormal and distance recomputation.
          * Returns the same object updated.  
          */
-        public update(path: Vector3[], firstNormal?: Vector3): Path3D {
+        public update(path: Vector3[], firstNormal: Nullable<Vector3> = null): Path3D {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p].x = path[p].x;
                 this._curve[p].y = path[p].y;
@@ -4822,7 +4832,7 @@
         }
 
         // private function compute() : computes tangents, normals and binormals
-        private _compute(firstNormal: Vector3): void {
+        private _compute(firstNormal: Nullable<Vector3>): void {
             var l = this._curve.length;
 
             // first and last tangents
@@ -4907,7 +4917,7 @@
         // private function normalVector(v0, vt, va) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
-        private _normalVector(v0: Vector3, vt: Vector3, va: Vector3): Vector3 {
+        private _normalVector(v0: Vector3, vt: Vector3, va: Nullable<Vector3>): Vector3 {
             var normal0: Vector3;
             var tgl = vt.length();
             if (tgl === 0.0) {
@@ -4924,6 +4934,9 @@
                 }
                 else if (!Scalar.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
                     point = new Vector3(0.0, 0.0, 1.0);
+                }
+                else {
+                    point = Vector3.Zero();
                 }
                 normal0 = Vector3.Cross(vt, point);
             }
@@ -5010,8 +5023,9 @@
             totalPoints.push(points[points.length - 1].clone());
             var catmullRom = new Array<Vector3>();
             var step = 1.0 / nbPoints;
+            var amount = 0.0;
             for (var i = 0; i < totalPoints.length - 3; i++) {
-                var amount = 0.0;
+                amount = 0;
                 for (var c = 0; c < nbPoints; c++) {
                     catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
                     amount += step

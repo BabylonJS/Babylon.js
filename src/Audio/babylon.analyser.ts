@@ -10,16 +10,16 @@ module BABYLON {
         private _byteTime: Uint8Array;
         private _floatFreqs: Float32Array;
         private _webAudioAnalyser: AnalyserNode;
-        private _debugCanvas: HTMLCanvasElement;
-        private _debugCanvasContext: CanvasRenderingContext2D;
+        private _debugCanvas: Nullable< HTMLCanvasElement>;
+        private _debugCanvasContext: Nullable<CanvasRenderingContext2D>;
         private _scene: Scene;
-        private _registerFunc: () => void
+        private _registerFunc: Nullable<() => void>;
         private _audioEngine: AudioEngine;
 
         constructor(scene: Scene) {
             this._scene = scene;
             this._audioEngine = Engine.audioEngine;
-            if (this._audioEngine.canUseWebAudio) {
+            if (this._audioEngine.canUseWebAudio && this._audioEngine.audioContext) {
                 this._webAudioAnalyser = this._audioEngine.audioContext.createAnalyser();
                 this._webAudioAnalyser.minDecibels = -140;
                 this._webAudioAnalyser.maxDecibels = 0;
@@ -81,7 +81,7 @@ module BABYLON {
                     };
                     this._scene.registerBeforeRender(this._registerFunc);
                 }
-                if (this._registerFunc) {
+                if (this._registerFunc && this._debugCanvasContext) {
                     var workingArray = this.getByteFrequencyData();
 
                     this._debugCanvasContext.fillStyle = 'rgb(0, 0, 0)';
@@ -104,8 +104,10 @@ module BABYLON {
 
         public stopDebugCanvas() {
             if (this._debugCanvas) {
-                this._scene.unregisterBeforeRender(this._registerFunc);
-                this._registerFunc = null;
+                if (this._registerFunc) {
+                    this._scene.unregisterBeforeRender(this._registerFunc);
+                    this._registerFunc = null;
+                }
                 document.body.removeChild(this._debugCanvas);
                 this._debugCanvas = null;
                 this._debugCanvasContext = null;

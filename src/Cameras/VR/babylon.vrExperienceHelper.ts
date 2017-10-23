@@ -16,7 +16,7 @@ module BABYLON {
         // Are we presenting in the fullscreen fallback?
         private _fullscreenVRpresenting = false;
 
-        private _canvas: HTMLCanvasElement;
+        private _canvas: Nullable<HTMLCanvasElement>;
         private _webVRCamera: WebVRFreeCamera;
         private _vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
         private _deviceOrientationCamera: DeviceOrientationCamera;
@@ -48,7 +48,9 @@ module BABYLON {
             this._scene.activeCamera = this._deviceOrientationCamera;
             this._position = this._scene.activeCamera.position;
             this._canvas = scene.getEngine().getRenderingCanvas();
-            this._scene.activeCamera.attachControl(this._canvas);
+            if (this._canvas) {
+                this._scene.activeCamera.attachControl(this._canvas);
+            }
 
             this._btnVR = <HTMLButtonElement>document.createElement("BUTTON");
             this._btnVR.className = "babylonVRicon";
@@ -65,20 +67,24 @@ module BABYLON {
             style.appendChild(document.createTextNode(css));
             document.getElementsByTagName('head')[0].appendChild(style);  
 
-            this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-            this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
-            this._btnVR.addEventListener("click", () => {
-                this.enterVR();
-            });
-
-            window.addEventListener("resize", () => {
+            if (this._canvas) {
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+                this._btnVR.addEventListener("click", () => {
+                    this.enterVR();
+                });
 
-                if (this._fullscreenVRpresenting && this._webVRready) {
-                    this.exitVR();
-                }
-            });
+                window.addEventListener("resize", () => {
+                    if (this._canvas) {
+                        this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
+                        this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+                    }
+
+                    if (this._fullscreenVRpresenting && this._webVRready) {
+                        this.exitVR();
+                    }
+                });
+            }
 
             document.addEventListener("fullscreenchange", () => { this._onFullscreenChange() }, false);
             document.addEventListener("mozfullscreenchange", () => { this._onFullscreenChange() }, false);
@@ -146,7 +152,7 @@ module BABYLON {
             } else if (document.msIsFullScreen !== undefined) {
                 this._fullscreenVRpresenting = document.msIsFullScreen;
             }
-            if (!this._fullscreenVRpresenting) {
+            if (!this._fullscreenVRpresenting && this._canvas) {
                 this.exitVR();
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
@@ -221,7 +227,9 @@ module BABYLON {
                 this.updateButtonVisibility();
             }
             
-            this._scene.activeCamera.attachControl(this._canvas);
+            if (this._scene.activeCamera && this._canvas) {
+                this._scene.activeCamera.attachControl(this._canvas);
+            }
         }
 
         /**
@@ -239,7 +247,10 @@ module BABYLON {
             }
             this._deviceOrientationCamera.position = this._position;
             this._scene.activeCamera = this._deviceOrientationCamera;
-            this._scene.activeCamera.attachControl(this._canvas);
+
+            if (this._canvas) {
+                this._scene.activeCamera.attachControl(this._canvas);
+            }
 
             this.updateButtonVisibility();
         }
@@ -250,7 +261,10 @@ module BABYLON {
 
         public set position(value: Vector3) {
             this._position = value;
-            this._scene.activeCamera.position = value;
+
+            if (this._scene.activeCamera) {
+                this._scene.activeCamera.position = value;
+            }
         }
 
         public dispose() {
