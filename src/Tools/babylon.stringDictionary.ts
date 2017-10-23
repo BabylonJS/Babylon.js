@@ -21,7 +21,7 @@
          * @param key the given key to get the matching value from
          * @return the value if found, otherwise undefined is returned
          */
-        public get(key: string): T {
+        public get(key: string): T | undefined {
             var val = this._data[key];
             if (val !== undefined) {
                 return val;
@@ -104,7 +104,7 @@
          * Get the element of the given key and remove it from the dictionary
          * @param key
          */
-        public getAndRemove(key: string): T {
+        public getAndRemove(key: string): Nullable<T> {
             let val = this.get(key);
             if (val !== undefined) {
                 delete this._data[key];

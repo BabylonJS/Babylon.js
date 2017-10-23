@@ -2,13 +2,13 @@ module BABYLON {
     export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         camera: FreeCamera;
 
-        private _offsetX: number = null;
-        private _offsetY: number = null;
+        private _offsetX: Nullable<number> = null;
+        private _offsetY: Nullable<number> = null;
         private _pointerCount: number = 0;
         private _pointerPressed = new Array<number>();
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
-        private _observer: Observer<PointerInfo>;
-        private _onLostFocus: (e: FocusEvent) => any;
+        private _observer: Nullable<Observer<PointerInfo>>;
+        private _onLostFocus: Nullable<(e: FocusEvent) => any>;
 
         @serialize()
         public touchAngularSensibility: number = 200000.0;
@@ -17,7 +17,7 @@ module BABYLON {
         public touchMoveSensibility: number = 250.0;
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
-            var previousPosition: {x: number, y: number};
+            var previousPosition: Nullable<{x: number, y: number}> = null;
 
             if (this._pointerInput === undefined) {
                 this._onLostFocus = (evt) => {
@@ -93,17 +93,22 @@ module BABYLON {
 
             this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
-            element.addEventListener("blur", this._onLostFocus);
+            if (this._onLostFocus) {
+                element.addEventListener("blur", this._onLostFocus);
+            }
         }
 
         detachControl(element: HTMLElement) {
             if (this._pointerInput && element) {
-                this.camera.getScene().onPointerObservable.remove(this._observer);
-                this._observer = null;
+                if (this._observer) {
+                    this.camera.getScene().onPointerObservable.remove(this._observer);
+                    this._observer = null;
+                }
 
-                element.removeEventListener("blur", this._onLostFocus);
-
-                this._onLostFocus = null;
+                if (this._onLostFocus) {
+                    element.removeEventListener("blur", this._onLostFocus);
+                    this._onLostFocus = null;
+                }
                 this._pointerPressed = [];
                 this._offsetX = null;
                 this._offsetY = null;
@@ -112,7 +117,7 @@ module BABYLON {
         }
 
         checkInputs() {
-            if (this._offsetX) {
+            if (this._offsetX && this._offsetY) {
                 var camera = this.camera;
                 camera.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
 

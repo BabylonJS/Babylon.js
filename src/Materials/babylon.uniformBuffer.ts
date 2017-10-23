@@ -2,10 +2,10 @@ module BABYLON {
 
     export class UniformBuffer {
         private _engine: Engine;
-        private _buffer: WebGLBuffer;
+        private _buffer: Nullable<WebGLBuffer>;
         private _data: number[];
         private _bufferData: Float32Array;
-        private _dynamic: boolean;
+        private _dynamic?: boolean;
         private _uniformLocations: { [key:string]:number; };
         private _uniformSizes: { [key:string]:number; };
         private _uniformLocationPointer: number;
@@ -182,7 +182,7 @@ module BABYLON {
          * update the underlying WebGL uniform buffer to the GPU.
          */
         public isDynamic(): boolean {
-            return this._dynamic;
+            return this._dynamic !== undefined;
         }
 
         /**
@@ -195,7 +195,7 @@ module BABYLON {
         /**
          * The underlying WebGL Uniform buffer.
          */
-        public getBuffer(): WebGLBuffer {
+        public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer;
         }
 
@@ -600,7 +600,7 @@ module BABYLON {
         public bindToEffect(effect: Effect, name: string): void {
             this._currentEffect = effect;
 
-            if (this._noUBO) {
+            if (this._noUBO || !this._buffer) {
                 return;
             }
             

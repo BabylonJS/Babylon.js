@@ -18,12 +18,12 @@ module BABYLON {
         bin: ArrayBufferView;
     }
 
-    export interface IGLTFLoader {
+    export interface IGLTFLoader extends IDisposable {
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
     }
 
-    export class GLTFFileLoader implements ISceneLoaderPluginAsync {
+    export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync {
         public static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         public static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
 
@@ -45,18 +45,13 @@ module BABYLON {
         public onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
 
         /**
-         * Raised when the visible components (geometry, materials, textures, etc.) are first ready to be rendered.
-         * For assets with LODs, raised when the first LOD is complete.
-         * For assets without LODs, raised when the model is complete just before onComplete.
-         */
-        public onReady: () => void;
-
-        /**
          * Raised when the asset is completely loaded, just before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
-         * For assets without LODs, raised when the model is complete just after onReady.
+         * For assets without LODs, raised when the model is complete just after onSuccess.
          */
         public onComplete: () => void;
+
+        private _loader: IGLTFLoader;
 
         public name = "gltf";
 
@@ -64,6 +59,13 @@ module BABYLON {
             ".gltf": { isBinary: false },
             ".glb": { isBinary: true }
         };
+
+        public dispose(): void {
+            if (this._loader) {
+                this._loader.dispose();
+                this._loader = null;
+            }
+        }
 
         public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
             var loaderData = GLTFFileLoader._parse(data, onError);
@@ -75,12 +77,12 @@ module BABYLON {
                 this.onParsed(loaderData);
             }
 
-            var loader = this._getLoader(loaderData, onError);
-            if (!loader) {
+            this._loader = this._getLoader(loaderData, onError);
+            if (!this._loader) {
                 return;
             }
 
-            loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
+            this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         }
 
         public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
@@ -93,12 +95,12 @@ module BABYLON {
                 this.onParsed(loaderData);
             }
 
-            var loader = this._getLoader(loaderData, onError);
-            if (!loader) {
+            this._loader = this._getLoader(loaderData, onError);
+            if (!this._loader) {
                 return;
             }
 
-            return loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
+            return this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         }
 
         public canDirectLoad(data: string): boolean {

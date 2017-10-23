@@ -50,7 +50,7 @@
             return value;
         }      
         
-        private _interpolate(currentFrame: number, repeatCount: number, loopMode: number, offsetValue?: any, highLimitValue?: any) {
+        private _interpolate(currentFrame: number, repeatCount: number, loopMode?: number, offsetValue?: any, highLimitValue?: any) {
             if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
                 return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
             }

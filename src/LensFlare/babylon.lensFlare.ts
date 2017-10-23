@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class LensFlare {
         public color: Color3;
-        public texture: Texture;
+        public texture: Nullable<Texture>;
         public alphaMode: number = Engine.ALPHA_ONEONE;
 
         private _system: LensFlareSystem;

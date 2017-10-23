@@ -4,7 +4,7 @@ module BABYLON {
     export var CollisionWorker = "";
 
     export interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
         init(scene: Scene): void;
         destroy(): void;
 
@@ -21,7 +21,7 @@ module BABYLON {
         id: string;
         name: string;
         uniqueId: number;
-        geometryId: string;
+        geometryId: Nullable<string>;
         sphereCenter: Array<number>;
         sphereRadius: number;
         boxMinimum: Array<number>;
@@ -89,7 +89,7 @@ module BABYLON {
         collisionId: number;
         collider: SerializedColliderToWorker;
         maximumRetry: number;
-        excludedMeshUniqueId?: number;
+        excludedMeshUniqueId: Nullable<number>;
     }
 
     export interface UpdatePayload {
@@ -111,7 +111,7 @@ module BABYLON {
         private _scaledPosition = Vector3.Zero();
         private _scaledVelocity = Vector3.Zero();
 
-        private _collisionsCallbackArray: Array<(collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void>;
+        private _collisionsCallbackArray: Array<Nullable<(collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void>>;
 
         private _init: boolean;
         private _runningUpdated: number;
@@ -154,7 +154,7 @@ module BABYLON {
                 });
             }
 
-            var geometryId: string = null;
+            var geometryId: Nullable<string> = null;
             if (mesh instanceof Mesh) {
                 geometryId = (<Mesh>mesh).geometry ? (<Mesh>mesh).geometry.id : null;
             } else if (mesh instanceof InstancedMesh) {
@@ -186,7 +186,7 @@ module BABYLON {
             }
         }
 
-        public getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void {
+        public getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void {
             if (!this._init) return;
             if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000]) return;
 
@@ -330,9 +330,18 @@ module BABYLON {
                     var returnPayload: CollisionReplyPayload = returnData.payload;
                     if (!this._collisionsCallbackArray[returnPayload.collisionId]) return;
 
-                    this._collisionsCallbackArray[returnPayload.collisionId](returnPayload.collisionId, Vector3.FromArray(returnPayload.newPosition), this._scene.getMeshByUniqueID(returnPayload.collidedMeshUniqueId));
+                    let callback = this._collisionsCallbackArray[returnPayload.collisionId];
+
+                    if (callback) {
+                        let mesh = this._scene.getMeshByUniqueID(returnPayload.collidedMeshUniqueId);
+
+                        if (mesh) {
+                            callback(returnPayload.collisionId, Vector3.FromArray(returnPayload.newPosition), mesh);
+                        }
+                    }
+                    
                     //cleanup
-                    this._collisionsCallbackArray[returnPayload.collisionId] = undefined;
+                    this._collisionsCallbackArray[returnPayload.collisionId] = null;
                     break;
             }
         }
@@ -347,7 +356,7 @@ module BABYLON {
 
         private _finalPosition = Vector3.Zero();
 
-        public getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void {
+        public getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void {
             position.divideToRef(collider.radius, this._scaledPosition);
             displacement.divideToRef(collider.radius, this._scaledVelocity);
             collider.collidedMesh = null;
@@ -377,7 +386,7 @@ module BABYLON {
         public onGeometryUpdated(geometry: Geometry) { }
         public onGeometryDeleted(geometry: Geometry) { }
 
-        private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
+        private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: Nullable<AbstractMesh> = null): void {
             var closeDistance = Engine.CollisionsEpsilon * 10.0;
 
             if (collider.retry >= maximumRetry) {

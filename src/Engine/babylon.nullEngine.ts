@@ -120,7 +120,7 @@
 
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
             return {
-                __SPECTOR_rebuildProgram: undefined,
+                __SPECTOR_rebuildProgram: null,
             };
         }
 
@@ -261,7 +261,7 @@
             return {};
         }
 
-        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: ArrayBuffer | HTMLImageElement = null, fallBack?: InternalTexture, format?: number): InternalTexture {
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
             var url = String(urlArg); 
 
@@ -272,8 +272,10 @@
             texture.baseWidth = this._options.textureSize;
             texture.baseHeight = this._options.textureSize;
             texture.width = this._options.textureSize;
-            texture.height = this._options.textureSize;            
-            texture.format = format;
+            texture.height = this._options.textureSize;  
+            if (format) {          
+                texture.format = format;    
+            }
 
             texture.isReady = true;            
 
@@ -313,11 +315,11 @@
             texture.height = height;
             texture.isReady = true;
             texture.samples = 1;
-            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
             return texture;
         }     
         

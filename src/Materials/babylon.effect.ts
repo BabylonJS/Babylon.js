@@ -5,7 +5,7 @@
         private _currentRank = 32;
         private _maxRank = -1;
 
-        private _mesh: AbstractMesh;
+        private _mesh: Nullable<AbstractMesh>;
         private _meshRank: number;
 
         public unBindMesh() {
@@ -91,9 +91,9 @@
     export class Effect {
         public name: any;
         public defines: string;
-        public onCompiled: (effect: Effect) => void;
-        public onError: (effect: Effect, errors: string) => void;
-        public onBind: (effect: Effect) => void;
+        public onCompiled: Nullable<(effect: Effect) => void>;
+        public onError: Nullable<(effect: Effect, errors: string) => void>;
+        public onBind: Nullable<(effect: Effect) => void>;
         public uniqueId = 0;
         public onCompileObservable = new Observable<Effect>();
         public onErrorObservable = new Observable<Effect>();
@@ -108,10 +108,10 @@
         private _compilationError = "";
         private _attributesNames: string[];
         private _attributes: number[];
-        private _uniforms: WebGLUniformLocation[];
+        private _uniforms: Nullable<WebGLUniformLocation>[];
         public _key: string;
         private _indexParameters: any;
-        private _fallbacks: EffectFallbacks;
+        private _fallbacks: Nullable<EffectFallbacks>;
         private _vertexSourceCode: string;
         private _fragmentSourceCode: string;
         private _vertexSourceCodeOverride: string;
@@ -121,7 +121,8 @@
         private _valueCache: { [key: string]: any };
         private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], engine?: Engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null, 
+                    fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
             this.name = baseName;
 
             if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
@@ -143,10 +144,10 @@
                     }          
                 }    
             } else {
-                this._engine = engine;
-                this.defines = defines;
-                this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(samplers);
-                this._samplers = samplers;
+                this._engine = <Engine>engine;
+                this.defines = <string>defines;
+                this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
+                this._samplers = <string[]>samplers;
                 this._attributesNames = (<string[]>attributesNamesOrOptions);
 
                 this.onError = onError;
@@ -245,7 +246,7 @@
             return this._uniformsNames.indexOf(uniformName);
         }
 
-        public getUniform(uniformName: string): WebGLUniformLocation {
+        public getUniform(uniformName: string): Nullable<WebGLUniformLocation> {
             return this._uniforms[this._uniformsNames.indexOf(uniformName)];
         }
 
@@ -648,7 +649,7 @@
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         }
 
-        public setTexture(channel: string, texture: BaseTexture): void {
+        public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
             this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
         }
 

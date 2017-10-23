@@ -4,11 +4,11 @@
     export interface IGetSetVerticesData
     {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array;
-        getIndices(copyWhenShared?: boolean): IndicesArray;
-        setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
+        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<number[] | Float32Array>;
+        getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
+        setVerticesData(kind: string, data: number[] | Float32Array, updatable: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): void;
+        setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
     }
 
     export class VertexData {
@@ -234,7 +234,7 @@
             }
 
             if (this.indices) {
-                meshOrGeometry.setIndices(this.indices);
+                meshOrGeometry.setIndices(this.indices, null);
             }
             return this;
         }
@@ -294,7 +294,9 @@
          * Merges the passed VertexData into the current one.  
          * Returns the modified VertexData.  
          */
-        public merge(other: VertexData): VertexData {
+        public merge(other: VertexData, options?: { tangentLength?: number }): VertexData {
+            options = options || {};
+
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
@@ -312,7 +314,7 @@
             var count = this.positions.length / 3;
 
             this.normals = this._mergeElement(this.normals, other.normals, count * 3);
-            this.tangents = this._mergeElement(this.tangents, other.tangents, count * 4);
+            this.tangents = this._mergeElement(this.tangents, other.tangents, count * (options.tangentLength || 4));
             this.uvs = this._mergeElement(this.uvs, other.uvs, count * 2);
             this.uvs2 = this._mergeElement(this.uvs2, other.uvs2, count * 2);
             this.uvs3 = this._mergeElement(this.uvs3, other.uvs3, count * 2);

@@ -59,7 +59,9 @@ module BABYLON.GLTF2.Extensions {
                 }
 
                 setTimeout(() => {
-                    this._loadNodeLOD(loader, context, nodes, index - 1, onComplete);
+                    loader._tryCatchOnError(() => {
+                        this._loadNodeLOD(loader, context, nodes, index - 1, onComplete);
+                    });
                 }, MSFTLOD.MinimalLODDelay);
             });
         }
@@ -91,7 +93,9 @@ module BABYLON.GLTF2.Extensions {
                 loader._executeWhenRenderReady(() => {
                     BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), () => {
                         setTimeout(() => {
-                            this._loadMaterialLOD(loader, context, materials, index - 1, assign, onComplete);
+                            loader._tryCatchOnError(() => {
+                                this._loadMaterialLOD(loader, context, materials, index - 1, assign, onComplete);
+                            });
                         }, MSFTLOD.MinimalLODDelay);
                     });
                 });

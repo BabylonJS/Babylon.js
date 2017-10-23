@@ -12,71 +12,71 @@
         public inputs : FreeCameraInputsManager;
         
         //-- begin properties for backward compatibility for inputs
-        public get angularSensibility() {
+        public get angularSensibility(): number {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
             if (mouse)
                 return mouse.angularSensibility;
 
-            return null;
+            return 0;
         }
         
-        public set angularSensibility(value) {
+        public set angularSensibility(value: number) {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
             if (mouse)
                 mouse.angularSensibility = value;
         }
         
-        public get keysUp() {
+        public get keysUp(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysUp;
 
-            return null;
+            return [];
         }
         
-        public set keysUp(value) {
+        public set keysUp(value: number[]) {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysUp = value;
         }
         
-        public get keysDown() {
+        public get keysDown(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysDown;
 
-            return null;
+            return [];
         }
         
-        public set keysDown(value) {
+        public set keysDown(value: number[]) {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysDown = value;
         }
         
-        public get keysLeft() {
+        public get keysLeft(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysLeft;
 
-            return null;
+            return [];
         }
         
-        public set keysLeft(value) {
+        public set keysLeft(value: number[]) {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysLeft = value;
         }
         
-        public get keysRight() {
+        public get keysRight(): number[] {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysRight;
 
-            return null;
+            return [];
         }
         
-        public set keysRight(value) {
+        public set keysRight(value: number[]) {
             var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysRight = value;
@@ -155,7 +155,7 @@
 
         }
 
-        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
             //TODO move this to the collision coordinator!
             if (this.getScene().workerCollisions)
                 newPosition.multiplyInPlace(this._collider.radius);

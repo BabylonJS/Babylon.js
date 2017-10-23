@@ -84,7 +84,7 @@
         */
         public onBeforeDrawObservable = new Observable<Mesh>();
 
-        private _onBeforeDrawObserver: Observer<Mesh>;
+        private _onBeforeDrawObserver: Nullable<Observer<Mesh>>;
         public set onBeforeDraw(callback: () => void) {
             if (this._onBeforeDrawObserver) {
                 this.onBeforeDrawObservable.remove(this._onBeforeDrawObserver);
@@ -116,7 +116,7 @@
         }
 
         // Private
-        public _geometry: Geometry;
+        public _geometry: Nullable<Geometry>;
         public _delayInfo: Array<string>;
         public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
 
@@ -136,7 +136,7 @@
         // Use by builder only to know what orientation were the mesh build in.
         public _originalBuilderSideOrientation: number = Mesh._DEFAULTSIDE;
 
-        public overrideMaterialSideOrientation: number = null;
+        public overrideMaterialSideOrientation: Nullable<number> = null;
 
         private _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
 
@@ -144,8 +144,8 @@
         private _sourceNormals: Float32Array;   // Will be used to save original normals when using software skinning
 
         // Will be used to save a source mesh reference, If any
-        private _source: BABYLON.Mesh = null;
-        public get source(): BABYLON.Mesh {
+        private _source: Nullable<Mesh> = null;
+        public get source(): Nullable<Mesh> {
             return this._source;
         }
 
@@ -160,7 +160,7 @@
          *                  This will make creation of children, recursive.
          * @param {boolean} clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
          */
-        constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true) {
+        constructor(name: string, scene: Scene, parent: Nullable<Node> = null, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true) {
             super(name, scene);
 
             if (source) {
@@ -722,7 +722,7 @@
          * 
          * Returns the Mesh.  
          */
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): Mesh {
+        public setVerticesData(kind: string, data: number[] | Float32Array, updatable: boolean = false, stride?: number): Mesh {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.set(data, kind);
@@ -840,7 +840,7 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): Mesh {
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): Mesh {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.indices = indices;
@@ -2534,7 +2534,7 @@
          * When updating an instance, remember that only point positions can change, not the number of points.      
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateLines(name: string, points: Vector3[], scene?: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
+        public static CreateLines(name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh {
             var options = {
                 points: points,
                 updatable: updatable,
