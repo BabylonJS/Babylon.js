@@ -761,31 +761,34 @@
                             return false;
                         }
                         defines.ENVIRONMENTBRDF = true;
+                    } else {
+                        defines.ENVIRONMENTBRDF = false;
                     }
 
                     if (this._shouldUseAlphaFromAlbedoTexture()) {
                         defines.ALPHAFROMALBEDO = true;
+                    } else {
+                        defines.ALPHAFROMALBEDO = false;
                     }
+
                 }
 
-                if (this._useSpecularOverAlpha) {
-                    defines.SPECULAROVERALPHA = true;
-                }
+                defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
 
-                if (this._usePhysicalLightFalloff) {
-                    defines.USEPHYSICALLIGHTFALLOFF = true;
-                }
+                defines.USEPHYSICALLIGHTFALLOFF = this._usePhysicalLightFalloff;
 
-                if (this._useRadianceOverAlpha) {
-                    defines.RADIANCEOVERALPHA = true;
-                }
+                defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
 
                 if ((this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
                     defines.METALLICWORKFLOW = true;
+                } else {
+                    defines.METALLICWORKFLOW = false;
                 }
 
                 if (!this.backFaceCulling && this._twoSidedLighting) {
                     defines.TWOSIDEDLIGHTING = true;
+                } else {
+                    defines.TWOSIDEDLIGHTING = false;
                 }
 
                 defines.ALPHATESTVALUE = this._alphaCutOff;

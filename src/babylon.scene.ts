@@ -144,6 +144,10 @@
          * this is easier to set here than in all the materials.
          */
         public set environmentTexture(value: BaseTexture) {
+            if (this._environmentTexture === value) {
+                return;
+            }
+            
             this._environmentTexture = value;
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
