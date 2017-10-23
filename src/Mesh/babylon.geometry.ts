@@ -911,7 +911,7 @@
 
                 if (binaryInfo.indicesAttrDesc && binaryInfo.indicesAttrDesc.count > 0) {
                     var indicesData = new Int32Array(parsedGeometry, binaryInfo.indicesAttrDesc.offset, binaryInfo.indicesAttrDesc.count);
-                    mesh.setIndices(indicesData);
+                    mesh.setIndices(indicesData, null);
                 }
 
                 if (binaryInfo.subMeshesAttrDesc && binaryInfo.subMeshesAttrDesc.count > 0) {
@@ -1010,7 +1010,7 @@
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
 
-                mesh.setIndices(parsedGeometry.indices);
+                mesh.setIndices(parsedGeometry.indices, null);
             }
 
             // SubMeshes

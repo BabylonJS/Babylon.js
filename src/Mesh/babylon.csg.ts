@@ -563,7 +563,7 @@
             mesh.setVerticesData(VertexBuffer.PositionKind, vertices);
             mesh.setVerticesData(VertexBuffer.NormalKind, normals);
             mesh.setVerticesData(VertexBuffer.UVKind, uvs);
-            mesh.setIndices(indices);
+            mesh.setIndices(indices, null);
 
             if (keepSubMeshes) {
                 // We offset the materialIndex by the previous number of materials in the CSG mixed meshes

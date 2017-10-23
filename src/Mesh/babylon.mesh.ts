@@ -84,7 +84,7 @@
         */
         public onBeforeDrawObservable = new Observable<Mesh>();
 
-        private _onBeforeDrawObserver: Observer<Mesh>;
+        private _onBeforeDrawObserver: Nullable<Observer<Mesh>>;
         public set onBeforeDraw(callback: () => void) {
             if (this._onBeforeDrawObserver) {
                 this.onBeforeDrawObservable.remove(this._onBeforeDrawObserver);
@@ -160,7 +160,7 @@
          *                  This will make creation of children, recursive.
          * @param {boolean} clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
          */
-        constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true) {
+        constructor(name: string, scene: Scene, parent: Nullable<Node> = null, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true) {
             super(name, scene);
 
             if (source) {
@@ -840,7 +840,7 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): Mesh {
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): Mesh {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.indices = indices;

@@ -561,7 +561,7 @@
 
                 // Bones
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                    this._effect.setMatrices("mBones", (<Skeleton>mesh.skeleton).getTransformMatrices((mesh));
                 }
 
                 if (this.forceBackFacesOnly) {
@@ -687,7 +687,7 @@
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + ((<Skeleton>mesh.skeleton).bones.length + 1));
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
