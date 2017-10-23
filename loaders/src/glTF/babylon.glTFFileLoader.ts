@@ -68,7 +68,7 @@ module BABYLON {
         }
 
         public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
-            var loaderData = GLTFFileLoader._parse(data, onError);
+            const loaderData = GLTFFileLoader._parse(data, onError);
             if (!loaderData) {
                 return;
             }
@@ -86,7 +86,7 @@ module BABYLON {
         }
 
         public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
-            var loaderData = GLTFFileLoader._parse(data, onError);
+            const loaderData = GLTFFileLoader._parse(data, onError);
             if (!loaderData) {
                 return;
             }
@@ -127,16 +127,16 @@ module BABYLON {
         private _getLoader(loaderData: IGLTFLoaderData, onError: (message: string) => void): IGLTFLoader {
             const loaderVersion = { major: 2, minor: 0 };
 
-            var asset = (<any>loaderData.json).asset || {};
+            const asset = (<any>loaderData.json).asset || {};
 
-            var version = GLTFFileLoader._parseVersion(asset.version);
+            const version = GLTFFileLoader._parseVersion(asset.version);
             if (!version) {
                 onError("Invalid version: " + asset.version);
                 return null;
             }
 
             if (asset.minVersion !== undefined) {
-                var minVersion = GLTFFileLoader._parseVersion(asset.minVersion);
+                const minVersion = GLTFFileLoader._parseVersion(asset.minVersion);
                 if (!minVersion) {
                     onError("Invalid minimum version: " + asset.minVersion);
                     return null;
@@ -148,12 +148,12 @@ module BABYLON {
                 }
             }
 
-            var createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
+            const createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
                 1: GLTFFileLoader.CreateGLTFLoaderV1,
                 2: GLTFFileLoader.CreateGLTFLoaderV2
             };
 
-            var createLoader = createLoaders[version.major];
+            const createLoader = createLoaders[version.major];
             if (!createLoader) {
                 onError("Unsupported version: " + asset.version);
                 return null;
@@ -167,15 +167,15 @@ module BABYLON {
                 Magic: 0x46546C67
             };
 
-            var binaryReader = new BinaryReader(data);
+            const binaryReader = new BinaryReader(data);
 
-            var magic = binaryReader.readUint32();
+            const magic = binaryReader.readUint32();
             if (magic !== Binary.Magic) {
                 onError("Unexpected magic: " + magic);
                 return null;
             }
 
-            var version = binaryReader.readUint32();
+            const version = binaryReader.readUint32();
             switch (version) {
                 case 1: return GLTFFileLoader._parseV1(binaryReader, onError);
                 case 2: return GLTFFileLoader._parseV2(binaryReader, onError);
@@ -190,16 +190,16 @@ module BABYLON {
                 JSON: 0
             };
 
-            var length = binaryReader.readUint32();
+            const length = binaryReader.readUint32();
             if (length != binaryReader.getLength()) {
                 onError("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
                 return null;
             }
 
-            var contentLength = binaryReader.readUint32();
-            var contentFormat = binaryReader.readUint32();
+            const contentLength = binaryReader.readUint32();
+            const contentFormat = binaryReader.readUint32();
 
-            var content: Object;
+            let content: Object;
             switch (contentFormat) {
                 case ContentFormat.JSON:
                     content = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(contentLength)));
@@ -209,8 +209,8 @@ module BABYLON {
                     return null;
             }
 
-            var bytesRemaining = binaryReader.getLength() - binaryReader.getPosition();
-            var body = binaryReader.readUint8Array(bytesRemaining);
+            const bytesRemaining = binaryReader.getLength() - binaryReader.getPosition();
+            const body = binaryReader.readUint8Array(bytesRemaining);
 
             return {
                 json: content,
@@ -224,26 +224,26 @@ module BABYLON {
                 BIN: 0x004E4942
             };
 
-            var length = binaryReader.readUint32();
+            const length = binaryReader.readUint32();
             if (length !== binaryReader.getLength()) {
                 onError("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
                 return null;
             }
 
             // JSON chunk
-            var chunkLength = binaryReader.readUint32();
-            var chunkFormat = binaryReader.readUint32();
+            const chunkLength = binaryReader.readUint32();
+            const chunkFormat = binaryReader.readUint32();
             if (chunkFormat !== ChunkFormat.JSON) {
                 onError("First chunk format is not JSON");
                 return null;
             }
-            var json = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(chunkLength)));
+            const json = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(chunkLength)));
 
             // Look for BIN chunk
-            var bin: Uint8Array = null;
+            let bin: Uint8Array = null;
             while (binaryReader.getPosition() < binaryReader.getLength()) {
-                chunkLength = binaryReader.readUint32();
-                chunkFormat = binaryReader.readUint32();
+                const chunkLength = binaryReader.readUint32();
+                const chunkFormat = binaryReader.readUint32();
                 switch (chunkFormat) {
                     case ChunkFormat.JSON:
                         onError("Unexpected JSON chunk");
@@ -265,7 +265,7 @@ module BABYLON {
         }
 
         private static _parseVersion(version: string): { major: number, minor: number } {
-            var match = (version + "").match(/^(\d+)\.(\d+)$/);
+            const match = (version + "").match(/^(\d+)\.(\d+)$/);
             if (!match) {
                 return null;
             }
@@ -285,10 +285,10 @@ module BABYLON {
         }
 
         private static _decodeBufferToText(buffer: Uint8Array): string {
-            var result = "";
-            var length = buffer.byteLength;
+            let result = "";
+            const length = buffer.byteLength;
 
-            for (var i = 0; i < length; ++i) {
+            for (let i = 0; i < length; i++) {
                 result += String.fromCharCode(buffer[i]);
             }
 
@@ -316,13 +316,13 @@ module BABYLON {
         }
 
         public readUint32(): number {
-            var value = this._dataView.getUint32(this._byteOffset, true);
+            const value = this._dataView.getUint32(this._byteOffset, true);
             this._byteOffset += 4;
             return value;
         }
 
         public readUint8Array(length: number): Uint8Array {
-            var value = new Uint8Array(this._arrayBuffer, this._byteOffset, length);
+            const value = new Uint8Array(this._arrayBuffer, this._byteOffset, length);
             this._byteOffset += length;
             return value;
         }
