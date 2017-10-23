@@ -36,8 +36,7 @@
         }
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
-            // Delta is in seconds, should be provided in milliseconds
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
