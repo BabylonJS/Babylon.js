@@ -50,7 +50,7 @@
             return this._sourceMesh.visibility;
         }
 
-        public get skeleton(): Skeleton {
+        public get skeleton(): Nullable<Skeleton> {
             return this._sourceMesh.skeleton;
         }
 
@@ -146,7 +146,7 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: number): Mesh {
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null): Mesh {
             if (this.sourceMesh) {
                this.sourceMesh.setIndices(indices, totalVertices);
             }
@@ -178,7 +178,9 @@
         public refreshBoundingInfo(): InstancedMesh {
             var meshBB = this._sourceMesh.getBoundingInfo();
 
-            this._boundingInfo = new BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
+            if (meshBB) {
+                this._boundingInfo = new BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
+            }
 
             this._updateBoundingInfo();
             return this;
@@ -202,7 +204,17 @@
          * Returns the current associated LOD AbstractMesh.  
          */
         public getLOD(camera: Camera): AbstractMesh {
-            this._currentLOD = <Mesh>this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
+            if (!camera) {
+                return this;
+            }
+
+            let boundingInfo = this.getBoundingInfo();
+
+            if (!boundingInfo) {
+                return this;
+            }
+
+            this._currentLOD = <Mesh>this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
 
             if (this._currentLOD === this.sourceMesh) {
                 return this;
