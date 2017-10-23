@@ -1167,10 +1167,10 @@
                     if (actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
                         window.setTimeout(() => {
                             var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY,
-                                (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger) && mesh == this._pickedDownMesh,
+                                (mesh: AbstractMesh): boolean => (<boolean>(mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger) && mesh == this._pickedDownMesh)),
                                 false, this.cameraToUseForPointers);
 
-                            if (pickResult && pickResult.hit && pickResult.pickedMesh) {
+                            if (pickResult && pickResult.hit && pickResult.pickedMesh && actionManager) {
                                 if (this._totalPointersPressed !== 0 &&
                                     ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                     (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
@@ -2621,7 +2621,7 @@
             return null;
         }
 
-        public isActiveMesh(mesh: Mesh): boolean {
+        public isActiveMesh(mesh: AbstractMesh): boolean {
             return (this._activeMeshes.indexOf(mesh) !== -1);
         }
 
@@ -2704,7 +2704,11 @@
                 var material = subMesh.getMaterial();
 
                 if (mesh.showSubMeshesBoundingBox) {
-                    this.getBoundingBoxRenderer().renderList.push(subMesh.getBoundingInfo().boundingBox);
+                    let boundingInfo = subMesh.getBoundingInfo();
+
+                    if (boundingInfo) {
+                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
+                    }
                 }
 
                 if (material) {
@@ -2857,7 +2861,11 @@
             }
 
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
-                this.getBoundingBoxRenderer().renderList.push(sourceMesh.getBoundingInfo().boundingBox);
+                let boundingInfo = sourceMesh.getBoundingInfo();
+
+                if (boundingInfo) {
+                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);    
+                }
             }
 
             if (mesh && mesh.subMeshes) {
@@ -2935,7 +2943,7 @@
             for (var softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
                 var mesh = this._softwareSkinnedMeshes.data[softwareSkinnedMeshIndex];
 
-                mesh.applySkeleton(mesh.skeleton);
+                mesh.applySkeleton(<Skeleton>mesh.skeleton);
             }
 
             // Render targets
@@ -3114,6 +3122,10 @@
         private _checkIntersections(): void {
             for (var index = 0; index < this._meshesForIntersections.length; index++) {
                 var sourceMesh = this._meshesForIntersections.data[index];
+
+                if (!sourceMesh.actionManager) {
+                    continue;
+                }
 
                 for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                     var action = sourceMesh.actionManager.actions[actionIndex];
@@ -3302,7 +3314,7 @@
                     var shadowGenerator = light.getShadowGenerator();
 
                     if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
-                        var shadowMap = shadowGenerator.getShadowMap();
+                        var shadowMap = <RenderTargetTexture>(shadowGenerator.getShadowMap());
                         if (this.textures.indexOf(shadowMap) !== -1) {
                             this._renderTargets.push(shadowMap);
                         }
@@ -3744,11 +3756,15 @@
                 }
 
                 mesh.computeWorldMatrix(true);
-                var minBox = mesh.getBoundingInfo().boundingBox.minimumWorld;
-                var maxBox = mesh.getBoundingInfo().boundingBox.maximumWorld;
+                let boundingInfo = mesh.getBoundingInfo();
 
-                Tools.CheckExtends(minBox, min, max);
-                Tools.CheckExtends(maxBox, min, max);
+                if (boundingInfo) {
+                    var minBox = boundingInfo.boundingBox.minimumWorld;
+                    var maxBox = boundingInfo.boundingBox.maximumWorld;
+
+                    Tools.CheckExtends(minBox, min, max);
+                    Tools.CheckExtends(maxBox, min, max);
+                }
             }
 
             return {
@@ -3957,7 +3973,7 @@
          * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
          * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
          */
-        public pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
+        public pickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
             return this._internalPick(world => {
                 if (!this._pickWithRayInverseMatrix) {
                     this._pickWithRayInverseMatrix = Matrix.Identity();
@@ -3983,7 +3999,7 @@
          * @param ray Ray to use
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
          */
-        public multiPickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean): Nullable<PickingInfo[]> {
+        public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
             return this._internalMultiPick(world => {
                 if (!this._pickWithRayInverseMatrix) {
                     this._pickWithRayInverseMatrix = Matrix.Identity();

@@ -381,7 +381,7 @@
         private _isDirty = false;
         public _masterMesh: AbstractMesh;
 
-        public _boundingInfo: BoundingInfo;
+        public _boundingInfo: Nullable<BoundingInfo>;
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
         private _postMultiplyPivotMatrix = false;
@@ -757,7 +757,7 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: number): AbstractMesh {
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number>): AbstractMesh {
             return this;
         }
 
@@ -772,7 +772,7 @@
          * Returns the mesh BoundingInfo object or creates a new one and returns it if undefined.
          * Returns a BoundingInfo
          */
-        public getBoundingInfo(): BoundingInfo {
+        public getBoundingInfo(): Nullable<BoundingInfo> {
             if (this._masterMesh) {
                 return this._masterMesh.getBoundingInfo();
             }
@@ -1169,13 +1169,14 @@
 
             let min: Vector3;
             let max: Vector3;
+            let boundingInfo = this.getBoundingInfo();
             
-            if (!this.subMeshes) {
+            if (!this.subMeshes || !boundingInfo) {
                 min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
                 max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             } else {
-                min = this.getBoundingInfo().boundingBox.minimumWorld;
-                max = this.getBoundingInfo().boundingBox.maximumWorld;
+                min = boundingInfo.boundingBox.minimumWorld;
+                max = boundingInfo.boundingBox.maximumWorld;
             }
 
             let descendants = this.getDescendants(false);
@@ -1184,11 +1185,12 @@
                 let childMesh = <AbstractMesh>descendant;
 
                 childMesh.computeWorldMatrix(true);
+                let childBoundingInfo = childMesh.getBoundingInfo();
 
-                if (childMesh.getTotalVertices() === 0) {
+                if (childMesh.getTotalVertices() === 0 || !childBoundingInfo) {
                     continue;
                 }
-                let boundingBox = childMesh.getBoundingInfo().boundingBox;
+                let boundingBox = childBoundingInfo.boundingBox;
 
                 var minBox = boundingBox.minimumWorld;
                 var maxBox = boundingBox.maximumWorld;
@@ -1493,7 +1495,7 @@
          * Boolean returned.  
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            return this._boundingInfo.isInFrustum(frustumPlanes);
+            return this._boundingInfo !== null && this._boundingInfo.isInFrustum(frustumPlanes);
         }
 
         /**
@@ -1502,7 +1504,7 @@
          * Boolean returned.  
          */
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
-            return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);;
+            return this._boundingInfo !== null && this._boundingInfo.isCompletelyInFrustum(frustumPlanes);;
         }
 
         /** 
@@ -1651,9 +1653,13 @@
 
             this.computeWorldMatrix(true);
 
+            let boundingInfo = this.getBoundingInfo();
+
             // Update octree
-            var bbox = this.getBoundingInfo().boundingBox;
-            this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
+            if (boundingInfo) {
+                var bbox = boundingInfo.boundingBox;
+                this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
+            }
 
             return this._submeshesOctree;
         }
@@ -1715,7 +1721,7 @@
 
         public _checkCollision(collider: Collider): AbstractMesh {
             // Bounding box test
-            if (!this._boundingInfo._checkCollision(collider))
+            if (!this._boundingInfo || !this._boundingInfo._checkCollision(collider))
                 return this;
 
             // Transformation matrix
@@ -2156,6 +2162,11 @@
             var indices = this.getIndices();
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
+
+            if (!bInfo) {
+                return this;
+            }
+
             this._bbSize.x = (bInfo.maximum.x - bInfo.minimum.x > Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : Epsilon;
             this._bbSize.y = (bInfo.maximum.y - bInfo.minimum.y > Epsilon) ? bInfo.maximum.y - bInfo.minimum.y : Epsilon;
             this._bbSize.z = (bInfo.maximum.z - bInfo.minimum.z > Epsilon) ? bInfo.maximum.z - bInfo.minimum.z : Epsilon;
@@ -2177,6 +2188,7 @@
             this._facetParameters.subDiv = this._subDiv;
             this._facetParameters.ratio = this.partitioningBBoxRatio;
             VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
+
             return this;
         }
         /**
@@ -2250,6 +2262,11 @@
          */
         public getFacetsAtLocalCoordinates(x: number, y: number, z: number): Nullable<number[]> {
             var bInfo = this.getBoundingInfo();
+
+            if (!bInfo) {
+                return null;
+            }
+
             var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * this._subDiv.X * this._partitioningBBoxRatio / this._bbSize.x);
             var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * this._subDiv.Y * this._partitioningBBoxRatio / this._bbSize.y);
             var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * this._subDiv.Z * this._partitioningBBoxRatio / this._bbSize.z);

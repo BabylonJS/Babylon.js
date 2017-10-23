@@ -2102,7 +2102,7 @@
             }
         }
 
-        private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect) {
+        private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect): void {
             var attributes = effect.getAttributesNames();
 
             if (!this._vaoRecordInProgress) {
@@ -2140,7 +2140,7 @@
             }
         }
 
-        public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): WebGLVertexArrayObject {
+        public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): WebGLVertexArrayObject {
             var vao = this._gl.createVertexArray();
 
             this._vaoRecordInProgress = true;
@@ -2158,7 +2158,7 @@
             return vao;
         }
 
-        public bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: WebGLBuffer): void {
+        public bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: Nullable<WebGLBuffer>): void {
             if (this._cachedVertexArrayObject !== vertexArrayObject) {
                 this._cachedVertexArrayObject = vertexArrayObject;
 
@@ -2211,7 +2211,7 @@
             this._gl.bindVertexArray(null);
         }
 
-        public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer>; }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): void {
+        public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
