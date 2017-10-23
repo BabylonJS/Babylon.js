@@ -364,7 +364,6 @@
 
             if (insertAt == null || insertAt < 0) {
                 this._postProcesses.push(postProcess);
-
             } else {
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
@@ -372,30 +371,12 @@
             return this._postProcesses.indexOf(postProcess);
         }
 
-        public detachPostProcess(postProcess: PostProcess, atIndices: any = null): number[] {
-            var result = [];
-            var i: number;
-            var index: number;
-
-            if (!atIndices) {
-                var idx = this._postProcesses.indexOf(postProcess);
-                if (idx !== -1) {
-                    this._postProcesses.splice(idx, 1);
-                }
-            } else {
-                atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
-                // iterate descending, so can just splice as we go
-                for (i = atIndices.length - 1; i >= 0; i--) {
-                    if (this._postProcesses[atIndices[i]] !== postProcess) {
-                        result.push(i);
-                        continue;
-                    }
-                    index = atIndices[i];
-                    this._postProcesses.splice(index, 1);
-                }
+        public detachPostProcess(postProcess: PostProcess): void {
+            var idx = this._postProcesses.indexOf(postProcess);
+            if (idx !== -1) {
+                this._postProcesses.splice(idx, 1);
             }
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
-            return result;
         }
 
         public getWorldMatrix(): Matrix {
