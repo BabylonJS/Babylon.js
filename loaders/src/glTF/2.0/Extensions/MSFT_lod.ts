@@ -18,8 +18,8 @@ module BABYLON.GLTF2.Extensions {
 
         protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean {
             return this._loadExtension<IMSFTLOD>(node, (extension, onComplete) => {
-                for (var i = extension.ids.length - 1; i >= 0; i--) {
-                    var lodNode = GLTFUtils.GetArrayItem(loader._gltf.nodes, extension.ids[i]);
+                for (let i = extension.ids.length - 1; i >= 0; i--) {
+                    const lodNode = GLTFUtils.GetArrayItem(loader._gltf.nodes, extension.ids[i]);
                     if (!lodNode) {
                         throw new Error(context + ": Failed to find node " + extension.ids[i]);
                     }
@@ -34,7 +34,7 @@ module BABYLON.GLTF2.Extensions {
 
         protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean {
             return this._loadExtension<IMSFTLOD>(node, (extension, onComplete) => {
-                var nodes = [node.index, ...extension.ids].map(index => loader._gltf.nodes[index]);
+                const nodes = [node.index, ...extension.ids].map(index => loader._gltf.nodes[index]);
 
                 loader._addLoaderPendingData(node);
                 this._loadNodeLOD(loader, context, nodes, nodes.length - 1, () => {
@@ -49,7 +49,7 @@ module BABYLON.GLTF2.Extensions {
                 loader._loadNode(context, nodes[index]);
             }, () => {
                 if (index !== nodes.length - 1) {
-                    var previousNode = nodes[index + 1];
+                    const previousNode = nodes[index + 1];
                     previousNode.babylonMesh.setEnabled(false);
                 }
 
@@ -68,7 +68,7 @@ module BABYLON.GLTF2.Extensions {
 
         protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
             return this._loadExtension<IMSFTLOD>(material, (extension, onComplete) => {
-                var materials = [material.index, ...extension.ids].map(index => loader._gltf.materials[index]);
+                const materials = [material.index, ...extension.ids].map(index => loader._gltf.materials[index]);
 
                 loader._addLoaderPendingData(material);
                 this._loadMaterialLOD(loader, context, materials, materials.length - 1, assign, () => {
