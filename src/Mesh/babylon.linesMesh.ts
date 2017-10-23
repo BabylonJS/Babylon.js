@@ -34,7 +34,7 @@ module BABYLON {
         private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
-        constructor(name: string, scene: Scene, parent: Node = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor? : boolean) {
+        constructor(name: string, scene: Scene, parent: Nullable<Node> = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor? : boolean) {
             super(name, scene, parent, source, doNotCloneChildren);
 
             if (source) {
@@ -75,11 +75,13 @@ module BABYLON {
         }
 
         public createInstance(name: string): InstancedMesh {
-            Tools.Log("LinesMeshes do not support createInstance.");
-            return null;
+            throw new Error("LinesMeshes do not support createInstance.");
         }
 
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh {
+            if (!this._geometry) {
+                return this;
+            }
             // VBOs
             this._geometry._bind(this._colorShader.getEffect() );
 

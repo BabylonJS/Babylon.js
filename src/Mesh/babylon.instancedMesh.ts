@@ -42,7 +42,7 @@
             return this._sourceMesh.receiveShadows;
         }
 
-        public get material(): Material {
+        public get material(): Nullable<Material> {
             return this._sourceMesh.material;
         }
 
@@ -72,7 +72,7 @@
         /**
          * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.  
          */
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray> {
             return this._sourceMesh.getVerticesData(kind, copyWhenShared);
         }
 
@@ -101,7 +101,7 @@
          * 
          * Returns the Mesh.  
          */
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): Mesh {
+        public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh {
             if (this.sourceMesh) {
                this.sourceMesh.setVerticesData(kind, data, updatable, stride);
             }
@@ -132,7 +132,7 @@
          * 
          * Returns the Mesh.  
          */
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
+        public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
             if (this.sourceMesh) {
                this.sourceMesh.updateVerticesData(kind, data, updateExtends, makeItUnique);
             }
@@ -163,7 +163,7 @@
         /**
          * Returns an array of indices (IndicesArray).  
          */
-        public getIndices(): IndicesArray {
+        public getIndices(): Nullable<IndicesArray> {
             return this._sourceMesh.getIndices();
         }
 

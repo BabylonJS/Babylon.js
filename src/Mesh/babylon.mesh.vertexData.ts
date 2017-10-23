@@ -4,31 +4,31 @@
     export interface IGetSetVerticesData
     {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<number[] | Float32Array>;
+        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray>;
         getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
-        setVerticesData(kind: string, data: number[] | Float32Array, updatable: boolean): void;
-        updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
+        setVerticesData(kind: string, data: FloatArray, updatable: boolean): void;
+        updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): void;
         setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
     }
 
     export class VertexData {
-        public positions: number[] | Float32Array;
-        public normals: number[] | Float32Array;
-        public tangents: number[] | Float32Array;
-        public uvs: number[] | Float32Array;
-        public uvs2: number[] | Float32Array;
-        public uvs3: number[] | Float32Array;
-        public uvs4: number[] | Float32Array;
-        public uvs5: number[] | Float32Array;
-        public uvs6: number[] | Float32Array;
-        public colors: number[] | Float32Array;
-        public matricesIndices: number[] | Float32Array;
-        public matricesWeights: number[] | Float32Array;
-        public matricesIndicesExtra: number[] | Float32Array;
-        public matricesWeightsExtra: number[] | Float32Array;
+        public positions: FloatArray;
+        public normals: FloatArray;
+        public tangents: FloatArray;
+        public uvs: FloatArray;
+        public uvs2: FloatArray;
+        public uvs3: FloatArray;
+        public uvs4: FloatArray;
+        public uvs5: FloatArray;
+        public uvs6: FloatArray;
+        public colors: FloatArray;
+        public matricesIndices: FloatArray;
+        public matricesWeights: FloatArray;
+        public matricesIndicesExtra: FloatArray;
+        public matricesWeightsExtra: FloatArray;
         public indices: IndicesArray;
 
-        public set(data: number[] | Float32Array, kind: string) {
+        public set(data: FloatArray, kind: string) {
             switch (kind) {
                 case VertexBuffer.PositionKind:
                     this.positions = data;
@@ -329,7 +329,7 @@
             return this;
         }
 
-        private _mergeElement(source: number[] | Float32Array, other: number[] | Float32Array, length = 0): number[] | Float32Array {
+        private _mergeElement(source: FloatArray, other: FloatArray, length = 0): FloatArray {
             if (!other && !source) {
                 return null;
             }
@@ -2392,7 +2392,7 @@
             }
         }
 
-        private static _ComputeSides(sideOrientation: number, positions: number[] | Float32Array, indices: number[] | Float32Array, normals: number[] | Float32Array, uvs: number[] | Float32Array, frontUVs?: Vector4, backUVs?: Vector4) {
+        private static _ComputeSides(sideOrientation: number, positions: FloatArray, indices: FloatArray, normals: FloatArray, uvs: FloatArray, frontUVs?: Vector4, backUVs?: Vector4) {
             var li: number = indices.length;
             var ln: number = normals.length;
             var i: number;
