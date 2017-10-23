@@ -691,7 +691,15 @@
     
                     // call to custom user function to update the particle properties
                     this.updateParticle(this._particle);
-    
+
+                    // camera-particle distance for depth sorting
+                    if (this._depthSort && this._depthSortParticles) {
+                        var dsp = this.depthSortedParticles[p];
+                        dsp.ind = this._particle._ind;
+                        dsp.indicesLength = this._particle._model._indicesLength;
+                        dsp.sqDistance = Vector3.DistanceSquared(this._particle.position, this._camInvertedPosition);
+                    }
+
                     // skip the computations for inactive or already invisible particles
                     if (!this._particle.alive || (this._particle._stillInvisible && !this._particle.isVisible)) {
                         // increment indexes for the next particle
@@ -721,15 +729,7 @@
                             }
                             this._quaternionToRotationMatrix();
                         }
-    
-                        // camera-particle distance for depth sorting
-                        if (this._depthSort && this._depthSortParticles) {
-                            var dsp = this.depthSortedParticles[p];
-                            dsp.ind = this._particle._ind;
-                            dsp.indicesLength = this._particle._model._indicesLength;
-                            dsp.sqDistance = Vector3.DistanceSquared(this._particle.position, this._camInvertedPosition);
-                        }
-    
+       
                         // particle vertex loop
                         for (pt = 0; pt < this._shape.length; pt++) {
                             idx = index + pt * 3;
