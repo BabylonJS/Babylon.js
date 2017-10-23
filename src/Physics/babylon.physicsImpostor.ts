@@ -9,11 +9,11 @@ module BABYLON {
 
     export interface IPhysicsEnabledObject {
         position: Vector3;
-        rotationQuaternion: Quaternion;
+        rotationQuaternion: Nullable<Quaternion>;
         scaling: Vector3;
         rotation?: Vector3;
         parent?: any;
-        getBoundingInfo?(): BoundingInfo;
+        getBoundingInfo(): Nullable<BoundingInfo>;
         computeWorldMatrix?(force: boolean): void;
         getWorldMatrix?(): Matrix;
         getChildMeshes?(directDecendantsOnly?: boolean): Array<AbstractMesh>;
@@ -29,7 +29,7 @@ module BABYLON {
 
         public static IDENTITY_QUATERNION = Quaternion.Identity();
 
-        private _physicsEngine: PhysicsEngine;
+        private _physicsEngine: Nullable<PhysicsEngine>;
         //The native cannon/oimo/energy physics body object.
         private _physicsBody: any;
         private _bodyUpdateRequired: boolean = false;
@@ -55,7 +55,7 @@ module BABYLON {
         }
 
         get mass(): number {
-            return this._physicsEngine.getPhysicsPlugin().getBodyMass(this);
+            return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyMass(this) : 0;
         }
 
         set mass(value: number) {
@@ -63,7 +63,7 @@ module BABYLON {
         }
 
         get friction(): number {
-            return this._physicsEngine.getPhysicsPlugin().getBodyFriction(this);
+            return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyFriction(this) : 0;
         }
 
         set friction(value: number) {
@@ -141,7 +141,7 @@ module BABYLON {
             }
         }
 
-        private _getPhysicsParent(): PhysicsImpostor {
+        private _getPhysicsParent(): Nullable<PhysicsImpostor> {
             if (this.object.parent instanceof AbstractMesh) {
                 var parentMesh: AbstractMesh = <AbstractMesh>this.object.parent;
                 return parentMesh.physicsImpostor;
