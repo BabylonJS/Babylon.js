@@ -17335,6 +17335,9 @@ var BABYLON;
              * this is easier to set here than in all the materials.
              */
             set: function (value) {
+                if (this._environmentTexture === value) {
+                    return;
+                }
                 this._environmentTexture = value;
                 this.markAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
             },
@@ -32763,7 +32766,7 @@ var BABYLON;
             _this.MORPHTARGETS_TANGENT = false;
             _this.NUM_MORPH_INFLUENCERS = 0;
             _this.NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
-            _this.PREMULTIPLYALPHA = false;
+            _this.PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
             _this.IMAGEPROCESSING = false;
             _this.VIGNETTE = false;
             _this.VIGNETTEBLENDMODEMULTIPLY = false;
@@ -34734,24 +34737,30 @@ var BABYLON;
                         }
                         defines.ENVIRONMENTBRDF = true;
                     }
+                    else {
+                        defines.ENVIRONMENTBRDF = false;
+                    }
                     if (this._shouldUseAlphaFromAlbedoTexture()) {
                         defines.ALPHAFROMALBEDO = true;
                     }
+                    else {
+                        defines.ALPHAFROMALBEDO = false;
+                    }
                 }
-                if (this._useSpecularOverAlpha) {
-                    defines.SPECULAROVERALPHA = true;
-                }
-                if (this._usePhysicalLightFalloff) {
-                    defines.USEPHYSICALLIGHTFALLOFF = true;
-                }
-                if (this._useRadianceOverAlpha) {
-                    defines.RADIANCEOVERALPHA = true;
-                }
+                defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
+                defines.USEPHYSICALLIGHTFALLOFF = this._usePhysicalLightFalloff;
+                defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
                 if ((this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
                     defines.METALLICWORKFLOW = true;
                 }
+                else {
+                    defines.METALLICWORKFLOW = false;
+                }
                 if (!this.backFaceCulling && this._twoSidedLighting) {
                     defines.TWOSIDEDLIGHTING = true;
+                }
+                else {
+                    defines.TWOSIDEDLIGHTING = false;
                 }
                 defines.ALPHATESTVALUE = this._alphaCutOff;
                 defines.PREMULTIPLYALPHA = (this.alphaMode === BABYLON.Engine.ALPHA_PREMULTIPLIED || this.alphaMode === BABYLON.Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
@@ -45690,6 +45699,7 @@ var BABYLON;
          * Returns the Mesh.
          */
         InstancedMesh.prototype.setIndices = function (indices, totalVertices) {
+            if (totalVertices === void 0) { totalVertices = null; }
             if (this.sourceMesh) {
                 this.sourceMesh.setIndices(indices, totalVertices);
             }
@@ -45720,7 +45730,9 @@ var BABYLON;
          */
         InstancedMesh.prototype.refreshBoundingInfo = function () {
             var meshBB = this._sourceMesh.getBoundingInfo();
-            this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
+            if (meshBB) {
+                this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
+            }
             this._updateBoundingInfo();
             return this;
         };
@@ -45740,7 +45752,14 @@ var BABYLON;
          * Returns the current associated LOD AbstractMesh.
          */
         InstancedMesh.prototype.getLOD = function (camera) {
-            this._currentLOD = this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
+            if (!camera) {
+                return this;
+            }
+            var boundingInfo = this.getBoundingInfo();
+            if (!boundingInfo) {
+                return this;
+            }
+            this._currentLOD = this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
             if (this._currentLOD === this.sourceMesh) {
                 return this;
             }
