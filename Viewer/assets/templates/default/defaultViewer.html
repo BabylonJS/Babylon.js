@@ -8,7 +8,7 @@
 
     nav-bar {
         position: absolute;
-        height: 80px;
+        height: 160px;
         width: 100%;
         bottom: 0;
         opacity: 0.3;
@@ -19,6 +19,18 @@
         align-items: center;
         justify-content: center;
         display: flex;
+
+        flex-direction: column;
+    }
+
+    /* Big screens have room for the entire navbar */
+
+    @media screen and (min-width: 768px) {
+        nav-bar {
+            flex-direction: row;
+            justify-content: space-between;
+            height: 80px;
+        }
     }
 </style>
 
