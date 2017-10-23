@@ -70,6 +70,7 @@ module BABYLON {
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
         public NONUNIFORMSCALING = false;
+        public PREMULTIPLYALPHA = false;
 
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;
@@ -697,6 +698,8 @@ module BABYLON {
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
+
+                defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
             }
 
             if (defines._areImageProcessingDirty) {
