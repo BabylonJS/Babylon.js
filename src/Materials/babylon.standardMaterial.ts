@@ -69,8 +69,8 @@ module BABYLON {
         public MORPHTARGETS_NORMAL = false;
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
-        public NONUNIFORMSCALING = false;
-        public PREMULTIPLYALPHA = false;
+        public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
+        public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
 
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;
