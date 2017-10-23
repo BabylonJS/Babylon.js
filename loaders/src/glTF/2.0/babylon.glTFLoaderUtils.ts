@@ -18,11 +18,11 @@ module BABYLON.GLTF2 {
         * @param uri: the uri to decode
         */
         public static DecodeBase64(uri: string): ArrayBuffer {
-            var decodedString = atob(uri.split(",")[1]);
-            var bufferLength = decodedString.length;
-            var bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+            const decodedString = atob(uri.split(",")[1]);
+            const bufferLength = decodedString.length;
+            const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
 
-            for (var i = 0; i < bufferLength; i++) {
+            for (let i = 0; i < bufferLength; i++) {
                 bufferView[i] = decodedString.charCodeAt(i);
             }
 
@@ -35,7 +35,7 @@ module BABYLON.GLTF2 {
 
         public static AssignIndices(array: Array<{index?: number}>): void {
             if (array) {
-                for (var index = 0; index < array.length; index++) {
+                for (let index = 0; index < array.length; index++) {
                     array[index].index = index;
                 }
             }
