@@ -36,7 +36,7 @@ Afterwards it can be imported to the project using:
 
 ```
 import * as BABYLON from 'babylonjs';
-import from 'babylonjs-materials';
+import 'babylonjs-materials';
 ```
 
 This will extend Babylon's namespace with the materials available:
