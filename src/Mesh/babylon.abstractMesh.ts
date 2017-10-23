@@ -207,11 +207,11 @@
         public isBlocker = false;
         public enablePointerMoveEvents = false;
         public renderingGroupId = 0;
-        private _material: Material
-        public get material(): Material {
+        private _material: Nullable<Material>
+        public get material(): Nullable<Material> {
             return this._material;
         }
-        public set material(value: Material) {
+        public set material(value: Nullable<Material>) {
             if (this._material === value) {
                 return;
             }
@@ -392,7 +392,7 @@
         private _collisionsTransformMatrix = Matrix.Zero();
         private _collisionsScalingMatrix = Matrix.Zero();
         private _isDirty = false;
-        public _masterMesh: AbstractMesh;
+        public _masterMesh: Nullable<AbstractMesh>;
 
         public _boundingInfo: Nullable<BoundingInfo>;
         private _pivotMatrix = Matrix.Identity();
@@ -703,7 +703,7 @@
          * Returns the array of the requested vertex data kind. Used by the class Mesh. Returns null here. 
          * Returned type : float array or Float32Array 
          */
-        public getVerticesData(kind: string): Nullable<number[] | Float32Array> {
+        public getVerticesData(kind: string): Nullable<FloatArray> {
             return null;
         }
         /**
@@ -731,7 +731,7 @@
          * 
          * Returns the Mesh.  
          */
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): AbstractMesh {
+        public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {
             return this;
         }
 
@@ -759,7 +759,7 @@
          * 
          * Returns the Mesh.  
          */
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
+        public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
             return this;
         }
 
@@ -2407,10 +2407,10 @@
         public createNormals(updatable: boolean) {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
-            var normals: number[] | Float32Array;
+            var normals: FloatArray;
 
             if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                normals = (<number[] | Float32Array>this.getVerticesData(VertexBuffer.NormalKind));
+                normals = (<FloatArray>this.getVerticesData(VertexBuffer.NormalKind));
             } else {
                 normals = [];
             }

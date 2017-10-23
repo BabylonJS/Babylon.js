@@ -1822,7 +1822,7 @@
         }
 
         // UBOs
-        public createUniformBuffer(elements: number[] | Float32Array): WebGLBuffer {
+        public createUniformBuffer(elements: FloatArray): WebGLBuffer {
             var ubo = this._gl.createBuffer();
 
             if (!ubo) {
@@ -1843,7 +1843,7 @@
             return ubo;
         }
 
-        public createDynamicUniformBuffer(elements: number[] | Float32Array): WebGLBuffer {
+        public createDynamicUniformBuffer(elements: FloatArray): WebGLBuffer {
             var ubo = this._gl.createBuffer();
 
             if (!ubo) {
@@ -1864,7 +1864,7 @@
             return ubo;
         }
 
-        public updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: number[] | Float32Array, offset?: number, count?: number): void {
+        public updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: FloatArray, offset?: number, count?: number): void {
             this.bindUniformBuffer(uniformBuffer);
 
             if (offset === undefined) {
@@ -1895,7 +1895,7 @@
             this._cachedVertexBuffers = null;
         }
 
-        public createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
+        public createVertexBuffer(vertices: FloatArray): WebGLBuffer {
             var vbo = this._gl.createBuffer();
 
             if (!vbo) {
@@ -1915,7 +1915,7 @@
             return vbo;
         }
 
-        public createDynamicVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
+        public createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer {
             var vbo = this._gl.createBuffer();
 
             if (!vbo) {
@@ -1951,7 +1951,7 @@
             this._resetIndexBufferBinding();
         }
 
-        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: number[] | Float32Array, offset?: number, count?: number): void {
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void {
             this.bindArrayBuffer(vertexBuffer);
 
             if (offset === undefined) {
@@ -2488,7 +2488,10 @@
             return results;
         }
 
-        public enableEffect(effect: Effect): void {
+        public enableEffect(effect: Nullable<Effect>): void {
+            if (!effect) {
+                return;
+            }
             // Use program
             this.setProgram(effect.getProgram());
 
@@ -4040,8 +4043,8 @@
         }
 
         public createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
-            callback: (ArrayBuffer: ArrayBuffer) => ArrayBufferView[],
-            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][]),
+            callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
+            mipmmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
             onLoad: Nullable<() => void> = null,
             onError: Nullable<(message?: string, exception?: any) => void> = null,
             samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
@@ -4063,6 +4066,10 @@
             var internalCallback = (data: any) => {
                 var width = texture.width;
                 var faceDataArrays = callback(data);
+
+                if (!faceDataArrays) {
+                    return;
+                }
 
                 if (mipmmapGenerator) {
                     var textureType = this._getWebGLTextureType(type);
