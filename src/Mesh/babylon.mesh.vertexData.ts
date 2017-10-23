@@ -6,9 +6,9 @@
         isVerticesDataPresent(kind: string): boolean;
         getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<number[] | Float32Array>;
         getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
-        setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
+        setVerticesData(kind: string, data: number[] | Float32Array, updatable: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: IndicesArray, totalVertices?: number, updatable?: boolean): void;
+        setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
     }
 
     export class VertexData {
@@ -234,7 +234,7 @@
             }
 
             if (this.indices) {
-                meshOrGeometry.setIndices(this.indices);
+                meshOrGeometry.setIndices(this.indices, null);
             }
             return this;
         }
