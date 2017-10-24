@@ -33,6 +33,8 @@ export interface ViewerConfiguration {
         rotation?: { x: number, y: number, z: number, w: number };
         scaling?: { x: number, y: number, z: number };
         parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
+
+        [propName: string]: any; // further configuration, like title and creator
     } | string,
 
     description?: string | {
@@ -184,9 +186,16 @@ export let defaultConfiguration: ViewerConfiguration = {
                     navBar: {
                         html: require("../../assets/templates/default/navbar.html"),
                         config: {
-                            thumbnail: require('../../assets/img/loading.png'),
-                            title: "Title",
-                            subtitle: "Subtitle"
+                            buttons: [
+                                {
+                                    id: 'fullscreen-button',
+                                    altText: "Fullscreen",
+                                    image: require('../../assets/img/fullscreen.png')
+                                }
+                            ]
+                        },
+                        events: {
+                            pointerdown: ['#fullscreen-button']
                         }
                     }
                 }

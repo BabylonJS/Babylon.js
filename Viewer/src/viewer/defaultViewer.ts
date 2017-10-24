@@ -40,7 +40,42 @@ export class DefaultViewer extends AbstractViewer {
             nextHeight = '0px';
         });
 
+        // events registration
+        this.registerFullscreenMode();
+
         return super.onTemplatesLoaded();
+    }
+
+    private registerFullscreenMode() {
+        let isFullscreen = false;
+
+        let navbar = this.templateManager.getTemplate('navBar');
+        let viewerElement = this.templateManager.getTemplate('viewer').parent;
+
+        navbar.onEventTriggered.add((data) => {
+            switch (data.event.type) {
+                case 'pointerdown':
+                    let event: PointerEvent = <PointerEvent>data.event;
+                    if (event.button === 0) {
+                        if (data.selector === '#fullscreen-button') {
+                            //this.engine.switchFullscreen(false);
+                            if (!isFullscreen) {
+                                let requestFullScreen = viewerElement.requestFullscreen || /*viewerElement.parent.msRequestFullscreen || viewerElement.parent.mozRequestFullScreen ||*/ viewerElement.webkitRequestFullscreen;
+                                requestFullScreen.call(viewerElement);
+                            } else {
+                                let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen
+                                exitFullscreen.call(document);
+                            }
+
+                            isFullscreen = !isFullscreen;
+
+                        }
+
+                    }
+                    break;
+            }
+        });
+
     }
 
     protected prepareContainerElement() {
@@ -55,6 +90,9 @@ export class DefaultViewer extends AbstractViewer {
 
     public onModelLoaded(meshes: Array<AbstractMesh>) {
 
+        // here we could set the navbar's model information:
+        this.setModelMetaData();
+
         this.hideLoadingScreen();
 
         // recreate the camera
@@ -67,6 +105,28 @@ export class DefaultViewer extends AbstractViewer {
         this.setupLights(meshes);
 
         return this.initEnvironment();
+    }
+
+    private setModelMetaData() {
+        let navbar = this.templateManager.getTemplate('navBar');
+
+        let metadataContainer = navbar.parent.querySelector('#model-metadata');
+
+        //title
+        if (typeof this.configuration.model === 'object') {
+            if (this.configuration.model.title) {
+                metadataContainer.querySelector('span.model-title').innerHTML = this.configuration.model.title;
+            }
+
+            if (this.configuration.model.subtitle) {
+                metadataContainer.querySelector('span.model-subtitle').innerHTML = this.configuration.model.subtitle;
+            }
+
+            if (this.configuration.model.thumbnail) {
+                (<HTMLDivElement>metadataContainer.querySelector('.thumbnail')).style.backgroundImage = `url('${this.configuration.model.thumbnail}')`;
+            }
+        }
+
     }
 
     public initEnvironment(): Promise<Scene> {
