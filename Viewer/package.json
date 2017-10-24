@@ -1,0 +1,48 @@
+{
+    "name": "babylonjs-viewer",
+    "version": "0.1.0",
+    "description": "A viewer using BabylonJS to display 3D elements natively",
+    "scripts": {
+        "start:server": "webpack-dev-server",
+        "build": "webpack",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "keywords": [
+        "3d",
+        "webgl",
+        "viewer"
+    ],
+    "author": "Raanan Weber",
+    "license": "Apache2",
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    },
+    "homepage": "https://github.com/BabylonJS/Babylon.js#readme",
+    "devDependencies": {
+        "@types/node": "^8.0.44",
+        "base64-image-loader": "^1.2.0",
+        "html-loader": "^0.5.1",
+        "json-loader": "^0.5.7",
+        "ts-loader": "^2.3.7",
+        "typescript": "^2.5.3",
+        "uglifyjs-webpack-plugin": "^1.0.0-beta.3",
+        "webpack": "^3.8.1",
+        "webpack-dev-server": "^2.9.2"
+    },
+    "dependencies": {
+        "babylonjs": "^3.1.0-alpha3.6",
+        "babylonjs-loaders": "^3.1.0-alpha3.6",
+        "babylonjs-materials": "^3.1.0-alpha3.6",
+        "babylonjs-post-process": "^3.1.0-alpha3.6",
+        "babylonjs-procedural-textures": "^3.1.0-alpha3.6",
+        "es6-promise": "^4.1.1",
+        "handlebars": "^4.0.11",
+        "lodash": "^4.17.4",
+        "lodash.merge": "^4.6.0",
+        "promise-polyfill": "^6.0.2"
+    }
+}

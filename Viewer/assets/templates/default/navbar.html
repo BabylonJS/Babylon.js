@@ -1,0 +1,69 @@
+<style>
+    div.flex-container {
+        display: flex;
+    }
+
+    div.thumbnail {
+        position: relative;
+        overflow: hidden;
+        display: block;
+        width: 40px;
+        height: 40px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 20px;
+        margin: 0 10px;
+    }
+
+    div.title-container {
+        flex-direction: column;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    span.model-title {
+        font-size: 125%;
+    }
+
+    span.model-subtitle {
+        font-size: 90%;
+    }
+
+    div.button-container {
+        align-items: center;
+        display: flex;
+    }
+
+    div.button {
+        cursor: pointer;
+        height: 30px;
+        margin: 0 10px;
+    }
+
+    div.button img {
+        height: 100%;
+    }
+</style>
+
+<div class="flex-container" id="model-metadata">
+    <!-- holding the description -->
+    <div class="thumbnail">
+        <!-- holding the thumbnail 
+        <img src="{{thumbnail}}" alt="{{title}}">-->
+    </div>
+    <div class="title-container">
+
+        <span class="model-title">{{#if title}}{{title}}{{/if}}</span>
+        <span class="model-subtitle"> {{#if subtitle}}{{subtitle}} {{/if}}</span>
+    </div>
+</div>
+<div class="button-container">
+    <!-- holding the buttons -->
+    {{#each buttons}}
+    <div id="{{id}}" class="button">
+        {{#if text}}
+        <span>{{text}}</span>> {{/if}} {{#if image}}
+        <img src="{{image}}" alt="{{altText}}"> {{/if}}
+    </div>
+    {{/each}}
+</div>
