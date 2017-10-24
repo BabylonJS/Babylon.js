@@ -160,9 +160,9 @@ export class DefaultViewer extends AbstractViewer {
         if (this.configuration.ground) {
             let groundConfig = (typeof this.configuration.ground === 'boolean') ? {} : this.configuration.ground;
 
-            var ground = Mesh.CreateGround('ground', groundConfig.size || 100, groundConfig.size || 100, 8, this.scene);
+            var ground = Mesh.CreateGround('ground', groundConfig.size || 1000, groundConfig.size || 1000, 8, this.scene);
             if (this.configuration.ground === true || groundConfig.shadowOnly) {
-                ground.material = new BABYLON.ShadowOnlyMaterial('groundmat', this.scene);
+                ground.material = new ShadowOnlyMaterial('groundmat', this.scene);
             } else {
                 ground.material = new StandardMaterial('groundmat', this.scene);
             }
