@@ -229,7 +229,7 @@ export let defaultConfiguration: ViewerConfiguration = {
     ],
     skybox: {
         cubeTexture: {
-            url: 'http://localhost:9000/environment.dds',
+            url: 'https://playground.babylonjs.com/textures/environment.dds',
             gammaSpace: false
         },
         pbr: true,
