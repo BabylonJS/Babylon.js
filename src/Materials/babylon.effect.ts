@@ -664,7 +664,7 @@
             this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
         }
 
-        public setTextureFromPostProcess(channel: string, postProcess: PostProcess): void {
+        public setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
 

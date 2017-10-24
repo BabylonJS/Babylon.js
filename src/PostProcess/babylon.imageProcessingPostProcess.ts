@@ -25,13 +25,13 @@
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration, doNotBuild = false): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild = false): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -58,7 +58,7 @@
                     scene = BABYLON.Engine.LastCreatedScene;
                 }
 
-                this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
+                this._imageProcessingConfiguration = (<Scene>scene).imageProcessingConfiguration;
             }
             else {
                 this._imageProcessingConfiguration = configuration;
@@ -312,7 +312,7 @@
             EXPOSURE: false,
         }
 
-        constructor(name: string, options: number | PostProcessOptions, camera?: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable,
                                             null, textureType, "postprocess", null, true);
 

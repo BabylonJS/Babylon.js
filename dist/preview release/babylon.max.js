@@ -11336,7 +11336,7 @@ var BABYLON;
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         };
         Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
-            this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
+            this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
         };
         Engine.prototype.unbindAllTextures = function () {
             for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
@@ -16869,7 +16869,7 @@ var BABYLON;
                 subMesh = sortedArray[subIndex];
                 if (transparent) {
                     var material = subMesh.getMaterial();
-                    if (material.needDepthPrePass) {
+                    if (material && material.needDepthPrePass) {
                         var engine = material.getScene().getEngine();
                         engine.setColorWrite(false);
                         engine.setAlphaTesting(true);
@@ -16975,6 +16975,9 @@ var BABYLON;
         RenderingGroup.prototype.dispatch = function (subMesh) {
             var material = subMesh.getMaterial();
             var mesh = subMesh.getMesh();
+            if (!material) {
+                return;
+            }
             if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) {
                 this._transparentSubMeshes.push(subMesh);
             }
@@ -32098,7 +32101,6 @@ var BABYLON;
                 defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
                 return;
             }
-            var engine = this.colorGradingTexture.getScene().getEngine();
             defines.VIGNETTE = this.vignetteEnabled;
             defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
@@ -32107,7 +32109,7 @@ var BABYLON;
             defines.EXPOSURE = (this.exposure !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
-            defines.COLORGRADING3D = defines.COLORGRADING && (engine.webGLVersion > 1);
+            defines.COLORGRADING3D = defines.COLORGRADING && (this.colorGradingTexture.getScene().getEngine().webGLVersion > 1);
             defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
@@ -50454,7 +50456,9 @@ var BABYLON;
                 if (this._onActivateObserver) {
                     this.onActivateObservable.remove(this._onActivateObserver);
                 }
-                this._onActivateObserver = this.onActivateObservable.add(callback);
+                if (callback) {
+                    this._onActivateObserver = this.onActivateObservable.add(callback);
+                }
             },
             enumerable: true,
             configurable: true
@@ -56548,6 +56552,7 @@ var BABYLON;
             this._renderPipelines[renderPipeline._name] = renderPipeline;
         };
         PostProcessRenderPipelineManager.prototype.attachCamerasToRenderPipeline = function (renderPipelineName, cameras, unique) {
+            if (unique === void 0) { unique = false; }
             var renderPipeline = this._renderPipelines[renderPipelineName];
             if (!renderPipeline) {
                 return;
@@ -56727,9 +56732,12 @@ var BABYLON;
         };
         PostProcessRenderEffect.prototype._attachCameras = function (cameras) {
             var cameraKey;
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            var cams = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            if (!cams) {
+                return;
+            }
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
                 if (this._singleInstance) {
                     cameraKey = 0;
@@ -56753,9 +56761,12 @@ var BABYLON;
             this._linkParameters();
         };
         PostProcessRenderEffect.prototype._detachCameras = function (cameras) {
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            var cams = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            if (!cams) {
+                return;
+            }
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
                 camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName]);
                 if (this._cameras[cameraName]) {
@@ -56768,9 +56779,12 @@ var BABYLON;
             }
         };
         PostProcessRenderEffect.prototype._enable = function (cameras) {
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            var cams = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            if (!cams) {
+                return;
+            }
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
                 for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
                     if (camera._postProcesses[this._indicesForCamera[cameraName][j]] === undefined) {
@@ -56783,9 +56797,12 @@ var BABYLON;
             }
         };
         PostProcessRenderEffect.prototype._disable = function (cameras) {
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            var cams = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            if (!cams) {
+                return;
+            }
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.Name;
                 camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName]);
                 for (var passName in this._renderPasses) {
@@ -56798,6 +56815,9 @@ var BABYLON;
                 return this._postProcesses[0];
             }
             else {
+                if (!camera) {
+                    return null;
+                }
                 return this._postProcesses[camera.name];
             }
         };
@@ -56876,11 +56896,14 @@ var BABYLON;
             renderEffects._disable(BABYLON.Tools.MakeArray(cameras || this._cameras));
         };
         PostProcessRenderPipeline.prototype._attachCameras = function (cameras, unique) {
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            var cams = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            if (!cams) {
+                return;
+            }
             var indicesToDelete = [];
             var i;
-            for (i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            for (i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
                 if (this._cameras.indexOf(camera) === -1) {
                     this._cameras[cameraName] = camera;
@@ -56894,24 +56917,30 @@ var BABYLON;
             }
             for (var renderEffectName in this._renderEffects) {
                 if (this._renderEffects.hasOwnProperty(renderEffectName)) {
-                    this._renderEffects[renderEffectName]._attachCameras(_cam);
+                    this._renderEffects[renderEffectName]._attachCameras(cams);
                 }
             }
         };
         PostProcessRenderPipeline.prototype._detachCameras = function (cameras) {
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            var cams = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            if (!cams) {
+                return;
+            }
             for (var renderEffectName in this._renderEffects) {
                 if (this._renderEffects.hasOwnProperty(renderEffectName)) {
-                    this._renderEffects[renderEffectName]._detachCameras(_cam);
+                    this._renderEffects[renderEffectName]._detachCameras(cams);
                 }
             }
-            for (var i = 0; i < _cam.length; i++) {
-                this._cameras.splice(this._cameras.indexOf(_cam[i]), 1);
+            for (var i = 0; i < cams.length; i++) {
+                this._cameras.splice(this._cameras.indexOf(cams[i]), 1);
             }
         };
         PostProcessRenderPipeline.prototype._enableDisplayOnlyPass = function (passName, cameras) {
             var _this = this;
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            var cams = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            if (!cams) {
+                return;
+            }
             var pass = null;
             var renderEffectName;
             for (renderEffectName in this._renderEffects) {
@@ -56927,14 +56956,14 @@ var BABYLON;
             }
             for (renderEffectName in this._renderEffects) {
                 if (this._renderEffects.hasOwnProperty(renderEffectName)) {
-                    this._renderEffects[renderEffectName]._disable(_cam);
+                    this._renderEffects[renderEffectName]._disable(cams);
                 }
             }
             pass._name = PostProcessRenderPipeline.PASS_SAMPLER_NAME;
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
-                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () { return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, null, _this._engine, true); });
+                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () { return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, undefined, _this._engine, true); });
                 this._renderEffectsForIsolatedPass[cameraName].emptyPasses();
                 this._renderEffectsForIsolatedPass[cameraName].addPass(pass);
                 this._renderEffectsForIsolatedPass[cameraName]._attachCameras(camera);
@@ -56942,16 +56971,19 @@ var BABYLON;
         };
         PostProcessRenderPipeline.prototype._disableDisplayOnlyPass = function (cameras) {
             var _this = this;
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            var cams = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            if (!cams) {
+                return;
+            }
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
-                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () { return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, null, _this._engine, true); });
+                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () { return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, undefined, _this._engine, true); });
                 this._renderEffectsForIsolatedPass[cameraName]._disable(camera);
             }
             for (var renderEffectName in this._renderEffects) {
                 if (this._renderEffects.hasOwnProperty(renderEffectName)) {
-                    this._renderEffects[renderEffectName]._enable(_cam);
+                    this._renderEffects[renderEffectName]._enable(cams);
                 }
             }
         };
@@ -57011,28 +57043,33 @@ var BABYLON;
                 var mesh = subMesh.getRenderingMesh();
                 var scene = _this._scene;
                 var engine = scene.getEngine();
+                var material = subMesh.getMaterial();
+                if (!material) {
+                    return;
+                }
                 // Culling
-                engine.setState(subMesh.getMaterial().backFaceCulling);
+                engine.setState(material.backFaceCulling);
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
                 if (batch.mustReturn) {
                     return;
                 }
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-                if (_this.isReady(subMesh, hardwareInstancedRendering)) {
+                if (_this.isReady(subMesh, hardwareInstancedRendering) && scene.activeCamera) {
                     engine.enableEffect(_this._effect);
                     mesh._bind(subMesh, _this._effect, BABYLON.Material.TriangleFillMode);
-                    var material = subMesh.getMaterial();
                     _this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     _this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.minZ + scene.activeCamera.maxZ);
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        _this._effect.setTexture("diffuseSampler", alphaTexture);
-                        _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        if (alphaTexture) {
+                            _this._effect.setTexture("diffuseSampler", alphaTexture);
+                            _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
                     }
                     // Bones
-                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                    if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                         _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
                     // Draw
@@ -57085,7 +57122,7 @@ var BABYLON;
                     attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
                 }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
             }
             else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
@@ -57466,9 +57503,10 @@ var BABYLON;
                 blurRatio: blurRatio
             };
             // Set up assets
+            var geometryBufferRenderer = scene.enableGeometryBufferRenderer();
             _this._createRandomTexture();
-            _this._depthTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[0];
-            _this._normalTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[1];
+            _this._depthTexture = geometryBufferRenderer.getGBuffer().textures[0];
+            _this._normalTexture = geometryBufferRenderer.getGBuffer().textures[1];
             _this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             _this._createSSAOPostProcess(1.0);
             _this._createBlurPostProcess(ssaoRatio, blurRatio);
@@ -57518,6 +57556,9 @@ var BABYLON;
             */
             get: function () {
                 var engine = BABYLON.Engine.LastCreatedEngine;
+                if (!engine) {
+                    return false;
+                }
                 return engine.getCaps().drawBuffersExtension;
             },
             enumerable: true,
@@ -57553,6 +57594,9 @@ var BABYLON;
             }
             this._blurHPostProcess = new BABYLON.PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurHPostProcess.onApply = function (effect) {
+                if (!_this._scene.activeCamera) {
+                    return;
+                }
                 effect.setFloat("outSize", _this._ssaoCombinePostProcess.width);
                 effect.setFloat("near", _this._scene.activeCamera.minZ);
                 effect.setFloat("far", _this._scene.activeCamera.maxZ);
@@ -57564,6 +57608,9 @@ var BABYLON;
             };
             this._blurVPostProcess = new BABYLON.PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurVPostProcess.onApply = function (effect) {
+                if (!_this._scene.activeCamera) {
+                    return;
+                }
                 effect.setFloat("outSize", _this._ssaoCombinePostProcess.height);
                 effect.setFloat("near", _this._scene.activeCamera.minZ);
                 effect.setFloat("far", _this._scene.activeCamera.maxZ);
@@ -57611,6 +57658,9 @@ var BABYLON;
                 if (_this._firstUpdate) {
                     effect.setArray3("sampleSphere", _this._sampleSphere);
                     effect.setFloat("randTextureTiles", 4.0);
+                }
+                if (!_this._scene.activeCamera) {
+                    return;
                 }
                 effect.setFloat("samplesFactor", 1 / _this.samples);
                 effect.setFloat("totalStrength", _this.totalStrength);
@@ -57833,9 +57883,9 @@ var BABYLON;
         LensRenderingPipeline.prototype.dispose = function (disableDepthRender) {
             if (disableDepthRender === void 0) { disableDepthRender = false; }
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
-            this._chromaticAberrationPostProcess = undefined;
-            this._highlightsPostProcess = undefined;
-            this._depthOfFieldPostProcess = undefined;
+            this._chromaticAberrationPostProcess = null;
+            this._highlightsPostProcess = null;
+            this._depthOfFieldPostProcess = null;
             this._grainTexture.dispose();
             if (disableDepthRender)
                 this._scene.disableDepthRenderer();
@@ -57848,8 +57898,8 @@ var BABYLON;
             ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._chromaticAberrationPostProcess.onApply = function (effect) {
                 effect.setFloat('chromatic_aberration', _this._chromaticAberration);
-                effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
-                effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
+                effect.setFloat('screen_width', _this._scene.getEngine().getRenderWidth());
+                effect.setFloat('screen_height', _this._scene.getEngine().getRenderHeight());
             };
         };
         // highlights enhancing
@@ -57862,8 +57912,8 @@ var BABYLON;
                 effect.setFloat('gain', _this._highlightsGain);
                 effect.setFloat('threshold', _this._highlightsThreshold);
                 effect.setTextureFromPostProcess("textureSampler", _this._chromaticAberrationPostProcess);
-                effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
-                effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
+                effect.setFloat('screen_width', _this._scene.getEngine().getRenderWidth());
+                effect.setFloat('screen_height', _this._scene.getEngine().getRenderHeight());
             };
         };
         // colors shifting and distortion
@@ -57880,8 +57930,8 @@ var BABYLON;
                 effect.setTextureFromPostProcess("highlightsSampler", _this._depthOfFieldPostProcess);
                 effect.setFloat('grain_amount', _this._grainAmount);
                 effect.setBool('blur_noise', _this._blurNoise);
-                effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
-                effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
+                effect.setFloat('screen_width', _this._scene.getEngine().getRenderWidth());
+                effect.setFloat('screen_height', _this._scene.getEngine().getRenderHeight());
                 effect.setFloat('distortion', _this._distortion);
                 effect.setBool('dof_enabled', (_this._dofDistance !== -1));
                 effect.setFloat('screen_distance', 1.0 / (0.1 - 1.0 / _this._dofDistance));
@@ -57889,8 +57939,10 @@ var BABYLON;
                 effect.setFloat('darken', _this._dofDarken);
                 effect.setFloat('edge_blur', _this._edgeBlur);
                 effect.setBool('highlights', (_this._highlightsGain !== -1));
-                effect.setFloat('near', _this._scene.activeCamera.minZ);
-                effect.setFloat('far', _this._scene.activeCamera.maxZ);
+                if (_this._scene.activeCamera) {
+                    effect.setFloat('near', _this._scene.activeCamera.minZ);
+                    effect.setFloat('far', _this._scene.activeCamera.maxZ);
+                }
             };
         };
         // creates a black and white random noise texture, 512x512
@@ -58201,10 +58253,12 @@ var BABYLON;
             this.downSampleX4PostProcess = new BABYLON.PostProcess("HDRDownSampleX4", "standard", ["dsOffsets"], [], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DOWN_SAMPLE_X4", BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
             this.downSampleX4PostProcess.onApply = function (effect) {
                 var id = 0;
+                var width = _this.downSampleX4PostProcess.width;
+                var height = _this.downSampleX4PostProcess.height;
                 for (var i = -2; i < 2; i++) {
                     for (var j = -2; j < 2; j++) {
-                        downSampleX4Offsets[id] = (i + 0.5) * (1.0 / _this.downSampleX4PostProcess.width);
-                        downSampleX4Offsets[id + 1] = (j + 0.5) * (1.0 / _this.downSampleX4PostProcess.height);
+                        downSampleX4Offsets[id] = (i + 0.5) * (1.0 / width);
+                        downSampleX4Offsets[id + 1] = (j + 0.5) * (1.0 / height);
                         id += 2;
                     }
                 }
@@ -58243,11 +58297,11 @@ var BABYLON;
             var blurX = new BABYLON.BlurPostProcess("HDRBlurH" + "_" + indice, new BABYLON.Vector2(1, 0), this[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
             var blurY = new BABYLON.BlurPostProcess("HDRBlurV" + "_" + indice, new BABYLON.Vector2(0, 1), this[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
             blurX.onActivateObservable.add(function () {
-                var dw = blurX.width / engine.getRenderingCanvas().width;
+                var dw = blurX.width / engine.getRenderWidth();
                 blurX.kernel = _this[blurWidthKey] * dw;
             });
             blurY.onActivateObservable.add(function () {
-                var dw = blurY.height / engine.getRenderingCanvas().height;
+                var dw = blurY.height / engine.getRenderHeight();
                 blurY.kernel = _this.horizontalBlur ? 64 * dw : _this[blurWidthKey] * dw;
             });
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), "HDRBlurH" + indice, function () { return blurX; }, true));
@@ -58277,13 +58331,13 @@ var BABYLON;
             this.volumetricLightPostProcess = new BABYLON.PostProcess("HDRVLS", "standard", ["shadowViewProjection", "cameraPosition", "sunDirection", "sunColor", "scatteringCoefficient", "scatteringPower", "depthValues"], ["shadowMapSampler", "positionSampler"], ratio / 8, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLS\n#define NB_STEPS " + this._volumetricLightStepsCount.toFixed(1));
             var depthValues = BABYLON.Vector2.Zero();
             this.volumetricLightPostProcess.onApply = function (effect) {
-                if (_this.sourceLight && _this.sourceLight.getShadowGenerator()) {
+                if (_this.sourceLight && _this.sourceLight.getShadowGenerator() && _this._scene.activeCamera) {
                     var generator = _this.sourceLight.getShadowGenerator();
                     effect.setTexture("shadowMapSampler", generator.getShadowMap());
                     effect.setTexture("positionSampler", geometry.textures[2]);
                     effect.setColor3("sunColor", _this.sourceLight.diffuse);
                     effect.setVector3("sunDirection", _this.sourceLight.getShadowDirection());
-                    effect.setVector3("cameraPosition", scene.activeCamera.globalPosition);
+                    effect.setVector3("cameraPosition", _this._scene.activeCamera.globalPosition);
                     effect.setMatrix("shadowViewProjection", generator.getTransformMatrix());
                     effect.setFloat("scatteringCoefficient", _this.volumetricLightCoefficient);
                     effect.setFloat("scatteringPower", _this.volumetricLightPower);
@@ -58340,6 +58394,9 @@ var BABYLON;
             this.luminanceDownSamplePostProcesses.forEach(function (pp, index) {
                 var downSampleOffsets = new Array(18);
                 pp.onApply = function (effect) {
+                    if (!lastLuminance) {
+                        return;
+                    }
                     var id = 0;
                     for (var x = -1; x < 2; x++) {
                         for (var y = -1; y < 2; y++) {
@@ -58425,6 +58482,9 @@ var BABYLON;
             var scaleBias1 = BABYLON.Matrix.FromValues(2.0, 0.0, -1.0, 0.0, 0.0, 2.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
             var scaleBias2 = BABYLON.Matrix.FromValues(0.5, 0.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
             this.lensFlareComposePostProcess.onApply = function (effect) {
+                if (!_this._scene.activeCamera) {
+                    return;
+                }
                 effect.setTextureFromPostProcess("otherSampler", _this._currentDepthOfFieldSource);
                 effect.setTexture("lensDirtSampler", _this.lensFlareDirtTexture);
                 effect.setTexture("lensStarSampler", _this.lensStarTexture);
@@ -58478,7 +58538,8 @@ var BABYLON;
         };
         StandardRenderingPipeline.prototype._getDepthTexture = function () {
             if (this._scene.getEngine().getCaps().drawBuffersExtension) {
-                return this._scene.enableGeometryBufferRenderer().getGBuffer().textures[0];
+                var renderer = this._scene.enableGeometryBufferRenderer();
+                return renderer.getGBuffer().textures[0];
             }
             return this._scene.enableDepthRenderer().getDepthMap();
         };
@@ -58688,6 +58749,7 @@ var BABYLON;
     var FxaaPostProcess = /** @class */ (function (_super) {
         __extends(FxaaPostProcess, _super);
         function FxaaPostProcess(name, options, camera, samplingMode, engine, reusable, textureType) {
+            if (camera === void 0) { camera = null; }
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             var _this = _super.call(this, name, "fxaa", ["texelSize"], null, options, camera, samplingMode || BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "fxaa") || this;
             _this.onApplyObservable.add(function (effect) {
@@ -58874,7 +58936,7 @@ var BABYLON;
                 this.blurX.alwaysForcePOT = true;
                 this.blurX.autoClear = false;
                 this.blurX.onActivateObservable.add(function () {
-                    var dw = _this.blurX.width / engine.getRenderingCanvas().width;
+                    var dw = _this.blurX.width / engine.getRenderWidth(true);
                     _this.blurX.kernel = _this.bloomKernel * dw;
                 });
                 this.blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), 10.0, this.bloomScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
@@ -58882,7 +58944,7 @@ var BABYLON;
                 this.blurY.alwaysForcePOT = true;
                 this.blurY.autoClear = false;
                 this.blurY.onActivateObservable.add(function () {
-                    var dh = _this.blurY.height / engine.getRenderingCanvas().height;
+                    var dh = _this.blurY.height / engine.getRenderHeight(true);
                     _this.blurY.kernel = _this.bloomKernel * dh;
                 });
                 this.copyBack = new BABYLON.PassPostProcess("bloomBlendBlit", this.bloomScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
@@ -59098,7 +59160,7 @@ var BABYLON;
                     attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
                 }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
             }
             else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
@@ -59115,7 +59177,7 @@ var BABYLON;
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
-                this._effect = this._scene.getEngine().createEffect("geometry", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "view"], ["diffuseSampler"], join, null, null, null, { buffersCount: this._enablePosition ? 3 : 2 });
+                this._effect = this._scene.getEngine().createEffect("geometry", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "view"], ["diffuseSampler"], join, undefined, undefined, undefined, { buffersCount: this._enablePosition ? 3 : 2 });
             }
             return this._effect.isReady();
         };
@@ -59132,7 +59194,7 @@ var BABYLON;
             var count = this._enablePosition ? 3 : 2;
             this._multiRenderTarget = new BABYLON.MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps: false, generateDepthTexture: true });
             if (!this.isSupported) {
-                return null;
+                return;
             }
             this._multiRenderTarget.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._multiRenderTarget.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
@@ -59148,8 +59210,12 @@ var BABYLON;
                 var mesh = subMesh.getRenderingMesh();
                 var scene = _this._scene;
                 var engine = scene.getEngine();
+                var material = subMesh.getMaterial();
+                if (!material) {
+                    return;
+                }
                 // Culling
-                engine.setState(subMesh.getMaterial().backFaceCulling);
+                engine.setState(material.backFaceCulling);
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
                 if (batch.mustReturn) {
@@ -59159,17 +59225,18 @@ var BABYLON;
                 if (_this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(_this._effect);
                     mesh._bind(subMesh, _this._effect, BABYLON.Material.TriangleFillMode);
-                    var material = subMesh.getMaterial();
                     _this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     _this._effect.setMatrix("view", scene.getViewMatrix());
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        _this._effect.setTexture("diffuseSampler", alphaTexture);
-                        _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        if (alphaTexture) {
+                            _this._effect.setTexture("diffuseSampler", alphaTexture);
+                            _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
                     }
                     // Bones
-                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                    if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                         _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
                     // Draw
@@ -59371,11 +59438,11 @@ var BABYLON;
             * @type {number}
             */
             _this.density = 0.926;
-            scene = (camera === null) ? scene : camera.getScene(); // parameter "scene" can be null.
-            var engine = scene.getEngine();
+            scene = ((camera === null) ? scene : camera.getScene()); // parameter "scene" can be null.
+            engine = scene.getEngine();
             _this._viewPort = new BABYLON.Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             // Configure mesh
-            _this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
+            _this.mesh = ((mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene));
             // Configure
             _this._createPass(scene, ratio.passRatio || ratio);
             _this.onActivate = function (camera) {
@@ -59412,7 +59479,7 @@ var BABYLON;
         VolumetricLightScatteringPostProcess.prototype.isReady = function (subMesh, useInstances) {
             var mesh = subMesh.getMesh();
             // Render this.mesh as default
-            if (mesh === this.mesh) {
+            if (mesh === this.mesh && mesh.material) {
                 return mesh.material.isReady(mesh);
             }
             var defines = [];
@@ -59437,7 +59504,7 @@ var BABYLON;
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
             }
             else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
@@ -59518,10 +59585,14 @@ var BABYLON;
                 if (_this._meshExcluded(mesh)) {
                     return;
                 }
+                var material = subMesh.getMaterial();
+                if (!material) {
+                    return;
+                }
                 var scene = mesh.getScene();
                 var engine = scene.getEngine();
                 // Culling
-                engine.setState(subMesh.getMaterial().backFaceCulling);
+                engine.setState(material.backFaceCulling);
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
                 if (batch.mustReturn) {
@@ -59535,16 +59606,15 @@ var BABYLON;
                             effect = subMesh.effect;
                         }
                         else {
-                            effect = subMesh.getMaterial().getEffect();
+                            effect = material.getEffect();
                         }
                     }
                     engine.enableEffect(effect);
                     mesh._bind(subMesh, effect, BABYLON.Material.TriangleFillMode);
                     if (mesh === _this.mesh) {
-                        subMesh.getMaterial().bind(mesh.getWorldMatrix(), mesh);
+                        material.bind(mesh.getWorldMatrix(), mesh);
                     }
                     else {
-                        var material = subMesh.getMaterial();
                         _this._volumetricLightScatteringPass.setMatrix("viewProjection", scene.getTransformMatrix());
                         // Alpha test
                         if (material && material.needAlphaTesting()) {
@@ -59555,7 +59625,7 @@ var BABYLON;
                             }
                         }
                         // Bones
-                        if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                             _this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                         }
                     }
@@ -59595,8 +59665,11 @@ var BABYLON;
                     // Sort sub meshes
                     for (index = 0; index < transparentSubMeshes.length; index++) {
                         var submesh = transparentSubMeshes.data[index];
-                        submesh._alphaIndex = submesh.getMesh().alphaIndex;
-                        submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(scene.activeCamera.position).length();
+                        var boundingInfo = submesh.getBoundingInfo();
+                        if (boundingInfo && scene.activeCamera) {
+                            submesh._alphaIndex = submesh.getMesh().alphaIndex;
+                            submesh._distanceToCamera = boundingInfo.boundingSphere.centerWorld.subtract(scene.activeCamera.position).length();
+                        }
                     }
                     var sortedArray = transparentSubMeshes.data.slice(0, transparentSubMeshes.length);
                     sortedArray.sort(function (a, b) {
@@ -59744,7 +59817,7 @@ var BABYLON;
         function TonemapPostProcess(name, _operator, exposureAdjustment, camera, samplingMode, engine, textureFormat) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
             if (textureFormat === void 0) { textureFormat = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
-            var _this = _super.call(this, name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, defines, textureFormat) || this;
+            var _this = _super.call(this, name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, null, textureFormat) || this;
             _this._operator = _operator;
             _this.exposureAdjustment = exposureAdjustment;
             var defines = "#define ";
@@ -59812,6 +59885,7 @@ var BABYLON;
     var ImageProcessingPostProcess = /** @class */ (function (_super) {
         __extends(ImageProcessingPostProcess, _super);
         function ImageProcessingPostProcess(name, options, camera, samplingMode, engine, reusable, textureType) {
+            if (camera === void 0) { camera = null; }
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             var _this = _super.call(this, name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable, null, textureType, "postprocess", null, true) || this;
             _this._fromLinearSpace = true;
@@ -65110,7 +65184,7 @@ var BABYLON;
          * @param {number} maxForce max force for this motor.
          */
         MotorEnabledJoint.prototype.setMotor = function (force, maxForce) {
-            this._physicsPlugin.setMotor(this, force, maxForce);
+            this._physicsPlugin.setMotor(this, force || 0, maxForce);
         };
         /**
          * Set the motor's limits.
@@ -65137,7 +65211,7 @@ var BABYLON;
          * @param {number} maxForce max force for this motor.
          */
         HingeJoint.prototype.setMotor = function (force, maxForce) {
-            this._physicsPlugin.setMotor(this, force, maxForce);
+            this._physicsPlugin.setMotor(this, force || 0, maxForce);
         };
         /**
          * Set the motor's limits.
@@ -65166,7 +65240,7 @@ var BABYLON;
          */
         Hinge2Joint.prototype.setMotor = function (force, maxForce, motorIndex) {
             if (motorIndex === void 0) { motorIndex = 0; }
-            this._physicsPlugin.setMotor(this, force, maxForce, motorIndex);
+            this._physicsPlugin.setMotor(this, force || 0, maxForce, motorIndex);
         };
         /**
          * Set the motor limits.
@@ -66030,6 +66104,9 @@ var BABYLON;
             var currentRotation = mainImpostor.object.rotationQuaternion;
             if (meshChildren.length) {
                 var processMesh = function (localPosition, mesh) {
+                    if (!currentRotation || !mesh.rotationQuaternion) {
+                        return;
+                    }
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
@@ -66176,14 +66253,15 @@ var BABYLON;
             return returnValue;
         };
         CannonJSPlugin.prototype._createHeightmap = function (object, pointDepth) {
-            var pos = object.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var pos = (object.getVerticesData(BABYLON.VertexBuffer.PositionKind));
             var matrix = new Array();
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
-            var dim = Math.min(object.getBoundingInfo().boundingBox.extendSizeWorld.x, object.getBoundingInfo().boundingBox.extendSizeWorld.z);
+            var boundingInfo = (object.getBoundingInfo());
+            var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.z);
+            var minY = boundingInfo.boundingBox.extendSizeWorld.y;
             var elementSize = dim * 2 / arraySize;
-            var minY = object.getBoundingInfo().boundingBox.extendSizeWorld.y;
             for (var i = 0; i < pos.length; i = i + 3) {
                 var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
                 var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1);
@@ -66232,6 +66310,9 @@ var BABYLON;
             this._tmpDeltaPosition.copyFrom(object.position.subtract(center));
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
+            if (!quaternion) {
+                return;
+            }
             //is shape is a plane or a heightmap, it must be rotated 90 degs in the X axis.
             if (impostor.type === BABYLON.PhysicsImpostor.PlaneImpostor || impostor.type === BABYLON.PhysicsImpostor.HeightmapImpostor || impostor.type === BABYLON.PhysicsImpostor.CylinderImpostor) {
                 //-90 DEG in X, precalculated
@@ -66243,6 +66324,7 @@ var BABYLON;
             //If it is a heightfield, if should be centered.
             if (impostor.type === BABYLON.PhysicsImpostor.HeightmapImpostor) {
                 var mesh = object;
+                var boundingInfo = mesh.getBoundingInfo();
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
                 mesh.rotationQuaternion = this._tmpUnityRotation;
@@ -66253,15 +66335,15 @@ var BABYLON;
                 //rotation is back
                 mesh.rotationQuaternion = rotationQuaternion;
                 //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
-                var p = BABYLON.Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSizeWorld.x, 0, -mesh.getBoundingInfo().boundingBox.extendSizeWorld.z);
+                var p = BABYLON.Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
                 mesh.setPivotMatrix(p);
                 mesh.computeWorldMatrix(true);
                 //calculate the translation
-                var translation = mesh.getBoundingInfo().boundingBox.centerWorld.subtract(center).subtract(mesh.position).negate();
-                this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSizeWorld.y, translation.z);
+                var translation = boundingInfo.boundingBox.centerWorld.subtract(center).subtract(mesh.position).negate();
+                this._tmpPosition.copyFromFloats(translation.x, translation.y - boundingInfo.boundingBox.extendSizeWorld.y, translation.z);
                 //add it inverted to the delta
-                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.centerWorld.subtract(c));
-                this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSizeWorld.y;
+                this._tmpDeltaPosition.copyFrom(boundingInfo.boundingBox.centerWorld.subtract(c));
+                this._tmpDeltaPosition.y += boundingInfo.boundingBox.extendSizeWorld.y;
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             }
@@ -66276,7 +66358,9 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.setTransformationFromPhysicsBody = function (impostor) {
             impostor.object.position.copyFrom(impostor.physicsBody.position);
-            impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+            if (impostor.object.rotationQuaternion) {
+                impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+            }
         };
         CannonJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
             impostor.physicsBody.position.copy(newPosition);
@@ -66293,14 +66377,16 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.getLinearVelocity = function (impostor) {
             var v = impostor.physicsBody.velocity;
-            if (!v)
+            if (!v) {
                 return null;
+            }
             return new BABYLON.Vector3(v.x, v.y, v.z);
         };
         CannonJSPlugin.prototype.getAngularVelocity = function (impostor) {
             var v = impostor.physicsBody.angularVelocity;
-            if (!v)
+            if (!v) {
                 return null;
+            }
             return new BABYLON.Vector3(v.x, v.y, v.z);
         };
         CannonJSPlugin.prototype.setBodyMass = function (impostor, mass) {
@@ -66359,10 +66445,12 @@ var BABYLON;
             mesh.position.x = body.position.x;
             mesh.position.y = body.position.y;
             mesh.position.z = body.position.z;
-            mesh.rotationQuaternion.x = body.quaternion.x;
-            mesh.rotationQuaternion.y = body.quaternion.y;
-            mesh.rotationQuaternion.z = body.quaternion.z;
-            mesh.rotationQuaternion.w = body.quaternion.w;
+            if (mesh.rotationQuaternion) {
+                mesh.rotationQuaternion.x = body.quaternion.x;
+                mesh.rotationQuaternion.y = body.quaternion.y;
+                mesh.rotationQuaternion.z = body.quaternion.z;
+                mesh.rotationQuaternion.w = body.quaternion.w;
+            }
         };
         CannonJSPlugin.prototype.getRadius = function (impostor) {
             var shape = impostor.physicsBody.shapes[0];
@@ -66484,6 +66572,9 @@ var BABYLON;
                     return Math.max(value, BABYLON.PhysicsEngine.Epsilon);
                 };
                 impostors.forEach(function (i) {
+                    if (!impostor.object.rotationQuaternion) {
+                        return;
+                    }
                     //get the correct bounding box
                     var oldQuaternion = i.object.rotationQuaternion;
                     var rot = new _this.BJSOIMO.Euler().setFromQuaternion({
@@ -66648,8 +66739,10 @@ var BABYLON;
                 else {
                     impostor.object.position.copyFrom(impostor.physicsBody.getPosition());
                 }
-                impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
-                impostor.object.rotationQuaternion.normalize();
+                if (impostor.object.rotationQuaternion) {
+                    impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
+                    impostor.object.rotationQuaternion.normalize();
+                }
             }
         };
         OimoJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
@@ -66674,14 +66767,16 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.getLinearVelocity = function (impostor) {
             var v = impostor.physicsBody.linearVelocity;
-            if (!v)
+            if (!v) {
                 return null;
+            }
             return new BABYLON.Vector3(v.x, v.y, v.z);
         };
         OimoJSPlugin.prototype.getAngularVelocity = function (impostor) {
             var v = impostor.physicsBody.angularVelocity;
-            if (!v)
+            if (!v) {
                 return null;
+            }
             return new BABYLON.Vector3(v.x, v.y, v.z);
         };
         OimoJSPlugin.prototype.setBodyMass = function (impostor, mass) {
@@ -66737,10 +66832,12 @@ var BABYLON;
             mesh.position.x = body.position.x;
             mesh.position.y = body.position.y;
             mesh.position.z = body.position.z;
-            mesh.rotationQuaternion.x = body.orientation.x;
-            mesh.rotationQuaternion.y = body.orientation.y;
-            mesh.rotationQuaternion.z = body.orientation.z;
-            mesh.rotationQuaternion.w = body.orientation.s;
+            if (mesh.rotationQuaternion) {
+                mesh.rotationQuaternion.x = body.orientation.x;
+                mesh.rotationQuaternion.y = body.orientation.y;
+                mesh.rotationQuaternion.z = body.orientation.z;
+                mesh.rotationQuaternion.w = body.orientation.s;
+            }
         };
         OimoJSPlugin.prototype.getRadius = function (impostor) {
             return impostor.physicsBody.shapes.radius;
@@ -68220,7 +68317,10 @@ var BABYLON;
             this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
         };
         BoundingBoxRenderer.prototype._rebuild = function () {
-            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind]._rebuild();
+            var vb = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
+            if (vb) {
+                vb._rebuild();
+            }
             this._createIndexBuffer();
         };
         BoundingBoxRenderer.prototype.reset = function () {
@@ -68271,7 +68371,7 @@ var BABYLON;
         };
         BoundingBoxRenderer.prototype.renderOcclusionBoundingBox = function (mesh) {
             this._prepareRessources();
-            if (!this._colorShader.isReady()) {
+            if (!this._colorShader.isReady() || !mesh._boundingInfo) {
                 return;
             }
             var engine = this._scene.getEngine();
@@ -69070,7 +69170,7 @@ var BABYLON;
                 'Scale',
                 'ScaleIn',
                 'HmdWarpParam'
-            ], null, vrMetrics.postProcessScaleFactor, camera, BABYLON.Texture.BILINEAR_SAMPLINGMODE, null, null) || this;
+            ], null, vrMetrics.postProcessScaleFactor, camera, BABYLON.Texture.BILINEAR_SAMPLINGMODE) || this;
             _this._isRightEye = isRightEye;
             _this._distortionFactors = vrMetrics.distortionK;
             _this._postProcessScaleFactor = vrMetrics.postProcessScaleFactor;
@@ -71557,6 +71657,9 @@ var BABYLON;
             }
             var mesh = subMesh.getRenderingMesh();
             var material = subMesh.getMaterial();
+            if (!material || !scene.activeCamera) {
+                return;
+            }
             engine.enableEffect(this._effect);
             // Logarithmic depth
             if (material.useLogarithmicDepth) {
@@ -71566,7 +71669,7 @@ var BABYLON;
             this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : material.alpha);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            if (mesh.useBones && mesh.computeBonesUsingShaders) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }
             mesh._bind(subMesh, this._effect, BABYLON.Material.TriangleFillMode);
@@ -71614,7 +71717,7 @@ var BABYLON;
                     attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
                 }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
             }
             else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
@@ -71786,6 +71889,9 @@ var BABYLON;
         EdgesRenderer.prototype._generateEdgesLines = function () {
             var positions = this._source.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = this._source.getIndices();
+            if (!indices || !positions) {
+                return;
+            }
             // First let's find adjacencies
             var adjacencies = new Array();
             var faceNormals = new Array();
@@ -71820,7 +71926,7 @@ var BABYLON;
                     var otherP1 = indices[otherIndex * 3 + 1];
                     var otherP2 = indices[otherIndex * 3 + 2];
                     for (var edgeIndex = 0; edgeIndex < 3; edgeIndex++) {
-                        var otherEdgeIndex;
+                        var otherEdgeIndex = 0;
                         if (faceAdjacencies.edges[edgeIndex] !== undefined) {
                             continue;
                         }
@@ -71879,10 +71985,10 @@ var BABYLON;
             this._indicesCount = this._linesIndices.length;
         };
         EdgesRenderer.prototype.render = function () {
-            if (!this._lineShader.isReady()) {
+            var scene = this._source.getScene();
+            if (!this._lineShader.isReady() || !scene.activeCamera) {
                 return;
             }
-            var scene = this._source.getScene();
             var engine = scene.getEngine();
             this._lineShader._preBind();
             // VBOs
@@ -73308,7 +73414,9 @@ var BABYLON;
             this._renderTargetTexture.onAfterUnbindObservable.add(function () {
                 scene.updateTransformMatrix(true);
             });
-            this._projectionMatrix = BABYLON.Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+            if (scene.activeCamera) {
+                this._projectionMatrix = BABYLON.Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+            }
         }
         Object.defineProperty(ReflectionProbe.prototype, "samples", {
             get: function () {

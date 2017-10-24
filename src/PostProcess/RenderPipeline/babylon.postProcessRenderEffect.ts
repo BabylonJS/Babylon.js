@@ -3,11 +3,11 @@ module BABYLON {
         private _engine: Engine;
 
         private _postProcesses: any;
-        private _getPostProcess: () => PostProcess;
+        private _getPostProcess: () => Nullable<PostProcess>;
 
         private _singleInstance: boolean;
 
-        private _cameras: { [key:string]: Camera};
+        private _cameras: { [key:string]: Nullable<Camera>};
         private _indicesForCamera: { [key:string]: number[]};
 
         private _renderPasses: any;
@@ -18,7 +18,7 @@ module BABYLON {
 
         public applyParameters: (postProcess: PostProcess) => void;
 
-        constructor(engine: Engine, name: string, getPostProcess: () => PostProcess, singleInstance?: boolean) {
+        constructor(engine: Engine, name: string, getPostProcess: () => Nullable<PostProcess>, singleInstance?: boolean) {
             this._engine = engine;
             this._name = name;
             this._singleInstance = singleInstance || true;
@@ -67,7 +67,7 @@ module BABYLON {
             this._linkParameters();
         }
 
-        public getPass(passName: string): PostProcessRenderPass {
+        public getPass(passName: string): Nullable<PostProcessRenderPass> {
             for (var renderPassName in this._renderPasses) {
                 if (renderPassName === passName) {
                     return this._renderPasses[passName];
@@ -89,10 +89,14 @@ module BABYLON {
         public _attachCameras(cameras: any): void {
             var cameraKey;
 
-            var _cam = Tools.MakeArray(cameras || this._cameras);
+            var cams = Tools.MakeArray(cameras || this._cameras);
 
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            if (!cams) {
+                return;
+            }
+
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
 
                 if (this._singleInstance) {
@@ -128,10 +132,14 @@ module BABYLON {
         public _detachCameras(cameras: Camera): void;
         public _detachCameras(cameras: Camera[]): void;
         public _detachCameras(cameras: any): void {
-            var _cam = Tools.MakeArray(cameras || this._cameras);
+            var cams = Tools.MakeArray(cameras || this._cameras);
 
-            for (var i = 0; i < _cam.length; i++) {
-                var camera: Camera = _cam[i];
+            if (!cams) {
+                return;
+            }
+
+            for (var i = 0; i < cams.length; i++) {
+                var camera: Camera = cams[i];
                 var cameraName: string = camera.name;
 
                 camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName]);
@@ -149,12 +157,16 @@ module BABYLON {
 
         // private
         public _enable(cameras: Camera): void;
-        public _enable(cameras: Camera[]): void;
+        public _enable(cameras: Nullable<Camera[]>): void;
         public _enable(cameras: any): void {
-            var _cam = Tools.MakeArray(cameras || this._cameras);
+            var cams = Tools.MakeArray(cameras || this._cameras);
 
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            if (!cams) {
+                return;
+            }
+
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
 
                 for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
@@ -171,12 +183,16 @@ module BABYLON {
 
         // private
         public _disable(cameras: Camera): void;
-        public _disable(cameras: Camera[]): void;
+        public _disable(cameras: Nullable<Camera[]>): void;
         public _disable(cameras: any): void {
-            var _cam = Tools.MakeArray(cameras || this._cameras);
+            var cams = Tools.MakeArray(cameras || this._cameras);
 
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            if (!cams) {
+                return;
+            }
+
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.Name;
 
                 camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName]);
@@ -187,11 +203,15 @@ module BABYLON {
             }
         }
 
-        public getPostProcess(camera?: Camera): PostProcess {
+        public getPostProcess(camera?: Camera): Nullable<PostProcess> {
             if (this._singleInstance) {
                 return this._postProcesses[0];
             }
             else {
+
+                if (!camera) {
+                    return null;
+                }
                 return this._postProcesses[camera.name];
             }
         }

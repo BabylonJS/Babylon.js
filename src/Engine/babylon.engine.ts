@@ -4382,7 +4382,7 @@
             }
         }
 
-        public _bindTexture(channel: number, texture: InternalTexture): void {
+        public _bindTexture(channel: number, texture: Nullable<InternalTexture>): void {
             if (channel < 0) {
                 return;
             }
@@ -4391,8 +4391,8 @@
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         }
 
-        public setTextureFromPostProcess(channel: number, postProcess: PostProcess): void {
-            this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
+        public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void {
+            this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
         }
 
         public unbindAllTextures(): void {
