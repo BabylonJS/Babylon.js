@@ -7,7 +7,7 @@
 
         private _scene: Scene;
         private _colorShader: ShaderMaterial;
-        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
+        private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
         private _indexBuffer: WebGLBuffer;
 
         constructor(scene: Scene) {
@@ -28,7 +28,7 @@
 
             var engine = this._scene.getEngine();
             var boxdata = VertexData.CreateBox({ size: 1.0 });
-            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, boxdata.positions, VertexBuffer.PositionKind, false);
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, <FloatArray>boxdata.positions, VertexBuffer.PositionKind, false);
             this._createIndexBuffer();
         }
 
@@ -38,7 +38,10 @@
         }
 
         public _rebuild(): void {
-            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+            let vb = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (vb) {
+                vb._rebuild();
+            }
             this._createIndexBuffer();
         }
 
@@ -72,7 +75,7 @@
                     .multiply(boundingBox.getWorldMatrix());
 
                 // VBOs
-                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
 
                 if (this.showBackLines) {
                     // Back
@@ -103,7 +106,7 @@
 
             this._prepareRessources();
 
-            if (!this._colorShader.isReady()) {
+            if (!this._colorShader.isReady() || !mesh._boundingInfo) {
                 return;
             }
 
@@ -122,7 +125,7 @@
                 .multiply(Matrix.Translation(median.x, median.y, median.z))
                 .multiply(boundingBox.getWorldMatrix());
 
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
 
             engine.setDepthFunctionToLess();
             this._scene.resetCachedMaterial();

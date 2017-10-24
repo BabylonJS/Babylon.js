@@ -167,9 +167,9 @@ module BABYLON {
         public dispose(disableDepthRender: boolean = false): void {
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
-            this._chromaticAberrationPostProcess = undefined;
-            this._highlightsPostProcess = undefined;
-            this._depthOfFieldPostProcess = undefined;
+            (<any>this._chromaticAberrationPostProcess) = null;
+            (<any>this._highlightsPostProcess) = null;
+            (<any>this._depthOfFieldPostProcess) = null;
 
             this._grainTexture.dispose();
 
@@ -187,8 +187,8 @@ module BABYLON {
 
             this._chromaticAberrationPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat('chromatic_aberration', this._chromaticAberration);
-                effect.setFloat('screen_width', this._scene.getEngine().getRenderingCanvas().width);
-                effect.setFloat('screen_height', this._scene.getEngine().getRenderingCanvas().height);
+                effect.setFloat('screen_width', this._scene.getEngine().getRenderWidth());
+                effect.setFloat('screen_height', this._scene.getEngine().getRenderHeight());
             };
         }
 
@@ -205,8 +205,8 @@ module BABYLON {
                 effect.setFloat('gain', this._highlightsGain);
                 effect.setFloat('threshold', this._highlightsThreshold);
                 effect.setTextureFromPostProcess("textureSampler", this._chromaticAberrationPostProcess);
-                effect.setFloat('screen_width', this._scene.getEngine().getRenderingCanvas().width);
-                effect.setFloat('screen_height', this._scene.getEngine().getRenderingCanvas().height);
+                effect.setFloat('screen_width', this._scene.getEngine().getRenderWidth());
+                effect.setFloat('screen_height', this._scene.getEngine().getRenderHeight());
             };
         }
 
@@ -231,8 +231,8 @@ module BABYLON {
                 effect.setFloat('grain_amount', this._grainAmount);
                 effect.setBool('blur_noise', this._blurNoise);
 
-                effect.setFloat('screen_width', this._scene.getEngine().getRenderingCanvas().width);
-                effect.setFloat('screen_height', this._scene.getEngine().getRenderingCanvas().height);
+                effect.setFloat('screen_width', this._scene.getEngine().getRenderWidth());
+                effect.setFloat('screen_height', this._scene.getEngine().getRenderHeight());
 
                 effect.setFloat('distortion', this._distortion);
 
@@ -245,8 +245,10 @@ module BABYLON {
 
                 effect.setBool('highlights', (this._highlightsGain !== -1));
 
-                effect.setFloat('near', this._scene.activeCamera.minZ);
-                effect.setFloat('far', this._scene.activeCamera.maxZ);
+                if (this._scene.activeCamera) {
+                    effect.setFloat('near', this._scene.activeCamera.minZ);
+                    effect.setFloat('far', this._scene.activeCamera.maxZ);
+                }
             };
         }
 

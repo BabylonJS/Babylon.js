@@ -187,7 +187,7 @@
             for (; subIndex < subMeshes.length; subIndex++) {
                 subMesh = subMeshes.data[subIndex];
                 subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
-                subMesh._distanceToCamera = subMesh.getBoundingInfo().boundingSphere.centerWorld.subtract(cameraPosition).length();
+                subMesh._distanceToCamera = (<BoundingInfo>subMesh.getBoundingInfo()).boundingSphere.centerWorld.subtract(cameraPosition).length();
             }
 
             let sortedArray = subMeshes.data.slice(0, subMeshes.length);
@@ -202,7 +202,7 @@
                 if (transparent) {
                     let material = subMesh.getMaterial();
 
-                    if (material.needDepthPrePass) {
+                    if (material && material.needDepthPrePass) {
                         let engine = material.getScene().getEngine();
                         engine.setColorWrite(false);
                         engine.setAlphaTesting(true);
@@ -319,6 +319,10 @@
         public dispatch(subMesh: SubMesh): void {
             var material = subMesh.getMaterial();
             var mesh = subMesh.getMesh();
+
+            if (!material) {
+                return;
+            }
 
             if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) { // Transparent
                 this._transparentSubMeshes.push(subMesh);

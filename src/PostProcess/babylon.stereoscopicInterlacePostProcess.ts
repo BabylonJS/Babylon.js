@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class StereoscopicInterlacePostProcess extends PostProcess {
         private _stepSize : Vector2;
-        private _passedProcess : PostProcess;
+        private _passedProcess : Nullable<PostProcess>;
 
         constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean) {
             super(name, "stereoscopicInterlace", ['stepSize'], ['camASampler'], 1, rigCameras[1], samplingMode, engine, reusable, isStereoscopicHoriz ? "#define IS_STEREOSCOPIC_HORIZ 1" : undefined);
