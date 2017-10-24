@@ -89,6 +89,7 @@ var BABYLON;
             _this.CONTRAST = false;
             _this.COLORCURVES = false;
             _this.COLORGRADING = false;
+            _this.COLORGRADING3D = false;
             _this.SAMPLER3DGREENDEPTH = false;
             _this.SAMPLER3DBGRMAP = false;
             _this.IMAGEPROCESSINGPOSTPROCESS = false;
