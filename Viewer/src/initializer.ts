@@ -7,7 +7,7 @@ export function InitTags(selector: string = 'babylon') {
         let element: HTMLElement = <HTMLElement>elements.item(i);
 
         // get the html configuration
-        let configMapper = mapperManager.getMapper('html');
+        let configMapper = mapperManager.getMapper('dom');
         let config = configMapper.map(element);
 
         let viewer = new DefaultViewer(element, config);

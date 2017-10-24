@@ -13,7 +13,8 @@ export class ConfigurationLoader {
 
         if (loadedConfig.defaultViewer) {
             loadedConfig = merge(loadedConfig, defaultConfiguration);
-            return Promise.resolve(loadedConfig);
+        } else {
+            loadedConfig = merge(defaultConfiguration, loadedConfig);
         }
 
         if (loadedConfig.configuration) {
@@ -37,7 +38,7 @@ export class ConfigurationLoader {
                 return merge(loadedConfig, parsed);
             });
         } else {
-            return Promise.resolve(initConfig);
+            return Promise.resolve(loadedConfig);
         }
     }
 
