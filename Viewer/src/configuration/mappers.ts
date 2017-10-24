@@ -3,6 +3,8 @@ import { ViewerConfiguration } from './configuration';
 
 import { kebabToCamel } from '../helper';
 
+import * as merge from 'lodash.merge';
+
 export interface IMapper {
     map(rawSource: any): ViewerConfiguration;
 }
@@ -39,7 +41,44 @@ class JSONMapper implements IMapper {
 }
 
 // TODO - Dom configuration mapper.
-class DOMMapper {
+class DOMMapper implements IMapper {
+
+    map(baseElement: HTMLElement): ViewerConfiguration {
+        let htmlMapper = new HTMLMapper();
+        let config = htmlMapper.map(baseElement);
+
+        let traverseChildren = function (element: HTMLElement, partConfig) {
+            let children = element.children;
+            if (children.length) {
+                for (let i = 0; i < children.length; ++i) {
+                    let item = <HTMLElement>children.item(i);
+                    let key = kebabToCamel(item.nodeName.toLowerCase());
+                    if (item.attributes.getNamedItem('array') && item.attributes.getNamedItem('array').nodeValue === 'true') {
+                        partConfig[key] = [];
+                    } else {
+                        let configMapped = htmlMapper.map(item);
+                        if (element.attributes.getNamedItem('array') && element.attributes.getNamedItem('array').nodeValue === 'true') {
+                            partConfig.push(configMapped)
+                        } else if (partConfig[key]) {
+                            //exists already! problem... probably an array
+                            element.setAttribute('array', 'true');
+                            let oldItem = partConfig[key];
+                            partConfig = [oldItem, configMapped]
+                        } else {
+                            partConfig[key] = configMapped;
+                        }
+                    }
+                    traverseChildren(item, partConfig[key]);
+                }
+            }
+            return partConfig;
+        }
+
+        traverseChildren(baseElement, config);
+
+
+        return config;
+    }
 
 }
 
@@ -51,7 +90,8 @@ export class MapperManager {
     constructor() {
         this.mappers = {
             "html": new HTMLMapper(),
-            "json": new JSONMapper()
+            "json": new JSONMapper(),
+            "dom": new DOMMapper()
         }
     }
 
