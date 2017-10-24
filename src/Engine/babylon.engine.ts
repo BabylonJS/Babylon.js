@@ -2137,13 +2137,15 @@
                     }
 
                     var buffer = vertexBuffer.getBuffer();
-                    this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
+                    if (buffer) {
+                        this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
 
-                    if (vertexBuffer.getIsInstanced()) {
-                        this._gl.vertexAttribDivisor(order, vertexBuffer.getInstanceDivisor());
-                        if (!this._vaoRecordInProgress) {
-                            this._currentInstanceLocations.push(order);
-                            this._currentInstanceBuffers.push(buffer);
+                        if (vertexBuffer.getIsInstanced()) {
+                            this._gl.vertexAttribDivisor(order, vertexBuffer.getInstanceDivisor());
+                            if (!this._vaoRecordInProgress) {
+                                this._currentInstanceLocations.push(order);
+                                this._currentInstanceBuffers.push(buffer);
+                            }
                         }
                     }
                 }
@@ -3104,7 +3106,11 @@
             return internalFormat;
         }
 
-        public updateRawTexture(texture: InternalTexture, data: ArrayBufferView, format: number, invertY: boolean, compression: Nullable<string> = null): void {
+        public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null): void {
+            if (!texture) {
+                return;
+            }
+
             var internalFormat = this._getInternalFormat(format);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -3120,7 +3126,7 @@
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
             }
 
-            if (compression) {
+            if (compression && data) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, data);
             } else {
                 this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture.width, texture.height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
@@ -3134,7 +3140,7 @@
             texture.isReady = true;
         }
 
-        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null): InternalTexture {
+        public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null): InternalTexture {
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW);
             texture.baseWidth = width;
             texture.baseHeight = height;
@@ -3221,7 +3227,12 @@
             texture.samplingMode = samplingMode;
         }
 
-        public updateDynamicTexture(texture: InternalTexture, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+        public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+
+            if (!texture) {
+                return;
+            }
+
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
             if (premulAlpha) {
@@ -3240,8 +3251,8 @@
             texture.isReady = true;
         }
 
-        public updateVideoTexture(texture: InternalTexture, video: HTMLVideoElement, invertY: boolean): void {
-            if (texture._isDisabled) {
+        public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
+            if (!texture || texture._isDisabled) {
                 return;
             }
 
@@ -3705,7 +3716,9 @@
             return texture;
         }
 
-        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number, onLoad: (internalTexture: Nullable<InternalTexture>) => void, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null): InternalTexture {
+        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number, 
+                                            onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null, 
+                                            onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null): InternalTexture {
             var callback = (loadData: any) => {
                 if (!loadData) {
                     if (onLoad) {
@@ -4135,7 +4148,7 @@
             return texture;
         };
 
-        public updateRawTexture3D(texture: InternalTexture, data: ArrayBufferView, format: number, invertY: boolean, compression: Nullable<string> = null): void {
+        public updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null): void {
             var internalFormat = this._getInternalFormat(format);
             this._bindTextureDirectly(this._gl.TEXTURE_3D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -4151,7 +4164,7 @@
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
             }
 
-            if (compression) {
+            if (compression && data) {
                 this._gl.compressedTexImage3D(this._gl.TEXTURE_3D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, texture.depth, 0, data);
             } else {
                 this._gl.texImage3D(this._gl.TEXTURE_3D, 0, internalFormat, texture.width, texture.height, texture.depth, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
@@ -4165,7 +4178,7 @@
             texture.isReady = true;
         }
 
-        public createRawTexture3D(data: ArrayBufferView, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null): InternalTexture {
+        public createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null): InternalTexture {
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW3D);
             texture.baseWidth = width;
             texture.baseHeight = height;
@@ -4429,7 +4442,7 @@
 
             let internalTexture: InternalTexture;
             if (texture.isReady()) {
-                internalTexture = texture.getInternalTexture();
+                internalTexture = <InternalTexture>texture.getInternalTexture();
             }
             else if (texture.isCube) {
                 internalTexture = this.emptyCubeTexture;

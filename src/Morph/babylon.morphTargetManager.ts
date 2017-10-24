@@ -1,9 +1,9 @@
 module BABYLON {
     export class MorphTargetManager {
         private _targets = new Array<MorphTarget>();
-        private _targetObservable = new Array<Observer<boolean>>();
+        private _targetObservable = new Array<Nullable<Observer<boolean>>>();
         private _activeTargets = new SmartArray<MorphTarget>(16);
-        private _scene: Scene;
+        private _scene: Nullable<Scene>;
         private _influences: Float32Array;
         private _supportsNormals = false;
         private _supportsTangents = false;
@@ -11,16 +11,18 @@ module BABYLON {
         private _uniqueId = 0;
         private _tempInfluences = new Array<number>();
 
-        public constructor(scene?: Scene) {
+        public constructor(scene: Nullable<Scene> = null) {
             if (!scene) {
                 scene = Engine.LastCreatedScene;
             }
 
             this._scene = scene;
 
-            this._scene.morphTargetManagers.push(this);
+            if (this._scene) {
+                this._scene.morphTargetManagers.push(this);
 
-            this._uniqueId = scene.getUniqueId();
+                this._uniqueId = this._scene.getUniqueId();
+            }
         }
 
         public get uniqueId(): number {
@@ -129,7 +131,7 @@ module BABYLON {
                 this._influences[index] = this._tempInfluences[index];
             }
             
-            if (needUpdate) {
+            if (needUpdate && this._scene) {
                 // Flag meshes as dirty to resync with the active targets
                 for (var mesh of this._scene.meshes) {
                     if ((<any>mesh).morphTargetManager === this) {

@@ -34,7 +34,7 @@ module BABYLON {
         // Private
         public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
         public _buffer: Nullable<ArrayBuffer | HTMLImageElement>;
-        public _bufferView: ArrayBufferView;
+        public _bufferView: Nullable<ArrayBufferView>;
         public _bufferViewArray: Nullable<ArrayBufferView[]>;
         public _size: number;
         public _extension: string;

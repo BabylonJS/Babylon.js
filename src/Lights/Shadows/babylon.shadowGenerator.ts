@@ -525,9 +525,14 @@
             var mesh = subMesh.getRenderingMesh();
             var scene = this._scene;
             var engine = scene.getEngine();
+            let material = subMesh.getMaterial();
+
+            if (!material) {
+                return;
+            }
 
             // Culling
-            engine.setState(subMesh.getMaterial().backFaceCulling);
+            engine.setState(material.backFaceCulling);
 
             // Managing instances
             var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -539,7 +544,6 @@
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 engine.enableEffect(this._effect);
                 mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
-                var material = subMesh.getMaterial();
 
                 this._effect.setFloat2("biasAndScale", this.bias, this.depthScale);
 
