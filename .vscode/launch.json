@@ -17,22 +17,22 @@
             "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
-                "--enable-unsafe-es3-apis" 
+                "--enable-unsafe-es3-apis"
             ]
-        },         
+        },
         {
             "name": "Launch playground (Chrome)",
             "type": "chrome",
             "request": "launch",
             "url": "http://localhost:1338/Playground/index-local.html",
             "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,            
+            "sourceMaps": true,
             "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
-                "--enable-unsafe-es3-apis" 
+                "--enable-unsafe-es3-apis"
             ]
-        },        
+        },
         {
             "name": "Launch playground (Chrome+WebGL 1.0 forced)",
             "type": "chrome",
@@ -43,7 +43,7 @@
             "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
-                "--disable-es3-apis" 
+                "--disable-es3-apis"
             ]
         },
         {
@@ -56,7 +56,7 @@
             "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
-                "--enable-unsafe-es3-apis" 
+                "--enable-unsafe-es3-apis"
             ]
         },
         {
@@ -69,7 +69,7 @@
             "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
-                "--enable-unsafe-es3-apis" 
+                "--enable-unsafe-es3-apis"
             ]
         },
         {
@@ -82,7 +82,7 @@
             "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
-                "--enable-unsafe-es3-apis" 
+                "--enable-unsafe-es3-apis"
             ]
         },
         {
@@ -95,7 +95,7 @@
             "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
-                "--enable-unsafe-es3-apis" 
+                "--enable-unsafe-es3-apis"
             ]
         },
         {
@@ -108,9 +108,9 @@
             "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
-                "--enable-unsafe-es3-apis" 
+                "--enable-unsafe-es3-apis"
             ]
-        },      
+        },
         {
             "name": "Launch Build Validation (Chrome)",
             "type": "chrome",
@@ -121,7 +121,20 @@
             "preLaunchTask": "run",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
-                "--enable-unsafe-es3-apis" 
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
+            "name": "Launch Viewer (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:9000/",
+            "webRoot": "${workspaceRoot}/Viewer/dist/",
+            "sourceMaps": true,
+            //"preLaunchTask": "build-viewer", // TODO - test why this fails.
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
             ]
         }
     ]
