@@ -13,6 +13,7 @@ module BABYLON {
         EXPOSURE: boolean;
         COLORCURVES: boolean;
         COLORGRADING: boolean;
+        COLORGRADING3D: boolean;
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
@@ -78,7 +79,7 @@ module BABYLON {
         }
 
         @serialize()
-        private _colorGradingWithGreenDepth = false;
+        private _colorGradingWithGreenDepth = true;
         /**
          * Gets wether the color grading effect is using a green depth for the 3d Texture.
          */
@@ -98,7 +99,7 @@ module BABYLON {
         }
 
         @serialize()
-        private _colorGradingBGR = false;
+        private _colorGradingBGR = true;
         /**
          * Gets wether the color grading texture contains BGR values.
          */
@@ -338,8 +339,9 @@ module BABYLON {
                 defines.CONTRAST = false;
                 defines.EXPOSURE = false;
                 defines.COLORCURVES = false;
-                defines.COLORGRADING = false;  
-                defines.IMAGEPROCESSING = false;              
+                defines.COLORGRADING = false;
+                defines.COLORGRADING3D = false;
+                defines.IMAGEPROCESSING = false;
                 defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
                 return;
             }
@@ -351,6 +353,7 @@ module BABYLON {
             defines.EXPOSURE = (this.exposure !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
+            defines.COLORGRADING3D = defines.COLORGRADING && (this.colorGradingTexture.getScene().getEngine().webGLVersion > 1);
             defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
