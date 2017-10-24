@@ -89,7 +89,7 @@
             }
 
             if (useBones) {
-                if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                     defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
                     defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
                 } else {
@@ -224,7 +224,8 @@
         }
 
         public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
-            var uniformsList: string[], uniformBuffersList: string[], samplersList: string[], defines: any;
+            let uniformsList: string[];
+            let uniformBuffersList: Nullable<string[]> = null;
 
             if ((<EffectCreationOptions>uniformsListOrOptions).uniformsNames) {
                 var options = <EffectCreationOptions>uniformsListOrOptions;
@@ -235,6 +236,9 @@
                 maxSimultaneousLights = options.maxSimultaneousLights;
             } else {
                 uniformsList = <string[]>uniformsListOrOptions;
+                if (!samplersList) {
+                    samplersList = [];
+                }
             }
 
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
@@ -296,7 +300,7 @@
         public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {
             var influencers = defines["NUM_MORPH_INFLUENCERS"];
 
-            if (influencers > 0) {
+            if (influencers > 0 && Engine.LastCreatedEngine) {
                 var maxAttributesCount = Engine.LastCreatedEngine.getCaps().maxVertexAttribs;
                 var manager = (<Mesh>mesh).morphTargetManager;
                 var normal = manager.supportsNormals && defines["NORMAL"];
@@ -389,11 +393,11 @@
             }
         }
 
-        public static BindBonesParameters(mesh: AbstractMesh, effect: Effect): void {
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+        public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 var matrices = mesh.skeleton.getTransformMatrices(mesh);
 
-                if (matrices) {
+                if (matrices && effect) {
                     effect.setMatrices("mBones", matrices);
                 }
             }
@@ -409,7 +413,7 @@
 
         public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
             if (defines["LOGARITHMICDEPTH"]) {
-                effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
+                effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log((<Camera>scene.activeCamera).maxZ + 1.0) / Math.LN2));
             }
         }
 

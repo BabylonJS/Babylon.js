@@ -203,7 +203,7 @@
             return "data:image/png;base64," + output;
         }
 
-        public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: IndicesArray, indexStart: number, indexCount: number, bias: Nullable<Vector2> = null): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, bias: Nullable<Vector2> = null): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -229,7 +229,7 @@
             };
         }
 
-        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMax(positions: FloatArray, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -481,12 +481,12 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): XMLHttpRequest {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): Nullable<XMLHttpRequest> {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
 
-            var request: XMLHttpRequest;
+            var request: Nullable<XMLHttpRequest> = null;
 
             var noIndexedDB = () => {
                 request = new XMLHttpRequest();
@@ -502,16 +502,17 @@
                 }
 
                 request.onreadystatechange = () => {
+                    let req = <XMLHttpRequest>request;
                     // In case of undefined state in some browsers.
-                    if (request.readyState === (XMLHttpRequest.DONE || 4)) {
-                        request.onreadystatechange = () => {};//some browsers have issues where onreadystatechange can be called multiple times with the same value
+                    if (req.readyState === (XMLHttpRequest.DONE || 4)) {
+                        req.onreadystatechange = () => {};//some browsers have issues where onreadystatechange can be called multiple times with the same value
 
-                        if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
-                            callback(!useArrayBuffer ? request.responseText : request.response);
+                        if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
+                            callback(!useArrayBuffer ? req.responseText : req.response);
                         } else { // Failed
-                            let e = new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
+                            let e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
                             if (onError) {
-                                onError(request, e);
+                                onError(req, e);
                             } else {
                                 throw e;
                             }

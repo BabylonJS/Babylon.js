@@ -38,7 +38,7 @@
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
          * Returns the Color3.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Color3 {
+        public toArray(array: FloatArray, index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
@@ -624,7 +624,7 @@
          * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.  
          * Returns the Vector2.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector2 {
+        public toArray(array: FloatArray, index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
             return this;
@@ -1075,7 +1075,7 @@
          * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3.  
          * Returns the Vector3.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector3 {
+        public toArray(array: FloatArray, index: number = 0): Vector3 {
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
@@ -1870,7 +1870,7 @@
          * Populates the passed array from the passed index with the Vector4 coordinates.  
          * Returns the Vector4.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Vector4 {
+        public toArray(array: FloatArray, index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }

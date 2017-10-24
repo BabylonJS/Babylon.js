@@ -79,7 +79,7 @@
             }   
         }
 
-        public createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
+        public createVertexBuffer(vertices: FloatArray): WebGLBuffer {
             return {
                 capacity: 0,
                 references: 1,
@@ -350,7 +350,7 @@
             this._currentFramebuffer = null;
         }
 
-        public createDynamicVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
+        public createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer {
             var vbo = {
                 capacity: 1,
                 references: 1,                
@@ -363,7 +363,7 @@
         public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
         }
 
-        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: number[] | Float32Array, offset?: number, count?: number): void {
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void {
         }        
 
         public _bindTextureDirectly(target: number, texture: InternalTexture): void {

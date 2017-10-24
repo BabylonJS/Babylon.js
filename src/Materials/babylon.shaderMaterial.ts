@@ -204,7 +204,7 @@
             }
             
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
                 if (mesh.numBoneInfluencers > 4) {
@@ -265,6 +265,10 @@
         public bindOnlyWorldMatrix(world: Matrix): void {
             var scene = this.getScene();
 
+            if (!this._effect) {
+                return;
+            }
+
             if (this._options.uniforms.indexOf("world") !== -1) {
                 this._effect.setMatrix("world", world);
             }
@@ -283,7 +287,7 @@
             // Std values
             this.bindOnlyWorldMatrix(world);
 
-            if (this.getScene().getCachedMaterial() !== this) {
+            if (this._effect && this.getScene().getCachedMaterial() !== this) {
                 if (this._options.uniforms.indexOf("view") !== -1) {
                     this._effect.setMatrix("view", this.getScene().getViewMatrix());
                 }
@@ -473,9 +477,9 @@
             }
 
             // Float s   
-            serializationObject.floatArrays = {};
+            serializationObject.FloatArrays = {};
             for (name in this._floatsArrays) {
-                serializationObject.floatArrays[name] = this._floatsArrays[name];
+                serializationObject.FloatArrays[name] = this._floatsArrays[name];
             }
 
             // Color3    
