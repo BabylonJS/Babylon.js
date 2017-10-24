@@ -42,8 +42,11 @@ module BABYLON {
             this.url = url;
             this.hasAlpha = false;
             this.isCube = false;
+            this.is3D = scene.getEngine().webGLVersion > 1;
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this.wrapR = Texture.CLAMP_ADDRESSMODE;
+
             this.anisotropicFilteringLevel = 1;
 
             this._texture = this._getFromCache(url, true);
@@ -69,7 +72,15 @@ module BABYLON {
          * Occurs when the file being loaded is a .3dl LUT file.
          */
         private load3dlTexture() {
-            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+            var engine = this.getScene().getEngine();
+            var texture: InternalTexture;
+            if (engine.webGLVersion === 1) {
+                texture = engine.createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+            } 
+            else {
+                texture = engine.createRawTexture3D(null, 1, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+            }
+
             this._texture = texture;
 
             var callback = (text: string) => {
@@ -136,8 +147,14 @@ module BABYLON {
                     }
                 }
 
-                texture.updateSize(size * size, size);
-                this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
+                if (texture.is3D) {
+                    texture.updateSize(size, size, size);
+                    engine.updateRawTexture3D(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
+                }
+                else {
+                    texture.updateSize(size * size, size);
+                    engine.updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
+                }
             }
 
             Tools.LoadFile(this.url, callback);

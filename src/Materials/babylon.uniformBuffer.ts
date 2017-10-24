@@ -414,7 +414,7 @@ module BABYLON {
          * @param {number[]|Float32Array} data Flattened data
          * @param {number} size Size of the data.
          */
-        public updateUniform(uniformName: string, data: number[] | Float32Array, size: number) {
+        public updateUniform(uniformName: string, data: FloatArray, size: number) {
 
             var location = this._uniformLocations[uniformName];
             if (location === undefined) {
@@ -586,7 +586,7 @@ module BABYLON {
          * @param {string} uniformName Name of the uniform, as used in the uniform block in the shader.
          * @param {number[]|Float32Array} data Flattened data
          */
-        public updateUniformDirectly(uniformName: string, data: number[] | Float32Array) {
+        public updateUniformDirectly(uniformName: string, data: FloatArray) {
             this.updateUniform(uniformName, data, data.length);
 
             this.update();

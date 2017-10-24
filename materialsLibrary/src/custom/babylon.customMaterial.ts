@@ -72,6 +72,7 @@ module BABYLON {
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
+        public COLORGRADING3D = false;
         public SAMPLER3DGREENDEPTH = false;
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;

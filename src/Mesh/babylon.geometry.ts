@@ -129,7 +129,7 @@
             this.notifyUpdate();
         }
 
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable: boolean = false, stride?: number): void {
+        public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
             var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
             this.setVerticesBuffer(buffer);
@@ -189,7 +189,7 @@
             this.notifyUpdate(kind);
         }
 
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends: boolean = false): void {
+        public updateVerticesData(kind: string, data: FloatArray, updateExtends: boolean = false): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
             if (!vertexBuffer) {
@@ -208,7 +208,7 @@
             this.notifyUpdate(kind);
         }
 
-        private updateBoundingInfo(updateExtends: boolean, data: Nullable<number[] | Float32Array>) {
+        private updateBoundingInfo(updateExtends: boolean, data: Nullable<FloatArray>) {
             if (updateExtends) {
                 this.updateExtend(data);
             }
@@ -231,7 +231,11 @@
             }
         }
 
-        public _bind(effect: Effect, indexToBind?: Nullable<WebGLBuffer>): void {
+        public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<WebGLBuffer>): void {
+            if (!effect) {
+                return;
+            }
+
             if (indexToBind === undefined) {
                 indexToBind = this._indexBuffer;
             }
@@ -262,7 +266,7 @@
             return this._totalVertices;
         }
 
-        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<number[] | Float32Array> {
+        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
@@ -399,7 +403,7 @@
             return this._indexBuffer;
         }
 
-        public _releaseVertexArrayObject(effect: Effect) {
+        public _releaseVertexArrayObject(effect: Nullable<Effect> = null) {
             if (!effect || !this._vertexArrayObjects) {
                 return;
             }
@@ -454,7 +458,7 @@
             }
         }
 
-        private updateExtend(data: Nullable<number[] | Float32Array> = null, stride? : number) {
+        private updateExtend(data: Nullable<FloatArray> = null, stride? : number) {
             if (!data) {
                 data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }
@@ -1054,8 +1058,8 @@
             } else {
                 return;
             }
-            let matricesIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
-            let matricesIndicesExtra = mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
+            let matricesIndices = (<FloatArray>mesh.getVerticesData(VertexBuffer.MatricesIndicesKind));
+            let matricesIndicesExtra = (<FloatArray>mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
             let matricesWeights = parsedGeometry.matricesWeights;
             let matricesWeightsExtra = parsedGeometry.matricesWeightsExtra;
             let influencers = parsedGeometry.numBoneInfluencer;
@@ -1214,7 +1218,7 @@
                 super.setAllVerticesData(vertexData, false);
             }
 
-            public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void {
+            public setVerticesData(kind: string, data: FloatArray, updatable?: boolean): void {
                 if (!this._beingRegenerated) {
                     return;
                 }

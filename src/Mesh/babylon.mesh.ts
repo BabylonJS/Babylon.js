@@ -249,7 +249,17 @@
             }
 
             if (fullDetails) {
-                ret += ", flat shading: " + (this._geometry ? (this.getVerticesData(VertexBuffer.PositionKind).length / 3 === this.getIndices().length ? "YES" : "NO") : "UNKNOWN");
+
+                if (this._geometry) {
+                    let ib = this.getIndices();
+                    let vb = this.getVerticesData(VertexBuffer.PositionKind);
+
+                    if (vb && ib) {
+                        ret += ", flat shading: " + (vb.length / 3 === ib.length ? "YES" : "NO");
+                    }
+                } else {
+                    ret += ", flat shading: UNKNOWN";
+                }
             }
             return ret;
         }
@@ -305,7 +315,7 @@
          * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD   
          * Returns an object Mesh or `null`.  
          */
-        public getLODLevelAtDistance(distance: number): Mesh {
+        public getLODLevelAtDistance(distance: number): Nullable<Mesh> {
             for (var index = 0; index < this._LODLevels.length; index++) {
                 var level = this._LODLevels[index];
 
@@ -346,7 +356,21 @@
                 return this;
             }
 
-            var distanceToCamera = (boundingSphere ? boundingSphere : this.getBoundingInfo().boundingSphere).centerWorld.subtract(camera.globalPosition).length();
+            let bSphere: BoundingSphere;
+
+            if (boundingSphere) {
+                bSphere = boundingSphere;
+            } else {
+                let boundingInfo = this.getBoundingInfo();
+
+                if (!boundingInfo) {
+                    return this;
+                }
+
+                bSphere =  boundingInfo.boundingSphere;
+            }
+
+            var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
 
             if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
                 if (this.onLODLevelSelection) {
@@ -379,7 +403,7 @@
         /**
          * Returns the mesh internal Geometry object.  
          */
-        public get geometry(): Geometry {
+        public get geometry(): Nullable<Geometry> {
             return this._geometry;
         }
 
@@ -412,7 +436,7 @@
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
-        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array {
+        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
             if (!this._geometry) {
                 return null;
             }
@@ -421,7 +445,7 @@
 
         /**
          * Returns the mesh VertexBuffer object from the requested `kind` : positions, indices, normals, etc.
-         * Returns `undefined` if the mesh has no geometry.   
+         * Returns `null` if the mesh has no geometry.   
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
          * - BABYLON.VertexBuffer.UVKind
@@ -436,9 +460,9 @@
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
-        public getVertexBuffer(kind: string): VertexBuffer {
+        public getVertexBuffer(kind: string): Nullable<VertexBuffer> {
             if (!this._geometry) {
-                return undefined;
+                return null;
             }
             return this._geometry.getVertexBuffer(kind);
         }
@@ -513,7 +537,7 @@
          * If the parameter `copyWhenShared` is true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
          * Returns an empty array if the mesh has no geometry.
          */
-        public getIndices(copyWhenShared?: boolean): IndicesArray {
+        public getIndices(copyWhenShared?: boolean): Nullable<IndicesArray> {
 
             if (!this._geometry) {
                 return [];
@@ -613,7 +637,7 @@
          * Returns the Mesh.  
          */
         public refreshBoundingInfo(): Mesh {
-            if (this._boundingInfo.isLocked) {
+            if (this._boundingInfo && this._boundingInfo.isLocked) {
                 return this;
             }
             var data = this.getVerticesData(VertexBuffer.PositionKind);
@@ -633,7 +657,7 @@
             return this;
         }
 
-        public _createGlobalSubMesh(force: boolean): SubMesh {
+        public _createGlobalSubMesh(force: boolean): Nullable<SubMesh> {
             var totalVertices = this.getTotalVertices();
             if (!totalVertices || !this.getIndices()) {
                 return null;
@@ -641,7 +665,13 @@
 
             // Check if we need to recreate the submeshes
             if (this.subMeshes && this.subMeshes.length > 0) {
-                var totalIndices = this.getIndices().length;
+                let ib = this.getIndices();
+
+                if (!ib) {
+                    return null;
+                }
+
+                var totalIndices = ib.length;
                 let needToRecreate = false;
 
                 if (force) {
@@ -722,7 +752,7 @@
          * 
          * Returns the Mesh.  
          */
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable: boolean = false, stride?: number): Mesh {
+        public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): Mesh {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.set(data, kind);
@@ -738,11 +768,13 @@
         }
 
         public markVerticesDataAsUpdatable(kind: string, updatable = true) {
-            if (this.getVertexBuffer(kind).isUpdatable() === updatable) {
+            let vb = this.getVertexBuffer(kind);
+
+            if (!vb || vb.isUpdatable() === updatable) {
                 return;
             }
 
-            this.setVerticesData(kind, this.getVerticesData(kind), updatable);
+            this.setVerticesData(kind, (<FloatArray>this.getVerticesData(kind)), updatable);
         }
 
         /**
@@ -784,7 +816,7 @@
          * 
          * Returns the Mesh.  
          */
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
+        public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
             if (!this._geometry) {
                 return this;
             }
@@ -805,7 +837,7 @@
          * The parameter `computeNormals` is a boolean (default true) to enable/disable the mesh normal recomputation after the vertex position update.     
          * Returns the Mesh.  
          */
-        public updateMeshPositions(positionFunction: (data: number[] | Float32Array) => void, computeNormals: boolean = true): Mesh {
+        public updateMeshPositions(positionFunction: (data: FloatArray) => void, computeNormals: boolean = true): Mesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             positionFunction(positions);
             this.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
@@ -1644,7 +1676,7 @@
 
             var kinds = this.getVerticesDataKinds();
             var vbs: { [key: string]: VertexBuffer } = {};
-            var data: { [key: string]: number[] | Float32Array } = {};
+            var data: { [key: string]: FloatArray } = {};
             var newdata: { [key: string]: Array<number> } = {};
             var updatableNormals = false;
             var kindIndex: number;
@@ -1743,7 +1775,7 @@
 
             var kinds = this.getVerticesDataKinds();
             var vbs: { [key: string]: VertexBuffer } = {};
-            var data: { [key: string]: number[] | Float32Array } = {};
+            var data: { [key: string]: FloatArray } = {};
             var newdata: { [key: string]: Array<number> } = {};
             var kindIndex: number;
             var kind: string;
@@ -2893,7 +2925,7 @@
          * @returns original positions used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
          */
         public setPositionsForCPUSkinning(): Float32Array {
-            var source: number[] | Float32Array;
+            var source: FloatArray;
             if (!this._sourcePositions) {
                 source = this.getVerticesData(VertexBuffer.PositionKind);
 
@@ -2910,7 +2942,7 @@
          * @returns original normals used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
          */
         public setNormalsForCPUSkinning(): Float32Array {
-            var source: number[] | Float32Array;
+            var source: FloatArray;
             if (!this._sourceNormals) {
                 source = this.getVerticesData(VertexBuffer.NormalKind);
 
