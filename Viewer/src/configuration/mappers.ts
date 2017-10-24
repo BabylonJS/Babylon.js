@@ -22,7 +22,18 @@ class HTMLMapper implements IMapper {
                 //convert html-style to json-style
                 let camelKey = kebabToCamel(key);
                 if (idx === split.length - 1) {
-                    currentConfig[camelKey] = attr.nodeValue;
+                    let val: any = attr.nodeValue;
+                    if (val === "true") {
+                        val = true;
+                    } else if (val === "false") {
+                        val = false;
+                    } else {
+                        let number = parseFloat(val);
+                        if (!isNaN(number)) {
+                            val = number;
+                        }
+                    }
+                    currentConfig[camelKey] = val;
                 } else {
                     currentConfig[camelKey] = currentConfig[camelKey] || {};
                 }
@@ -52,11 +63,11 @@ class DOMMapper implements IMapper {
             if (children.length) {
                 for (let i = 0; i < children.length; ++i) {
                     let item = <HTMLElement>children.item(i);
+                    let configMapped = htmlMapper.map(item);
                     let key = kebabToCamel(item.nodeName.toLowerCase());
                     if (item.attributes.getNamedItem('array') && item.attributes.getNamedItem('array').nodeValue === 'true') {
                         partConfig[key] = [];
                     } else {
-                        let configMapped = htmlMapper.map(item);
                         if (element.attributes.getNamedItem('array') && element.attributes.getNamedItem('array').nodeValue === 'true') {
                             partConfig.push(configMapped)
                         } else if (partConfig[key]) {
@@ -68,7 +79,7 @@ class DOMMapper implements IMapper {
                             partConfig[key] = configMapped;
                         }
                     }
-                    traverseChildren(item, partConfig[key]);
+                    traverseChildren(item, partConfig[key] || configMapped);
                 }
             }
             return partConfig;
