@@ -212,12 +212,12 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         ]
     },
-    lights: [
+    /*lights: [
         {
             type: 1,
             shadowEnabled: true,
             direction: { x: -0.2, y: -1, z: 0 },
-            position: { x: 0.017, y: 0.5, z: 0 },
+            position: { x: 0.017, y: 50, z: 0 },
             intensity: 4.5,
             shadowConfig: {
                 useBlurExponentialShadowMap: true,
@@ -226,15 +226,14 @@ export let defaultConfiguration: ViewerConfiguration = {
                 blurScale: 4
             }
         }
-    ],
+    ],*/
     skybox: {
         cubeTexture: {
-            url: 'http://localhost:9000/environment.dds',
+            url: 'https://playground.babylonjs.com/textures/environment.dds',
             gammaSpace: false
         },
         pbr: true,
         blur: 0.7,
-        scale: 32,
         infiniteDIstance: false,
         material: {
             imageProcessingConfiguration: {
