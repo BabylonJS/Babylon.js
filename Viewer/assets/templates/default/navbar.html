@@ -6,29 +6,27 @@
     div.thumbnail {
         position: relative;
         overflow: hidden;
-        display: flex;
-        width: 90px;
-    }
-
-    div.thumbnail img {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        height: 100%;
-        width: auto;
-        border-radius: 50%;
-        -webkit-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
+        display: block;
+        width: 40px;
+        height: 40px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 20px;
+        margin: 0 10px;
     }
 
     div.title-container {
         flex-direction: column;
         display: flex;
+        justify-content: space-between;
     }
 
     span.model-title {
         font-size: 125%;
+    }
+
+    span.model-subtitle {
+        font-size: 90%;
     }
 
     div.button-container {
@@ -47,26 +45,25 @@
     }
 </style>
 
-<div class="flex-container">
+<div class="flex-container" id="model-metadata">
     <!-- holding the description -->
     <div class="thumbnail">
-        <!-- holding the thumbnail -->
-        <img src="{{thumbnail}}" alt="{{title}}">
+        <!-- holding the thumbnail 
+        <img src="{{thumbnail}}" alt="{{title}}">-->
     </div>
     <div class="title-container">
-        <span class="model-title">{{title}}</span>
-        <span class="model-subtitle">{{subtitle}}</span>
+
+        <span class="model-title">{{#if title}}{{title}}{{/if}}</span>
+        <span class="model-subtitle"> {{#if subtitle}}{{subtitle}} {{/if}}</span>
     </div>
 </div>
 <div class="button-container">
     <!-- holding the buttons -->
-    <div class="button">
-        <img src="{{thumbnail}}" alt="{{title}}">
+    {{#each buttons}}
+    <div id="{{id}}" class="button">
+        {{#if text}}
+        <span>{{text}}</span>> {{/if}} {{#if image}}
+        <img src="{{image}}" alt="{{altText}}"> {{/if}}
     </div>
-    <div class="button">
-        <img src="{{thumbnail}}" alt="{{title}}">
-    </div>
-    <div class="button">
-        <img src="{{thumbnail}}" alt="{{title}}">
-    </div>
+    {{/each}}
 </div>
