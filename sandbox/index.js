@@ -155,9 +155,9 @@ if (BABYLON.Engine.isSupported()) {
     filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
     filesInput.onProcessFileCallback = (function (file, name, extension) {
         if (extension === "dds") {
+            BABYLON.FilesInput.FilesToLoad[name] = file;
             var loadTexture = () => {
                 if (currentPluginName === "gltf") { // currentPluginName is updated only once scene is loaded
-                    BABYLON.FilesInput.FilesToLoad[name] = file;
                     var newHdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("file:" + file.correctName, currentScene);
                     if (currentSkybox) {
                         currentSkybox.dispose();
