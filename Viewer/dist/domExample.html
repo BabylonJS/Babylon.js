@@ -24,6 +24,13 @@
                     <behavior type="0"></behavior>
                 </behaviors>
             </camera>
+            <lights array="true">
+                <light type="1" shadow-enabled="true" position.y="0.5" direction.y="-1" intensity="4.5">
+                    <shadow-config use-blur-exponential-shadow-map="true" use-kernel-blur="true" blur-kernel="64" blur-scale="4">
+
+                    </shadow-config>
+                </light>
+            </lights>
         </babylon>
         <script src="viewer.js"></script>
     </body>
