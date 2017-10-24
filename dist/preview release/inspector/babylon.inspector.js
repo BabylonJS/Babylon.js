@@ -406,9 +406,6 @@ var INSPECTOR;
             ],
             format: function (tex) { return tex.name; }
         },
-        'MapTexture': {
-            type: BABYLON.MapTexture
-        },
         'RenderTargetTexture': {
             type: BABYLON.RenderTargetTexture
         },
@@ -3054,13 +3051,7 @@ var INSPECTOR;
             for (var i = 0; i < 5; i++) {
                 imgs.push(INSPECTOR.Helpers.CreateElement('img', 'texture-image', this._imagePanel));
             }
-            if (texture instanceof BABYLON.MapTexture) {
-                // instance of Map texture
-                texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
-                BABYLON.Tools.DumpFramebuffer(texture.getSize().width, texture.getSize().height, this._inspector.scene.getEngine(), function (data) { return img.src = data; });
-                texture.unbindTexture();
-            }
-            else if (texture instanceof BABYLON.RenderTargetTexture) {
+            if (texture instanceof BABYLON.RenderTargetTexture) {
                 // RenderTarget textures
                 var scene = this._inspector.scene;
                 var engine_1 = scene.getEngine();

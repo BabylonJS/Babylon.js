@@ -37,7 +37,7 @@
 
         // Members
         @serialize()
-        public url: string;
+        public url: Nullable<string>;
 
         @serialize()
         public uOffset = 0;
@@ -85,10 +85,10 @@
         public _samplingMode: number;
         private _buffer: any;
         private _deleteBuffer: boolean;
-        protected _format: number;
-        private _delayedOnLoad: () => void;
-        private _delayedOnError: () => void;
-        private _onLoadObservable: Observable<Texture>;
+        protected _format: Nullable<number>;
+        private _delayedOnLoad: Nullable<() => void>;
+        private _delayedOnError: Nullable<() => void>;
+        private _onLoadObservable: Nullable<Observable<Texture>>;
 
         protected _isBlocking: boolean = true;
         public set isBlocking(value: boolean) {
@@ -103,20 +103,25 @@
             return this._samplingMode;
         }
 
-        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: (message?: string, esception?: any) => void = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
+        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, esception?: any) => void> = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
             super(scene);
 
-            this.name = url;
+            this.name = url || "";
             this.url = url;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
             this._samplingMode = samplingMode;
             this._buffer = buffer;
             this._deleteBuffer = deleteBuffer;
-            this._format = format;
+            if (format) {
+                this._format = format;
+            }
 
             scene = this.getScene();
 
+            if (!scene) {
+                return;
+            }
             scene.getEngine().onBeforeTextureInitObservable.notifyObservers(this);
 
             let load = () => {
@@ -127,7 +132,7 @@
                     onLoad();
                 }
 
-                if (!this.isBlocking) {
+                if (!this.isBlocking && scene) {
                     scene.resetCachedMaterial();
                 }
             }
@@ -142,7 +147,7 @@
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(this.url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer, null, this._format);
+                    this._texture = scene.getEngine().createTexture(this.url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer, undefined, this._format);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
@@ -172,19 +177,32 @@
                 return;
             }
 
+            let scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+            
             this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
+                this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
             } else {
                 if (this._texture.isReady) {
-                    Tools.SetImmediate(() => this._delayedOnLoad());
+                    Tools.SetImmediate(() => {
+                        if (!this._delayedOnLoad) {
+                            return;
+                        }
+                        this._delayedOnLoad();
+                    });
                 } else {
-                    this._texture.onLoadedObservable.add(this._delayedOnLoad);
+                    if (this._delayedOnLoad) {
+                        this._texture.onLoadedObservable.add(this._delayedOnLoad);
+                    }
                 }
             }
         }
@@ -194,8 +212,14 @@
                 return;
             }
 
+            let scene = this.getScene();
+            
+            if (!scene) {
+                return;
+            }            
+
             this._samplingMode = samplingMode;
-            this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
+            scene.getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         }
 
         private _prepareRowForTextureGeneration(x: number, y: number, z: number, t: Vector3): void {
@@ -255,7 +279,13 @@
             this._cachedTextureMatrix.m[4] = this._t2.x; this._cachedTextureMatrix.m[5] = this._t2.y; this._cachedTextureMatrix.m[6] = this._t2.z;
             this._cachedTextureMatrix.m[8] = this._t0.x; this._cachedTextureMatrix.m[9] = this._t0.y; this._cachedTextureMatrix.m[10] = this._t0.z;
 
-            this.getScene().markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
+            let scene = this.getScene();
+            
+            if (!scene) {
+                return this._cachedTextureMatrix;
+            }
+
+            scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
 
@@ -264,6 +294,11 @@
 
         public getReflectionTextureMatrix(): Matrix {
             let scene = this.getScene();
+
+            if (!scene) {
+                return this._cachedTextureMatrix;
+            }
+
             if (
                 this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
@@ -327,7 +362,7 @@
 
         public clone(): Texture {
             return SerializationHelper.Clone(() => {
-                return new Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
+                return new Texture(this._texture ? this._texture.url : null, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
             }, this);
         }
 
@@ -366,11 +401,12 @@
         }
 
         // Statics
-        public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
+        public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, 
+                                            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data, false, format);
         }
 
-        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> {
             if (parsedTexture.customType) {
                 var customTexture = Tools.Instantiate(parsedTexture.customType);
                 // Update Sampling Mode
@@ -435,7 +471,8 @@
             return texture;
         }
 
-        public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: (message?: string, exception?: any) => void = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
+        public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, 
+                                    onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
             if (name.substr(0, 5) !== "data:") {
                 name = "data:" + name;
             }

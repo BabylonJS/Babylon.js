@@ -139,9 +139,6 @@ declare module INSPECTOR {
             properties: string[];
             format: (tex: BABYLON.Texture) => string;
         };
-        'MapTexture': {
-            type: typeof BABYLON.MapTexture;
-        };
         'RenderTargetTexture': {
             type: typeof BABYLON.RenderTargetTexture;
         };

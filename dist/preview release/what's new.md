@@ -16,10 +16,11 @@
 - Added support for `material.separateCullingPass`. [Doc here](http://doc.babylonjs.com/tutorials/transparency_and_how_meshes_are_rendered#things-to-do-and-not-to-do) ([sebavan](https://github.com/sebavan))
 - Added support for Windows Motion Controllers ([Lewis Weaver](https://github.com/leweaver))
 - Added support for Particle animation in ParticleSystem. [Doc here](http://doc.babylonjs.com/tutorials/particles#particle-animation) ([Ibraheem Osama](https://github.com/IbraheemOsama))
-- More robust TypeScript code with *noImplicitAny*, *noImplicitThis* and *noImplicitReturns* compiler options ([deltakosh](https://github.com/deltakosh))
-- Introduced `NullEngine` which can be used to use Babylon.js in headless mode. [Doc here](http://doc.babylonjs.com/generals/nullengine) ([deltakosh](https://github.com/deltakosh)) 
+- More robust TypeScript code with *strictNullChecks*, *noImplicitAny*, *noImplicitThis* and *noImplicitReturns* compiler options ([deltakosh](https://github.com/deltakosh))
+- Introduced `NullEngine` which can be used to use Babylon.js in headless mode. [Doc here](http://doc.babylonjs.com/generals/nullengine) ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
+- Support for non uniform scaling. Normals are now correctly computed ([deltakosh](https://github.com/deltakosh))
 - Added `MultiObserver`. [Doc here](http://doc.babylonjs.com/overviews/observables#multiobserver) ([deltakosh](https://github.com/deltakosh))
 - Added `shadowGenerator.addShadowCaster` and `shadowGenerator.removeShadowCaster` helper functions ([deltakosh](https://github.com/deltakosh))
 - Several inspector improvements ([temechon](https://github.com/temechon))
@@ -43,3 +44,4 @@
 
 ## Breaking changes
 - `Gamepads` was removed in favor of `scene.gamepadManager`
+- `DynamicFloatArray`, `MapTexture` and `RectPakingMap` were removed because there were not used anymore

@@ -2,10 +2,10 @@ module BABYLON {
 
     export class UniformBuffer {
         private _engine: Engine;
-        private _buffer: WebGLBuffer;
+        private _buffer: Nullable<WebGLBuffer>;
         private _data: number[];
         private _bufferData: Float32Array;
-        private _dynamic: boolean;
+        private _dynamic?: boolean;
         private _uniformLocations: { [key:string]:number; };
         private _uniformSizes: { [key:string]:number; };
         private _uniformLocationPointer: number;
@@ -182,7 +182,7 @@ module BABYLON {
          * update the underlying WebGL uniform buffer to the GPU.
          */
         public isDynamic(): boolean {
-            return this._dynamic;
+            return this._dynamic !== undefined;
         }
 
         /**
@@ -195,7 +195,7 @@ module BABYLON {
         /**
          * The underlying WebGL Uniform buffer.
          */
-        public getBuffer(): WebGLBuffer {
+        public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer;
         }
 
@@ -414,7 +414,7 @@ module BABYLON {
          * @param {number[]|Float32Array} data Flattened data
          * @param {number} size Size of the data.
          */
-        public updateUniform(uniformName: string, data: number[] | Float32Array, size: number) {
+        public updateUniform(uniformName: string, data: FloatArray, size: number) {
 
             var location = this._uniformLocations[uniformName];
             if (location === undefined) {
@@ -586,7 +586,7 @@ module BABYLON {
          * @param {string} uniformName Name of the uniform, as used in the uniform block in the shader.
          * @param {number[]|Float32Array} data Flattened data
          */
-        public updateUniformDirectly(uniformName: string, data: number[] | Float32Array) {
+        public updateUniformDirectly(uniformName: string, data: FloatArray) {
             this.updateUniform(uniformName, data, data.length);
 
             this.update();
@@ -600,7 +600,7 @@ module BABYLON {
         public bindToEffect(effect: Effect, name: string): void {
             this._currentEffect = effect;
 
-            if (this._noUBO) {
+            if (this._noUBO || !this._buffer) {
                 return;
             }
             

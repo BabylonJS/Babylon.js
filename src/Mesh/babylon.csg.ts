@@ -48,7 +48,7 @@
         // point is on the plane.
         static EPSILON = 1e-5;
 
-        public static FromPoints(a: Vector3, b: Vector3, c: Vector3): Plane {
+        public static FromPoints(a: Vector3, b: Vector3, c: Vector3): Nullable<Plane> {
             var v0 = c.subtract(a);
             var v1 = b.subtract(a);
 
@@ -154,7 +154,7 @@
         constructor(vertices: Vertex[], shared: any) {
             this.vertices = vertices;
             this.shared = shared;
-            this.plane = Plane.FromPoints(vertices[0].pos, vertices[1].pos, vertices[2].pos);
+            this.plane = <Plane>Plane.FromPoints(vertices[0].pos, vertices[1].pos, vertices[2].pos);
 
         }
 
@@ -177,9 +177,9 @@
     // the front and/or back subtrees. This is not a leafy BSP tree since there is
     // no distinction between internal and leaf nodes.
     class Node {
-        private plane: Plane = null;
-        private front: Node = null;
-        private back: Node = null;
+        private plane: Nullable<Plane> = null;
+        private front: Nullable<Node> = null;
+        private back: Nullable<Node> = null;
         private polygons = new Array<Polygon>();
 
         constructor(polygons?: Array<Polygon>) {
@@ -278,7 +278,7 @@
         public matrix: Matrix;
         public position: Vector3;
         public rotation: Vector3;
-        public rotationQuaternion: Quaternion;
+        public rotationQuaternion: Nullable<Quaternion>;
         public scaling: Vector3;
 
         // Convert BABYLON.Mesh to BABYLON.CSG
@@ -290,7 +290,7 @@
 			var matrix : Matrix, 
 				meshPosition : Vector3,
 				meshRotation : Vector3,
-				meshRotationQuaternion: Quaternion,
+				meshRotationQuaternion: Nullable<Quaternion> = null,
 				meshScaling: Vector3;
 				
             if (mesh instanceof Mesh) {
@@ -563,7 +563,7 @@
             mesh.setVerticesData(VertexBuffer.PositionKind, vertices);
             mesh.setVerticesData(VertexBuffer.NormalKind, normals);
             mesh.setVerticesData(VertexBuffer.UVKind, uvs);
-            mesh.setIndices(indices);
+            mesh.setIndices(indices, null);
 
             if (keepSubMeshes) {
                 // We offset the materialIndex by the previous number of materials in the CSG mixed meshes
@@ -576,7 +576,7 @@
                     materialMaxIndex = -1;
                     for (var sm in (<any>subMesh_dict)[m]) {
                         subMesh_obj = (<any>subMesh_dict)[m][sm];
-                        SubMesh.CreateFromIndices(subMesh_obj.materialIndex + materialIndexOffset, subMesh_obj.indexStart, subMesh_obj.indexEnd - subMesh_obj.indexStart + 1, mesh);
+                        SubMesh.CreateFromIndices(subMesh_obj.materialIndex + materialIndexOffset, subMesh_obj.indexStart, subMesh_obj.indexEnd - subMesh_obj.indexStart + 1, <AbstractMesh>mesh);
                         materialMaxIndex = Math.max(subMesh_obj.materialIndex, materialMaxIndex);
                     }
                     materialIndexOffset += ++materialMaxIndex;

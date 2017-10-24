@@ -9,10 +9,10 @@ module BABYLON {
         public angularSensibility = 2000.0;
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
-        private _onMouseMove: (e: MouseEvent) => any;
-        private _observer: Observer<PointerInfo>;
+        private _onMouseMove: Nullable<(e: MouseEvent) => any>;
+        private _observer: Nullable<Observer<PointerInfo>>;
 
-        private previousPosition: { x: number, y: number };
+        private previousPosition: Nullable<{ x: number, y: number }> = null;
 
         constructor(public touchEnabled = true) {
         }           
@@ -36,7 +36,7 @@ module BABYLON {
                         return;
                     }
 
-                    if (p.type === PointerEventTypes.POINTERDOWN) {
+                    if (p.type === PointerEventTypes.POINTERDOWN && evt.srcElement) {
                         try {
                             evt.srcElement.setPointerCapture(evt.pointerId);
                         } catch (e) {
@@ -53,7 +53,7 @@ module BABYLON {
                             element.focus();
                         }
                     }
-                    else if (p.type === PointerEventTypes.POINTERUP) {
+                    else if (p.type === PointerEventTypes.POINTERUP && evt.srcElement) {
                         try {
                             evt.srcElement.releasePointerCapture(evt.pointerId);
                         } catch (e) {
@@ -129,7 +129,10 @@ module BABYLON {
         detachControl(element: HTMLElement) {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
-                element.removeEventListener("mousemove", this._onMouseMove);
+
+                if (this._onMouseMove) {
+                    element.removeEventListener("mousemove", this._onMouseMove);
+                }
 
                 this._observer = null;
                 this._onMouseMove = null;

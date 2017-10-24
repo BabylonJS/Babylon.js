@@ -21,6 +21,12 @@ var BABYLON;
                 ".glb": { isBinary: true }
             };
         }
+        GLTFFileLoader.prototype.dispose = function () {
+            if (this._loader) {
+                this._loader.dispose();
+                this._loader = null;
+            }
+        };
         GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
             var loaderData = GLTFFileLoader._parse(data, onError);
             if (!loaderData) {
@@ -29,11 +35,11 @@ var BABYLON;
             if (this.onParsed) {
                 this.onParsed(loaderData);
             }
-            var loader = this._getLoader(loaderData, onError);
-            if (!loader) {
+            this._loader = this._getLoader(loaderData, onError);
+            if (!this._loader) {
                 return;
             }
-            loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
+            this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         };
         GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
             var loaderData = GLTFFileLoader._parse(data, onError);
@@ -43,11 +49,11 @@ var BABYLON;
             if (this.onParsed) {
                 this.onParsed(loaderData);
             }
-            var loader = this._getLoader(loaderData, onError);
-            if (!loader) {
+            this._loader = this._getLoader(loaderData, onError);
+            if (!this._loader) {
                 return;
             }
-            return loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
+            return this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         };
         GLTFFileLoader.prototype.canDirectLoad = function (data) {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
@@ -163,18 +169,18 @@ var BABYLON;
             // Look for BIN chunk
             var bin = null;
             while (binaryReader.getPosition() < binaryReader.getLength()) {
-                chunkLength = binaryReader.readUint32();
-                chunkFormat = binaryReader.readUint32();
-                switch (chunkFormat) {
+                var chunkLength_1 = binaryReader.readUint32();
+                var chunkFormat_1 = binaryReader.readUint32();
+                switch (chunkFormat_1) {
                     case ChunkFormat.JSON:
                         onError("Unexpected JSON chunk");
                         return null;
                     case ChunkFormat.BIN:
-                        bin = binaryReader.readUint8Array(chunkLength);
+                        bin = binaryReader.readUint8Array(chunkLength_1);
                         break;
                     default:
                         // ignore unrecognized chunkFormat
-                        binaryReader.skipBytes(chunkLength);
+                        binaryReader.skipBytes(chunkLength_1);
                         break;
                 }
             }
@@ -207,7 +213,7 @@ var BABYLON;
         GLTFFileLoader._decodeBufferToText = function (buffer) {
             var result = "";
             var length = buffer.byteLength;
-            for (var i = 0; i < length; ++i) {
+            for (var i = 0; i < length; i++) {
                 result += String.fromCharCode(buffer[i]);
             }
             return result;
@@ -1596,6 +1602,9 @@ var BABYLON;
                     return;
                 }
                 GLTFLoader.Extensions[extension.name] = extension;
+            };
+            GLTFLoader.prototype.dispose = function () {
+                // do nothing
             };
             GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
                 var _this = this;
