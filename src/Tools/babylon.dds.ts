@@ -365,9 +365,11 @@
             var ext = engine.getCaps().s3tc;
 
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt),
-                fourCC, blockBytes, internalFormat, format,
-                width, height, dataLength, dataOffset,
+                fourCC, width, height, dataLength, dataOffset,
                 byteArray, mipmapCount, mip;
+            let internalFormat = 0;
+            let format = 0;
+            let blockBytes = 1;
 
             if (header[off_magic] != DDS_MAGIC) {
                 Tools.Error("Invalid magic number in DDS header");
@@ -389,7 +391,7 @@
 
             let computeFormats = false;
 
-            if (info.isFourCC) {
+            if (info.isFourCC && ext) {
                 fourCC = header[off_pfFourCC];
                 switch (fourCC) {
                 case FOURCC_DXT1:
@@ -460,14 +462,14 @@
 
                         if (!info.isCompressed && info.isFourCC) {
                             dataLength = width * height * 4;
-                            var floatArray: ArrayBufferView;
+                            var FloatArray: Nullable<ArrayBufferView> = null;
 
                             if (engine.badOS || engine.badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
                                 if (bpp === 128) {
-                                    floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);                                    
+                                    FloatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);                                    
                                 }
                                 else if (bpp === 64) {
-                                    floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    FloatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 }
 
                                 info.textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -476,19 +478,21 @@
                             }
                             else {
                                 if (bpp === 128) {
-                                    floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    FloatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
-                                    floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    FloatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
 
                                     info.textureType = Engine.TEXTURETYPE_FLOAT;
                                     format = engine._getWebGLTextureType(info.textureType);    
                                     internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);                            
                                 } else { // 64
-                                    floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    FloatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 }
                             }
 
-                            engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
+                            if (FloatArray) {
+                                engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, FloatArray);
+                            }
                         } else if (info.isRGB) {
                             if (bpp === 24) {
                                 dataLength = width * height * 3;

@@ -55,7 +55,7 @@
 
             if (this.data) {
                 this.data.length = 0;
-                this.data = null;
+                this.data = [];
             }
         }
 

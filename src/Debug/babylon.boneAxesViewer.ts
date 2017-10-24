@@ -2,8 +2,8 @@
 
     export class BoneAxesViewer extends Debug.AxesViewer {
 
-        public mesh:Mesh;
-        public bone:Bone;
+        public mesh: Nullable<Mesh>;
+        public bone: Nullable<Bone>;
 
         public pos = Vector3.Zero();
         public xaxis = Vector3.Zero();
@@ -21,6 +21,10 @@
 
         public update (): void {
 
+            if (!this.mesh || !this.bone) {
+                return;
+            }
+
             var bone = this.bone;
             bone.getAbsolutePositionToRef(this.mesh, this.pos);
             bone.getDirectionToRef(Axis.X, this.mesh, this.xaxis);
@@ -33,14 +37,7 @@
 
         public dispose() {
 
-            if(this.pos){
-
-                this.pos = null;
-
-                this.xaxis = null;
-                this.yaxis = null;
-                this.zaxis = null;
-
+            if (this.mesh){
                 this.mesh = null;
                 this.bone = null;
 

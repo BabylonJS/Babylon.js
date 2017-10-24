@@ -31,7 +31,7 @@ module Earcut {
 
         if (!outerNode) return triangles;
 
-        var minX, minY, maxX, maxY, x, y, size;
+        var minX = 0, minY = 0, maxX, maxY, x, y, size = 0;
 
         if (hasHoles) outerNode = eliminateHoles(data, holeIndices, outerNode, dim);
 
@@ -53,18 +53,18 @@ module Earcut {
             size = Math.max(maxX - minX, maxY - minY);
         }
 
-        earcutLinked(outerNode, triangles, dim, minX, minY, size, undefined);
+        earcutLinked(outerNode, triangles, dim, minX, minY, size, 0);
 
         return triangles;
     }
 
     class Node {
-        public prev: Node = null;
-        public next: Node = null;
+        public prev: any = null;
+        public next: any = null;
 
-        public z: number = null;
-        public prevZ: Node = null;
-        public nextZ: Node = null;  
+        public z: any = null;
+        public prevZ: any = null;
+        public nextZ: any = null;  
         
         public steiner: boolean = false;
 
@@ -73,13 +73,13 @@ module Earcut {
     }
 
     // create a circular doubly linked list from polygon points in the specified winding order
-    function linkedList(data: number[], start: number, end: number, dim: number, clockwise: boolean) {
-        var i, last;
+    function linkedList(data: number[], start: number, end: number, dim: number, clockwise: boolean): Node {
+        var i, last: Nullable<Node> = null;
 
         if (clockwise === (signedArea(data, start, end, dim) > 0)) {
-            for (i = start; i < end; i += dim) last = insertNode(i, data[i], data[i + 1], last);
+            for (i = start; i < end; i += dim) last = insertNode(i, data[i], data[i + 1], (<Node>last));
         } else {
-            for (i = end - dim; i >= start; i -= dim) last = insertNode(i, data[i], data[i + 1], last);
+            for (i = end - dim; i >= start; i -= dim) last = insertNode(i, data[i], data[i + 1], (<Node>last));
         }
 
         if (last && equals(last, last.next)) {
@@ -87,11 +87,11 @@ module Earcut {
             last = last.next;
         }
 
-        return last;
+        return (<Node>last);
     }
 
     // eliminate colinear or duplicate points
-    function filterPoints(start: Node, end: Node) {
+    function filterPoints(start: Node, end?: Node) {
         if (!start) return start;
         if (!end) end = start;
 
@@ -103,7 +103,7 @@ module Earcut {
             if (!p.steiner && (equals(p, p.next) || area(p.prev, p, p.next) === 0)) {
                 removeNode(p);
                 p = end = p.prev;
-                if (p === p.next) return null;
+                if (p === p.next) return undefined;
                 again = true;
 
             } else {
@@ -115,7 +115,7 @@ module Earcut {
     }
 
     // main ear slicing loop which triangulates a polygon (given as a linked list)
-    function earcutLinked(ear: Node, triangles: number[], dim: number, minX: number, minY: number, size: number, pass: number) {
+    function earcutLinked(ear: any, triangles: number[], dim: number, minX: number, minY: number, size: number, pass?: number) {
         if (!ear) return;
 
         // interlink polygon nodes in z-order
@@ -267,8 +267,8 @@ module Earcut {
                     var c = splitPolygon(a, b);
 
                     // filter colinear points around the cuts
-                    a = filterPoints(a, a.next);
-                    c = filterPoints(c, c.next);
+                    a = (<Node>filterPoints(a, a.next));
+                    c = (<Node>filterPoints(c, c.next));
 
                     // run earcut on each half
                     earcutLinked(a, triangles, dim, minX, minY, size, undefined);
@@ -303,7 +303,7 @@ module Earcut {
         // process holes from left to right
         for (i = 0; i < queue.length; i++) {
             eliminateHole(queue[i], outerNode);
-            outerNode = filterPoints(outerNode, outerNode.next);
+            outerNode = (<Node>filterPoints(outerNode, outerNode.next));
         }
 
         return outerNode;
@@ -315,7 +315,7 @@ module Earcut {
 
     // find a bridge between vertices that connects hole with an outer ring and and link it
     function eliminateHole(hole: Node, outerNode: Node) {
-        outerNode = findHoleBridge(hole, outerNode);
+        outerNode = (<Node>findHoleBridge(hole, outerNode));
         if (outerNode) {
             var b = splitPolygon(outerNode, hole);
             filterPoints(b, b.next);
@@ -392,8 +392,8 @@ module Earcut {
             p = p.next;
         } while (p !== start);
 
-        p.prevZ.nextZ = null;
-        p.prevZ = null;
+        (<any>p.prevZ.nextZ) = null;
+        (<any>p.prevZ) = null;
 
         sortLinked(p);
     }
@@ -404,7 +404,7 @@ module Earcut {
         var i, p, q, e, tail, numMerges, pSize, qSize, inSize = 1;
         do {
             p = list;
-            list = null;
+            (<any>list) = null;
             tail = null;
             numMerges = 0;
 
@@ -443,14 +443,14 @@ module Earcut {
                     if (tail) tail.nextZ = e;
                     else list = e;
 
-                    e.prevZ = tail;
+                    (<any>e.prevZ) = tail;
                     tail = e;
                 }
 
                 p = q;
             }
 
-            tail.nextZ = null;
+            (<any>tail).nextZ = null;
             inSize *= 2;
 
         } while (numMerges > 1);
@@ -585,7 +585,7 @@ module Earcut {
     }
 
     // create a node and optionally link it with previous one (in a circular doubly linked list)
-    function insertNode(i: number, x: number, y: number, last: Node) {
+    function insertNode(i: number, x: number, y: number, last?: Node) {
         var p = new Node(i, x, y);
 
         if (!last) {

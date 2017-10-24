@@ -11,10 +11,10 @@ module BABYLON {
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
             SceneLoader.ImportMesh("", GenericController.MODEL_BASE_URL, GenericController.MODEL_FILENAME, scene, (newMeshes) => {
                 this._defaultModel = newMeshes[1];
+                this.attachToMesh(this._defaultModel);
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
                 }
-                this.attachToMesh(this._defaultModel);
             });
         }
 

@@ -2,7 +2,7 @@ module BABYLON {
     export class PostProcessRenderPipeline {
         private _engine: Engine;
 
-        private _renderEffects: PostProcessRenderEffect[];
+        private _renderEffects: {[key: string]: PostProcessRenderEffect};
         private _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
 
         protected _cameras: Camera[];
@@ -18,7 +18,7 @@ module BABYLON {
             this._engine = engine;
             this._name = name;
 
-            this._renderEffects = new Array<PostProcessRenderEffect>();
+            this._renderEffects = {};
             this._renderEffectsForIsolatedPass = new Array<PostProcessRenderEffect>();
 
             this._cameras = [];
@@ -198,7 +198,7 @@ module BABYLON {
         }
 
         public _reset(): void {
-            this._renderEffects = new Array<PostProcessRenderEffect>();
+            this._renderEffects = {};
             this._renderEffectsForIsolatedPass = new Array<PostProcessRenderEffect>();
         }
 

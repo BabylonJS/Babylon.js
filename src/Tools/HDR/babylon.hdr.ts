@@ -114,7 +114,7 @@ module BABYLON.Internals {
             var match = sizeRegexp.exec(line);
 
             // TODO. Support +Y and -X if needed.
-            if (match.length < 3) {
+            if (!match || match.length < 3) {
                 throw "HDR Bad header format, no size";
             }
             width = parseInt(match[2]);

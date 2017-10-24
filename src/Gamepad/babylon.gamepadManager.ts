@@ -10,8 +10,8 @@
         public onGamepadConnectedObservable: Observable<Gamepad>;
         public onGamepadDisconnectedObservable = new Observable<Gamepad>();
 
-        private _onGamepadConnectedEvent: (evt: any) => void;
-        private _onGamepadDisconnectedEvent: (evt: any) => void;
+        private _onGamepadConnectedEvent: Nullable<(evt: any) => void>;
+        private _onGamepadDisconnectedEvent: Nullable<(evt: any) => void>;
 
         constructor() {
             if (!Tools.IsWindowObjectExist()) {
@@ -91,7 +91,7 @@
             return this._babylonGamepads;
         }
 
-        public getGamepadByType(type: number = Gamepad.XBOX): Gamepad {
+        public getGamepadByType(type: number = Gamepad.XBOX): Nullable<Gamepad> {
             for (var gamepad of this._babylonGamepads) {
                 if (gamepad && gamepad.type === type) {
                     return gamepad;
@@ -103,8 +103,13 @@
 
         public dispose() {
             if (this._gamepadEventSupported) {
-                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent);
-                window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
+                if (this._onGamepadConnectedEvent) {
+                    window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent);
+                }
+
+                if (this._onGamepadDisconnectedEvent) {
+                    window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
+                }
                 this._onGamepadConnectedEvent = null;
                 this._onGamepadDisconnectedEvent = null;
             }

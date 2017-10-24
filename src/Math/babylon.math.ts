@@ -38,7 +38,7 @@
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
          * Returns the Color3.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Color3 {
+        public toArray(array: FloatArray, index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
@@ -624,7 +624,7 @@
          * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.  
          * Returns the Vector2.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector2 {
+        public toArray(array: FloatArray, index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
             return this;
@@ -1075,7 +1075,7 @@
          * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3.  
          * Returns the Vector3.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector3 {
+        public toArray(array: FloatArray, index: number = 0): Vector3 {
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
@@ -1309,6 +1309,25 @@
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
             return this;
+        }
+
+        /**
+         * Return true is the vector is non uniform meaning x, y or z are not all the same.
+         */
+        public get isNonUniform(): boolean {
+            if (this.x !== this.y) {
+                return true;
+            }
+
+            if (this.x !== this.z) {
+                return true;
+            }
+
+            if (this.y !== this.z) {
+                return true;
+            }
+
+            return false;
         }
 
         // Properties
@@ -1833,7 +1852,7 @@
          * Populates the passed array from the passed index with the Vector4 coordinates.  
          * Returns the Vector4.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Vector4 {
+        public toArray(array: FloatArray, index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }
@@ -2884,6 +2903,7 @@
         private static _yAxis: Vector3 = Vector3.Zero();
         private static _zAxis: Vector3 = Vector3.Zero();
         private static _updateFlagSeed = 0;
+        private static _identityReadOnly = Matrix.Identity();
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
@@ -3383,7 +3403,7 @@
         /**
          * Returns the index-th row of the current matrix as a new Vector4.  
          */
-        public getRow(index: number): Vector4 {
+        public getRow(index: number): Nullable<Vector4> {
             if (index < 0 || index > 3) {
                 return null;
             }
@@ -3410,6 +3430,24 @@
         }
 
         /**
+         * Compute the transpose of the matrix.  
+         * Returns a new Matrix.  
+         */        
+        public transpose(): Matrix {
+            return Matrix.Transpose(this);
+        }
+
+        /**
+         * Compute the transpose of the matrix.  
+         * Returns the current matrix.  
+         */        
+        public transposeToRef(result: Matrix): Matrix {
+            Matrix.TransposeToRef(this, result);
+
+            return this;
+        }
+
+        /**
          * Sets the index-th row of the current matrix with the passed 4 x float values.
          * Returns the updated Matrix.    
          */
@@ -3426,6 +3464,15 @@
             this._markAsUpdated();
             return this;
         }
+
+        /**
+         * Static identity matrix to be used as readonly matrix
+         * Must not be updated.
+         */
+        public static get IdentityReadOnly(): Matrix {
+            return Matrix._identityReadOnly;
+        }
+
         /**
          * Returns a new Matrix set from the 16 passed floats.  
          */
@@ -4079,6 +4126,15 @@
         public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
 
+            Matrix.TransposeToRef(matrix, result);
+
+            return result;
+        }
+
+        /**
+         * Compute the transpose of the passed Matrix and store it in the result matrix.  
+         */
+        public static TransposeToRef(matrix: Matrix, result: Matrix): void {
             result.m[0] = matrix.m[0];
             result.m[1] = matrix.m[4];
             result.m[2] = matrix.m[8];
@@ -4098,8 +4154,6 @@
             result.m[13] = matrix.m[7];
             result.m[14] = matrix.m[11];
             result.m[15] = matrix.m[15];
-
-            return result;
         }
 
         /**
@@ -4760,7 +4814,7 @@
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
         */
-        constructor(public path: Vector3[], firstNormal?: Vector3, raw?: boolean) {
+        constructor(public path: Vector3[], firstNormal: Nullable<Vector3> = null, raw?: boolean) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p] = path[p].clone(); // hard copy
             }
@@ -4811,7 +4865,7 @@
          * Forces the Path3D tangent, normal, binormal and distance recomputation.
          * Returns the same object updated.  
          */
-        public update(path: Vector3[], firstNormal?: Vector3): Path3D {
+        public update(path: Vector3[], firstNormal: Nullable<Vector3> = null): Path3D {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p].x = path[p].x;
                 this._curve[p].y = path[p].y;
@@ -4822,7 +4876,7 @@
         }
 
         // private function compute() : computes tangents, normals and binormals
-        private _compute(firstNormal: Vector3): void {
+        private _compute(firstNormal: Nullable<Vector3>): void {
             var l = this._curve.length;
 
             // first and last tangents
@@ -4907,7 +4961,7 @@
         // private function normalVector(v0, vt, va) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
-        private _normalVector(v0: Vector3, vt: Vector3, va: Vector3): Vector3 {
+        private _normalVector(v0: Vector3, vt: Vector3, va: Nullable<Vector3>): Vector3 {
             var normal0: Vector3;
             var tgl = vt.length();
             if (tgl === 0.0) {
@@ -4924,6 +4978,9 @@
                 }
                 else if (!Scalar.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
                     point = new Vector3(0.0, 0.0, 1.0);
+                }
+                else {
+                    point = Vector3.Zero();
                 }
                 normal0 = Vector3.Cross(vt, point);
             }
@@ -5010,8 +5067,9 @@
             totalPoints.push(points[points.length - 1].clone());
             var catmullRom = new Array<Vector3>();
             var step = 1.0 / nbPoints;
+            var amount = 0.0;
             for (var i = 0; i < totalPoints.length - 3; i++) {
-                var amount = 0.0;
+                amount = 0;
                 for (var c = 0; c < nbPoints; c++) {
                     catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
                     amount += step
