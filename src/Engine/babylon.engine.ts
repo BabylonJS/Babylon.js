@@ -726,6 +726,7 @@
 
         private _emptyTexture: Nullable<InternalTexture>;
         private _emptyCubeTexture: Nullable<InternalTexture>;
+        private _emptyTexture3D: Nullable<InternalTexture>;
 
         private _frameHandler: number;
 
@@ -752,6 +753,13 @@
             }
 
             return this._emptyTexture;
+        }
+        public get emptyTexture3D(): InternalTexture {
+            if (!this._emptyTexture3D) {
+                this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+            }
+
+            return this._emptyTexture3D;
         }
         public get emptyCubeTexture(): InternalTexture {
             if (!this._emptyCubeTexture) {
@@ -3196,6 +3204,12 @@
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag);
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+            } else if (texture.is3D) {
+                this._bindTextureDirectly(this._gl.TEXTURE_3D, texture);
+
+                this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+                this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
             } else {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
 
@@ -4121,6 +4135,73 @@
             return texture;
         };
 
+        public updateRawTexture3D(texture: InternalTexture, data: ArrayBufferView, format: number, invertY: boolean, compression: Nullable<string> = null): void {
+            var internalFormat = this._getInternalFormat(format);
+            this._bindTextureDirectly(this._gl.TEXTURE_3D, texture);
+            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+
+            if (!this._doNotHandleContextLost) {
+                texture._bufferView = data;
+                texture.format = format;
+                texture.invertY = invertY;
+                texture._compression = compression;
+            }
+
+            if (texture.width % 4 !== 0) {
+                this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
+            }
+
+            if (compression) {
+                this._gl.compressedTexImage3D(this._gl.TEXTURE_3D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, texture.depth, 0, data);
+            } else {
+                this._gl.texImage3D(this._gl.TEXTURE_3D, 0, internalFormat, texture.width, texture.height, texture.depth, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+            }
+
+            if (texture.generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_3D);
+            }
+            this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+            this.resetTextureCache();
+            texture.isReady = true;
+        }
+
+        public createRawTexture3D(data: ArrayBufferView, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null): InternalTexture {
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW3D);
+            texture.baseWidth = width;
+            texture.baseHeight = height;
+            texture.baseDepth = depth;
+            texture.width = width;
+            texture.height = height;
+            texture.depth = depth;
+            texture.format = format;
+            texture.generateMipMaps = generateMipMaps;
+            texture.samplingMode = samplingMode;
+            texture.is3D = true;
+
+            if (!this._doNotHandleContextLost) {
+                texture._bufferView = data;
+            }
+
+            this.updateRawTexture3D(texture, data, format, invertY, compression);
+            this._bindTextureDirectly(this._gl.TEXTURE_3D, texture);
+
+            // Filters
+            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+
+            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+
+            if (generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_3D);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+
+            this._internalTexturesCache.push(texture);
+
+            return texture;
+        }
+
         private _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<Scene>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void {
             var gl = this._gl;
             if (!gl) {
@@ -4306,6 +4387,9 @@
                 this.activateTexture((<any>this._gl)["TEXTURE" + channel]);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+                if (this.webGLVersion > 1) {
+                    this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                }
             }
         }
 
@@ -4325,6 +4409,9 @@
                     this.activateTexture((<any>this._gl)["TEXTURE" + channel]);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+                    if (this.webGLVersion > 1) {
+                        this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                    }
                 }
                 return;
             }
@@ -4340,8 +4427,19 @@
                 return;
             }
 
-            var internalTexture = texture.isReady() ? texture.getInternalTexture() :
-                (texture.isCube ? this.emptyCubeTexture : this.emptyTexture);
+            let internalTexture: InternalTexture;
+            if (texture.isReady()) {
+                internalTexture = texture.getInternalTexture();
+            }
+            else if (texture.isCube) {
+                internalTexture = this.emptyCubeTexture;
+            }
+            else if (texture.is3D) {
+                internalTexture = this.emptyTexture3D;
+            }
+            else {
+                internalTexture = this.emptyTexture;
+            }
 
             if (this._activeTexturesCache[channel] === internalTexture) {
                 return;
@@ -4351,7 +4449,58 @@
                 this.activateTexture((<any>this._gl)["TEXTURE" + channel]);
             }
 
-            if (internalTexture && internalTexture.isCube) {
+            if (internalTexture && internalTexture.is3D) {
+                this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture);
+
+                if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
+                    internalTexture._cachedWrapU = texture.wrapU;
+
+                    switch (texture.wrapU) {
+                        case Texture.WRAP_ADDRESSMODE:
+                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
+                            break;
+                        case Texture.CLAMP_ADDRESSMODE:
+                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
+                            break;
+                        case Texture.MIRROR_ADDRESSMODE:
+                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._gl.MIRRORED_REPEAT);
+                            break;
+                    }
+                }
+
+                if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
+                    internalTexture._cachedWrapV = texture.wrapV;
+                    switch (texture.wrapV) {
+                        case Texture.WRAP_ADDRESSMODE:
+                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
+                            break;
+                        case Texture.CLAMP_ADDRESSMODE:
+                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
+                            break;
+                        case Texture.MIRROR_ADDRESSMODE:
+                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._gl.MIRRORED_REPEAT);
+                            break;
+                    }
+                }
+
+                if (internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
+                    internalTexture._cachedWrapR = texture.wrapR;
+                    switch (texture.wrapV) {
+                        case Texture.WRAP_ADDRESSMODE:
+                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.REPEAT);
+                            break;
+                        case Texture.CLAMP_ADDRESSMODE:
+                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.CLAMP_TO_EDGE);
+                            break;
+                        case Texture.MIRROR_ADDRESSMODE:
+                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.MIRRORED_REPEAT);
+                            break;
+                    }
+                }
+
+                this._setAnisotropicLevel(this._gl.TEXTURE_3D, texture);
+            }
+            else if (internalTexture && internalTexture.isCube) {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture);
 
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {

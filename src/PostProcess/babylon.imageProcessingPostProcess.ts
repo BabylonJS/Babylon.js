@@ -304,6 +304,7 @@
             CONTRAST: false,
             COLORCURVES: false,
             COLORGRADING: false,
+            COLORGRADING3D: false,
             FROMLINEARSPACE: false,
             SAMPLER3DGREENDEPTH: false,
             SAMPLER3DBGRMAP: false,
