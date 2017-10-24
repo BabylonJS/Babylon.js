@@ -306,10 +306,10 @@
                 throw 'BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh';
             }
 
-            var indices = mesh.getIndices(),
-                positions = mesh.getVerticesData(VertexBuffer.PositionKind),
-                normals = mesh.getVerticesData(VertexBuffer.NormalKind),
-                uvs = mesh.getVerticesData(VertexBuffer.UVKind);
+            var indices = <IndicesArray>mesh.getIndices(),
+                positions = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind),
+                normals = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind),
+                uvs = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
 
             var subMeshes = mesh.subMeshes;
 

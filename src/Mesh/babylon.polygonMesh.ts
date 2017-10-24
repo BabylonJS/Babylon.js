@@ -147,7 +147,7 @@ module BABYLON {
             return this;
         }
 
-        build(updatable: boolean = false, depth?:number): Mesh {
+        build(updatable: boolean = false, depth:number = 0): Mesh {
             var result = new Mesh(this._name, this._scene);
 
             var normals = new Array<number>();

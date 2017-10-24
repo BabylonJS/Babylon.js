@@ -2,7 +2,7 @@
     export class GPUParticleSystem implements IDisposable, IParticleSystem {
         // Members
         public id: string;
-        public emitter: AbstractMesh | Vector3 = null;       
+        public emitter: Nullable<AbstractMesh | Vector3> = null;       
         public renderingGroupId = 0;        
         public layerMask: number = 0x0FFFFFFF;
 
@@ -50,7 +50,7 @@
         }
 
         //TODO: Clone / Parse / serialize
-        public clone(name: string, newEmitter: any): GPUParticleSystem {
+        public clone(name: string, newEmitter: any): Nullable<GPUParticleSystem> {
             return null;
         }
 

@@ -75,7 +75,7 @@ module BABYLON {
 
                 scene.getEngine().cullBackFaces = false;
 
-                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.globalPosition, this._mirrorMatrix);
+                scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).globalPosition, this._mirrorMatrix);
             });
 
             this.onAfterRenderObservable.add(() => {
@@ -91,14 +91,14 @@ module BABYLON {
             this.clearPostProcesses(true);
 
             if (this._blurKernelX && this._blurKernelY) {
-                var engine = this.getScene().getEngine();
+                var engine = (<Scene>this.getScene()).getEngine();
 
                 var textureType = engine.getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
 
                 this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;
 
-                if (this._blurRatio === 1 && this.samples < 2) {
+                if (this._blurRatio === 1 && this.samples < 2 && this._texture) {
                     this._blurX.outputTexture = this._texture;
                 } else {
                     this._blurX.alwaysForcePOT = true;
@@ -114,11 +114,17 @@ module BABYLON {
         }   
 
         public clone(): MirrorTexture {
+            let scene = this.getScene();
+
+            if (!scene) {
+                return this;
+            }
+
             var textureSize = this.getSize();
             var newTexture = new MirrorTexture(
                 this.name,
                 textureSize.width,
-                this.getScene(),
+                scene,
                 this._renderTargetOptions.generateMipMaps,
                 this._renderTargetOptions.type,
                 this._renderTargetOptions.samplingMode,
@@ -131,7 +137,9 @@ module BABYLON {
 
             // Mirror Texture
             newTexture.mirrorPlane = this.mirrorPlane.clone();
-            newTexture.renderList = this.renderList.slice(0);
+            if (this.renderList) {
+                newTexture.renderList = this.renderList.slice(0);
+            }
 
             return newTexture;
         }

@@ -118,13 +118,13 @@ module BABYLON {
 
             var result = new MorphTarget(name, influence);
 
-            result.setPositions(mesh.getVerticesData(VertexBuffer.PositionKind));
+            result.setPositions(<FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind));
 
             if (mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                result.setNormals(mesh.getVerticesData(VertexBuffer.NormalKind));
+                result.setNormals(<FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind));
             }
             if (mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-                result.setTangents(mesh.getVerticesData(VertexBuffer.TangentKind));
+                result.setTangents(<FloatArray>mesh.getVerticesData(VertexBuffer.TangentKind));
             }
 
             return result;
