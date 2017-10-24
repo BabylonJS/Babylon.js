@@ -7,8 +7,33 @@ export interface TemplateConfiguration {
     location?: string; // #template-id OR http://example.com/loading.html
     html?: string; // raw html string
     id?: string;
-    config?: { [key: string]: string | number | boolean };
+    config?: { [key: string]: string | number | boolean | object };
+    events?: {
+        // pointer events
+        pointerdown?: boolean | Array<string>;
+        pointerup?: boolean | Array<string>;
+        pointermove?: boolean | Array<string>;
+        pointerover?: boolean | Array<string>;
+        pointerout?: boolean | Array<string>;
+        pointerenter?: boolean | Array<string>;
+        pointerleave?: boolean | Array<string>;
+        pointercancel?: boolean | Array<string>;
+        //click, just in case
+        click?: boolean | Array<string>;
+        // drag and drop
+        dragstart?: boolean | Array<string>;
+        drop?: boolean | Array<string>;
+
+        [key: string]: boolean | Array<string>;
+    }
     children?: { [name: string]: TemplateConfiguration };
+}
+
+export interface EventCallback {
+    event: Event;
+    template: Template;
+    selector: string;
+    payload?: any;
 }
 
 export class TemplateManager {
@@ -29,7 +54,7 @@ export class TemplateManager {
         this.onAllLoaded = new Observable<TemplateManager>();
     }
 
-    public initTemplate(configuration: TemplateConfiguration, name: string = 'main', parent?: Template) {
+    public initTemplate(configuration: TemplateConfiguration, name: string = 'main', parentTemplate?: Template) {
         //init template
         let template = new Template(name, configuration);
         this.templates[name] = template;
@@ -42,13 +67,13 @@ export class TemplateManager {
         // register the observers
         template.onLoaded.add(() => {
             let addToParent = () => {
-                let containingElement = parent && parent.parent.querySelector(camelToKebab(name)) || this.containerElement;
+                let containingElement = parentTemplate && parentTemplate.parent.querySelector(camelToKebab(name)) || this.containerElement;
                 template.appendTo(containingElement);
                 this.checkLoadedState();
             }
 
-            if (parent && !parent.parent) {
-                parent.onAppended.add(() => {
+            if (parentTemplate && !parentTemplate.parent) {
+                parentTemplate.onAppended.add(() => {
                     addToParent();
                 });
             } else {
@@ -89,6 +114,7 @@ export class Template {
     public onLoaded: Observable<Template>;
     public onAppended: Observable<Template>;
     public onStateChange: Observable<Template>;
+    public onEventTriggered: Observable<EventCallback>;
 
     public isLoaded: boolean;
 
@@ -101,12 +127,13 @@ export class Template {
         this.onLoaded = new Observable<Template>();
         this.onAppended = new Observable<Template>();
         this.onStateChange = new Observable<Template>();
+        this.onEventTriggered = new Observable<EventCallback>();
 
         this.isLoaded = false;
         /*
-                if (configuration.id) {
-                    this.parent.id = configuration.id;
-                }
+        if (configuration.id) {
+            this.parent.id = configuration.id;
+        }
         */
         this.onInit.notifyObservers(this);
 
@@ -136,6 +163,7 @@ export class Template {
             this.parent.appendChild(this.fragment);
             // appended only one frame after.
             setTimeout(() => {
+                this.registerEvents();
                 this.onAppended.notifyObservers(this);
             });
         }
@@ -166,6 +194,30 @@ export class Template {
             this.parent.style.display = 'none';
             this.onStateChange.notifyObservers(this);
             return Promise.resolve(this);
+        }
+    }
+
+    // TODO - Should events be removed as well? when are templates disposed?
+    private registerEvents() {
+        if (this.configuration.events) {
+            Object.keys(this.configuration.events).forEach(eventName => {
+                if (this.configuration.events[eventName]) {
+                    let functionToFire = (selector, event) => {
+                        this.onEventTriggered.notifyObservers({ event: event, template: this, selector: selector });
+                    }
+
+                    // if boolean, set the parent as the event listener
+                    if (typeof this.configuration.events[eventName] === 'boolean') {
+                        this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
+                    } else {
+                        let selectorsArray: Array<string> = <Array<string>>this.configuration.events[eventName];
+                        selectorsArray.forEach(selector => {
+                            let htmlElement = <HTMLElement>this.parent.querySelector(selector);
+                            htmlElement && htmlElement.addEventListener(eventName, functionToFire.bind(this, selector), false)
+                        });
+                    }
+                }
+            });
         }
     }
 
