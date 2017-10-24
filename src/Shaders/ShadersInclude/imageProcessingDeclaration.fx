@@ -19,6 +19,10 @@
 #endif
 
 #ifdef COLORGRADING
-	uniform sampler2D txColorTransform;
+	#ifdef COLORGRADING3D
+		uniform highp sampler3D txColorTransform;
+	#else
+		uniform sampler2D txColorTransform;
+	#endif
 	uniform vec4 colorTransformSettings;
 #endif
