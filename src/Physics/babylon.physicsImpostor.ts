@@ -5,6 +5,8 @@ module BABYLON {
         friction?: number;
         restitution?: number;
         nativeOptions?: any;
+        ignoreParent?: boolean;
+        disableBidirectionalTransformation?: boolean;
     }
 
     export interface IPhysicsEnabledObject {
@@ -80,7 +82,7 @@ module BABYLON {
         set restitution(value: number) {
             if (!this._physicsEngine) {
                 return;
-            }            
+            }
             this._physicsEngine.getPhysicsPlugin().setBodyRestitution(this, value);
         }
 
@@ -126,9 +128,10 @@ module BABYLON {
                 this._options.mass = (_options.mass === void 0) ? 0 : _options.mass
                 this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction
                 this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution
+
                 this._joints = [];
                 //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
-                if (!this.object.parent) {
+                if (!this.object.parent || this._options.ignoreParent) {
                     this._init();
                 } else if (this.object.parent.physicsImpostor) {
                     Tools.Warn("You must affect impostors to children before affecting impostor to parent.");
@@ -150,7 +153,7 @@ module BABYLON {
             this._physicsEngine.removeImpostor(this);
             this.physicsBody = null;
             this._parent = this._parent || this._getPhysicsParent();
-            if (!this.parent) {
+            if (!this.parent || this._options.ignoreParent) {
                 this._physicsEngine.addImpostor(this);
             }
         }
@@ -180,7 +183,7 @@ module BABYLON {
          */
         public forceUpdate() {
             this._init();
-            if (this.parent) {
+            if (this.parent && !this._options.ignoreParent) {
                 this.parent.forceUpdate();
             }
         }
@@ -193,11 +196,11 @@ module BABYLON {
          * Gets the body that holds this impostor. Either its own, or its parent.
          */
         public get physicsBody(): any {
-            return this._parent ? this._parent.physicsBody : this._physicsBody;
+            return (this._parent && !this._options.ignoreParent) ? this._parent.physicsBody : this._physicsBody;
         }
 
         public get parent(): PhysicsImpostor {
-            return this._parent;
+            return !this._options.ignoreParent && this._parent;
         }
 
         public set parent(value: PhysicsImpostor) {
@@ -386,8 +389,10 @@ module BABYLON {
                     this._tmpRotationWithDelta.copyFrom(this.object.rotationQuaternion);
                 }
             }
-
-            this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, this._tmpPositionWithDelta, this._tmpRotationWithDelta);
+            // Only if not disabled
+            if (!this._options.disableBidirectionalTransformation) {
+                this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, this._tmpPositionWithDelta, this._tmpRotationWithDelta);
+            }
 
             this._onBeforePhysicsStepCallbacks.forEach((func) => {
                 func(this);
