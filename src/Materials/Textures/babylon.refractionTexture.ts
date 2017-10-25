@@ -24,8 +24,14 @@ module BABYLON {
         }
 
         public clone(): RefractionTexture {
+            let scene = this.getScene();
+
+            if (!scene) {
+                return this;
+            }
+
             var textureSize = this.getSize();
-            var newTexture = new RefractionTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new RefractionTexture(this.name, textureSize.width, scene, this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
@@ -33,7 +39,9 @@ module BABYLON {
 
             // Refraction Texture
             newTexture.refractionPlane = this.refractionPlane.clone();
-            newTexture.renderList = this.renderList.slice(0);
+            if (this.renderList) {
+                newTexture.renderList = this.renderList.slice(0);
+            }
             newTexture.depth = this.depth;
 
             return newTexture;

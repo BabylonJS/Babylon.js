@@ -9,7 +9,7 @@
     export class TonemapPostProcess extends PostProcess {
 
         constructor(name: string, private _operator: TonemappingOperator, public exposureAdjustment: number, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, textureFormat = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, defines, textureFormat);
+            super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, null, textureFormat);
 
             var defines = "#define ";
 

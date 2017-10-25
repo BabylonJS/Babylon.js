@@ -561,8 +561,14 @@ module BABYLON {
             }
         }
 
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh) {
-            this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
+        private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh): void {
+            let boundingInfo = connectedMesh.getBoundingInfo();
+
+            if (!boundingInfo) {
+                return;
+            }
+
+            this.setPosition(boundingInfo.boundingSphere.centerWorld);
             if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
