@@ -836,7 +836,7 @@ namespace BABYLON {
          */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
-            serializationObject.customType = "BABYLON.GridMaterial";
+            serializationObject.customType = "BABYLON.BackgroundMaterial";
             return serializationObject;
         }
 
