@@ -35,7 +35,7 @@
         public _distanceToCamera: number;
         public _id: number;
 
-        private _currentMaterial: Material;
+        private _currentMaterial: Nullable<Material>;
 
         public static AddToMesh(materialIndex: number, verticesStart: number, verticesCount: number, indexStart: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true): SubMesh {
             return new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox);
@@ -98,7 +98,7 @@
         /**
          * Returns the submesh material.  
          */
-        public getMaterial(): Material {
+        public getMaterial(): Nullable<Material> {
             var rootMaterial = this._renderingMesh.material;
 
             if (rootMaterial && (<MultiMaterial>rootMaterial).getSubMaterial) {
@@ -128,7 +128,7 @@
         public refreshBoundingInfo(): SubMesh {
             this._lastColliderWorldVertices = null;
 
-            if (this.IsGlobal) {
+            if (this.IsGlobal || !this._renderingMesh || !this._renderingMesh.geometry) {
                 return this;
             }
             var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
@@ -138,7 +138,7 @@
                 return this;
             }
 
-            var indices = this._renderingMesh.getIndices();
+            var indices = <IndicesArray>this._renderingMesh.getIndices();
             var extend: { minimum: Vector3, maximum: Vector3 };
 
             //is this the only submesh?
@@ -364,7 +364,7 @@
             var maxVertexIndex = -Number.MAX_VALUE;
 
             renderingMesh = (<Mesh>(renderingMesh || <Mesh>mesh));
-            var indices = renderingMesh.getIndices();
+            var indices = <IndicesArray>renderingMesh.getIndices();
 
             for (var index = startIndex; index < startIndex + indexCount; index++) {
                 var vertexIndex = indices[index];

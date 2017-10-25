@@ -35,6 +35,7 @@
                         break;
                     case VertexBuffer.MatricesWeightsKind:
                     case VertexBuffer.MatricesWeightsExtraKind:
+                    default:
                         stride = 4;
                         break;
                 }
@@ -86,14 +87,14 @@
         /**
          * Returns an array of numbers or a Float32Array containing the VertexBuffer data.  
          */
-        public getData(): FloatArray {
+        public getData(): Nullable<FloatArray> {
             return this._buffer.getData();
         }
 
         /**
          * Returns the WebGLBuffer associated to the VertexBuffer.  
          */
-        public getBuffer(): WebGLBuffer {
+        public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer.getBuffer();
         }
 

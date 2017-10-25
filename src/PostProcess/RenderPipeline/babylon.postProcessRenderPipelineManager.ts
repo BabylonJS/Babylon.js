@@ -12,7 +12,7 @@ module BABYLON {
 
         public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera, unique?: boolean): void;
         public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera[], unique?: boolean): void;
-        public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any, unique?: boolean): void {
+        public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any, unique: boolean = false): void {
             var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {

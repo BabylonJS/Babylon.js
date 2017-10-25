@@ -20,7 +20,7 @@
 
         private _lineShader: ShaderMaterial;
         private _ib: WebGLBuffer;
-        private _buffers: { [key: string]: VertexBuffer; } = {};
+        private _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
         private _checkVerticesInsteadOfIndices = false;
 
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
@@ -182,6 +182,10 @@
             var positions = this._source.getVerticesData(VertexBuffer.PositionKind);
             var indices = this._source.getIndices();
 
+            if (!indices || !positions) {
+                return;
+            }
+
             // First let's find adjacencies
             var adjacencies = new Array<FaceAdjacencies>();
             var faceNormals = new Array<Vector3>();
@@ -226,7 +230,7 @@
                     var otherP2 = indices[otherIndex * 3 + 2];
 
                     for (var edgeIndex = 0; edgeIndex < 3; edgeIndex++) {
-                        var otherEdgeIndex: number;
+                        var otherEdgeIndex: number = 0;
 
                         if (faceAdjacencies.edges[edgeIndex] !== undefined) {
                             continue;
@@ -295,16 +299,17 @@
         }
 
         public render(): void {
-            if (!this._lineShader.isReady()) {
+            var scene = this._source.getScene();
+
+            if (!this._lineShader.isReady() || !scene.activeCamera) {
                 return;
             }
 
-            var scene = this._source.getScene();
             var engine = scene.getEngine();
             this._lineShader._preBind();
 
             // VBOs
-            engine.bindBuffers(this._buffers, this._ib, this._lineShader.getEffect());
+            engine.bindBuffers(this._buffers, this._ib, <Effect>this._lineShader.getEffect());
 
             scene.resetCachedMaterial();
             this._lineShader.setColor4("color", this._source.edgesColor);

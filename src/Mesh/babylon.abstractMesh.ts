@@ -448,7 +448,7 @@
         }
 
         // Constructor
-        constructor(name: string, scene: Scene) {
+        constructor(name: string, scene: Nullable<Scene> = null) {
             super(name, scene);
 
             this.getScene().addMesh(this);
@@ -2077,8 +2077,6 @@
          * Returns the AbstractMesh.  
          */
         public setParent(mesh: Nullable<AbstractMesh>): AbstractMesh {
-
-            var child = this;
             var parent = (<AbstractMesh>mesh);
 
             if (mesh == null) {
@@ -2087,17 +2085,17 @@
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
 
-                child.getWorldMatrix().decompose(scale, rotation, position);
+                this.getWorldMatrix().decompose(scale, rotation, position);
 
-                if (child.rotationQuaternion) {
-                    child.rotationQuaternion.copyFrom(rotation);
+                if (this.rotationQuaternion) {
+                    this.rotationQuaternion.copyFrom(rotation);
                 } else {
-                    rotation.toEulerAnglesToRef(child.rotation);
+                    rotation.toEulerAnglesToRef(this.rotation);
                 }
 
-                child.position.x = position.x;
-                child.position.y = position.y;
-                child.position.z = position.z;
+                this.position.x = position.x;
+                this.position.y = position.y;
+                this.position.z = position.z;
 
             } else {
 
@@ -2105,11 +2103,11 @@
                 var m1 = Tmp.Matrix[0];
 
                 parent.getWorldMatrix().invertToRef(m1);
-                Vector3.TransformCoordinatesToRef(child.position, m1, position);
+                Vector3.TransformCoordinatesToRef(this.position, m1, position);
 
-                child.position.copyFrom(position);
+                this.position.copyFrom(position);
             }
-            child.parent = parent;
+            this.parent = parent;
             return this;
         }
 

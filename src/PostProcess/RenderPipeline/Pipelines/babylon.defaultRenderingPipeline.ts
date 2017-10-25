@@ -193,7 +193,7 @@
 				this.blurX.alwaysForcePOT = true;
 				this.blurX.autoClear = false;
 				this.blurX.onActivateObservable.add(() => {
-					let dw = this.blurX.width / engine.getRenderingCanvas().width;
+					let dw = this.blurX.width / engine.getRenderWidth(true);
 					this.blurX.kernel = this.bloomKernel * dw;
 				});
 
@@ -202,7 +202,7 @@
 				this.blurY.alwaysForcePOT = true;
 				this.blurY.autoClear = false;
 				this.blurY.onActivateObservable.add(() => {
-					let dh = this.blurY.height / engine.getRenderingCanvas().height;
+					let dh = this.blurY.height / engine.getRenderHeight(true);
 					this.blurY.kernel = this.bloomKernel * dh;
 				});				
 
@@ -302,14 +302,14 @@
                 }                
             }
 
-            this.pass = null;
-            this.highlights = null;
-            this.blurX = null;
-            this.blurY = null;
-            this.copyBack = null;
-            this.imageProcessing = null;
-            this.fxaa = null;
-            this.finalMerge = null;
+            (<any>this.pass) = null;
+            (<any>this.highlights) = null;
+            (<any>this.blurX) = null;
+            (<any>this.blurY) = null;
+            (<any>this.copyBack) = null;
+            (<any>this.imageProcessing) = null;
+            (<any>this.fxaa) = null;
+            (<any>this.finalMerge) = null;
         }
 
         // Dispose

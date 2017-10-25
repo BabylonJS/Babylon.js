@@ -16,7 +16,7 @@
                 'Scale',
                 'ScaleIn',
                 'HmdWarpParam'
-            ], null, vrMetrics.postProcessScaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE, null, null);
+            ], null, vrMetrics.postProcessScaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
 
             this._isRightEye = isRightEye;
             this._distortionFactors = vrMetrics.distortionK;

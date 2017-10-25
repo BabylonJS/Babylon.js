@@ -885,7 +885,7 @@ module BABYLON {
                 this.buildUniformLayout();
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -958,6 +958,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
