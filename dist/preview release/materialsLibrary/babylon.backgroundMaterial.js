@@ -20,7 +20,7 @@ var BABYLON;
     /**
      * Background material defines definition.
      */
-    var BackgroundMaterialDefines = /** @class */ (function (_super) {
+    var BackgroundMaterialDefines = (function (_super) {
         __extends(BackgroundMaterialDefines, _super);
         /**
          * Constructor of the defines.
@@ -105,7 +105,7 @@ var BABYLON;
     /**
      * Background material
      */
-    var BackgroundMaterial = /** @class */ (function (_super) {
+    var BackgroundMaterial = (function (_super) {
         __extends(BackgroundMaterial, _super);
         /**
          * constructor
@@ -670,7 +670,7 @@ var BABYLON;
          */
         BackgroundMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
-            serializationObject.customType = "BABYLON.GridMaterial";
+            serializationObject.customType = "BABYLON.BackgroundMaterial";
             return serializationObject;
         };
         /**
