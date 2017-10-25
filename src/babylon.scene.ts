@@ -3757,7 +3757,7 @@
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
 
-                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0 || mesh.infiniteDistance) {
                     continue;
                 }
 

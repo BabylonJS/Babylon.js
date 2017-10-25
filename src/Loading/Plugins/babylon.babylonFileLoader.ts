@@ -529,6 +529,16 @@
                     }
                 }
 
+                // Environment texture
+                if (parsedData.environmentTexture !== undefined && parsedData.environmentTexture !== null) {
+                    scene.environmentTexture = CubeTexture.CreateFromPrefilteredData(rootUrl + parsedData.environmentTexture, scene);
+                    if (parsedData.createDefaultSkybox === true) {
+                        var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;
+                        var skyboxBlurLevel = parsedData.skyboxBlurLevel || 0;
+                        scene.createDefaultSkybox(undefined, true, skyboxScale, skyboxBlurLevel);
+                    }
+                }
+
                 // Lens flares
                 if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
                     for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
