@@ -437,7 +437,7 @@
         private _currentInternalStep: number = 0;
 
         // Mirror
-        public _mirroredCameraPosition: Vector3;
+        public _mirroredCameraPosition: Nullable<Vector3>;
 
         // Keyboard
 
@@ -760,6 +760,7 @@
 
         public _toBeDisposed = new SmartArray<Nullable<IDisposable>>(256);
         private _pendingData = new Array();
+        private _isDisposed = false;
 
         private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
@@ -3729,10 +3730,11 @@
             }
 
             this._engine.wipeCaches();
+            this._isDisposed = true;
         }
 
         public get isDisposed(): boolean {
-            return !this._engine;
+            return this._isDisposed;
         }
 
         // Release sounds & sounds tracks
@@ -3755,7 +3757,7 @@
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
 
-                if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
+                if (!mesh.subMeshes || mesh.subMeshes.length === 0 || mesh.infiniteDistance) {
                     continue;
                 }
 

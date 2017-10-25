@@ -64,7 +64,7 @@ module BABYLON {
 					}
 
 					mesh.computeWorldMatrix(true);
-					let diagonal = mesh.getBoundingInfo().diagonalLength;
+					let diagonal = (<BoundingInfo>mesh.getBoundingInfo()).diagonalLength;
 
 					this.lowerRadiusTransitionRange = diagonal * 0.05;
 					this.upperRadiusTransitionRange = diagonal * 0.05;

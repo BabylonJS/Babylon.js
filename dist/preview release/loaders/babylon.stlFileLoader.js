@@ -1,7 +1,7 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
-    var STLFileLoader = /** @class */ (function () {
+    var STLFileLoader = (function () {
         function STLFileLoader() {
             this.solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
             this.facetsPattern = /facet([\s\S]*?)endfacet/g;

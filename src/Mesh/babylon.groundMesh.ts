@@ -161,6 +161,11 @@ module BABYLON {
         // Returns the GroundMesh.  
         private _computeHeightQuads(): GroundMesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
+
+            if (!positions) {
+                return this;
+            }
+
             var v1 = Tmp.Vector3[3];
             var v2 = Tmp.Vector3[2];
             var v3 = Tmp.Vector3[1];

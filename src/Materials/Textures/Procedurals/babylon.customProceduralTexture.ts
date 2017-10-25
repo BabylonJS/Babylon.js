@@ -83,8 +83,9 @@ module BABYLON {
         }
 
         public render(useCameraPostProcess?: boolean): void {
-            if (this._animate) {
-                this._time += this.getScene().getAnimationRatio() * 0.03;
+            let scene = this.getScene();
+            if (this._animate && scene) {
+                this._time += scene.getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
             }
 

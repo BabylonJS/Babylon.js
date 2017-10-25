@@ -46,6 +46,14 @@
             this.updateBoundingInfo(true, null);
         }
 
+        public static CreateGeometryForMesh(mesh: Mesh): Geometry {
+            let geometry = new Geometry(Geometry.RandomId(), mesh.getScene());
+            
+            geometry.applyToMesh(mesh);
+
+            return geometry;
+        }
+
         constructor(id: string, scene: Scene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null) {
             this.id = id;
             this._engine = scene.getEngine();
@@ -151,7 +159,7 @@
             this._vertexBuffers[kind] = buffer;
 
             if (kind === VertexBuffer.PositionKind) {
-                var data = buffer.getData();
+                var data = <FloatArray>buffer.getData();
                 var stride = buffer.getStrideSize();
 
                 this._totalVertices = data.length / stride;
@@ -271,7 +279,7 @@
             if (!vertexBuffer) {
                 return null;
             }
-            var orig = vertexBuffer.getData();
+            var orig = <FloatArray>vertexBuffer.getData();
             if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
                 return orig;
             } else {
@@ -284,6 +292,22 @@
             }
         }
 
+        /**
+         * Returns a boolean defining if the vertex data for the requested `kind` is updatable.
+         * Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         */        
         public isVertexBufferUpdatable(kind: string): boolean {
             let vb = this._vertexBuffers[kind];
 
@@ -460,7 +484,7 @@
 
         private updateExtend(data: Nullable<FloatArray> = null, stride? : number) {
             if (!data) {
-                data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
+                data = <FloatArray>this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }
 
             this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias, stride);

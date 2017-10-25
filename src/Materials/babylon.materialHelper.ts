@@ -99,8 +99,8 @@
             }
 
             if (useMorphTargets) {
-                if ((<any>mesh).morphTargetManager) {
-                    var manager = (<Mesh>mesh).morphTargetManager;
+                var manager = (<Mesh>mesh).morphTargetManager;
+                if (manager) {
                     defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
                     defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"] ;
                     defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
@@ -303,8 +303,8 @@
             if (influencers > 0 && Engine.LastCreatedEngine) {
                 var maxAttributesCount = Engine.LastCreatedEngine.getCaps().maxVertexAttribs;
                 var manager = (<Mesh>mesh).morphTargetManager;
-                var normal = manager.supportsNormals && defines["NORMAL"];
-                var tangent = manager.supportsTangents && defines["TANGENT"];
+                var normal = manager && manager.supportsNormals && defines["NORMAL"];
+                var tangent = manager && manager.supportsTangents && defines["TANGENT"];
                 for (var index = 0; index < influencers; index++) {
                     attribs.push(VertexBuffer.PositionKind + index);
 
@@ -404,11 +404,12 @@
         }
 
         public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {
-            if (!abstractMesh || !(<Mesh>abstractMesh).morphTargetManager) {
+            let manager = (<Mesh>abstractMesh).morphTargetManager;
+            if (!abstractMesh || !manager) {
                 return;
             }
 
-            effect.setFloatArray("morphTargetInfluences", (<Mesh>abstractMesh).morphTargetManager.influences);
+            effect.setFloatArray("morphTargetInfluences", manager.influences);
         }
 
         public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {

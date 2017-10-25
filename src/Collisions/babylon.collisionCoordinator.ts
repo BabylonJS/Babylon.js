@@ -139,6 +139,8 @@ module BABYLON {
             var submeshes: Array<SerializedSubMesh> = [];
             if (mesh.subMeshes) {
                 submeshes = mesh.subMeshes.map(function (sm, idx) {
+                    let boundingInfo = <BoundingInfo>sm.getBoundingInfo();
+
                     return {
                         position: idx,
                         verticesStart: sm.verticesStart,
@@ -146,30 +148,34 @@ module BABYLON {
                         indexStart: sm.indexStart,
                         indexCount: sm.indexCount,
                         hasMaterial: !!sm.getMaterial(),
-                        sphereCenter: sm.getBoundingInfo().boundingSphere.centerWorld.asArray(),
-                        sphereRadius: sm.getBoundingInfo().boundingSphere.radiusWorld,
-                        boxMinimum: sm.getBoundingInfo().boundingBox.minimumWorld.asArray(),
-                        boxMaximum: sm.getBoundingInfo().boundingBox.maximumWorld.asArray()
+                        sphereCenter: boundingInfo.boundingSphere.centerWorld.asArray(),
+                        sphereRadius: boundingInfo.boundingSphere.radiusWorld,
+                        boxMinimum: boundingInfo.boundingBox.minimumWorld.asArray(),
+                        boxMaximum: boundingInfo.boundingBox.maximumWorld.asArray()
                     }
                 });
             }
 
             var geometryId: Nullable<string> = null;
             if (mesh instanceof Mesh) {
-                geometryId = (<Mesh>mesh).geometry ? (<Mesh>mesh).geometry.id : null;
+                let geometry = (<Mesh>mesh).geometry;
+                geometryId = geometry ? geometry.id : null;
             } else if (mesh instanceof InstancedMesh) {
-                geometryId = ((<InstancedMesh>mesh).sourceMesh && (<InstancedMesh>mesh).sourceMesh.geometry) ? (<InstancedMesh>mesh).sourceMesh.geometry.id : null;
+                let geometry = (<InstancedMesh>mesh).sourceMesh.geometry;
+                geometryId = geometry ? geometry.id : null;
             }
+
+            let boundingInfo = <BoundingInfo>mesh.getBoundingInfo();
 
             return {
                 uniqueId: mesh.uniqueId,
                 id: mesh.id,
                 name: mesh.name,
                 geometryId: geometryId,
-                sphereCenter: mesh.getBoundingInfo().boundingSphere.centerWorld.asArray(),
-                sphereRadius: mesh.getBoundingInfo().boundingSphere.radiusWorld,
-                boxMinimum: mesh.getBoundingInfo().boundingBox.minimumWorld.asArray(),
-                boxMaximum: mesh.getBoundingInfo().boundingBox.maximumWorld.asArray(),
+                sphereCenter: boundingInfo.boundingSphere.centerWorld.asArray(),
+                sphereRadius: boundingInfo.boundingSphere.radiusWorld,
+                boxMinimum: boundingInfo.boundingBox.minimumWorld.asArray(),
+                boxMaximum: boundingInfo.boundingBox.maximumWorld.asArray(),
                 worldMatrixFromCache: mesh.worldMatrixFromCache.asArray(),
                 subMeshes: submeshes,
                 checkCollisions: mesh.checkCollisions
