@@ -10,7 +10,7 @@
             this._scene = scene;
         }
 
-        public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay: boolean = false) {
+        public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay: boolean = false): void {
             var scene = this._scene;
             var engine = this._scene.getEngine();
 
@@ -22,6 +22,10 @@
 
             var mesh = subMesh.getRenderingMesh();
             var material = subMesh.getMaterial();
+
+            if (!material || !scene.activeCamera) {
+                return;
+            }
 
             engine.enableEffect(this._effect);
 
@@ -36,7 +40,7 @@
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            if (mesh.useBones && mesh.computeBonesUsingShaders) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }
 
@@ -95,7 +99,7 @@
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }

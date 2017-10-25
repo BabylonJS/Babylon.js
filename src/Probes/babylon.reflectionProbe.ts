@@ -56,7 +56,9 @@
                 scene.updateTransformMatrix(true);
             });
 
-            this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+            if (scene.activeCamera) {
+                this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+            }
         }
 
         public get samples(): number {
@@ -83,7 +85,7 @@
             return this._renderTargetTexture;
         }
 
-        public get renderList(): AbstractMesh[] {
+        public get renderList(): Nullable<AbstractMesh[]> {
             return this._renderTargetTexture.renderList;
         }
 
@@ -111,7 +113,7 @@
 
             if (this._renderTargetTexture) {
                 this._renderTargetTexture.dispose();
-                this._renderTargetTexture = null;
+                (<any>this._renderTargetTexture) = null;
             }
         }
     }    

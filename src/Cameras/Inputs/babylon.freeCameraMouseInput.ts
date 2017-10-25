@@ -15,7 +15,7 @@ module BABYLON {
         private previousPosition: Nullable<{ x: number, y: number }> = null;
 
         constructor(public touchEnabled = true) {
-        }           
+        }
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             var engine = this.camera.getEngine();
@@ -32,13 +32,15 @@ module BABYLON {
                         return;
                     }
 
-                    if(p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1){
+                    if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                         return;
                     }
 
-                    if (p.type === PointerEventTypes.POINTERDOWN && evt.srcElement) {
+                    let srcElement = <HTMLElement>(evt.srcElement || evt.target);
+
+                    if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
                         try {
-                            evt.srcElement.setPointerCapture(evt.pointerId);
+                            srcElement.setPointerCapture(evt.pointerId);
                         } catch (e) {
                             //Nothing to do with the error. Execution will continue.
                         }
@@ -53,9 +55,9 @@ module BABYLON {
                             element.focus();
                         }
                     }
-                    else if (p.type === PointerEventTypes.POINTERUP && evt.srcElement) {
+                    else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                         try {
-                            evt.srcElement.releasePointerCapture(evt.pointerId);
+                            srcElement.releasePointerCapture(evt.pointerId);
                         } catch (e) {
                             //Nothing to do with the error.
                         }
@@ -146,7 +148,7 @@ module BABYLON {
 
         getSimpleName() {
             return "mouse";
-        }      
+        }
     }
 
     (<any>CameraInputTypes)["FreeCameraMouseInput"] = FreeCameraMouseInput;

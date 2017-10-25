@@ -345,6 +345,7 @@ module BABYLON {
                 defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
                 return;
             }
+
             defines.VIGNETTE = this.vignetteEnabled;
             defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
@@ -353,7 +354,7 @@ module BABYLON {
             defines.EXPOSURE = (this.exposure !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
-            defines.COLORGRADING3D = defines.COLORGRADING && (this.colorGradingTexture.getScene().getEngine().webGLVersion > 1);
+            defines.COLORGRADING3D = defines.COLORGRADING && ((<Scene>this.colorGradingTexture.getScene()).getEngine().webGLVersion > 1);
             defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;

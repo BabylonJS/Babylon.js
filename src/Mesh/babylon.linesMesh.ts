@@ -34,7 +34,7 @@ module BABYLON {
         private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
-        constructor(name: string, scene: Scene, parent: Nullable<Node> = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor? : boolean) {
+        constructor(name: string, scene: Nullable<Scene> = null, parent: Nullable<Node> = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor? : boolean) {
             super(name, scene, parent, source, doNotCloneChildren);
 
             if (source) {
@@ -56,7 +56,7 @@ module BABYLON {
                 options.needAlphaBlending = true;
             }
 
-            this._colorShader = new ShaderMaterial("colorShader", scene, "color", options);
+            this._colorShader = new ShaderMaterial("colorShader", this.getScene(), "color", options);
         }
 
         /**

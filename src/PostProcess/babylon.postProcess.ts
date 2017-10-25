@@ -50,11 +50,13 @@
         public onActivateObservable = new Observable<Camera>();
 
         private _onActivateObserver: Nullable<Observer<Camera>>;
-        public set onActivate(callback: (camera: Camera) => void) {
+        public set onActivate(callback: Nullable<(camera: Camera) => void>) {
             if (this._onActivateObserver) {
                 this.onActivateObservable.remove(this._onActivateObserver);
             }
-            this._onActivateObserver = this.onActivateObservable.add(callback);
+            if (callback) {
+                this._onActivateObserver = this.onActivateObservable.add(callback);
+            }
         }
 
         /**

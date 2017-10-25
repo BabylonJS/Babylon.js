@@ -23,7 +23,7 @@
             this.id = name;
             scene.lensFlareSystems.push(this);
 
-            this.meshesSelectionPredicate = m => scene.activeCamera !== null && m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0);
+            this.meshesSelectionPredicate = m => <boolean>(scene.activeCamera && m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0));
 
             var engine = scene.getEngine();
 
