@@ -6,6 +6,8 @@
         private _lastUpdate: number;
         private _generateMipMaps: boolean
         private _setTextureReady: () => void;
+        private _engine: Engine;
+
         /**
          * Creates a video texture.
          * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
@@ -18,7 +20,7 @@
         constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, scene: Scene, generateMipMaps = false, invertY = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(null, scene, !generateMipMaps, invertY);
 
-            var urls: string[];
+            var urls: Nullable<string[]> = null;
             this.name = name;
 
             if (urlsOrVideo instanceof HTMLVideoElement) {
@@ -31,10 +33,11 @@
                 this.video.loop = true;
             }
 
+            this._engine = (<Scene>this.getScene()).getEngine();
             this._generateMipMaps = generateMipMaps;
             this._samplingMode = samplingMode;
 
-            if (!this.getScene().getEngine().needPOTTextures ||(Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
+            if (!this._engine.needPOTTextures ||(Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
                 this.wrapU = Texture.WRAP_ADDRESSMODE;
                 this.wrapV = Texture.WRAP_ADDRESSMODE;
             } else {
@@ -60,11 +63,13 @@
         }
 
         private __setTextureReady(): void {
-            this._texture.isReady = true;
+            if (this._texture) {
+                this._texture.isReady = true;
+            }
         }
 
         private _createTexture(): void {
-            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
+            this._texture = this._engine.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
 
             if (this._autoLaunch) {
                 this._autoLaunch = false;
@@ -87,7 +92,7 @@
             }
 
             this._lastUpdate = now;
-            this.getScene().getEngine().updateVideoTexture(this._texture, this.video, this._invertY);
+            this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
             return true;
         }
 

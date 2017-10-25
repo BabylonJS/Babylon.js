@@ -114,7 +114,7 @@
             }
 
             if (!this._debugMesh) {
-                this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true }, this._scene);
+                this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, this._scene);
                 this._debugMesh.renderingGroupId = this.renderingGroupId;
             } else {
                 BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);

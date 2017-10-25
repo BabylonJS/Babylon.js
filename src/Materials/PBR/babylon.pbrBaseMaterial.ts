@@ -106,6 +106,7 @@
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
+        public COLORGRADING3D = false;
         public SAMPLER3DGREENDEPTH = false;
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
@@ -388,7 +389,7 @@
          * from cos thetav and roughness: 
          * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
          */
-        protected _environmentBRDFTexture: BaseTexture = null;
+        protected _environmentBRDFTexture: Nullable<BaseTexture> = null;
 
         /**
          * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
@@ -410,13 +411,13 @@
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -811,7 +812,7 @@
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._forceAlphaTest);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._forceAlphaTest);
 
              // Attribs
             if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true)) {
@@ -967,7 +968,7 @@
                 this.buildUniformLayout();
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -1040,6 +1041,11 @@
             }
 
             var effect = subMesh.effect;
+
+            if (!effect) {
+                return;
+            }
+
             this._activeEffect = effect;
 
             // Matrices
@@ -1050,11 +1056,12 @@
             // Bones
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
+            let reflectionTexture: Nullable<BaseTexture> = null;
             if (mustRebind) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
 
                 this.bindViewProjection(effect);
-                var reflectionTexture = this._getReflectionTexture();
+                reflectionTexture = this._getReflectionTexture();
                 var refractionTexture = this._getRefractionTexture();
                                
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
@@ -1080,8 +1087,8 @@
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
 
-                            if (defines.USESPHERICALFROMREFLECTIONMAP) {
-                                var polynomials = reflectionTexture.sphericalPolynomial;
+                            var polynomials = reflectionTexture.sphericalPolynomial;
+                            if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
                                 this._activeEffect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
                                 this._activeEffect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
                                 this._activeEffect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
@@ -1258,7 +1265,7 @@
                 // Colors
                 scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
 
-                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
+                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).globalPosition;
                 var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
                 effect.setFloat4("vEyePosition",
                     eyePosition.x,
@@ -1297,8 +1304,6 @@
             this._uniformBuffer.update();
 
             this._afterBind(mesh);
-
-            scene = null;
         }
 
         public getAnimatables(): IAnimatable[] {
@@ -1354,7 +1359,7 @@
             return this.getScene().environmentTexture;
         }
 
-        private _getRefractionTexture(): BaseTexture {
+        private _getRefractionTexture(): Nullable<BaseTexture> {
             if (this._refractionTexture) {
                 return this._refractionTexture;
             }

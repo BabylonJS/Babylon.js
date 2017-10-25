@@ -167,7 +167,7 @@
             return this._sourceMesh.getIndices();
         }
 
-        public get _positions(): Vector3[] {
+        public get _positions(): Nullable<Vector3[]> {
             return this._sourceMesh._positions;
         }
 

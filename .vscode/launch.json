@@ -2,6 +2,19 @@
     "version": "0.1.0",
     "configurations": [
         {
+            "name": "Launch Viewer (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:9000/",
+            "webRoot": "${workspaceRoot}/Viewer/dist/",
+            "sourceMaps": true,
+            //"preLaunchTask": "build-viewer", // TODO - test why this fails.
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
             "name": "Launch nullEngine",
             "type": "node",
             "request": "launch",
@@ -119,19 +132,6 @@
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },
-        {
-            "name": "Launch Viewer (Chrome)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:9000/",
-            "webRoot": "${workspaceRoot}/Viewer/dist/",
-            "sourceMaps": true,
-            //"preLaunchTask": "build-viewer", // TODO - test why this fails.
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"

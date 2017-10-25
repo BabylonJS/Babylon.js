@@ -73,7 +73,7 @@
             private _alwaysVisible: boolean = false;
             private _depthSort: boolean = false;
             private _shapeCounter: number = 0;
-            private _copy: SolidParticle = new SolidParticle(null, null, null, null, null, null, null);
+            private _copy: SolidParticle = new SolidParticle(0, 0, 0, null, 0, 0, this);
             private _shape: Vector3[];
             private _shapeUV: number[];
             private _color: Color4 = new Color4(0, 0, 0, 0);
@@ -141,10 +141,10 @@
                 this.name = name;
                 this._scene = scene || Engine.LastCreatedScene;
                 this._camera = <TargetCamera>scene.activeCamera;
-                this._pickable = options ? options.isPickable : false;
-                this._depthSort = options ? options.enableDepthSort : false;
-                this._particlesIntersect = options ? options.particleIntersection : false;
-                this._bSphereOnly= options ? options.boundingSphereOnly : false;
+                this._pickable = options ? <boolean>options.isPickable : false;
+                this._depthSort = options ? <boolean>options.enableDepthSort : false;
+                this._particlesIntersect = options ? <boolean>options.particleIntersection : false;
+                this._bSphereOnly= options ? <boolean>options.boundingSphereOnly : false;
                 this._bSphereRadiusFactor = (options && options.bSphereRadiusFactor) ? options.bSphereRadiusFactor : 1.0;
                 if (options && options.updatable) {
                     this._updatable = options.updatable;
@@ -202,10 +202,10 @@
                 this.mesh.isPickable = this._pickable;
     
                 // free memory
-                this._positions = null;
-                this._normals = null;
-                this._uvs = null;
-                this._colors = null;
+                (<any>this._positions) = null;
+                (<any>this._normals) = null;
+                (<any>this._uvs) = null;
+                (<any>this._colors) = null;
     
                 if (!this._updatable) {
                     this.particles.length = 0;
@@ -225,13 +225,13 @@
             */
             public digest(mesh: Mesh, options?: { facetNb?: number; number?: number; delta?: number }): SolidParticleSystem {
                 var size: number = (options && options.facetNb) || 1;
-                var number: number = (options && options.number);
+                var number: number = (options && options.number) || 0;
                 var delta: number = (options && options.delta) || 0;
-                var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
-                var meshInd = mesh.getIndices();
-                var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
-                var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
-                var meshNor = mesh.getVerticesData(VertexBuffer.NormalKind);
+                var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
+                var meshInd = <IndicesArray>mesh.getIndices();
+                var meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
+                var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+                var meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
     
                 var f: number = 0;                              // facet counter
                 var totalFacets: number = meshInd.length / 3;   // a facet is a triangle, so 3 indices
@@ -477,7 +477,7 @@
             }
     
             // adds a new particle object in the particles array
-            private _addParticle(idx: number, idxpos: number, idxind: number, model: ModelShape, shapeId: number, idxInShape: number, bInfo?: BoundingInfo): SolidParticle {
+            private _addParticle(idx: number, idxpos: number, idxind: number, model: ModelShape, shapeId: number, idxInShape: number, bInfo: Nullable<BoundingInfo> = null): SolidParticle {
                 var sp = new SolidParticle(idx, idxpos, idxind, model, shapeId, idxInShape, this, bInfo);
                 this.particles.push(sp);
                 return sp;
@@ -492,11 +492,11 @@
             * `vertexFunction` is an optional javascript function to called for each vertex of each particle on SPS creation
             */
             public addShape(mesh: Mesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any }): number {
-                var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
-                var meshInd = mesh.getIndices();
-                var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
-                var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
-                var meshNor = mesh.getVerticesData(VertexBuffer.NormalKind);
+                var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
+                var meshInd = <IndicesArray>mesh.getIndices();
+                var meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
+                var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+                var meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
                 var bbInfo;
                 if (this._particlesIntersect) {
                     bbInfo = mesh.getBoundingInfo();
@@ -522,10 +522,10 @@
                         sp = this._addParticle(idx, currentPos, currentInd, modelShape, this._shapeCounter, i, bbInfo);
                         sp.position.copyFrom(currentCopy.position);
                         sp.rotation.copyFrom(currentCopy.rotation);
-                        if (currentCopy.rotationQuaternion) {
+                        if (currentCopy.rotationQuaternion && sp.rotationQuaternion) {
                             sp.rotationQuaternion.copyFrom(currentCopy.rotationQuaternion);
                         }
-                        if (currentCopy.color) {
+                        if (currentCopy.color && sp.color) {
                             sp.color.copyFrom(currentCopy.color);
                         }
                         sp.scaling.copyFrom(currentCopy.scaling);
@@ -674,8 +674,10 @@
                         Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
                     }
                     else {      // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
-                        this._minimum.copyFrom(this.mesh._boundingInfo.boundingBox.minimum);
-                        this._maximum.copyFrom(this.mesh._boundingInfo.boundingBox.maximum);
+                        if (this.mesh._boundingInfo) {
+                            this._minimum.copyFrom(this.mesh._boundingInfo.boundingBox.minimum);
+                            this._maximum.copyFrom(this.mesh._boundingInfo.boundingBox.maximum);
+                        }
                     }
                 }
     
@@ -793,7 +795,7 @@
                                 this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;                          
                             }
     
-                            if (this._computeParticleColor) {
+                            if (this._computeParticleColor && this._particle.color) {
                                 this._colors32[colidx] = this._particle.color.r;
                                 this._colors32[colidx + 1] = this._particle.color.g;
                                 this._colors32[colidx + 2] = this._particle.color.b;
@@ -820,7 +822,7 @@
                             this._normals32[idx] = 0.0;
                             this._normals32[idx + 1] = 0.0;
                             this._normals32[idx + 2] = 0.0;
-                            if (this._computeParticleColor) {
+                            if (this._computeParticleColor && this._particle.color) {
                                 this._colors32[colidx] = this._particle.color.r;
                                 this._colors32[colidx + 1] = this._particle.color.g;
                                 this._colors32[colidx + 2] = this._particle.color.b;
@@ -964,17 +966,17 @@
                 this.mesh.dispose();
                 this.vars = null;
                 // drop references to internal big arrays for the GC
-                this._positions = null;
-                this._indices = null;
-                this._normals = null;
-                this._uvs = null;
-                this._colors = null;
-                this._positions32 = null;
-                this._normals32 = null;
-                this._fixedNormal32 = null;
-                this._uvs32 = null;
-                this._colors32 = null;
-                this.pickedParticles = null;
+                (<any>this._positions) = null;
+                (<any>this._indices) = null;
+                (<any>this._normals) = null;
+                (<any>this._uvs) = null;
+                (<any>this._colors) = null;
+                (<any>this._positions32) = null;
+                (<any>this._normals32) = null;
+                (<any>this._fixedNormal32) = null;
+                (<any>this._uvs32) = null;
+                (<any>this._colors32) = null;
+                (<any>this.pickedParticles) = null;
             }
     
             /**
@@ -1021,7 +1023,12 @@
             */
             public set isVisibilityBoxLocked(val: boolean) {
                 this._isVisibilityBoxLocked = val;
-                this.mesh.getBoundingInfo().isLocked = val;
+
+                let boundingInfo = this.mesh.getBoundingInfo();
+
+                if (boundingInfo) {
+                    boundingInfo.isLocked = val;
+                }
             }
     
             public get isVisibilityBoxLocked(): boolean {

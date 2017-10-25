@@ -19,7 +19,7 @@ module BABYLON {
         computeWorldMatrix?(force: boolean): void;
         getWorldMatrix?(): Matrix;
         getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
-        getVerticesData?(kind: string): Nullable<Array<number> | Float32Array>;
+        getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
         getIndices?(): Nullable<IndicesArray>;
         getScene?(): Scene;
         getAbsolutePosition(): Vector3;
@@ -287,21 +287,21 @@ module BABYLON {
             }
         }
 
-        public getLinearVelocity(): Vector3 {
+        public getLinearVelocity(): Nullable<Vector3> {
             return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getLinearVelocity(this) : Vector3.Zero();
         }
 
-        public setLinearVelocity(velocity: Vector3) {
+        public setLinearVelocity(velocity: Nullable<Vector3>) {
             if (this._physicsEngine) {
                 this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
             }
         }
 
-        public getAngularVelocity(): Vector3 {
+        public getAngularVelocity(): Nullable<Vector3> {
             return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this) : Vector3.Zero();
         }
 
-        public setAngularVelocity(velocity: Vector3) {
+        public setAngularVelocity(velocity: Nullable<Vector3>) {
             if (this._physicsEngine) {
                 this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
             }
