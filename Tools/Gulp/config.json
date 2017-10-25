@@ -147,6 +147,7 @@
             "textureTools",
             "cameraBehaviors",
             "materialsLibrary/babylon.gridMaterial.js",
+            "materialsLibrary/babylon.backgroundMaterial.js",
             "loaders/babylon.glTFFileLoader.js"
         ],
         "distributed": [
@@ -1237,6 +1238,21 @@
                     "../../materialsLibrary/src/legacyPBR/legacyColorGradingDefinition.fx"
                 ],
                 "output": "babylon.legacyPbrMaterial.js"
+            },
+            {
+                "files": [
+                    "../../materialsLibrary/src/background/babylon.backgroundMaterial.ts"
+                ],
+                "shaderFiles": [
+                    "../../materialsLibrary/src/background/background.vertex.fx",
+                    "../../materialsLibrary/src/background/background.fragment.fx"
+                ],
+                "shadersIncludeFiles": [
+                    "../../materialsLibrary/src/background/backgroundFragmentDeclaration.fx",
+                    "../../materialsLibrary/src/background/backgroundUboDeclaration.fx",
+                    "../../materialsLibrary/src/background/backgroundVertexDeclaration.fx"
+                ],
+                "output": "babylon.backgroundMaterial.js"
             }
         ],
         "build": {
