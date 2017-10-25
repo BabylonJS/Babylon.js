@@ -17,7 +17,7 @@ module BABYLON {
         /**
          * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0. 
          * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
-         */        
+         */
         @serialize()
         public pinchDeltaPercentage = 0;
 
@@ -50,7 +50,7 @@ module BABYLON {
             var previousPinchSquaredDistance = 0;
             var initialDistance = 0;
             var twoFingerActivityCount = 0;
-            var previousMultiTouchPanPosition: { x: number, y: number, isPaning: boolean, isPinching: boolean } = { x: 0, y:0, isPaning: false, isPinching: false };
+            var previousMultiTouchPanPosition: { x: number, y: number, isPaning: boolean, isPinching: boolean } = { x: 0, y: 0, isPaning: false, isPinching: false };
 
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
@@ -63,9 +63,11 @@ module BABYLON {
                     return;
                 }
 
-                if (p.type === PointerEventTypes.POINTERDOWN && evt.srcElement) {
+                let srcElement = <HTMLElement>(evt.srcElement || evt.target);
+
+                if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
                     try {
-                        evt.srcElement.setPointerCapture(evt.pointerId);
+                        srcElement.setPointerCapture(evt.pointerId);
                     } catch (e) {
                         //Nothing to do with the error. Execution will continue.
                     }
@@ -85,13 +87,13 @@ module BABYLON {
                         evt.preventDefault();
                         element.focus();
                     }
-                } 
+                }
                 else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                     this.camera.restoreState();
                 }
-                else if (p.type === PointerEventTypes.POINTERUP && evt.srcElement) {
+                else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                     try {
-                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                        srcElement.releasePointerCapture(evt.pointerId);
                     } catch (e) {
                         //Nothing to do with the error.
                     }
@@ -103,7 +105,7 @@ module BABYLON {
                     twoFingerActivityCount = 0;
                     initialDistance = 0;
 
-                    if((<any>p.event).pointerType !== "touch") {
+                    if ((<any>p.event).pointerType !== "touch") {
                         pointB = null; // Mouse and pen are mono pointer
                     }
 
@@ -178,13 +180,13 @@ module BABYLON {
 
                         if (this.multiTouchPanAndZoom) {
                             if (this.pinchDeltaPercentage) {
-                                this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001)* this.camera.radius * this.pinchDeltaPercentage; 
+                                this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001) * this.camera.radius * this.pinchDeltaPercentage;
                             } else {
                                 this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
-                                (this.pinchPrecision *
-                                    ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
-                                    direction);
-                                }
+                                    (this.pinchPrecision *
+                                        ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
+                                        direction);
+                            }
 
                             if (this.panningSensibility !== 0) {
                                 var pointersCenterX = (pointA.x + pointB.x) / 2;
@@ -202,14 +204,14 @@ module BABYLON {
                         else {
                             twoFingerActivityCount++;
 
-                            if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > this.camera.pinchToPanMaxDistance)) {                   
+                            if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > this.camera.pinchToPanMaxDistance)) {
                                 if (this.pinchDeltaPercentage) {
                                     this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001) * this.camera.radius * this.pinchDeltaPercentage;
                                 } else {
                                     this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
-                                    (this.pinchPrecision *
-                                        ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
-                                        direction);
+                                        (this.pinchPrecision *
+                                            ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
+                                            direction);
                                 }
                                 previousMultiTouchPanPosition.isPaning = false;
                                 previousMultiTouchPanPosition.isPinching = true;
