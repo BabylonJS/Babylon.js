@@ -101,7 +101,7 @@ module BABYLON {
          * @param {number} maxForce max force for this motor.
          */
         public setMotor(force?: number, maxForce?: number) {
-            this._physicsPlugin.setMotor(this, force, maxForce);
+            this._physicsPlugin.setMotor(this, force || 0, maxForce);
         }
         
         /**
@@ -129,7 +129,7 @@ module BABYLON {
          * @param {number} maxForce max force for this motor.
          */
         public setMotor(force?: number, maxForce?: number) {
-            this._physicsPlugin.setMotor(this, force, maxForce);
+            this._physicsPlugin.setMotor(this, force || 0, maxForce);
         }
         
         /**
@@ -158,7 +158,7 @@ module BABYLON {
          * @param {motorIndex} the motor's index, 0 or 1.
          */
         public setMotor(force?: number, maxForce?: number, motorIndex: number = 0) {
-            this._physicsPlugin.setMotor(this, force, maxForce, motorIndex);
+            this._physicsPlugin.setMotor(this, force || 0, maxForce, motorIndex);
         }
         
         /**

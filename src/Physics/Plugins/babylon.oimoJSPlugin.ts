@@ -120,7 +120,9 @@ module BABYLON {
                 }
 
                 impostors.forEach((i) => {
-
+                    if (!impostor.object.rotationQuaternion) {
+                        return;
+                    }
                     //get the correct bounding box
                     var oldQuaternion = i.object.rotationQuaternion;
                     var rot = new this.BJSOIMO.Euler().setFromQuaternion({
@@ -316,8 +318,11 @@ module BABYLON {
                     impostor.object.position.copyFrom(impostor.physicsBody.getPosition());
 
                 }
-                impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
-                impostor.object.rotationQuaternion.normalize();
+
+                if (impostor.object.rotationQuaternion) {
+                    impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
+                    impostor.object.rotationQuaternion.normalize();
+                }
             }
         }
 
@@ -347,14 +352,18 @@ module BABYLON {
             impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
         }
 
-        public getLinearVelocity(impostor: PhysicsImpostor): Vector3 {
+        public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
             var v = impostor.physicsBody.linearVelocity;
-            if (!v) return null;
+            if (!v) {
+                return null;
+            }
             return new Vector3(v.x, v.y, v.z)
         }
-        public getAngularVelocity(impostor: PhysicsImpostor): Vector3 {
+        public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
             var v = impostor.physicsBody.angularVelocity;
-            if (!v) return null;
+            if (!v) {
+                return null;
+            }
             return new Vector3(v.x, v.y, v.z)
         }
 
@@ -424,10 +433,12 @@ module BABYLON {
             mesh.position.y = body.position.y;
             mesh.position.z = body.position.z;
 
-            mesh.rotationQuaternion.x = body.orientation.x;
-            mesh.rotationQuaternion.y = body.orientation.y;
-            mesh.rotationQuaternion.z = body.orientation.z;
-            mesh.rotationQuaternion.w = body.orientation.s;
+            if (mesh.rotationQuaternion) {
+                mesh.rotationQuaternion.x = body.orientation.x;
+                mesh.rotationQuaternion.y = body.orientation.y;
+                mesh.rotationQuaternion.z = body.orientation.z;
+                mesh.rotationQuaternion.w = body.orientation.s;
+            }
         }
 
         public getRadius(impostor: PhysicsImpostor): number {

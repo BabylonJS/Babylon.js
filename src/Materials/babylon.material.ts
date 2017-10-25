@@ -462,7 +462,7 @@
             this._wasPreviouslyReady = false;
         }
 
-        public _preBind(effect?: Effect, overrideOrientation? : number): boolean {
+        public _preBind(effect?: Effect, overrideOrientation : Nullable<number> = null): boolean {
             var engine = this._scene.getEngine();
 
             var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;

@@ -138,6 +138,11 @@ module BABYLON {
             }
 
             var meshInfo = this._loadedMeshInfo.buttonMeshes[buttonName];
+
+            if (!meshInfo.unpressed.rotationQuaternion || !meshInfo.pressed.rotationQuaternion || !meshInfo.value.rotationQuaternion) {
+                return;
+            }
+
             BABYLON.Quaternion.SlerpToRef(
                 meshInfo.unpressed.rotationQuaternion, 
                 meshInfo.pressed.rotationQuaternion, 
@@ -159,6 +164,10 @@ module BABYLON {
             if (!meshInfo) {
                 return;
             }
+
+            if (!meshInfo.min.rotationQuaternion || !meshInfo.max.rotationQuaternion || !meshInfo.value.rotationQuaternion) {
+                return;
+            }            
 
             // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
             let lerpValue = axisValue * 0.5 + 0.5;

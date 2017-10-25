@@ -80,7 +80,9 @@ module BABYLON {
             
             if (this._mesh) {
                 this._mesh.position.copyFrom(this._calculatedPosition);
-                this._mesh.rotationQuaternion.copyFrom(this._calculatedRotation);
+                if (this._mesh.rotationQuaternion) {
+                    this._mesh.rotationQuaternion.copyFrom(this._calculatedRotation);
+                }
             }
         }
 

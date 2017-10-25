@@ -419,17 +419,21 @@ module BABYLON {
 
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
-
                 if (!this._meshes) {
                     return;
                 }
 
+                var material = subMesh.getMaterial();
                 var mesh = subMesh.getRenderingMesh();
                 var scene = this._scene;
                 var engine = scene.getEngine();
 
+                if (!material) {
+                    return;
+                }
+
                 // Culling
-                engine.setState(subMesh.getMaterial().backFaceCulling);
+                engine.setState(material.backFaceCulling);
 
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -445,7 +449,6 @@ module BABYLON {
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
                 var highlightLayerMesh = this._meshes[mesh.uniqueId];
-                var material = subMesh.getMaterial();
                 var emissiveTexture: Nullable<Texture> = null;
                 if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
                     emissiveTexture = (<any>material).emissiveTexture;
@@ -491,7 +494,7 @@ module BABYLON {
                     }
 
                     // Bones
-                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                    if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                         this._glowMapGenerationEffect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
 
@@ -545,7 +548,13 @@ module BABYLON {
          * @return true if ready otherwise, false
          */
         private isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<Texture>): boolean {
-            if (!subMesh.getMaterial().isReady(subMesh.getMesh(), useInstances)) {
+            let material = subMesh.getMaterial();
+
+            if (!material) {
+                return false;
+            }
+
+            if (!material.isReady(subMesh.getMesh(), useInstances)) {
                 return false;
             }
 
@@ -554,7 +563,6 @@ module BABYLON {
             var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
-            var material = subMesh.getMaterial();
             var uv1 = false;
             var uv2 = false;
 
@@ -607,7 +615,7 @@ module BABYLON {
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }

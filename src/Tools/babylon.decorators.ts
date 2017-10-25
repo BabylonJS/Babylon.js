@@ -238,8 +238,12 @@
             return serializationObject;
         }
 
-        public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: string = ""): T {
+        public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: Nullable<string> = null): T {
             var destination = creationFunction();
+
+            if (!rootUrl) {
+                rootUrl = "";
+            }
 
             // Tags
             if (Tags) {

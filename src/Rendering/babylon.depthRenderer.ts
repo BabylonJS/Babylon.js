@@ -28,9 +28,14 @@
                 var mesh = subMesh.getRenderingMesh();
                 var scene = this._scene;
                 var engine = scene.getEngine();
+                let material = subMesh.getMaterial();
+
+                if (!material) {
+                    return;
+                }
 
                 // Culling
-                engine.setState(subMesh.getMaterial().backFaceCulling);
+                engine.setState(material.backFaceCulling);
 
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -41,10 +46,9 @@
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
 
-                if (this.isReady(subMesh, hardwareInstancedRendering)) {
+                if (this.isReady(subMesh, hardwareInstancedRendering) && scene.activeCamera) {
                     engine.enableEffect(this._effect);
                     mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
-                    var material = subMesh.getMaterial();
 
                     this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -53,12 +57,15 @@
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        this._effect.setTexture("diffuseSampler", alphaTexture);
-                        this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+
+                        if (alphaTexture) {
+                            this._effect.setTexture("diffuseSampler", alphaTexture);
+                            this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
                     }
 
                     // Bones
-                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                    if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                         this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
 
@@ -123,7 +130,7 @@
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }

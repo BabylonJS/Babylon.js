@@ -577,7 +577,7 @@ module BABYLON {
          * @param {string} name Name of the sampler.
          * @param {Texture} texture
          */
-        public setTexture(name: string, texture: BaseTexture) {
+        public setTexture(name: string, texture: Nullable<BaseTexture>) {
             this._currentEffect.setTexture(name, texture);
         }
 

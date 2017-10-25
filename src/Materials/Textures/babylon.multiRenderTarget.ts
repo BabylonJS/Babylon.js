@@ -13,10 +13,10 @@ module BABYLON {
         private _internalTextures: InternalTexture[];
         private _textures: Texture[];
         private _count: number;
+        private _engine: Engine;
 
         public get isSupported(): boolean {
-            var engine = this.getScene().getEngine();
-            return engine.webGLVersion > 1 || engine.getCaps().drawBuffersExtension;
+            return this._engine.webGLVersion > 1 || this._engine.getCaps().drawBuffersExtension;
         }
 
         private _multiRenderTargetOptions: IMultiRenderTargetOptions;
@@ -53,6 +53,8 @@ module BABYLON {
             var doNotChangeAspectRatio = options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
 
             super(name, size, scene, generateMipMaps, doNotChangeAspectRatio);
+
+            this._engine = scene.getEngine();            
 
             if (!this.isSupported) {
                 this.dispose();
@@ -109,7 +111,7 @@ module BABYLON {
         }
 
         private _createInternalTextures(): void {
-            this._internalTextures = this.getScene().getEngine().createMultipleRenderTarget(this._size , this._multiRenderTargetOptions);
+            this._internalTextures = this._engine.createMultipleRenderTarget(this._size , this._multiRenderTargetOptions);
         }
 
         private _createTextures(): void {
@@ -134,13 +136,13 @@ module BABYLON {
             }
             
             for (var i = 0 ; i < this._internalTextures.length; i++) {
-                this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._internalTextures[i], value);
+                this._samples = this._engine.updateRenderTargetTextureSampleCount(this._internalTextures[i], value);
             }
         }
 
         public resize(size: any) {
             this.releaseInternalTextures();
-            this._internalTextures = this.getScene().getEngine().createMultipleRenderTarget(size, this._multiRenderTargetOptions);
+            this._internalTextures = this._engine.createMultipleRenderTarget(size, this._multiRenderTargetOptions);
             this._createInternalTextures();
         }
 
