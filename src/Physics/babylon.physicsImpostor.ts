@@ -380,7 +380,13 @@ module BABYLON {
             if (!this._physicsEngine) {
                 return;
             }
-            this.object.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
+
+            if (this._options.ignoreParent && this.object.parent) {
+                this._tmpPositionWithDelta.copyFrom(this.object.getAbsolutePosition());
+                //this.object.getAbsolutePosition().subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
+            } else {
+                this.object.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
+            }
             //conjugate deltaRotation
             if (this.object.rotationQuaternion) {
                 if (this._deltaRotationConjugated) {
@@ -413,7 +419,12 @@ module BABYLON {
 
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
 
-            this.object.position.addInPlace(this._deltaPosition)
+            if (this._options.ignoreParent && this.object.parent) {
+                this.object.position.subtractInPlace(this.object.parent.getAbsolutePosition());
+            } else {
+                this.object.position.addInPlace(this._deltaPosition)
+            }
+
             if (this._deltaRotation && this.object.rotationQuaternion) {
                 this.object.rotationQuaternion.multiplyInPlace(this._deltaRotation);
             }
