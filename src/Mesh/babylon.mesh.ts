@@ -177,6 +177,11 @@
                 // Deep copy
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId"], ["_poseMatrix"]);
 
+                // Tags
+                if (Tags.HasTags(source)) {
+                    Tags.AddTagsTo(this, Tags.GetTags(source, true));
+                }
+
                 // Parent
                 this.parent = source.parent;
 
