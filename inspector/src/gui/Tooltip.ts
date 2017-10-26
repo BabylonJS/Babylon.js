@@ -11,13 +11,13 @@ module INSPECTOR {
         /** The tooltip div */
         private _infoDiv : HTMLDivElement;
         
-        constructor(elem: HTMLElement, tip:string, attachTo?:HTMLElement) {
+        constructor(elem: HTMLElement, tip:string, attachTo: Nullable<HTMLElement> = null) {
             
             this._elem = elem;
             if (!attachTo) {
                 attachTo = this._elem.parentElement;
             }
-            this._infoDiv = Helpers.CreateDiv('tooltip', attachTo) as HTMLDivElement;
+            this._infoDiv = Helpers.CreateDiv('tooltip', <HTMLElement>attachTo) as HTMLDivElement;
             
 
             this._elem.addEventListener('mouseover', () => { 

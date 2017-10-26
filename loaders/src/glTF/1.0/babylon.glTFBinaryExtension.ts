@@ -23,7 +23,7 @@ module BABYLON.GLTF1 {
 
         public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: (message: string) => void): boolean {
             var extensionsUsed = (<any>data.json).extensionsUsed;
-            if (!extensionsUsed || extensionsUsed.indexOf(this.name) === -1) {
+            if (!extensionsUsed || extensionsUsed.indexOf(this.name) === -1 || !data.bin) {
                 return false;
             }
 

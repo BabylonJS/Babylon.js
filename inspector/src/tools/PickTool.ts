@@ -19,7 +19,8 @@ module INSPECTOR {
             } else {                 
                 this.toHtml().classList.add('active');            
                 // Add event handler : pick on a mesh in the scene
-                this._inspector.scene.getEngine().getRenderingCanvas().addEventListener('click', this._pickHandler);
+                let canvas = <HTMLElement>this._inspector.scene.getEngine().getRenderingCanvas();
+                canvas.addEventListener('click', this._pickHandler);
                 this._isActive = true;
             }
         }
@@ -28,7 +29,8 @@ module INSPECTOR {
         private _deactivate() {
             this.toHtml().classList.remove('active');            
             // Remove event handler
-            this._inspector.scene.getEngine().getRenderingCanvas().removeEventListener('click', this._pickHandler);
+            let canvas = <HTMLElement>this._inspector.scene.getEngine().getRenderingCanvas();
+            canvas.removeEventListener('click', this._pickHandler);
             this._isActive = false;
         }
         
@@ -37,14 +39,14 @@ module INSPECTOR {
             let pos = this._updatePointerPosition(evt);
             let pi = this._inspector.scene.pick(pos.x, pos.y, (mesh:BABYLON.AbstractMesh) => {return true});
             
-            if (pi.pickedMesh) {
+            if (pi && pi.pickedMesh) {
                 this._inspector.displayObjectDetails(pi.pickedMesh);
             }
             this._deactivate();
         }
         
         private _updatePointerPosition(evt: PointerEvent) : {x:number, y:number}{
-            let canvasRect =  this._inspector.scene.getEngine().getRenderingCanvasClientRect();
+            let canvasRect = <ClientRect>this._inspector.scene.getEngine().getRenderingCanvasClientRect();
             let pointerX = evt.clientX - canvasRect.left;
             let pointerY = evt.clientY - canvasRect.top;
             return {x:pointerX, y:pointerY};

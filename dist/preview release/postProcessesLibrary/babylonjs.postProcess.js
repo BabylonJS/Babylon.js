@@ -37,7 +37,12 @@ var BABYLON;
          * @param scene the scene that owns the texture
          */
         function AsciiArtFontTexture(name, font, text, scene) {
+            if (scene === void 0) { scene = null; }
             var _this = _super.call(this, scene) || this;
+            scene = _this.getScene();
+            if (!scene) {
+                return _this;
+            }
             _this.name = name;
             _this._text == text;
             _this._font == font;
@@ -69,7 +74,7 @@ var BABYLON;
                 context.fillText(text[i], i * _this._charSize, -maxCharHeight.offset);
             }
             // Flush the text in the dynamic texture.
-            _this.getScene().getEngine().updateDynamicTexture(_this._texture, canvas, false, true);
+            scene.getEngine().updateDynamicTexture(_this._texture, canvas, false, true);
             return _this;
         }
         Object.defineProperty(AsciiArtFontTexture.prototype, "charSize", {
@@ -241,7 +246,12 @@ var BABYLON;
          * @param scene the scene that owns the texture
          */
         function DigitalRainFontTexture(name, font, text, scene) {
+            if (scene === void 0) { scene = null; }
             var _this = _super.call(this, scene) || this;
+            scene = _this.getScene();
+            if (!scene) {
+                return _this;
+            }
             _this.name = name;
             _this._text == text;
             _this._font == font;
@@ -273,7 +283,7 @@ var BABYLON;
                 context.fillText(text[i], 0, i * _this._charSize - maxCharHeight.offset);
             }
             // Flush the text in the dynamic texture.
-            _this.getScene().getEngine().updateDynamicTexture(_this._texture, canvas, false, true);
+            scene.getEngine().updateDynamicTexture(_this._texture, canvas, false, true);
             return _this;
         }
         Object.defineProperty(DigitalRainFontTexture.prototype, "charSize", {

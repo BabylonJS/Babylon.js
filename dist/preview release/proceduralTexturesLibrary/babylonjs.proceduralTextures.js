@@ -92,8 +92,9 @@ var BABYLON;
             this.setFloat("alphaThreshold", this._alphaThreshold);
         };
         FireProceduralTexture.prototype.render = function (useCameraPostProcess) {
-            if (this._autoGenerateTime) {
-                this._time += this.getScene().getAnimationRatio() * 0.03;
+            var scene = this.getScene();
+            if (this._autoGenerateTime && scene) {
+                this._time += scene.getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
             }
             _super.prototype.render.call(this, useCameraPostProcess);
@@ -717,7 +718,11 @@ var BABYLON;
         }
         PerlinNoiseProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("size", this.getRenderSize());
-            var deltaTime = this.getScene().getEngine().getDeltaTime();
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
+            var deltaTime = scene.getEngine().getDeltaTime();
             this.time += deltaTime;
             this.setFloat("time", this.time * this.speed / 1000);
             this._currentTranslation += deltaTime * this.translationSpeed / 1000.0;

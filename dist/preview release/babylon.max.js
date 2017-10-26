@@ -33206,6 +33206,23 @@ var BABYLON;
             };
             return _this;
         }
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
         Object.defineProperty(StandardMaterial.prototype, "imageProcessingConfiguration", {
             /**
              * Gets the image processing configuration used either in this material.

@@ -99,24 +99,24 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            this._gltf = undefined;
-            this._babylonScene = undefined;
-            this._parent = undefined;
-            this._rootUrl = undefined;
-            this._defaultMaterial = undefined;
-            this._rootNode = undefined;
-            this._successCallback = undefined;
-            this._progressCallback = undefined;
-            this._errorCallback = undefined;
+            (<any>this._gltf) = undefined;
+            (<any>this._babylonScene) = undefined;
+            (<any>this._parent) = undefined;
+            (<any>this._rootUrl) = undefined;
+            (<any>this._defaultMaterial) = undefined;
+            (<any>this._rootNode) = undefined;
+            (<any>this._successCallback) = undefined;
+            (<any>this._progressCallback) = undefined;
+            (<any>this._errorCallback) = undefined;
             this._renderReady = false;
-            this._requests = undefined;
-            this._renderReadyObservable = undefined;
+            (<any>this._requests) = undefined;
+            (<any>this._renderReadyObservable) = undefined;
             this._renderPendingCount = 0;
             this._loaderPendingCount = 0;
-            this._loaderTrackers = undefined;
+            (<any>this._loaderTrackers) = undefined;
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
             this._loadAsync(meshesNames, scene, data, rootUrl, () => {
                 onSuccess(this._getMeshes(), null, this._getSkeletons());
             }, onProgress, onError);
@@ -189,7 +189,9 @@ module BABYLON.GLTF2 {
         }
 
         private _onRenderReady(): void {
-            this._rootNode.babylonMesh.setEnabled(true);
+            if (this._rootNode.babylonMesh) {
+                this._rootNode.babylonMesh.setEnabled(true);
+            }   
 
             this._startAnimations();
             this._successCallback();
@@ -223,7 +225,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _getMeshes(): Mesh[] {
+        private _getMeshes(): AbstractMesh[] {
             const meshes = [this._rootNode.babylonMesh];
 
             const nodes = this._gltf.nodes;
@@ -235,7 +237,7 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            return meshes;
+            return <AbstractMesh[]>meshes;
         }
 
         private _getSkeletons(): Skeleton[] {
@@ -259,7 +261,7 @@ module BABYLON.GLTF2 {
             const animations = this._gltf.animations;
             if (animations) {
                 for (const animation of animations) {
-                    targets.push(...animation.targets);
+                    targets.push(...(<any>animation.targets));
                 }
             }
 
@@ -286,7 +288,7 @@ module BABYLON.GLTF2 {
 
             switch (this._parent.coordinateSystemMode) {
                 case GLTFLoaderCoordinateSystemMode.AUTO:
-                    if (!this._babylonScene.useRightHandedSystem) {
+                    if (!this._babylonScene.useRightHandedSystem && this._rootNode.babylonMesh) {
                         this._rootNode.babylonMesh.rotation = new Vector3(0, Math.PI, 0);
                         this._rootNode.babylonMesh.scaling = new Vector3(1, 1, -1);
                     }
@@ -317,7 +319,7 @@ module BABYLON.GLTF2 {
                 const filteredNodeIndices = new Array<number>();
                 this._traverseNodes(context, nodeIndices, node => {
                     if (nodeNames.indexOf(node.name) !== -1) {
-                        filteredNodeIndices.push(node.index);
+                        filteredNodeIndices.push(<number>node.index);
                         return false;
                     }
 
@@ -337,7 +339,9 @@ module BABYLON.GLTF2 {
             }
 
             // Disable the root mesh until the asset is ready to render.
-            this._rootNode.babylonMesh.setEnabled(false);
+            if (this._rootNode.babylonMesh) {
+                this._rootNode.babylonMesh.setEnabled(false);
+            }
         }
 
         public _loadNode(context: string, node: IGLTFNode): void {
@@ -358,7 +362,7 @@ module BABYLON.GLTF2 {
                 this._loadMesh("#/meshes/" + node.mesh, node, mesh);
             }
 
-            node.babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
+            (<Mesh>node.babylonMesh).parent = <Nullable<Node>>(node.parent ? node.parent.babylonMesh : null);
 
             node.babylonAnimationTargets = node.babylonAnimationTargets || [];
             node.babylonAnimationTargets.push(node.babylonMesh);
@@ -389,7 +393,11 @@ module BABYLON.GLTF2 {
         }
 
         private _loadMesh(context: string, node: IGLTFNode, mesh: IGLTFMesh): void {
-            node.babylonMesh.name = node.babylonMesh.name || mesh.name;
+            if (!node.babylonMesh) {
+                return;
+            }
+
+            node.babylonMesh.name = node.babylonMesh.name || mesh.name || "";
 
             const primitives = mesh.primitives;
             if (!primitives || primitives.length === 0) {
@@ -399,6 +407,10 @@ module BABYLON.GLTF2 {
             this._createMorphTargets(context, node, mesh);
 
             this._loadAllVertexDataAsync(context, mesh, () => {
+                if (!node.babylonMesh) {
+                    return;
+                }
+
                 this._loadMorphTargets(context, node, mesh);
 
                 const vertexData = new VertexData();
@@ -416,8 +428,8 @@ module BABYLON.GLTF2 {
                 let indicesStart = 0;
                 for (let index = 0; index < primitives.length; index++) {
                     const vertexData = primitives[index].vertexData;
-                    const verticesCount = vertexData.positions.length;
-                    const indicesCount = vertexData.indices.length;
+                    const verticesCount = (<FloatArray>vertexData.positions).length;
+                    const indicesCount = (<IndicesArray>vertexData.indices).length;
                     SubMesh.AddToMesh(index, verticesStart, verticesCount, indicesStart, indicesCount, node.babylonMesh);
                     verticesStart += verticesCount;
                     indicesStart += indicesCount;
@@ -446,7 +458,7 @@ module BABYLON.GLTF2 {
 
                         if (this._parent.onBeforeMaterialReadyAsync) {
                             this._addLoaderPendingData(material);
-                            this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[index] != null, () => {
+                            this._parent.onBeforeMaterialReadyAsync(babylonMaterial, <Mesh>node.babylonMesh, subMaterials[index] != null, () => {
                                 this._tryCatchOnError(() => {
                                     subMaterials[index] = babylonMaterial;
                                     this._removeLoaderPendingData(material);
@@ -527,7 +539,7 @@ module BABYLON.GLTF2 {
 
                     if (--numRemainingAttributes === 0) {
                         if (primitive.indices == null) {
-                            vertexData.indices = new Uint32Array(vertexData.positions.length / 3);
+                            vertexData.indices = new Uint32Array((<FloatArray>vertexData.positions).length / 3);
                             for (let i = 0; i < vertexData.indices.length; i++) {
                                 vertexData.indices[i] = i;
                             }
@@ -553,7 +565,7 @@ module BABYLON.GLTF2 {
             const primitives = mesh.primitives;
 
             const targets = primitives[0].targets;
-            if (!targets) {
+            if (!targets || !node.babylonMesh) {
                 return;
             }
 
@@ -572,6 +584,9 @@ module BABYLON.GLTF2 {
         }
 
         private _loadMorphTargets(context: string, node: IGLTFNode, mesh: IGLTFMesh): void {
+            if (!node.babylonMesh) {
+                return;
+            }            
             const morphTargetManager = node.babylonMesh.morphTargetManager;
             if (!morphTargetManager) {
                 return;
@@ -586,18 +601,24 @@ module BABYLON.GLTF2 {
                     }
 
                     const target = morphTargetManager.getTarget(index);
-                    target.setNormals(vertexData.normals);
-                    target.setPositions(vertexData.positions);
-                    target.setTangents(vertexData.tangents);
+                    target.setNormals(<FloatArray>vertexData.normals);
+                    target.setPositions(<FloatArray>vertexData.positions);
+                    target.setTangents(<FloatArray>vertexData.tangents);
                 }
             });
         }
 
         private _loadAllMorphTargetVertexDataAsync(context: string, node: IGLTFNode, mesh: IGLTFMesh, onSuccess: () => void): void {
+            if (!node.babylonMesh || !node.babylonMesh.morphTargetManager) {
+                return;
+            }
             let numRemainingTargets = mesh.primitives.length * node.babylonMesh.morphTargetManager.numTargets;
 
             for (const primitive of mesh.primitives) {
                 const targets = primitive.targets;
+                if (!targets) {
+                    continue;
+                }
                 primitive.targetsVertexData = new Array<VertexData>(targets.length);
                 for (let index = 0; index < targets.length; index++) {
                     this._loadMorphTargetVertexDataAsync(context + "/targets/" + index, primitive.vertexData, targets[index], vertexData => {
@@ -627,13 +648,13 @@ module BABYLON.GLTF2 {
                     switch (attribute) {
                         case "NORMAL":
                             for (let i = 0; i < values.length; i++) {
-                                values[i] += vertexData.normals[i];
+                                values[i] += (<FloatArray>vertexData.normals)[i];
                             }
                             targetVertexData.normals = values;
                             break;
                         case "POSITION":
                             for (let i = 0; i < values.length; i++) {
-                                values[i] += vertexData.positions[i];
+                                values[i] += (<FloatArray>vertexData.positions)[i];
                             }
                             targetVertexData.positions = values;
                             break;
@@ -642,7 +663,7 @@ module BABYLON.GLTF2 {
                             // The vertexData.tangent is stored as xyzw.
                             // So we need to skip every fourth vertexData.tangent.
                             for (let i = 0, j = 0; i < values.length; i++, j++) {
-                                values[i] += vertexData.tangents[j];
+                                values[i] += (<FloatArray>vertexData.tangents)[j];
                                 if ((i + 1) % 3 == 0) {
                                     j++;
                                 }
@@ -662,6 +683,10 @@ module BABYLON.GLTF2 {
         }
 
         private _loadTransform(node: IGLTFNode): void {
+            if (!node.babylonMesh) {
+                return;
+            }
+
             let position: Vector3 = Vector3.Zero();
             let rotation: Quaternion = Quaternion.Identity();
             let scaling: Vector3 = Vector3.One();
@@ -703,10 +728,10 @@ module BABYLON.GLTF2 {
         }
 
         private _createBone(node: IGLTFNode, skin: IGLTFSkin, parent: Bone, localMatrix: Matrix, baseMatrix: Matrix, index: number): Bone {
-            const babylonBone = new Bone(node.name || "bone" + node.index, skin.babylonSkeleton, parent, localMatrix, null, baseMatrix, index);
+            const babylonBone = new Bone(node.name || "bone" + node.index, <Skeleton>skin.babylonSkeleton, parent, localMatrix, null, baseMatrix, index);
 
             node.babylonBones = node.babylonBones || {};
-            node.babylonBones[skin.index] = babylonBone;
+            node.babylonBones[<number>skin.index] = babylonBone;
 
             node.babylonAnimationTargets = node.babylonAnimationTargets || [];
             node.babylonAnimationTargets.push(babylonBone);
@@ -714,7 +739,7 @@ module BABYLON.GLTF2 {
             return babylonBone;
         }
 
-        private _loadBones(context: string, skin: IGLTFSkin, inverseBindMatrixData: Float32Array): void {
+        private _loadBones(context: string, skin: IGLTFSkin, inverseBindMatrixData: Nullable<Float32Array>): void {
             const babylonBones: { [index: number]: Bone } = {};
             for (const index of skin.joints) {
                 const node = GLTFUtils.GetArrayItem(this._gltf.nodes, index);
@@ -726,13 +751,13 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _loadBone(node: IGLTFNode, skin: IGLTFSkin, inverseBindMatrixData: Float32Array, babylonBones: { [index: number]: Bone }): Bone {
-            let babylonBone = babylonBones[node.index];
+        private _loadBone(node: IGLTFNode, skin: IGLTFSkin, inverseBindMatrixData: Nullable<Float32Array>, babylonBones: { [index: number]: Bone }): Bone {
+            let babylonBone = babylonBones[<number>node.index];
             if (babylonBone) {
                 return babylonBone;
             }
 
-            const boneIndex = skin.joints.indexOf(node.index);
+            const boneIndex = skin.joints.indexOf(<number>node.index);
 
             let baseMatrix = Matrix.Identity();
             if (inverseBindMatrixData && boneIndex !== -1) {
@@ -740,14 +765,14 @@ module BABYLON.GLTF2 {
                 baseMatrix.invertToRef(baseMatrix);
             }
 
-            let babylonParentBone: Bone;
+            let babylonParentBone: Nullable<Bone> = null;
             if (node.index !== skin.skeleton && node.parent !== this._rootNode) {
-                babylonParentBone = this._loadBone(node.parent, skin, inverseBindMatrixData, babylonBones);
+                babylonParentBone = this._loadBone(<IGLTFNode>node.parent, skin, inverseBindMatrixData, babylonBones);
                 baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
             }
 
-            babylonBone = this._createBone(node, skin, babylonParentBone, this._getNodeMatrix(node), baseMatrix, boneIndex);
-            babylonBones[node.index] = babylonBone;
+            babylonBone = this._createBone(node, skin, <Bone>babylonParentBone, this._getNodeMatrix(node), baseMatrix, boneIndex);
+            babylonBones[<number>node.index] = babylonBone;
             return babylonBone;
         }
 
@@ -760,7 +785,7 @@ module BABYLON.GLTF2 {
                     node.translation ? Vector3.FromArray(node.translation) : Vector3.Zero());
         }
 
-        private _traverseNodes(context: string, indices: number[], action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode = null): void {
+        private _traverseNodes(context: string, indices: number[], action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: Nullable<IGLTFNode> = null): void {
             for (const index of indices) {
                 const node = GLTFUtils.GetArrayItem(this._gltf.nodes, index);
                 if (!node) {
@@ -771,7 +796,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public _traverseNode(context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode = null): void {
+        public _traverseNode(context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: Nullable<IGLTFNode>) => boolean, parentNode: Nullable<IGLTFNode> = null): void {
             if (GLTFLoaderExtension.TraverseNode(this, context, node, action, parentNode)) {
                 return;
             }
@@ -876,6 +901,9 @@ module BABYLON.GLTF2 {
                         break;
                     case "influence":
                         getNextOutputValue = () => {
+                            if (!targetNode.babylonMesh || !targetNode.babylonMesh.morphTargetManager) {
+                                return;
+                            }
                             const numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
                             const value = new Array<number>(numTargets);
                             for (let i = 0; i < numTargets; i++) {
@@ -913,7 +941,7 @@ module BABYLON.GLTF2 {
 
                 animation.targets = animation.targets || [];
 
-                if (targetPath === "influence") {
+                if (targetPath === "influence" && targetNode.babylonMesh && targetNode.babylonMesh.morphTargetManager) {
                     const morphTargetManager = targetNode.babylonMesh.morphTargetManager;
 
                     for (let targetIndex = 0; targetIndex < morphTargetManager.numTargets; targetIndex++) {
@@ -931,7 +959,7 @@ module BABYLON.GLTF2 {
                         animation.targets.push(morphTarget);
                     }
                 }
-                else {
+                else if (targetNode.babylonAnimationTargets) {
                     const animationName = animation.name || "anim" + animation.index;
                     const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys);
@@ -964,7 +992,7 @@ module BABYLON.GLTF2 {
             });
         }
 
-        private _loadBufferAsync(context: string, buffer: IGLTFBuffer, onSuccess: (data: ArrayBufferView) => void): void {
+        private _loadBufferAsync(context: string, buffer: IGLTFBuffer, onSuccess: (data?: ArrayBufferView) => void): void {
             this._addPendingData(buffer);
 
             if (buffer.loadedData) {
@@ -998,8 +1026,10 @@ module BABYLON.GLTF2 {
 
                     this._loadUri(context, buffer.uri, data => {
                         buffer.loadedData = data;
-                        buffer.loadedObservable.notifyObservers(buffer);
-                        buffer.loadedObservable = null;
+                        if (buffer.loadedObservable) {
+                            buffer.loadedObservable.notifyObservers(buffer);
+                            buffer.loadedObservable = undefined;
+                        }
                     });
                 }
             }
@@ -1012,7 +1042,7 @@ module BABYLON.GLTF2 {
             }
 
             this._loadBufferAsync("#/buffers/" + buffer.index, buffer, bufferData => {
-                if (this._disposed) {
+                if (this._disposed || !bufferData) {
                     return;
                 }
 
@@ -1038,7 +1068,7 @@ module BABYLON.GLTF2 {
                 throw new Error(context + ": Normalized accessors are not currently supported");
             }
 
-            const bufferView = GLTFUtils.GetArrayItem(this._gltf.bufferViews, accessor.bufferView);
+            const bufferView = GLTFUtils.GetArrayItem(this._gltf.bufferViews, <number>accessor.bufferView);
             if (!bufferView) {
                 throw new Error(context + ": Failed to find buffer view " + accessor.bufferView);
             }
@@ -1050,26 +1080,28 @@ module BABYLON.GLTF2 {
                 }
 
                 let data: ArrayBufferView;
+                let byteOffset = <number>accessor.byteOffset;
+                let byteStride = <number>bufferView.byteStride;
 
                 try {
                     switch (accessor.componentType) {
                         case EComponentType.BYTE:
-                            data = this._buildArrayBuffer(Float32Array, bufferViewData, accessor.byteOffset, accessor.count, numComponents, bufferView.byteStride);
+                            data = this._buildArrayBuffer(Float32Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                             break;
                         case EComponentType.UNSIGNED_BYTE:
-                            data = this._buildArrayBuffer(Uint8Array, bufferViewData, accessor.byteOffset, accessor.count, numComponents, bufferView.byteStride);
+                            data = this._buildArrayBuffer(Uint8Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                             break;
                         case EComponentType.SHORT:
-                            data = this._buildArrayBuffer(Int16Array, bufferViewData, accessor.byteOffset, accessor.count, numComponents, bufferView.byteStride);
+                            data = this._buildArrayBuffer(Int16Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                             break;
                         case EComponentType.UNSIGNED_SHORT:
-                            data = this._buildArrayBuffer(Uint16Array, bufferViewData, accessor.byteOffset, accessor.count, numComponents, bufferView.byteStride);
+                            data = this._buildArrayBuffer(Uint16Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                             break;
                         case EComponentType.UNSIGNED_INT:
-                            data = this._buildArrayBuffer(Uint32Array, bufferViewData, accessor.byteOffset, accessor.count, numComponents, bufferView.byteStride);
+                            data = this._buildArrayBuffer(Uint32Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                             break;
                         case EComponentType.FLOAT:
-                            data = this._buildArrayBuffer(Float32Array, bufferViewData, accessor.byteOffset, accessor.count, numComponents, bufferView.byteStride);
+                            data = this._buildArrayBuffer(Float32Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                             break;
                         default:
                             throw new Error(context + ": Invalid component type (" + accessor.componentType + ")");
@@ -1245,7 +1277,9 @@ module BABYLON.GLTF2 {
             this._createPbrMaterial(material);
             this._loadMaterialBaseProperties(context, material);
             this._loadMaterialMetallicRoughnessProperties(context, material);
-            assign(material.babylonMaterial, true);
+            if (material.babylonMaterial) {
+                assign(material.babylonMaterial, true);
+            }
         }
 
         public _createPbrMaterial(material: IGLTFMaterial): void {
@@ -1339,7 +1373,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public _loadTexture(context: string, texture: IGLTFTexture, coordinatesIndex: number): Texture {
+        public _loadTexture(context: string, texture: IGLTFTexture, coordinatesIndex: number = 0): Texture {
             const sampler = (texture.sampler == null ? <IGLTFSampler>{} : GLTFUtils.GetArrayItem(this._gltf.samplers, texture.sampler));
             if (!sampler) {
                 throw new Error(context + ": Failed to find sampler " + texture.sampler);
@@ -1364,13 +1398,13 @@ module BABYLON.GLTF2 {
             }
             else if (texture.dataReadyObservable) {
                 texture.dataReadyObservable.add(texture => {
-                    babylonTexture.updateURL(texture.url);
+                    babylonTexture.updateURL(<string>texture.url);
                 });
             }
             else {
                 texture.dataReadyObservable = new Observable<IGLTFTexture>();
                 texture.dataReadyObservable.add(texture => {
-                    babylonTexture.updateURL(texture.url);
+                    babylonTexture.updateURL(<string>texture.url);
                 });
 
                 const image = GLTFUtils.GetArrayItem(this._gltf.images, texture.source);
@@ -1380,13 +1414,20 @@ module BABYLON.GLTF2 {
 
                 this._loadImage("#/images/" + image.index, image, data => {
                     texture.url = URL.createObjectURL(new Blob([data], { type: image.mimeType }));
-                    texture.dataReadyObservable.notifyObservers(texture);
+                    if (texture.dataReadyObservable) {
+                        texture.dataReadyObservable.notifyObservers(texture);
+                    }
                 });
             }
 
             babylonTexture.coordinatesIndex = coordinatesIndex || 0;
-            babylonTexture.wrapU = GLTFUtils.GetTextureWrapMode(sampler.wrapS);
-            babylonTexture.wrapV = GLTFUtils.GetTextureWrapMode(sampler.wrapT);
+            if (sampler.wrapS !== undefined) {
+                babylonTexture.wrapU = GLTFUtils.GetTextureWrapMode(sampler.wrapS);
+            }
+
+            if (sampler.wrapT !== undefined) {
+                babylonTexture.wrapV = GLTFUtils.GetTextureWrapMode(sampler.wrapT);
+            }
             babylonTexture.name = texture.name || "texture" + texture.index;
 
             if (this._parent.onTextureLoaded) {
@@ -1406,7 +1447,7 @@ module BABYLON.GLTF2 {
                 }
             }
             else {
-                const bufferView = GLTFUtils.GetArrayItem(this._gltf.bufferViews, image.bufferView);
+                const bufferView = GLTFUtils.GetArrayItem(this._gltf.bufferViews, <number>image.bufferView);
                 if (!bufferView) {
                     throw new Error(context + ": Failed to find buffer view " + image.bufferView);
                 }
