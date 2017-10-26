@@ -15,11 +15,11 @@ module BABYLON {
 
     export interface IGLTFLoaderData {
         json: Object;
-        bin: ArrayBufferView;
+        bin: Nullable<ArrayBufferView>;
     }
 
     export interface IGLTFLoader extends IDisposable {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
     }
 
@@ -51,7 +51,7 @@ module BABYLON {
          */
         public onComplete: () => void;
 
-        private _loader: IGLTFLoader;
+        private _loader: Nullable<IGLTFLoader>;
 
         public name = "gltf";
 
@@ -107,7 +107,7 @@ module BABYLON {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         }
 
-        private static _parse(data: string | ArrayBuffer, onError: (message: string) => void): IGLTFLoaderData {
+        private static _parse(data: string | ArrayBuffer, onError: (message: string) => void): Nullable<IGLTFLoaderData> {
             try {
                 if (data instanceof ArrayBuffer) {
                     return GLTFFileLoader._parseBinary(data, onError);
@@ -124,7 +124,7 @@ module BABYLON {
             }
         }
 
-        private _getLoader(loaderData: IGLTFLoaderData, onError: (message: string) => void): IGLTFLoader {
+        private _getLoader(loaderData: IGLTFLoaderData, onError: (message: string) => void): Nullable<IGLTFLoader> {
             const loaderVersion = { major: 2, minor: 0 };
 
             const asset = (<any>loaderData.json).asset || {};
@@ -162,7 +162,7 @@ module BABYLON {
             return createLoader(this);
         }
 
-        private static _parseBinary(data: ArrayBuffer, onError: (message: string) => void): IGLTFLoaderData {
+        private static _parseBinary(data: ArrayBuffer, onError: (message: string) => void): Nullable<IGLTFLoaderData> {
             const Binary = {
                 Magic: 0x46546C67
             };
@@ -185,7 +185,7 @@ module BABYLON {
             return null;
         }
 
-        private static _parseV1(binaryReader: BinaryReader, onError: (message: string) => void): IGLTFLoaderData {
+        private static _parseV1(binaryReader: BinaryReader, onError: (message: string) => void): Nullable<IGLTFLoaderData> {
             const ContentFormat = {
                 JSON: 0
             };
@@ -218,7 +218,7 @@ module BABYLON {
             };
         }
 
-        private static _parseV2(binaryReader: BinaryReader, onError: (message: string) => void): IGLTFLoaderData {
+        private static _parseV2(binaryReader: BinaryReader, onError: (message: string) => void): Nullable<IGLTFLoaderData> {
             const ChunkFormat = {
                 JSON: 0x4E4F534A,
                 BIN: 0x004E4942
@@ -240,7 +240,7 @@ module BABYLON {
             const json = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(chunkLength)));
 
             // Look for BIN chunk
-            let bin: Uint8Array = null;
+            let bin: Nullable<Uint8Array> = null;
             while (binaryReader.getPosition() < binaryReader.getLength()) {
                 const chunkLength = binaryReader.readUint32();
                 const chunkFormat = binaryReader.readUint32();
@@ -264,7 +264,7 @@ module BABYLON {
             };
         }
 
-        private static _parseVersion(version: string): { major: number, minor: number } {
+        private static _parseVersion(version: string): Nullable<{ major: number, minor: number }> {
             const match = (version + "").match(/^(\d+)\.(\d+)$/);
             if (!match) {
                 return null;

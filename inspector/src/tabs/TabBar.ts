@@ -32,7 +32,7 @@ module INSPECTOR {
             this._tabs.push(this._meshTab);
             this._tabs.push(new LightTab(this, this._inspector));
             this._tabs.push(new MaterialTab(this, this._inspector));
-            if(BABYLON.GUI){
+            if (BABYLON.GUI) {
                 this._tabs.push(new GUITab(this, this._inspector));
             }
             this._tabs.push(new PhysicsTab(this, this._inspector));
@@ -110,7 +110,11 @@ module INSPECTOR {
         /** Dispose the current tab, set the given tab as active, and refresh the treeview */
         public switchTab(tab: Tab) {
             // Dispose the active tab
-            this.getActiveTab().dispose();
+            let activeTab = this.getActiveTab();
+
+            if (activeTab) {
+                activeTab.dispose();
+            }
 
             // Deactivate all tabs
             for (let t of this._tabs) {
@@ -130,12 +134,14 @@ module INSPECTOR {
             this.switchTab(this._meshTab);
             if (mesh) {
                 let item = this._meshTab.getItemFor(mesh);
-                this._meshTab.select(item);
+                if (item) {
+                    this._meshTab.select(item);
+                }
             }
         }
 
         /** Returns the active tab */
-        public getActiveTab(): Tab {
+        public getActiveTab(): Nullable<Tab> {
             for (let tab of this._tabs) {
                 if (tab.isActive()) {
                     return tab;
@@ -147,7 +153,7 @@ module INSPECTOR {
 
         public getActiveTabIndex(): number {
             for (let i = 0; i < this._tabs.length; i++) {
-                if(this._tabs[i].isActive()){
+                if (this._tabs[i].isActive()) {
                     return i;
                 }
             }
@@ -177,7 +183,10 @@ module INSPECTOR {
         /** Display the remaining icon or not depending on the tabbar width.
          * This function should be called each time the inspector width is updated
          */
-        public updateWidth() {
+        public updateWidth(): void {
+            if (!this._div.parentElement) {
+                return;
+            }
             let parentSize = this._div.parentElement.clientWidth;
             let lastTabWidth = 75;
             let currentSize = this.getPixelWidth();
@@ -187,6 +196,11 @@ module INSPECTOR {
             while (this._visibleTabs.length > 0 && currentSize > parentSize) {
                 // Start by the last element
                 let tab = this._visibleTabs.pop();
+
+                if (!tab) {
+                    break;
+                }
+
                 // set it invisible
                 this._invisibleTabs.push(tab);
                 // and removes it from the DOM
@@ -199,8 +213,11 @@ module INSPECTOR {
             if (this._invisibleTabs.length > 0) {
                 if (currentSize + lastTabWidth < parentSize) {
                     let lastTab = this._invisibleTabs.pop();
-                    this._div.appendChild(lastTab.toHtml());
-                    this._visibleTabs.push(lastTab);
+
+                    if (lastTab) {
+                        this._div.appendChild(lastTab.toHtml());
+                        this._visibleTabs.push(lastTab);
+                    }
                     // Update more-tab icon in last position if needed
                     if (this._div.contains(this._moreTabsIcon)) {
                         this._div.removeChild(this._moreTabsIcon);

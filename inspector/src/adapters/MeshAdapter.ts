@@ -5,7 +5,7 @@ module INSPECTOR {
         implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
 
         /** Keep track of the axis of the actual object */
-        private _axesViewer: BABYLON.Debug.AxesViewer;
+        private _axesViewer: Nullable<BABYLON.Debug.AxesViewer>;
 
         constructor(obj: BABYLON.AbstractMesh) {
             super(obj);

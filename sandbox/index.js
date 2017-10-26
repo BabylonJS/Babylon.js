@@ -105,6 +105,9 @@ if (BABYLON.Engine.isSupported()) {
         if (currentPluginName === "gltf") {
             var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("Assets/environment.dds", currentScene);
             currentSkybox = currentScene.createDefaultSkybox(hdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
+
+            // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+            currentScene.activeCamera.alpha += Math.PI;
         }
 
         // In case of error during loading, meshes will be empty and clearColor is set to red

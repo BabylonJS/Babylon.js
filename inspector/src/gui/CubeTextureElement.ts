@@ -45,7 +45,9 @@
                 }
                 if (this._engine) {
                     // Dispose old material and cube
-                    this._cube.material.dispose(true, true);
+                    if (this._cube.material) {
+                        this._cube.material.dispose(true, true);
+                    }
                     this._cube.dispose();
                 } else {
                     this._initEngine();
@@ -110,7 +112,7 @@
         public dispose () {
             if (this._engine) {
                 this._engine.dispose();
-                this._engine = null;
+                (<any>this._engine) = null;
             }
         }
     }

@@ -22,13 +22,13 @@ module INSPECTOR {
 
         private _initialTab: number;
 
-        private _parentElement: HTMLElement;
+        private _parentElement: Nullable<HTMLElement>;
 
         /** The inspector is created with the given engine.
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement, newColors?: {
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab: number = 0, parentElement: Nullable<HTMLElement> = null, newColors?: {
             backgroundColor?: string,
             backgroundColorLighter?: string,
             backgroundColorLighter2?: string,
@@ -71,7 +71,7 @@ module INSPECTOR {
                 this.openPopup(true);// set to true in order to NOT dispose the inspector (done in openPopup), as it's not existing yet
             } else {
                 // Get canvas and its DOM parent
-                let canvas = this._scene.getEngine().getRenderingCanvas();
+                let canvas = <HTMLElement>this._scene.getEngine().getRenderingCanvas();
                 let canvasParent = canvas.parentElement;
 
                 // get canvas style                
@@ -123,6 +123,10 @@ module INSPECTOR {
                         (<any>this._c2diwrapper.style)[prop] = this._canvasStyle[prop];
                     }
 
+                    if (!canvasComputedStyle.width || !canvasComputedStyle.height || !canvasComputedStyle.left) {
+                        return;
+                    }
+
                     // Convert wrapper size in % (because getComputedStyle returns px only)
                     let widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
                     let heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
@@ -135,6 +139,7 @@ module INSPECTOR {
                             this._c2diwrapper.style.maxWidth = `${widthPx - leftPx}px`;
                         }
                     }
+                    
 
                     // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
                     let parent = this._getRelativeParent(canvas);
@@ -164,7 +169,9 @@ module INSPECTOR {
                     canvas.style.marginRight = "0";
 
                     // Replace canvas with the wrapper...
-                    canvasParent.replaceChild(this._c2diwrapper, canvas);
+                    if (canvasParent) {
+                        canvasParent.replaceChild(this._c2diwrapper, canvas);
+                    }
                     // ... and add canvas to the wrapper
                     this._c2diwrapper.appendChild(canvas);
 
@@ -290,7 +297,11 @@ module INSPECTOR {
          * All item returned should have the given filter contained in the item id.
         */
         public filterItem(filter: string) {
-            this._tabbar.getActiveTab().filter(filter);
+            let tab = this._tabbar.getActiveTab();
+
+            if (tab) {
+                tab.filter(filter);
+            }
         }
 
         /** Display the mesh tab on the given object */
@@ -305,6 +316,10 @@ module INSPECTOR {
 
             // Get the active tab and its items
             let activeTab = this._tabbar.getActiveTab();
+
+            if (!activeTab) {
+                return;
+            }
             activeTab.update();
             this._tabPanel.appendChild(activeTab.getPanel());
             Helpers.SEND_EVENT('resize');
@@ -316,25 +331,31 @@ module INSPECTOR {
          */
         public dispose() {
             if (!this._popupMode) {
-                     
-                this._tabbar.getActiveTab().dispose();
+                let activeTab = this._tabbar.getActiveTab();
+                if (activeTab) {
+                    activeTab.dispose();
+                }
 
                 // Get canvas
-                let canvas = this._scene.getEngine().getRenderingCanvas();
+                let canvas = <HTMLElement>this._scene.getEngine().getRenderingCanvas();
 
                 // restore canvas style
                 for (let prop in this._canvasStyle) {
                     (<any>canvas.style)[prop] = this._canvasStyle[prop];
                 }
                 // Get parent of the wrapper 
-                let canvasParent = canvas.parentElement.parentElement;
+                if (canvas.parentElement) {
+                    let canvasParent = canvas.parentElement.parentElement;
 
-                canvasParent.insertBefore(canvas, this._c2diwrapper);
-                // Remove wrapper
-                Helpers.CleanDiv(this._c2diwrapper);
-                this._c2diwrapper.remove();
-                // Send resize event to the window
-                Helpers.SEND_EVENT('resize');
+                    if (canvasParent) {
+                        canvasParent.insertBefore(canvas, this._c2diwrapper);
+                        // Remove wrapper
+                        Helpers.CleanDiv(this._c2diwrapper);
+                        this._c2diwrapper.remove();
+                        // Send resize event to the window
+                        Helpers.SEND_EVENT('resize');
+                    }
+                }
             }
         }
 

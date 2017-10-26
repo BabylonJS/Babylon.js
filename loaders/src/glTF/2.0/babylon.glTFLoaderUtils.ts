@@ -33,7 +33,7 @@ module BABYLON.GLTF2 {
             return (uri.indexOf("..") === -1);
         }
 
-        public static AssignIndices(array: Array<{index?: number}>): void {
+        public static AssignIndices(array?: Array<{index?: number}>): void {
             if (array) {
                 for (let index = 0; index < array.length; index++) {
                     array[index].index = index;
@@ -41,7 +41,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public static GetArrayItem<T>(array: ArrayLike<T>, index: number): T {
+        public static GetArrayItem<T>(array: Nullable<ArrayLike<T>> | undefined, index: number): Nullable<T> {
             if (!array || !array[index]) {
                 return null;
             }
@@ -63,7 +63,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public static GetTextureSamplingMode(magFilter: ETextureMagFilter, minFilter: ETextureMinFilter): number {
+        public static GetTextureSamplingMode(magFilter?: ETextureMagFilter, minFilter?: ETextureMinFilter): number {
             // Set defaults if undefined
             magFilter = magFilter === undefined ? ETextureMagFilter.LINEAR : magFilter;
             minFilter = minFilter === undefined ? ETextureMinFilter.LINEAR_MIPMAP_LINEAR : minFilter;
