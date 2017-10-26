@@ -1162,7 +1162,7 @@ module BABYLON.GLTF2 {
 
         public _whenAction(action: () => void, onComplete: () => void): void {
             const tracker = new GLTFLoaderTracker(() => {
-                this._loaderTrackers.splice(this._loaderTrackers.indexOf(tracker));
+                this._loaderTrackers.splice(this._loaderTrackers.indexOf(tracker), 1);
                 onComplete();
             });
 
