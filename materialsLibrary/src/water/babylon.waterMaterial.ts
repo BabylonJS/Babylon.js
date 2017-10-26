@@ -537,7 +537,7 @@ module BABYLON {
                 mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
                 scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
                 scene.getEngine().cullBackFaces = false;
-                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.position, mirrorMatrix);
+                scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
             };
 
             this._reflectionRTT.onAfterRender = () => {

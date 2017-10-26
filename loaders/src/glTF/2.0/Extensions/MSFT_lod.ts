@@ -18,6 +18,9 @@ module BABYLON.GLTF2.Extensions {
 
         protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean {
             return this._loadExtension<IMSFTLOD>(node, (extension, onComplete) => {
+                if (!loader._gltf.nodes) {
+                    return;
+                }
                 for (let i = extension.ids.length - 1; i >= 0; i--) {
                     const lodNode = GLTFUtils.GetArrayItem(loader._gltf.nodes, extension.ids[i]);
                     if (!lodNode) {
@@ -34,7 +37,8 @@ module BABYLON.GLTF2.Extensions {
 
         protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean {
             return this._loadExtension<IMSFTLOD>(node, (extension, onComplete) => {
-                const nodes = [node.index, ...extension.ids].map(index => loader._gltf.nodes[index]);
+                
+                const nodes = [node.index, ...extension.ids].map(index => (<IGLTFNode[]>loader._gltf.nodes)[<number>index]);
 
                 loader._addLoaderPendingData(node);
                 this._loadNodeLOD(loader, context, nodes, nodes.length - 1, () => {
@@ -50,7 +54,10 @@ module BABYLON.GLTF2.Extensions {
             }, () => {
                 if (index !== nodes.length - 1) {
                     const previousNode = nodes[index + 1];
-                    previousNode.babylonMesh.setEnabled(false);
+
+                    if (previousNode.babylonMesh) {
+                        previousNode.babylonMesh.setEnabled(false);
+                    }
                 }
 
                 if (index === 0) {
@@ -68,11 +75,13 @@ module BABYLON.GLTF2.Extensions {
 
         protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
             return this._loadExtension<IMSFTLOD>(material, (extension, onComplete) => {
-                const materials = [material.index, ...extension.ids].map(index => loader._gltf.materials[index]);
+                const materials = [material.index, ...extension.ids].map(index => (<IGLTFMaterial[]>loader._gltf.materials)[<number>index]);
 
                 loader._addLoaderPendingData(material);
                 this._loadMaterialLOD(loader, context, materials, materials.length - 1, assign, () => {
-                    material.extensions[this.name] = extension;
+                    if (material.extensions) {
+                        material.extensions[this.name] = extension;
+                    }
                     loader._removeLoaderPendingData(material);
                     onComplete();
                 });

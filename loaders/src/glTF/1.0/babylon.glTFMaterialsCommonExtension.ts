@@ -77,25 +77,33 @@ module BABYLON.GLTF1 {
                         case "ambient":
                             var ambientLight = new HemisphericLight(light.name, new Vector3(0, 1, 0), gltfRuntime.scene);
                             var ambient = light.ambient;
-                            ambientLight.diffuse = Color3.FromArray(ambient.color || [1, 1, 1]);
+                            if (ambient) {
+                                ambientLight.diffuse = Color3.FromArray(ambient.color || [1, 1, 1]);
+                            }
                             break;
                         case "point":
                             var pointLight = new PointLight(light.name, new Vector3(10, 10, 10), gltfRuntime.scene);
                             var point = light.point;
-                            pointLight.diffuse = Color3.FromArray(point.color || [1, 1, 1]);
+                            if (point) {
+                                pointLight.diffuse = Color3.FromArray(point.color || [1, 1, 1]);
+                            }
                             break;
                         case "directional":
                             var dirLight = new DirectionalLight(light.name, new Vector3(0, -1, 0), gltfRuntime.scene);
                             var directional = light.directional;
-                            dirLight.diffuse = Color3.FromArray(directional.color || [1, 1, 1]);
+                            if (directional) {
+                                dirLight.diffuse = Color3.FromArray(directional.color || [1, 1, 1]);
+                            }
                             break;
                         case "spot":
                             var spot = light.spot;
-                            var spotLight = new SpotLight(light.name, new Vector3(0, 10, 0), new Vector3(0, -1, 0),
-                                                          light.spot.fallOffAngle || Math.PI,
-                                                          light.spot.fallOffExponent || 0.0,
-                                                          gltfRuntime.scene);
-                            spotLight.diffuse = Color3.FromArray(spot.color || [1, 1, 1]);
+                            if (spot) {
+                                var spotLight = new SpotLight(light.name, new Vector3(0, 10, 0), new Vector3(0, -1, 0),
+                                                            spot.fallOffAngle || Math.PI,
+                                                            spot.fallOffExponent || 0.0,
+                                                            gltfRuntime.scene);
+                                spotLight.diffuse = Color3.FromArray(spot.color || [1, 1, 1]);
+                            }
                             break;
                         default: Tools.Warn("GLTF Material Common extension: light type \"" + light.type + "\” not supported"); break;
                     }
