@@ -74,7 +74,7 @@ module BABYLON {
             if (this._parent) {
                 var index = this._parent.children.indexOf(this);
                 if (index !== -1) {
-                    this._parent.children.splice(index);
+                    this._parent.children.splice(index, 1);
                 }
             }
 
