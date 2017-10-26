@@ -179,7 +179,7 @@
         }
 
         public forceShowBoundingBoxes = false;
-        public clipPlane: Plane;
+        public clipPlane: Nullable<Plane>;
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
 

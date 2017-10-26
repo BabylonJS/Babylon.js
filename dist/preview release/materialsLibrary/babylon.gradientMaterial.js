@@ -118,7 +118,7 @@ var BABYLON;
                 }
             }
             var engine = scene.getEngine();
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
             // Attribs
@@ -183,7 +183,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: 4 }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -197,15 +197,18 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
+            BABYLON.MaterialHelper.BindBonesParameters(mesh, effect);
             if (this._mustRebind(scene, effect)) {
                 // Clip plane
-                BABYLON.MaterialHelper.BindClipPlane(this._effect, scene);
+                BABYLON.MaterialHelper.BindClipPlane(effect, scene);
                 // Point size
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);

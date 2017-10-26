@@ -101,7 +101,7 @@ var BABYLON;
                     "cameraPosition"
                 ], [], join, fallbacks, this.onCompiled, this.onError), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -115,6 +115,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);

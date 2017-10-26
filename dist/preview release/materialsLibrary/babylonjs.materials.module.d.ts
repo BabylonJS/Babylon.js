@@ -11,7 +11,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         activeLight: IShadowLight;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
@@ -39,7 +39,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -65,7 +65,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -101,7 +101,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -129,7 +129,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -229,11 +229,11 @@ declare module BABYLON {
         readonly reflectionTexture: RenderTargetTexture;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
-        getRenderList(): AbstractMesh[];
+        getRenderList(): Nullable<AbstractMesh[]>;
         readonly renderTargetsEnabled: boolean;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         private _createRenderTargets(scene, renderTargetSize);
@@ -253,11 +253,11 @@ declare module BABYLON {
 declare module BABYLON {
     class FireMaterial extends PushMaterial {
         private _diffuseTexture;
-        diffuseTexture: BaseTexture;
+        diffuseTexture: Nullable<BaseTexture>;
         private _distortionTexture;
-        distortionTexture: BaseTexture;
+        distortionTexture: Nullable<BaseTexture>;
         private _opacityTexture;
-        opacityTexture: BaseTexture;
+        opacityTexture: Nullable<BaseTexture>;
         diffuseColor: Color3;
         speed: number;
         private _scaledDiffuse;
@@ -266,7 +266,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -309,7 +309,7 @@ declare module BABYLON {
         furTime: number;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         updateFur(): void;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
@@ -354,7 +354,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -396,7 +396,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -428,7 +428,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -678,7 +678,7 @@ declare module BABYLON {
          * Attaches a new image processing configuration to the Standard Material.
          * @param configuration
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void;
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
         /**
          * Gets wether the color curves effect is enabled.
          */
@@ -724,7 +724,7 @@ declare module BABYLON {
         /**
          * Sets the Color Grading 2D Lookup Texture.
          */
-        cameraColorGradingTexture: BaseTexture;
+        cameraColorGradingTexture: Nullable<BaseTexture>;
         customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines_OldVer) => string;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;
@@ -844,7 +844,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -919,14 +919,14 @@ declare module BABYLON {
          * Color Grading 2D Lookup Texture.
          * This allows special effects like sepia, black and white to sixties rendering style.
          */
-        cameraColorGradingTexture: BaseTexture;
+        cameraColorGradingTexture: Nullable<BaseTexture>;
         /**
          * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
          * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
-        cameraColorCurves: ColorCurves;
+        cameraColorCurves: Nullable<ColorCurves>;
         private _cameraInfos;
         private _microsurfaceTextureLods;
         /**
@@ -1180,7 +1180,7 @@ declare module BABYLON {
         private static _scaledEmissive;
         private static _scaledReflection;
         static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean, maxSimultaneousLights: number, usePhysicalLightFalloff: boolean): void;
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        isReady(mesh?: Nullable<AbstractMesh>, useInstances?: boolean): boolean;
         buildUniformLayout(): void;
         unbind(): void;
         bindOnlyWorldMatrix(world: Matrix): void;
@@ -1304,7 +1304,7 @@ declare namespace BABYLON {
          *
          * If sets to null, the scene one is in use.
          */
-        imageProcessingConfiguration: ImageProcessingConfiguration;
+        imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
         /**
          * Gets wether the color curves effect is enabled.
          */

@@ -301,7 +301,7 @@ var BABYLON;
              * Sets the Color Grading 2D Lookup Texture.
              */
             set: function (value) {
-                this._imageProcessingConfiguration.colorGradingTexture = value;
+                this.imageProcessingConfiguration.colorGradingTexture = value;
             },
             enumerable: true,
             configurable: true
@@ -314,7 +314,7 @@ var BABYLON;
              * corresponding to low luminance, medium luminance, and high luminance areas respectively.
              */
             get: function () {
-                return this._imageProcessingConfiguration.colorCurves;
+                return this.imageProcessingConfiguration.colorCurves;
             },
             /**
              * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
@@ -323,7 +323,7 @@ var BABYLON;
              * corresponding to low luminance, medium luminance, and high luminance areas respectively.
              */
             set: function (value) {
-                this._imageProcessingConfiguration.colorCurves = value;
+                this.imageProcessingConfiguration.colorCurves = value;
             },
             enumerable: true,
             configurable: true
@@ -504,7 +504,7 @@ var BABYLON;
                 }, engine), defines);
                 this.buildUniformLayout();
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             defines._renderId = scene.getRenderId();
@@ -559,6 +559,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices
             this.bindOnlyWorldMatrix(world);
@@ -631,7 +634,6 @@ var BABYLON;
             }
             this._uniformBuffer.update();
             this._afterBind(mesh);
-            scene = null;
         };
         /**
          * Dispose the material.

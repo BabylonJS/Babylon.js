@@ -564,7 +564,7 @@ var BABYLON;
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -671,7 +671,7 @@ var BABYLON;
                 }, engine), defines);
                 this.buildUniformLayout();
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             defines._renderId = scene.getRenderId();
@@ -732,6 +732,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -1951,11 +1954,14 @@ vColor=color;\n\
                 return this._createdShaderName;
             this._isCreatedShader = false;
             CustomMaterial.ShaderIndexer++;
-            var name = name + "custom_" + CustomMaterial.ShaderIndexer;
+            var name = "custom_" + CustomMaterial.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
             var fn_afterBind = this._afterBind;
             this._afterBind = function (m, e) {
+                if (!e) {
+                    return;
+                }
                 _this.AttachAfterBind(m, e);
                 try {
                     fn_afterBind(m, e);

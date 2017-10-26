@@ -8597,12 +8597,8 @@ var BABYLON;
             }
             // Constants
             this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
-            if (this._gl.RGBA16F !== 0x881A) {
-                this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-            }
-            if (this._gl.RGBA32F !== 0x8814) {
-                this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
-            }
+            this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
+            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
             this._gl.DEPTH24_STENCIL8 = 35056;
             // Extensions
             this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
@@ -32123,7 +32119,13 @@ var BABYLON;
             defines.EXPOSURE = (this.exposure !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
-            defines.COLORGRADING3D = defines.COLORGRADING && (this.colorGradingTexture.getScene().getEngine().webGLVersion > 1);
+            if (defines.COLORGRADING) {
+                var texture = this.colorGradingTexture;
+                defines.COLORGRADING3D = (texture.getScene().getEngine().webGLVersion > 1) ? true : false;
+            }
+            else {
+                defines.COLORGRADING3D = false;
+            }
             defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
@@ -32143,7 +32145,7 @@ var BABYLON;
         ImageProcessingConfiguration.prototype.bind = function (effect, aspectRatio) {
             if (aspectRatio === void 0) { aspectRatio = 1; }
             // Color Curves
-            if (this._colorCurvesEnabled) {
+            if (this._colorCurvesEnabled && this.colorCurves) {
                 BABYLON.ColorCurves.Bind(this.colorCurves, effect);
             }
             // Vignette
@@ -42611,7 +42613,7 @@ var BABYLON;
             var min = BABYLON.Vector3.Zero();
             var max = BABYLON.Vector3.Zero();
             var distance = Number.MAX_VALUE;
-            var currentSprite;
+            var currentSprite = null;
             var cameraSpacePosition = BABYLON.Vector3.Zero();
             var cameraView = camera.getViewMatrix();
             for (var index = 0; index < count; index++) {
@@ -50093,6 +50095,7 @@ var BABYLON;
     var DynamicTexture = /** @class */ (function (_super) {
         __extends(DynamicTexture, _super);
         function DynamicTexture(name, options, scene, generateMipMaps, samplingMode, format) {
+            if (scene === void 0) { scene = null; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             if (format === void 0) { format = BABYLON.Engine.TEXTUREFORMAT_RGBA; }
             var _this = _super.call(this, null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format) || this;
@@ -65541,7 +65544,7 @@ var BABYLON;
         });
         Object.defineProperty(PhysicsImpostor.prototype, "parent", {
             get: function () {
-                return !this._options.ignoreParent && this._parent;
+                return !this._options.ignoreParent && this._parent ? this._parent : null;
             },
             set: function (value) {
                 this._parent = value;
@@ -73564,7 +73567,7 @@ var BABYLON;
             this.texture = imgUrl ? new BABYLON.Texture(imgUrl, scene, true) : null;
             this.isBackground = isBackground === undefined ? true : isBackground;
             this.color = color === undefined ? new BABYLON.Color4(1, 1, 1, 1) : color;
-            this._scene = scene || BABYLON.Engine.LastCreatedScene;
+            this._scene = (scene || BABYLON.Engine.LastCreatedScene);
             this._scene.layers.push(this);
             var engine = this._scene.getEngine();
             // VBO
@@ -74669,9 +74672,9 @@ var BABYLON;
                 var attribs = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.NormalKind];
                 // Defines
                 var join = defines.toString();
-                subMesh.setEffect(scene.getEngine().createEffect("grid", attribs, ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"], [], join, null, this.onCompiled, this.onError), defines);
+                subMesh.setEffect(scene.getEngine().createEffect("grid", attribs, ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"], [], join, undefined, this.onCompiled, this.onError), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -74685,6 +74688,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices
             this.bindOnlyWorldMatrix(world);
@@ -75051,7 +75057,7 @@ var BABYLON;
              * Sets the Color Grading 2D Lookup Texture.
              */
             set: function (value) {
-                this._imageProcessingConfiguration.colorGradingTexture = value;
+                this.imageProcessingConfiguration.colorGradingTexture = value;
             },
             enumerable: true,
             configurable: true
@@ -75064,7 +75070,7 @@ var BABYLON;
              * corresponding to low luminance, medium luminance, and high luminance areas respectively.
              */
             get: function () {
-                return this._imageProcessingConfiguration.colorCurves;
+                return this.imageProcessingConfiguration.colorCurves;
             },
             /**
              * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
@@ -75073,7 +75079,7 @@ var BABYLON;
              * corresponding to low luminance, medium luminance, and high luminance areas respectively.
              */
             set: function (value) {
-                this._imageProcessingConfiguration.colorCurves = value;
+                this.imageProcessingConfiguration.colorCurves = value;
             },
             enumerable: true,
             configurable: true
@@ -75254,7 +75260,7 @@ var BABYLON;
                 }, engine), defines);
                 this.buildUniformLayout();
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             defines._renderId = scene.getRenderId();
@@ -75309,6 +75315,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices
             this.bindOnlyWorldMatrix(world);
@@ -75381,7 +75390,6 @@ var BABYLON;
             }
             this._uniformBuffer.update();
             this._afterBind(mesh);
-            scene = null;
         };
         /**
          * Dispose the material.

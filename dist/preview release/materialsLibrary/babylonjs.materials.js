@@ -95,7 +95,7 @@ var BABYLON;
                     }
                 }
             }
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
             // Attribs
@@ -148,7 +148,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: 1 }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -162,6 +162,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -322,7 +325,7 @@ var BABYLON;
                 }
             }
             var engine = scene.getEngine();
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
             // Attribs
@@ -387,7 +390,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: 4 }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -401,15 +404,18 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
+            BABYLON.MaterialHelper.BindBonesParameters(mesh, effect);
             if (this._mustRebind(scene, effect)) {
                 // Clip plane
-                BABYLON.MaterialHelper.BindClipPlane(this._effect, scene);
+                BABYLON.MaterialHelper.BindClipPlane(effect, scene);
                 // Point size
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
@@ -608,7 +614,7 @@ var BABYLON;
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
@@ -669,7 +675,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: 4 }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -683,6 +689,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -916,7 +925,7 @@ var BABYLON;
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
@@ -982,7 +991,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -996,6 +1005,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -1225,7 +1237,7 @@ var BABYLON;
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
@@ -1286,7 +1298,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights - 1 }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -1300,6 +1312,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -1556,8 +1571,12 @@ var BABYLON;
         });
         // Methods
         WaterMaterial.prototype.addToRenderList = function (node) {
-            this._refractionRTT.renderList.push(node);
-            this._reflectionRTT.renderList.push(node);
+            if (this._refractionRTT.renderList) {
+                this._refractionRTT.renderList.push(node);
+            }
+            if (this._reflectionRTT.renderList) {
+                this._reflectionRTT.renderList.push(node);
+            }
         };
         WaterMaterial.prototype.enableRenderTargets = function (enable) {
             var refreshRate = enable ? 1 : 0;
@@ -1618,7 +1637,7 @@ var BABYLON;
                     }
                 }
             }
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
             if (defines._areMiscDirty) {
                 if (this._fresnelSeparate) {
@@ -1705,7 +1724,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -1719,6 +1738,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect || !this._mesh) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -2084,7 +2106,7 @@ var BABYLON;
                 defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled);
             }
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
             // Get correct effect      
@@ -2130,10 +2152,12 @@ var BABYLON;
                     defines: join,
                     fallbacks: fallbacks,
                     onCompiled: this.onCompiled,
-                    onError: this.onError
+                    onError: this.onError,
+                    indexParameters: null,
+                    maxSimultaneousLights: 4
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -2147,6 +2171,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices
             this.bindOnlyWorldMatrix(world);
@@ -2452,7 +2479,7 @@ var BABYLON;
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
@@ -2517,7 +2544,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -2531,6 +2558,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -2617,7 +2647,10 @@ var BABYLON;
             }
             if (this._meshes) {
                 for (var i = 1; i < this._meshes.length; i++) {
-                    this._meshes[i].material.dispose(forceDisposeEffect);
+                    var mat = this._meshes[i].material;
+                    if (mat) {
+                        mat.dispose(forceDisposeEffect);
+                    }
                     this._meshes[i].dispose();
                 }
             }
@@ -2863,7 +2896,7 @@ var BABYLON;
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
@@ -2928,7 +2961,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -2942,6 +2975,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -3266,7 +3302,7 @@ var BABYLON;
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
@@ -3324,7 +3360,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -3338,6 +3374,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -3625,7 +3664,7 @@ var BABYLON;
                     "cameraPosition"
                 ], [], join, fallbacks, this.onCompiled, this.onError), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -3639,6 +3678,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -3852,9 +3894,9 @@ var BABYLON;
                 var attribs = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.NormalKind];
                 // Defines
                 var join = defines.toString();
-                subMesh.setEffect(scene.getEngine().createEffect("grid", attribs, ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"], [], join, null, this.onCompiled, this.onError), defines);
+                subMesh.setEffect(scene.getEngine().createEffect("grid", attribs, ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"], [], join, undefined, this.onCompiled, this.onError), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -3868,6 +3910,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices
             this.bindOnlyWorldMatrix(world);
@@ -4493,7 +4538,7 @@ var BABYLON;
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -4600,7 +4645,7 @@ var BABYLON;
                 }, engine), defines);
                 this.buildUniformLayout();
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             defines._renderId = scene.getRenderId();
@@ -4661,6 +4706,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -5880,11 +5928,14 @@ vColor=color;\n\
                 return this._createdShaderName;
             this._isCreatedShader = false;
             CustomMaterial.ShaderIndexer++;
-            var name = name + "custom_" + CustomMaterial.ShaderIndexer;
+            var name = "custom_" + CustomMaterial.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
             var fn_afterBind = this._afterBind;
             this._afterBind = function (m, e) {
+                if (!e) {
+                    return;
+                }
                 _this.AttachAfterBind(m, e);
                 try {
                     fn_afterBind(m, e);
@@ -6077,7 +6128,7 @@ var BABYLON;
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
@@ -6138,7 +6189,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -6152,6 +6203,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -6718,6 +6772,7 @@ var BABYLON;
         };
         LegacyPBRMaterial.prototype.isReady = function (mesh, useInstances) {
             var _this = this;
+            if (mesh === void 0) { mesh = null; }
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -6727,10 +6782,10 @@ var BABYLON;
             var engine = scene.getEngine();
             var needUVs = false;
             this._defines.reset();
-            if (scene.lightsEnabled && !this.disableLighting) {
+            if (scene.lightsEnabled && !this.disableLighting && mesh) {
                 BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights);
             }
-            if (!this.checkReadyOnEveryCall) {
+            if (!this.checkReadyOnEveryCall && mesh) {
                 if (this._renderId === scene.getRenderId()) {
                     if (this._checkCache(scene, mesh, useInstances)) {
                         return true;
@@ -6998,14 +7053,14 @@ var BABYLON;
                 }
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
-                    this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
+                    this._defines.BonesPerMesh = (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0);
                 }
                 // Instances
                 if (useInstances) {
                     this._defines.INSTANCES = true;
                 }
-                if (mesh.morphTargetManager) {
-                    var manager = mesh.morphTargetManager;
+                var manager = mesh.morphTargetManager;
+                if (manager) {
                     this._defines.MORPHTARGETS_TANGENT = manager.supportsTangents && this._defines.TANGENT;
                     this._defines.MORPHTARGETS_NORMAL = manager.supportsNormals && this._defines.NORMAL;
                     this._defines.MORPHTARGETS = (manager.numInfluencers > 0);
@@ -7081,9 +7136,11 @@ var BABYLON;
                 if (this._defines.VERTEXCOLOR) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
-                BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
-                BABYLON.MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, this._defines);
+                if (mesh) {
+                    BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                    BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                    BABYLON.MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, this._defines);
+                }
                 // Legacy browser patch
                 var join = this._defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
@@ -7135,7 +7192,7 @@ var BABYLON;
                 }, engine);
                 this.buildUniformLayout();
             }
-            if (!this._effect.isReady()) {
+            if (!this._effect || !this._effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -7195,15 +7252,20 @@ var BABYLON;
             _super.prototype.unbind.call(this);
         };
         LegacyPBRMaterial.prototype.bindOnlyWorldMatrix = function (world) {
-            this._effect.setMatrix("world", world);
+            if (this._effect) {
+                this._effect.setMatrix("world", world);
+            }
         };
         LegacyPBRMaterial.prototype.bind = function (world, mesh) {
             this._myScene = this.getScene();
             var effect = this._effect;
+            if (!effect) {
+                return;
+            }
             // Matrices        
             this.bindOnlyWorldMatrix(world);
             // Bones
-            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
+            BABYLON.MaterialHelper.BindBonesParameters(mesh, effect);
             if (this._myScene.getCachedMaterial() !== this) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
                 this.bindViewProjection(effect);
@@ -7238,15 +7300,17 @@ var BABYLON;
                             this._uniformBuffer.updateFloat2("vReflectionInfos", this.reflectionTexture.level, 0);
                             if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
                                 var polynomials = this.reflectionTexture.sphericalPolynomial;
-                                this._effect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
-                                this._effect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
-                                this._effect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
-                                this._effect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x, polynomials.xx.y - polynomials.zz.y, polynomials.xx.z - polynomials.zz.z);
-                                this._effect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x, polynomials.yy.y - polynomials.zz.y, polynomials.yy.z - polynomials.zz.z);
-                                this._effect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
-                                this._effect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
-                                this._effect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
-                                this._effect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                                if (polynomials) {
+                                    effect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                                    effect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                                    effect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                                    effect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x, polynomials.xx.y - polynomials.zz.y, polynomials.xx.z - polynomials.zz.z);
+                                    effect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x, polynomials.yy.y - polynomials.zz.y, polynomials.yy.z - polynomials.zz.z);
+                                    effect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                                    effect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                                    effect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                                    effect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                                }
                             }
                         }
                         if (this.emissiveTexture && BABYLON.StandardMaterial.EmissiveTextureEnabled) {
@@ -7319,7 +7383,9 @@ var BABYLON;
                     this._uniformBuffer.updateColor3("vReflectionColor", LegacyPBRMaterial._scaledReflection);
                     // GAMMA CORRECTION.
                     this.convertColorToLinearSpaceToRef(this.albedoColor, LegacyPBRMaterial._scaledAlbedo);
-                    this._uniformBuffer.updateColor4("vAlbedoColor", LegacyPBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
+                    if (mesh) {
+                        this._uniformBuffer.updateColor4("vAlbedoColor", LegacyPBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
+                    }
                     // Misc
                     this._lightingInfos.x = this.directIntensity;
                     this._lightingInfos.y = this.emissiveIntensity;
@@ -7397,51 +7463,51 @@ var BABYLON;
                         }
                     }
                     if (this.cameraColorGradingTexture && BABYLON.StandardMaterial.ColorGradingTextureEnabled) {
-                        this._effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
+                        effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
                         var x = this.cameraColorGradingTexture.level; // Texture Level
                         var y = this.cameraColorGradingTexture.getSize().height; // Texture Size example with 8
                         var z = y - 1.0; // SizeMinusOne 8 - 1
                         var w = 1 / y; // Space of 1 slice 1 / 8
-                        this._effect.setFloat4("vCameraColorGradingInfos", x, y, z, w);
+                        effect.setFloat4("vCameraColorGradingInfos", x, y, z, w);
                         var slicePixelSizeU = w / y; // Space of 1 pixel in U direction, e.g. 1/64
                         var slicePixelSizeV = w; // Space of 1 pixel in V direction, e.g. 1/8					    // Space of 1 pixel in V direction, e.g. 1/8
                         var x2 = z * slicePixelSizeU; // Extent of lookup range in U for a single slice so that range corresponds to (size-1) texels, for example 7/64
                         var y2 = z / y; // Extent of lookup range in V for a single slice so that range corresponds to (size-1) texels, for example 7/8
                         var z2 = 0.5 * slicePixelSizeU; // Offset of lookup range in U to align sample position with texel centre, for example 0.5/64 
                         var w2 = 0.5 * slicePixelSizeV; // Offset of lookup range in V to align sample position with texel centre, for example 0.5/8
-                        this._effect.setFloat4("vCameraColorGradingScaleOffset", x2, y2, z2, w2);
+                        effect.setFloat4("vCameraColorGradingScaleOffset", x2, y2, z2, w2);
                     }
                 }
                 // Clip plane
-                BABYLON.MaterialHelper.BindClipPlane(this._effect, this._myScene);
+                BABYLON.MaterialHelper.BindClipPlane(effect, this._myScene);
                 // Colors
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
                 effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
-            if (this._myScene.getCachedMaterial() !== this || !this.isFrozen) {
+            if (mesh && (this._myScene.getCachedMaterial() !== this || !this.isFrozen)) {
                 // Lights
                 if (this._myScene.lightsEnabled && !this.disableLighting) {
-                    LegacyPBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
+                    LegacyPBRMaterial.BindLights(this._myScene, mesh, effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
                 }
                 // View
                 if (this._myScene.fogEnabled && mesh.applyFog && this._myScene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture) {
                     this.bindView(effect);
                 }
                 // Fog
-                BABYLON.MaterialHelper.BindFogParameters(this._myScene, mesh, this._effect);
+                BABYLON.MaterialHelper.BindFogParameters(this._myScene, mesh, effect);
                 // Morph targets
                 if (this._defines.NUM_MORPH_INFLUENCERS) {
-                    BABYLON.MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+                    BABYLON.MaterialHelper.BindMorphTargetParameters(mesh, effect);
                 }
                 this._cameraInfos.x = this.cameraExposure;
                 this._cameraInfos.y = this.cameraContrast;
                 effect.setVector4("vCameraInfos", this._cameraInfos);
                 if (this.cameraColorCurves) {
-                    BABYLON.ColorCurves.Bind(this.cameraColorCurves, this._effect);
+                    BABYLON.ColorCurves.Bind(this.cameraColorCurves, effect);
                 }
                 // Log. depth
-                BABYLON.MaterialHelper.BindLogDepth(this._defines, this._effect, this._myScene);
+                BABYLON.MaterialHelper.BindLogDepth(this._defines, effect, this._myScene);
             }
             this._uniformBuffer.update();
             this._afterBind(mesh);
@@ -8066,7 +8132,7 @@ var BABYLON;
              * Sets the Color Grading 2D Lookup Texture.
              */
             set: function (value) {
-                this._imageProcessingConfiguration.colorGradingTexture = value;
+                this.imageProcessingConfiguration.colorGradingTexture = value;
             },
             enumerable: true,
             configurable: true
@@ -8079,7 +8145,7 @@ var BABYLON;
              * corresponding to low luminance, medium luminance, and high luminance areas respectively.
              */
             get: function () {
-                return this._imageProcessingConfiguration.colorCurves;
+                return this.imageProcessingConfiguration.colorCurves;
             },
             /**
              * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
@@ -8088,7 +8154,7 @@ var BABYLON;
              * corresponding to low luminance, medium luminance, and high luminance areas respectively.
              */
             set: function (value) {
-                this._imageProcessingConfiguration.colorCurves = value;
+                this.imageProcessingConfiguration.colorCurves = value;
             },
             enumerable: true,
             configurable: true
@@ -8269,7 +8335,7 @@ var BABYLON;
                 }, engine), defines);
                 this.buildUniformLayout();
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             defines._renderId = scene.getRenderId();
@@ -8324,6 +8390,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices
             this.bindOnlyWorldMatrix(world);
@@ -8396,7 +8465,6 @@ var BABYLON;
             }
             this._uniformBuffer.update();
             this._afterBind(mesh);
-            scene = null;
         };
         /**
          * Dispose the material.

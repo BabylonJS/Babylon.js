@@ -310,13 +310,13 @@ module BABYLON {
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the Standard Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -413,13 +413,13 @@ module BABYLON {
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
-        public get cameraColorGradingTexture(): BaseTexture {
+        public get cameraColorGradingTexture(): Nullable<BaseTexture> {
             return this._imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets the Color Grading 2D Lookup Texture.
          */
-        public set cameraColorGradingTexture(value: BaseTexture) {
+        public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
             this._imageProcessingConfiguration.colorGradingTexture = value;
         }
 
@@ -721,7 +721,7 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             // Get correct effect      
             if (defines.isDirty) {
@@ -861,7 +861,7 @@ module BABYLON {
                 this.buildUniformLayout();
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -934,6 +934,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -1103,7 +1106,7 @@ module BABYLON {
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).position);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 
@@ -2033,7 +2036,7 @@ vColor=color;\n\
               this._isCreatedShader  = false;
             
             CustomMaterial.ShaderIndexer++;
-            var name: string = name + "custom_" + CustomMaterial.ShaderIndexer;
+            var name: string = "custom_" + CustomMaterial.ShaderIndexer;
 
             this.ReviewUniform("uniform",uniforms);
             this.ReviewUniform("sampler",samplers);
@@ -2041,7 +2044,10 @@ vColor=color;\n\
 
             var fn_afterBind = this._afterBind;
             this._afterBind = (m,e) => { 
-                this.AttachAfterBind(m,e);
+                if (!e) {
+                    return;
+                }
+                this.AttachAfterBind(m, e);
                 try{fn_afterBind(m,e);}catch(e){};
             } ;
 
