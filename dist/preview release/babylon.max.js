@@ -67520,7 +67520,7 @@ var BABYLON;
                 var bpp = header[off_RGBbpp];
                 dataOffset = header[off_size] + 4;
                 var computeFormats = false;
-                if (info.isFourCC && ext) {
+                if (info.isFourCC) {
                     fourCC = header[off_pfFourCC];
                     switch (fourCC) {
                         case FOURCC_DXT1:
