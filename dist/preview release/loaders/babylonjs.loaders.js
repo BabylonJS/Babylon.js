@@ -19,7 +19,7 @@ var __extends = (this && this.__extends) || (function () {
         
 var BABYLON;
 (function (BABYLON) {
-    var STLFileLoader = (function () {
+    var STLFileLoader = /** @class */ (function () {
         function STLFileLoader() {
             this.solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
             this.facetsPattern = /facet([\s\S]*?)endfacet/g;
@@ -187,7 +187,7 @@ var BABYLON;
     /**
      * Class reading and parsing the MTL file bundled with the obj file.
      */
-    var MTLFileLoader = (function () {
+    var MTLFileLoader = /** @class */ (function () {
         function MTLFileLoader() {
             // All material loaded from the mtl will be set here
             this.materials = [];
@@ -386,7 +386,7 @@ var BABYLON;
         return MTLFileLoader;
     }());
     BABYLON.MTLFileLoader = MTLFileLoader;
-    var OBJFileLoader = (function () {
+    var OBJFileLoader = /** @class */ (function () {
         function OBJFileLoader() {
             this.name = "obj";
             this.extensions = ".obj";
@@ -982,7 +982,7 @@ var BABYLON;
         // Sets the useRightHandedSystem flag on the scene.
         GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 2] = "FORCE_RIGHT_HANDED";
     })(GLTFLoaderCoordinateSystemMode = BABYLON.GLTFLoaderCoordinateSystemMode || (BABYLON.GLTFLoaderCoordinateSystemMode = {}));
-    var GLTFFileLoader = (function () {
+    var GLTFFileLoader = /** @class */ (function () {
         function GLTFFileLoader() {
             // V2 options
             this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
@@ -1195,7 +1195,7 @@ var BABYLON;
         return GLTFFileLoader;
     }());
     BABYLON.GLTFFileLoader = GLTFFileLoader;
-    var BinaryReader = (function () {
+    var BinaryReader = /** @class */ (function () {
         function BinaryReader(arrayBuffer) {
             this._arrayBuffer = arrayBuffer;
             this._dataView = new DataView(arrayBuffer);
@@ -1341,7 +1341,7 @@ var BABYLON;
             ETokenType[ETokenType["UNKNOWN"] = 2] = "UNKNOWN";
             ETokenType[ETokenType["END_OF_INPUT"] = 3] = "END_OF_INPUT";
         })(ETokenType || (ETokenType = {}));
-        var Tokenizer = (function () {
+        var Tokenizer = /** @class */ (function () {
             function Tokenizer(toParse) {
                 this._pos = 0;
                 this.isLetterOrDigitPattern = /^[a-zA-Z0-9]+$/;
@@ -2269,7 +2269,7 @@ var BABYLON;
         /**
         * Implementation of the base glTF spec
         */
-        var GLTFLoaderBase = (function () {
+        var GLTFLoaderBase = /** @class */ (function () {
             function GLTFLoaderBase() {
             }
             GLTFLoaderBase.CreateRuntime = function (parsedData, scene, rootUrl) {
@@ -2564,7 +2564,7 @@ var BABYLON;
         /**
         * glTF V1 Loader
         */
-        var GLTFLoader = (function () {
+        var GLTFLoader = /** @class */ (function () {
             function GLTFLoader() {
             }
             GLTFLoader.RegisterExtension = function (extension) {
@@ -2751,7 +2751,7 @@ var BABYLON;
         /**
         * Utils functions for GLTF
         */
-        var GLTFUtils = (function () {
+        var GLTFUtils = /** @class */ (function () {
             function GLTFUtils() {
             }
             /**
@@ -3001,7 +3001,7 @@ var BABYLON;
 (function (BABYLON) {
     var GLTF1;
     (function (GLTF1) {
-        var GLTFLoaderExtension = (function () {
+        var GLTFLoaderExtension = /** @class */ (function () {
             function GLTFLoaderExtension(name) {
                 this._name = name;
             }
@@ -3146,7 +3146,7 @@ var BABYLON;
         var BinaryExtensionBufferName = "binary_glTF";
         ;
         ;
-        var GLTFBinaryExtension = (function (_super) {
+        var GLTFBinaryExtension = /** @class */ (function (_super) {
             __extends(GLTFBinaryExtension, _super);
             function GLTFBinaryExtension() {
                 return _super.call(this, "KHR_binary_glTF") || this;
@@ -3214,7 +3214,7 @@ var BABYLON;
         ;
         ;
         ;
-        var GLTFMaterialsCommonExtension = (function (_super) {
+        var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
             __extends(GLTFMaterialsCommonExtension, _super);
             function GLTFMaterialsCommonExtension() {
                 return _super.call(this, "KHR_materials_common") || this;
@@ -3377,7 +3377,7 @@ var BABYLON;
 (function (BABYLON) {
     var GLTF2;
     (function (GLTF2) {
-        var GLTFLoaderTracker = (function () {
+        var GLTFLoaderTracker = /** @class */ (function () {
             function GLTFLoaderTracker(onComplete) {
                 this._pendingCount = 0;
                 this._callback = onComplete;
@@ -3392,7 +3392,7 @@ var BABYLON;
             };
             return GLTFLoaderTracker;
         }());
-        var GLTFLoader = (function () {
+        var GLTFLoader = /** @class */ (function () {
             function GLTFLoader(parent) {
                 this._disposed = false;
                 this._renderReady = false;
@@ -4385,7 +4385,7 @@ var BABYLON;
             GLTFLoader.prototype._whenAction = function (action, onComplete) {
                 var _this = this;
                 var tracker = new GLTFLoaderTracker(function () {
-                    _this._loaderTrackers.splice(_this._loaderTrackers.indexOf(tracker));
+                    _this._loaderTrackers.splice(_this._loaderTrackers.indexOf(tracker), 1);
                     onComplete();
                 });
                 this._loaderTrackers.push(tracker);
@@ -4642,7 +4642,7 @@ var BABYLON;
         /**
         * Utils functions for GLTF
         */
-        var GLTFUtils = (function () {
+        var GLTFUtils = /** @class */ (function () {
             function GLTFUtils() {
             }
             /**
@@ -4740,7 +4740,7 @@ var BABYLON;
 (function (BABYLON) {
     var GLTF2;
     (function (GLTF2) {
-        var GLTFLoaderExtension = (function () {
+        var GLTFLoaderExtension = /** @class */ (function () {
             function GLTFLoaderExtension() {
                 this.enabled = true;
             }
@@ -4807,7 +4807,7 @@ var BABYLON;
         var Extensions;
         (function (Extensions) {
             // See https://github.com/sbtron/glTF/tree/MSFT_lod/extensions/Vendor/MSFT_lod for more information about this extension.
-            var MSFTLOD = (function (_super) {
+            var MSFTLOD = /** @class */ (function (_super) {
                 __extends(MSFTLOD, _super);
                 function MSFTLOD() {
                     return _super !== null && _super.apply(this, arguments) || this;
@@ -4918,7 +4918,7 @@ var BABYLON;
     (function (GLTF2) {
         var Extensions;
         (function (Extensions) {
-            var KHRMaterialsPbrSpecularGlossiness = (function (_super) {
+            var KHRMaterialsPbrSpecularGlossiness = /** @class */ (function (_super) {
                 __extends(KHRMaterialsPbrSpecularGlossiness, _super);
                 function KHRMaterialsPbrSpecularGlossiness() {
                     return _super !== null && _super.apply(this, arguments) || this;

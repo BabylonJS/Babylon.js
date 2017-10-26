@@ -20,7 +20,7 @@ var BABYLON;
     /**
      * Background material defines definition.
      */
-    var BackgroundMaterialDefines = (function (_super) {
+    var BackgroundMaterialDefines = /** @class */ (function (_super) {
         __extends(BackgroundMaterialDefines, _super);
         /**
          * Constructor of the defines.
@@ -105,7 +105,7 @@ var BABYLON;
     /**
      * Background material
      */
-    var BackgroundMaterial = (function (_super) {
+    var BackgroundMaterial = /** @class */ (function (_super) {
         __extends(BackgroundMaterial, _super);
         /**
          * constructor

@@ -22,7 +22,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var AdvancedDynamicTexture = (function (_super) {
+        var AdvancedDynamicTexture = /** @class */ (function (_super) {
             __extends(AdvancedDynamicTexture, _super);
             function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode) {
                 if (width === void 0) { width = 0; }
@@ -430,7 +430,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Measure = (function () {
+        var Measure = /** @class */ (function () {
             function Measure(left, top, width, height) {
                 this.left = left;
                 this.top = top;
@@ -475,7 +475,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Vector2WithInfo = (function (_super) {
+        var Vector2WithInfo = /** @class */ (function (_super) {
             __extends(Vector2WithInfo, _super);
             function Vector2WithInfo(source, buttonIndex) {
                 if (buttonIndex === void 0) { buttonIndex = 0; }
@@ -486,7 +486,7 @@ var BABYLON;
             return Vector2WithInfo;
         }(BABYLON.Vector2));
         GUI.Vector2WithInfo = Vector2WithInfo;
-        var Matrix2D = (function () {
+        var Matrix2D = /** @class */ (function () {
             function Matrix2D(m00, m01, m10, m11, m20, m21) {
                 this.m = new Float32Array(6);
                 this.fromValues(m00, m01, m10, m11, m20, m21);
@@ -607,7 +607,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var ValueAndUnit = (function () {
+        var ValueAndUnit = /** @class */ (function () {
             function ValueAndUnit(value, unit, negativeValueAllowed) {
                 if (unit === void 0) { unit = ValueAndUnit.UNITMODE_PIXEL; }
                 if (negativeValueAllowed === void 0) { negativeValueAllowed = true; }
@@ -725,7 +725,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Control = (function () {
+        var Control = /** @class */ (function () {
             // Functions
             function Control(name) {
                 this.name = name;
@@ -1771,7 +1771,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Container = (function (_super) {
+        var Container = /** @class */ (function (_super) {
             __extends(Container, _super);
             function Container(name) {
                 var _this = _super.call(this, name) || this;
@@ -1950,7 +1950,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var StackPanel = (function (_super) {
+        var StackPanel = /** @class */ (function (_super) {
             __extends(StackPanel, _super);
             function StackPanel(name) {
                 var _this = _super.call(this, name) || this;
@@ -2092,7 +2092,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Rectangle = (function (_super) {
+        var Rectangle = /** @class */ (function (_super) {
             __extends(Rectangle, _super);
             function Rectangle(name) {
                 var _this = _super.call(this, name) || this;
@@ -2208,7 +2208,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Ellipse = (function (_super) {
+        var Ellipse = /** @class */ (function (_super) {
             __extends(Ellipse, _super);
             function Ellipse(name) {
                 var _this = _super.call(this, name) || this;
@@ -2274,7 +2274,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Line = (function (_super) {
+        var Line = /** @class */ (function (_super) {
             __extends(Line, _super);
             function Line(name) {
                 var _this = _super.call(this, name) || this;
@@ -2474,7 +2474,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Slider = (function (_super) {
+        var Slider = /** @class */ (function (_super) {
             __extends(Slider, _super);
             function Slider(name) {
                 var _this = _super.call(this, name) || this;
@@ -2684,7 +2684,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Checkbox = (function (_super) {
+        var Checkbox = /** @class */ (function (_super) {
             __extends(Checkbox, _super);
             function Checkbox(name) {
                 var _this = _super.call(this, name) || this;
@@ -2800,7 +2800,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var RadioButton = (function (_super) {
+        var RadioButton = /** @class */ (function (_super) {
             __extends(RadioButton, _super);
             function RadioButton(name) {
                 var _this = _super.call(this, name) || this;
@@ -2937,7 +2937,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var TextBlock = (function (_super) {
+        var TextBlock = /** @class */ (function (_super) {
             __extends(TextBlock, _super);
             function TextBlock(name, text) {
                 if (text === void 0) { text = ""; }
@@ -3146,7 +3146,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Image = (function (_super) {
+        var Image = /** @class */ (function (_super) {
             __extends(Image, _super);
             function Image(name, url) {
                 var _this = _super.call(this, name) || this;
@@ -3388,7 +3388,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Button = (function (_super) {
+        var Button = /** @class */ (function (_super) {
             __extends(Button, _super);
             function Button(name) {
                 var _this = _super.call(this, name) || this;
@@ -3517,7 +3517,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var ColorPicker = (function (_super) {
+        var ColorPicker = /** @class */ (function (_super) {
             __extends(ColorPicker, _super);
             function ColorPicker(name) {
                 var _this = _super.call(this, name) || this;
@@ -3863,7 +3863,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var InputText = (function (_super) {
+        var InputText = /** @class */ (function (_super) {
             __extends(InputText, _super);
             function InputText(name, text) {
                 if (text === void 0) { text = ""; }
@@ -4112,12 +4112,12 @@ var BABYLON;
                         return;
                 }
                 // Printable characters
-                if ((keyCode === -1) ||
-                    (keyCode === 32) ||
-                    (keyCode > 47 && keyCode < 58) ||
-                    (keyCode > 64 && keyCode < 91) ||
-                    (keyCode > 185 && keyCode < 193) ||
-                    (keyCode > 218 && keyCode < 223) ||
+                if ((keyCode === -1) || // Direct access
+                    (keyCode === 32) || // Space
+                    (keyCode > 47 && keyCode < 58) || // Numbers
+                    (keyCode > 64 && keyCode < 91) || // Letters
+                    (keyCode > 185 && keyCode < 193) || // Special characters
+                    (keyCode > 218 && keyCode < 223) || // Special characters
                     (keyCode > 95 && keyCode < 112)) {
                     if (this._cursorOffset === 0) {
                         this.text += key;
@@ -4276,13 +4276,13 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var KeyPropertySet = (function () {
+        var KeyPropertySet = /** @class */ (function () {
             function KeyPropertySet() {
             }
             return KeyPropertySet;
         }());
         GUI.KeyPropertySet = KeyPropertySet;
-        var VirtualKeyboard = (function (_super) {
+        var VirtualKeyboard = /** @class */ (function (_super) {
             __extends(VirtualKeyboard, _super);
             function VirtualKeyboard() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
