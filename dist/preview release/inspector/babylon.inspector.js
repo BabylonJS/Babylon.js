@@ -6,6 +6,8 @@ var INSPECTOR;
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
         function Inspector(scene, popup, initialTab, parentElement, newColors) {
+            if (initialTab === void 0) { initialTab = 0; }
+            if (parentElement === void 0) { parentElement = null; }
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
@@ -81,6 +83,9 @@ var INSPECTOR;
                     for (var prop in this._canvasStyle) {
                         this._c2diwrapper.style[prop] = this._canvasStyle[prop];
                     }
+                    if (!canvasComputedStyle.width || !canvasComputedStyle.height || !canvasComputedStyle.left) {
+                        return;
+                    }
                     // Convert wrapper size in % (because getComputedStyle returns px only)
                     var widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
                     var heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
@@ -114,7 +119,9 @@ var INSPECTOR;
                     canvas.style.marginTop = "0";
                     canvas.style.marginRight = "0";
                     // Replace canvas with the wrapper...
-                    canvasParent.replaceChild(this._c2diwrapper, canvas);
+                    if (canvasParent) {
+                        canvasParent.replaceChild(this._c2diwrapper, canvas);
+                    }
                     // ... and add canvas to the wrapper
                     this._c2diwrapper.appendChild(canvas);
                     // add inspector
@@ -232,7 +239,10 @@ var INSPECTOR;
          * All item returned should have the given filter contained in the item id.
         */
         Inspector.prototype.filterItem = function (filter) {
-            this._tabbar.getActiveTab().filter(filter);
+            var tab = this._tabbar.getActiveTab();
+            if (tab) {
+                tab.filter(filter);
+            }
         };
         /** Display the mesh tab on the given object */
         Inspector.prototype.displayObjectDetails = function (mesh) {
@@ -244,6 +254,9 @@ var INSPECTOR;
             INSPECTOR.Helpers.CleanDiv(this._tabPanel);
             // Get the active tab and its items
             var activeTab = this._tabbar.getActiveTab();
+            if (!activeTab) {
+                return;
+            }
             activeTab.update();
             this._tabPanel.appendChild(activeTab.getPanel());
             INSPECTOR.Helpers.SEND_EVENT('resize');
@@ -253,7 +266,10 @@ var INSPECTOR;
          */
         Inspector.prototype.dispose = function () {
             if (!this._popupMode) {
-                this._tabbar.getActiveTab().dispose();
+                var activeTab = this._tabbar.getActiveTab();
+                if (activeTab) {
+                    activeTab.dispose();
+                }
                 // Get canvas
                 var canvas = this._scene.getEngine().getRenderingCanvas();
                 // restore canvas style
@@ -261,13 +277,17 @@ var INSPECTOR;
                     canvas.style[prop] = this._canvasStyle[prop];
                 }
                 // Get parent of the wrapper 
-                var canvasParent = canvas.parentElement.parentElement;
-                canvasParent.insertBefore(canvas, this._c2diwrapper);
-                // Remove wrapper
-                INSPECTOR.Helpers.CleanDiv(this._c2diwrapper);
-                this._c2diwrapper.remove();
-                // Send resize event to the window
-                INSPECTOR.Helpers.SEND_EVENT('resize');
+                if (canvas.parentElement) {
+                    var canvasParent = canvas.parentElement.parentElement;
+                    if (canvasParent) {
+                        canvasParent.insertBefore(canvas, this._c2diwrapper);
+                        // Remove wrapper
+                        INSPECTOR.Helpers.CleanDiv(this._c2diwrapper);
+                        this._c2diwrapper.remove();
+                        // Send resize event to the window
+                        INSPECTOR.Helpers.SEND_EVENT('resize');
+                    }
+                }
             }
         };
         /** Open the inspector in a new popup
@@ -1372,13 +1392,16 @@ var INSPECTOR;
                 this._sortDirection[property] *= -1;
             }
             var direction = this._sortDirection[property];
-            if (direction == 1) {
-                this._headerRow.querySelector("#sort-direction-" + property).classList.remove('fa-chevron-down');
-                this._headerRow.querySelector("#sort-direction-" + property).classList.add('fa-chevron-up');
-            }
-            else {
-                this._headerRow.querySelector("#sort-direction-" + property).classList.remove('fa-chevron-up');
-                this._headerRow.querySelector("#sort-direction-" + property).classList.add('fa-chevron-down');
+            var query = this._headerRow.querySelector("#sort-direction-" + property);
+            if (query) {
+                if (direction == 1) {
+                    query.classList.remove('fa-chevron-down');
+                    query.classList.add('fa-chevron-up');
+                }
+                else {
+                    query.classList.remove('fa-chevron-up');
+                    query.classList.add('fa-chevron-down');
+                }
             }
             var isString = function (s) {
                 return typeof (s) === 'string' || s instanceof String;
@@ -1535,6 +1558,7 @@ var INSPECTOR;
      */
     var PropertyLine = /** @class */ (function () {
         function PropertyLine(prop, parent, level) {
+            if (parent === void 0) { parent = null; }
             if (level === void 0) { level = 0; }
             // If the type is complex, this property will have child to update
             this._children = [];
@@ -1665,7 +1689,7 @@ var INSPECTOR;
             // Set input value
             var valueTxt = this._valueDiv.textContent;
             this._valueDiv.textContent = "";
-            this._input.value = valueTxt;
+            this._input.value = valueTxt || "";
             this._valueDiv.appendChild(this._input);
             this._input.focus();
             if (typeof this.value !== 'boolean' && !this._isSliderType()) {
@@ -1830,9 +1854,11 @@ var INSPECTOR;
                 // Remove class unfolded
                 this._div.classList.remove('unfolded');
                 // remove html children
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                    var child = _a[_i];
-                    this._div.parentNode.removeChild(child.toHtml());
+                if (this._div.parentNode) {
+                    for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                        var child = _a[_i];
+                        this._div.parentNode.removeChild(child.toHtml());
+                    }
                 }
             }
         };
@@ -1844,9 +1870,11 @@ var INSPECTOR;
                 // Remove class unfolded
                 this._div.classList.remove('unfolded');
                 // remove html children
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                    var child = _a[_i];
-                    this._div.parentNode.removeChild(child.toHtml());
+                if (this._div.parentNode) {
+                    for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                        var child = _a[_i];
+                        this._div.parentNode.removeChild(child.toHtml());
+                    }
                 }
             }
             else {
@@ -1862,10 +1890,12 @@ var INSPECTOR;
                         this._children.push(child);
                     }
                 }
-                // otherwise display it                    
-                for (var _c = 0, _d = this._children; _c < _d.length; _c++) {
-                    var child = _d[_c];
-                    this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
+                // otherwise display it    
+                if (this._div.parentNode) {
+                    for (var _c = 0, _d = this._children; _c < _d.length; _c++) {
+                        var child = _d[_c];
+                        this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
+                    }
                 }
             }
         };
@@ -2121,7 +2151,9 @@ var INSPECTOR;
                 }
                 if (this._engine) {
                     // Dispose old material and cube
-                    this._cube.material.dispose(true, true);
+                    if (this._cube.material) {
+                        this._cube.material.dispose(true, true);
+                    }
                     this._cube.dispose();
                 }
                 else {
@@ -2335,6 +2367,7 @@ var INSPECTOR;
      */
     var Tooltip = /** @class */ (function () {
         function Tooltip(elem, tip, attachTo) {
+            if (attachTo === void 0) { attachTo = null; }
             var _this = this;
             this._elem = elem;
             if (!attachTo) {
@@ -2450,6 +2483,7 @@ var INSPECTOR;
          * Useful function used to create a div
          */
         Helpers.CreateDiv = function (className, parent) {
+            if (className === void 0) { className = null; }
             return Helpers.CreateElement('div', className, parent);
         };
         /**
@@ -2459,6 +2493,7 @@ var INSPECTOR;
             return Helpers.CreateElement('input', className, parent);
         };
         Helpers.CreateElement = function (element, className, parent) {
+            if (className === void 0) { className = null; }
             var elem = INSPECTOR.Inspector.DOCUMENT.createElement(element);
             if (className) {
                 elem.className = className;
@@ -2485,7 +2520,9 @@ var INSPECTOR;
             div.style.display = 'none';
             div.appendChild(clone);
             var value = INSPECTOR.Inspector.WINDOW.getComputedStyle(clone)[cssAttribute];
-            div.parentNode.removeChild(div);
+            if (div.parentNode) {
+                div.parentNode.removeChild(div);
+            }
             return value;
         };
         Helpers.LoadScript = function () {
@@ -2501,10 +2538,10 @@ var INSPECTOR;
                         var style = Helpers.CreateElement('style', '', INSPECTOR.Inspector.DOCUMENT.body);
                         style.textContent = elem;
                     });
-                }, null, null, null, function () {
+                }, undefined, undefined, undefined, function () {
                     console.log("erreur");
                 });
-            }, null, null, null, function () {
+            }, undefined, undefined, undefined, function () {
                 console.log("erreur");
             });
         };
@@ -2646,6 +2683,9 @@ var INSPECTOR;
         */
         Tab.prototype.getPixelWidth = function () {
             var style = INSPECTOR.Inspector.WINDOW.getComputedStyle(this._div);
+            if (!style.marginLeft || !style.marginRight) {
+                return 0;
+            }
             var left = parseFloat(style.marginLeft.substr(0, style.marginLeft.length - 2)) || 0;
             var right = parseFloat(style.marginRight.substr(0, style.marginRight.length - 2)) || 0;
             return (this._div.clientWidth || 0) + left + right;
@@ -3078,7 +3118,9 @@ var INSPECTOR;
                 var pixels = texture.readPixels();
                 var canvas = document.createElement('canvas');
                 canvas.id = "MyCanvas";
-                img.parentElement.appendChild(canvas);
+                if (img.parentElement) {
+                    img.parentElement.appendChild(canvas);
+                }
                 var ctx = canvas.getContext('2d');
                 var size = texture.getSize();
                 var tmp = pixels.buffer.slice(0, size.height * size.width * 4);
@@ -3107,7 +3149,9 @@ var INSPECTOR;
                 var pixels = texture.readPixels();
                 var canvas = document.createElement('canvas');
                 canvas.id = "MyCanvas";
-                img.parentElement.appendChild(canvas);
+                if (img.parentElement) {
+                    img.parentElement.appendChild(canvas);
+                }
                 var ctx = canvas.getContext('2d');
                 var size = texture.getSize();
                 var imgData = ctx.createImageData(size.width, size.height);
@@ -3990,7 +4034,10 @@ var INSPECTOR;
         /** Dispose the current tab, set the given tab as active, and refresh the treeview */
         TabBar.prototype.switchTab = function (tab) {
             // Dispose the active tab
-            this.getActiveTab().dispose();
+            var activeTab = this.getActiveTab();
+            if (activeTab) {
+                activeTab.dispose();
+            }
             // Deactivate all tabs
             for (var _i = 0, _a = this._tabs; _i < _a.length; _i++) {
                 var t = _a[_i];
@@ -4008,7 +4055,9 @@ var INSPECTOR;
             this.switchTab(this._meshTab);
             if (mesh) {
                 var item = this._meshTab.getItemFor(mesh);
-                this._meshTab.select(item);
+                if (item) {
+                    this._meshTab.select(item);
+                }
             }
         };
         /** Returns the active tab */
@@ -4056,6 +4105,9 @@ var INSPECTOR;
          * This function should be called each time the inspector width is updated
          */
         TabBar.prototype.updateWidth = function () {
+            if (!this._div.parentElement) {
+                return;
+            }
             var parentSize = this._div.parentElement.clientWidth;
             var lastTabWidth = 75;
             var currentSize = this.getPixelWidth();
@@ -4064,6 +4116,9 @@ var INSPECTOR;
             while (this._visibleTabs.length > 0 && currentSize > parentSize) {
                 // Start by the last element
                 var tab = this._visibleTabs.pop();
+                if (!tab) {
+                    break;
+                }
                 // set it invisible
                 this._invisibleTabs.push(tab);
                 // and removes it from the DOM
@@ -4075,8 +4130,10 @@ var INSPECTOR;
             if (this._invisibleTabs.length > 0) {
                 if (currentSize + lastTabWidth < parentSize) {
                     var lastTab = this._invisibleTabs.pop();
-                    this._div.appendChild(lastTab.toHtml());
-                    this._visibleTabs.push(lastTab);
+                    if (lastTab) {
+                        this._div.appendChild(lastTab.toHtml());
+                        this._visibleTabs.push(lastTab);
+                    }
                     // Update more-tab icon in last position if needed
                     if (this._div.contains(this._moreTabsIcon)) {
                         this._div.removeChild(this._moreTabsIcon);
@@ -4114,6 +4171,9 @@ var INSPECTOR;
         */
         AbstractTool.prototype.getPixelWidth = function () {
             var style = INSPECTOR.Inspector.WINDOW.getComputedStyle(this._elem);
+            if (!style.marginLeft || !style.marginRight) {
+                return 0;
+            }
             var left = parseFloat(style.marginLeft.substr(0, style.marginLeft.length - 2)) || 0;
             var right = parseFloat(style.marginRight.substr(0, style.marginRight.length - 2)) || 0;
             return (this._elem.clientWidth || 0) + left + right;
@@ -4194,7 +4254,8 @@ var INSPECTOR;
             else {
                 this.toHtml().classList.add('active');
                 // Add event handler : pick on a mesh in the scene
-                this._inspector.scene.getEngine().getRenderingCanvas().addEventListener('click', this._pickHandler);
+                var canvas = this._inspector.scene.getEngine().getRenderingCanvas();
+                canvas.addEventListener('click', this._pickHandler);
                 this._isActive = true;
             }
         };
@@ -4202,14 +4263,15 @@ var INSPECTOR;
         PickTool.prototype._deactivate = function () {
             this.toHtml().classList.remove('active');
             // Remove event handler
-            this._inspector.scene.getEngine().getRenderingCanvas().removeEventListener('click', this._pickHandler);
+            var canvas = this._inspector.scene.getEngine().getRenderingCanvas();
+            canvas.removeEventListener('click', this._pickHandler);
             this._isActive = false;
         };
         /** Pick a mesh in the scene */
         PickTool.prototype._pickMesh = function (evt) {
             var pos = this._updatePointerPosition(evt);
             var pi = this._inspector.scene.pick(pos.x, pos.y, function (mesh) { return true; });
-            if (pi.pickedMesh) {
+            if (pi && pi.pickedMesh) {
                 this._inspector.displayObjectDetails(pi.pickedMesh);
             }
             this._deactivate();
@@ -4320,7 +4382,7 @@ var INSPECTOR;
         LabelTool.prototype._initializeLabels = function () {
             var _this = this;
             // Check if the label are already initialized and quit if it's the case
-            if (this._labelInitialized) {
+            if (this._labelInitialized || !this._scene) {
                 return;
             }
             // Can't initialize them if the GUI lib is not loaded yet
@@ -4349,7 +4411,7 @@ var INSPECTOR;
             if (INSPECTOR.Helpers.IsSystemName(name)) {
                 return;
             }
-            if (mesh) {
+            if (mesh && this._advancedTexture) {
                 var rect1 = new BABYLON.GUI.Rectangle();
                 rect1.width = 4 + 10 * name.length + "px";
                 rect1.height = "22px";
@@ -4364,6 +4426,9 @@ var INSPECTOR;
             }
         };
         LabelTool.prototype._removeLabel = function (mesh) {
+            if (!this._advancedTexture) {
+                return;
+            }
             for (var _i = 0, _a = this._advancedTexture._rootContainer.children; _i < _a.length; _i++) {
                 var g = _a[_i];
                 var ed = g._linkedMesh;
@@ -4376,7 +4441,7 @@ var INSPECTOR;
         // Action : Display/hide mesh names on the canvas
         LabelTool.prototype.action = function () {
             // Don't toggle if the script is not loaded
-            if (!this._checkGUILoaded()) {
+            if (!this._checkGUILoaded() || !this._advancedTexture) {
                 return;
             }
             // Toggle the label display state

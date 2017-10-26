@@ -19,7 +19,9 @@ module BABYLON.GLTF2.Extensions {
                 loader._createPbrMaterial(material);
                 loader._loadMaterialBaseProperties(context, material);
                 this._loadSpecularGlossinessProperties(loader, context, material, extension);
-                assign(material.babylonMaterial, true);
+                if (material.babylonMaterial) {
+                    assign(material.babylonMaterial, true);
+                }
             });
         }
 
@@ -30,25 +32,31 @@ module BABYLON.GLTF2.Extensions {
             babylonMaterial.reflectivityColor = properties.specularFactor ? Color3.FromArray(properties.specularFactor) : new Color3(1, 1, 1);
             babylonMaterial.microSurface = properties.glossinessFactor == null ? 1 : properties.glossinessFactor;
 
-            if (properties.diffuseTexture) {
-                const texture = GLTFUtils.GetArrayItem(loader._gltf.textures, properties.diffuseTexture.index);
-                if (!texture) {
-                    throw new Error(context + ": Failed to find diffuse texture " + properties.diffuseTexture.index);
+            if (loader._gltf.textures) {
+                if (properties.diffuseTexture) {
+                    const texture = GLTFUtils.GetArrayItem(loader._gltf.textures, properties.diffuseTexture.index);
+                    if (!texture) {
+                        throw new Error(context + ": Failed to find diffuse texture " + properties.diffuseTexture.index);
+                    }
+
+                    if (properties.diffuseTexture.texCoord) {
+                        babylonMaterial.albedoTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.diffuseTexture.texCoord);
+                    }
                 }
 
-                babylonMaterial.albedoTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.diffuseTexture.texCoord);
-            }
+                if (properties.specularGlossinessTexture) {
+                    const texture = GLTFUtils.GetArrayItem(loader._gltf.textures, properties.specularGlossinessTexture.index);
+                    if (!texture) {
+                        throw new Error(context + ": Failed to find diffuse texture " + properties.specularGlossinessTexture.index);
+                    }
 
-            if (properties.specularGlossinessTexture) {
-                const texture = GLTFUtils.GetArrayItem(loader._gltf.textures, properties.specularGlossinessTexture.index);
-                if (!texture) {
-                    throw new Error(context + ": Failed to find diffuse texture " + properties.specularGlossinessTexture.index);
+                    if (properties.specularGlossinessTexture.texCoord) {
+                        babylonMaterial.reflectivityTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.specularGlossinessTexture.texCoord);
+                    }
+                    babylonMaterial.reflectivityTexture.hasAlpha = true;
+                    babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
                 }
-
-                babylonMaterial.reflectivityTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.specularGlossinessTexture.texCoord);
-                babylonMaterial.reflectivityTexture.hasAlpha = true;
-                babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
-            }
+        }
 
             loader._loadMaterialAlphaProperties(context, material, properties.diffuseFactor);
         }

@@ -100,7 +100,7 @@ module INSPECTOR {
         /**
          * Useful function used to create a div
          */
-        public static CreateDiv(className?: string, parent?: HTMLElement): HTMLElement {
+        public static CreateDiv(className: Nullable<string> = null, parent?: HTMLElement): HTMLElement {
             return Helpers.CreateElement('div', className, parent);
         }
 
@@ -111,7 +111,7 @@ module INSPECTOR {
             return <HTMLInputElement>Helpers.CreateElement('input', className, parent);
         }
 
-        public static CreateElement(element: string, className?: string, parent?: HTMLElement): HTMLElement {
+        public static CreateElement(element: string, className: Nullable<string> = null, parent?: HTMLElement): HTMLElement {
             let elem = Inspector.DOCUMENT.createElement(element);
 
             if (className) {
@@ -141,7 +141,9 @@ module INSPECTOR {
             div.style.display = 'none';
             div.appendChild(clone);
             let value = (<any>Inspector.WINDOW.getComputedStyle(clone))[cssAttribute];
-            div.parentNode.removeChild(div);
+            if (div.parentNode)  {
+                div.parentNode.removeChild(div);
+            }
             return value;
         }
 
@@ -160,11 +162,11 @@ module INSPECTOR {
                         let style = Helpers.CreateElement('style', '', Inspector.DOCUMENT.body);
                         style.textContent = elem;
                     });
-                }, null, null, null, () => {
+                }, undefined, undefined, undefined, () => {
                     console.log("erreur");
                 });
 
-            }, null, null, null, () => {
+            }, undefined, undefined, undefined, () => {
                 console.log("erreur");
             });
 

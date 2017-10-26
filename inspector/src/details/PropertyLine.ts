@@ -45,7 +45,7 @@ module INSPECTOR {
         /** The list of viewer element displayed at the end of the line (color, texture...) */
         private _elements: Array<BasicElement> = [];
         /** The property parent of this one. Used to update the value of this property and to retrieve the correct object */
-        private _parent: PropertyLine;
+        private _parent: Nullable<PropertyLine>;
         /** The input element to display if this property is 'simple' in order to update it */
         private _input: HTMLInputElement;
         /** Display input handler (stored to be removed afterwards) */
@@ -67,7 +67,7 @@ module INSPECTOR {
         /**Save value while slider is on */
         private _preValue: number;
 
-        constructor(prop: Property, parent?: PropertyLine, level: number = 0) {
+        constructor(prop: Property, parent: Nullable<PropertyLine> = null, level: number = 0) {
             this._property = prop;
             this._level = level;
             this._parent = parent;
@@ -200,7 +200,7 @@ module INSPECTOR {
             // Set input value
             let valueTxt = this._valueDiv.textContent;
             this._valueDiv.textContent = "";
-            this._input.value = valueTxt;
+            this._input.value = valueTxt || "";
             this._valueDiv.appendChild(this._input);
             this._input.focus();
 
@@ -360,8 +360,10 @@ module INSPECTOR {
                 // Remove class unfolded
                 this._div.classList.remove('unfolded');
                 // remove html children
-                for (let child of this._children) {
-                    this._div.parentNode.removeChild(child.toHtml());
+                if (this._div.parentNode) {
+                    for (let child of this._children) {
+                        this._div.parentNode.removeChild(child.toHtml());
+                    }
                 }
             }
         }
@@ -374,8 +376,10 @@ module INSPECTOR {
                 // Remove class unfolded
                 this._div.classList.remove('unfolded');
                 // remove html children
-                for (let child of this._children) {
-                    this._div.parentNode.removeChild(child.toHtml());
+                if (this._div.parentNode) {
+                    for (let child of this._children) {
+                        this._div.parentNode.removeChild(child.toHtml());
+                    }
                 }
             } else {
                 // if children does not exists, generate it
@@ -390,9 +394,11 @@ module INSPECTOR {
                         this._children.push(child);
                     }
                 }
-                // otherwise display it                    
-                for (let child of this._children) {
-                    this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
+                // otherwise display it    
+                if (this._div.parentNode) {                
+                    for (let child of this._children) {
+                        this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
+                    }
                 }
             }
         }

@@ -35,8 +35,9 @@ var BABYLON;
             this.setFloat("alphaThreshold", this._alphaThreshold);
         };
         FireProceduralTexture.prototype.render = function (useCameraPostProcess) {
-            if (this._autoGenerateTime) {
-                this._time += this.getScene().getAnimationRatio() * 0.03;
+            var scene = this.getScene();
+            if (this._autoGenerateTime && scene) {
+                this._time += scene.getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
             }
             _super.prototype.render.call(this, useCameraPostProcess);

@@ -24,7 +24,11 @@ var BABYLON;
         }
         PerlinNoiseProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("size", this.getRenderSize());
-            var deltaTime = this.getScene().getEngine().getDeltaTime();
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
+            var deltaTime = scene.getEngine().getDeltaTime();
             this.time += deltaTime;
             this.setFloat("time", this.time * this.speed / 1000);
             this._currentTranslation += deltaTime * this.translationSpeed / 1000.0;

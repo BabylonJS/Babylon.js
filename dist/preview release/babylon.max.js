@@ -33206,6 +33206,23 @@ var BABYLON;
             };
             return _this;
         }
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
         Object.defineProperty(StandardMaterial.prototype, "imageProcessingConfiguration", {
             /**
              * Gets the image processing configuration used either in this material.
@@ -72842,6 +72859,15 @@ var BABYLON;
         return AbstractAssetTask;
     }());
     BABYLON.AbstractAssetTask = AbstractAssetTask;
+    var AssetsProgressEvent = /** @class */ (function () {
+        function AssetsProgressEvent(remainingCount, totalCount, task) {
+            this.remainingCount = remainingCount;
+            this.totalCount = totalCount;
+            this.task = task;
+        }
+        return AssetsProgressEvent;
+    }());
+    BABYLON.AssetsProgressEvent = AssetsProgressEvent;
     var MeshAssetTask = /** @class */ (function (_super) {
         __extends(MeshAssetTask, _super);
         function MeshAssetTask(name, meshesNames, rootUrl, sceneFilename) {
@@ -73018,6 +73044,7 @@ var BABYLON;
             this.onTaskSuccessObservable = new BABYLON.Observable();
             this.onTaskErrorObservable = new BABYLON.Observable();
             this.onTasksDoneObservable = new BABYLON.Observable();
+            this.onProgressObservable = new BABYLON.Observable();
             this.useDefaultLoadingScreen = true;
             this._scene = scene;
         }
@@ -73061,8 +73088,18 @@ var BABYLON;
             this.tasks.push(task);
             return task;
         };
-        AssetsManager.prototype._decreaseWaitingTasksCount = function () {
+        AssetsManager.prototype._decreaseWaitingTasksCount = function (task) {
             this.waitingTasksCount--;
+            try {
+                if (this.onProgress) {
+                    this.onProgress(this.waitingTasksCount, this.tasks.length, task);
+                }
+                this.onProgressObservable.notifyObservers(new AssetsProgressEvent(this.waitingTasksCount, this.tasks.length, task));
+            }
+            catch (e) {
+                BABYLON.Tools.Error("Error running progress callbacks.");
+                console.log(e);
+            }
             if (this.waitingTasksCount === 0) {
                 try {
                     if (this.onFinish) {
@@ -73085,7 +73122,7 @@ var BABYLON;
                         _this.onTaskSuccess(task);
                     }
                     _this.onTaskSuccessObservable.notifyObservers(task);
-                    _this._decreaseWaitingTasksCount();
+                    _this._decreaseWaitingTasksCount(task);
                 }
                 catch (e) {
                     error("Error executing task success callbacks", e);
@@ -73100,7 +73137,7 @@ var BABYLON;
                     _this.onTaskError(task);
                 }
                 _this.onTaskErrorObservable.notifyObservers(task);
-                _this._decreaseWaitingTasksCount();
+                _this._decreaseWaitingTasksCount(task);
             };
             task.run(this._scene, done, error);
         };

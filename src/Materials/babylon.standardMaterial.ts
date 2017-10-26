@@ -107,49 +107,49 @@ module BABYLON {
 
     export class StandardMaterial extends PushMaterial {
         @serializeAsTexture("diffuseTexture")
-        private _diffuseTexture: BaseTexture;
+        private _diffuseTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public diffuseTexture: BaseTexture;
+        public diffuseTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("ambientTexture")
-        private _ambientTexture: BaseTexture;
+        private _ambientTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public ambientTexture: BaseTexture;
+        public ambientTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("opacityTexture")
-        private _opacityTexture: BaseTexture;        
+        private _opacityTexture: Nullable<BaseTexture>;;        
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public opacityTexture: BaseTexture;    
+        public opacityTexture: Nullable<BaseTexture>;;    
 
         @serializeAsTexture("reflectionTexture")
-        private _reflectionTexture: BaseTexture;
+        private _reflectionTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionTexture: Nullable<BaseTexture>;        
 
         @serializeAsTexture("emissiveTexture")
-        private _emissiveTexture: BaseTexture;
+        private _emissiveTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public emissiveTexture: BaseTexture;     
+        public emissiveTexture: Nullable<BaseTexture>;;     
 
         @serializeAsTexture("specularTexture")
-        private _specularTexture: BaseTexture;
+        private _specularTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public specularTexture: BaseTexture;             
+        public specularTexture: Nullable<BaseTexture>;;             
 
         @serializeAsTexture("bumpTexture")
-        private _bumpTexture: BaseTexture;
+        private _bumpTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture: BaseTexture;         
+        public bumpTexture: Nullable<BaseTexture>;;         
 
         @serializeAsTexture("lightmapTexture")
-        private _lightmapTexture: BaseTexture;
+        private _lightmapTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public lightmapTexture: BaseTexture;            
+        public lightmapTexture: Nullable<BaseTexture>;;            
 
         @serializeAsTexture("refractionTexture")
-        private _refractionTexture: BaseTexture;
+        private _refractionTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public refractionTexture: BaseTexture;   
+        public refractionTexture: Nullable<BaseTexture>;;   
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
@@ -506,7 +506,7 @@ module BABYLON {
             return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return this._diffuseTexture;
         }
 

@@ -56,7 +56,7 @@ declare module BABYLON {
          * @private
          */
         private _loadMTL(url, rootUrl, onSuccess);
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean;
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean;
         load(scene: Scene, data: string, rootUrl: string): boolean;
         /**
          * Read the OBJ file and create an Array of meshes.

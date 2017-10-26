@@ -6,7 +6,7 @@ module BABYLON.GLTF2 {
 
         public abstract get name(): string;
 
-        protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean { return false; }
+        protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: Nullable<IGLTFNode>): boolean { return false; }
 
         protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean { return false; }
 
@@ -27,7 +27,9 @@ module BABYLON.GLTF2 {
 
             action(extension, () => {
                 // Restore the extension after completing the action.
-                property.extensions[this.name] = extension;
+                if (property.extensions) {
+                    property.extensions[this.name] = extension;
+                }
             });
 
             return true;
@@ -39,7 +41,7 @@ module BABYLON.GLTF2 {
 
         public static _Extensions: GLTFLoaderExtension[] = [];
 
-        public static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean {
+        public static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: Nullable<IGLTFNode>): boolean {
             return this._ApplyExtensions(extension => extension._traverseNode(loader, context, node, action, parentNode));
         }
 
