@@ -78,13 +78,13 @@
         /**
          * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
          */
-        public get colorCurves(): ColorCurves {
+        public get colorCurves(): Nullable<ColorCurves> {
             return this.imageProcessingConfiguration.colorCurves;
         }
         /**
          * Sets Color curves setup used in the effect if colorCurvesEnabled is set to true .
          */
-        public set colorCurves(value: ColorCurves) {
+        public set colorCurves(value: Nullable<ColorCurves>) {
             this.imageProcessingConfiguration.colorCurves = value;
         }
 
@@ -104,13 +104,13 @@
         /**
          * Gets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
          */
-        public get colorGradingTexture(): BaseTexture {
+        public get colorGradingTexture(): Nullable<BaseTexture> {
             return this.imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
          */
-        public set colorGradingTexture(value: BaseTexture) {
+        public set colorGradingTexture(value: Nullable<BaseTexture>) {
             this.imageProcessingConfiguration.colorGradingTexture = value;
         }
 

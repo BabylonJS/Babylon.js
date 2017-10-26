@@ -2,11 +2,11 @@
 declare module BABYLON {
     class FireMaterial extends PushMaterial {
         private _diffuseTexture;
-        diffuseTexture: BaseTexture;
+        diffuseTexture: Nullable<BaseTexture>;
         private _distortionTexture;
-        distortionTexture: BaseTexture;
+        distortionTexture: Nullable<BaseTexture>;
         private _opacityTexture;
-        opacityTexture: BaseTexture;
+        opacityTexture: Nullable<BaseTexture>;
         diffuseColor: Color3;
         speed: number;
         private _scaledDiffuse;
@@ -15,7 +15,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];

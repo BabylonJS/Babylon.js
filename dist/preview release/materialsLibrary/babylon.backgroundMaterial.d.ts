@@ -108,7 +108,7 @@ declare namespace BABYLON {
          *
          * If sets to null, the scene one is in use.
          */
-        imageProcessingConfiguration: ImageProcessingConfiguration;
+        imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
         /**
          * Gets wether the color curves effect is enabled.
          */

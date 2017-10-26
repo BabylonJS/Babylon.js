@@ -45,7 +45,7 @@ module BABYLON {
         private _deltaRotationConjugated: Quaternion;
 
         //If set, this is this impostor's parent
-        private _parent: PhysicsImpostor;
+        private _parent: Nullable<PhysicsImpostor>;
 
         private _isDisposed = false;
 
@@ -199,11 +199,11 @@ module BABYLON {
             return (this._parent && !this._options.ignoreParent) ? this._parent.physicsBody : this._physicsBody;
         }
 
-        public get parent(): PhysicsImpostor {
-            return !this._options.ignoreParent && this._parent;
+        public get parent(): Nullable<PhysicsImpostor> {
+            return !this._options.ignoreParent && this._parent ? this._parent : null;
         }
 
-        public set parent(value: PhysicsImpostor) {
+        public set parent(value: Nullable<PhysicsImpostor>) {
             this._parent = value;
         }
 

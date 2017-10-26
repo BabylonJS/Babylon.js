@@ -175,7 +175,7 @@ declare module BABYLON {
          * Attaches a new image processing configuration to the Standard Material.
          * @param configuration
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void;
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
         /**
          * Gets wether the color curves effect is enabled.
          */
@@ -221,7 +221,7 @@ declare module BABYLON {
         /**
          * Sets the Color Grading 2D Lookup Texture.
          */
-        cameraColorGradingTexture: BaseTexture;
+        cameraColorGradingTexture: Nullable<BaseTexture>;
         customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines_OldVer) => string;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;

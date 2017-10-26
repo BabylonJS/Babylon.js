@@ -60,12 +60,12 @@
             this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
         }
 
-        constructor(public name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4) {
+        constructor(public name: string, imgUrl: Nullable<string>, scene: Nullable<Scene>, isBackground?: boolean, color?: Color4) {
             this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
             this.isBackground = isBackground === undefined ? true : isBackground;
             this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
             
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = <Scene>(scene || Engine.LastCreatedScene);
             this._scene.layers.push(this);
 
             var engine = this._scene.getEngine();

@@ -15,9 +15,9 @@ module BABYLON.GUI {
         private _blinkTimeout: number;
         private _blinkIsEven = false;
         private _cursorOffset = 0;        
-        private _scrollLeft: number;
+        private _scrollLeft: Nullable<number>;
         private _textWidth: number;
-        private _clickedCoordinate: number;
+        private _clickedCoordinate: Nullable<number>;
         
         public promptMessage = "Please enter text:";
 

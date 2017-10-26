@@ -86,7 +86,7 @@ var BABYLON;
                     }
                 }
             }
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
             // Attribs
@@ -139,7 +139,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: 1 }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -153,6 +153,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);

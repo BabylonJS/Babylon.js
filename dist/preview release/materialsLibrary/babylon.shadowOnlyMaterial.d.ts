@@ -6,7 +6,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         activeLight: IShadowLight;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
