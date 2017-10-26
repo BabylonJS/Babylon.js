@@ -399,6 +399,10 @@
                     this._vertex.x *= this._copy.scaling.x;
                     this._vertex.y *= this._copy.scaling.y;
                     this._vertex.z *= this._copy.scaling.z;
+
+                    this._vertex.x += this._copy.pivot.x;
+                    this._vertex.y += this._copy.pivot.y;
+                    this._vertex.z += this._copy.pivot.z;
     
                     Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
                     positions.push(this._copy.position.x + this._rotated.x, this._copy.position.y + this._rotated.y, this._copy.position.z + this._rotated.z);
@@ -568,6 +572,10 @@
                     this._vertex.x *= this._copy.scaling.x;
                     this._vertex.y *= this._copy.scaling.y;
                     this._vertex.z *= this._copy.scaling.z;
+
+                    this._vertex.x += this._copy.pivot.x;
+                    this._vertex.y += this._copy.pivot.y;
+                    this._vertex.z += this._copy.pivot.z;
     
                     Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
     
