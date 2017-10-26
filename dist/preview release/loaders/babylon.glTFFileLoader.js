@@ -2626,7 +2626,7 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._getMeshes = function () {
-                var meshes = [this._rootNode.babylonMesh || null];
+                var meshes = [this._rootNode.babylonMesh];
                 var nodes = this._gltf.nodes;
                 if (nodes) {
                     for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
@@ -3531,14 +3531,14 @@ var BABYLON;
                 babylonMaterial.albedoColor = properties.baseColorFactor ? BABYLON.Color3.FromArray(properties.baseColorFactor) : new BABYLON.Color3(1, 1, 1);
                 babylonMaterial.metallic = properties.metallicFactor == null ? 1 : properties.metallicFactor;
                 babylonMaterial.roughness = properties.roughnessFactor == null ? 1 : properties.roughnessFactor;
-                if (properties.baseColorTexture && properties.baseColorTexture.texCoord) {
+                if (properties.baseColorTexture) {
                     var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, properties.baseColorTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find base color texture " + properties.baseColorTexture.index);
                     }
                     babylonMaterial.albedoTexture = this._loadTexture("#/textures/" + texture.index, texture, properties.baseColorTexture.texCoord);
                 }
-                if (properties.metallicRoughnessTexture && properties.metallicRoughnessTexture.texCoord) {
+                if (properties.metallicRoughnessTexture) {
                     var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, properties.metallicRoughnessTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find metallic roughness texture " + properties.metallicRoughnessTexture.index);
@@ -3577,7 +3577,7 @@ var BABYLON;
                     babylonMaterial.backFaceCulling = false;
                     babylonMaterial.twoSidedLighting = true;
                 }
-                if (material.normalTexture && material.normalTexture.texCoord) {
+                if (material.normalTexture) {
                     var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, material.normalTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find normal texture " + material.normalTexture.index);
@@ -3589,7 +3589,7 @@ var BABYLON;
                         babylonMaterial.bumpTexture.level = material.normalTexture.scale;
                     }
                 }
-                if (material.occlusionTexture && material.occlusionTexture.texCoord) {
+                if (material.occlusionTexture) {
                     var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, material.occlusionTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find occlusion texture " + material.occlusionTexture.index);
@@ -3600,7 +3600,7 @@ var BABYLON;
                         babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
                     }
                 }
-                if (material.emissiveTexture && material.emissiveTexture.texCoord) {
+                if (material.emissiveTexture) {
                     var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, material.emissiveTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find emissive texture " + material.emissiveTexture.index);
@@ -3644,6 +3644,7 @@ var BABYLON;
             };
             GLTFLoader.prototype._loadTexture = function (context, texture, coordinatesIndex) {
                 var _this = this;
+                if (coordinatesIndex === void 0) { coordinatesIndex = 0; }
                 var sampler = (texture.sampler == null ? {} : GLTF2.GLTFUtils.GetArrayItem(this._gltf.samplers, texture.sampler));
                 if (!sampler) {
                     throw new Error(context + ": Failed to find sampler " + texture.sampler);

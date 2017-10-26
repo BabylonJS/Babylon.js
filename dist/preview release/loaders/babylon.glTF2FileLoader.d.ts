@@ -373,7 +373,7 @@ declare module BABYLON.GLTF2 {
         _createPbrMaterial(material: IGLTFMaterial): void;
         _loadMaterialBaseProperties(context: string, material: IGLTFMaterial): void;
         _loadMaterialAlphaProperties(context: string, material: IGLTFMaterial, colorFactor: number[]): void;
-        _loadTexture(context: string, texture: IGLTFTexture, coordinatesIndex: number): Texture;
+        _loadTexture(context: string, texture: IGLTFTexture, coordinatesIndex?: number): Texture;
         private _loadImage(context, image, onSuccess);
         _loadUri(context: string, uri: string, onSuccess: (data: ArrayBufferView) => void): void;
         _tryCatchOnError(handler: () => void): void;
