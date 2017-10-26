@@ -1728,6 +1728,10 @@
 
         // Ready
         public isReady(): boolean {
+            if (this._isDisposed) {
+                return false;
+            }
+
             if (this._pendingData.length > 0) {
                 return false;
             }
