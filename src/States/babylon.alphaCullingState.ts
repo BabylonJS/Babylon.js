@@ -5,9 +5,9 @@
         private _isBlendEquationParametersDirty = false;
         private _isBlendConstantsDirty = false;
         private _alphaBlend = false;
-        private _blendFunctionParameters = new Array<number>(4);
-        private _blendEquationParameters = new Array<number>(2);
-        private _blendConstants = new Array<number>(4);
+        private _blendFunctionParameters = new Array<Nullable<number>>(4);
+        private _blendEquationParameters = new Array<Nullable<number>>(2);
+        private _blendConstants = new Array<Nullable<number>>(4);
 
         /**
          * Initializes the state.
@@ -123,7 +123,7 @@
 
             // Alpha function
             if (this._isBlendFunctionParametersDirty) {
-                gl.blendFuncSeparate(this._blendFunctionParameters[0], this._blendFunctionParameters[1], this._blendFunctionParameters[2], this._blendFunctionParameters[3]);
+                gl.blendFuncSeparate(<number>this._blendFunctionParameters[0], <number>this._blendFunctionParameters[1], <number>this._blendFunctionParameters[2], <number>this._blendFunctionParameters[3]);
                 this._isBlendFunctionParametersDirty = false;
             }
 
@@ -135,7 +135,7 @@
 
             // Constants
             if (this._isBlendConstantsDirty) {
-                gl.blendColor(this._blendConstants[0], this._blendConstants[1], this._blendConstants[2], this._blendConstants[3]);
+                gl.blendColor(<number>this._blendConstants[0], <number>this._blendConstants[1], <number>this._blendConstants[2], <number>this._blendConstants[3]);
                 this._isBlendConstantsDirty = false;
             }                    
         }

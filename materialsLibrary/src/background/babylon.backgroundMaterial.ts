@@ -266,7 +266,7 @@ namespace BABYLON {
         /**
          * Gets the image processing configuration used either in this material.
          */
-        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+        public get imageProcessingConfiguration(): Nullable<ImageProcessingConfiguration> {
             return this._imageProcessingConfiguration;
         }
 
@@ -286,26 +286,26 @@ namespace BABYLON {
          * Gets wether the color curves effect is enabled.
          */
         public get cameraColorCurvesEnabled(): boolean {
-            return this.imageProcessingConfiguration.colorCurvesEnabled;
+            return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurvesEnabled;
         }
         /**
          * Sets wether the color curves effect is enabled.
          */
         public set cameraColorCurvesEnabled(value: boolean) {
-            this.imageProcessingConfiguration.colorCurvesEnabled = value;
+            (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurvesEnabled = value;
         }
 
         /**
          * Gets wether the color grading effect is enabled.
          */
         public get cameraColorGradingEnabled(): boolean {
-            return this.imageProcessingConfiguration.colorGradingEnabled;
+            return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorGradingEnabled;
         }
         /**
          * Gets wether the color grading effect is enabled.
          */
         public set cameraColorGradingEnabled(value: boolean) {
-            this.imageProcessingConfiguration.colorGradingEnabled = value;
+            (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorGradingEnabled = value;
         }
 
         /**
@@ -362,7 +362,7 @@ namespace BABYLON {
          * Sets the Color Grading 2D Lookup Texture.
          */
         public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
-            this._imageProcessingConfiguration.colorGradingTexture = value;
+            (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorGradingTexture = value;
         }
 
         /**
@@ -372,7 +372,7 @@ namespace BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public get cameraColorCurves(): Nullable<ColorCurves> {
-            return this._imageProcessingConfiguration.colorCurves;
+            return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurves;
         }
         /**
          * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
@@ -381,7 +381,7 @@ namespace BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         public set cameraColorCurves(value: Nullable<ColorCurves>) {
-            this._imageProcessingConfiguration.colorCurves = value;
+            (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurves = value;
         }
 
         /**
@@ -630,7 +630,7 @@ namespace BABYLON {
                 this.buildUniformLayout();
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -695,6 +695,9 @@ namespace BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }            
             this._activeEffect = effect;
 
             // Matrices
@@ -767,7 +770,7 @@ namespace BABYLON {
                 // Clip plane
                 MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
-                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
+                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).globalPosition;
                 // var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
                 effect.setFloat3("vEyePosition",
                     eyePosition.x,
@@ -793,8 +796,6 @@ namespace BABYLON {
             this._uniformBuffer.update();
 
             this._afterBind(mesh);
-
-            scene = null;
         }
 
         /**
