@@ -3,14 +3,15 @@ module BABYLON {
         export class SolidParticle {
             public idx: number = 0;                                             // particle global index
             public color: Nullable<Color4> = new Color4(1.0, 1.0, 1.0, 1.0);    // color
-            public position = Vector3.Zero();                                   // position
-            public rotation = Vector3.Zero();                                   // rotation
+            public position: Vector3 = Vector3.Zero();                                   // position
+            public rotation: Vector3 = Vector3.Zero();                                   // rotation
             public rotationQuaternion: Nullable<Quaternion>;                    // quaternion, will overwrite rotation
-            public scaling = Vector3.One();                                     // scaling
-            public uvs = new Vector4(0.0, 0.0, 1.0, 1.0);                       // uvs
-            public velocity = Vector3.Zero();                                   // velocity
-            public alive = true;                                                // alive
-            public isVisible = true;                                            // visibility
+            public scaling: Vector3 = Vector3.One();                                     // scaling
+            public uvs: Vector4 = new Vector4(0.0, 0.0, 1.0, 1.0);                       // uvs
+            public velocity: Vector3 = Vector3.Zero();                                   // velocity
+            public pivot: Vector3 = Vector3.Zero();                                      // pivot point in the particle local space
+            public alive: boolean = true;                                                // alive
+            public isVisible: boolean = true;                                            // visibility
             public _pos: number = 0;                                            // index of this particle in the global "positions" array
             public _ind: number = 0;                                            // index of this particle in the global "indices" array
             public _model: ModelShape;                                          // model shape reference

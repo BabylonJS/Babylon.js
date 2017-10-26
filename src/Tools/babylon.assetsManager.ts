@@ -11,6 +11,7 @@
         onSuccess: (task: IAssetTask) => void;
         onError: (task: IAssetTask, message?: string, exception?: any) => void;
         isCompleted: boolean;
+        name: string;
 
         taskState: AssetTaskState;
         errorObject: {
@@ -23,7 +24,7 @@
 
     export abstract class AbstractAssetTask implements IAssetTask {
 
-        constructor() {
+        constructor(public name: string) {
             this.taskState = AssetTaskState.INIT;
         }
 
@@ -85,7 +86,7 @@
         public loadedSkeletons: Array<Skeleton>;
 
         constructor(public name: string, public meshesNames: any, public rootUrl: string, public sceneFilename: string) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -106,7 +107,7 @@
         public text: string;
 
         constructor(public name: string, public url: string) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -125,7 +126,7 @@
         public data: ArrayBuffer;
 
         constructor(public name: string, public url: string) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -145,7 +146,7 @@
         public image: HTMLImageElement;
 
         constructor(public name: string, public url: string) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -176,7 +177,7 @@
         public texture: Texture;
 
         constructor(public name: string, public url: string, public noMipmap?: boolean, public invertY?: boolean, public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -197,7 +198,7 @@
         public texture: CubeTexture;
 
         constructor(public name: string, public url: string, public extensions?: string[], public noMipmap?: boolean, public files?: string[]) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -218,7 +219,7 @@
         public texture: HDRCubeTexture;
 
         constructor(public name: string, public url: string, public size?: number, public noMipmap = false, public generateHarmonics = true, public useInGammaSpace = false, public usePMREMGenerator = false) {
-            super();
+            super(name);
         }
 
         public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
