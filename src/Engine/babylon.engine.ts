@@ -4251,6 +4251,15 @@
                 return;
             }
 
+            if (!texture._webGLTexture) {
+                this.resetTextureCache();
+                if (scene) {
+                    scene._removePendingData(texture);
+                }
+
+                return;
+            }
+
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
