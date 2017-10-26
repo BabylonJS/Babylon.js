@@ -61,6 +61,7 @@
             private _normals: number[] = new Array<number>();
             private _colors: number[] = new Array<number>();
             private _uvs: number[] = new Array<number>();
+            private _indices32: IndicesArray;
             private _positions32: Float32Array;
             private _normals32: Float32Array;           // updated normals for the VBO
             private _fixedNormal32: Float32Array;       // initial normal references
@@ -119,7 +120,6 @@
                 function(p1, p2) {
                     return (p2.sqDistance - p1.sqDistance);
                 };
-            private _depthSortedIndices: IndicesArray;
             private _needs32Bits: boolean = false;
             public _bSphereOnly: boolean = false;
             public _bSphereRadiusFactor: number = 1.0;
@@ -169,6 +169,7 @@
                     this.addShape(triangle, 1);
                     triangle.dispose();
                 }
+                this._indices32 = (this._needs32Bits) ? new Uint32Array(this._indices) : new Uint16Array(this._indices);
                 this._positions32 = new Float32Array(this._positions);
                 this._uvs32 = new Float32Array(this._uvs);
                 this._colors32 = new Float32Array(this._colors);
@@ -180,14 +181,9 @@
                 if (this._mustUnrotateFixedNormals) {  // the particles could be created already rotated in the mesh with a positionFunction
                     this._unrotateFixedNormals();
                 }
+
                 var vertexData = new VertexData();
-                if (this._depthSort) {
-                    this._depthSortedIndices = (this._needs32Bits) ? new Uint32Array(this._indices) : new Uint16Array(this._indices);
-                    vertexData.indices = this._depthSortedIndices;
-                }
-                else {
-                    vertexData.indices = this._indices;
-                }
+                vertexData.indices = this._indices32;
                 vertexData.set(this._positions32, VertexBuffer.PositionKind);
                 vertexData.set(this._normals32, VertexBuffer.NormalKind);
                 if (this._uvs32) {
@@ -202,6 +198,9 @@
                 this.mesh.isPickable = this._pickable;
     
                 // free memory
+                if (!this._depthSort) {
+                    (<any>this._indices) = null;
+                }
                 (<any>this._positions) = null;
                 (<any>this._normals) = null;
                 (<any>this._uvs) = null;
@@ -750,6 +749,10 @@
                             this._vertex.x *= this._particle.scaling.x;
                             this._vertex.y *= this._particle.scaling.y;
                             this._vertex.z *= this._particle.scaling.z;
+
+                            this._vertex.x += this._particle.pivot.x;
+                            this._vertex.y += this._particle.pivot.y;
+                            this._vertex.z += this._particle.pivot.z;
     
                             this._rotated.x = this._vertex.x * this._rotMatrix.m[0] + this._vertex.y * this._rotMatrix.m[4] + this._vertex.z * this._rotMatrix.m[8];
                             this._rotated.y = this._vertex.x * this._rotMatrix.m[1] + this._vertex.y * this._rotMatrix.m[5] + this._vertex.z * this._rotMatrix.m[9];
@@ -908,11 +911,11 @@
                             lind = this.depthSortedParticles[sorted].indicesLength;
                             sind = this.depthSortedParticles[sorted].ind;
                             for (var i = 0; i < lind; i++) {
-                                this._depthSortedIndices[sid] = this._indices[sind + i];
+                                this._indices32[sid] = this._indices[sind + i];
                                 sid++;
                             }
                         }
-                        this.mesh.updateIndices(this._depthSortedIndices);
+                        this.mesh.updateIndices(this._indices32);
                     }
                 }
                 if (this._computeBoundingBox) {
@@ -971,6 +974,7 @@
                 (<any>this._normals) = null;
                 (<any>this._uvs) = null;
                 (<any>this._colors) = null;
+                (<any>this._indices32) = null;
                 (<any>this._positions32) = null;
                 (<any>this._normals32) = null;
                 (<any>this._fixedNormal32) = null;
