@@ -391,20 +391,20 @@
 
             let computeFormats = false;
 
-            if (info.isFourCC && ext) {
+            if (info.isFourCC) {
                 fourCC = header[off_pfFourCC];
                 switch (fourCC) {
                 case FOURCC_DXT1:
                     blockBytes = 8;
-                    internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT1_EXT;
+                    internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT1_EXT;
                     break;
                 case FOURCC_DXT3:
                     blockBytes = 16;
-                    internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT3_EXT;
+                    internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT3_EXT;
                     break;
                 case FOURCC_DXT5:
                     blockBytes = 16;
-                    internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                    internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT5_EXT;
                     break;
                 case FOURCC_D3DFMT_R16G16B16A16F:  
                     computeFormats = true;
