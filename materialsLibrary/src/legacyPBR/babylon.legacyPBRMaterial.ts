@@ -169,7 +169,7 @@ module BABYLON {
          * This allows special effects like sepia, black and white to sixties rendering style. 
          */
         @serializeAsTexture()
-        public cameraColorGradingTexture: BaseTexture = null;
+        public cameraColorGradingTexture: Nullable<BaseTexture> = null;
         
         /**
          * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
@@ -178,7 +178,7 @@ module BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         @serializeAsColorCurves()
-        public cameraColorCurves: ColorCurves = null;
+        public cameraColorCurves: Nullable<ColorCurves> = null;
          
         private _cameraInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
 
@@ -666,7 +666,7 @@ module BABYLON {
             }
         }
 
-        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
+        public isReady(mesh: Nullable<AbstractMesh> = null, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -679,11 +679,11 @@ module BABYLON {
 
             this._defines.reset();
 
-            if (scene.lightsEnabled && !this.disableLighting) {
+            if (scene.lightsEnabled && !this.disableLighting && mesh) {
                 MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, true, this.maxSimultaneousLights);
             }
 
-            if (!this.checkReadyOnEveryCall) {
+            if (!this.checkReadyOnEveryCall && mesh) {
                 if (this._renderId === scene.getRenderId()) {
                     if (this._checkCache(scene, mesh, useInstances)) {
                         return true;
@@ -1009,7 +1009,7 @@ module BABYLON {
                 }
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
-                    this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
+                    this._defines.BonesPerMesh = (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0);
                 }
 
                 // Instances
@@ -1017,8 +1017,8 @@ module BABYLON {
                     this._defines.INSTANCES = true;
                 }
 
-               if ((<any>mesh).morphTargetManager) {
-                    var manager = (<Mesh>mesh).morphTargetManager;
+                let manager = (<any>mesh).morphTargetManager;
+                if (manager) {
                     this._defines.MORPHTARGETS_TANGENT = manager.supportsTangents && this._defines.TANGENT;
                     this._defines.MORPHTARGETS_NORMAL = manager.supportsNormals && this._defines.NORMAL;
                     this._defines.MORPHTARGETS = (manager.numInfluencers > 0);
@@ -1093,7 +1093,7 @@ module BABYLON {
                 }
 
                 if (this._defines.NUM_BONE_INFLUENCERS > 0) {
-                    fallbacks.addCPUSkinningFallback(0, mesh);
+                    fallbacks.addCPUSkinningFallback(0, <Mesh>mesh);
                 }
 
                 //Attributes
@@ -1119,9 +1119,11 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
-                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, this._defines);
+                if (mesh) {
+                    MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                    MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                    MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, this._defines);
+                }
 
                 // Legacy browser patch
                 var join = this._defines.toString();
@@ -1187,7 +1189,7 @@ module BABYLON {
                 
                 this.buildUniformLayout();
             }
-            if (!this._effect.isReady()) {
+            if (!this._effect || !this._effect.isReady()) {
                 return false;
             }
 
@@ -1259,19 +1261,26 @@ module BABYLON {
         }
 
         public bindOnlyWorldMatrix(world: Matrix): void {
-            this._effect.setMatrix("world", world);
+            if (this._effect) {
+                this._effect.setMatrix("world", world);
+            }
         }
 
-        private _myScene: BABYLON.Scene = null;
+        private _myScene: Nullable<BABYLON.Scene> = null;
 
         public bind(world: Matrix, mesh?: Mesh): void {
             this._myScene = this.getScene();
             var effect = this._effect;
+
+            if (!effect) {
+                return;
+            }
+
             // Matrices        
             this.bindOnlyWorldMatrix(world);
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, this._effect);
+            MaterialHelper.BindBonesParameters(mesh, effect);
 
             if (this._myScene.getCachedMaterial() !== (<BABYLON.Material>this)) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
@@ -1316,19 +1325,22 @@ module BABYLON {
 
                             if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
                                 var polynomials = this.reflectionTexture.sphericalPolynomial;
-                                this._effect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
-                                this._effect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
-                                this._effect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
-                                this._effect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
-                                    polynomials.xx.y - polynomials.zz.y,
-                                    polynomials.xx.z - polynomials.zz.z);
-                                this._effect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
-                                    polynomials.yy.y - polynomials.zz.y,
-                                    polynomials.yy.z - polynomials.zz.z);
-                                this._effect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
-                                this._effect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
-                                this._effect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
-                                this._effect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+
+                                if (polynomials) {
+                                    effect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                                    effect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                                    effect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                                    effect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
+                                        polynomials.xx.y - polynomials.zz.y,
+                                        polynomials.xx.z - polynomials.zz.z);
+                                    effect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
+                                        polynomials.yy.y - polynomials.zz.y,
+                                        polynomials.yy.z - polynomials.zz.z);
+                                    effect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                                    effect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                                    effect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                                    effect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                                }
                             }
                         }
 
@@ -1415,7 +1427,9 @@ module BABYLON {
 
                     // GAMMA CORRECTION.
                     this.convertColorToLinearSpaceToRef(this.albedoColor, LegacyPBRMaterial._scaledAlbedo);
-                    this._uniformBuffer.updateColor4("vAlbedoColor", LegacyPBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
+                    if (mesh) {
+                        this._uniformBuffer.updateColor4("vAlbedoColor", LegacyPBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
+                    }
 
 
                     // Misc
@@ -1511,14 +1525,14 @@ module BABYLON {
                     }
 
                     if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
-                        this._effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
+                        effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
 
                         let x = this.cameraColorGradingTexture.level;                 // Texture Level
                         let y = this.cameraColorGradingTexture.getSize().height;      // Texture Size example with 8
                         let z = y - 1.0;                    // SizeMinusOne 8 - 1
                         let w = 1 / y;                      // Space of 1 slice 1 / 8
                         
-                        this._effect.setFloat4("vCameraColorGradingInfos", x, y, z, w);
+                        effect.setFloat4("vCameraColorGradingInfos", x, y, z, w);
                         
                         let slicePixelSizeU = w / y;    // Space of 1 pixel in U direction, e.g. 1/64
                         let slicePixelSizeV = w;		// Space of 1 pixel in V direction, e.g. 1/8					    // Space of 1 pixel in V direction, e.g. 1/8
@@ -1528,25 +1542,25 @@ module BABYLON {
                         let z2 = 0.5 * slicePixelSizeU;	// Offset of lookup range in U to align sample position with texel centre, for example 0.5/64 
                         let w2 = 0.5 * slicePixelSizeV;	// Offset of lookup range in V to align sample position with texel centre, for example 0.5/8
                         
-                        this._effect.setFloat4("vCameraColorGradingScaleOffset", x2, y2, z2, w2);
+                        effect.setFloat4("vCameraColorGradingScaleOffset", x2, y2, z2, w2);
                     }
                 }
 
                 // Clip plane
-                MaterialHelper.BindClipPlane(this._effect, this._myScene);
+                MaterialHelper.BindClipPlane(effect, this._myScene);
 
                 // Colors
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-                effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
+                effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : (<Camera>this._myScene.activeCamera).position);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 
-            if (this._myScene.getCachedMaterial() !== this || !this.isFrozen) {
+            if (mesh && (this._myScene.getCachedMaterial() !== this || !this.isFrozen)) {
 
                 // Lights
                 if (this._myScene.lightsEnabled && !this.disableLighting) {
-                    LegacyPBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
+                    LegacyPBRMaterial.BindLights(this._myScene, mesh, effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
                 }
 
                 // View
@@ -1555,11 +1569,11 @@ module BABYLON {
                 }
 
                 // Fog
-                MaterialHelper.BindFogParameters(this._myScene, mesh, this._effect);
+                MaterialHelper.BindFogParameters(this._myScene, mesh, effect);
 
                 // Morph targets
                 if (this._defines.NUM_MORPH_INFLUENCERS) {
-                    MaterialHelper.BindMorphTargetParameters(mesh, this._effect);                
+                    MaterialHelper.BindMorphTargetParameters(mesh, effect);                
                 }
 
                 this._cameraInfos.x = this.cameraExposure;
@@ -1567,11 +1581,11 @@ module BABYLON {
                 effect.setVector4("vCameraInfos", this._cameraInfos);
                 
                 if (this.cameraColorCurves) {
-                    ColorCurves.Bind(this.cameraColorCurves, this._effect);
+                    ColorCurves.Bind(this.cameraColorCurves, effect);
                 }
 
                 // Log. depth
-                MaterialHelper.BindLogDepth(this._defines, this._effect, this._myScene);
+                MaterialHelper.BindLogDepth(this._defines, effect, this._myScene);
             }
 
             this._uniformBuffer.update();

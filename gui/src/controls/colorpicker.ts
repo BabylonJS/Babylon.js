@@ -128,7 +128,7 @@ module BABYLON.GUI {
             var canvas = document.createElement("canvas");
             canvas.width = radius * 2;
             canvas.height = radius * 2;
-            var context = canvas.getContext("2d");
+            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
             var image = context.getImageData(0, 0, radius * 2, radius * 2);
             var data = image.data;
             

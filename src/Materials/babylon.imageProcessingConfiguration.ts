@@ -30,7 +30,7 @@ module BABYLON {
          * Color curves setup used in the effect if colorCurvesEnabled is set to true 
          */
         @serializeAsColorCurves()
-        public colorCurves = new ColorCurves();
+        public colorCurves: Nullable<ColorCurves> = new ColorCurves();
 
         @serialize()
         private _colorCurvesEnabled = false;
@@ -56,7 +56,7 @@ module BABYLON {
          * Color grading LUT texture used in the effect if colorGradingEnabled is set to true 
          */
         @serializeAsTexture()
-        public colorGradingTexture: BaseTexture;
+        public colorGradingTexture: Nullable<BaseTexture>;
 
         @serialize()
         private _colorGradingEnabled = false;
@@ -354,7 +354,12 @@ module BABYLON {
             defines.EXPOSURE = (this.exposure !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
-            defines.COLORGRADING3D = defines.COLORGRADING && ((<Scene>this.colorGradingTexture.getScene()).getEngine().webGLVersion > 1);
+            if (defines.COLORGRADING) {
+                let texture = <BaseTexture>this.colorGradingTexture;
+                defines.COLORGRADING3D = ((<Scene>texture.getScene()).getEngine().webGLVersion > 1) ? true : false;                 
+            } else {
+                defines.COLORGRADING3D = false;
+            }
             defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
@@ -375,7 +380,7 @@ module BABYLON {
          */
         public bind(effect: Effect, aspectRatio = 1) : void {
             // Color Curves
-            if (this._colorCurvesEnabled) {
+            if (this._colorCurvesEnabled && this.colorCurves) {
                 ColorCurves.Bind(this.colorCurves, effect);
             }
 
