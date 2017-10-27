@@ -6,40 +6,34 @@ namespace BABYLON {
      */
     class BackgroundMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         /**
-         * True if the opacity texture is in use.
+         * True if the diffuse texture is in use.
          */
-        public OPACITY = false;
+        public DIFFUSE = false;
 
         /**
          * The direct UV channel to use.
          */
-        public OPACITYDIRECTUV = 0;
+        public DIFFUSEDIRECTUV = 0;
 
         /**
-         * True if the opacity texture is used in gray scale.
+         * True if the diffuse texture is in gamma space.
          */
-        public OPACITYRGB = false;
+        public GAMMADIFFUSE = false;
 
         /**
-         * True if the environment texture is in use.
+         * True if the diffuse texture has opacity in the alpha channel.
          */
-        public ENVIRONMENT = false;
+        public DIFFUSEHASALPHA = false;
 
         /**
-         * True if the environment is defined in gamma space.
+         * True if you want the material to fade to transparent at grazing angle.
          */
-        public GAMMAENVIRONMENT = false;
+        public OPACITYFRESNEL = false;
 
         /**
-         * True if the environment texture does not contain background dedicated data.
-         * The material will fallback to use the luminance of the background.
+         * True if an extra blur needs to be added in the reflection.
          */
-        public RGBENVIRONMENT = false;
-
-        /**
-         * True if an extra blur needs to be added in the environment.
-         */
-        public ENVIRONMENTBLUR = false;
+        public REFLECTIONBLUR = false;
 
         /**
          * False if the current Webgl implementation does not support the texture lod extension.
@@ -47,16 +41,14 @@ namespace BABYLON {
         public TEXTURELODSUPPORT = false;
 
         /**
-         * True if you want the material to fade to the environment color at grazing angle.
+         * True to ensure the data are premultiplied.
          */
-        public OPACITYFRESNEL = false;
+        public PREMULTIPLYALPHA = false;
 
         /**
-         * True if you want the shadow being generated from the diffuse color of the light.
-         * It is actually using 1 - diffuse to adpat the color to the color not reflected
-         * by the target.
+         * True if the texture contains cooked RGB values and not gray scaled multipliers.
          */
-        public SHADOWFROMLIGHTCOLOR = false;
+        public USERGBCOLOR = false;
 
         // Image Processing Configuration.
         public IMAGEPROCESSING = false;
@@ -72,6 +64,23 @@ namespace BABYLON {
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
         public EXPOSURE = false;
+
+        // Reflection.
+        public REFLECTION = false;
+        public REFLECTIONMAP_3D = false;
+        public REFLECTIONMAP_SPHERICAL = false;
+        public REFLECTIONMAP_PLANAR = false;
+        public REFLECTIONMAP_CUBIC = false;
+        public REFLECTIONMAP_PROJECTION = false;
+        public REFLECTIONMAP_SKYBOX = false;
+        public REFLECTIONMAP_EXPLICIT = false;
+        public REFLECTIONMAP_EQUIRECTANGULAR = false;
+        public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+        public INVERTCUBICMAP = false;
+        public REFLECTIONMAP_OPPOSITEZ = false;
+        public LODINREFLECTIONALPHA = false;
+        public GAMMAREFLECTION = false;
 
         // Default BJS.
         public MAINUV1 = false;
@@ -149,45 +158,33 @@ namespace BABYLON {
         public thirdLevel: float = 1;
 
         /**
-         * Environment Texture used in the material.
+         * Reflection Texture used in the material.
          * Should be author in a specific way for the best result (refer to the documentation).
          */
         @serializeAsTexture()
-        protected _environmentTexture: Nullable<BaseTexture>;
+        protected _reflectionTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public environmentTexture: Nullable<BaseTexture> = null;
+        public reflectionTexture: Nullable<BaseTexture> = null;
 
         /**
-         * Opacity Texture used in the material.
-         * If present, the environment will be seen as a reflection when the luminance is close to 1 and a skybox
-         * where close from 0.
-         * This helps achieving a nice grounding effect by simulating a reflection on the ground but not the skybox.
-         * If not present only the skybox mode is used.
-         */
-        @serializeAsTexture()
-        protected _opacityTexture: Nullable<BaseTexture>;
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public opacityTexture: Nullable<BaseTexture> = null;
-
-        /**
-         * Environment Texture level of blur.
+         * Reflection Texture level of blur.
          * 
          * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the 
          * texture twice.
          */
         @serialize()
-        protected _environmentBlur: float;
+        protected _reflectionBlur: float;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public environmentBlur: float = 0;
-
+        public reflectionBlur: float = 0;
+        
         /**
-         * Specify wether or not the different channels of the environment represents background lighting information.
-         * If no, the lumiance will be use equally on each channels.
+         * Diffuse Texture used in the material.
+         * Should be author in a specific way for the best result (refer to the documentation).
          */
-        @serialize()
-        protected _lightChannelsInTexture: boolean;
+        @serializeAsTexture()
+        protected _diffuseTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public lightChannelsInTexture: boolean = false;
+        public diffuseTexture: Nullable<BaseTexture> = null;
 
         /**
          * Specify the list of lights casting shadow on the material.
@@ -223,6 +220,22 @@ namespace BABYLON {
         protected _opacityFresnel: boolean;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public opacityFresnel: boolean = true;
+
+        /**
+         * Helps to directly use the maps channels instead of their level.
+         */
+        @serialize()
+        protected _useRGBColor: boolean;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useRGBColor: boolean = true;
+
+        /**
+         * Number of Simultaneous lights allowed on the material.
+         */
+        @serialize()
+        private _maxSimultaneousLights: int = 4;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public maxSimultaneousLights: int = 4;
 
         /**
          * Default configuration related to image processing available in the Background Material.
@@ -384,11 +397,6 @@ namespace BABYLON {
             (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurves = value;
         }
 
-        /**
-         * Number of Simultaneous lights allowed on the material.
-         */
-        private _maxSimultaneousLights: int = 4;
-
         // Temp values kept as cache in the material.
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
 
@@ -406,12 +414,12 @@ namespace BABYLON {
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
 
-                if (this._opacityTexture && this._opacityTexture.isRenderTarget) {
-                    this._renderTargets.push(this._opacityTexture as RenderTargetTexture);
+                if (this._diffuseTexture && this._diffuseTexture.isRenderTarget) {
+                    this._renderTargets.push(this._diffuseTexture as RenderTargetTexture);
                 }
 
-                if (this._environmentTexture && this._environmentTexture.isRenderTarget) {
-                    this._renderTargets.push(this._environmentTexture as RenderTargetTexture);
+                if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                    this._renderTargets.push(this._reflectionTexture as RenderTargetTexture);
                 }
 
                 return this._renderTargets;
@@ -428,22 +436,10 @@ namespace BABYLON {
 
         /**
          * The entire material has been created in order to prevent overdraw.
-         * @returns false
+         * @returns true if blending is enable
          */
         public needAlphaBlending(): boolean {
-            return false;
-        }
-
-        /**
-         * Gets the environment texture to use in the material.
-         * @returns the texture
-         */
-        private _getEnvironmentTexture(): Nullable<BaseTexture> {
-            if (this._environmentTexture) {
-                return this._environmentTexture;
-            }
-
-            return this.getScene().environmentTexture;
+            return ((this.alpha < 0) || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha));
         }
 
         /**
@@ -485,36 +481,92 @@ namespace BABYLON {
                         defines.TEXTURELODSUPPORT = true;
                     }
 
-                    if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                        if (!this._opacityTexture.isReadyOrNotBlocking()) {
+                    if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                        if (!this._diffuseTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
 
-                        MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
-                        defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
+                        MaterialHelper.PrepareDefinesForMergedUV(this._diffuseTexture, defines, "DIFFUSE");
+                        defines.DIFFUSEHASALPHA = this._diffuseTexture.hasAlpha;
+                        defines.GAMMADIFFUSE = this._diffuseTexture.gammaSpace;
                         defines.OPACITYFRESNEL = this._opacityFresnel;
                     } else {
-                        defines.OPACITY = false;
-                        defines.OPACITYRGB = false;
+                        defines.DIFFUSE = false;
+                        defines.DIFFUSEHASALPHA = false;
+                        defines.GAMMADIFFUSE = false;
                         defines.OPACITYFRESNEL = false;
                     }
 
-                    var environmentTexture = this._getEnvironmentTexture();
-                    if (environmentTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        if (!environmentTexture.isReadyOrNotBlocking()) {
+                    var reflectionTexture = this._reflectionTexture;
+                    if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        if (!reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
+                        
+                        defines.REFLECTION = true;
+                        defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
+                        defines.REFLECTIONBLUR = this._reflectionBlur > 0;
+                        defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
+                        defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
 
-                        MaterialHelper.PrepareDefinesForMergedUV(environmentTexture, defines, "ENVIRONMENT"); 
-                        defines.GAMMAENVIRONMENT = environmentTexture.gammaSpace;
-                        defines.ENVIRONMENTBLUR = this._environmentBlur > 0;
-                        defines.RGBENVIRONMENT = !this.lightChannelsInTexture;
+                        if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
+                            defines.INVERTCUBICMAP = true;
+                        }
+
+                        defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
+
+                        switch (reflectionTexture.coordinatesMode) {
+                            case Texture.CUBIC_MODE:
+                            case Texture.INVCUBIC_MODE:
+                                defines.REFLECTIONMAP_CUBIC = true;
+                                break;
+                            case Texture.EXPLICIT_MODE:
+                                defines.REFLECTIONMAP_EXPLICIT = true;
+                                break;
+                            case Texture.PLANAR_MODE:
+                                defines.REFLECTIONMAP_PLANAR = true;
+                                break;
+                            case Texture.PROJECTION_MODE:
+                                defines.REFLECTIONMAP_PROJECTION = true;
+                                break;
+                            case Texture.SKYBOX_MODE:
+                                defines.REFLECTIONMAP_SKYBOX = true;
+                                break;
+                            case Texture.SPHERICAL_MODE:
+                                defines.REFLECTIONMAP_SPHERICAL = true;
+                                break;
+                            case Texture.EQUIRECTANGULAR_MODE:
+                                defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
+                                break;
+                            case Texture.FIXED_EQUIRECTANGULAR_MODE:
+                                defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
+                                break;
+                            case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
+                                defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
+                                break;
+                        }
                     } else {
-                        defines.ENVIRONMENT = false;
-                        defines.GAMMAENVIRONMENT = false;
-                        defines.RGBENVIRONMENT = false;
+                        defines.REFLECTION = false;
+                        defines.REFLECTIONBLUR = false;
+                        defines.REFLECTIONMAP_3D = false;
+                        defines.REFLECTIONMAP_SPHERICAL = false;
+                        defines.REFLECTIONMAP_PLANAR = false;
+                        defines.REFLECTIONMAP_CUBIC = false;
+                        defines.REFLECTIONMAP_PROJECTION = false;
+                        defines.REFLECTIONMAP_SKYBOX = false;
+                        defines.REFLECTIONMAP_EXPLICIT = false;
+                        defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
+                        defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+                        defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+                        defines.INVERTCUBICMAP = false;
+                        defines.REFLECTIONMAP_OPPOSITEZ = false;
+                        defines.LODINREFLECTIONALPHA = false;
+                        defines.GAMMAREFLECTION = false;
                     }
                 }
+
+                defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
+                defines.USERGBCOLOR = this._useRGBColor;
             }
 
             if (defines._areImageProcessingDirty) {
@@ -585,14 +637,14 @@ namespace BABYLON {
                         "vClipPlane", "mBones", 
 
                         "vPrimaryColor", "vSecondaryColor", "vThirdColor",
-                        "vEnvironmentInfo", "environmentMatrix", "vEnvironmentMicrosurfaceInfos",
+                        "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos",
 
-                        "shadowLevel",
+                        "shadowLevel", "alpha",
 
-                        "vOpacityInfo", "opacityMatrix",
+                        "vDiffuseInfos", "diffuseMatrix",
                 ];
 
-                var samplers = ["opacitySampler", "environmentSampler", "environmentSamplerLow", "environmentSamplerHigh"];
+                var samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
                 var uniformBuffers = ["Material", "Scene"];
 
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -648,13 +700,14 @@ namespace BABYLON {
             this._uniformBuffer.addUniform("vPrimaryColor", 4);
             this._uniformBuffer.addUniform("vSecondaryColor", 4);
             this._uniformBuffer.addUniform("vThirdColor", 4);
-            this._uniformBuffer.addUniform("vOpacityInfo", 2);
-            this._uniformBuffer.addUniform("vEnvironmentInfo", 2);
-            this._uniformBuffer.addUniform("opacityMatrix", 16);
-            this._uniformBuffer.addUniform("environmentMatrix", 16);
-            this._uniformBuffer.addUniform("vEnvironmentMicrosurfaceInfos", 3);
+            this._uniformBuffer.addUniform("vDiffuseInfos", 2);
+            this._uniformBuffer.addUniform("vReflectionInfos", 2);
+            this._uniformBuffer.addUniform("diffuseMatrix", 16);
+            this._uniformBuffer.addUniform("reflectionMatrix", 16);
+            this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
             this._uniformBuffer.addUniform("pointSize", 1);
             this._uniformBuffer.addUniform("shadowLevel", 1);
+            this._uniformBuffer.addUniform("alpha", 1);
             this._uniformBuffer.create();
         }
 
@@ -662,12 +715,12 @@ namespace BABYLON {
          * Unbind the material.
          */
         public unbind(): void {
-            if (this._opacityTexture && this._opacityTexture.isRenderTarget) {
-                this._uniformBuffer.setTexture("opacitySampler", null);
+            if (this._diffuseTexture && this._diffuseTexture.isRenderTarget) {
+                this._uniformBuffer.setTexture("diffuseSampler", null);
             }
 
-            if (this._environmentTexture && this._environmentTexture.isRenderTarget) {
-                this._uniformBuffer.setTexture("environmentSampler", null);
+            if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                this._uniformBuffer.setTexture("reflectionSampler", null);
             }
 
             super.unbind();
@@ -712,29 +765,31 @@ namespace BABYLON {
 
                 this.bindViewProjection(effect);
 
-                var environmentTexture = this._getEnvironmentTexture();
+                let reflectionTexture = this._reflectionTexture;
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
 
                     // Texture uniforms
                     if (scene.texturesEnabled) {
-                        if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                            this._uniformBuffer.updateFloat2("vOpacityInfo", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                            MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
+                        if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                            this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
+                            MaterialHelper.BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
                         }
 
-                        if (environmentTexture && StandardMaterial.ReflectionTextureEnabled) {
-                            this._uniformBuffer.updateMatrix("environmentMatrix", environmentTexture.getReflectionTextureMatrix());
-                            this._uniformBuffer.updateFloat2("vEnvironmentInfo", environmentTexture.level, this._environmentBlur);
-                            this._uniformBuffer.updateFloat3("vEnvironmentMicrosurfaceInfos", 
-                                environmentTexture.getSize().width, 
-                                environmentTexture.lodGenerationScale,
-                                environmentTexture.lodGenerationOffset);
+                        if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                            this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
+                            this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, this._reflectionBlur);
+
+                            this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos", 
+                                reflectionTexture.getSize().width, 
+                                reflectionTexture.lodGenerationScale,
+                                reflectionTexture.lodGenerationOffset);
                         }
                     }
 
                     if (this.shadowLevel > 0) {
                         this._uniformBuffer.updateFloat("shadowLevel", this.shadowLevel);
                     }
+                    this._uniformBuffer.updateFloat("alpha", this.alpha);
 
                     // Point size
                     if (this.pointsCloud) {
@@ -748,21 +803,21 @@ namespace BABYLON {
 
                 // Textures
                 if (scene.texturesEnabled) {
-                    if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                        this._uniformBuffer.setTexture("opacitySampler", this._opacityTexture);
+                    if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                        this._uniformBuffer.setTexture("diffuseSampler", this._diffuseTexture);
                     }
 
-                    if (environmentTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        if (defines.ENVIRONMENTBLUR && defines.TEXTURELODSUPPORT) {
-                            this._uniformBuffer.setTexture("environmentSampler", environmentTexture);
+                    if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        if (defines.REFLECTIONBLUR && defines.TEXTURELODSUPPORT) {
+                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
                         }
-                        else if (!defines.ENVIRONMENTBLUR) {
-                            this._uniformBuffer.setTexture("environmentSampler", environmentTexture);
+                        else if (!defines.REFLECTIONBLUR) {
+                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
                         }
                         else {
-                            this._uniformBuffer.setTexture("environmentSampler", environmentTexture._lodTextureMid || environmentTexture);
-                            this._uniformBuffer.setTexture("environmentSamplerLow", environmentTexture._lodTextureLow || environmentTexture);
-                            this._uniformBuffer.setTexture("environmentSamplerHigh", environmentTexture._lodTextureHigh || environmentTexture);
+                            this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
+                            this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
                         }
                     }
                 }
@@ -805,11 +860,11 @@ namespace BABYLON {
          */
         public dispose(forceDisposeEffect: boolean = false, forceDisposeTextures: boolean = false): void {
             if (forceDisposeTextures) {
-                if (this.opacityTexture) {
-                    this.opacityTexture.dispose();
+                if (this.diffuseTexture) {
+                    this.diffuseTexture.dispose();
                 }
-                if (this.environmentTexture) {
-                    this.environmentTexture.dispose();
+                if (this.reflectionTexture) {
+                    this.reflectionTexture.dispose();
                 }
             }
 

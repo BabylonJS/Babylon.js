@@ -2,13 +2,14 @@
     uniform vec4 vSecondaryColor;
     uniform vec4 vThirdColor;
     uniform float shadowLevel;
+    uniform float alpha;
 
-#ifdef OPACITY
-    uniform vec2 vOpacityInfo;
+#ifdef DIFFUSE
+    uniform vec2 vDiffuseInfos;
 #endif
 
-#ifdef ENVIRONMENT
-    uniform vec2 vEnvironmentInfo;
-    uniform mat4 environmentMatrix;
-    uniform vec3 vEnvironmentMicrosurfaceInfos;
+#ifdef REFLECTION
+    uniform vec2 vReflectionInfos;
+    uniform mat4 reflectionMatrix;
+    uniform vec3 vReflectionMicrosurfaceInfos;
 #endif
