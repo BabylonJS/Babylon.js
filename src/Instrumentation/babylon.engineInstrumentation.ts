@@ -25,7 +25,7 @@ module BABYLON {
         }
 
         /**
-         * Gets the current GPU frame time capture status
+         * Gets the GPU frame time capture status
          */
         public get captureGPUFrameTime(): boolean {
             return this._captureGPUFrameTime;
@@ -74,7 +74,7 @@ module BABYLON {
         }
 
         /**
-         * Gets the perf counter associated with shader compilation
+         * Gets the shader compilation time capture status
          */
         public get captureShaderCompilationTime(): boolean {
             return this._captureShaderCompilationTime;

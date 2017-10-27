@@ -345,6 +345,20 @@
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
 
         /**
+        * An event triggered when render targets are about to be rendered
+        * Can happen multiple times per frame.
+        * @type {BABYLON.Observable}
+        */
+        public OnBeforeRenderTargetsRenderObservable = new Observable<Scene>();
+        
+        /**
+        * An event triggered when render targets were rendered.
+        * Can happen multiple times per frame.
+        * @type {BABYLON.Observable}
+        */
+        public OnAfterRenderTargetsRenderObservable = new Observable<Scene>();      
+
+        /**
         * An event triggered before calculating deterministic simulation step
         * @type {BABYLON.Observable}
         */
@@ -739,8 +753,6 @@
         public _activeIndices = new PerfCounter();
         public _activeParticles = new PerfCounter();
         private _interFrameDuration = new PerfCounter();
-        private _lastFrameDuration = new PerfCounter();
-        private _renderTargetsDuration = new PerfCounter();
         public _particlesDuration = new PerfCounter();
         private _renderDuration = new PerfCounter();
         public _spritesDuration = new PerfCounter();
@@ -993,20 +1005,22 @@
         }
 
         public getLastFrameDuration(): number {
-            return this._lastFrameDuration.current;
+            Tools.Warn("getLastFrameDuration is deprecated. Please use SceneInstrumentation class");
+            return 0;
         }
 
-        public get lastFramePerfCounter(): PerfCounter {
-            return this._lastFrameDuration;
+        public get lastFramePerfCounter(): Nullable<PerfCounter> {
+            Tools.Warn("lastFramePerfCounter is deprecated. Please use SceneInstrumentation class");
+            return null;
         }
 
         public getEvaluateActiveMeshesDuration(): number {
-            Tools.Log("getEvaluateActiveMeshesDuration is deprecated. Please use SceneInstrumentation class");
+            Tools.Warn("getEvaluateActiveMeshesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
         public get evaluateActiveMeshesDurationPerfCounter(): Nullable<PerfCounter> {
-            Tools.Log("evaluateActiveMeshesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
+            Tools.Warn("evaluateActiveMeshesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
         public getActiveMeshes(): SmartArray<AbstractMesh> {
@@ -1014,7 +1028,8 @@
         }
 
         public getRenderTargetsDuration(): number {
-            return this._renderTargetsDuration.current;
+            Tools.Warn("getRenderTargetsDuration is deprecated. Please use SceneInstrumentation class");
+            return 0;            
         }
 
         public getRenderDuration(): number {
@@ -2964,7 +2979,7 @@
             }
 
             // Render targets
-            this._renderTargetsDuration.beginMonitoring();
+            this.OnBeforeRenderTargetsRenderObservable.notifyObservers(this);
             var needsRestoreFrameBuffer = false;
 
             if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
@@ -3022,7 +3037,7 @@
                 engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
 
-            this._renderTargetsDuration.endMonitoring(false);
+            this.OnAfterRenderTargetsRenderObservable.notifyObservers(this);
 
             // Prepare Frame
             this.postProcessManager._prepareFrame();
@@ -3185,12 +3200,10 @@
             }
 
             this._interFrameDuration.endMonitoring();
-            this._lastFrameDuration.beginMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
             this._activeParticles.fetchNewFrame();
             this._renderDuration.fetchNewFrame();
-            this._renderTargetsDuration.fetchNewFrame();
             this._totalVertices.fetchNewFrame();
             this._activeIndices.fetchNewFrame();
             this._activeBones.fetchNewFrame();
@@ -3268,7 +3281,7 @@
             this.onBeforeRenderObservable.notifyObservers(this);
 
             // Customs render targets
-            this._renderTargetsDuration.beginMonitoring();
+            this.OnBeforeRenderTargetsRenderObservable.notifyObservers(this);
             var engine = this.getEngine();
             var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
@@ -3303,7 +3316,7 @@
                 engine.restoreDefaultFramebuffer();
             }
 
-            this._renderTargetsDuration.endMonitoring();
+            this.OnAfterRenderTargetsRenderObservable.notifyObservers(this);
             this.activeCamera = currentActiveCamera;
 
             // Procedural textures
@@ -3401,8 +3414,7 @@
             }
 
             Tools.EndPerformanceCounter("Scene rendering");
-            this._interFrameDuration.beginMonitoring();           
-            this._lastFrameDuration.endMonitoring();
+            this._interFrameDuration.beginMonitoring();  
             this._activeBones.addCount(0, true);
             this._activeIndices.addCount(0, true);
             this._activeParticles.addCount(0, true);
@@ -3633,6 +3645,12 @@
             this.onDisposeObservable.clear();
             this.onBeforeRenderObservable.clear();
             this.onAfterRenderObservable.clear();
+            this.OnBeforeRenderTargetsRenderObservable.clear();
+            this.OnAfterRenderTargetsRenderObservable.clear();
+            this.onAfterStepObservable.clear();
+            this.onBeforeStepObservable.clear();
+            this.onBeforeActiveMeshesEvaluationObservable.clear();
+            this.onAfterActiveMeshesEvaluationObservable.clear();
 
             this.detachControl();
 
