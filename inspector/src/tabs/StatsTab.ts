@@ -16,6 +16,8 @@ module INSPECTOR {
 
         private _updateLoopHandler : any;
 
+        private _sceneInstrumentation: BABYLON.SceneInstrumentation;
+
         constructor(tabbar:TabBar, insp:Inspector) {
             super(tabbar, 'Stats');        
 
@@ -24,6 +26,9 @@ module INSPECTOR {
             this._scene             = this._inspector.scene;
             this._engine            = this._scene.getEngine();
             this._glInfo            = this._engine.getGlInfo();
+
+            this._sceneInstrumentation = new BABYLON.SceneInstrumentation(this._scene);
+            this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
 
             // Build the stats panel: a div that will contains all stats
             this._panel             = Helpers.CreateDiv('tab-panel') as HTMLDivElement; 
@@ -125,7 +130,7 @@ module INSPECTOR {
                 let elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getEvaluateActiveMeshesDuration())}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.currentActiveMeshesEvaluationTime)}
                 });
                 elemLabel = this._createStatLabel("Render targets", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
@@ -296,6 +301,7 @@ module INSPECTOR {
 
         public dispose() {
             this._scene.unregisterAfterRender(this._updateLoopHandler);
+            this._sceneInstrumentation.dispose();
         }
 
         public active(b: boolean){

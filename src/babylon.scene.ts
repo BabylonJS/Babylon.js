@@ -285,6 +285,18 @@
         }
 
         /**
+        * An event triggered when active meshes evaluation is about to start
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeActiveMeshesEvaluationObservable = new Observable<Scene>();        
+
+        /**
+        * An event triggered when active meshes evaluation is done
+        * @type {BABYLON.Observable}
+        */
+        public onAfterActiveMeshesEvaluationObservable = new Observable<Scene>();           
+
+        /**
         * An event triggered when a camera is created
         * @type {BABYLON.Observable}
         */
@@ -723,16 +735,11 @@
         private _engine: Engine;
 
         // Performance counters
-        private _totalMeshesCounter = new PerfCounter();
-        private _totalLightsCounter = new PerfCounter();
-        private _totalMaterialsCounter = new PerfCounter();
-        private _totalTexturesCounter = new PerfCounter();
         private _totalVertices = new PerfCounter();
         public _activeIndices = new PerfCounter();
         public _activeParticles = new PerfCounter();
         private _interFrameDuration = new PerfCounter();
         private _lastFrameDuration = new PerfCounter();
-        private _evaluateActiveMeshesDuration = new PerfCounter();
         private _renderTargetsDuration = new PerfCounter();
         public _particlesDuration = new PerfCounter();
         private _renderDuration = new PerfCounter();
@@ -994,13 +1001,14 @@
         }
 
         public getEvaluateActiveMeshesDuration(): number {
-            return this._evaluateActiveMeshesDuration.current;
+            Tools.Log("getEvaluateActiveMeshesDuration is deprecated. Please use SceneInstrumentation class");
+            return 0;
         }
 
-        public get evaluateActiveMeshesDurationPerfCounter(): PerfCounter {
-            return this._evaluateActiveMeshesDuration;
+        public get evaluateActiveMeshesDurationPerfCounter(): Nullable<PerfCounter> {
+            Tools.Log("evaluateActiveMeshesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
+            return null;
         }
-
         public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
         }
@@ -2769,6 +2777,8 @@
                 return;
             }
 
+            this.onBeforeActiveMeshesEvaluationObservable.notifyObservers(this);
+
             this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
             this._renderingManager.reset();
@@ -2834,6 +2844,8 @@
                     this._activeMesh(mesh, meshLOD);
                 }
             }
+
+            this.onAfterActiveMeshesEvaluationObservable.notifyObservers(this);
 
             // Particle systems
             this._particlesDuration.beginMonitoring();
@@ -2942,11 +2954,7 @@
             this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
 
             // Meshes
-            this._evaluateActiveMeshesDuration.beginMonitoring();
-            Tools.StartPerformanceCounter("Active meshes evaluation");
             this._evaluateActiveMeshes();
-            this._evaluateActiveMeshesDuration.endMonitoring(false);
-            Tools.EndPerformanceCounter("Active meshes evaluation");
 
             // Software skinning
             for (var softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
@@ -3183,7 +3191,6 @@
             this._activeParticles.fetchNewFrame();
             this._renderDuration.fetchNewFrame();
             this._renderTargetsDuration.fetchNewFrame();
-            this._evaluateActiveMeshesDuration.fetchNewFrame();
             this._totalVertices.fetchNewFrame();
             this._activeIndices.fetchNewFrame();
             this._activeBones.fetchNewFrame();
@@ -3396,10 +3403,6 @@
             Tools.EndPerformanceCounter("Scene rendering");
             this._interFrameDuration.beginMonitoring();           
             this._lastFrameDuration.endMonitoring();
-            this._totalMeshesCounter.addCount(this.meshes.length, true);
-            this._totalLightsCounter.addCount(this.lights.length, true);
-            this._totalMaterialsCounter.addCount(this.materials.length, true);
-            this._totalTexturesCounter.addCount(this.textures.length, true);
             this._activeBones.addCount(0, true);
             this._activeIndices.addCount(0, true);
             this._activeParticles.addCount(0, true);
