@@ -35,34 +35,25 @@ declare namespace BABYLON {
         protected _thirdLevel: float;
         thirdLevel: float;
         /**
-         * Environment Texture used in the material.
+         * Reflection Texture used in the material.
          * Should be author in a specific way for the best result (refer to the documentation).
          */
-        protected _environmentTexture: Nullable<BaseTexture>;
-        environmentTexture: Nullable<BaseTexture>;
+        protected _reflectionTexture: Nullable<BaseTexture>;
+        reflectionTexture: Nullable<BaseTexture>;
         /**
-         * Opacity Texture used in the material.
-         * If present, the environment will be seen as a reflection when the luminance is close to 1 and a skybox
-         * where close from 0.
-         * This helps achieving a nice grounding effect by simulating a reflection on the ground but not the skybox.
-         * If not present only the skybox mode is used.
-         */
-        protected _opacityTexture: Nullable<BaseTexture>;
-        opacityTexture: Nullable<BaseTexture>;
-        /**
-         * Environment Texture level of blur.
+         * Reflection Texture level of blur.
          *
          * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the
          * texture twice.
          */
-        protected _environmentBlur: float;
-        environmentBlur: float;
+        protected _reflectionBlur: float;
+        reflectionBlur: float;
         /**
-         * Specify wether or not the different channels of the environment represents background lighting information.
-         * If no, the lumiance will be use equally on each channels.
+         * Diffuse Texture used in the material.
+         * Should be author in a specific way for the best result (refer to the documentation).
          */
-        protected _lightChannelsInTexture: boolean;
-        lightChannelsInTexture: boolean;
+        protected _diffuseTexture: Nullable<BaseTexture>;
+        diffuseTexture: Nullable<BaseTexture>;
         /**
          * Specify the list of lights casting shadow on the material.
          * All scene shadow lights will be included if null.
@@ -87,6 +78,16 @@ declare namespace BABYLON {
          */
         protected _opacityFresnel: boolean;
         opacityFresnel: boolean;
+        /**
+         * Helps to directly use the maps channels instead of their level.
+         */
+        protected _useRGBColor: boolean;
+        useRGBColor: boolean;
+        /**
+         * Number of Simultaneous lights allowed on the material.
+         */
+        private _maxSimultaneousLights;
+        maxSimultaneousLights: int;
         /**
          * Default configuration related to image processing available in the Background Material.
          */
@@ -168,10 +169,6 @@ declare namespace BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         cameraColorCurves: Nullable<ColorCurves>;
-        /**
-         * Number of Simultaneous lights allowed on the material.
-         */
-        private _maxSimultaneousLights;
         private _renderTargets;
         /**
          * constructor
@@ -186,14 +183,9 @@ declare namespace BABYLON {
         needAlphaTesting(): boolean;
         /**
          * The entire material has been created in order to prevent overdraw.
-         * @returns false
+         * @returns true if blending is enable
          */
         needAlphaBlending(): boolean;
-        /**
-         * Gets the environment texture to use in the material.
-         * @returns the texture
-         */
-        private _getEnvironmentTexture();
         /**
          * Checks wether the material is ready to be rendered for a given mesh.
          * @param mesh The mesh to render

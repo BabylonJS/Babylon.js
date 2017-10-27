@@ -1,7 +1,7 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
-    var OBJExport = (function () {
+    var OBJExport = /** @class */ (function () {
         function OBJExport() {
         }
         //Exports the geometrys of a Mesh array in .OBJ file format (text)

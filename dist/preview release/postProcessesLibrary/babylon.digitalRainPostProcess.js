@@ -23,7 +23,7 @@ var BABYLON;
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    var DigitalRainFontTexture = (function (_super) {
+    var DigitalRainFontTexture = /** @class */ (function (_super) {
         __extends(DigitalRainFontTexture, _super);
         /**
          * Create a new instance of the Digital Rain FontTexture class
@@ -165,7 +165,7 @@ var BABYLON;
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
      */
-    var DigitalRainPostProcess = (function (_super) {
+    var DigitalRainPostProcess = /** @class */ (function (_super) {
         __extends(DigitalRainPostProcess, _super);
         /**
          * Instantiates a new Digital Rain Post Process.

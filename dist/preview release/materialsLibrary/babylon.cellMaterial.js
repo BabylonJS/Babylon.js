@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var CellMaterialDefines = (function (_super) {
+    var CellMaterialDefines = /** @class */ (function (_super) {
         __extends(CellMaterialDefines, _super);
         function CellMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -43,7 +43,7 @@ var BABYLON;
         }
         return CellMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var CellMaterial = (function (_super) {
+    var CellMaterial = /** @class */ (function (_super) {
         __extends(CellMaterial, _super);
         function CellMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
