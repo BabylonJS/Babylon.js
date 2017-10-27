@@ -202,6 +202,12 @@
       "referenceImage": "PBRRough.png"
     },
     {
+      "title": "GLTF LOD",
+      "renderCount": 100,
+      "playgroundId": "#TC80RU#41",
+      "referenceImage": "GLTF LOD.png"
+    },
+    {
       "title": "Reflection probes",
       "renderCount": 10,
       "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
