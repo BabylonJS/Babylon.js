@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.mesh.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class LinesMesh extends Mesh {
         public color = new Color3(1, 1, 1);
         public alpha = 1;
@@ -34,7 +32,7 @@ module BABYLON {
         private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
-        constructor(name: string, scene: Nullable<Scene> = null, parent: Nullable<Node> = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor? : boolean) {
+        constructor(name: string, scene: Nullable<Scene> = null, parent: Nullable<Node> = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor?: boolean) {
             super(name, scene, parent, source, doNotCloneChildren);
 
             if (source) {
@@ -44,13 +42,13 @@ module BABYLON {
             }
 
             this._intersectionThreshold = 0.1;
-            
+
             var options = {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
                 needAlphaBlending: false,
             };
-            
+
             if (!useVertexColor) {
                 options.uniforms.push("color");
                 options.needAlphaBlending = true;
@@ -64,7 +62,7 @@ module BABYLON {
          */
         public getClassName(): string {
             return "LinesMesh";
-        }      
+        }
 
         public get material(): Material {
             return this._colorShader;
@@ -83,7 +81,7 @@ module BABYLON {
                 return this;
             }
             // VBOs
-            this._geometry._bind(this._colorShader.getEffect() );
+            this._geometry._bind(this._colorShader.getEffect());
 
             // Color
             if (!this.useVertexColor) {
