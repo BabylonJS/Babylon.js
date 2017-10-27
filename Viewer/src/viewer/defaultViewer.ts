@@ -25,19 +25,37 @@ export class DefaultViewer extends AbstractViewer {
         // navbar
         let viewerElement = this.templateManager.getTemplate('viewer');
         let navbar = this.templateManager.getTemplate('navBar');
+        let navbarHeight = navbar.parent.clientHeight + 'px';
 
-        let nextHeight: string = '0px';
-
-        viewerElement.parent.addEventListener('pointerover', () => {
-            let currentHeight = navbar.parent.clientHeight + 'px';
-            navbar.parent.style.bottom = nextHeight;
-            nextHeight = '-' + currentHeight;
-            console.log(nextHeight, currentHeight);
-        });
+        let navbarShown: boolean = true;
 
         viewerElement.parent.addEventListener('pointerout', () => {
-            navbar.parent.style.bottom = nextHeight;
-            nextHeight = '0px';
+            if (navbarShown) return;
+            navbar.parent.style.bottom = '0px';
+            navbarShown = true;
+        });
+
+        let timeoutCancel;
+
+        viewerElement.parent.addEventListener('pointerdown', () => {
+            if (!navbarShown) return;
+            navbar.parent.style.bottom = '-' + navbarHeight;
+            navbarShown = false;
+
+            if (timeoutCancel) {
+                clearTimeout(timeoutCancel);
+            }
+        });
+
+        viewerElement.parent.addEventListener('pointerup', () => {
+            if (timeoutCancel) {
+                clearTimeout(timeoutCancel);
+            }
+
+            timeoutCancel = setTimeout(() => {
+                navbar.parent.style.bottom = '0px';
+                navbarShown = true;
+            }, 2000)
         });
 
         // events registration
@@ -93,7 +111,11 @@ export class DefaultViewer extends AbstractViewer {
         // here we could set the navbar's model information:
         this.setModelMetaData();
 
-        this.hideLoadingScreen();
+        // with a short timeout, making sure everything is there already.
+        setTimeout(() => {
+            this.hideLoadingScreen();
+        }, 500);
+
 
         // recreate the camera
         this.scene.createDefaultCameraOrLight(true, true, true);
