@@ -2461,9 +2461,9 @@
                 this._occlusionQuery = engine.createQuery();
             }
 
-            engine.beginQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
+            engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
-            engine.endQuery(this.occlusionQueryAlgorithmType);
+            engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
             this._isOcclusionQueryInProgress = true;
         }
 

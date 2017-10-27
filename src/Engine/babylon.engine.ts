@@ -254,6 +254,8 @@
         public drawBuffersExtension: boolean;
         public depthTextureExtension: boolean;
         public colorBufferFloat: boolean;
+        public timerQuery: EXT_disjoint_timer_query;
+        public canUseTimestampForTimerQuery: boolean;
     }
 
     export interface EngineOptions extends WebGLContextAttributes {
@@ -594,6 +596,28 @@
         public get supportsUniformBuffers(): boolean {
             return this.webGLVersion > 1 && !this.disableUniformBuffers;
         }
+
+        // Observables
+
+        /**
+         * Observable raised when the engine begins a new frame
+         */
+        public onBeginFrameObservable = new Observable<Engine>();
+
+        /**
+         * Observable raised when the engine ends the current frame
+         */
+        public onEndFrameObservable = new Observable<Engine>();      
+
+        /**
+         * Observable raised when the engine is about to compile a shader
+         */
+        public onBeforeShaderCompilationObservable = new Observable<Engine>();    
+
+        /**
+         * Observable raised when the engine has jsut compiled a shader
+         */
+        public onAfterShaderCompilationObservable = new Observable<Engine>();    
 
         // Private Members
         private _gl: WebGLRenderingContext;
@@ -1105,6 +1129,13 @@
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
+            this._caps.timerQuery = this._gl.getExtension("EXT_disjoint_timer_query") || this._gl.getExtension('EXT_disjoint_timer_query_webgl2');
+            if (this._caps.timerQuery) {
+                if (this._webGLVersion === 1) {
+                    this._gl.getQuery = (<any>this._caps.timerQuery).getQueryEXT.bind(this._caps.timerQuery);
+                }
+                this._caps.canUseTimestampForTimerQuery = this._gl.getQuery(this._caps.timerQuery.TIMESTAMP_EXT, this._caps.timerQuery.QUERY_COUNTER_BITS_EXT) > 0;
+            }
 
             // Checks if some of the format renders first to allow the use of webgl inspector.
             this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
@@ -1568,9 +1599,10 @@
             this._gl.viewport(x, y, width, height);
 
             return currentViewport;
-        }
-
+        }       
+                
         public beginFrame(): void {
+            this.onBeginFrameObservable.notifyObservers(this);
             this._measureFps();
         }
 
@@ -1585,6 +1617,8 @@
                 // TODO: We should only submit the frame if we read frameData successfully.
                 this._vrDisplay.submitFrame();
             }
+
+            this.onEndFrameObservable.notifyObservers(this);
         }
 
         /**
@@ -1951,7 +1985,7 @@
             }
 
             this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
-            
+
             this._resetIndexBufferBinding();
         }
 
@@ -2435,11 +2469,17 @@
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext): WebGLProgram {
             context = context || this._gl;
 
+            this.onBeforeShaderCompilationObservable.notifyObservers(this);
+
             var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n" : "";
             var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
             var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
 
-            return this._createShaderProgram(vertexShader, fragmentShader, context);
+            let program = this._createShaderProgram(vertexShader, fragmentShader, context);
+
+            this.onAfterShaderCompilationObservable.notifyObservers(this);
+
+            return program;
         }
 
         private _createShaderProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext): WebGLProgram {
@@ -2881,9 +2921,9 @@
          *
          * @returns {WebGLTexture} for assignment back into BABYLON.Texture
          */
-        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, 
-                            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, 
-                            buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
+        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null,
+            buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
@@ -3712,9 +3752,9 @@
             return texture;
         }
 
-        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number, 
-                                            onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null, 
-                                            onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null): InternalTexture {
+        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number,
+            onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
+            onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null): InternalTexture {
             var callback = (loadData: any) => {
                 if (!loadData) {
                     if (onLoad) {
@@ -4820,7 +4860,7 @@
         public hideLoadingUI(): void {
             if (!Tools.IsWindowObjectExist()) {
                 return;
-            }            
+            }
             const loadingScreen = this.loadingScreen;
             if (loadingScreen) {
                 loadingScreen.hideLoadingUI();
@@ -5045,16 +5085,146 @@
             return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
         }
 
-        public beginQuery(algorithmType: number, query: WebGLQuery) {
+        public beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine {
             var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.beginQuery(glAlgorithm, query);
+
+            return this;
         }
 
-        public endQuery(algorithmType: number): Engine {
+        public endOcclusionQuery(algorithmType: number): Engine {
             var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.endQuery(glAlgorithm);
 
             return this;
+        }
+
+        /* Time queries */
+
+        private _createTimeQuery(): WebGLQuery {
+            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
+
+            if (timerQuery.createQueryEXT) {
+                return timerQuery.createQueryEXT();
+            }
+
+            return this.createQuery();
+        }
+
+        private _deleteTimeQuery(query: WebGLQuery): void {
+            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
+
+            if (timerQuery.deleteQueryEXT) {
+                timerQuery.deleteQueryEXT(query);
+                return;
+            }
+
+            this.deleteQuery(query);
+        }
+
+        private _getTimeQueryResult(query: WebGLQuery): any {
+            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
+
+            if (timerQuery.getQueryObjectEXT) {
+                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_EXT);
+            }
+            return this.getQueryResult(query);
+        }
+
+        private _getTimeQueryAvailability(query: WebGLQuery): any {
+            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
+
+            if (timerQuery.getQueryObjectEXT) {
+                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_AVAILABLE_EXT);
+            }
+            return this.isQueryResultAvailable(query);
+        }
+
+        public startTimeQuery(): Nullable<_TimeToken> {
+            let timerQuery = this._caps.timerQuery;
+            if (!timerQuery) {
+                return null;
+            }
+
+            let token = new _TimeToken();
+            this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
+            if (this._caps.canUseTimestampForTimerQuery) {
+                token._startTimeQuery = this._createTimeQuery();
+
+                timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
+            } else {
+                token._timeElapsedQuery = this._createTimeQuery();
+                if (timerQuery.beginQueryEXT) {
+                    timerQuery.beginQueryEXT(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
+                } else {
+                    this._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
+                }
+            }
+            return token;
+        }
+
+        public endTimeQuery(token: _TimeToken): int {
+            let timerQuery = this._caps.timerQuery;
+            if (!timerQuery || !token) {
+                return -1;
+            }
+
+            if (this._caps.canUseTimestampForTimerQuery) {
+                if (!token._startTimeQuery) {
+                    return -1;
+                }
+                if (!token._endTimeQuery) {
+                    token._endTimeQuery = this._createTimeQuery();
+                    timerQuery.queryCounterEXT(token._endTimeQuery, timerQuery.TIMESTAMP_EXT);
+                }
+            } else if (!token._timeElapsedQueryEnded) {
+                if (!token._timeElapsedQuery) {
+                    return -1;
+                }
+                if (timerQuery.endQueryEXT) {
+                    timerQuery.endQueryEXT(timerQuery.TIME_ELAPSED_EXT);
+                } else {
+                    this._gl.endQuery(timerQuery.TIME_ELAPSED_EXT);
+                }
+                token._timeElapsedQueryEnded = true;
+            }
+
+            let disjoint = this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
+            let available: boolean = false;
+            if (token._endTimeQuery) {
+                available = this._getTimeQueryAvailability(token._endTimeQuery);
+            } else if (token._timeElapsedQuery) {
+                available = this._getTimeQueryAvailability(token._timeElapsedQuery);
+            }
+
+            if (available && !disjoint) {
+                let result = 0;
+                if (this._caps.canUseTimestampForTimerQuery) {
+                    if (!token._startTimeQuery || !token._endTimeQuery) {
+                        return -1;
+                    }
+                    let timeStart = this._getTimeQueryResult(token._startTimeQuery);
+                    let timeEnd = this._getTimeQueryResult(token._endTimeQuery);
+
+                    result = timeEnd - timeStart;
+                    this._deleteTimeQuery(token._startTimeQuery);
+                    this._deleteTimeQuery(token._endTimeQuery);
+                    token._startTimeQuery = null;
+                    token._endTimeQuery = null;                    
+                } else {
+                    if (!token._timeElapsedQuery) {
+                        return -1;
+                    }
+
+                    result = this._getTimeQueryResult(token._timeElapsedQuery);
+                    this._deleteTimeQuery(token._timeElapsedQuery);
+                    token._timeElapsedQuery = null;
+                    token._timeElapsedQueryEnded = false;
+                }
+                return result;
+            }
+
+            return -1;
         }
 
         private getGlAlgorithmType(algorithmType: number): number {

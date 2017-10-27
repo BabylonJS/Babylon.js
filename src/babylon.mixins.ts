@@ -44,12 +44,13 @@ interface WebGLRenderingContext {
     getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
     uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
 
-    // Occlusion Query
+    // Queries
     createQuery(): WebGLQuery;
     deleteQuery(query: WebGLQuery): void;
     beginQuery(target: number, query: WebGLQuery): void;
     endQuery(target: number): void;
     getQueryParameter(query: WebGLQuery, pname: number): any;
+    getQuery(target: number, pname: number): any;
 
     MAX_SAMPLES: number;
     RGBA8: number;
@@ -602,4 +603,19 @@ declare namespace SIMD {
         xor(a: SIMD.Bool8x16, b: SIMD.Bool8x16): SIMD.Bool8x16;
         not(a: SIMD.Bool8x16, b: SIMD.Bool8x16): SIMD.Bool8x16;
     }
+}
+
+interface EXT_disjoint_timer_query {
+    QUERY_COUNTER_BITS_EXT: number;
+    TIME_ELAPSED_EXT: number;
+    TIMESTAMP_EXT: number;
+    GPU_DISJOINT_EXT: number;
+    QUERY_RESULT_EXT: number;
+    QUERY_RESULT_AVAILABLE_EXT: number;
+    queryCounterEXT(query: WebGLQuery, target: number): void;
+    createQueryEXT(): WebGLQuery;
+    beginQueryEXT(target: number, query: WebGLQuery): void;
+    endQueryEXT(target: number): void;
+    getQueryObjectEXT(query: WebGLQuery, target: number): any;
+    deleteQueryEXT(query: WebGLQuery): void;
 }
