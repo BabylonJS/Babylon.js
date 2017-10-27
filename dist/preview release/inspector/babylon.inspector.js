@@ -3862,6 +3862,12 @@ var INSPECTOR;
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().vertexArrayObject ? "Yes" : "No"); }
                 });
+                elemLabel = _this._createStatLabel("Timer query", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().timerQuery ? "Yes" : "No"); }
+                });
             }
             title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Caps.";

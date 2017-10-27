@@ -72,7 +72,8 @@
             "layer",
             "textureTools",
             "cameraBehaviors",
-            "nullEngine"
+            "nullEngine",
+            "instrumentation"
         ],
         "minimal": [
             "standardMaterial",
@@ -225,7 +226,16 @@
             "dependUpon": [
                 "core"
             ]
-        },        
+        },    
+        "instrumentation": {
+            "files": [
+                "../../src/Engine/babylon.engineInstrumentation.js",
+                "../../src/Engine/babylon.timeToken.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },      
         "cameraBehaviors": {
             "files": [
                 "../../src/Behaviors/Cameras/babylon.framingBehavior.js",

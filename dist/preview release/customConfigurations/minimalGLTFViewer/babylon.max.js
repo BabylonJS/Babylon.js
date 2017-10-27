@@ -6961,6 +6961,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(PerfCounter.prototype, "count", {
+            get: function () {
+                return this._totalValueCount;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Call this method to start monitoring a new frame.
          * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
@@ -7860,6 +7867,23 @@ var BABYLON;
             // Uniform buffers list
             this.disableUniformBuffers = false;
             this._uniformBuffers = new Array();
+            // Observables
+            /**
+             * Observable raised when the engine begins a new frame
+             */
+            this.onBeginFrameObservable = new BABYLON.Observable();
+            /**
+             * Observable raised when the engine ends the current frame
+             */
+            this.onEndFrameObservable = new BABYLON.Observable();
+            /**
+             * Observable raised when the engine is about to compile a shader
+             */
+            this.onBeforeShaderCompilationObservable = new BABYLON.Observable();
+            /**
+             * Observable raised when the engine has jsut compiled a shader
+             */
+            this.onAfterShaderCompilationObservable = new BABYLON.Observable();
             this._windowIsBackground = false;
             this._webGLVersion = 1.0;
             this._badOS = false;
@@ -8613,6 +8637,13 @@ var BABYLON;
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
+            this._caps.timerQuery = this._gl.getExtension("EXT_disjoint_timer_query") || this._gl.getExtension('EXT_disjoint_timer_query_webgl2');
+            if (this._caps.timerQuery) {
+                if (this._webGLVersion === 1) {
+                    this._gl.getQuery = this._caps.timerQuery.getQueryEXT.bind(this._caps.timerQuery);
+                }
+                this._caps.canUseTimestampForTimerQuery = this._gl.getQuery(this._caps.timerQuery.TIMESTAMP_EXT, this._caps.timerQuery.QUERY_COUNTER_BITS_EXT) > 0;
+            }
             // Checks if some of the format renders first to allow the use of webgl inspector.
             this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
             this._caps.textureFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float');
@@ -9026,6 +9057,7 @@ var BABYLON;
             return currentViewport;
         };
         Engine.prototype.beginFrame = function () {
+            this.onBeginFrameObservable.notifyObservers(this);
             this._measureFps();
         };
         Engine.prototype.endFrame = function () {
@@ -9038,6 +9070,7 @@ var BABYLON;
                 // TODO: We should only submit the frame if we read frameData successfully.
                 this._vrDisplay.submitFrame();
             }
+            this.onEndFrameObservable.notifyObservers(this);
         };
         /**
          * resize the view according to the canvas' size.
@@ -9747,10 +9780,13 @@ var BABYLON;
         };
         Engine.prototype.createShaderProgram = function (vertexCode, fragmentCode, defines, context) {
             context = context || this._gl;
+            this.onBeforeShaderCompilationObservable.notifyObservers(this);
             var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n" : "";
             var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
             var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
-            return this._createShaderProgram(vertexShader, fragmentShader, context);
+            var program = this._createShaderProgram(vertexShader, fragmentShader, context);
+            this.onAfterShaderCompilationObservable.notifyObservers(this);
+            return program;
         };
         Engine.prototype._createShaderProgram = function (vertexShader, fragmentShader, context) {
             var shaderProgram = context.createProgram();
@@ -11894,14 +11930,128 @@ var BABYLON;
         Engine.prototype.getQueryResult = function (query) {
             return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT);
         };
-        Engine.prototype.beginQuery = function (algorithmType, query) {
+        Engine.prototype.beginOcclusionQuery = function (algorithmType, query) {
             var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.beginQuery(glAlgorithm, query);
+            return this;
         };
-        Engine.prototype.endQuery = function (algorithmType) {
+        Engine.prototype.endOcclusionQuery = function (algorithmType) {
             var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.endQuery(glAlgorithm);
             return this;
+        };
+        /* Time queries */
+        Engine.prototype._createTimeQuery = function () {
+            var timerQuery = this._caps.timerQuery;
+            if (timerQuery.createQueryEXT) {
+                return timerQuery.createQueryEXT();
+            }
+            return this.createQuery();
+        };
+        Engine.prototype._deleteTimeQuery = function (query) {
+            var timerQuery = this._caps.timerQuery;
+            if (timerQuery.deleteQueryEXT) {
+                timerQuery.deleteQueryEXT(query);
+                return;
+            }
+            this.deleteQuery(query);
+        };
+        Engine.prototype._getTimeQueryResult = function (query) {
+            var timerQuery = this._caps.timerQuery;
+            if (timerQuery.getQueryObjectEXT) {
+                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_EXT);
+            }
+            return this.getQueryResult(query);
+        };
+        Engine.prototype._getTimeQueryAvailability = function (query) {
+            var timerQuery = this._caps.timerQuery;
+            if (timerQuery.getQueryObjectEXT) {
+                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_AVAILABLE_EXT);
+            }
+            return this.isQueryResultAvailable(query);
+        };
+        Engine.prototype.startTimeQuery = function () {
+            var timerQuery = this._caps.timerQuery;
+            if (!timerQuery) {
+                return null;
+            }
+            var token = new BABYLON._TimeToken();
+            this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
+            if (this._caps.canUseTimestampForTimerQuery) {
+                token._startTimeQuery = this._createTimeQuery();
+                timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
+            }
+            else {
+                token._timeElapsedQuery = this._createTimeQuery();
+                if (timerQuery.beginQueryEXT) {
+                    timerQuery.beginQueryEXT(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
+                }
+                else {
+                    this._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
+                }
+            }
+            return token;
+        };
+        Engine.prototype.endTimeQuery = function (token) {
+            var timerQuery = this._caps.timerQuery;
+            if (!timerQuery || !token) {
+                return -1;
+            }
+            if (this._caps.canUseTimestampForTimerQuery) {
+                if (!token._startTimeQuery) {
+                    return -1;
+                }
+                if (!token._endTimeQuery) {
+                    token._endTimeQuery = this._createTimeQuery();
+                    timerQuery.queryCounterEXT(token._endTimeQuery, timerQuery.TIMESTAMP_EXT);
+                }
+            }
+            else if (!token._timeElapsedQueryEnded) {
+                if (!token._timeElapsedQuery) {
+                    return -1;
+                }
+                if (timerQuery.endQueryEXT) {
+                    timerQuery.endQueryEXT(timerQuery.TIME_ELAPSED_EXT);
+                }
+                else {
+                    this._gl.endQuery(timerQuery.TIME_ELAPSED_EXT);
+                }
+                token._timeElapsedQueryEnded = true;
+            }
+            var disjoint = this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
+            var available = false;
+            if (token._endTimeQuery) {
+                available = this._getTimeQueryAvailability(token._endTimeQuery);
+            }
+            else if (token._timeElapsedQuery) {
+                available = this._getTimeQueryAvailability(token._timeElapsedQuery);
+            }
+            if (available && !disjoint) {
+                var result = 0;
+                if (this._caps.canUseTimestampForTimerQuery) {
+                    if (!token._startTimeQuery || !token._endTimeQuery) {
+                        return -1;
+                    }
+                    var timeStart = this._getTimeQueryResult(token._startTimeQuery);
+                    var timeEnd = this._getTimeQueryResult(token._endTimeQuery);
+                    result = timeEnd - timeStart;
+                    this._deleteTimeQuery(token._startTimeQuery);
+                    this._deleteTimeQuery(token._endTimeQuery);
+                    token._startTimeQuery = null;
+                    token._endTimeQuery = null;
+                }
+                else {
+                    if (!token._timeElapsedQuery) {
+                        return -1;
+                    }
+                    result = this._getTimeQueryResult(token._timeElapsedQuery);
+                    this._deleteTimeQuery(token._timeElapsedQuery);
+                    token._timeElapsedQuery = null;
+                    token._timeElapsedQueryEnded = false;
+                }
+                return result;
+            }
+            return -1;
         };
         Engine.prototype.getGlAlgorithmType = function (algorithmType) {
             return algorithmType === BABYLON.AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
@@ -14939,9 +15089,9 @@ var BABYLON;
             if (!this._occlusionQuery) {
                 this._occlusionQuery = engine.createQuery();
             }
-            engine.beginQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
+            engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
-            engine.endQuery(this.occlusionQueryAlgorithmType);
+            engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
             this._isOcclusionQueryInProgress = true;
         };
         // Statics
