@@ -25,20 +25,6 @@ module BABYLON {
         }
 
         /**
-         * Gets the current GPU frame time (in nanoseconds)
-         */
-        public get currentGPUFrameTime(): number {
-            return this._gpuFrameTime.current;
-        }
-
-        /**
-         * Gets the average GPU frame time (in nanoseconds)
-         */        
-        public get averageGPUFrameTime(): number {
-            return this._gpuFrameTime.average;
-        }
-
-        /**
          * Gets the current GPU frame time capture status
          */
         public get captureGPUFrameTime(): boolean {
@@ -86,34 +72,6 @@ module BABYLON {
         public get shaderCompilationTimeCounter(): PerfCounter {
             return this._shaderCompilationTime;
         }
-
-        /**
-         * Gets the current shader compilation time (in milliseconds)
-         */
-        public get currentShaderCompilationTime(): number {
-            return this._shaderCompilationTime.current;
-        }
-
-        /**
-         * Gets the average shader compilation time (in milliseconds)
-         */        
-        public get averageShaderCompilationTime(): number {
-            return this._shaderCompilationTime.average;
-        }
-
-        /**
-         * Gets the total shader compilation time (in milliseconds)
-         */        
-        public get totalShaderCompilationTime(): number {
-            return this._shaderCompilationTime.total;
-        }               
-
-        /**
-         * Gets the number of compiled shaders
-         */        
-        public get compiledShadersCount(): number {
-            return this._shaderCompilationTime.count;
-        }  
 
         /**
          * Gets the perf counter associated with shader compilation

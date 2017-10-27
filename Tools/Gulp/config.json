@@ -147,6 +147,7 @@
             "layer",
             "textureTools",
             "cameraBehaviors",
+            "instrumentation",
             "materialsLibrary/babylon.gridMaterial.js",
             "materialsLibrary/babylon.backgroundMaterial.js",
             "loaders/babylon.glTFFileLoader.js"

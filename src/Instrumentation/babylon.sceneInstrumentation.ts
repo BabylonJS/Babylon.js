@@ -19,27 +19,6 @@ module BABYLON {
         }
 
         /**
-         * Gets the current active meshes evaluation time (in milliseconds)
-         */
-        public get currentActiveMeshesEvaluationTime(): number {
-            return this._activeMeshesEvaluationTime.current;
-        }
-
-        /**
-         * Gets the average active meshes evaluation time (in milliseconds)
-         */        
-        public get averageActiveMeshesEvaluationTime(): number {
-            return this._activeMeshesEvaluationTime.average;
-        }
-
-        /**
-         * Gets the current active meshes evaluation time capture status
-         */
-        public get captureActiveMeshesEvaluationTime(): boolean {
-            return this._captureActiveMeshesEvaluationTime;
-        }
-
-        /**
          * Enable or disable the active meshes evaluation time capture
          */        
         public set captureActiveMeshesEvaluationTime(value: boolean) {
