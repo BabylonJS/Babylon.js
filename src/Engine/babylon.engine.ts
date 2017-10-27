@@ -254,6 +254,8 @@
         public drawBuffersExtension: boolean;
         public depthTextureExtension: boolean;
         public colorBufferFloat: boolean;
+        public timerQuery: EXT_disjoint_timer_query;
+        public canUseTimestampForTimerQuery: boolean;
     }
 
     export interface EngineOptions extends WebGLContextAttributes {
@@ -1105,6 +1107,13 @@
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
+            this._caps.timerQuery = this._gl.getExtension("EXT_disjoint_timer_query") || this._gl.getExtension('EXT_disjoint_timer_query_webgl2');
+            if (this._caps.timerQuery) {
+                if (this._webGLVersion === 1) {
+                    this._gl.getQuery = (<any>this._caps.timerQuery).getQueryEXT.bind(this._caps.timerQuery);
+                }
+                this._caps.canUseTimestampForTimerQuery = this._gl.getQuery(this._caps.timerQuery.TIMESTAMP_EXT, this._caps.timerQuery.QUERY_COUNTER_BITS_EXT) > 0
+            }
 
             // Checks if some of the format renders first to allow the use of webgl inspector.
             this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
@@ -1951,7 +1960,7 @@
             }
 
             this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
-            
+
             this._resetIndexBufferBinding();
         }
 
@@ -2881,9 +2890,9 @@
          *
          * @returns {WebGLTexture} for assignment back into BABYLON.Texture
          */
-        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, 
-                            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, 
-                            buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
+        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null,
+            buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
@@ -3712,9 +3721,9 @@
             return texture;
         }
 
-        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number, 
-                                            onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null, 
-                                            onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null): InternalTexture {
+        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number,
+            onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
+            onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null): InternalTexture {
             var callback = (loadData: any) => {
                 if (!loadData) {
                     if (onLoad) {
@@ -4820,7 +4829,7 @@
         public hideLoadingUI(): void {
             if (!Tools.IsWindowObjectExist()) {
                 return;
-            }            
+            }
             const loadingScreen = this.loadingScreen;
             if (loadingScreen) {
                 loadingScreen.hideLoadingUI();
@@ -5045,9 +5054,11 @@
             return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
         }
 
-        public beginQuery(algorithmType: number, query: WebGLQuery) {
+        public beginQuery(algorithmType: number, query: WebGLQuery): Engine {
             var glAlgorithm = this.getGlAlgorithmType(algorithmType);
             this._gl.beginQuery(glAlgorithm, query);
+
+            return this;
         }
 
         public endQuery(algorithmType: number): Engine {
@@ -5055,6 +5066,68 @@
             this._gl.endQuery(glAlgorithm);
 
             return this;
+        }
+
+        private _startTimeQuery: Nullable<WebGLQuery>;
+        private _endTimeQuery: Nullable<WebGLQuery>;
+        private _timeElapsedQuery: Nullable<WebGLQuery>;
+
+        private _createTimeQuery(): WebGLQuery {
+            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
+
+            if (timerQuery.createQueryEXT) {
+                return timerQuery.createQueryEXT();
+            }
+
+            return this.createQuery();
+        }
+
+        public startTimeQuery(): Engine {
+            let timerQuery = this._caps.timerQuery;
+            if (!timerQuery) {
+                return this;
+            }
+
+            if (this._caps.canUseTimestampForTimerQuery) {
+                if (!this._startTimeQuery) {
+                    this._startTimeQuery = this._createTimeQuery();
+
+                    timerQuery.queryCounterEXT(this._startTimeQuery, timerQuery.TIMESTAMP_EXT);
+                }
+            } else {
+                this._timeElapsedQuery = this._createTimeQuery();
+                if (timerQuery.beginQueryEXT) {
+                    
+                }
+            }
+            return this;
+        }
+
+        public endTimeQuery(): int {
+            let timerQuery = this._caps.timerQuery;
+            if (!timerQuery || !this._startTimeQuery) {
+                return -1;
+            }
+
+            if (!this._endTimeQuery) {
+                this._endTimeQuery = this._createTimeQuery();
+                timerQuery.queryCounterEXT(this._endTimeQuery, timerQuery.TIMESTAMP_EXT);
+            }
+
+            let available = this._gl.getQueryParameter(this._endTimeQuery, this._gl.QUERY_RESULT_AVAILABLE);
+            let disjoint = this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
+
+            if (available && !disjoint) {
+                let timeStart = this._gl.getQueryParameter(this._startTimeQuery, this._gl.QUERY_RESULT);
+                let timeEnd = this._gl.getQueryParameter(this._endTimeQuery, this._gl.QUERY_RESULT);
+
+                this.deleteQuery(this._startTimeQuery);
+                this.deleteQuery(this._endTimeQuery);
+                this._startTimeQuery = null;
+                return timeEnd - timeStart;
+            }
+
+            return -1;
         }
 
         private getGlAlgorithmType(algorithmType: number): number {

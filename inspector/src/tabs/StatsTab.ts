@@ -234,6 +234,12 @@ module INSPECTOR {
                     elem:elemValue, 
                     updateFct:() => { return (this._engine.getCaps().vertexArrayObject ? "Yes" : "No")}
                 }); 
+                elemLabel = this._createStatLabel("Timer query", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return (this._engine.getCaps().timerQuery ? "Yes" : "No")}
+                });                 
             }
 
             title = Helpers.CreateDiv('stat-title2', this._panel);
