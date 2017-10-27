@@ -24,31 +24,52 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
-#ifdef OPACITY
-    #if OPACITYDIRECTUV == 1
-        #define vOpacityUV vMainUV1
-    #elif OPACITYDIRECTUV == 2
-        #define vOpacityUV vMainUV2
+#ifdef DIFFUSE
+    #if DIFFUSEDIRECTUV == 1
+        #define vDiffuseUV vMainUV1
+    #elif DIFFUSEDIRECTUV == 2
+        #define vDiffuseUV vMainUV2
     #else
-        varying vec2 vOpacityUV;
+        varying vec2 vDiffuseUV;
     #endif
-    uniform sampler2D opacitySampler;
+    uniform sampler2D diffuseSampler;
 #endif
 
-// Environment
-#ifdef ENVIRONMENT
-    #define sampleEnvironment(s, c) textureCube(s, c)
+// Reflection
+#ifdef REFLECTION
+	#ifdef REFLECTIONMAP_3D
+		#define sampleReflection(s, c) textureCube(s, c)
 
-    uniform samplerCube environmentSampler;
+		uniform samplerCube reflectionSampler;
+		
+		#ifdef TEXTURELODSUPPORT
+			#define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+		#else
+			uniform samplerCube reflectionSamplerLow;
+			uniform samplerCube reflectionSamplerHigh;
+		#endif
+	#else
+		#define sampleReflection(s, c) texture2D(s, c)
 
-    #ifdef ENVIRONMENTBLUR
-        #ifdef TEXTURELODSUPPORT
-            #define sampleEnvironmentLod(s, c, l) textureCubeLodEXT(s, c, l)
-        #else
-            uniform samplerCube environmentSamplerLow;
-            uniform samplerCube environmentSamplerHigh;
-        #endif
-    #endif
+		uniform sampler2D reflectionSampler;
+
+		#ifdef TEXTURELODSUPPORT
+			#define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
+		#else
+			uniform samplerCube reflectionSamplerLow;
+			uniform samplerCube reflectionSamplerHigh;
+		#endif
+	#endif
+
+	#ifdef REFLECTIONMAP_SKYBOX
+		varying vec3 vPositionUVW;
+	#else
+		#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+			varying vec3 vDirectionW;
+		#endif
+	#endif
+
+	#include<reflectionFunction>
 #endif
 
 // Forces linear space for image processing
@@ -91,143 +112,122 @@ void main(void) {
 
 // _____________________________ Light Information _______________________________
     float shadow = 1.;
+    float globalShadow = 0.;
+    float shadowLightCount = 0.;
 
 #include<lightFragment>[0..maxSimultaneousLights]
 
-// _____________________________ Environment ______________________________________
-#ifdef ENVIRONMENT
-    vec3 environmentColor = vec3(0., 0., 0.);
+#ifdef SHADOWINUSE
+    globalShadow /= shadowLightCount;
+#else
+    globalShadow = 1.0;
+#endif
 
-    // Skybox Fetch.
-    vec3 environmentCoords = (vPositionW.xyz - vEyePosition.xyz);
-    #ifdef INVERTCUBICMAP
-            environmentCoords.y = 1.0 - environmentCoords.y;
-    #endif
-    // Rotate Environment
-    environmentCoords = vec3(environmentMatrix * vec4(environmentCoords, 0));
+// _____________________________ REFLECTION ______________________________________
+vec3 environmentColor = vec3(1., 1., 1.);
+#ifdef REFLECTION
+	vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
+	#ifdef REFLECTIONMAP_OPPOSITEZ
+		reflectionVector.z *= -1.0;
+	#endif
 
-    #ifdef ENVIRONMENTBLUR
-        float environmentLOD = vEnvironmentInfo.y;
+	// _____________________________ 2D vs 3D Maps ________________________________
+	#ifdef REFLECTIONMAP_3D
+		vec3 reflectionCoords = reflectionVector;
+	#else
+		vec2 reflectionCoords = reflectionVector.xy;
+		#ifdef REFLECTIONMAP_PROJECTION
+			reflectionCoords /= reflectionVector.z;
+		#endif
+		reflectionCoords.y = 1.0 - reflectionCoords.y;
+	#endif
+
+    #ifdef REFLECTIONBLUR
+        float reflectionLOD = vReflectionInfos.y;
 
         #ifdef TEXTURELODSUPPORT
             // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-            environmentLOD = environmentLOD * log2(vEnvironmentMicrosurfaceInfos.x) * vEnvironmentMicrosurfaceInfos.y + vEnvironmentMicrosurfaceInfos.z;
-            environmentColor = sampleEnvironmentLod(environmentSampler, environmentCoords, environmentLOD).rgb;
+            reflectionLOD = reflectionLOD * log2(vReflectionMicrosurfaceInfos.x) * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
+            environmentColor = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD).rgb;
         #else
-            float lodEnvironmentNormalized = clamp(environmentLOD, 0., 1.);
-            float lodEnvironmentNormalizedDoubled = lodEnvironmentNormalized * 2.0;
+            float lodReflectionNormalized = clamp(reflectionLOD, 0., 1.);
+            float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
 
-            vec3 environmentSpecularMid = sampleEnvironment(environmentSampler, environmentCoords).rgb;
-            if(lodEnvironmentNormalizedDoubled < 1.0){
+            vec3 reflectionSpecularMid = sampleReflection(reflectionSampler, reflectionCoords).rgb;
+            if(lodReflectionNormalizedDoubled < 1.0){
                 environmentColor = mix(
-                    sampleEnvironment(environmentSamplerHigh, environmentCoords).rgb,
-                    environmentSpecularMid,
-                    lodEnvironmentNormalizedDoubled
+                    sampleReflection(reflectionSamplerHigh, reflectionCoords).rgb,
+                    reflectionSpecularMid,
+                    lodReflectionNormalizedDoubled
                 );
             } else {
                 environmentColor = mix(
-                    environmentSpecularMid,
-                    sampleEnvironment(environmentSamplerLow, environmentCoords).rgb,
-                    lodEnvironmentNormalizedDoubled - 1.0
+                    reflectionSpecularMid,
+                    sampleReflection(reflectionSamplerLow, reflectionCoords).rgb,
+                    lodReflectionNormalizedDoubled - 1.0
                 );
             }
         #endif
     #else
-        environmentColor = sampleEnvironment(environmentSampler, environmentCoords).rgb;
+        environmentColor = sampleReflection(reflectionSampler, reflectionCoords).rgb;
     #endif
 
-    #ifdef GAMMAENVIRONMENT
+    #ifdef GAMMAREFLECTION
         environmentColor = toLinearSpace(environmentColor.rgb);
     #endif
 
     // _____________________________ Levels _____________________________________
-    environmentColor *= vEnvironmentInfo.x;
+    environmentColor *= vReflectionInfos.x;
+#endif
 
-    // _____________________________ Alpha Information _______________________________
-    #ifdef OPACITY
-        vec3 reflectEnvironmentColor = vec3(0., 0., 0.);
-        vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
-
-        #ifdef OPACITYRGB
-            float environmentMix = getLuminance(opacityMap.rgb);
-        #else
-            float environmentMix = opacityMap.a;
-        #endif
-
-        environmentMix *= vOpacityInfo.y;
-
-        #ifdef OPACITYFRESNEL
-            // TODO. Change by camera forward Direction.
-            float viewAngleToFloor = dot(normalW, normalize(vEyePosition));
-
-            // Fade out the floor plane as the angle between the floor and the camera tends to 0 (starting from startAngle)
-            const float startAngle = 0.1;
-            float fadeFactor = clamp(viewAngleToFloor/startAngle, 0.0, 1.0);
-
-            environmentMix *= fadeFactor * fadeFactor;
-            shadow = mix(1., shadow, environmentMix);
-        #endif
-
-        // Cubic Fetch
-        vec3 viewDir = vPositionW.xyz - vEyePosition.xyz;
-        vec3 reflectEnvironmentCoords = reflect(viewDir, normalW);
-        #ifdef INVERTCUBICMAP
-            reflectEnvironmentCoords.y = 1.0 - reflectEnvironmentCoords.y;
-        #endif
-        // Rotate Environment
-        reflectEnvironmentCoords = vec3(environmentMatrix * vec4(reflectEnvironmentCoords, 0));
-
-        #ifdef ENVIRONMENTBLUR
-            #ifdef TEXTURELODSUPPORT
-                // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-                reflectEnvironmentColor = sampleEnvironmentLod(environmentSampler, reflectEnvironmentCoords, environmentLOD).rgb;
-            #else
-                vec3 reflectEnvironmentSpecularMid = sampleEnvironment(environmentSampler, reflectEnvironmentCoords).rgb;
-                if(lodEnvironmentNormalizedDoubled < 1.0){
-                    reflectEnvironmentColor = mix(
-                        sampleEnvironment(environmentSamplerHigh, reflectEnvironmentCoords).rgb,
-                        environmentSpecularMid,
-                        lodEnvironmentNormalizedDoubled
-                    );
-                } else {
-                    reflectEnvironmentColor = mix(
-                        environmentSpecularMid,
-                        sampleEnvironment(environmentSamplerLow, reflectEnvironmentCoords).rgb,
-                        lodEnvironmentNormalizedDoubled - 1.0
-                    );
-                }
-            #endif
-        #else
-            reflectEnvironmentColor = sampleEnvironment(environmentSampler, reflectEnvironmentCoords).rgb;
-        #endif
-
-        #ifdef GAMMAENVIRONMENT
-            reflectEnvironmentColor = toLinearSpace(reflectEnvironmentColor.rgb);
-        #endif
-
-        // _____________________________ Levels _____________________________________
-        reflectEnvironmentColor *= vEnvironmentInfo.x;
-
-        // _____________________________ MIX ________________________________________
-        environmentColor = mix(environmentColor, reflectEnvironmentColor, environmentMix);
+// _____________________________ Alpha Information _______________________________
+vec3 groundColor = vec3(1., 1., 1.);
+float finalAlpha = alpha;
+#ifdef DIFFUSE
+    vec4 diffuseMap = texture2D(diffuseSampler, vDiffuseUV);
+    #ifdef GAMMADIFFUSE
+        diffuseMap.rgb = toLinearSpace(diffuseMap.rgb);
     #endif
+
+// _____________________________ Levels _____________________________________
+    diffuseMap.rgb *= vDiffuseInfos.y;
+
+    #ifdef DIFFUSEHASALPHA
+        finalAlpha *= diffuseMap.a;
+    #endif
+
+    groundColor = diffuseMap.rgb;
+#endif
+
+    // _____________________________ MIX ________________________________________
+    vec3 colorBase = environmentColor * groundColor;
+    colorBase = max(colorBase, 0.0);
+
+    // ___________________________ COMPOSE _______________________________________
+#ifdef USERGBCOLOR
+    vec3 finalColor = colorBase;
 #else
-    vec3 environmentColor = vec3(1., 1., 1.);
+    vec3 finalColor = colorBase.r * vPrimaryColor.rgb * vPrimaryColor.a;
+    finalColor += colorBase.g * vSecondaryColor.rgb * vSecondaryColor.a;
+    finalColor += colorBase.b * vThirdColor.rgb * vThirdColor.a;
 #endif
 
-// _____________________________ Composition ____________________________________
-#ifdef RGBENVIRONMENT
-    environmentColor = vec3(1., 1., 1.) * getLuminance(environmentColor);
+#ifdef SHADOWINUSE
+    finalColor = mix(finalColor * shadowLevel, finalColor, globalShadow);
 #endif
 
-    // Might think of conserving energy here.
-    vec3 colorBase = environmentColor.r * vPrimaryColor.rgb * vPrimaryColor.a;
-    colorBase += environmentColor.g * vSecondaryColor.rgb * vSecondaryColor.a;
-    colorBase += environmentColor.b * vThirdColor.rgb * vThirdColor.a;
+#ifdef OPACITYFRESNEL
+    // TODO. Change by camera forward Direction.
+    float viewAngleToFloor = dot(normalW, normalize(vEyePosition));
 
-    colorBase = mix(colorBase * shadowLevel, colorBase, shadow);
+    // Fade out the floor plane as the angle between the floor and the camera tends to 0 (starting from startAngle)
+    const float startAngle = 0.1;
+    float fadeFactor = clamp(viewAngleToFloor/startAngle, 0.0, 1.0);
 
-    vec4 color = vec4(colorBase, 1.0);
+    finalAlpha *= fadeFactor * fadeFactor;
+#endif
+
+    vec4 color = vec4(colorBase, finalAlpha);
 
 #include<fogFragment>
 
@@ -238,6 +238,11 @@ void main(void) {
 #else
 	// Alway run even to ensure going back to gamma space.
 	color = applyImageProcessing(color);
+#endif
+
+#ifdef PREMULTIPLYALPHA
+	// Convert to associative (premultiplied) format if needed.
+	color.rgb *= color.a;
 #endif
 
     gl_FragColor = color;

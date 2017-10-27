@@ -5,14 +5,15 @@ uniform Material
 	uniform vec4 vPrimaryColor;
 	uniform vec4 vSecondaryColor;
 	uniform vec4 vThirdColor;
-	uniform vec2 vOpacityInfo;
-	uniform vec2 vEnvironmentInfo;
-	uniform mat4 opacityMatrix;
-	uniform mat4 environmentMatrix;
-	uniform vec3 vEnvironmentMicrosurfaceInfos;
+	uniform vec2 vDiffuseInfos;
+	uniform vec2 vReflectionInfos;
+	uniform mat4 diffuseMatrix;
+	uniform mat4 reflectionMatrix;
+	uniform vec3 vReflectionMicrosurfaceInfos;
 
 	uniform float pointSize;
 	uniform float shadowLevel;
+	uniform float alpha;
 };
 
 uniform Scene {

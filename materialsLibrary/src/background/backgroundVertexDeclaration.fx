@@ -2,15 +2,15 @@ uniform mat4 view;
 uniform mat4 viewProjection;
 uniform float shadowLevel;
 
-#ifdef OPACITY
-uniform mat4 opacityMatrix;
-uniform vec2 vOpacityInfo;
+#ifdef DIFFUSE
+uniform mat4 diffuseMatrix;
+uniform vec2 vDiffuseInfos;
 #endif
 
-#ifdef ENVIRONMENT
-uniform vec2 vEnvironmentInfo;
-uniform mat4 environmentMatrix;
-uniform vec3 vEnvionmentMicrosurfaceInfos;
+#ifdef REFLECTION
+    uniform vec2 vReflectionInfos;
+    uniform mat4 reflectionMatrix;
+    uniform vec3 vReflectionMicrosurfaceInfos;
 #endif
 
 #ifdef POINTSIZE

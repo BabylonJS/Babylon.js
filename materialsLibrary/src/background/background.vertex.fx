@@ -35,8 +35,8 @@ varying vec2 vMainUV1;
 varying vec2 vMainUV2; 
 #endif
 
-#if defined(OPACITY) && OPACITYDIRECTUV == 0
-varying vec2 vOpacityUV;
+#if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0
+varying vec2 vDiffuseUV;
 #endif
 
 #include<clipPlaneVertexDeclaration>
@@ -44,7 +44,19 @@ varying vec2 vOpacityUV;
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
+#ifdef REFLECTIONMAP_SKYBOX
+varying vec3 vPositionUVW;
+#endif
+
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+varying vec3 vDirectionW;
+#endif
+
 void main(void) {
+
+#ifdef REFLECTIONMAP_SKYBOX
+    vPositionUVW = position;
+#endif 
 
 #include<instancesVertex>
 #include<bonesVertex>
@@ -64,6 +76,10 @@ void main(void) {
 	vNormalW = normalize(normalWorld * normal);
 #endif
 
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+    vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
+#endif
+
 #ifndef UV1
     vec2 uv = vec2(0., 0.);
 #endif
@@ -79,14 +95,14 @@ void main(void) {
 	vMainUV2 = uv2;
 #endif
 
-#if defined(OPACITY) && OPACITYDIRECTUV == 0 
-    if (vOpacityInfo.x == 0.)
+#if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0 
+    if (vDiffuseInfos.x == 0.)
     {
-        vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));
+        vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
     }
     else
     {
-        vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
+        vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
 

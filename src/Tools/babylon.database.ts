@@ -124,12 +124,11 @@ module BABYLON {
         }
 
         public openAsync(successCallback: () => void, errorCallback: () => void) {
-            function handleError() {
-                that.isSupported = false;
+            let handleError = () => {
+                this.isSupported = false;
                 if (errorCallback) errorCallback();
             }
 
-            var that = this;
             if (!this.idbFactory || !(this._enableSceneOffline || this._enableTexturesOffline)) {
                 // Your browser doesn't support IndexedDB
                 this.isSupported = false;

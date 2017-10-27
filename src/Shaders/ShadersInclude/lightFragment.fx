@@ -54,6 +54,14 @@
 				#endif
 			#endif
 		#endif
+
+		#ifdef SHADOWONLY
+			#ifndef SHADOWINUSE
+				#define SHADOWINUSE
+			#endif
+			globalShadow += shadow;
+			shadowLightCount += 1.0;
+		#endif
 	#else
 		shadow = 1.;
 	#endif
