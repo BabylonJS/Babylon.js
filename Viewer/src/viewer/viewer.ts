@@ -29,7 +29,8 @@ export abstract class AbstractViewer {
         configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
             this.configuration = configuration;
             // initialize the templates
-            this.templateManager.initTemplate(this.configuration.template);
+            let templateConfiguration = this.configuration.template || {};
+            this.templateManager.initTemplate(templateConfiguration);
             // when done, execute onTemplatesLoaded()
             this.templateManager.onAllLoaded.add(() => {
                 this.onTemplatesLoaded();
@@ -69,6 +70,9 @@ export abstract class AbstractViewer {
      */
     protected initEngine(): Promise<Engine> {
         let canvasElement = this.templateManager.getCanvas();
+        if (!canvasElement) {
+            return Promise.reject('Canvas element not found!');
+        }
         let config = this.configuration.engine || {};
         // TDO enable further configuration
         this.engine = new Engine(canvasElement, !!config.antialiasing);
