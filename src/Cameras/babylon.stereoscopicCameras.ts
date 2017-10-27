@@ -1,9 +1,4 @@
-﻿/// <reference path="babylon.freeCamera.ts" />
-/// <reference path="babylon.arcRotateCamera.ts" />
-/// <reference path="babylon.gamepadCamera.ts" />
-/// <reference path="babylon.universalCamera.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class AnaglyphFreeCamera extends FreeCamera {
         constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene) {
             super(name, position, scene);
@@ -51,7 +46,7 @@ module BABYLON {
             return "AnaglyphUniversalCamera";
         }
     }
-    
+
     export class StereoscopicFreeCamera extends FreeCamera {
         constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene) {
             super(name, position, scene);
@@ -66,7 +61,7 @@ module BABYLON {
     }
 
     export class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene:Scene) {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene) {
             super(name, alpha, beta, radius, target, scene);
             this.interaxialDistance = interaxialDistance;
             this.isStereoscopicSideBySide = isStereoscopicSideBySide;

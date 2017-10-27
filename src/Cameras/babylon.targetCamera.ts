@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.camera.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class TargetCamera extends Camera {
 
         public cameraDirection = new Vector3(0, 0, 0);
@@ -95,7 +93,7 @@ module BABYLON {
             this.cameraRotation.copyFromFloats(0, 0);
 
             return true;
-        }           
+        }
 
         // Cache
         public _initCache() {
