@@ -1,5 +1,3 @@
-/// <reference path="babylon.freeCamera.ts" />
-
 module BABYLON {
     // We're mainly based on the logic defined into the FreeCamera code
     export class TouchCamera extends FreeCamera {
@@ -11,13 +9,13 @@ module BABYLON {
 
             return 0;
         }
-        
+
         public set touchAngularSensibility(value: number) {
             var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
             if (touch)
                 touch.touchAngularSensibility = value;
         }
-        
+
         public get touchMoveSensibility(): number {
             var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
             if (touch)
@@ -25,14 +23,14 @@ module BABYLON {
 
             return 0;
         }
-        
+
         public set touchMoveSensibility(value: number) {
             var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
             if (touch)
                 touch.touchMoveSensibility = value;
         }
         //-- end properties for backward compatibility for inputs
-        
+
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
             this.inputs.addTouch();

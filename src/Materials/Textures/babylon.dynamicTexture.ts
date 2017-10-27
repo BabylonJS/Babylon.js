@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.texture.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class DynamicTexture extends Texture {
         private _generateMipMaps: boolean;
         private _canvas: HTMLCanvasElement;
@@ -62,7 +60,7 @@ module BABYLON {
         public scaleTo(width: number, height: number): void {
             var textureSize = this.getSize();
 
-            textureSize.width  = width;
+            textureSize.width = width;
             textureSize.height = height;
 
             this._recreate(textureSize);
@@ -89,15 +87,15 @@ module BABYLON {
             }
 
             this._context.font = font;
-            if (x === null  || x === undefined) {
+            if (x === null || x === undefined) {
                 var textSize = this._context.measureText(text);
                 x = (size.width - textSize.width) / 2;
             }
             if (y === null || y === undefined) {
-                var fontSize = parseInt((font.replace(/\D/g,'')));;
-                y = (size.height /2) + (fontSize/3.65);
+                var fontSize = parseInt((font.replace(/\D/g, '')));;
+                y = (size.height / 2) + (fontSize / 3.65);
             }
-            
+
             this._context.fillStyle = color;
             this._context.fillText(text, x, y);
 

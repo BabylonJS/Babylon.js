@@ -1,7 +1,4 @@
-﻿/// <reference path="..\PostProcess\babylon.postProcess.ts" />
-/// <reference path="..\Math\babylon.math.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     /**
      * Special Glow Blur post process only blurring the alpha channel
      * It enforces keeping the most luminous color in the color channel.
@@ -300,7 +297,7 @@ module BABYLON {
             // Create Textures and post processes
             this.createTextureAndPostProcesses();
         }
-       
+
         private _createIndexBuffer(): void {
             var engine = this._scene.getEngine();
 
@@ -318,14 +315,14 @@ module BABYLON {
         }
 
         public _rebuild(): void {
-            let vb  = this._vertexBuffers[VertexBuffer.PositionKind];
+            let vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
             if (vb) {
                 vb._rebuild();
             }
 
             this._createIndexBuffer();
-        }        
+        }
 
         /**
          * Creates the render target textures and post processes used in the highlight layer.
@@ -409,9 +406,9 @@ module BABYLON {
                 let internalTexture = this._blurTexture.getInternalTexture();
 
                 if (internalTexture) {
-                this._scene.postProcessManager.directRender(
-                    [this._downSamplePostprocess, this._horizontalBlurPostprocess, this._verticalBlurPostprocess],
-                    internalTexture, true);
+                    this._scene.postProcessManager.directRender(
+                        [this._downSamplePostprocess, this._horizontalBlurPostprocess, this._verticalBlurPostprocess],
+                        internalTexture, true);
                 }
 
                 this.onAfterBlurObservable.notifyObservers(this);
@@ -513,14 +510,14 @@ module BABYLON {
                 var index: number;
 
                 let engine = this._scene.getEngine();
-                
+
                 if (depthOnlySubMeshes.length) {
-                    engine.setColorWrite(false);            
+                    engine.setColorWrite(false);
                     for (index = 0; index < depthOnlySubMeshes.length; index++) {
                         renderSubMesh(depthOnlySubMeshes.data[index]);
                     }
                     engine.setColorWrite(true);
-                }                
+                }
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
