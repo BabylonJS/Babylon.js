@@ -20,7 +20,7 @@ var __extends = (this && this.__extends) || (function () {
 
 var BABYLON;
 (function (BABYLON) {
-    var ShadowOnlyMaterialDefines = /** @class */ (function (_super) {
+    var ShadowOnlyMaterialDefines = (function (_super) {
         __extends(ShadowOnlyMaterialDefines, _super);
         function ShadowOnlyMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -36,7 +36,7 @@ var BABYLON;
         }
         return ShadowOnlyMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var ShadowOnlyMaterial = /** @class */ (function (_super) {
+    var ShadowOnlyMaterial = (function (_super) {
         __extends(ShadowOnlyMaterial, _super);
         function ShadowOnlyMaterial(name, scene) {
             return _super.call(this, name, scene) || this;
@@ -224,7 +224,7 @@ BABYLON.Effect.ShadersStore['shadowOnlyPixelShader'] = "precision highp float;\n
 
 var BABYLON;
 (function (BABYLON) {
-    var GradientMaterialDefines = /** @class */ (function (_super) {
+    var GradientMaterialDefines = (function (_super) {
         __extends(GradientMaterialDefines, _super);
         function GradientMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -280,7 +280,7 @@ var BABYLON;
         }
         return GradientMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var GradientMaterial = /** @class */ (function (_super) {
+    var GradientMaterial = (function (_super) {
         __extends(GradientMaterial, _super);
         function GradientMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -502,7 +502,7 @@ BABYLON.Effect.ShadersStore['gradientPixelShader'] = "precision highp float;\n\n
 
 var BABYLON;
 (function (BABYLON) {
-    var NormalMaterialDefines = /** @class */ (function (_super) {
+    var NormalMaterialDefines = (function (_super) {
         __extends(NormalMaterialDefines, _super);
         function NormalMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -558,7 +558,7 @@ var BABYLON;
         }
         return NormalMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var NormalMaterial = /** @class */ (function (_super) {
+    var NormalMaterial = (function (_super) {
         __extends(NormalMaterial, _super);
         function NormalMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -807,7 +807,7 @@ BABYLON.Effect.ShadersStore['normalPixelShader'] = "precision highp float;\n\nun
 
 var BABYLON;
 (function (BABYLON) {
-    var LavaMaterialDefines = /** @class */ (function (_super) {
+    var LavaMaterialDefines = (function (_super) {
         __extends(LavaMaterialDefines, _super);
         function LavaMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -863,7 +863,7 @@ var BABYLON;
         }
         return LavaMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var LavaMaterial = /** @class */ (function (_super) {
+    var LavaMaterial = (function (_super) {
         __extends(LavaMaterial, _super);
         function LavaMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -1158,7 +1158,7 @@ BABYLON.Effect.ShadersStore['lavaPixelShader'] = "precision highp float;\n\nunif
 
 var BABYLON;
 (function (BABYLON) {
-    var SimpleMaterialDefines = /** @class */ (function (_super) {
+    var SimpleMaterialDefines = (function (_super) {
         __extends(SimpleMaterialDefines, _super);
         function SimpleMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -1181,7 +1181,7 @@ var BABYLON;
         }
         return SimpleMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var SimpleMaterial = /** @class */ (function (_super) {
+    var SimpleMaterial = (function (_super) {
         __extends(SimpleMaterial, _super);
         function SimpleMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -1430,7 +1430,7 @@ BABYLON.Effect.ShadersStore['simplePixelShader'] = "precision highp float;\n\nun
 
 var BABYLON;
 (function (BABYLON) {
-    var WaterMaterialDefines = /** @class */ (function (_super) {
+    var WaterMaterialDefines = (function (_super) {
         __extends(WaterMaterialDefines, _super);
         function WaterMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -1459,7 +1459,7 @@ var BABYLON;
         }
         return WaterMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var WaterMaterial = /** @class */ (function (_super) {
+    var WaterMaterial = (function (_super) {
         __extends(WaterMaterial, _super);
         /**
         * Constructor
@@ -2029,7 +2029,7 @@ BABYLON.Effect.ShadersStore['waterPixelShader'] = "#ifdef LOGARITHMICDEPTH\n#ext
 
 var BABYLON;
 (function (BABYLON) {
-    var FireMaterialDefines = /** @class */ (function (_super) {
+    var FireMaterialDefines = (function (_super) {
         __extends(FireMaterialDefines, _super);
         function FireMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -2050,7 +2050,7 @@ var BABYLON;
         }
         return FireMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var FireMaterial = /** @class */ (function (_super) {
+    var FireMaterial = (function (_super) {
         __extends(FireMaterial, _super);
         function FireMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -2349,7 +2349,7 @@ BABYLON.Effect.ShadersStore['firePixelShader'] = "precision highp float;\n\nunif
 
 var BABYLON;
 (function (BABYLON) {
-    var FurMaterialDefines = /** @class */ (function (_super) {
+    var FurMaterialDefines = (function (_super) {
         __extends(FurMaterialDefines, _super);
         function FurMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -2374,7 +2374,7 @@ var BABYLON;
         }
         return FurMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var FurMaterial = /** @class */ (function (_super) {
+    var FurMaterial = (function (_super) {
         __extends(FurMaterial, _super);
         function FurMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -2811,7 +2811,7 @@ BABYLON.Effect.ShadersStore['furPixelShader'] = "precision highp float;\n\nunifo
 
 var BABYLON;
 (function (BABYLON) {
-    var TerrainMaterialDefines = /** @class */ (function (_super) {
+    var TerrainMaterialDefines = (function (_super) {
         __extends(TerrainMaterialDefines, _super);
         function TerrainMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -2836,7 +2836,7 @@ var BABYLON;
         }
         return TerrainMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var TerrainMaterial = /** @class */ (function (_super) {
+    var TerrainMaterial = (function (_super) {
         __extends(TerrainMaterial, _super);
         function TerrainMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -3198,7 +3198,7 @@ BABYLON.Effect.ShadersStore['terrainPixelShader'] = "precision highp float;\n\nu
 
 var BABYLON;
 (function (BABYLON) {
-    var TriPlanarMaterialDefines = /** @class */ (function (_super) {
+    var TriPlanarMaterialDefines = (function (_super) {
         __extends(TriPlanarMaterialDefines, _super);
         function TriPlanarMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -3225,7 +3225,7 @@ var BABYLON;
         }
         return TriPlanarMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var TriPlanarMaterial = /** @class */ (function (_super) {
+    var TriPlanarMaterial = (function (_super) {
         __extends(TriPlanarMaterial, _super);
         function TriPlanarMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -3580,7 +3580,7 @@ BABYLON.Effect.ShadersStore['triplanarPixelShader'] = "precision highp float;\n\
 
 var BABYLON;
 (function (BABYLON) {
-    var SkyMaterialDefines = /** @class */ (function (_super) {
+    var SkyMaterialDefines = (function (_super) {
         __extends(SkyMaterialDefines, _super);
         function SkyMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -3594,7 +3594,7 @@ var BABYLON;
         }
         return SkyMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var SkyMaterial = /** @class */ (function (_super) {
+    var SkyMaterial = (function (_super) {
         __extends(SkyMaterial, _super);
         function SkyMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -3795,7 +3795,7 @@ BABYLON.Effect.ShadersStore['skyPixelShader'] = "precision highp float;\n\nvaryi
 
 var BABYLON;
 (function (BABYLON) {
-    var GridMaterialDefines = /** @class */ (function (_super) {
+    var GridMaterialDefines = (function (_super) {
         __extends(GridMaterialDefines, _super);
         function GridMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -3811,7 +3811,7 @@ var BABYLON;
      * The grid materials allows you to wrap any shape with a grid.
      * Colors are customizable.
      */
-    var GridMaterial = /** @class */ (function (_super) {
+    var GridMaterial = (function (_super) {
         __extends(GridMaterial, _super);
         /**
          * constructor
@@ -3992,7 +3992,7 @@ BABYLON.Effect.ShadersStore['gridPixelShader'] = "#extension GL_OES_standard_der
 var BABYLON;
 (function (BABYLON) {
     // old version of standard material updated every 3 months
-    var StandardMaterialDefines_OldVer = /** @class */ (function (_super) {
+    var StandardMaterialDefines_OldVer = (function (_super) {
         __extends(StandardMaterialDefines_OldVer, _super);
         function StandardMaterialDefines_OldVer() {
             var _this = _super.call(this) || this;
@@ -4086,7 +4086,7 @@ var BABYLON;
         return StandardMaterialDefines_OldVer;
     }(BABYLON.MaterialDefines));
     BABYLON.StandardMaterialDefines_OldVer = StandardMaterialDefines_OldVer;
-    var StandardMaterial_OldVer = /** @class */ (function (_super) {
+    var StandardMaterial_OldVer = (function (_super) {
         __extends(StandardMaterial_OldVer, _super);
         function StandardMaterial_OldVer(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -5360,19 +5360,19 @@ var BABYLON;
         return StandardMaterial_OldVer;
     }(BABYLON.PushMaterial));
     BABYLON.StandardMaterial_OldVer = StandardMaterial_OldVer;
-    var CustomShaderStructure = /** @class */ (function () {
+    var CustomShaderStructure = (function () {
         function CustomShaderStructure() {
         }
         return CustomShaderStructure;
     }());
     BABYLON.CustomShaderStructure = CustomShaderStructure;
-    var ShaderSpecialParts = /** @class */ (function () {
+    var ShaderSpecialParts = (function () {
         function ShaderSpecialParts() {
         }
         return ShaderSpecialParts;
     }());
     BABYLON.ShaderSpecialParts = ShaderSpecialParts;
-    var ShaderForVer3_0 = /** @class */ (function (_super) {
+    var ShaderForVer3_0 = (function (_super) {
         __extends(ShaderForVer3_0, _super);
         function ShaderForVer3_0() {
             var _this = _super.call(this) || this;
@@ -5873,14 +5873,14 @@ vColor=color;\n\
         return ShaderForVer3_0;
     }(CustomShaderStructure));
     BABYLON.ShaderForVer3_0 = ShaderForVer3_0;
-    var StandardShaderVersions = /** @class */ (function () {
+    var StandardShaderVersions = (function () {
         function StandardShaderVersions() {
         }
         StandardShaderVersions.Ver3_0 = "3.0.0";
         return StandardShaderVersions;
     }());
     BABYLON.StandardShaderVersions = StandardShaderVersions;
-    var CustomMaterial = /** @class */ (function (_super) {
+    var CustomMaterial = (function (_super) {
         __extends(CustomMaterial, _super);
         function CustomMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -6043,7 +6043,7 @@ vColor=color;\n\
 
 var BABYLON;
 (function (BABYLON) {
-    var CellMaterialDefines = /** @class */ (function (_super) {
+    var CellMaterialDefines = (function (_super) {
         __extends(CellMaterialDefines, _super);
         function CellMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -6069,7 +6069,7 @@ var BABYLON;
         }
         return CellMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var CellMaterial = /** @class */ (function (_super) {
+    var CellMaterial = (function (_super) {
         __extends(CellMaterial, _super);
         function CellMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -6324,7 +6324,7 @@ BABYLON.Effect.ShadersStore['cellPixelShader'] = "precision highp float;\n\nunif
 
 var BABYLON;
 (function (BABYLON) {
-    var LegacyPBRMaterialDefines = /** @class */ (function (_super) {
+    var LegacyPBRMaterialDefines = (function (_super) {
         __extends(LegacyPBRMaterialDefines, _super);
         function LegacyPBRMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -6417,7 +6417,7 @@ var BABYLON;
      * For more information, please refer to the documentation :
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
-    var LegacyPBRMaterial = /** @class */ (function (_super) {
+    var LegacyPBRMaterial = (function (_super) {
         __extends(LegacyPBRMaterial, _super);
         /**
          * Instantiates a new PBRMaterial instance.
@@ -7851,7 +7851,7 @@ var BABYLON;
     /**
      * Background material defines definition.
      */
-    var BackgroundMaterialDefines = /** @class */ (function (_super) {
+    var BackgroundMaterialDefines = (function (_super) {
         __extends(BackgroundMaterialDefines, _super);
         /**
          * Constructor of the defines.
@@ -7936,7 +7936,7 @@ var BABYLON;
     /**
      * Background material
      */
-    var BackgroundMaterial = /** @class */ (function (_super) {
+    var BackgroundMaterial = (function (_super) {
         __extends(BackgroundMaterial, _super);
         /**
          * constructor

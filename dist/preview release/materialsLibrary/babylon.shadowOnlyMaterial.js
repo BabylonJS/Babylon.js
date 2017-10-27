@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var BABYLON;
 (function (BABYLON) {
-    var ShadowOnlyMaterialDefines = /** @class */ (function (_super) {
+    var ShadowOnlyMaterialDefines = (function (_super) {
         __extends(ShadowOnlyMaterialDefines, _super);
         function ShadowOnlyMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -27,7 +27,7 @@ var BABYLON;
         }
         return ShadowOnlyMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var ShadowOnlyMaterial = /** @class */ (function (_super) {
+    var ShadowOnlyMaterial = (function (_super) {
         __extends(ShadowOnlyMaterial, _super);
         function ShadowOnlyMaterial(name, scene) {
             return _super.call(this, name, scene) || this;

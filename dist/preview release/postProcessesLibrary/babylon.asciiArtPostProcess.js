@@ -23,7 +23,7 @@ var BABYLON;
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    var AsciiArtFontTexture = /** @class */ (function (_super) {
+    var AsciiArtFontTexture = (function (_super) {
         __extends(AsciiArtFontTexture, _super);
         /**
          * Create a new instance of the Ascii Art FontTexture class
@@ -165,7 +165,7 @@ var BABYLON;
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
      */
-    var AsciiArtPostProcess = /** @class */ (function (_super) {
+    var AsciiArtPostProcess = (function (_super) {
         __extends(AsciiArtPostProcess, _super);
         /**
          * Instantiates a new Ascii Art Post Process.
