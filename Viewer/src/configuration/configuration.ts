@@ -4,7 +4,9 @@ export interface ViewerConfiguration {
     // configuration version
     version?: string;
 
-    defaultViewer?: boolean; // indicates no configuration (except for initial configuration) should be changed. Will load the defaultCOnfiguration variable.
+    defaultViewer?: boolean; // indicates no configuration (except for initial configuration) should be changed. Will load the defaultConfiguration variable.
+
+    pageUrl?: string; // will be used for sharing and other fun stuff. This is the page showing the model (not the model's url!)
 
     configuration?: string | {
         url: string;
@@ -197,6 +199,20 @@ export let defaultConfiguration: ViewerConfiguration = {
                         events: {
                             pointerdown: ['#fullscreen-button']
                         }
+                    }
+                }
+            },
+            overlay: {
+                html: require("../../assets/templates/default/overlay.html"),
+                children: {
+                    help: {
+                        html: require("../../assets/templates/default/help.html")
+                    },
+                    share: {
+                        html: require("../../assets/templates/default/share.html")
+                    },
+                    error: {
+                        html: require("../../assets/templates/default/error.html")
                     }
                 }
             }

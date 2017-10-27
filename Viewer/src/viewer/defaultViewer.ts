@@ -58,13 +58,24 @@ export class DefaultViewer extends AbstractViewer {
             }, 2000)
         });
 
+
+        // close overlay button
+        let closeButton = document.getElementById('close-button');
+        if (closeButton) {
+            closeButton.addEventListener('pointerdown', () => {
+                this.hideOverlayScreen();
+            })
+        }
+
         // events registration
-        this.registerFullscreenMode();
+        this.registerNavbarButtons();
 
         return super.onTemplatesLoaded();
     }
 
-    private registerFullscreenMode() {
+    private registerNavbarButtons() {
+
+
         let isFullscreen = false;
 
         let navbar = this.templateManager.getTemplate('navBar');
@@ -75,20 +86,22 @@ export class DefaultViewer extends AbstractViewer {
                 case 'pointerdown':
                     let event: PointerEvent = <PointerEvent>data.event;
                     if (event.button === 0) {
-                        if (data.selector === '#fullscreen-button') {
-                            //this.engine.switchFullscreen(false);
-                            if (!isFullscreen) {
-                                let requestFullScreen = viewerElement.requestFullscreen || /*viewerElement.parent.msRequestFullscreen || viewerElement.parent.mozRequestFullScreen ||*/ viewerElement.webkitRequestFullscreen;
-                                requestFullScreen.call(viewerElement);
-                            } else {
-                                let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen
-                                exitFullscreen.call(document);
-                            }
+                        switch (data.selector) {
+                            case '#fullscreen-button':
+                                if (!isFullscreen) {
+                                    let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen; // || viewerElement.parent.msRequestFullscreen || viewerElement.parent.mozRequestFullScreen 
+                                    requestFullScreen.call(viewerElement);
+                                } else {
+                                    let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen
+                                    exitFullscreen.call(document);
+                                }
 
-                            isFullscreen = !isFullscreen;
-
+                                isFullscreen = !isFullscreen;
+                                break;
+                            case '#help-button':
+                                this.showOverlayScreen('help');
+                                break;
                         }
-
                     }
                     break;
             }
@@ -205,6 +218,49 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         return Promise.resolve(this.scene);
+    }
+
+    public showOverlayScreen(subScreen: string) {
+        return this.templateManager.getTemplate('overlay').show((template => {
+
+            var canvasRect = this.containerElement.getBoundingClientRect();
+            var canvasPositioning = window.getComputedStyle(this.containerElement).position;
+
+            template.parent.style.display = 'flex';
+            template.parent.style.width = canvasRect.width + "px";
+            template.parent.style.height = canvasRect.height + "px";
+            template.parent.style.opacity = "1";
+
+            return this.templateManager.getTemplate(subScreen).show((template => {
+                template.parent.style.display = 'flex';
+                return Promise.resolve(template);
+            }));
+        }));
+    }
+
+    public hideOverlayScreen() {
+        return this.templateManager.getTemplate('loadingScreen').hide((template => {
+            template.parent.style.opacity = "0";
+            let onTransitionEnd = () => {
+                template.parent.removeEventListener("transitionend", onTransitionEnd);
+                template.parent.style.display = 'none';
+            }
+            template.parent.addEventListener("transitionend", onTransitionEnd);
+
+            let overlays = template.parent.querySelectorAll('.overlay');
+            if (overlays) {
+                for (let i = 0; i < overlays.length; ++i) {
+                    let htmlElement = <HTMLElement>overlays.item(i);
+                    htmlElement.style.display = 'none';
+                }
+            }
+
+            /*return this.templateManager.getTemplate(subScreen).show((template => {
+                template.parent.style.display = 'none';
+                return Promise.resolve(template);
+            }));*/
+            return Promise.resolve(template);
+        }));
     }
 
     public showLoadingScreen() {

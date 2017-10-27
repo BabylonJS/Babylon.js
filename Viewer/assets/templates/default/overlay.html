@@ -1,0 +1,30 @@
+<style>
+    .overlay {
+        width: 100%;
+        height: 100%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    error.overlay {
+        background-color: rgba(121, 121, 121, 1);
+    }
+
+    div#close-button {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+    }
+</style>
+
+<div id="close-button">
+    <img src="{{closeImage}}" alt="{{closeText}}">
+</div>
+<help class="overlay"></help>
+<error class="overlay"></error>
+<share class="overlay"></share>
