@@ -3762,7 +3762,7 @@ var INSPECTOR;
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getRenderTargetsDuration()); }
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.activeMeshesEvaluationTime.current); }
                 });
                 elemLabel = _this._createStatLabel("Particles", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
