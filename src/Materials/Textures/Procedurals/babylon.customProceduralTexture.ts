@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.proceduralTexture.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class CustomProceduralTexture extends ProceduralTexture {
         private _animate: boolean = true;
         private _time: number = 0;
@@ -17,12 +15,10 @@ module BABYLON {
         }
 
         private loadJson(jsonUrl: string): void {
-            var that = this;
-
-            function noConfigFile() {
+            let noConfigFile = () => {
                 Tools.Log("No config file found in " + jsonUrl + " trying to use ShadersStore or DOM element");
                 try {
-                    that.setFragment(that._texturePath);
+                    this.setFragment(this._texturePath);
                 }
                 catch (ex) {
                     Tools.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");

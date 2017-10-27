@@ -1,15 +1,14 @@
 window.prepareBackgroundMaterial = function() {
-	var back = new BABYLON.BackgroundMaterial("back", scene);
 	var backSky = new BABYLON.BackgroundMaterial("backSky", scene);
+	//var hdrTexture = new BABYLON.HDRCubeTexture("../assets/textures/hdr/environment.hdr", scene, 512);
+	var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("/playground/textures/environment.dds", scene);
+	hdrTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE
+	backSky.reflectionTexture = hdrTexture;
 	backSky.backFaceCulling = false;
-
-    var hdrTexture = new BABYLON.HDRCubeTexture("../assets/textures/hdr/environment.hdr", scene, 512);
-	back.environmentTexture = hdrTexture;
-	back.opacityTexture = new BABYLON.Texture("../assets/textures/amiga.jpg", scene);
-	back.opacityTexture.getAlphaFromRGB = true;
-	back.opacityTexture.uScale = 5;
-	back.opacityTexture.vScale = 5;
-	backSky.environmentTexture = hdrTexture;
+	
+	var back = new BABYLON.BackgroundMaterial("back", scene);
+	back.diffuseTexture = new BABYLON.Texture("/playground/textures/WhiteTransarentRamp.png", scene);
+	back.diffuseTexture.hasAlpha = true;
 
     // Skybox
     backgroundSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
@@ -100,11 +99,11 @@ window.prepareBackgroundMaterial = function() {
 		return back.thirdLevel;
 	});
 
-	registerRangeUI("background", "environmentBlur", 0, 1, function(value) {
-		back.environmentBlur = value;
-		backSky.environmentBlur = value;
+	registerRangeUI("background", "reflectionBlur", 0, 1, function(value) {
+		back.reflectionBlur = value;
+		backSky.reflectionBlur = value;
 	}, function() {
-		return back.environmentBlur;
+		return back.reflectionBlur;
 	});
 
 	registerRangeUI("background", "shadowLevel", 0, 1, function(value) {
@@ -113,6 +112,21 @@ window.prepareBackgroundMaterial = function() {
 	}, function() {
 		return back.shadowLevel;
 	});
+
+	registerRangeUI("background", "alpha", 0, 1, function(value) {
+		back.alpha = value;
+	}, function() {
+		return back.alpha;
+	});
+
+	registerButtonUI("background", "ToggleBackRGB", function() {
+		back.useRGBColor = !back.useRGBColor;
+	});
+
+	registerButtonUI("background", "ToggleSkyRGB", function() {
+		backSky.useRGBColor = !backSky.useRGBColor;
+	});
+
 
 	return back;
 }

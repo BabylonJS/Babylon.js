@@ -1,6 +1,4 @@
-﻿/// <reference path="Tools\babylon.decorators.ts" />
-
-module BABYLON {
+﻿module BABYLON {
 
     /**
      * Node is the basic class for all scene objects (Mesh, Light Camera).
@@ -127,14 +125,14 @@ module BABYLON {
 
             if (index === -1) {
                 return this;
-            } 
+            }
 
             this._behaviors[index].detach();
             this._behaviors.splice(index, 1);
 
             return this;
-        }     
-        
+        }
+
         public get behaviors(): Behavior<Node>[] {
             return this._behaviors;
         }
@@ -309,8 +307,8 @@ module BABYLON {
             this._getDescendants(results, directDescendantsOnly, predicate);
 
             return results;
-        }    
-        
+        }
+
         /**
          * Get all child-meshes of this node.
          */
@@ -422,7 +420,7 @@ module BABYLON {
 
             this._behaviors = [];
         }
-        
+
         public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
             if (parsedNode.ranges) {
                 for (var index = 0; index < parsedNode.ranges.length; index++) {

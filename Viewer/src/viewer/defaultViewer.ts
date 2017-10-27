@@ -25,19 +25,37 @@ export class DefaultViewer extends AbstractViewer {
         // navbar
         let viewerElement = this.templateManager.getTemplate('viewer');
         let navbar = this.templateManager.getTemplate('navBar');
+        let navbarHeight = navbar.parent.clientHeight + 'px';
 
-        let nextHeight: string = '0px';
-
-        viewerElement.parent.addEventListener('pointerover', () => {
-            let currentHeight = navbar.parent.clientHeight + 'px';
-            navbar.parent.style.bottom = nextHeight;
-            nextHeight = '-' + currentHeight;
-            console.log(nextHeight, currentHeight);
-        });
+        let navbarShown: boolean = true;
 
         viewerElement.parent.addEventListener('pointerout', () => {
-            navbar.parent.style.bottom = nextHeight;
-            nextHeight = '0px';
+            if (navbarShown) return;
+            navbar.parent.style.bottom = '0px';
+            navbarShown = true;
+        });
+
+        let timeoutCancel;
+
+        viewerElement.parent.addEventListener('pointerdown', () => {
+            if (!navbarShown) return;
+            navbar.parent.style.bottom = '-' + navbarHeight;
+            navbarShown = false;
+
+            if (timeoutCancel) {
+                clearTimeout(timeoutCancel);
+            }
+        });
+
+        viewerElement.parent.addEventListener('pointerup', () => {
+            if (timeoutCancel) {
+                clearTimeout(timeoutCancel);
+            }
+
+            timeoutCancel = setTimeout(() => {
+                navbar.parent.style.bottom = '0px';
+                navbarShown = true;
+            }, 2000)
         });
 
         // events registration
@@ -93,7 +111,11 @@ export class DefaultViewer extends AbstractViewer {
         // here we could set the navbar's model information:
         this.setModelMetaData();
 
-        this.hideLoadingScreen();
+        // with a short timeout, making sure everything is there already.
+        setTimeout(() => {
+            this.hideLoadingScreen();
+        }, 500);
+
 
         // recreate the camera
         this.scene.createDefaultCameraOrLight(true, true, true);
@@ -113,13 +135,19 @@ export class DefaultViewer extends AbstractViewer {
         let metadataContainer = navbar.parent.querySelector('#model-metadata');
 
         //title
-        if (typeof this.configuration.model === 'object') {
+        if (metadataContainer && typeof this.configuration.model === 'object') {
             if (this.configuration.model.title) {
-                metadataContainer.querySelector('span.model-title').innerHTML = this.configuration.model.title;
+                let element = metadataContainer.querySelector('span.model-title');
+                if (element) {
+                    element.innerHTML = this.configuration.model.title;
+                }
             }
 
             if (this.configuration.model.subtitle) {
-                metadataContainer.querySelector('span.model-subtitle').innerHTML = this.configuration.model.subtitle;
+                let element = metadataContainer.querySelector('span.model-subtitle');
+                if (element) {
+                    element.innerHTML = this.configuration.model.subtitle;
+                }
             }
 
             if (this.configuration.model.thumbnail) {
@@ -208,7 +236,10 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     private setupLights(focusMeshes: Array<AbstractMesh> = []) {
-        if (!this.configuration.scene.defaultLight && (this.configuration.lights && this.configuration.lights.length)) {
+
+        let sceneConfig = this.configuration.scene || { defaultLight: true };
+
+        if (!sceneConfig.defaultLight && (this.configuration.lights && this.configuration.lights.length)) {
             // remove old lights
             this.scene.lights.forEach(l => {
                 l.dispose();
@@ -242,7 +273,10 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     private setupCamera(focusMeshes: Array<AbstractMesh> = []) {
-        if (this.configuration.scene.defaultCamera) {
+
+        let sceneConfig = this.configuration.scene || { autoRotate: false, defaultCamera: true };
+
+        if (sceneConfig.defaultCamera) {
             return;
         }
 
@@ -265,7 +299,7 @@ export class DefaultViewer extends AbstractViewer {
             });
         };
 
-        if (this.configuration.scene.autoRotate) {
+        if (sceneConfig.autoRotate) {
             this.camera.useAutoRotationBehavior = true;
         }
     }
@@ -275,7 +309,7 @@ export class DefaultViewer extends AbstractViewer {
         [propName: string]: any;
     }, payload: any) {
 
-        let behavior: Behavior<ArcRotateCamera>;
+        let behavior: Behavior<ArcRotateCamera> | null;
         let type = (typeof behaviorConfig !== "object") ? behaviorConfig : behaviorConfig.type;
 
         let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
@@ -290,6 +324,9 @@ export class DefaultViewer extends AbstractViewer {
                 break;
             case CameraBehavior.FRAMING:
                 behavior = new FramingBehavior();
+                break;
+            default:
+                behavior = null;
                 break;
         }
 

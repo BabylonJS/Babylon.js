@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.light.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class DirectionalLight extends ShadowLight {
 
         private _shadowFrustumSize = 0;
@@ -152,12 +150,12 @@ module BABYLON {
         }
 
         protected _buildUniformLayout(): void {
-             this._uniformBuffer.addUniform("vLightData", 4);
-             this._uniformBuffer.addUniform("vLightDiffuse", 4);
-             this._uniformBuffer.addUniform("vLightSpecular", 3);
-             this._uniformBuffer.addUniform("shadowsInfo", 3);
-             this._uniformBuffer.addUniform("depthValues", 2);
-             this._uniformBuffer.create();
+            this._uniformBuffer.addUniform("vLightData", 4);
+            this._uniformBuffer.addUniform("vLightDiffuse", 4);
+            this._uniformBuffer.addUniform("vLightSpecular", 3);
+            this._uniformBuffer.addUniform("shadowsInfo", 3);
+            this._uniformBuffer.addUniform("depthValues", 2);
+            this._uniformBuffer.create();
         }
 
         /**
@@ -166,7 +164,7 @@ module BABYLON {
          */
         public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
             if (this.computeTransformedInformation()) {
-               this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
+                this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
                 return this;
             }
             this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
@@ -192,7 +190,7 @@ module BABYLON {
          * @param activeCamera 
          */
         public getDepthMaxZ(activeCamera: Camera): number {
-             return 1;
+            return 1;
         }
     }
 }  

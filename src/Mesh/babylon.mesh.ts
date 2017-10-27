@@ -182,6 +182,8 @@
                     Tags.AddTagsTo(this, Tags.GetTags(source, true));
                 }
 
+                this.metadata = source.metadata;
+
                 // Parent
                 this.parent = source.parent;
 

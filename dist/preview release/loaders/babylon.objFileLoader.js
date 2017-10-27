@@ -4,7 +4,7 @@ var BABYLON;
     /**
      * Class reading and parsing the MTL file bundled with the obj file.
      */
-    var MTLFileLoader = (function () {
+    var MTLFileLoader = /** @class */ (function () {
         function MTLFileLoader() {
             // All material loaded from the mtl will be set here
             this.materials = [];
@@ -205,7 +205,7 @@ var BABYLON;
         return MTLFileLoader;
     }());
     BABYLON.MTLFileLoader = MTLFileLoader;
-    var OBJFileLoader = (function () {
+    var OBJFileLoader = /** @class */ (function () {
         function OBJFileLoader() {
             this.name = "obj";
             this.extensions = ".obj";

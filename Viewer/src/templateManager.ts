@@ -24,7 +24,7 @@ export interface TemplateConfiguration {
         dragstart?: boolean | Array<string>;
         drop?: boolean | Array<string>;
 
-        [key: string]: boolean | Array<string>;
+        [key: string]: boolean | Array<string> | undefined;
     }
     children?: { [name: string]: TemplateConfiguration };
 }
@@ -61,7 +61,7 @@ export class TemplateManager {
 
         let childrenMap = configuration.children || {};
         let childrenTemplates = Object.keys(childrenMap).map(name => {
-            return this.initTemplate(configuration.children[name], name, template);
+            return this.initTemplate(childrenMap[name], name, template);
         });
 
         // register the observers
@@ -85,7 +85,7 @@ export class TemplateManager {
     }
 
     // assumiung only ONE(!) canvas
-    public getCanvas(): HTMLCanvasElement {
+    public getCanvas(): HTMLCanvasElement | null {
         return this.containerElement.querySelector('canvas');
     }
 
@@ -201,7 +201,7 @@ export class Template {
     private registerEvents() {
         if (this.configuration.events) {
             Object.keys(this.configuration.events).forEach(eventName => {
-                if (this.configuration.events[eventName]) {
+                if (this.configuration.events && this.configuration.events[eventName]) {
                     let functionToFire = (selector, event) => {
                         this.onEventTriggered.notifyObservers({ event: event, template: this, selector: selector });
                     }
@@ -225,7 +225,7 @@ export class Template {
 
 export function getTemplateAsHtml(templateConfig: TemplateConfiguration): Promise<string> {
     if (!templateConfig) {
-        return Promise.resolve(undefined);
+        return Promise.reject('No templateConfig provided');
     } else if (templateConfig.html) {
         return Promise.resolve(templateConfig.html);
     } else {
@@ -234,7 +234,12 @@ export function getTemplateAsHtml(templateConfig: TemplateConfiguration): Promis
             return loadFile(location);
         } else {
             location = location.replace('#', '');
-            document.getElementById('#' + location);
+            let element = document.getElementById('#' + location);
+            if (element) {
+                return Promise.resolve(element.innerHTML);
+            } else {
+                return Promise.reject('Template ID not found');
+            }
         }
     }
 }

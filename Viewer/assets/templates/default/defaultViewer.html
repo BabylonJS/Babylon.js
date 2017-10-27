@@ -14,9 +14,8 @@
         background-color: rgba(0, 0, 0, 0.3);
         color: white;
         transition: 1s;
-
-        align-items: center;
-        justify-content: center;
+        align-items: flex-start;
+        justify-content: space-around;
         display: flex;
 
         flex-direction: column;
@@ -26,6 +25,7 @@
 
     @media screen and (min-width: 768px) {
         nav-bar {
+            align-items: center;
             flex-direction: row;
             justify-content: space-between;
             height: 80px;
