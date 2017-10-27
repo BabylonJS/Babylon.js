@@ -18,21 +18,21 @@ module BABYLON {
 
         // Properties
         /**
-         * Get the perf counter used for GPU frame time
+         * Gets the perf counter used for GPU frame time
          */
         public get gpuFrameTimeCounter(): PerfCounter {
             return this._gpuFrameTime;
         }
 
         /**
-         * Get the current GPU frame time (in nanoseconds)
+         * Gets the current GPU frame time (in nanoseconds)
          */
         public get currentGPUFrameTime(): number {
             return this._gpuFrameTime.current;
         }
 
         /**
-         * Get the average GPU frame time (in nanoseconds)
+         * Gets the average GPU frame time (in nanoseconds)
          */        
         public get averageGPUFrameTime(): number {
             return this._gpuFrameTime.average;
@@ -81,35 +81,35 @@ module BABYLON {
         }
 
         /**
-         * Get the perf counter used for shader compilation time
+         * Gets the perf counter used for shader compilation time
          */
         public get shaderCompilationTimeCounter(): PerfCounter {
             return this._shaderCompilationTime;
         }
 
         /**
-         * Get the current shader compilation time (in milliseconds)
+         * Gets the current shader compilation time (in milliseconds)
          */
         public get currentShaderCompilationTime(): number {
             return this._shaderCompilationTime.current;
         }
 
         /**
-         * Get the average shader compilation time (in milliseconds)
+         * Gets the average shader compilation time (in milliseconds)
          */        
         public get averageShaderCompilationTime(): number {
             return this._shaderCompilationTime.average;
         }
 
         /**
-         * Get the total shader compilation time (in milliseconds)
+         * Gets the total shader compilation time (in milliseconds)
          */        
         public get totalShaderCompilationTime(): number {
             return this._shaderCompilationTime.total;
         }               
 
         /**
-         * Get the number of compiled shaders
+         * Gets the number of compiled shaders
          */        
         public get compiledShadersCount(): number {
             return this._shaderCompilationTime.count;
@@ -148,29 +148,20 @@ module BABYLON {
         }
 
         public constructor(public engine: Engine) {
-
         }
 
         public dispose() {
-            if (this._onBeginFrameObserver) {
-                this.engine.onBeginFrameObservable.remove(this._onBeginFrameObserver);
-                this._onBeginFrameObserver = null;
-            }
+            this.engine.onBeginFrameObservable.remove(this._onBeginFrameObserver);
+            this._onBeginFrameObserver = null;
 
-            if (this._onEndFrameObserver) {
-                this.engine.onEndFrameObservable.remove(this._onEndFrameObserver);
-                this._onEndFrameObserver = null;
-            }
+            this.engine.onEndFrameObservable.remove(this._onEndFrameObserver);
+            this._onEndFrameObserver = null;
 
-            if (this._onBeforeShaderCompilationObserver) {
-                this.engine.onBeforeShaderCompilationObservable.remove(this._onBeforeShaderCompilationObserver);
-                this._onBeforeShaderCompilationObserver = null;
-            }
+            this.engine.onBeforeShaderCompilationObservable.remove(this._onBeforeShaderCompilationObserver);
+            this._onBeforeShaderCompilationObserver = null;
 
-            if (this._onAfterShaderCompilationObserver) {
-                this.engine.onAfterShaderCompilationObservable.remove(this._onAfterShaderCompilationObserver);
-                this._onAfterShaderCompilationObserver = null;     
-            }       
+            this.engine.onAfterShaderCompilationObservable.remove(this._onAfterShaderCompilationObserver);
+            this._onAfterShaderCompilationObserver = null;     
 
             (<any>this.engine) = null;
         }

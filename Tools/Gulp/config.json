@@ -229,8 +229,9 @@
         },    
         "instrumentation": {
             "files": [
-                "../../src/Engine/babylon.engineInstrumentation.js",
-                "../../src/Engine/babylon.timeToken.js"
+                "../../src/Instrumentation/babylon.engineInstrumentation.js",
+                "../../src/Instrumentation/babylon.sceneInstrumentation.js",
+                "../../src/Instrumentation/babylon.timeToken.js"
             ],
             "dependUpon": [
                 "core"
