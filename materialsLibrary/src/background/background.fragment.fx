@@ -227,7 +227,7 @@ float finalAlpha = alpha;
     finalAlpha *= fadeFactor * fadeFactor;
 #endif
 
-    vec4 color = vec4(colorBase, finalAlpha);
+    vec4 color = vec4(finalColor, finalAlpha);
 
 #include<fogFragment>
 
