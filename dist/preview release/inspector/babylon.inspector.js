@@ -3668,6 +3668,8 @@ var INSPECTOR;
             _this._scene = _this._inspector.scene;
             _this._engine = _this._scene.getEngine();
             _this._glInfo = _this._engine.getGlInfo();
+            _this._sceneInstrumentation = new BABYLON.SceneInstrumentation(_this._scene);
+            _this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
             // Build the stats panel: a div that will contains all stats
             _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
             _this._panel.classList.add("stats-panel");
@@ -3754,7 +3756,7 @@ var INSPECTOR;
                 var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getEvaluateActiveMeshesDuration()); }
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.activeMeshesEvaluationTime.current); }
                 });
                 elemLabel = _this._createStatLabel("Render targets", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
@@ -3922,6 +3924,7 @@ var INSPECTOR;
         };
         StatsTab.prototype.dispose = function () {
             this._scene.unregisterAfterRender(this._updateLoopHandler);
+            this._sceneInstrumentation.dispose();
         };
         StatsTab.prototype.active = function (b) {
             _super.prototype.active.call(this, b);
