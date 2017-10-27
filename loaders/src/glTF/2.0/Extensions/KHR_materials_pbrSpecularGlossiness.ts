@@ -39,9 +39,7 @@ module BABYLON.GLTF2.Extensions {
                         throw new Error(context + ": Failed to find diffuse texture " + properties.diffuseTexture.index);
                     }
 
-                    if (properties.diffuseTexture.texCoord) {
-                        babylonMaterial.albedoTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.diffuseTexture.texCoord);
-                    }
+                    babylonMaterial.albedoTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.diffuseTexture.texCoord);
                 }
 
                 if (properties.specularGlossinessTexture) {
@@ -50,9 +48,7 @@ module BABYLON.GLTF2.Extensions {
                         throw new Error(context + ": Failed to find diffuse texture " + properties.specularGlossinessTexture.index);
                     }
 
-                    if (properties.specularGlossinessTexture.texCoord) {
-                        babylonMaterial.reflectivityTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.specularGlossinessTexture.texCoord);
-                    }
+                    babylonMaterial.reflectivityTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.specularGlossinessTexture.texCoord);
                     babylonMaterial.reflectivityTexture.hasAlpha = true;
                     babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
                 }

@@ -19,7 +19,7 @@ var __extends = (this && this.__extends) || (function () {
         
 var BABYLON;
 (function (BABYLON) {
-    var OBJExport = /** @class */ (function () {
+    var OBJExport = (function () {
         function OBJExport() {
         }
         //Exports the geometrys of a Mesh array in .OBJ file format (text)

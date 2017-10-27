@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var LavaMaterialDefines = /** @class */ (function (_super) {
+    var LavaMaterialDefines = (function (_super) {
         __extends(LavaMaterialDefines, _super);
         function LavaMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -73,7 +73,7 @@ var BABYLON;
         }
         return LavaMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var LavaMaterial = /** @class */ (function (_super) {
+    var LavaMaterial = (function (_super) {
         __extends(LavaMaterial, _super);
         function LavaMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;

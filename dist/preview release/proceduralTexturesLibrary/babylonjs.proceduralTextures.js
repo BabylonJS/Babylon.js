@@ -20,7 +20,7 @@ var __extends = (this && this.__extends) || (function () {
 
 var BABYLON;
 (function (BABYLON) {
-    var WoodProceduralTexture = /** @class */ (function (_super) {
+    var WoodProceduralTexture = (function (_super) {
         __extends(WoodProceduralTexture, _super);
         function WoodProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "woodProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -68,7 +68,7 @@ BABYLON.Effect.ShadersStore['woodProceduralTexturePixelShader'] = "precision hig
 
 var BABYLON;
 (function (BABYLON) {
-    var FireProceduralTexture = /** @class */ (function (_super) {
+    var FireProceduralTexture = (function (_super) {
         __extends(FireProceduralTexture, _super);
         function FireProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -212,7 +212,7 @@ BABYLON.Effect.ShadersStore['fireProceduralTexturePixelShader'] = "precision hig
 
 var BABYLON;
 (function (BABYLON) {
-    var CloudProceduralTexture = /** @class */ (function (_super) {
+    var CloudProceduralTexture = (function (_super) {
         __extends(CloudProceduralTexture, _super);
         function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "cloudProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -260,7 +260,7 @@ BABYLON.Effect.ShadersStore['cloudProceduralTexturePixelShader'] = "precision hi
 
 var BABYLON;
 (function (BABYLON) {
-    var GrassProceduralTexture = /** @class */ (function (_super) {
+    var GrassProceduralTexture = (function (_super) {
         __extends(GrassProceduralTexture, _super);
         function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "grassProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -314,7 +314,7 @@ BABYLON.Effect.ShadersStore['grassProceduralTexturePixelShader'] = "precision hi
 
 var BABYLON;
 (function (BABYLON) {
-    var RoadProceduralTexture = /** @class */ (function (_super) {
+    var RoadProceduralTexture = (function (_super) {
         __extends(RoadProceduralTexture, _super);
         function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "roadProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -349,7 +349,7 @@ BABYLON.Effect.ShadersStore['roadProceduralTexturePixelShader'] = "precision hig
 
 var BABYLON;
 (function (BABYLON) {
-    var BrickProceduralTexture = /** @class */ (function (_super) {
+    var BrickProceduralTexture = (function (_super) {
         __extends(BrickProceduralTexture, _super);
         function BrickProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -423,7 +423,7 @@ BABYLON.Effect.ShadersStore['brickProceduralTexturePixelShader'] = "precision hi
 
 var BABYLON;
 (function (BABYLON) {
-    var MarbleProceduralTexture = /** @class */ (function (_super) {
+    var MarbleProceduralTexture = (function (_super) {
         __extends(MarbleProceduralTexture, _super);
         function MarbleProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "marbleProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -497,7 +497,7 @@ BABYLON.Effect.ShadersStore['marbleProceduralTexturePixelShader'] = "precision h
 
 var BABYLON;
 (function (BABYLON) {
-    var StarfieldProceduralTexture = /** @class */ (function (_super) {
+    var StarfieldProceduralTexture = (function (_super) {
         __extends(StarfieldProceduralTexture, _super);
         function StarfieldProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "starfieldProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -662,7 +662,7 @@ BABYLON.Effect.ShadersStore['starfieldProceduralTexturePixelShader'] = "precisio
 
 var BABYLON;
 (function (BABYLON) {
-    var NormalMapProceduralTexture = /** @class */ (function (_super) {
+    var NormalMapProceduralTexture = (function (_super) {
         __extends(NormalMapProceduralTexture, _super);
         function NormalMapProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "normalMapProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -705,7 +705,7 @@ BABYLON.Effect.ShadersStore['normalMapProceduralTexturePixelShader'] = "precisio
 
 var BABYLON;
 (function (BABYLON) {
-    var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
+    var PerlinNoiseProceduralTexture = (function (_super) {
         __extends(PerlinNoiseProceduralTexture, _super);
         function PerlinNoiseProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "perlinNoiseProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;

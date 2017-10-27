@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var FireMaterialDefines = /** @class */ (function (_super) {
+    var FireMaterialDefines = (function (_super) {
         __extends(FireMaterialDefines, _super);
         function FireMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -38,7 +38,7 @@ var BABYLON;
         }
         return FireMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var FireMaterial = /** @class */ (function (_super) {
+    var FireMaterial = (function (_super) {
         __extends(FireMaterial, _super);
         function FireMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
