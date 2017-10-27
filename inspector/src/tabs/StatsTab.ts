@@ -130,7 +130,7 @@ module INSPECTOR {
                 let elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.currentActiveMeshesEvaluationTime)}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.activeMeshesEvaluationTime.current)}
                 });
                 elemLabel = this._createStatLabel("Render targets", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
