@@ -44,7 +44,7 @@ interface WebGLRenderingContext {
     getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
     uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
 
-    // Occlusion Query
+    // Queries
     createQuery(): WebGLQuery;
     deleteQuery(query: WebGLQuery): void;
     beginQuery(target: number, query: WebGLQuery): void;
@@ -610,7 +610,12 @@ interface EXT_disjoint_timer_query {
     TIME_ELAPSED_EXT: number;
     TIMESTAMP_EXT: number;
     GPU_DISJOINT_EXT: number;
+    QUERY_RESULT_EXT: number;
+    QUERY_RESULT_AVAILABLE_EXT: number;
     queryCounterEXT(query: WebGLQuery, target: number): void;
     createQueryEXT(): WebGLQuery;
     beginQueryEXT(target: number, query: WebGLQuery): void;
+    endQueryEXT(target: number): void;
+    getQueryObjectEXT(query: WebGLQuery, target: number): any;
+    deleteQueryEXT(query: WebGLQuery): void;
 }
