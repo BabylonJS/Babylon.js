@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.renderTargetTexture.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     /**
     * Creates a refraction texture used by refraction channel of the standard material.
     * @param name the texture name
