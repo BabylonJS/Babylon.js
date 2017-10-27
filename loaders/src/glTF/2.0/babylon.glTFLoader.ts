@@ -902,7 +902,7 @@ module BABYLON.GLTF2 {
                     case "influence":
                         getNextOutputValue = () => {
                             if (!targetNode.babylonMesh || !targetNode.babylonMesh.morphTargetManager) {
-                                return;
+                                return Vector3.Zero();
                             }
                             const numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
                             const value = new Array<number>(numTargets);
