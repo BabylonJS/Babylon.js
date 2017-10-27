@@ -1,6 +1,7 @@
 <style>
     div.flex-container {
         display: flex;
+        width: 100%;
     }
 
     div.thumbnail {
@@ -31,7 +32,7 @@
 
     div.button-container {
         align-items: center;
-        display: flex;
+        justify-content: flex-end;
     }
 
     div.button {
@@ -57,7 +58,7 @@
         <span class="model-subtitle"> {{#if subtitle}}{{subtitle}} {{/if}}</span>
     </div>
 </div>
-<div class="button-container">
+<div class="button-container flex-container">
     <!-- holding the buttons -->
     {{#each buttons}}
     <div id="{{id}}" class="button">
