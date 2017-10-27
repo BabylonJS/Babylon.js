@@ -4,6 +4,7 @@
         "module": "commonjs",
         "noResolve": true,
         "noImplicitAny": false, //mainly due to usage of external libs without typings.
+        "strictNullChecks": true,
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
