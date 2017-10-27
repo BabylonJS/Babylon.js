@@ -1353,6 +1353,10 @@
             return this._totalAccumulated;
         }
 
+        public get count(): number {
+            return this._totalValueCount;
+        }
+
         constructor() {
             this._startMonitoringTime = 0;
             this._min = 0;
