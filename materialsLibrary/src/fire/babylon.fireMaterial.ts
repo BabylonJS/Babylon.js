@@ -38,7 +38,7 @@ module BABYLON {
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public opacityTexture: Nullable<BaseTexture>;
         
-        @serialize("diffuse")
+        @serializeAsColor3("diffuse")
         public diffuseColor = new Color3(1, 1, 1);
         
         @serialize()
