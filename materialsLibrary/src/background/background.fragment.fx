@@ -209,7 +209,7 @@ float finalAlpha = alpha;
 #else
     vec3 finalColor = colorBase.r * vPrimaryColor.rgb * vPrimaryColor.a;
     finalColor += colorBase.g * vSecondaryColor.rgb * vSecondaryColor.a;
-    finalColor += colorBase.b * vThirdColor.rgb * vThirdColor.a;
+    finalColor += colorBase.b * vTertiaryColor.rgb * vTertiaryColor.a;
 #endif
 
 #ifdef SHADOWINUSE

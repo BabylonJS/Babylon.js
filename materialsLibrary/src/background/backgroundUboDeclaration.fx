@@ -4,7 +4,7 @@ uniform Material
 {
 	uniform vec4 vPrimaryColor;
 	uniform vec4 vSecondaryColor;
-	uniform vec4 vThirdColor;
+	uniform vec4 vTertiaryColor;
 	uniform vec2 vDiffuseInfos;
 	uniform vec2 vReflectionInfos;
 	uniform mat4 diffuseMatrix;
