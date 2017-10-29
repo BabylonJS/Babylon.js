@@ -885,15 +885,15 @@ declare namespace BABYLON {
         protected _secondaryLevel: float;
         secondaryLevel: float;
         /**
-         * Third light Color (multiply against the B channel of the environement texture)
+         * Tertiary light Color (multiply against the B channel of the environement texture)
          */
-        protected _thirdColor: Color3;
-        thirdColor: Color3;
+        protected _tertiaryColor: Color3;
+        tertiaryColor: Color3;
         /**
-         * Third light Level (allowing HDR output of the background)
+         * Tertiary light Level (allowing HDR output of the background)
          */
-        protected _thirdLevel: float;
-        thirdLevel: float;
+        protected _tertiaryLevel: float;
+        tertiaryLevel: float;
         /**
          * Reflection Texture used in the material.
          * Should be author in a specific way for the best result (refer to the documentation).
