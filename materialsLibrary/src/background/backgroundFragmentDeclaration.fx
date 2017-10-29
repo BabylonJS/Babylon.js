@@ -1,6 +1,6 @@
     uniform vec4 vPrimaryColor;
     uniform vec4 vSecondaryColor;
-    uniform vec4 vThirdColor;
+    uniform vec4 vTertiaryColor;
     uniform float shadowLevel;
     uniform float alpha;
 
