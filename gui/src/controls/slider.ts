@@ -9,6 +9,7 @@ module BABYLON.GUI {
         private _background = "black";   
         private _borderColor = "white";
         private _barOffset = new ValueAndUnit(5, ValueAndUnit.UNITMODE_PIXEL, false);
+        private _isThumbCircle = false;
 
         public onValueChangedObservable = new Observable<number>();
 
@@ -120,6 +121,19 @@ module BABYLON.GUI {
             this.onValueChangedObservable.notifyObservers(this._value);
         }                             
 
+        public get isThumbCircle(): boolean {
+            return this._isThumbCircle;
+        }
+
+        public set isThumbCircle(value: boolean) {
+            if (this._isThumbCircle === value) {
+                return;
+            }
+
+            this._isThumbCircle = value;
+            this._markAsDirty();
+        }
+
         constructor(public name?: string) {
             super(name);
 
@@ -164,10 +178,20 @@ module BABYLON.GUI {
                 context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
 
                 // Thumb
-                context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                if (this._isThumbCircle) {
+                    context.beginPath();
+                    context.arc(left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+                    context.fill();
 
-                context.strokeStyle = this._borderColor;
-                context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    context.strokeStyle = this._borderColor;
+                    context.stroke();
+                }
+                else {
+                    context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    
+                    context.strokeStyle = this._borderColor;
+                    context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                }
             }
             context.restore();
         }
