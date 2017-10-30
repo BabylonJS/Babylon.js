@@ -8624,8 +8624,12 @@ var BABYLON;
             }
             // Constants
             this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
-            this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-            this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
+            if (this._gl.RGBA16F !== 0x881A) {
+                this._gl.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
+            }
+            if (this._gl.RGBA32F !== 0x8814) {
+                this._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
+            }
             this._gl.DEPTH24_STENCIL8 = 35056;
             // Extensions
             this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
@@ -22365,7 +22369,7 @@ var BABYLON;
                     source._geometry.applyToMesh(_this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, _this, ["name", "material", "skeleton", "instances", "parent", "uniqueId"], ["_poseMatrix"]);
+                BABYLON.Tools.DeepCopy(source, _this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source"], ["_poseMatrix", "_source"]);
                 // Tags
                 if (BABYLON.Tags.HasTags(source)) {
                     BABYLON.Tags.AddTagsTo(_this, BABYLON.Tags.GetTags(source, true));
