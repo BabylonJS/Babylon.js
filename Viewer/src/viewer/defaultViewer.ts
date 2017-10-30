@@ -113,7 +113,10 @@ export class DefaultViewer extends AbstractViewer {
 
     public loadModel(model: any = this.configuration.model): Promise<Scene> {
         this.showLoadingScreen();
-        return super.loadModel(model, true);
+        return super.loadModel(model, true).catch(() => {
+            this.showOverlayScreen('error');
+            return this.scene;
+        });
     }
 
     public onModelLoaded(meshes: Array<AbstractMesh>) {
