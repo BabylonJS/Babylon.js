@@ -28,36 +28,35 @@ export class DefaultViewer extends AbstractViewer {
         let navbarHeight = navbar.parent.clientHeight + 'px';
 
         let navbarShown: boolean = true;
+        let timeoutCancel /*: number*/;
 
-        viewerElement.parent.addEventListener('pointerout', () => {
-            if (navbarShown) return;
-            navbar.parent.style.bottom = '0px';
-            navbarShown = true;
-        });
-
-        let timeoutCancel;
-
-        viewerElement.parent.addEventListener('pointerdown', () => {
-            if (!navbarShown) return;
-            navbar.parent.style.bottom = '-' + navbarHeight;
-            navbarShown = false;
-
-            if (timeoutCancel) {
-                clearTimeout(timeoutCancel);
+        let triggerNavbar = function (show: boolean = false, evt: PointerEvent) {
+            // only left-click on no-button.
+            if (evt.button > 0) return;
+            // clear timeout
+            timeoutCancel && clearTimeout(timeoutCancel);
+            // if state is the same, do nothing
+            if (show === navbarShown) return;
+            //showing? simply show it!
+            if (show) {
+                navbar.parent.style.bottom = show ? '0px' : '-' + navbarHeight;
+                navbarShown = show;
+            } else {
+                // not showing? set timeout until it is removed.
+                timeoutCancel = setTimeout(function () {
+                    navbar.parent.style.bottom = '-' + navbarHeight;
+                    navbarShown = show;
+                }, navbar.configuration.config ? navbar.configuration.config.visibilityTimeout || 2000 : 2000);
             }
-        });
+        }
 
-        viewerElement.parent.addEventListener('pointerup', () => {
-            if (timeoutCancel) {
-                clearTimeout(timeoutCancel);
-            }
 
-            timeoutCancel = setTimeout(() => {
-                navbar.parent.style.bottom = '0px';
-                navbarShown = true;
-            }, 2000)
-        });
 
+        viewerElement.parent.addEventListener('pointerout', triggerNavbar.bind(this, false));
+        viewerElement.parent.addEventListener('pointerdown', triggerNavbar.bind(this, true));
+        viewerElement.parent.addEventListener('pointerup', triggerNavbar.bind(this, false));
+        navbar.parent.addEventListener('pointerover', triggerNavbar.bind(this, true))
+        // triggerNavbar(false);
 
         // close overlay button
         let closeButton = document.getElementById('close-button');
@@ -74,8 +73,6 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     private registerNavbarButtons() {
-
-
         let isFullscreen = false;
 
         let navbar = this.templateManager.getTemplate('navBar');

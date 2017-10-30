@@ -46,6 +46,22 @@
     }
 </style>
 
+{{#if disableOnFullscreen}}
+<style>
+    viewer:fullscreen nav-bar {
+        display: none;
+    }
+
+    viewer:-moz-full-screen nav-bar {
+        display: none;
+    }
+
+    viewer:-webkit-full-screen nav-bar {
+        display: none;
+    }
+</style>
+{{/if}}
+
 <div class="flex-container" id="model-metadata">
     <!-- holding the description -->
     <div class="thumbnail">
