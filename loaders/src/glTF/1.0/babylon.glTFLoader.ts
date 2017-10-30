@@ -1547,7 +1547,7 @@ module BABYLON.GLTF1 {
             // do nothing
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
 
             GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1597,13 +1597,13 @@ module BABYLON.GLTF1 {
                         postLoad(gltfRuntime);
 
                         if (!BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                            onSuccess(meshes, null, skeletons);
+                            onSuccess(meshes, [], skeletons);
                         }
                     });
                 }, onProgress);
 
                 if (BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                    onSuccess(meshes, null, skeletons);
+                    onSuccess(meshes, [], skeletons);
                 }
             }, onError);
 

@@ -197,7 +197,7 @@ module BABYLON {
 
                 this._activeEffect.setFloat("alpha", this.alpha);
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).position);                
+                MaterialHelper.BindEyePosition(effect, scene);             
             }
 
             // Lights

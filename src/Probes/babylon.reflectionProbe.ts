@@ -50,9 +50,12 @@
                 Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
                 scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+
+                scene._forcedViewPosition = this.position;
             });
 
             this._renderTargetTexture.onAfterUnbindObservable.add(() => {
+                scene._forcedViewPosition = null;
                 scene.updateTransformMatrix(true);
             });
 

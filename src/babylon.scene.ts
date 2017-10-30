@@ -215,7 +215,7 @@
         }
 
         /**
-        * An event triggered before rendering the scene
+        * An event triggered before rendering the scene (right after animations and physcis)
         * @type {BABYLON.Observable}
         */
         public onBeforeRenderObservable = new Observable<Scene>();
@@ -248,6 +248,24 @@
                 this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
             }
         }
+
+        /**
+        * An event triggered before animating the scene
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeAnimationsObservable = new Observable<Scene>();        
+
+        /**
+        * An event triggered before draw calls are ready to be sent
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeDrawPhaseObservable = new Observable<Scene>();          
+
+        /**
+        * An event triggered after draw calls have been sent
+        * @type {BABYLON.Observable}
+        */
+        public onAfterDrawPhaseObservable = new Observable<Scene>();          
 
         /**
         * An event triggered when the scene is ready
@@ -295,6 +313,34 @@
         * @type {BABYLON.Observable}
         */
         public onAfterActiveMeshesEvaluationObservable = new Observable<Scene>();           
+
+        /**
+        * An event triggered when particles rendering is about to start
+        * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeParticlesRenderingObservable = new Observable<Scene>();        
+        
+        /**
+        * An event triggered when particles rendering is done
+        * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
+        * @type {BABYLON.Observable}
+        */
+        public onAfterParticlesRenderingObservable = new Observable<Scene>();  
+
+        /**
+        * An event triggered when sprites rendering is about to start
+        * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeSpritesRenderingObservable = new Observable<Scene>();        
+        
+        /**
+        * An event triggered when sprites rendering is done
+        * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
+        * @type {BABYLON.Observable}
+        */
+        public onAfterSpritesRenderingObservable = new Observable<Scene>();          
 
         /**
         * An event triggered when a camera is created
@@ -752,10 +798,6 @@
         private _totalVertices = new PerfCounter();
         public _activeIndices = new PerfCounter();
         public _activeParticles = new PerfCounter();
-        private _interFrameDuration = new PerfCounter();
-        public _particlesDuration = new PerfCounter();
-        private _renderDuration = new PerfCounter();
-        public _spritesDuration = new PerfCounter();
         public _activeBones = new PerfCounter();
 
         private _animationRatio: number;
@@ -809,6 +851,7 @@
         private _alternateTransformMatrix: Matrix;
         private _useAlternateCameraConfiguration = false;
         private _alternateRendering = false;
+        public _forcedViewPosition: Nullable<Vector3>;
 
         public get _isAlternateRenderingEnabled(): boolean {
             return this._alternateRendering;
@@ -997,11 +1040,13 @@
 
         // Stats
         public getInterFramePerfCounter(): number {
-            return this._interFrameDuration.current;
+            Tools.Warn("getInterFramePerfCounter is deprecated. Please use SceneInstrumentation class");
+            return 0;
         }
 
-        public get interFramePerfCounter(): PerfCounter {
-            return this._interFrameDuration;
+        public get interFramePerfCounter(): Nullable<PerfCounter> {
+            Tools.Warn("interFramePerfCounter is deprecated. Please use SceneInstrumentation class");
+            return null;
         }
 
         public getLastFrameDuration(): number {
@@ -1033,27 +1078,33 @@
         }
 
         public getRenderDuration(): number {
-            return this._renderDuration.current;
+            Tools.Warn("getRenderDuration is deprecated. Please use SceneInstrumentation class");
+            return 0;
         }
 
-        public get renderDurationPerfCounter(): PerfCounter {
-            return this._renderDuration;
+        public get renderDurationPerfCounter(): Nullable<PerfCounter> {
+            Tools.Warn("renderDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
+            return null;
         }
 
         public getParticlesDuration(): number {
-            return this._particlesDuration.current;
+            Tools.Warn("getParticlesDuration is deprecated. Please use SceneInstrumentation class");
+            return 0;
         }
 
-        public get particlesDurationPerfCounter(): PerfCounter {
-            return this._particlesDuration;
+        public get particlesDurationPerfCounter(): Nullable<PerfCounter> {
+            Tools.Warn("particlesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
+            return null;
         }
 
         public getSpritesDuration(): number {
-            return this._spritesDuration.current;
+            Tools.Warn("getSpritesDuration is deprecated. Please use SceneInstrumentation class");
+            return 0;
         }
 
-        public get spriteDuractionPerfCounter(): PerfCounter {
-            return this._spritesDuration;
+        public get spriteDuractionPerfCounter(): Nullable<PerfCounter> {
+            Tools.Warn("spriteDuractionPerfCounter is deprecated. Please use SceneInstrumentation class");
+            return null;
         }
 
         public getAnimationRatio(): number {
@@ -2863,9 +2914,8 @@
             this.onAfterActiveMeshesEvaluationObservable.notifyObservers(this);
 
             // Particle systems
-            this._particlesDuration.beginMonitoring();
             if (this.particlesEnabled) {
-                Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
+                this.onBeforeParticlesRenderingObservable.notifyObservers(this);
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
                     var particleSystem = this.particleSystems[particleIndex];
 
@@ -2880,9 +2930,8 @@
                         this._renderingManager.dispatchParticles(particleSystem);
                     }
                 }
-                Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
+                this.onAfterParticlesRenderingObservable.notifyObservers(this);
             }
-            this._particlesDuration.endMonitoring(false);
         }
 
         private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
@@ -3042,8 +3091,6 @@
             // Prepare Frame
             this.postProcessManager._prepareFrame();
 
-            this._renderDuration.beginMonitoring();
-
             // Backgrounds
             var layerIndex;
             var layer;
@@ -3057,23 +3104,21 @@
                 }
                 engine.setDepthBuffer(true);
             }
-
-            // Render
-            Tools.StartPerformanceCounter("Main render");
-
+        
             // Activate HighlightLayer stencil
             if (renderhighlights) {
                 this._engine.setStencilBuffer(true);
             }
 
+            // Render
+            this.onBeforeDrawPhaseObservable.notifyObservers(this);
             this._renderingManager.render(null, null, true, true);
+            this.onAfterDrawPhaseObservable.notifyObservers(this);
 
             // Restore HighlightLayer stencil
             if (renderhighlights) {
                 this._engine.setStencilBuffer(stencilState);
             }
-
-            Tools.EndPerformanceCounter("Main render");
 
             // Bounding boxes
             if (this._boundingBoxRenderer) {
@@ -3115,8 +3160,6 @@
                 }
                 engine.setDepthBuffer(true);
             }
-
-            this._renderDuration.endMonitoring(false);
 
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
@@ -3199,19 +3242,14 @@
                 return;
             }
 
-            this._interFrameDuration.endMonitoring();
-            this._particlesDuration.fetchNewFrame();
-            this._spritesDuration.fetchNewFrame();
             this._activeParticles.fetchNewFrame();
-            this._renderDuration.fetchNewFrame();
             this._totalVertices.fetchNewFrame();
             this._activeIndices.fetchNewFrame();
             this._activeBones.fetchNewFrame();
-            this.getEngine().drawCallsPerfCounter.fetchNewFrame();
             this._meshesForIntersections.reset();
             this.resetCachedMaterial();
 
-            Tools.StartPerformanceCounter("Scene rendering");
+            this.onBeforeAnimationsObservable.notifyObservers(this);
 
             // Actions
             if (this.actionManager) {
@@ -3413,8 +3451,6 @@
                 this.dumpNextRenderTargets = false;
             }
 
-            Tools.EndPerformanceCounter("Scene rendering");
-            this._interFrameDuration.beginMonitoring();  
             this._activeBones.addCount(0, true);
             this._activeIndices.addCount(0, true);
             this._activeParticles.addCount(0, true);
@@ -3651,6 +3687,12 @@
             this.onBeforeStepObservable.clear();
             this.onBeforeActiveMeshesEvaluationObservable.clear();
             this.onAfterActiveMeshesEvaluationObservable.clear();
+            this.onBeforeParticlesRenderingObservable.clear();
+            this.onAfterParticlesRenderingObservable.clear();
+            this.onBeforeSpritesRenderingObservable.clear();
+            this.onAfterSpritesRenderingObservable.clear();
+            this.onBeforeDrawPhaseObservable.clear();
+            this.onAfterDrawPhaseObservable.clear();
 
             this.detachControl();
 

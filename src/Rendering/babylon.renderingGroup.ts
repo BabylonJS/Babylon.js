@@ -360,7 +360,7 @@
 
             // Particles
             var activeCamera = this._scene.activeCamera;
-            this._scene._particlesDuration.beginMonitoring();
+            this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
 
@@ -373,7 +373,8 @@
                     this._scene._activeParticles.addCount(particleSystem.render(), false);
                 }
             }
-            this._scene._particlesDuration.endMonitoring(false);
+            this._scene.onAfterParticlesRenderingObservable.notifyObservers(this._scene);
+            
         }
 
         private _renderSprites(): void {
@@ -383,7 +384,7 @@
 
             // Sprites       
             var activeCamera = this._scene.activeCamera;
-            this._scene._spritesDuration.beginMonitoring();
+            this._scene.onBeforeSpritesRenderingObservable.notifyObservers(this._scene);
             for (var id = 0; id < this._spriteManagers.length; id++) {
                 var spriteManager = this._spriteManagers.data[id];
 
@@ -391,7 +392,7 @@
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration.endMonitoring(false);
+            this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
         }
     }
 } 

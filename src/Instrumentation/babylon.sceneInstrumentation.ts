@@ -12,20 +12,42 @@ module BABYLON {
         private _captureFrameTime = false;
         private _frameTime = new PerfCounter();        
 
+        private _captureRenderTime = false;
+        private _renderTime = new PerfCounter();           
+
+        private _captureInterFrameTime = false;
+        private _interFrameTime = new PerfCounter();    
+        
+        private _captureParticlesRenderTime = false;
+        private _particlesRenderTime = new PerfCounter();       
+        
+        private _captureSpritesRenderTime = false;
+        private _spritesRenderTime = new PerfCounter();              
+
         // Observers
         private _onBeforeActiveMeshesEvaluationObserver: Nullable<Observer<Scene>> = null;
         private _onAfterActiveMeshesEvaluationObserver: Nullable<Observer<Scene>> = null;
         private _onBeforeRenderTargetsRenderObserver: Nullable<Observer<Scene>> = null;
         private _onAfterRenderTargetsRenderObserver: Nullable<Observer<Scene>> = null;
 
-        private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
         private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
+
+        private _onBeforeDrawPhaseObserver: Nullable<Observer<Scene>> = null;
+        private _onAfterDrawPhaseObserver: Nullable<Observer<Scene>> = null;        
+        
+        private _onBeforeAnimationsObserver: Nullable<Observer<Scene>> = null;
+
+        private _onBeforeParticlesRenderingObserver: Nullable<Observer<Scene>> = null;
+        private _onAfterParticlesRenderingObserver: Nullable<Observer<Scene>> = null;
+
+        private _onBeforeSpritesRenderingObserver: Nullable<Observer<Scene>> = null;
+        private _onAfterSpritesRenderingObserver: Nullable<Observer<Scene>> = null;        
                 
         // Properties
         /**
          * Gets the perf counter used for active meshes evaluation time
          */
-        public get activeMeshesEvaluationTime(): PerfCounter {
+        public get activeMeshesEvaluationTimeCounter(): PerfCounter {
             return this._activeMeshesEvaluationTime;
         }
 
@@ -43,6 +65,8 @@ module BABYLON {
             if (value === this._captureActiveMeshesEvaluationTime) {
                 return;
             }
+
+            this._captureActiveMeshesEvaluationTime = value;            
 
             if (value) {
                 this._onBeforeActiveMeshesEvaluationObserver = this.scene.onBeforeActiveMeshesEvaluationObservable.add(()=>{
@@ -85,6 +109,8 @@ module BABYLON {
                 return;
             }
 
+            this._captureRenderTargetsRenderTime = value;
+
             if (value) {
                 this._onBeforeRenderTargetsRenderObserver = this.scene.OnBeforeRenderTargetsRenderObservable.add(()=>{
                     Tools.StartPerformanceCounter("Render targets rendering");
@@ -105,6 +131,92 @@ module BABYLON {
         }        
 
         /**
+         * Gets the perf counter used for particles render time
+         */
+        public get particlesRenderTimeCounter(): PerfCounter {
+            return this._particlesRenderTime;
+        }
+
+        /**
+         * Gets the particles render time capture status
+         */
+        public get captureParticlesRenderTime(): boolean {
+            return this._captureParticlesRenderTime;
+        }        
+
+        /**
+         * Enable or disable the particles render time capture
+         */        
+        public set captureParticlesRenderTime(value: boolean) {
+            if (value === this._captureParticlesRenderTime) {
+                return;
+            }
+
+            this._captureParticlesRenderTime = value;
+
+            if (value) {
+                this._onBeforeParticlesRenderingObserver = this.scene.onBeforeParticlesRenderingObservable.add(()=>{                    
+                    Tools.StartPerformanceCounter("Particles");
+                    this._particlesRenderTime.beginMonitoring();
+                });
+
+                this._onAfterParticlesRenderingObserver = this.scene.onAfterParticlesRenderingObservable.add(()=>{                                        
+                    Tools.EndPerformanceCounter("Particles");
+                    this._particlesRenderTime.endMonitoring(false);
+                });
+            } else {
+                this.scene.onBeforeParticlesRenderingObservable.remove(this._onBeforeParticlesRenderingObserver);
+                this._onBeforeParticlesRenderingObserver = null;
+
+                this.scene.onAfterParticlesRenderingObservable.remove(this._onAfterParticlesRenderingObserver);
+                this._onAfterParticlesRenderingObserver = null;
+            }
+        }        
+
+        /**
+         * Gets the perf counter used for sprites render time
+         */
+        public get spritesRenderTimeCounter(): PerfCounter {
+            return this._spritesRenderTime;
+        }
+
+        /**
+         * Gets the sprites render time capture status
+         */
+        public get captureSpritesRenderTime(): boolean {
+            return this._captureSpritesRenderTime;
+        }        
+
+        /**
+         * Enable or disable the sprites render time capture
+         */        
+        public set captureSpritesRenderTime(value: boolean) {
+            if (value === this._captureSpritesRenderTime) {
+                return;
+            }
+
+            this._captureSpritesRenderTime = value;
+
+            if (value) {
+                this._onBeforeSpritesRenderingObserver = this.scene.onBeforeSpritesRenderingObservable.add(()=>{                    
+                    Tools.StartPerformanceCounter("Sprites");
+                    this._spritesRenderTime.beginMonitoring();
+                });
+
+                this._onAfterSpritesRenderingObserver = this.scene.onAfterSpritesRenderingObservable.add(()=>{                                        
+                    Tools.EndPerformanceCounter("Sprites");
+                    this._spritesRenderTime.endMonitoring(false);
+                });
+            } else {
+                this.scene.onBeforeSpritesRenderingObservable.remove(this._onBeforeSpritesRenderingObserver);
+                this._onBeforeSpritesRenderingObserver = null;
+
+                this.scene.onAfterSpritesRenderingObservable.remove(this._onAfterSpritesRenderingObserver);
+                this._onAfterSpritesRenderingObserver = null;
+            }
+        }      
+        
+        /**
          * Gets the perf counter used for frame time capture
          */
         public get frameTimeCounter(): PerfCounter {
@@ -123,10 +235,81 @@ module BABYLON {
          */        
         public set captureFrameTime(value: boolean) {
             this._captureFrameTime = value;
-        }          
+        }       
+     
+        /**
+         * Gets the perf counter used for inter-frames time capture
+         */
+        public get interFrameTimeCounter(): PerfCounter {
+            return this._interFrameTime;
+        }               
+       
+        /**
+         * Gets the inter-frames time capture status
+         */        
+        public get captureInterFrameTime(): boolean {
+            return this._captureInterFrameTime;
+        }        
+
+        /**
+         * Enable or disable the inter-frames time capture
+         */        
+        public set captureInterFrameTime(value: boolean) {
+            this._captureInterFrameTime = value;
+        }     
+
+        /**
+         * Gets the perf counter used for render time capture
+         */
+        public get renderTimeCounter(): PerfCounter {
+            return this._renderTime;
+        }               
+       
+        /**
+         * Gets the render time capture status
+         */        
+        public get captureRenderTime(): boolean {
+            return this._captureRenderTime;
+        }        
+
+        /**
+         * Enable or disable the render time capture
+         */        
+        public set captureRenderTime(value: boolean) {
+            if (value === this._captureRenderTime) {
+                return;
+            }
+
+            this._captureRenderTime = value;
+
+            if (value) {
+                this._onBeforeDrawPhaseObserver = this.scene.onBeforeDrawPhaseObservable.add(()=>{
+                    this._renderTime.beginMonitoring(); 
+                    Tools.StartPerformanceCounter("Main render");
+                });
+
+                this._onAfterDrawPhaseObserver = this.scene.onAfterDrawPhaseObservable.add(()=>{
+                    this._renderTime.endMonitoring(false); 
+                    Tools.EndPerformanceCounter("Main render");
+                });                
+            } else {
+                this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver);
+                this._onBeforeDrawPhaseObserver = null;
+                this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver);
+                this._onAfterDrawPhaseObserver = null;
+            }
+        }            
+
+        /**
+         * Gets the perf counter used for frame time capture
+         */
+        public get drawCallsCounter(): PerfCounter {
+            return this.scene.getEngine()._drawCalls;
+        }            
     
         public constructor(public scene: Scene) {
-            this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+            // Before render
+            this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
                 if (this._captureActiveMeshesEvaluationTime) {
                     this._activeMeshesEvaluationTime.fetchNewFrame();
                 }
@@ -138,21 +321,41 @@ module BABYLON {
                 if (this._captureFrameTime) {
                     Tools.StartPerformanceCounter("Scene rendering");
                     this._frameTime.beginMonitoring();
-                }           
+                }   
+
+                if (this._captureInterFrameTime) {
+                    this._interFrameTime.endMonitoring(); 
+                }                   
+
+                if (this._captureParticlesRenderTime) {
+                    this._particlesRenderTime.fetchNewFrame();
+                }
+
+                if (this._captureSpritesRenderTime) {
+                    this._spritesRenderTime.fetchNewFrame();
+                }
+
+                this.scene.getEngine()._drawCalls.fetchNewFrame();
             });
 
+            // After render
             this._onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
                 if (this._captureFrameTime) {
                     Tools.EndPerformanceCounter("Scene rendering");
                     this._frameTime.endMonitoring();                    
                 }
+
+                if (this._captureRenderTime) {
+                    this._renderTime.endMonitoring(false);                    
+                }                
+
+                if (this._captureInterFrameTime) {
+                    this._interFrameTime.beginMonitoring();  
+                }                
             });
         }
 
         public dispose() {
-            this.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
-            this._onBeforeRenderObserver = null;
-
             this.scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
             this._onAfterRenderObserver = null;
 
@@ -166,8 +369,29 @@ module BABYLON {
             this._onBeforeRenderTargetsRenderObserver = null;   
             
             this.scene.OnAfterRenderTargetsRenderObservable.remove(this._onAfterRenderTargetsRenderObserver);
-            this._onAfterRenderTargetsRenderObserver = null;            
-        
+            this._onAfterRenderTargetsRenderObserver = null;      
+            
+            this.scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
+            this._onBeforeAnimationsObserver = null;
+
+            this.scene.onBeforeParticlesRenderingObservable.remove(this._onBeforeParticlesRenderingObserver);
+            this._onBeforeParticlesRenderingObserver = null;
+
+            this.scene.onAfterParticlesRenderingObservable.remove(this._onAfterParticlesRenderingObserver);
+            this._onAfterParticlesRenderingObserver = null;         
+            
+            this.scene.onBeforeSpritesRenderingObservable.remove(this._onBeforeSpritesRenderingObserver);
+            this._onBeforeSpritesRenderingObserver = null;
+
+            this.scene.onAfterSpritesRenderingObservable.remove(this._onAfterSpritesRenderingObserver);
+            this._onAfterSpritesRenderingObserver = null;       
+            
+            this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver);
+            this._onBeforeDrawPhaseObserver = null;
+
+            this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver);
+            this._onAfterDrawPhaseObserver = null;            
+                
             (<any>this.scene) = null;
         }
     }
