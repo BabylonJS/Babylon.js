@@ -60,20 +60,13 @@ module BABYLON {
         public getTarget(index: number): MorphTarget {
             return this._targets[index];
         }
-       
-        public addTarget(target: MorphTarget): void {
-            if (this._vertexCount) {
-                if (this._vertexCount !== target.getPositions().length / 3) {
-                    Tools.Error("Incompatible target. Targets must all have the same vertices count.");
-                    return;
-                }
-            }
 
+        public addTarget(target: MorphTarget): void {
             this._targets.push(target);
             this._targetObservable.push(target.onInfluenceChanged.add(needUpdate => {
                 this._syncActiveTargets(needUpdate);
             }));
-            this._syncActiveTargets(true);        
+            this._syncActiveTargets(true);
         }
 
         public removeTarget(target: MorphTarget): void {
@@ -82,7 +75,6 @@ module BABYLON {
                 this._targets.splice(index, 1);
 
                 target.onInfluenceChanged.remove(this._targetObservable.splice(index, 1)[0]);
-                this._vertexCount = 0;
                 this._syncActiveTargets(true);
             }
         }
@@ -106,9 +98,10 @@ module BABYLON {
 
         private _syncActiveTargets(needUpdate: boolean): void {
             let influenceCount = 0;
-            this._activeTargets.reset();            
+            this._activeTargets.reset();
             this._supportsNormals = true;
             this._supportsTangents = true;
+            this._vertexCount = 0;
             for (var target of this._targets) {
                 if (target.influence > 0) {
                     this._activeTargets.push(target);
@@ -117,8 +110,19 @@ module BABYLON {
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
                     this._supportsTangents = this._supportsTangents && target.hasTangents;
 
+                    const positions = target.getPositions();
+                    if (!positions) {
+                        Tools.Error("Invalid target. Target must positions.");
+                        return;
+                    }
+
+                    const vertexCount = positions.length / 3;
                     if (this._vertexCount === 0) {
-                        this._vertexCount = target.getPositions().length / 3;
+                        this._vertexCount = vertexCount;
+                    }
+                    else if (this._vertexCount !== vertexCount) {
+                        Tools.Error("Incompatible target. Targets must all have the same vertices count.");
+                        return;
                     }
                 }
             }
@@ -130,7 +134,7 @@ module BABYLON {
             for (var index = 0; index < influenceCount; index++) {
                 this._influences[index] = this._tempInfluences[index];
             }
-            
+
             if (needUpdate && this._scene) {
                 // Flag meshes as dirty to resync with the active targets
                 for (var mesh of this._scene.meshes) {
