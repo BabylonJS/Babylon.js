@@ -179,7 +179,7 @@ var BABYLON;
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
                 this._activeEffect.setFloat("alpha", this.alpha);
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             // Lights
             if (scene.lightsEnabled) {
@@ -420,7 +420,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
             if (scene.lightsEnabled && !this.disableLighting) {
@@ -711,7 +711,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             // Lights
@@ -1030,7 +1030,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
             if (scene.lightsEnabled && !this.disableLighting) {
@@ -1334,7 +1334,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             // Lights
@@ -1760,7 +1760,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             if (defines.SPECULARTERM) {
@@ -2198,7 +2198,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
             // View
@@ -2583,7 +2583,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             if (scene.lightsEnabled && !this.disableLighting) {
@@ -3022,7 +3022,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             if (defines.SPECULARTERM) {
@@ -3410,7 +3410,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             if (defines.SPECULARTERM) {
@@ -4847,7 +4847,7 @@ var BABYLON;
                 BABYLON.MaterialHelper.BindClipPlane(effect, scene);
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
             if (this._mustRebind(scene, effect) || !this.isFrozen) {
@@ -6225,7 +6225,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             // Lights
@@ -6978,9 +6978,7 @@ var BABYLON;
                 }
                 // Clip plane
                 BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
-                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
-                // var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
-                effect.setFloat3("vEyePosition", eyePosition.x, eyePosition.y, eyePosition.z);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             if (mustRebind || !this.isFrozen) {
                 if (scene.lightsEnabled) {

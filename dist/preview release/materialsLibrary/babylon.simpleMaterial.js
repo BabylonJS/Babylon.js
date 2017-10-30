@@ -193,7 +193,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             // Lights

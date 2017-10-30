@@ -3672,6 +3672,10 @@ var INSPECTOR;
             _this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
             _this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
             _this._sceneInstrumentation.captureFrameTime = true;
+            _this._sceneInstrumentation.captureRenderTime = true;
+            _this._sceneInstrumentation.captureInterFrameTime = true;
+            _this._sceneInstrumentation.captureParticlesRenderTime = true;
+            _this._sceneInstrumentation.captureSpritesRenderTime = true;
             _this._engineInstrumentation = new BABYLON.EngineInstrumentation(_this._engine);
             _this._engineInstrumentation.captureGPUFrameTime = true;
             // Build the stats panel: a div that will contains all stats
@@ -3702,7 +3706,7 @@ var INSPECTOR;
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return _this._engine.drawCalls.toString(); }
+                    updateFct: function () { return _this._sceneInstrumentation.drawCallsCounter.current.toString(); }
                 });
                 elemLabel = _this._createStatLabel("Total lights", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
@@ -3760,7 +3764,7 @@ var INSPECTOR;
                 var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.activeMeshesEvaluationTime.current); }
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.activeMeshesEvaluationTimeCounter.current); }
                 });
                 elemLabel = _this._createStatLabel("Render targets", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
@@ -3772,19 +3776,19 @@ var INSPECTOR;
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getParticlesDuration()); }
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.particlesRenderTimeCounter.current); }
                 });
                 elemLabel = _this._createStatLabel("Sprites", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getSpritesDuration()); }
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.spritesRenderTimeCounter.current); }
                 });
                 elemLabel = _this._createStatLabel("Render", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getRenderDuration()); }
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.renderTimeCounter.current); }
                 });
                 elemLabel = _this._createStatLabel("Frame", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
@@ -3796,7 +3800,7 @@ var INSPECTOR;
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getInterFramePerfCounter()); }
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.interFrameTimeCounter.current); }
                 });
                 elemLabel = _this._createStatLabel("GPU Frame time", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);

@@ -1109,10 +1109,16 @@
             }
 
             // Constants
-            this._gl.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
-            (<any>this._gl.RGBA16F) = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
-            (<any>this._gl.RGBA32F) = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
-            this._gl.DEPTH24_STENCIL8 = 35056;
+            this._gl.HALF_FLOAT_OES = 0x8D61;   // Half floating-point type (16-bit).
+            if (this._gl.RGBA16F !== 0x881A) {
+                this._gl.RGBA16F = 0x881A;      // RGBA 16-bit floating-point color-renderable internal sized format.
+            }
+            if (this._gl.RGBA32F !== 0x8814) {
+                this._gl.RGBA32F = 0x8814;      // RGBA 32-bit floating-point color-renderable internal sized format.
+            }
+            if (this._gl.DEPTH24_STENCIL8 !== 35056) {
+                this._gl.DEPTH24_STENCIL8 = 35056;
+            }
 
             // Extensions
             this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
@@ -1336,11 +1342,13 @@
 
         /** The number of draw calls submitted last frame */
         public get drawCalls(): number {
-            return this._drawCalls.current;
+            Tools.Warn("drawCalls is deprecated. Please use SceneInstrumentation class");
+            return 0;
         }
 
-        public get drawCallsPerfCounter(): PerfCounter {
-            return this._drawCalls;
+        public get drawCallsPerfCounter(): Nullable<PerfCounter> {
+            Tools.Warn("drawCallsPerfCounter is deprecated. Please use SceneInstrumentation class");
+            return null;
         }
 
         public getDepthFunction(): Nullable<number> {

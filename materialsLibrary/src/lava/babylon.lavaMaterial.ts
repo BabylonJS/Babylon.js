@@ -295,7 +295,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).position);
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);

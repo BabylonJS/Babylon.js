@@ -10,7 +10,7 @@ declare module BABYLON {
         bin: Nullable<ArrayBufferView>;
     }
     interface IGLTFLoader extends IDisposable {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
     }
     class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync {
@@ -39,11 +39,11 @@ declare module BABYLON {
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         canDirectLoad(data: string): boolean;
-        private static _parse(data, onError);
-        private _getLoader(loaderData, onError);
-        private static _parseBinary(data, onError);
-        private static _parseV1(binaryReader, onError);
-        private static _parseV2(binaryReader, onError);
+        private static _parse(data);
+        private _getLoader(loaderData);
+        private static _parseBinary(data);
+        private static _parseV1(binaryReader);
+        private static _parseV2(binaryReader);
         private static _parseVersion(version);
         private static _compareVersion(a, b);
         private static _decodeBufferToText(buffer);
@@ -444,7 +444,7 @@ declare module BABYLON.GLTF1 {
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
         dispose(): void;
-        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean;
+        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         private _loadShadersAsync(gltfRuntime, onload);
         private _loadBuffersAsync(gltfRuntime, onLoad, onProgress?);

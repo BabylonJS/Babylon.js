@@ -170,7 +170,7 @@ var BABYLON;
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
                 this._activeEffect.setFloat("alpha", this.alpha);
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             // Lights
             if (scene.lightsEnabled) {

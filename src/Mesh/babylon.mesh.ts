@@ -175,7 +175,7 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId"], ["_poseMatrix"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source"], ["_poseMatrix", "_source"]);
 
                 // Tags
                 if (Tags.HasTags(source)) {
@@ -2182,13 +2182,23 @@
 
                 for (var index = 0; index < morphTargetManager.numInfluencers; index++) {
                     var morphTarget = morphTargetManager.getActiveTarget(index);
-                    this.geometry.setVerticesData(VertexBuffer.PositionKind + index, morphTarget.getPositions(), false, 3);
 
-                    if (morphTarget.hasNormals) {
-                        this.geometry.setVerticesData(VertexBuffer.NormalKind + index, morphTarget.getNormals(), false, 3);
+                    const positions = morphTarget.getPositions(); 
+                    if (!positions) {
+                        Tools.Error("Invalid morph target. Target must have positions.");
+                        return;
                     }
-                    if (morphTarget.hasTangents) {
-                        this.geometry.setVerticesData(VertexBuffer.TangentKind + index, morphTarget.getTangents(), false, 3);
+
+                    this.geometry.setVerticesData(VertexBuffer.PositionKind + index, positions, false, 3);
+
+                    const normals = morphTarget.getNormals();
+                    if (normals) {
+                        this.geometry.setVerticesData(VertexBuffer.NormalKind + index, normals, false, 3);
+                    }
+
+                    const tangents = morphTarget.getTangents();
+                    if (tangents) {
+                        this.geometry.setVerticesData(VertexBuffer.TangentKind + index, tangents, false, 3);
                     }
                 }
             } else {

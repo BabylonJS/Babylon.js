@@ -873,7 +873,7 @@ var BABYLON;
                 BABYLON.MaterialHelper.BindClipPlane(effect, scene);
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
             if (this._mustRebind(scene, effect) || !this.isFrozen) {

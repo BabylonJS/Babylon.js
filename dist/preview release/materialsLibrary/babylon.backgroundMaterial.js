@@ -671,9 +671,7 @@ var BABYLON;
                 }
                 // Clip plane
                 BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
-                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
-                // var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
-                effect.setFloat3("vEyePosition", eyePosition.x, eyePosition.y, eyePosition.z);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             if (mustRebind || !this.isFrozen) {
                 if (scene.lightsEnabled) {
