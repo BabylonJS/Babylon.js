@@ -809,6 +809,7 @@
         private _alternateTransformMatrix: Matrix;
         private _useAlternateCameraConfiguration = false;
         private _alternateRendering = false;
+        public _forcedViewPosition: Nullable<Vector3>;
 
         public get _isAlternateRenderingEnabled(): boolean {
             return this._alternateRendering;

@@ -1,6 +1,14 @@
 ﻿module BABYLON {
     export class MaterialHelper {
 
+        public static BindEyePosition(effect: Effect, scene: Scene): void {
+            if (scene._forcedViewPosition) {
+                effect.setVector3("vEyePosition", scene._forcedViewPosition);            
+                return;
+            }
+            effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera!.globalPosition);            
+        }
+
         public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
             defines._needUVs = true;
             defines[key] = true;

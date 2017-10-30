@@ -26371,6 +26371,13 @@ var BABYLON;
     var MaterialHelper = /** @class */ (function () {
         function MaterialHelper() {
         }
+        MaterialHelper.BindEyePosition = function (effect, scene) {
+            if (scene._forcedViewPosition) {
+                effect.setVector3("vEyePosition", scene._forcedViewPosition);
+                return;
+            }
+            effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition);
+        };
         MaterialHelper.PrepareDefinesForMergedUV = function (texture, defines, key) {
             defines._needUVs = true;
             defines[key] = true;
@@ -34121,9 +34128,7 @@ var BABYLON;
                 BABYLON.MaterialHelper.BindClipPlane(effect, scene);
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                if (scene.activeCamera) {
-                    effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition);
-                }
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
             if (mustRebind || !this.isFrozen) {
@@ -35680,7 +35685,7 @@ var BABYLON;
                 BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
                 // Colors
                 scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
-                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
+                var eyePosition = scene._forcedViewPosition ? scene._forcedViewPosition : (scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition);
                 var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
                 effect.setFloat4("vEyePosition", eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
@@ -73645,8 +73650,10 @@ var BABYLON;
                 _this.position.addToRef(_this._add, _this._target);
                 BABYLON.Matrix.LookAtLHToRef(_this.position, _this._target, BABYLON.Vector3.Up(), _this._viewMatrix);
                 scene.setTransformMatrix(_this._viewMatrix, _this._projectionMatrix);
+                scene._forcedViewPosition = _this.position;
             });
             this._renderTargetTexture.onAfterUnbindObservable.add(function () {
+                scene._forcedViewPosition = null;
                 scene.updateTransformMatrix(true);
             });
             if (scene.activeCamera) {

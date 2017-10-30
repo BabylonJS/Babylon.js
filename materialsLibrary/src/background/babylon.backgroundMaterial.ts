@@ -824,13 +824,8 @@ namespace BABYLON {
 
                 // Clip plane
                 MaterialHelper.BindClipPlane(this._activeEffect, scene);
-
-                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).globalPosition;
-                // var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
-                effect.setFloat3("vEyePosition",
-                    eyePosition.x,
-                    eyePosition.y,
-                    eyePosition.z);
+                
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             if (mustRebind || !this.isFrozen) {
