@@ -32,6 +32,7 @@ module INSPECTOR {
             this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
             this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
             this._sceneInstrumentation.captureFrameTime = true;
+            this._sceneInstrumentation.captureInterFrameTime = true;
 
             this._engineInstrumentation = new BABYLON.EngineInstrumentation(this._engine);
             this._engineInstrumentation.captureGPUFrameTime = true;
@@ -136,7 +137,7 @@ module INSPECTOR {
                 let elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.activeMeshesEvaluationTime.current)}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.activeMeshesEvaluationTimeCounter.current)}
                 });
                 elemLabel = this._createStatLabel("Render targets", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
@@ -172,7 +173,7 @@ module INSPECTOR {
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getInterFramePerfCounter())}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.frameInterTimeCounter.current)}
                 });       
                 elemLabel = this._createStatLabel("GPU Frame time", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);

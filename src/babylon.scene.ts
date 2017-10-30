@@ -250,6 +250,12 @@
         }
 
         /**
+        * An event triggered before animating the scene
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeAnimationsObservable = new Observable<Scene>();        
+
+        /**
         * An event triggered when the scene is ready
         * @type {BABYLON.Observable}
         */
@@ -752,7 +758,6 @@
         private _totalVertices = new PerfCounter();
         public _activeIndices = new PerfCounter();
         public _activeParticles = new PerfCounter();
-        private _interFrameDuration = new PerfCounter();
         public _particlesDuration = new PerfCounter();
         private _renderDuration = new PerfCounter();
         public _spritesDuration = new PerfCounter();
@@ -998,11 +1003,13 @@
 
         // Stats
         public getInterFramePerfCounter(): number {
-            return this._interFrameDuration.current;
+            Tools.Warn("getInterFramePerfCounter is deprecated. Please use SceneInstrumentation class");
+            return 0;
         }
 
-        public get interFramePerfCounter(): PerfCounter {
-            return this._interFrameDuration;
+        public get interFramePerfCounter(): Nullable<PerfCounter> {
+            Tools.Warn("interFramePerfCounter is deprecated. Please use SceneInstrumentation class");
+            return null;
         }
 
         public getLastFrameDuration(): number {
@@ -3200,7 +3207,6 @@
                 return;
             }
 
-            this._interFrameDuration.endMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
             this._activeParticles.fetchNewFrame();
@@ -3212,7 +3218,7 @@
             this._meshesForIntersections.reset();
             this.resetCachedMaterial();
 
-            Tools.StartPerformanceCounter("Scene rendering");
+            this.onBeforeAnimationsObservable.notifyObservers(this);
 
             // Actions
             if (this.actionManager) {
@@ -3414,8 +3420,6 @@
                 this.dumpNextRenderTargets = false;
             }
 
-            Tools.EndPerformanceCounter("Scene rendering");
-            this._interFrameDuration.beginMonitoring();  
             this._activeBones.addCount(0, true);
             this._activeIndices.addCount(0, true);
             this._activeParticles.addCount(0, true);
