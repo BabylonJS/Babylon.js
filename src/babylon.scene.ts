@@ -215,7 +215,7 @@
         }
 
         /**
-        * An event triggered before rendering the scene (right after animations and physcis)
+        * An event triggered before rendering the scene (right after animations and physics)
         * @type {BABYLON.Observable}
         */
         public onBeforeRenderObservable = new Observable<Scene>();
@@ -265,7 +265,19 @@
         * An event triggered after draw calls have been sent
         * @type {BABYLON.Observable}
         */
-        public onAfterDrawPhaseObservable = new Observable<Scene>();          
+        public onAfterDrawPhaseObservable = new Observable<Scene>();         
+        
+        /**
+        * An event triggered when physic simulation is about to be run
+        * @type {BABYLON.Observable}
+        */
+        public onBeforePhysicsObservable = new Observable<Scene>();          
+        
+        /**
+        * An event triggered when physic simulation has been done
+        * @type {BABYLON.Observable}
+        */
+        public onAfterPhysicsObservable = new Observable<Scene>();           
 
         /**
         * An event triggered when the scene is ready
@@ -3287,9 +3299,9 @@
 
                 // Physics
                 if (this._physicsEngine) {
-                   Tools.StartPerformanceCounter("Physics");
+                   this.onBeforePhysicsObservable.notifyObservers(this);
                    this._physicsEngine._step(defaultTimeStep);
-                   Tools.EndPerformanceCounter("Physics");
+                   this.onAfterPhysicsObservable.notifyObservers(this);
                 }
                 this._timeAccumulator -= defaultTimeStep;
 
@@ -3309,9 +3321,9 @@
 
               // Physics
               if (this._physicsEngine) {
-                 Tools.StartPerformanceCounter("Physics");
-                 this._physicsEngine._step(deltaTime / 1000.0);
-                 Tools.EndPerformanceCounter("Physics");
+                this.onBeforePhysicsObservable.notifyObservers(this);
+                this._physicsEngine._step(deltaTime / 1000.0);
+                this.onAfterPhysicsObservable.notifyObservers(this);
               }
             }
 
@@ -3693,6 +3705,8 @@
             this.onAfterSpritesRenderingObservable.clear();
             this.onBeforeDrawPhaseObservable.clear();
             this.onAfterDrawPhaseObservable.clear();
+            this.onBeforePhysicsObservable.clear();
+            this.onAfterPhysicsObservable.clear();
 
             this.detachControl();
 
