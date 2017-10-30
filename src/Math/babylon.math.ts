@@ -1315,15 +1315,18 @@
          * Return true is the vector is non uniform meaning x, y or z are not all the same.
          */
         public get isNonUniform(): boolean {
-            if (this.x !== this.y) {
+            let absX = Math.abs(this.x);
+            let absY = Math.abs(this.y);
+            if (absX !== absY) {
                 return true;
             }
 
-            if (this.x !== this.z) {
+            let absZ = Math.abs(this.z);
+            if (absX !== absZ) {
                 return true;
             }
 
-            if (this.y !== this.z) {
+            if (absY !== absZ) {
                 return true;
             }
 

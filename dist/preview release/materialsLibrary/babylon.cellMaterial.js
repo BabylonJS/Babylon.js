@@ -263,7 +263,7 @@ var BABYLON;
             BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], CellMaterial.prototype, "diffuseTexture", void 0);
         __decorate([
-            BABYLON.serializeAsColor3("diffuseColor")
+            BABYLON.serializeAsColor3("diffuse")
         ], CellMaterial.prototype, "diffuseColor", void 0);
         __decorate([
             BABYLON.serialize("computeHighLevel")

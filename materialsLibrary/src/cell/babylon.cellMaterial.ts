@@ -32,7 +32,7 @@ module BABYLON {
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public diffuseTexture: BaseTexture;
 
-        @serializeAsColor3("diffuseColor")
+        @serializeAsColor3("diffuse")
         public diffuseColor = new Color3(1, 1, 1);
 
         @serialize("computeHighLevel")

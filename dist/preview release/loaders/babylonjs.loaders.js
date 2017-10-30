@@ -3810,6 +3810,84 @@ var BABYLON;
                     _loop_2(index);
                 }
             };
+            /**
+             * Converts a data bufferview into a Float4 Texture Coordinate Array, based on the accessor component type
+             * @param {ArrayBufferView} data
+             * @param {IGLTFAccessor} accessor
+             */
+            GLTFLoader.prototype._convertToFloat4TextureCoordArray = function (context, data, accessor) {
+                if (accessor.componentType == GLTF2.EComponentType.FLOAT) {
+                    return data;
+                }
+                var buffer = data;
+                var factor = 1;
+                switch (accessor.componentType) {
+                    case GLTF2.EComponentType.UNSIGNED_BYTE: {
+                        factor = 1 / 255;
+                        break;
+                    }
+                    case GLTF2.EComponentType.UNSIGNED_SHORT: {
+                        factor = 1 / 65535;
+                        break;
+                    }
+                    default: {
+                        throw new Error(context + ": Invalid component type (" + accessor.componentType + ")");
+                    }
+                }
+                var result = new Float32Array(accessor.count * 2);
+                for (var i = 0; i < result.length; ++i) {
+                    result[i] = buffer[i] * factor;
+                }
+                return result;
+            };
+            /**
+             * Converts a data bufferview into a Float4 Color Array, based on the accessor component type
+             * @param {ArrayBufferView} data
+             * @param {IGLTFAccessor} accessor
+             */
+            GLTFLoader.prototype._convertToFloat4ColorArray = function (context, data, accessor) {
+                var colorComponentCount = this._getNumComponentsOfType(accessor.type);
+                if (colorComponentCount === 4 && accessor.componentType === GLTF2.EComponentType.FLOAT) {
+                    return data;
+                }
+                var buffer = data;
+                var factor = 1;
+                switch (accessor.componentType) {
+                    case GLTF2.EComponentType.FLOAT: {
+                        factor = 1;
+                        break;
+                    }
+                    case GLTF2.EComponentType.UNSIGNED_BYTE: {
+                        factor = 1 / 255;
+                        break;
+                    }
+                    case GLTF2.EComponentType.UNSIGNED_SHORT: {
+                        factor = 1 / 65535;
+                        break;
+                    }
+                    default: {
+                        throw new Error(context + ": Invalid component type (" + accessor.componentType + ")");
+                    }
+                }
+                var result = new Float32Array(accessor.count * 4);
+                if (colorComponentCount === 4) {
+                    for (var i = 0; i < result.length; ++i) {
+                        result[i] = buffer[i] * factor;
+                    }
+                }
+                else {
+                    var offset = 0;
+                    for (var i = 0; i < result.length; ++i) {
+                        if ((i + 1) % 4 === 0) {
+                            result[i] = 1;
+                        }
+                        else {
+                            result[i] = buffer[offset++] * factor;
+                        }
+                    }
+                }
+                return result;
+            };
             GLTFLoader.prototype._loadVertexDataAsync = function (context, mesh, primitive, onSuccess) {
                 var _this = this;
                 var attributes = primitive.attributes;
@@ -3839,19 +3917,20 @@ var BABYLON;
                                 vertexData.tangents = data;
                                 break;
                             case "TEXCOORD_0":
-                                vertexData.uvs = data;
+                                vertexData.uvs = _this._convertToFloat4TextureCoordArray(context, data, accessor);
                                 break;
                             case "TEXCOORD_1":
-                                vertexData.uvs2 = data;
+                                vertexData.uvs2 = _this._convertToFloat4TextureCoordArray(context, data, accessor);
                                 break;
                             case "JOINTS_0":
                                 vertexData.matricesIndices = new Float32Array(Array.prototype.slice.apply(data));
                                 break;
                             case "WEIGHTS_0":
+                                //TODO: need to add support for normalized weights.
                                 vertexData.matricesWeights = data;
                                 break;
                             case "COLOR_0":
-                                vertexData.colors = data;
+                                vertexData.colors = _this._convertToFloat4ColorArray(context, data, accessor);
                                 break;
                             default:
                                 BABYLON.Tools.Warn("Ignoring unrecognized attribute '" + attribute + "'");
@@ -4340,9 +4419,6 @@ var BABYLON;
                 var _this = this;
                 if (accessor.sparse) {
                     throw new Error(context + ": Sparse accessors are not currently supported");
-                }
-                if (accessor.normalized) {
-                    throw new Error(context + ": Normalized accessors are not currently supported");
                 }
                 var bufferView = GLTF2.GLTFUtils.GetArrayItem(this._gltf.bufferViews, accessor.bufferView);
                 if (!bufferView) {

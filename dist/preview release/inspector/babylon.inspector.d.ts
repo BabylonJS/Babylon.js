@@ -985,6 +985,7 @@ declare module INSPECTOR {
         private _glInfo;
         private _updateLoopHandler;
         private _sceneInstrumentation;
+        private _engineInstrumentation;
         constructor(tabbar: TabBar, insp: Inspector);
         private _createStatLabel(content, parent);
         /** Update each properties of the stats panel */

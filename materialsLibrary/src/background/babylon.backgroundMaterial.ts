@@ -142,20 +142,20 @@ namespace BABYLON {
         public secondaryLevel: float = 1;
 
         /**
-         * Third light Color (multiply against the B channel of the environement texture)
+         * Tertiary light Color (multiply against the B channel of the environement texture)
          */
         @serializeAsColor3()
-        protected _thirdColor: Color3;
+        protected _tertiaryColor: Color3;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public thirdColor = BABYLON.Color3.Black();
+        public tertiaryColor = BABYLON.Color3.Black();
 
         /**
-         * Third light Level (allowing HDR output of the background)
+         * Tertiary light Level (allowing HDR output of the background)
          */
         @serialize()
-        protected _thirdLevel: float;
+        protected _tertiaryLevel: float;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public thirdLevel: float = 1;
+        public tertiaryLevel: float = 1;
 
         /**
          * Reflection Texture used in the material.
@@ -636,7 +636,7 @@ namespace BABYLON {
                         "vFogInfos", "vFogColor", "pointSize",
                         "vClipPlane", "mBones", 
 
-                        "vPrimaryColor", "vSecondaryColor", "vThirdColor",
+                        "vPrimaryColor", "vSecondaryColor", "vTertiaryColor",
                         "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos",
 
                         "shadowLevel", "alpha",
@@ -699,7 +699,7 @@ namespace BABYLON {
             // Order is important !
             this._uniformBuffer.addUniform("vPrimaryColor", 4);
             this._uniformBuffer.addUniform("vSecondaryColor", 4);
-            this._uniformBuffer.addUniform("vThirdColor", 4);
+            this._uniformBuffer.addUniform("vTertiaryColor", 4);
             this._uniformBuffer.addUniform("vDiffuseInfos", 2);
             this._uniformBuffer.addUniform("vReflectionInfos", 2);
             this._uniformBuffer.addUniform("diffuseMatrix", 16);
@@ -798,7 +798,7 @@ namespace BABYLON {
 
                     this._uniformBuffer.updateColor4("vPrimaryColor", this._primaryColor, this._primaryLevel);
                     this._uniformBuffer.updateColor4("vSecondaryColor", this._secondaryColor, this._secondaryLevel);
-                    this._uniformBuffer.updateColor4("vThirdColor", this._thirdColor, this._thirdLevel);
+                    this._uniformBuffer.updateColor4("vTertiaryColor", this._tertiaryColor, this._tertiaryLevel);
                 }
 
                 // Textures

@@ -317,7 +317,7 @@ var BABYLON;
             BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], FireMaterial.prototype, "opacityTexture", void 0);
         __decorate([
-            BABYLON.serialize("diffuseColor")
+            BABYLON.serializeAsColor3("diffuse")
         ], FireMaterial.prototype, "diffuseColor", void 0);
         __decorate([
             BABYLON.serialize()

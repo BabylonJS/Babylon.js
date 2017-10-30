@@ -17,6 +17,7 @@ module INSPECTOR {
         private _updateLoopHandler : any;
 
         private _sceneInstrumentation: BABYLON.SceneInstrumentation;
+        private _engineInstrumentation: BABYLON.EngineInstrumentation;
 
         constructor(tabbar:TabBar, insp:Inspector) {
             super(tabbar, 'Stats');        
@@ -29,6 +30,11 @@ module INSPECTOR {
 
             this._sceneInstrumentation = new BABYLON.SceneInstrumentation(this._scene);
             this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
+            this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
+            this._sceneInstrumentation.captureFrameTime = true;
+
+            this._engineInstrumentation = new BABYLON.EngineInstrumentation(this._engine);
+            this._engineInstrumentation.captureGPUFrameTime = true;
 
             // Build the stats panel: a div that will contains all stats
             this._panel             = Helpers.CreateDiv('tab-panel') as HTMLDivElement; 
@@ -136,7 +142,7 @@ module INSPECTOR {
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getRenderTargetsDuration())}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.renderTargetsRenderTimeCounter.current)}
                 });
                 elemLabel = this._createStatLabel("Particles", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
@@ -160,19 +166,31 @@ module INSPECTOR {
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getLastFrameDuration())}
-                });
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.frameTimeCounter.current)}
+                });                
                 elemLabel = this._createStatLabel("Inter-frame", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
                     updateFct:() => { return BABYLON.Tools.Format(this._scene.getInterFramePerfCounter())}
-                });                
+                });       
+                elemLabel = this._createStatLabel("GPU Frame time", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return BABYLON.Tools.Format(this._engineInstrumentation.gpuFrameTimeCounter.current * 0.000001)}
+                });                  
+                elemLabel = this._createStatLabel("GPU Frame time (average)", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return BABYLON.Tools.Format(this._engineInstrumentation.gpuFrameTimeCounter.average * 0.000001)}
+                });                                 
                 elemLabel = this._createStatLabel("Potential FPS", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(1000.0 / this._scene.getLastFrameDuration(), 0)}
+                    updateFct:() => { return BABYLON.Tools.Format(1000.0 / this._sceneInstrumentation.frameTimeCounter.current, 0)}
                 });
                 elemLabel = this._createStatLabel("Resolution", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);

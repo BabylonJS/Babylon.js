@@ -486,6 +486,94 @@ module BABYLON.GLTF2 {
             }
         }
 
+        /**
+         * Converts a data bufferview into a Float4 Texture Coordinate Array, based on the accessor component type
+         * @param {ArrayBufferView} data 
+         * @param {IGLTFAccessor} accessor 
+         */
+        private _convertToFloat4TextureCoordArray(context: string, data: ArrayBufferView, accessor: IGLTFAccessor): Float32Array {
+            if (accessor.componentType == EComponentType.FLOAT) {
+                return data as Float32Array;
+            }
+
+            const buffer = data as TypedArray;
+            let factor = 1;
+
+            switch (accessor.componentType) {
+                case EComponentType.UNSIGNED_BYTE: {
+                    factor = 1 / 255;
+                    break;
+                }
+                case EComponentType.UNSIGNED_SHORT: {
+                    factor = 1 / 65535;
+                    break;
+                }
+                default: {
+                    throw new Error(context + ": Invalid component type (" + accessor.componentType + ")");
+                }
+            }
+
+            const result = new Float32Array(accessor.count * 2);
+            for (let i = 0; i < result.length; ++i) {
+                result[i] = buffer[i] * factor;
+            }
+
+            return result;
+        }
+
+        /**
+         * Converts a data bufferview into a Float4 Color Array, based on the accessor component type
+         * @param {ArrayBufferView} data 
+         * @param {IGLTFAccessor} accessor 
+         */
+        private _convertToFloat4ColorArray(context: string, data: ArrayBufferView, accessor: IGLTFAccessor): Float32Array {
+            const colorComponentCount = this._getNumComponentsOfType(accessor.type);
+            if (colorComponentCount === 4 && accessor.componentType === EComponentType.FLOAT) {
+                return data as Float32Array;
+            }
+
+            const buffer = data as TypedArray;
+            let factor = 1;
+
+            switch (accessor.componentType) {
+                case EComponentType.FLOAT: {
+                    factor = 1;
+                    break;
+                }
+                case EComponentType.UNSIGNED_BYTE: {
+                    factor = 1 / 255;
+                    break;
+                }
+                case EComponentType.UNSIGNED_SHORT: {
+                    factor = 1 / 65535;
+                    break;
+                }
+                default: {
+                    throw new Error(context + ": Invalid component type (" + accessor.componentType + ")");
+                }
+            }
+
+            const result = new Float32Array(accessor.count * 4);
+            if (colorComponentCount === 4) {
+                for (let i = 0; i < result.length; ++i) {
+                    result[i] = buffer[i] * factor;
+                }
+            }
+            else {
+                let offset = 0;
+                for (let i = 0; i < result.length; ++i) {
+                    if ((i + 1) % 4 === 0) {
+                        result[i] = 1;
+                    }
+                    else {
+                        result[i] = buffer[offset++] * factor;
+                    }
+                }
+            }
+
+            return result;
+        }
+
         private _loadVertexDataAsync(context: string, mesh: IGLTFMesh, primitive: IGLTFMeshPrimitive, onSuccess: (vertexData: VertexData) => void): void {
             const attributes = primitive.attributes;
             if (!attributes) {
@@ -518,19 +606,20 @@ module BABYLON.GLTF2 {
                             vertexData.tangents = <Float32Array>data;
                             break;
                         case "TEXCOORD_0":
-                            vertexData.uvs = <Float32Array>data;
+                            vertexData.uvs = this._convertToFloat4TextureCoordArray(context, data, accessor);
                             break;
                         case "TEXCOORD_1":
-                            vertexData.uvs2 = <Float32Array>data;
+                            vertexData.uvs2 = this._convertToFloat4TextureCoordArray(context, data, accessor);
                             break;
                         case "JOINTS_0":
                             vertexData.matricesIndices = new Float32Array(Array.prototype.slice.apply(data));
                             break;
                         case "WEIGHTS_0":
+                            //TODO: need to add support for normalized weights.
                             vertexData.matricesWeights = <Float32Array>data;
                             break;
                         case "COLOR_0":
-                            vertexData.colors = <Float32Array>data;
+                            vertexData.colors = this._convertToFloat4ColorArray(context, data, accessor);
                             break;
                         default:
                             Tools.Warn("Ignoring unrecognized attribute '" + attribute + "'");
@@ -1062,10 +1151,6 @@ module BABYLON.GLTF2 {
         private _loadAccessorAsync(context: string, accessor: IGLTFAccessor, onSuccess: (data: ArrayBufferView) => void): void {
             if (accessor.sparse) {
                 throw new Error(context + ": Sparse accessors are not currently supported");
-            }
-
-            if (accessor.normalized) {
-                throw new Error(context + ": Normalized accessors are not currently supported");
             }
 
             const bufferView = GLTFUtils.GetArrayItem(this._gltf.bufferViews, <number>accessor.bufferView);
