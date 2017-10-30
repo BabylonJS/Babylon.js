@@ -122,7 +122,7 @@ export class Template {
 
     private fragment: DocumentFragment;
 
-    constructor(public name: string, private configuration: TemplateConfiguration) {
+    constructor(public name: string, private _configuration: TemplateConfiguration) {
         this.onInit = new Observable<Template>();
         this.onLoaded = new Observable<Template>();
         this.onAppended = new Observable<Template>();
@@ -137,12 +137,12 @@ export class Template {
         */
         this.onInit.notifyObservers(this);
 
-        let htmlContentPromise = getTemplateAsHtml(configuration);
+        let htmlContentPromise = getTemplateAsHtml(_configuration);
 
         htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
                 let compiledTemplate = Handlebars.compile(htmlTemplate);
-                let config = this.configuration.config || {};
+                let config = this._configuration.config || {};
                 let rawHtml = compiledTemplate(config);
                 this.fragment = document.createRange().createContextualFragment(rawHtml);
                 this.isLoaded = true;
@@ -151,14 +151,18 @@ export class Template {
         });
     }
 
+    public get configuration(): TemplateConfiguration {
+        return this._configuration;
+    }
+
     public appendTo(parent: HTMLElement) {
         if (this.parent) {
             console.error('Alread appanded to ', this.parent);
         } else {
             this.parent = parent;
 
-            if (this.configuration.id) {
-                this.parent.id = this.configuration.id;
+            if (this._configuration.id) {
+                this.parent.id = this._configuration.id;
             }
             this.parent.appendChild(this.fragment);
             // appended only one frame after.
@@ -199,18 +203,18 @@ export class Template {
 
     // TODO - Should events be removed as well? when are templates disposed?
     private registerEvents() {
-        if (this.configuration.events) {
-            Object.keys(this.configuration.events).forEach(eventName => {
-                if (this.configuration.events && this.configuration.events[eventName]) {
+        if (this._configuration.events) {
+            Object.keys(this._configuration.events).forEach(eventName => {
+                if (this._configuration.events && this._configuration.events[eventName]) {
                     let functionToFire = (selector, event) => {
                         this.onEventTriggered.notifyObservers({ event: event, template: this, selector: selector });
                     }
 
                     // if boolean, set the parent as the event listener
-                    if (typeof this.configuration.events[eventName] === 'boolean') {
+                    if (typeof this._configuration.events[eventName] === 'boolean') {
                         this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
                     } else {
-                        let selectorsArray: Array<string> = <Array<string>>this.configuration.events[eventName];
+                        let selectorsArray: Array<string> = <Array<string>>this._configuration.events[eventName];
                         selectorsArray.forEach(selector => {
                             let htmlElement = <HTMLElement>this.parent.querySelector(selector);
                             htmlElement && htmlElement.addEventListener(eventName, functionToFire.bind(this, selector), false)
