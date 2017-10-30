@@ -6,7 +6,7 @@ export interface ITemplateConfiguration {
     location?: string; // #template-id OR http://example.com/loading.html
     html?: string; // raw html string
     id?: string;
-    config?: { [key: string]: string | number | boolean | object };
+    params?: { [key: string]: string | number | boolean | object };
     events?: {
         // pointer events
         pointerdown?: boolean | Array<string>;
@@ -180,7 +180,7 @@ export class Template {
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
                 let compiledTemplate = Handlebars.compile(htmlTemplate);
-                let config = this._configuration.config || {};
+                let config = this._configuration.params || {};
                 let rawHtml = compiledTemplate(config);
                 this.fragment = document.createRange().createContextualFragment(rawHtml);
                 this.isLoaded = true;
