@@ -42,11 +42,15 @@ export class DefaultViewer extends AbstractViewer {
                 navbar.parent.style.bottom = show ? '0px' : '-' + navbarHeight;
                 navbarShown = show;
             } else {
+                let visibilityTimeout = 2000;
+                if (navbar.configuration.params && navbar.configuration.params.visibilityTimeout !== undefined) {
+                    visibilityTimeout = <number>navbar.configuration.params.visibilityTimeout;
+                }
                 // not showing? set timeout until it is removed.
                 timeoutCancel = setTimeout(function () {
                     navbar.parent.style.bottom = '-' + navbarHeight;
                     navbarShown = show;
-                }, navbar.configuration.config ? navbar.configuration.config.visibilityTimeout || 2000 : 2000);
+                }, visibilityTimeout);
             }
         }
 
