@@ -195,8 +195,8 @@ export let defaultConfiguration: ViewerConfiguration = {
                                     image: require('../../assets/img/fullscreen.png')
                                 }
                             ],
-                            visibilityTimeout: 2000,
-                            disableOnFullscreen: false
+                            visibilityTimeout: 2000/*,
+                            disableOnFullscreen: false*/
                         },
                         events: {
                             pointerdown: ['#fullscreen-button']
