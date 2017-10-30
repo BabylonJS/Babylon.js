@@ -3670,6 +3670,10 @@ var INSPECTOR;
             _this._glInfo = _this._engine.getGlInfo();
             _this._sceneInstrumentation = new BABYLON.SceneInstrumentation(_this._scene);
             _this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
+            _this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
+            _this._sceneInstrumentation.captureFrameTime = true;
+            _this._engineInstrumentation = new BABYLON.EngineInstrumentation(_this._engine);
+            _this._engineInstrumentation.captureGPUFrameTime = true;
             // Build the stats panel: a div that will contains all stats
             _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
             _this._panel.classList.add("stats-panel");
@@ -3762,7 +3766,7 @@ var INSPECTOR;
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.activeMeshesEvaluationTime.current); }
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.renderTargetsRenderTimeCounter.current); }
                 });
                 elemLabel = _this._createStatLabel("Particles", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
@@ -3786,7 +3790,7 @@ var INSPECTOR;
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getLastFrameDuration()); }
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.frameTimeCounter.current); }
                 });
                 elemLabel = _this._createStatLabel("Inter-frame", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
@@ -3794,11 +3798,23 @@ var INSPECTOR;
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._scene.getInterFramePerfCounter()); }
                 });
+                elemLabel = _this._createStatLabel("GPU Frame time", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._engineInstrumentation.gpuFrameTimeCounter.current * 0.000001); }
+                });
+                elemLabel = _this._createStatLabel("GPU Frame time (average)", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._engineInstrumentation.gpuFrameTimeCounter.average * 0.000001); }
+                });
                 elemLabel = _this._createStatLabel("Potential FPS", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return BABYLON.Tools.Format(1000.0 / _this._scene.getLastFrameDuration(), 0); }
+                    updateFct: function () { return BABYLON.Tools.Format(1000.0 / _this._sceneInstrumentation.frameTimeCounter.current, 0); }
                 });
                 elemLabel = _this._createStatLabel("Resolution", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);

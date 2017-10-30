@@ -987,6 +987,18 @@ declare module BABYLON.GLTF2 {
         _loadNode(context: string, node: IGLTFNode): void;
         private _loadMesh(context, node, mesh);
         private _loadAllVertexDataAsync(context, mesh, onSuccess);
+        /**
+         * Converts a data bufferview into a Float4 Texture Coordinate Array, based on the accessor component type
+         * @param {ArrayBufferView} data
+         * @param {IGLTFAccessor} accessor
+         */
+        private _convertToFloat4TextureCoordArray(context, data, accessor);
+        /**
+         * Converts a data bufferview into a Float4 Color Array, based on the accessor component type
+         * @param {ArrayBufferView} data
+         * @param {IGLTFAccessor} accessor
+         */
+        private _convertToFloat4ColorArray(context, data, accessor);
         private _loadVertexDataAsync(context, mesh, primitive, onSuccess);
         private _createMorphTargets(context, node, mesh);
         private _loadMorphTargets(context, node, mesh);
