@@ -12,7 +12,7 @@ module BABYLON.GLTF2 {
 
         protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean { return false; }
 
-        protected _loadExtension<T>(property: IGLTFProperty, action: (extension: T, onComplete: () => void) => void): boolean {
+        protected _loadExtension<T>(context: string, property: IGLTFProperty, action: (context: string, extension: T, onComplete: () => void) => void): boolean {
             if (!property.extensions) {
                 return false;
             }
@@ -25,11 +25,9 @@ module BABYLON.GLTF2 {
             // Clear out the extension before executing the action to avoid recursing into the same property.
             property.extensions[this.name] = undefined;
 
-            action(extension, () => {
+            action(context + "extensions/" + this.name, extension, () => {
                 // Restore the extension after completing the action.
-                if (property.extensions) {
-                    property.extensions[this.name] = extension;
-                }
+                property.extensions![this.name] = extension;
             });
 
             return true;
