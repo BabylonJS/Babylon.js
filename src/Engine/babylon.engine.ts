@@ -1129,7 +1129,7 @@
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
-            this._caps.timerQuery = this._gl.getExtension("EXT_disjoint_timer_query") || this._gl.getExtension('EXT_disjoint_timer_query_webgl2');
+            this._caps.timerQuery = this._gl.getExtension('EXT_disjoint_timer_query_webgl2') || this._gl.getExtension("EXT_disjoint_timer_query");
             if (this._caps.timerQuery) {
                 if (this._webGLVersion === 1) {
                     this._gl.getQuery = (<any>this._caps.timerQuery).getQueryEXT.bind(this._caps.timerQuery);
@@ -4842,6 +4842,8 @@
             this.onCanvasBlurObservable.clear();
             this.onCanvasFocusObservable.clear();
             this.onCanvasPointerOutObservable.clear();
+            this.onBeginFrameObservable.clear();
+            this.onEndFrameObservable.clear();
 
             BABYLON.Effect.ResetCache();
         }

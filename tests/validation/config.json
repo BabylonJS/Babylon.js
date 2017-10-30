@@ -203,7 +203,7 @@
     },
     {
       "title": "GLTF LOD",
-      "renderCount": 100,
+      "renderCount": 500,
       "playgroundId": "#TC80RU#41",
       "referenceImage": "GLTF LOD.png"
     },
