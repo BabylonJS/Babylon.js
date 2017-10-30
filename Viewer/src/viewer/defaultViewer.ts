@@ -236,7 +236,7 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     public hideOverlayScreen() {
-        return this.templateManager.getTemplate('loadingScreen').hide((template => {
+        return this.templateManager.getTemplate('overlay').hide((template => {
             template.parent.style.opacity = "0";
             let onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);

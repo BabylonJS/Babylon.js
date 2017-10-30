@@ -189,17 +189,23 @@ export let defaultConfiguration: ViewerConfiguration = {
                         html: require("../../assets/templates/default/navbar.html"),
                         config: {
                             buttons: [
+                                /*{
+                                    id: 'help-button',
+                                    altText: "Help",
+                                    image: require('../../assets/img/help-circle.png')
+                                },*/
                                 {
                                     id: 'fullscreen-button',
                                     altText: "Fullscreen",
                                     image: require('../../assets/img/fullscreen.png')
-                                }
+                                },
+
                             ],
                             visibilityTimeout: 2000/*,
                             disableOnFullscreen: false*/
                         },
                         events: {
-                            pointerdown: ['#fullscreen-button']
+                            pointerdown: ['#fullscreen-button'/*, '#help-button'*/]
                         }
                     }
                 }
@@ -216,6 +222,10 @@ export let defaultConfiguration: ViewerConfiguration = {
                     error: {
                         html: require("../../assets/templates/default/error.html")
                     }
+                },
+                config: {
+                    closeImage: require('../../assets/img/close.png'),
+                    closeText: 'Close'
                 }
             }
         }
