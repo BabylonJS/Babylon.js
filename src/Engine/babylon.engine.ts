@@ -5150,6 +5150,7 @@
             return this.isQueryResultAvailable(query);
         }
 
+        private _currentNonTimestampToken: Nullable<_TimeToken>;
         public startTimeQuery(): Nullable<_TimeToken> {
             let timerQuery = this._caps.timerQuery;
             if (!timerQuery) {
@@ -5163,12 +5164,19 @@
 
                 timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
             } else {
+                if (this._currentNonTimestampToken)
+                {
+                    return this._currentNonTimestampToken;
+                }
+
                 token._timeElapsedQuery = this._createTimeQuery();
                 if (timerQuery.beginQueryEXT) {
                     timerQuery.beginQueryEXT(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
                 } else {
                     this._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
                 }
+
+                this._currentNonTimestampToken = token;
             }
             return token;
         }
@@ -5230,6 +5238,7 @@
                     this._deleteTimeQuery(token._timeElapsedQuery);
                     token._timeElapsedQuery = null;
                     token._timeElapsedQueryEnded = false;
+                    this._currentNonTimestampToken = null;
                 }
                 return result;
             }
