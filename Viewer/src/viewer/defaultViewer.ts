@@ -28,43 +28,55 @@ export class DefaultViewer extends AbstractViewer {
         let navbarHeight = navbar.parent.clientHeight + 'px';
 
         let navbarShown: boolean = true;
+        let timeoutCancel /*: number*/;
 
-        viewerElement.parent.addEventListener('pointerout', () => {
-            if (navbarShown) return;
-            navbar.parent.style.bottom = '0px';
-            navbarShown = true;
-        });
-
-        let timeoutCancel;
-
-        viewerElement.parent.addEventListener('pointerdown', () => {
-            if (!navbarShown) return;
-            navbar.parent.style.bottom = '-' + navbarHeight;
-            navbarShown = false;
-
-            if (timeoutCancel) {
-                clearTimeout(timeoutCancel);
+        let triggerNavbar = function (show: boolean = false, evt: PointerEvent) {
+            // only left-click on no-button.
+            if (evt.button > 0) return;
+            // clear timeout
+            timeoutCancel && clearTimeout(timeoutCancel);
+            // if state is the same, do nothing
+            if (show === navbarShown) return;
+            //showing? simply show it!
+            if (show) {
+                navbar.parent.style.bottom = show ? '0px' : '-' + navbarHeight;
+                navbarShown = show;
+            } else {
+                let visibilityTimeout = 2000;
+                if (navbar.configuration.params && navbar.configuration.params.visibilityTimeout !== undefined) {
+                    visibilityTimeout = <number>navbar.configuration.params.visibilityTimeout;
+                }
+                // not showing? set timeout until it is removed.
+                timeoutCancel = setTimeout(function () {
+                    navbar.parent.style.bottom = '-' + navbarHeight;
+                    navbarShown = show;
+                }, visibilityTimeout);
             }
-        });
+        }
 
-        viewerElement.parent.addEventListener('pointerup', () => {
-            if (timeoutCancel) {
-                clearTimeout(timeoutCancel);
-            }
 
-            timeoutCancel = setTimeout(() => {
-                navbar.parent.style.bottom = '0px';
-                navbarShown = true;
-            }, 2000)
-        });
+
+        viewerElement.parent.addEventListener('pointerout', triggerNavbar.bind(this, false));
+        viewerElement.parent.addEventListener('pointerdown', triggerNavbar.bind(this, true));
+        viewerElement.parent.addEventListener('pointerup', triggerNavbar.bind(this, false));
+        navbar.parent.addEventListener('pointerover', triggerNavbar.bind(this, true))
+        // triggerNavbar(false);
+
+        // close overlay button
+        let closeButton = document.getElementById('close-button');
+        if (closeButton) {
+            closeButton.addEventListener('pointerdown', () => {
+                this.hideOverlayScreen();
+            })
+        }
 
         // events registration
-        this.registerFullscreenMode();
+        this.registerNavbarButtons();
 
         return super.onTemplatesLoaded();
     }
 
-    private registerFullscreenMode() {
+    private registerNavbarButtons() {
         let isFullscreen = false;
 
         let navbar = this.templateManager.getTemplate('navBar');
@@ -75,20 +87,22 @@ export class DefaultViewer extends AbstractViewer {
                 case 'pointerdown':
                     let event: PointerEvent = <PointerEvent>data.event;
                     if (event.button === 0) {
-                        if (data.selector === '#fullscreen-button') {
-                            //this.engine.switchFullscreen(false);
-                            if (!isFullscreen) {
-                                let requestFullScreen = viewerElement.requestFullscreen || /*viewerElement.parent.msRequestFullscreen || viewerElement.parent.mozRequestFullScreen ||*/ viewerElement.webkitRequestFullscreen;
-                                requestFullScreen.call(viewerElement);
-                            } else {
-                                let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen
-                                exitFullscreen.call(document);
-                            }
+                        switch (data.selector) {
+                            case '#fullscreen-button':
+                                if (!isFullscreen) {
+                                    let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen; // || viewerElement.parent.msRequestFullscreen || viewerElement.parent.mozRequestFullScreen 
+                                    requestFullScreen.call(viewerElement);
+                                } else {
+                                    let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen
+                                    exitFullscreen.call(document);
+                                }
 
-                            isFullscreen = !isFullscreen;
-
+                                isFullscreen = !isFullscreen;
+                                break;
+                            case '#help-button':
+                                this.showOverlayScreen('help');
+                                break;
                         }
-
                     }
                     break;
             }
@@ -103,7 +117,10 @@ export class DefaultViewer extends AbstractViewer {
 
     public loadModel(model: any = this.configuration.model): Promise<Scene> {
         this.showLoadingScreen();
-        return super.loadModel(model, true);
+        return super.loadModel(model, true).catch(() => {
+            this.showOverlayScreen('error');
+            return this.scene;
+        });
     }
 
     public onModelLoaded(meshes: Array<AbstractMesh>) {
@@ -205,6 +222,49 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         return Promise.resolve(this.scene);
+    }
+
+    public showOverlayScreen(subScreen: string) {
+        return this.templateManager.getTemplate('overlay').show((template => {
+
+            var canvasRect = this.containerElement.getBoundingClientRect();
+            var canvasPositioning = window.getComputedStyle(this.containerElement).position;
+
+            template.parent.style.display = 'flex';
+            template.parent.style.width = canvasRect.width + "px";
+            template.parent.style.height = canvasRect.height + "px";
+            template.parent.style.opacity = "1";
+
+            return this.templateManager.getTemplate(subScreen).show((template => {
+                template.parent.style.display = 'flex';
+                return Promise.resolve(template);
+            }));
+        }));
+    }
+
+    public hideOverlayScreen() {
+        return this.templateManager.getTemplate('overlay').hide((template => {
+            template.parent.style.opacity = "0";
+            let onTransitionEnd = () => {
+                template.parent.removeEventListener("transitionend", onTransitionEnd);
+                template.parent.style.display = 'none';
+            }
+            template.parent.addEventListener("transitionend", onTransitionEnd);
+
+            let overlays = template.parent.querySelectorAll('.overlay');
+            if (overlays) {
+                for (let i = 0; i < overlays.length; ++i) {
+                    let htmlElement = <HTMLElement>overlays.item(i);
+                    htmlElement.style.display = 'none';
+                }
+            }
+
+            /*return this.templateManager.getTemplate(subScreen).show((template => {
+                template.parent.style.display = 'none';
+                return Promise.resolve(template);
+            }));*/
+            return Promise.resolve(template);
+        }));
     }
 
     public showLoadingScreen() {

@@ -1,13 +1,12 @@
 
 import { Observable } from 'babylonjs';
-import { isUrl, loadFile, camelToKebab } from './helper';
+import { isUrl, loadFile, camelToKebab, kebabToCamel } from './helper';
 
-
-export interface TemplateConfiguration {
+export interface ITemplateConfiguration {
     location?: string; // #template-id OR http://example.com/loading.html
     html?: string; // raw html string
     id?: string;
-    config?: { [key: string]: string | number | boolean | object };
+    params?: { [key: string]: string | number | boolean | object };
     events?: {
         // pointer events
         pointerdown?: boolean | Array<string>;
@@ -26,7 +25,6 @@ export interface TemplateConfiguration {
 
         [key: string]: boolean | Array<string> | undefined;
     }
-    children?: { [name: string]: TemplateConfiguration };
 }
 
 export interface EventCallback {
@@ -54,18 +52,18 @@ export class TemplateManager {
         this.onAllLoaded = new Observable<TemplateManager>();
     }
 
-    public initTemplate(configuration: TemplateConfiguration, name: string = 'main', parentTemplate?: Template) {
-        //init template
-        let template = new Template(name, configuration);
-        this.templates[name] = template;
+    public initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
 
-        let childrenMap = configuration.children || {};
-        let childrenTemplates = Object.keys(childrenMap).map(name => {
-            return this.initTemplate(childrenMap[name], name, template);
-        });
+        let internalInit = (dependencyMap, name: string, parentTemplate?: Template) => {
+            //init template
+            let template = this.templates[name];
 
-        // register the observers
-        template.onLoaded.add(() => {
+            let childrenTemplates = Object.keys(dependencyMap).map(childName => {
+                return internalInit(dependencyMap[childName], childName, template);
+            });
+
+            // register the observers
+            //template.onLoaded.add(() => {
             let addToParent = () => {
                 let containingElement = parentTemplate && parentTemplate.parent.querySelector(camelToKebab(name)) || this.containerElement;
                 template.appendTo(containingElement);
@@ -79,9 +77,47 @@ export class TemplateManager {
             } else {
                 addToParent();
             }
+            //});
+
+            return template;
+        }
+
+        //build the html tree
+        let htmlTree = this.buildHTMLTree(templates).then(htmlTree => {
+            internalInit(htmlTree, 'main');
+        });
+    }
+
+    /**
+     * 
+     * This function will create a simple map with child-dependencies of the template html tree.
+     * It will compile each template, check if its children exist in the configuration and will add them if they do.
+     * It is expected that the main template will be called main!
+     * 
+     * @private
+     * @param {{ [key: string]: ITemplateConfiguration }} templates 
+     * @memberof TemplateManager
+     */
+    private buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
+        let promises = Object.keys(templates).map(name => {
+            let template = new Template(name, templates[name]);
+            this.templates[name] = template;
         });
 
-        return template;
+        return Promise.all(promises).then(() => {
+            let templateStructure = {};
+            // now iterate through all templates and check for children:
+            let buildTree = (parentObject, name) => {
+                let childNodes = this.templates[name].getChildElements().filter(n => !!this.templates[n]);
+                childNodes.forEach(element => {
+                    parentObject[element] = {};
+                    buildTree(parentObject[element], element);
+                });
+            }
+
+            buildTree(templateStructure, "main");
+            return templateStructure;
+        });
     }
 
     // assumiung only ONE(!) canvas
@@ -120,9 +156,11 @@ export class Template {
 
     public parent: HTMLElement;
 
+    public initPromise: Promise<Template>;
+
     private fragment: DocumentFragment;
 
-    constructor(public name: string, private configuration: TemplateConfiguration) {
+    constructor(public name: string, private _configuration: ITemplateConfiguration) {
         this.onInit = new Observable<Template>();
         this.onLoaded = new Observable<Template>();
         this.onAppended = new Observable<Template>();
@@ -137,28 +175,41 @@ export class Template {
         */
         this.onInit.notifyObservers(this);
 
-        let htmlContentPromise = getTemplateAsHtml(configuration);
+        let htmlContentPromise = getTemplateAsHtml(_configuration);
 
-        htmlContentPromise.then(htmlTemplate => {
+        this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
                 let compiledTemplate = Handlebars.compile(htmlTemplate);
-                let config = this.configuration.config || {};
+                let config = this._configuration.params || {};
                 let rawHtml = compiledTemplate(config);
                 this.fragment = document.createRange().createContextualFragment(rawHtml);
                 this.isLoaded = true;
                 this.onLoaded.notifyObservers(this);
             }
+            return this;
         });
+    }
+
+    public get configuration(): ITemplateConfiguration {
+        return this._configuration;
+    }
+
+    public getChildElements(): Array<string> {
+        let childrenArray: string[] = [];
+        for (let i = 0; i < this.fragment.children.length; ++i) {
+            childrenArray.push(kebabToCamel(this.fragment.children.item(i).nodeName.toLowerCase()));
+        }
+        return childrenArray;
     }
 
     public appendTo(parent: HTMLElement) {
         if (this.parent) {
-            console.error('Alread appanded to ', this.parent);
+            console.error('Already appanded to ', this.parent);
         } else {
             this.parent = parent;
 
-            if (this.configuration.id) {
-                this.parent.id = this.configuration.id;
+            if (this._configuration.id) {
+                this.parent.id = this._configuration.id;
             }
             this.parent.appendChild(this.fragment);
             // appended only one frame after.
@@ -199,18 +250,18 @@ export class Template {
 
     // TODO - Should events be removed as well? when are templates disposed?
     private registerEvents() {
-        if (this.configuration.events) {
-            Object.keys(this.configuration.events).forEach(eventName => {
-                if (this.configuration.events && this.configuration.events[eventName]) {
+        if (this._configuration.events) {
+            Object.keys(this._configuration.events).forEach(eventName => {
+                if (this._configuration.events && this._configuration.events[eventName]) {
                     let functionToFire = (selector, event) => {
                         this.onEventTriggered.notifyObservers({ event: event, template: this, selector: selector });
                     }
 
                     // if boolean, set the parent as the event listener
-                    if (typeof this.configuration.events[eventName] === 'boolean') {
+                    if (typeof this._configuration.events[eventName] === 'boolean') {
                         this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
                     } else {
-                        let selectorsArray: Array<string> = <Array<string>>this.configuration.events[eventName];
+                        let selectorsArray: Array<string> = <Array<string>>this._configuration.events[eventName];
                         selectorsArray.forEach(selector => {
                             let htmlElement = <HTMLElement>this.parent.querySelector(selector);
                             htmlElement && htmlElement.addEventListener(eventName, functionToFire.bind(this, selector), false)
@@ -223,7 +274,7 @@ export class Template {
 
 }
 
-export function getTemplateAsHtml(templateConfig: TemplateConfiguration): Promise<string> {
+export function getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
     if (!templateConfig) {
         return Promise.reject('No templateConfig provided');
     } else if (templateConfig.html) {

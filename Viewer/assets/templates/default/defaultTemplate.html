@@ -24,7 +24,20 @@
         width: 100%;
         height: 100%;
     }
+
+    overlay {
+        position: absolute;
+        z-index: 99;
+        opacity: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        -webkit-transition: opacity 1s ease;
+        -moz-transition: opacity 1s ease;
+        transition: opacity 1s ease;
+    }
 </style>
 
 <viewer></viewer>
 <loading-screen></loading-screen>
+<overlay></overlay>

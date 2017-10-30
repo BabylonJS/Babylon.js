@@ -29,12 +29,12 @@ export abstract class AbstractViewer {
         configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
             this.configuration = configuration;
             // initialize the templates
-            let templateConfiguration = this.configuration.template || {};
+            let templateConfiguration = this.configuration.templates || {};
             this.templateManager.initTemplate(templateConfiguration);
             // when done, execute onTemplatesLoaded()
             this.templateManager.onAllLoaded.add(() => {
                 this.onTemplatesLoaded();
-            })
+            });
         });
 
     }
