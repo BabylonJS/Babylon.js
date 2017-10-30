@@ -12,6 +12,9 @@ module BABYLON {
         private _captureFrameTime = false;
         private _frameTime = new PerfCounter();        
 
+        private _captureInterFrameTime = false;
+        private _interFrameTime = new PerfCounter();              
+
         // Observers
         private _onBeforeActiveMeshesEvaluationObserver: Nullable<Observer<Scene>> = null;
         private _onAfterActiveMeshesEvaluationObserver: Nullable<Observer<Scene>> = null;
@@ -20,12 +23,14 @@ module BABYLON {
 
         private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
         private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
+        
+        private _onBeforeAnimationsObserver: Nullable<Observer<Scene>> = null;
                 
         // Properties
         /**
          * Gets the perf counter used for active meshes evaluation time
          */
-        public get activeMeshesEvaluationTime(): PerfCounter {
+        public get activeMeshesEvaluationTimeCounter(): PerfCounter {
             return this._activeMeshesEvaluationTime;
         }
 
@@ -43,6 +48,8 @@ module BABYLON {
             if (value === this._captureActiveMeshesEvaluationTime) {
                 return;
             }
+
+            this._captureActiveMeshesEvaluationTime = value;            
 
             if (value) {
                 this._onBeforeActiveMeshesEvaluationObserver = this.scene.onBeforeActiveMeshesEvaluationObservable.add(()=>{
@@ -85,6 +92,8 @@ module BABYLON {
                 return;
             }
 
+            this._captureRenderTargetsRenderTime = value;
+
             if (value) {
                 this._onBeforeRenderTargetsRenderObserver = this.scene.OnBeforeRenderTargetsRenderObservable.add(()=>{
                     Tools.StartPerformanceCounter("Render targets rendering");
@@ -123,9 +132,44 @@ module BABYLON {
          */        
         public set captureFrameTime(value: boolean) {
             this._captureFrameTime = value;
-        }          
+        }       
+     
+        /**
+         * Gets the perf counter used for inter-frames time capture
+         */
+        public get frameInterTimeCounter(): PerfCounter {
+            return this._interFrameTime;
+        }               
+       
+        /**
+         * Gets the inter-frames time capture status
+         */        
+        public get captureInterFrameTime(): boolean {
+            return this._captureInterFrameTime;
+        }        
+
+        /**
+         * Enable or disable the inter-frames time capture
+         */        
+        public set captureInterFrameTime(value: boolean) {
+            if (value === this._captureInterFrameTime) {
+                return;
+            }
+
+            this._captureInterFrameTime = value;
+
+            if (value) {
+                this._onBeforeAnimationsObserver = this.scene.onBeforeAnimationsObservable.add(()=>{
+                    this._interFrameTime.endMonitoring(); 
+                });
+            } else {
+                this.scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
+                this._onBeforeAnimationsObserver = null;
+            }
+        }     
     
         public constructor(public scene: Scene) {
+            // Before render
             this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
                 if (this._captureActiveMeshesEvaluationTime) {
                     this._activeMeshesEvaluationTime.fetchNewFrame();
@@ -138,14 +182,19 @@ module BABYLON {
                 if (this._captureFrameTime) {
                     Tools.StartPerformanceCounter("Scene rendering");
                     this._frameTime.beginMonitoring();
-                }           
+                }   
             });
 
+            // After render
             this._onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
                 if (this._captureFrameTime) {
                     Tools.EndPerformanceCounter("Scene rendering");
                     this._frameTime.endMonitoring();                    
                 }
+
+                if (this._captureInterFrameTime) {
+                    this._interFrameTime.beginMonitoring();  
+                }                
             });
         }
 
@@ -166,8 +215,11 @@ module BABYLON {
             this._onBeforeRenderTargetsRenderObserver = null;   
             
             this.scene.OnAfterRenderTargetsRenderObservable.remove(this._onAfterRenderTargetsRenderObserver);
-            this._onAfterRenderTargetsRenderObserver = null;            
-        
+            this._onAfterRenderTargetsRenderObserver = null;      
+            
+            this.scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
+            this._onBeforeAnimationsObserver = null;
+                
             (<any>this.scene) = null;
         }
     }

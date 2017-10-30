@@ -39,6 +39,8 @@ module BABYLON {
                 return;
             }
 
+            this._captureGPUFrameTime = value;                 
+
             if (value) {
                 this._onBeginFrameObserver = this.engine.onBeginFrameObservable.add(()=>{
                     if (!this._gpuFrameTimeToken) {
@@ -87,6 +89,8 @@ module BABYLON {
             if (value === this._captureShaderCompilationTime) {
                 return;
             }
+
+            this._captureShaderCompilationTime = value;                
 
             if (value) {
                 this._onBeforeShaderCompilationObserver = this.engine.onBeforeShaderCompilationObservable.add(()=>{

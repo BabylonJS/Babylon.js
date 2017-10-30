@@ -17330,6 +17330,11 @@ var BABYLON;
             */
             this.onAfterRenderObservable = new BABYLON.Observable();
             /**
+            * An event triggered before animating the scene
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeAnimationsObservable = new BABYLON.Observable();
+            /**
             * An event triggered when the scene is ready
             * @type {BABYLON.Observable}
             */
@@ -17553,7 +17558,6 @@ var BABYLON;
             this._totalVertices = new BABYLON.PerfCounter();
             this._activeIndices = new BABYLON.PerfCounter();
             this._activeParticles = new BABYLON.PerfCounter();
-            this._interFrameDuration = new BABYLON.PerfCounter();
             this._particlesDuration = new BABYLON.PerfCounter();
             this._renderDuration = new BABYLON.PerfCounter();
             this._spritesDuration = new BABYLON.PerfCounter();
@@ -18062,11 +18066,13 @@ var BABYLON;
         });
         // Stats
         Scene.prototype.getInterFramePerfCounter = function () {
-            return this._interFrameDuration.current;
+            BABYLON.Tools.Warn("getInterFramePerfCounter is deprecated. Please use SceneInstrumentation class");
+            return 0;
         };
         Object.defineProperty(Scene.prototype, "interFramePerfCounter", {
             get: function () {
-                return this._interFrameDuration;
+                BABYLON.Tools.Warn("interFramePerfCounter is deprecated. Please use SceneInstrumentation class");
+                return null;
             },
             enumerable: true,
             configurable: true
@@ -19925,7 +19931,6 @@ var BABYLON;
             if (this.isDisposed) {
                 return;
             }
-            this._interFrameDuration.endMonitoring();
             this._particlesDuration.fetchNewFrame();
             this._spritesDuration.fetchNewFrame();
             this._activeParticles.fetchNewFrame();
@@ -19936,7 +19941,7 @@ var BABYLON;
             this.getEngine().drawCallsPerfCounter.fetchNewFrame();
             this._meshesForIntersections.reset();
             this.resetCachedMaterial();
-            BABYLON.Tools.StartPerformanceCounter("Scene rendering");
+            this.onBeforeAnimationsObservable.notifyObservers(this);
             // Actions
             if (this.actionManager) {
                 this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger);
@@ -20098,8 +20103,6 @@ var BABYLON;
             if (this.dumpNextRenderTargets) {
                 this.dumpNextRenderTargets = false;
             }
-            BABYLON.Tools.EndPerformanceCounter("Scene rendering");
-            this._interFrameDuration.beginMonitoring();
             this._activeBones.addCount(0, true);
             this._activeIndices.addCount(0, true);
             this._activeParticles.addCount(0, true);
@@ -24229,12 +24232,19 @@ var BABYLON;
                 }
                 for (var index = 0; index < morphTargetManager.numInfluencers; index++) {
                     var morphTarget = morphTargetManager.getActiveTarget(index);
-                    this.geometry.setVerticesData(BABYLON.VertexBuffer.PositionKind + index, morphTarget.getPositions(), false, 3);
-                    if (morphTarget.hasNormals) {
-                        this.geometry.setVerticesData(BABYLON.VertexBuffer.NormalKind + index, morphTarget.getNormals(), false, 3);
+                    var positions = morphTarget.getPositions();
+                    if (!positions) {
+                        BABYLON.Tools.Error("Invalid morph target. Target must have positions.");
+                        return;
                     }
-                    if (morphTarget.hasTangents) {
-                        this.geometry.setVerticesData(BABYLON.VertexBuffer.TangentKind + index, morphTarget.getTangents(), false, 3);
+                    this.geometry.setVerticesData(BABYLON.VertexBuffer.PositionKind + index, positions, false, 3);
+                    var normals = morphTarget.getNormals();
+                    if (normals) {
+                        this.geometry.setVerticesData(BABYLON.VertexBuffer.NormalKind + index, normals, false, 3);
+                    }
+                    var tangents = morphTarget.getTangents();
+                    if (tangents) {
+                        this.geometry.setVerticesData(BABYLON.VertexBuffer.TangentKind + index, tangents, false, 3);
                     }
                 }
             }
@@ -68653,6 +68663,9 @@ var BABYLON;
             if (influence === void 0) { influence = 0; }
             this.name = name;
             this.animations = new Array();
+            this._positions = null;
+            this._normals = null;
+            this._tangents = null;
             this.onInfluenceChanged = new BABYLON.Observable();
             this.influence = influence;
         }
@@ -68673,34 +68686,41 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(MorphTarget.prototype, "hasPositions", {
+            get: function () {
+                return !!this._positions;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(MorphTarget.prototype, "hasNormals", {
             get: function () {
-                return this._normals !== undefined;
+                return !!this._normals;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(MorphTarget.prototype, "hasTangents", {
             get: function () {
-                return this._tangents !== undefined;
+                return !!this._tangents;
             },
             enumerable: true,
             configurable: true
         });
         MorphTarget.prototype.setPositions = function (data) {
-            this._positions = new Float32Array(data);
+            this._positions = data;
         };
         MorphTarget.prototype.getPositions = function () {
             return this._positions;
         };
         MorphTarget.prototype.setNormals = function (data) {
-            this._normals = new Float32Array(data);
+            this._normals = data;
         };
         MorphTarget.prototype.getNormals = function () {
             return this._normals;
         };
         MorphTarget.prototype.setTangents = function (data) {
-            this._tangents = new Float32Array(data);
+            this._tangents = data;
         };
         MorphTarget.prototype.getTangents = function () {
             return this._tangents;
@@ -68843,12 +68863,6 @@ var BABYLON;
         };
         MorphTargetManager.prototype.addTarget = function (target) {
             var _this = this;
-            if (this._vertexCount) {
-                if (this._vertexCount !== target.getPositions().length / 3) {
-                    BABYLON.Tools.Error("Incompatible target. Targets must all have the same vertices count.");
-                    return;
-                }
-            }
             this._targets.push(target);
             this._targetObservable.push(target.onInfluenceChanged.add(function (needUpdate) {
                 _this._syncActiveTargets(needUpdate);
@@ -68860,7 +68874,6 @@ var BABYLON;
             if (index >= 0) {
                 this._targets.splice(index, 1);
                 target.onInfluenceChanged.remove(this._targetObservable.splice(index, 1)[0]);
-                this._vertexCount = 0;
                 this._syncActiveTargets(true);
             }
         };
@@ -68883,6 +68896,7 @@ var BABYLON;
             this._activeTargets.reset();
             this._supportsNormals = true;
             this._supportsTangents = true;
+            this._vertexCount = 0;
             for (var _i = 0, _a = this._targets; _i < _a.length; _i++) {
                 var target = _a[_i];
                 if (target.influence > 0) {
@@ -68890,8 +68904,18 @@ var BABYLON;
                     this._tempInfluences[influenceCount++] = target.influence;
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
                     this._supportsTangents = this._supportsTangents && target.hasTangents;
+                    var positions = target.getPositions();
+                    if (!positions) {
+                        BABYLON.Tools.Error("Invalid target. Target must positions.");
+                        return;
+                    }
+                    var vertexCount = positions.length / 3;
                     if (this._vertexCount === 0) {
-                        this._vertexCount = target.getPositions().length / 3;
+                        this._vertexCount = vertexCount;
+                    }
+                    else if (this._vertexCount !== vertexCount) {
+                        BABYLON.Tools.Error("Incompatible target. Targets must all have the same vertices count.");
+                        return;
                     }
                 }
             }
@@ -74799,6 +74823,7 @@ var BABYLON;
                 if (value === this._captureGPUFrameTime) {
                     return;
                 }
+                this._captureGPUFrameTime = value;
                 if (value) {
                     this._onBeginFrameObserver = this.engine.onBeginFrameObservable.add(function () {
                         if (!_this._gpuFrameTimeToken) {
@@ -74852,6 +74877,7 @@ var BABYLON;
                 if (value === this._captureShaderCompilationTime) {
                     return;
                 }
+                this._captureShaderCompilationTime = value;
                 if (value) {
                     this._onBeforeShaderCompilationObserver = this.engine.onBeforeShaderCompilationObservable.add(function () {
                         _this._shaderCompilationTime.fetchNewFrame();
@@ -74904,6 +74930,8 @@ var BABYLON;
             this._renderTargetsRenderTime = new BABYLON.PerfCounter();
             this._captureFrameTime = false;
             this._frameTime = new BABYLON.PerfCounter();
+            this._captureInterFrameTime = false;
+            this._interFrameTime = new BABYLON.PerfCounter();
             // Observers
             this._onBeforeActiveMeshesEvaluationObserver = null;
             this._onAfterActiveMeshesEvaluationObserver = null;
@@ -74911,6 +74939,8 @@ var BABYLON;
             this._onAfterRenderTargetsRenderObserver = null;
             this._onBeforeRenderObserver = null;
             this._onAfterRenderObserver = null;
+            this._onBeforeAnimationsObserver = null;
+            // Before render
             this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(function () {
                 if (_this._captureActiveMeshesEvaluationTime) {
                     _this._activeMeshesEvaluationTime.fetchNewFrame();
@@ -74923,14 +74953,18 @@ var BABYLON;
                     _this._frameTime.beginMonitoring();
                 }
             });
+            // After render
             this._onAfterRenderObserver = scene.onAfterRenderObservable.add(function () {
                 if (_this._captureFrameTime) {
                     BABYLON.Tools.EndPerformanceCounter("Scene rendering");
                     _this._frameTime.endMonitoring();
                 }
+                if (_this._captureInterFrameTime) {
+                    _this._interFrameTime.beginMonitoring();
+                }
             });
         }
-        Object.defineProperty(SceneInstrumentation.prototype, "activeMeshesEvaluationTime", {
+        Object.defineProperty(SceneInstrumentation.prototype, "activeMeshesEvaluationTimeCounter", {
             // Properties
             /**
              * Gets the perf counter used for active meshes evaluation time
@@ -74956,6 +74990,7 @@ var BABYLON;
                 if (value === this._captureActiveMeshesEvaluationTime) {
                     return;
                 }
+                this._captureActiveMeshesEvaluationTime = value;
                 if (value) {
                     this._onBeforeActiveMeshesEvaluationObserver = this.scene.onBeforeActiveMeshesEvaluationObservable.add(function () {
                         BABYLON.Tools.StartPerformanceCounter("Active meshes evaluation");
@@ -75001,6 +75036,7 @@ var BABYLON;
                 if (value === this._captureRenderTargetsRenderTime) {
                     return;
                 }
+                this._captureRenderTargetsRenderTime = value;
                 if (value) {
                     this._onBeforeRenderTargetsRenderObserver = this.scene.OnBeforeRenderTargetsRenderObservable.add(function () {
                         BABYLON.Tools.StartPerformanceCounter("Render targets rendering");
@@ -75047,6 +75083,45 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(SceneInstrumentation.prototype, "frameInterTimeCounter", {
+            /**
+             * Gets the perf counter used for inter-frames time capture
+             */
+            get: function () {
+                return this._interFrameTime;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneInstrumentation.prototype, "captureInterFrameTime", {
+            /**
+             * Gets the inter-frames time capture status
+             */
+            get: function () {
+                return this._captureInterFrameTime;
+            },
+            /**
+             * Enable or disable the inter-frames time capture
+             */
+            set: function (value) {
+                var _this = this;
+                if (value === this._captureInterFrameTime) {
+                    return;
+                }
+                this._captureInterFrameTime = value;
+                if (value) {
+                    this._onBeforeAnimationsObserver = this.scene.onBeforeAnimationsObservable.add(function () {
+                        _this._interFrameTime.endMonitoring();
+                    });
+                }
+                else {
+                    this.scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
+                    this._onBeforeAnimationsObserver = null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         SceneInstrumentation.prototype.dispose = function () {
             this.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
@@ -75060,6 +75135,8 @@ var BABYLON;
             this._onBeforeRenderTargetsRenderObserver = null;
             this.scene.OnAfterRenderTargetsRenderObservable.remove(this._onAfterRenderTargetsRenderObserver);
             this._onAfterRenderTargetsRenderObserver = null;
+            this.scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
+            this._onBeforeAnimationsObserver = null;
             this.scene = null;
         };
         return SceneInstrumentation;
@@ -76150,72 +76227,60 @@ var BABYLON;
         GLTFFileLoader.prototype.dispose = function () {
             if (this._loader) {
                 this._loader.dispose();
-                this._loader = null;
             }
         };
         GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
-            var loaderData = GLTFFileLoader._parse(data, onError);
-            if (!loaderData) {
-                return;
+            try {
+                var loaderData = GLTFFileLoader._parse(data);
+                if (this.onParsed) {
+                    this.onParsed(loaderData);
+                }
+                this._loader = this._getLoader(loaderData);
+                this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
-            if (this.onParsed) {
-                this.onParsed(loaderData);
+            catch (e) {
+                onError(e.message);
             }
-            this._loader = this._getLoader(loaderData, onError);
-            if (!this._loader) {
-                return;
-            }
-            this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         };
         GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
-            var loaderData = GLTFFileLoader._parse(data, onError);
-            if (!loaderData) {
-                return;
+            try {
+                var loaderData = GLTFFileLoader._parse(data);
+                if (this.onParsed) {
+                    this.onParsed(loaderData);
+                }
+                this._loader = this._getLoader(loaderData);
+                this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
-            if (this.onParsed) {
-                this.onParsed(loaderData);
+            catch (e) {
+                onError(e.message);
             }
-            this._loader = this._getLoader(loaderData, onError);
-            if (!this._loader) {
-                return;
-            }
-            return this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
         };
         GLTFFileLoader.prototype.canDirectLoad = function (data) {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         };
-        GLTFFileLoader._parse = function (data, onError) {
-            try {
-                if (data instanceof ArrayBuffer) {
-                    return GLTFFileLoader._parseBinary(data, onError);
-                }
-                return {
-                    json: JSON.parse(data),
-                    bin: null
-                };
+        GLTFFileLoader._parse = function (data) {
+            if (data instanceof ArrayBuffer) {
+                return GLTFFileLoader._parseBinary(data);
             }
-            catch (e) {
-                onError(e.message);
-                return null;
-            }
+            return {
+                json: JSON.parse(data),
+                bin: null
+            };
         };
-        GLTFFileLoader.prototype._getLoader = function (loaderData, onError) {
+        GLTFFileLoader.prototype._getLoader = function (loaderData) {
             var loaderVersion = { major: 2, minor: 0 };
             var asset = loaderData.json.asset || {};
             var version = GLTFFileLoader._parseVersion(asset.version);
             if (!version) {
-                onError("Invalid version: " + asset.version);
-                return null;
+                throw new Error("Invalid version: " + asset.version);
             }
             if (asset.minVersion !== undefined) {
                 var minVersion = GLTFFileLoader._parseVersion(asset.minVersion);
                 if (!minVersion) {
-                    onError("Invalid minimum version: " + asset.minVersion);
-                    return null;
+                    throw new Error("Invalid minimum version: " + asset.minVersion);
                 }
                 if (GLTFFileLoader._compareVersion(minVersion, loaderVersion) > 0) {
-                    onError("Incompatible minimum version: " + asset.minVersion);
-                    return null;
+                    throw new Error("Incompatible minimum version: " + asset.minVersion);
                 }
             }
             var createLoaders = {
@@ -76224,48 +76289,45 @@ var BABYLON;
             };
             var createLoader = createLoaders[version.major];
             if (!createLoader) {
-                onError("Unsupported version: " + asset.version);
-                return null;
+                throw new Error("Unsupported version: " + asset.version);
             }
             return createLoader(this);
         };
-        GLTFFileLoader._parseBinary = function (data, onError) {
+        GLTFFileLoader._parseBinary = function (data) {
             var Binary = {
                 Magic: 0x46546C67
             };
             var binaryReader = new BinaryReader(data);
             var magic = binaryReader.readUint32();
             if (magic !== Binary.Magic) {
-                onError("Unexpected magic: " + magic);
-                return null;
+                throw new Error("Unexpected magic: " + magic);
             }
             var version = binaryReader.readUint32();
             switch (version) {
-                case 1: return GLTFFileLoader._parseV1(binaryReader, onError);
-                case 2: return GLTFFileLoader._parseV2(binaryReader, onError);
+                case 1: return GLTFFileLoader._parseV1(binaryReader);
+                case 2: return GLTFFileLoader._parseV2(binaryReader);
             }
-            onError("Unsupported version: " + version);
-            return null;
+            throw new Error("Unsupported version: " + version);
         };
-        GLTFFileLoader._parseV1 = function (binaryReader, onError) {
+        GLTFFileLoader._parseV1 = function (binaryReader) {
             var ContentFormat = {
                 JSON: 0
             };
             var length = binaryReader.readUint32();
             if (length != binaryReader.getLength()) {
-                onError("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
-                return null;
+                throw new Error("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
             }
             var contentLength = binaryReader.readUint32();
             var contentFormat = binaryReader.readUint32();
             var content;
             switch (contentFormat) {
-                case ContentFormat.JSON:
+                case ContentFormat.JSON: {
                     content = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(contentLength)));
                     break;
-                default:
-                    onError("Unexpected content format: " + contentFormat);
-                    return null;
+                }
+                default: {
+                    throw new Error("Unexpected content format: " + contentFormat);
+                }
             }
             var bytesRemaining = binaryReader.getLength() - binaryReader.getPosition();
             var body = binaryReader.readUint8Array(bytesRemaining);
@@ -76274,22 +76336,20 @@ var BABYLON;
                 bin: body
             };
         };
-        GLTFFileLoader._parseV2 = function (binaryReader, onError) {
+        GLTFFileLoader._parseV2 = function (binaryReader) {
             var ChunkFormat = {
                 JSON: 0x4E4F534A,
                 BIN: 0x004E4942
             };
             var length = binaryReader.readUint32();
             if (length !== binaryReader.getLength()) {
-                onError("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
-                return null;
+                throw new Error("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
             }
             // JSON chunk
             var chunkLength = binaryReader.readUint32();
             var chunkFormat = binaryReader.readUint32();
             if (chunkFormat !== ChunkFormat.JSON) {
-                onError("First chunk format is not JSON");
-                return null;
+                throw new Error("First chunk format is not JSON");
             }
             var json = JSON.parse(GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(chunkLength)));
             // Look for BIN chunk
@@ -76298,16 +76358,18 @@ var BABYLON;
                 var chunkLength_1 = binaryReader.readUint32();
                 var chunkFormat_1 = binaryReader.readUint32();
                 switch (chunkFormat_1) {
-                    case ChunkFormat.JSON:
-                        onError("Unexpected JSON chunk");
-                        return null;
-                    case ChunkFormat.BIN:
+                    case ChunkFormat.JSON: {
+                        throw new Error("Unexpected JSON chunk");
+                    }
+                    case ChunkFormat.BIN: {
                         bin = binaryReader.readUint8Array(chunkLength_1);
                         break;
-                    default:
+                    }
+                    default: {
                         // ignore unrecognized chunkFormat
                         binaryReader.skipBytes(chunkLength_1);
                         break;
+                    }
                 }
             }
             return {
@@ -77799,12 +77861,12 @@ var BABYLON;
                             importMaterials(gltfRuntime);
                             postLoad(gltfRuntime);
                             if (!BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                                onSuccess(meshes, null, skeletons);
+                                onSuccess(meshes, [], skeletons);
                             }
                         });
                     }, onProgress);
                     if (BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                        onSuccess(meshes, null, skeletons);
+                        onSuccess(meshes, [], skeletons);
                     }
                 }, onError);
                 return true;
@@ -78626,26 +78688,11 @@ var BABYLON;
                         }
                     }
                 }
-                this._gltf = undefined;
-                this._babylonScene = undefined;
-                this._parent = undefined;
-                this._rootUrl = undefined;
-                this._defaultMaterial = undefined;
-                this._rootNode = undefined;
-                this._successCallback = undefined;
-                this._progressCallback = undefined;
-                this._errorCallback = undefined;
-                this._renderReady = false;
-                this._requests = undefined;
-                this._renderReadyObservable = undefined;
-                this._renderPendingCount = 0;
-                this._loaderPendingCount = 0;
-                this._loaderTrackers = undefined;
             };
             GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
                 var _this = this;
                 this._loadAsync(meshesNames, scene, data, rootUrl, function () {
-                    onSuccess(_this._getMeshes(), null, _this._getSkeletons());
+                    onSuccess(_this._getMeshes(), [], _this._getSkeletons());
                 }, onProgress, onError);
             };
             GLTFLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
@@ -78660,37 +78707,13 @@ var BABYLON;
                     _this._successCallback = onSuccess;
                     _this._progressCallback = onProgress;
                     _this._errorCallback = onError;
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.accessors);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.animations);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.buffers);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.bufferViews);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.images);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.materials);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.meshes);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.nodes);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.scenes);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.skins);
-                    GLTF2.GLTFUtils.AssignIndices(_this._gltf.textures);
                     _this._addPendingData(_this);
                     _this._loadDefaultScene(nodeNames);
                     _this._loadAnimations();
                     _this._removePendingData(_this);
                 });
             };
-            GLTFLoader.prototype._onError = function (message) {
-                if (this._disposed) {
-                    return;
-                }
-                BABYLON.Tools.Error("glTF Loader: " + message);
-                if (this._errorCallback) {
-                    this._errorCallback(message);
-                }
-                this.dispose();
-            };
             GLTFLoader.prototype._onProgress = function (event) {
-                if (this._disposed) {
-                    return;
-                }
                 if (this._progressCallback) {
                     this._progressCallback(event);
                 }
@@ -78704,9 +78727,7 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._onRenderReady = function () {
-                if (this._rootNode.babylonMesh) {
-                    this._rootNode.babylonMesh.setEnabled(true);
-                }
+                this._rootNode.babylonMesh.setEnabled(true);
                 this._startAnimations();
                 this._successCallback();
                 this._renderReadyObservable.notifyObservers(this);
@@ -78719,6 +78740,18 @@ var BABYLON;
             };
             GLTFLoader.prototype._loadData = function (data) {
                 this._gltf = data.json;
+                // Assign the index of each object for convinience.
+                GLTFLoader._AssignIndices(this._gltf.accessors);
+                GLTFLoader._AssignIndices(this._gltf.animations);
+                GLTFLoader._AssignIndices(this._gltf.buffers);
+                GLTFLoader._AssignIndices(this._gltf.bufferViews);
+                GLTFLoader._AssignIndices(this._gltf.images);
+                GLTFLoader._AssignIndices(this._gltf.materials);
+                GLTFLoader._AssignIndices(this._gltf.meshes);
+                GLTFLoader._AssignIndices(this._gltf.nodes);
+                GLTFLoader._AssignIndices(this._gltf.scenes);
+                GLTFLoader._AssignIndices(this._gltf.skins);
+                GLTFLoader._AssignIndices(this._gltf.textures);
                 if (data.bin) {
                     var buffers = this._gltf.buffers;
                     if (buffers && buffers[0] && !buffers[0].uri) {
@@ -78734,7 +78767,9 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._getMeshes = function () {
-                var meshes = [this._rootNode.babylonMesh];
+                var meshes = new Array();
+                // Root mesh is always first.
+                meshes.push(this._rootNode.babylonMesh);
                 var nodes = this._gltf.nodes;
                 if (nodes) {
                     for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
@@ -78752,7 +78787,7 @@ var BABYLON;
                 if (skins) {
                     for (var _i = 0, skins_1 = skins; _i < skins_1.length; _i++) {
                         var skin = skins_1[_i];
-                        if (skin.babylonSkeleton instanceof BABYLON.Skeleton) {
+                        if (skin.babylonSkeleton) {
                             skeletons.push(skin.babylonSkeleton);
                         }
                     }
@@ -78777,7 +78812,7 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._loadDefaultScene = function (nodeNames) {
-                var scene = GLTF2.GLTFUtils.GetArrayItem(this._gltf.scenes, this._gltf.scene || 0);
+                var scene = GLTFLoader._GetProperty(this._gltf.scenes, this._gltf.scene || 0);
                 if (!scene) {
                     throw new Error("Failed to find scene " + (this._gltf.scene || 0));
                 }
@@ -78786,21 +78821,25 @@ var BABYLON;
             GLTFLoader.prototype._loadScene = function (context, scene, nodeNames) {
                 this._rootNode = { babylonMesh: new BABYLON.Mesh("__root__", this._babylonScene) };
                 switch (this._parent.coordinateSystemMode) {
-                    case BABYLON.GLTFLoaderCoordinateSystemMode.AUTO:
-                        if (!this._babylonScene.useRightHandedSystem && this._rootNode.babylonMesh) {
+                    case BABYLON.GLTFLoaderCoordinateSystemMode.AUTO: {
+                        if (!this._babylonScene.useRightHandedSystem) {
                             this._rootNode.babylonMesh.rotation = new BABYLON.Vector3(0, Math.PI, 0);
                             this._rootNode.babylonMesh.scaling = new BABYLON.Vector3(1, 1, -1);
                         }
                         break;
-                    case BABYLON.GLTFLoaderCoordinateSystemMode.PASS_THROUGH:
+                    }
+                    case BABYLON.GLTFLoaderCoordinateSystemMode.PASS_THROUGH: {
                         // do nothing
                         break;
-                    case BABYLON.GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED:
+                    }
+                    case BABYLON.GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED: {
                         this._babylonScene.useRightHandedSystem = true;
                         break;
-                    default:
-                        BABYLON.Tools.Error("Invalid coordinate system mode (" + this._parent.coordinateSystemMode + ")");
+                    }
+                    default: {
+                        BABYLON.Tools.Error("Invalid coordinate system mode " + this._parent.coordinateSystemMode);
                         return;
+                    }
                 }
                 var nodeIndices = scene.nodes;
                 this._traverseNodes(context, nodeIndices, function (node, parentNode) {
@@ -78823,35 +78862,34 @@ var BABYLON;
                 }
                 for (var _i = 0, nodeIndices_1 = nodeIndices; _i < nodeIndices_1.length; _i++) {
                     var index = nodeIndices_1[_i];
-                    var node = GLTF2.GLTFUtils.GetArrayItem(this._gltf.nodes, index);
+                    var node = GLTFLoader._GetProperty(this._gltf.nodes, index);
                     if (!node) {
                         throw new Error(context + ": Failed to find node " + index);
                     }
                     this._loadNode("#/nodes/" + index, node);
                 }
                 // Disable the root mesh until the asset is ready to render.
-                if (this._rootNode.babylonMesh) {
-                    this._rootNode.babylonMesh.setEnabled(false);
-                }
+                this._rootNode.babylonMesh.setEnabled(false);
             };
             GLTFLoader.prototype._loadNode = function (context, node) {
+                node.babylonBones = {};
+                node.babylonAnimationTargets = [];
                 if (GLTF2.GLTFLoaderExtension.LoadNode(this, context, node)) {
                     return;
                 }
                 node.babylonMesh = new BABYLON.Mesh(node.name || "mesh" + node.index, this._babylonScene);
                 this._loadTransform(node);
                 if (node.mesh != null) {
-                    var mesh = GLTF2.GLTFUtils.GetArrayItem(this._gltf.meshes, node.mesh);
+                    var mesh = GLTFLoader._GetProperty(this._gltf.meshes, node.mesh);
                     if (!mesh) {
                         throw new Error(context + ": Failed to find mesh " + node.mesh);
                     }
                     this._loadMesh("#/meshes/" + node.mesh, node, mesh);
                 }
-                node.babylonMesh.parent = (node.parent ? node.parent.babylonMesh : null);
-                node.babylonAnimationTargets = node.babylonAnimationTargets || [];
+                node.babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
                 node.babylonAnimationTargets.push(node.babylonMesh);
                 if (node.skin != null) {
-                    var skin = GLTF2.GLTFUtils.GetArrayItem(this._gltf.skins, node.skin);
+                    var skin = GLTFLoader._GetProperty(this._gltf.skins, node.skin);
                     if (!skin) {
                         throw new Error(context + ": Failed to find skin " + node.skin);
                     }
@@ -78863,7 +78901,7 @@ var BABYLON;
                 if (node.children) {
                     for (var _i = 0, _a = node.children; _i < _a.length; _i++) {
                         var index = _a[_i];
-                        var childNode = GLTF2.GLTFUtils.GetArrayItem(this._gltf.nodes, index);
+                        var childNode = GLTFLoader._GetProperty(this._gltf.nodes, index);
                         if (!childNode) {
                             throw new Error(context + ": Failed to find child node " + index);
                         }
@@ -78873,19 +78911,12 @@ var BABYLON;
             };
             GLTFLoader.prototype._loadMesh = function (context, node, mesh) {
                 var _this = this;
-                if (!node.babylonMesh) {
-                    return;
-                }
-                node.babylonMesh.name = node.babylonMesh.name || mesh.name || "";
                 var primitives = mesh.primitives;
                 if (!primitives || primitives.length === 0) {
                     throw new Error(context + ": Primitives are missing");
                 }
                 this._createMorphTargets(context, node, mesh);
                 this._loadAllVertexDataAsync(context, mesh, function () {
-                    if (!node.babylonMesh) {
-                        return;
-                    }
                     _this._loadMorphTargets(context, node, mesh);
                     var vertexData = new BABYLON.VertexData();
                     for (var _i = 0, primitives_1 = primitives; _i < primitives_1.length; _i++) {
@@ -78917,7 +78948,7 @@ var BABYLON;
                         subMaterials[index] = this_1._getDefaultMaterial();
                     }
                     else {
-                        var material_1 = GLTF2.GLTFUtils.GetArrayItem(this_1._gltf.materials, primitive.material);
+                        var material_1 = GLTFLoader._GetProperty(this_1._gltf.materials, primitive.material);
                         if (!material_1) {
                             throw new Error(context + ": Failed to find material " + primitive.material);
                         }
@@ -78999,7 +79030,7 @@ var BABYLON;
              * @param {IGLTFAccessor} accessor
              */
             GLTFLoader.prototype._convertToFloat4ColorArray = function (context, data, accessor) {
-                var colorComponentCount = this._getNumComponentsOfType(accessor.type);
+                var colorComponentCount = GLTFLoader._GetNumComponents(accessor.type);
                 if (colorComponentCount === 4 && accessor.componentType === GLTF2.EComponentType.FLOAT) {
                     return data;
                 }
@@ -79054,40 +79085,49 @@ var BABYLON;
                 var vertexData = new BABYLON.VertexData();
                 var numRemainingAttributes = Object.keys(attributes).length;
                 var _loop_3 = function (attribute) {
-                    var accessor = GLTF2.GLTFUtils.GetArrayItem(this_3._gltf.accessors, attributes[attribute]);
+                    var accessor = GLTFLoader._GetProperty(this_3._gltf.accessors, attributes[attribute]);
                     if (!accessor) {
                         throw new Error(context + ": Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
                     }
                     this_3._loadAccessorAsync("#/accessors/" + accessor.index, accessor, function (data) {
                         switch (attribute) {
-                            case "NORMAL":
-                                vertexData.normals = data;
-                                break;
-                            case "POSITION":
+                            case "POSITION": {
                                 vertexData.positions = data;
                                 break;
-                            case "TANGENT":
+                            }
+                            case "NORMAL": {
+                                vertexData.normals = data;
+                                break;
+                            }
+                            case "TANGENT": {
                                 vertexData.tangents = data;
                                 break;
-                            case "TEXCOORD_0":
+                            }
+                            case "TEXCOORD_0": {
                                 vertexData.uvs = _this._convertToFloat4TextureCoordArray(context, data, accessor);
                                 break;
-                            case "TEXCOORD_1":
+                            }
+                            case "TEXCOORD_1": {
                                 vertexData.uvs2 = _this._convertToFloat4TextureCoordArray(context, data, accessor);
                                 break;
-                            case "JOINTS_0":
+                            }
+                            case "JOINTS_0": {
                                 vertexData.matricesIndices = new Float32Array(Array.prototype.slice.apply(data));
                                 break;
-                            case "WEIGHTS_0":
+                            }
+                            case "WEIGHTS_0": {
                                 //TODO: need to add support for normalized weights.
                                 vertexData.matricesWeights = data;
                                 break;
-                            case "COLOR_0":
+                            }
+                            case "COLOR_0": {
                                 vertexData.colors = _this._convertToFloat4ColorArray(context, data, accessor);
                                 break;
-                            default:
+                            }
+                            default: {
                                 BABYLON.Tools.Warn("Ignoring unrecognized attribute '" + attribute + "'");
                                 break;
+                            }
                         }
                         if (--numRemainingAttributes === 0) {
                             if (primitive.indices == null) {
@@ -79098,7 +79138,7 @@ var BABYLON;
                                 onSuccess(vertexData);
                             }
                             else {
-                                var indicesAccessor = GLTF2.GLTFUtils.GetArrayItem(_this._gltf.accessors, primitive.indices);
+                                var indicesAccessor = GLTFLoader._GetProperty(_this._gltf.accessors, primitive.indices);
                                 if (!indicesAccessor) {
                                     throw new Error(context + ": Failed to find indices accessor " + primitive.indices);
                                 }
@@ -79118,7 +79158,7 @@ var BABYLON;
             GLTFLoader.prototype._createMorphTargets = function (context, node, mesh) {
                 var primitives = mesh.primitives;
                 var targets = primitives[0].targets;
-                if (!targets || !node.babylonMesh) {
+                if (!targets) {
                     return;
                 }
                 for (var _i = 0, primitives_2 = primitives; _i < primitives_2.length; _i++) {
@@ -79135,9 +79175,6 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._loadMorphTargets = function (context, node, mesh) {
-                if (!node.babylonMesh) {
-                    return;
-                }
                 var morphTargetManager = node.babylonMesh.morphTargetManager;
                 if (!morphTargetManager) {
                     return;
@@ -79150,23 +79187,20 @@ var BABYLON;
                             var primitive = _a[_i];
                             vertexData.merge(primitive.targetsVertexData[index], { tangentLength: 3 });
                         }
+                        if (!vertexData.positions) {
+                            throw new Error(context + ": Positions are missing");
+                        }
                         var target = morphTargetManager.getTarget(index);
-                        target.setNormals(vertexData.normals);
                         target.setPositions(vertexData.positions);
+                        target.setNormals(vertexData.normals);
                         target.setTangents(vertexData.tangents);
                     }
                 });
             };
             GLTFLoader.prototype._loadAllMorphTargetVertexDataAsync = function (context, node, mesh, onSuccess) {
-                if (!node.babylonMesh || !node.babylonMesh.morphTargetManager) {
-                    return;
-                }
                 var numRemainingTargets = mesh.primitives.length * node.babylonMesh.morphTargetManager.numTargets;
                 var _loop_4 = function (primitive) {
                     var targets = primitive.targets;
-                    if (!targets) {
-                        return "continue";
-                    }
                     primitive.targetsVertexData = new Array(targets.length);
                     var _loop_5 = function (index) {
                         this_4._loadMorphTargetVertexDataAsync(context + "/targets/" + index, primitive.vertexData, targets[index], function (vertexData) {
@@ -79190,7 +79224,7 @@ var BABYLON;
                 var targetVertexData = new BABYLON.VertexData();
                 var numRemainingAttributes = Object.keys(attributes).length;
                 var _loop_6 = function (attribute) {
-                    var accessor = GLTF2.GLTFUtils.GetArrayItem(this_5._gltf.accessors, attributes[attribute]);
+                    var accessor = GLTFLoader._GetProperty(this_5._gltf.accessors, attributes[attribute]);
                     if (!accessor) {
                         throw new Error(context + ": Failed to find attribute '" + attribute + "' accessor " + attributes[attribute]);
                     }
@@ -79199,19 +79233,21 @@ var BABYLON;
                         // As a result we have to add the original data to the delta to calculate the final data.
                         var values = data;
                         switch (attribute) {
-                            case "NORMAL":
-                                for (var i = 0; i < values.length; i++) {
-                                    values[i] += vertexData.normals[i];
-                                }
-                                targetVertexData.normals = values;
-                                break;
-                            case "POSITION":
+                            case "POSITION": {
                                 for (var i = 0; i < values.length; i++) {
                                     values[i] += vertexData.positions[i];
                                 }
                                 targetVertexData.positions = values;
                                 break;
-                            case "TANGENT":
+                            }
+                            case "NORMAL": {
+                                for (var i = 0; i < values.length; i++) {
+                                    values[i] += vertexData.normals[i];
+                                }
+                                targetVertexData.normals = values;
+                                break;
+                            }
+                            case "TANGENT": {
                                 // Tangent data for morph targets is stored as xyz delta.
                                 // The vertexData.tangent is stored as xyzw.
                                 // So we need to skip every fourth vertexData.tangent.
@@ -79223,9 +79259,11 @@ var BABYLON;
                                 }
                                 targetVertexData.tangents = values;
                                 break;
-                            default:
+                            }
+                            default: {
                                 BABYLON.Tools.Warn("Ignoring unrecognized attribute '" + attribute + "'");
                                 break;
+                            }
                         }
                         if (--numRemainingAttributes === 0) {
                             onSuccess(targetVertexData);
@@ -79238,9 +79276,6 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._loadTransform = function (node) {
-                if (!node.babylonMesh) {
-                    return;
-                }
                 var position = BABYLON.Vector3.Zero();
                 var rotation = BABYLON.Quaternion.Identity();
                 var scaling = BABYLON.Vector3.One();
@@ -79268,7 +79303,7 @@ var BABYLON;
                     this._loadBones(context, skin, null);
                 }
                 else {
-                    var accessor = GLTF2.GLTFUtils.GetArrayItem(this._gltf.accessors, skin.inverseBindMatrices);
+                    var accessor = GLTFLoader._GetProperty(this._gltf.accessors, skin.inverseBindMatrices);
                     if (!accessor) {
                         throw new Error(context + ": Failed to find inverse bind matrices attribute " + skin.inverseBindMatrices);
                     }
@@ -79280,9 +79315,7 @@ var BABYLON;
             };
             GLTFLoader.prototype._createBone = function (node, skin, parent, localMatrix, baseMatrix, index) {
                 var babylonBone = new BABYLON.Bone(node.name || "bone" + node.index, skin.babylonSkeleton, parent, localMatrix, null, baseMatrix, index);
-                node.babylonBones = node.babylonBones || {};
                 node.babylonBones[skin.index] = babylonBone;
-                node.babylonAnimationTargets = node.babylonAnimationTargets || [];
                 node.babylonAnimationTargets.push(babylonBone);
                 return babylonBone;
             };
@@ -79290,7 +79323,7 @@ var BABYLON;
                 var babylonBones = {};
                 for (var _i = 0, _a = skin.joints; _i < _a.length; _i++) {
                     var index = _a[_i];
-                    var node = GLTF2.GLTFUtils.GetArrayItem(this._gltf.nodes, index);
+                    var node = GLTFLoader._GetProperty(this._gltf.nodes, index);
                     if (!node) {
                         throw new Error(context + ": Failed to find joint " + index);
                     }
@@ -79309,7 +79342,7 @@ var BABYLON;
                     baseMatrix.invertToRef(baseMatrix);
                 }
                 var babylonParentBone = null;
-                if (node.index !== skin.skeleton && node.parent !== this._rootNode) {
+                if (node.index !== skin.skeleton && node.parent && node.parent !== this._rootNode) {
                     babylonParentBone = this._loadBone(node.parent, skin, inverseBindMatrixData, babylonBones);
                     baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
                 }
@@ -79326,7 +79359,7 @@ var BABYLON;
                 if (parentNode === void 0) { parentNode = null; }
                 for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
                     var index = indices_1[_i];
-                    var node = GLTF2.GLTFUtils.GetArrayItem(this._gltf.nodes, index);
+                    var node = GLTFLoader._GetProperty(this._gltf.nodes, index);
                     if (!node) {
                         throw new Error(context + ": Failed to find node " + index);
                     }
@@ -79350,48 +79383,56 @@ var BABYLON;
                 if (!animations) {
                     return;
                 }
-                for (var animationIndex = 0; animationIndex < animations.length; animationIndex++) {
-                    var animation = animations[animationIndex];
-                    var context = "#/animations/" + animationIndex;
-                    for (var channelIndex = 0; channelIndex < animation.channels.length; channelIndex++) {
-                        var channel = GLTF2.GLTFUtils.GetArrayItem(animation.channels, channelIndex);
-                        if (!channel) {
-                            throw new Error(context + ": Failed to find channel " + channelIndex);
-                        }
-                        var sampler = GLTF2.GLTFUtils.GetArrayItem(animation.samplers, channel.sampler);
-                        if (!sampler) {
-                            throw new Error(context + ": Failed to find sampler " + channel.sampler);
-                        }
-                        this._loadAnimationChannel(animation, context + "/channels/" + channelIndex, channel, context + "/samplers/" + channel.sampler, sampler);
+                for (var index = 0; index < animations.length; index++) {
+                    var animation = animations[index];
+                    this._loadAnimation("#/animations/" + index, animation);
+                }
+            };
+            GLTFLoader.prototype._loadAnimation = function (context, animation) {
+                animation.targets = [];
+                for (var index = 0; index < animation.channels.length; index++) {
+                    var channel = GLTFLoader._GetProperty(animation.channels, index);
+                    if (!channel) {
+                        throw new Error(context + ": Failed to find channel " + index);
                     }
+                    var sampler = GLTFLoader._GetProperty(animation.samplers, channel.sampler);
+                    if (!sampler) {
+                        throw new Error(context + ": Failed to find sampler " + channel.sampler);
+                    }
+                    this._loadAnimationChannel(animation, context + "/channels/" + index, channel, context + "/samplers/" + channel.sampler, sampler);
                 }
             };
             GLTFLoader.prototype._loadAnimationChannel = function (animation, channelContext, channel, samplerContext, sampler) {
-                var targetNode = GLTF2.GLTFUtils.GetArrayItem(this._gltf.nodes, channel.target.node);
+                var targetNode = GLTFLoader._GetProperty(this._gltf.nodes, channel.target.node);
                 if (!targetNode) {
                     throw new Error(channelContext + ": Failed to find target node " + channel.target.node);
                 }
                 var targetPath;
                 var animationType;
                 switch (channel.target.path) {
-                    case "translation":
+                    case "translation": {
                         targetPath = "position";
                         animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
                         break;
-                    case "rotation":
+                    }
+                    case "rotation": {
                         targetPath = "rotationQuaternion";
                         animationType = BABYLON.Animation.ANIMATIONTYPE_QUATERNION;
                         break;
-                    case "scale":
+                    }
+                    case "scale": {
                         targetPath = "scaling";
                         animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
                         break;
-                    case "weights":
+                    }
+                    case "weights": {
                         targetPath = "influence";
                         animationType = BABYLON.Animation.ANIMATIONTYPE_FLOAT;
                         break;
-                    default:
-                        throw new Error(channelContext + ": Invalid target path '" + channel.target.path + "'");
+                    }
+                    default: {
+                        throw new Error(channelContext + ": Invalid target path " + channel.target.path);
+                    }
                 }
                 var inputData;
                 var outputData;
@@ -79402,32 +79443,32 @@ var BABYLON;
                     var outputBufferOffset = 0;
                     var getNextOutputValue;
                     switch (targetPath) {
-                        case "position":
+                        case "position": {
                             getNextOutputValue = function () {
                                 var value = BABYLON.Vector3.FromArray(outputData, outputBufferOffset);
                                 outputBufferOffset += 3;
                                 return value;
                             };
                             break;
-                        case "rotationQuaternion":
+                        }
+                        case "rotationQuaternion": {
                             getNextOutputValue = function () {
                                 var value = BABYLON.Quaternion.FromArray(outputData, outputBufferOffset);
                                 outputBufferOffset += 4;
                                 return value;
                             };
                             break;
-                        case "scaling":
+                        }
+                        case "scaling": {
                             getNextOutputValue = function () {
                                 var value = BABYLON.Vector3.FromArray(outputData, outputBufferOffset);
                                 outputBufferOffset += 3;
                                 return value;
                             };
                             break;
-                        case "influence":
+                        }
+                        case "influence": {
                             getNextOutputValue = function () {
-                                if (!targetNode.babylonMesh || !targetNode.babylonMesh.morphTargetManager) {
-                                    return BABYLON.Vector3.Zero();
-                                }
                                 var numTargets = targetNode.babylonMesh.morphTargetManager.numTargets;
                                 var value = new Array(numTargets);
                                 for (var i = 0; i < numTargets; i++) {
@@ -79436,16 +79477,18 @@ var BABYLON;
                                 return value;
                             };
                             break;
+                        }
                     }
                     var getNextKey;
                     switch (sampler.interpolation) {
-                        case "LINEAR":
+                        case "LINEAR": {
                             getNextKey = function (frameIndex) { return ({
                                 frame: inputData[frameIndex],
                                 value: getNextOutputValue()
                             }); };
                             break;
-                        case "CUBICSPLINE":
+                        }
+                        case "CUBICSPLINE": {
                             getNextKey = function (frameIndex) { return ({
                                 frame: inputData[frameIndex],
                                 inTangent: getNextOutputValue(),
@@ -79453,16 +79496,17 @@ var BABYLON;
                                 outTangent: getNextOutputValue()
                             }); };
                             break;
-                        default:
-                            throw new Error(samplerContext + ": Invalid interpolation '" + sampler.interpolation + "'");
+                        }
+                        default: {
+                            throw new Error(samplerContext + ": Invalid interpolation " + sampler.interpolation);
+                        }
                     }
                     ;
                     var keys = new Array(inputData.length);
                     for (var frameIndex = 0; frameIndex < inputData.length; frameIndex++) {
                         keys[frameIndex] = getNextKey(frameIndex);
                     }
-                    animation.targets = animation.targets || [];
-                    if (targetPath === "influence" && targetNode.babylonMesh && targetNode.babylonMesh.morphTargetManager) {
+                    if (targetPath === "influence") {
                         var morphTargetManager = targetNode.babylonMesh.morphTargetManager;
                         var _loop_7 = function (targetIndex) {
                             var morphTarget = morphTargetManager.getTarget(targetIndex);
@@ -79481,7 +79525,7 @@ var BABYLON;
                             _loop_7(targetIndex);
                         }
                     }
-                    else if (targetNode.babylonAnimationTargets) {
+                    else {
                         var animationName = animation.name || "anim" + animation.index;
                         var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys);
@@ -79492,7 +79536,7 @@ var BABYLON;
                         }
                     }
                 };
-                var inputAccessor = GLTF2.GLTFUtils.GetArrayItem(this._gltf.accessors, sampler.input);
+                var inputAccessor = GLTFLoader._GetProperty(this._gltf.accessors, sampler.input);
                 if (!inputAccessor) {
                     throw new Error(samplerContext + ": Failed to find input accessor " + sampler.input);
                 }
@@ -79500,7 +79544,7 @@ var BABYLON;
                     inputData = data;
                     checkSuccess();
                 });
-                var outputAccessor = GLTF2.GLTFUtils.GetArrayItem(this._gltf.accessors, sampler.output);
+                var outputAccessor = GLTFLoader._GetProperty(this._gltf.accessors, sampler.output);
                 if (!outputAccessor) {
                     throw new Error(samplerContext + ": Failed to find output accessor " + sampler.output);
                 }
@@ -79540,24 +79584,18 @@ var BABYLON;
                         });
                         this._loadUri(context, buffer.uri, function (data) {
                             buffer.loadedData = data;
-                            if (buffer.loadedObservable) {
-                                buffer.loadedObservable.notifyObservers(buffer);
-                                buffer.loadedObservable = undefined;
-                            }
+                            buffer.loadedObservable.notifyObservers(buffer);
+                            buffer.loadedObservable = undefined;
                         });
                     }
                 }
             };
             GLTFLoader.prototype._loadBufferViewAsync = function (context, bufferView, onSuccess) {
-                var _this = this;
-                var buffer = GLTF2.GLTFUtils.GetArrayItem(this._gltf.buffers, bufferView.buffer);
+                var buffer = GLTFLoader._GetProperty(this._gltf.buffers, bufferView.buffer);
                 if (!buffer) {
                     throw new Error(context + ": Failed to find buffer " + bufferView.buffer);
                 }
                 this._loadBufferAsync("#/buffers/" + buffer.index, buffer, function (bufferData) {
-                    if (_this._disposed || !bufferData) {
-                        return;
-                    }
                     var data;
                     try {
                         data = new Uint8Array(bufferData.buffer, bufferData.byteOffset + (bufferView.byteOffset || 0), bufferView.byteLength);
@@ -79573,40 +79611,47 @@ var BABYLON;
                 if (accessor.sparse) {
                     throw new Error(context + ": Sparse accessors are not currently supported");
                 }
-                var bufferView = GLTF2.GLTFUtils.GetArrayItem(this._gltf.bufferViews, accessor.bufferView);
+                var bufferView = GLTFLoader._GetProperty(this._gltf.bufferViews, accessor.bufferView);
                 if (!bufferView) {
                     throw new Error(context + ": Failed to find buffer view " + accessor.bufferView);
                 }
                 this._loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView, function (bufferViewData) {
-                    var numComponents = _this._getNumComponentsOfType(accessor.type);
+                    var numComponents = GLTFLoader._GetNumComponents(accessor.type);
                     if (numComponents === 0) {
-                        throw new Error(context + ": Invalid type (" + accessor.type + ")");
+                        throw new Error(context + ": Invalid type " + accessor.type);
                     }
                     var data;
-                    var byteOffset = accessor.byteOffset;
+                    var byteOffset = accessor.byteOffset || 0;
                     var byteStride = bufferView.byteStride;
                     try {
                         switch (accessor.componentType) {
-                            case GLTF2.EComponentType.BYTE:
+                            case GLTF2.EComponentType.BYTE: {
                                 data = _this._buildArrayBuffer(Float32Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                                 break;
-                            case GLTF2.EComponentType.UNSIGNED_BYTE:
+                            }
+                            case GLTF2.EComponentType.UNSIGNED_BYTE: {
                                 data = _this._buildArrayBuffer(Uint8Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                                 break;
-                            case GLTF2.EComponentType.SHORT:
+                            }
+                            case GLTF2.EComponentType.SHORT: {
                                 data = _this._buildArrayBuffer(Int16Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                                 break;
-                            case GLTF2.EComponentType.UNSIGNED_SHORT:
+                            }
+                            case GLTF2.EComponentType.UNSIGNED_SHORT: {
                                 data = _this._buildArrayBuffer(Uint16Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                                 break;
-                            case GLTF2.EComponentType.UNSIGNED_INT:
+                            }
+                            case GLTF2.EComponentType.UNSIGNED_INT: {
                                 data = _this._buildArrayBuffer(Uint32Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                                 break;
-                            case GLTF2.EComponentType.FLOAT:
+                            }
+                            case GLTF2.EComponentType.FLOAT: {
                                 data = _this._buildArrayBuffer(Float32Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
                                 break;
-                            default:
-                                throw new Error(context + ": Invalid component type (" + accessor.componentType + ")");
+                            }
+                            default: {
+                                throw new Error(context + ": Invalid component type " + accessor.componentType);
+                            }
                         }
                     }
                     catch (e) {
@@ -79615,20 +79660,8 @@ var BABYLON;
                     onSuccess(data);
                 });
             };
-            GLTFLoader.prototype._getNumComponentsOfType = function (type) {
-                switch (type) {
-                    case "SCALAR": return 1;
-                    case "VEC2": return 2;
-                    case "VEC3": return 3;
-                    case "VEC4": return 4;
-                    case "MAT2": return 4;
-                    case "MAT3": return 9;
-                    case "MAT4": return 16;
-                }
-                return 0;
-            };
             GLTFLoader.prototype._buildArrayBuffer = function (typedArray, data, byteOffset, count, numComponents, byteStride) {
-                byteOffset = data.byteOffset + (byteOffset || 0);
+                byteOffset += data.byteOffset;
                 var targetLength = count * numComponents;
                 if (byteStride == null || byteStride === numComponents * typedArray.BYTES_PER_ELEMENT) {
                     return new typedArray(data.buffer, byteOffset, targetLength);
@@ -79716,14 +79749,14 @@ var BABYLON;
                 babylonMaterial.metallic = properties.metallicFactor == null ? 1 : properties.metallicFactor;
                 babylonMaterial.roughness = properties.roughnessFactor == null ? 1 : properties.roughnessFactor;
                 if (properties.baseColorTexture) {
-                    var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, properties.baseColorTexture.index);
+                    var texture = GLTFLoader._GetProperty(this._gltf.textures, properties.baseColorTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find base color texture " + properties.baseColorTexture.index);
                     }
                     babylonMaterial.albedoTexture = this._loadTexture("#/textures/" + texture.index, texture, properties.baseColorTexture.texCoord);
                 }
                 if (properties.metallicRoughnessTexture) {
-                    var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, properties.metallicRoughnessTexture.index);
+                    var texture = GLTFLoader._GetProperty(this._gltf.textures, properties.metallicRoughnessTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find metallic roughness texture " + properties.metallicRoughnessTexture.index);
                     }
@@ -79745,9 +79778,7 @@ var BABYLON;
                 this._createPbrMaterial(material);
                 this._loadMaterialBaseProperties(context, material);
                 this._loadMaterialMetallicRoughnessProperties(context, material);
-                if (material.babylonMaterial) {
-                    assign(material.babylonMaterial, true);
-                }
+                assign(material.babylonMaterial, true);
             };
             GLTFLoader.prototype._createPbrMaterial = function (material) {
                 var babylonMaterial = new BABYLON.PBRMaterial(material.name || "mat" + material.index, this._babylonScene);
@@ -79762,7 +79793,7 @@ var BABYLON;
                     babylonMaterial.twoSidedLighting = true;
                 }
                 if (material.normalTexture) {
-                    var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, material.normalTexture.index);
+                    var texture = GLTFLoader._GetProperty(this._gltf.textures, material.normalTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find normal texture " + material.normalTexture.index);
                     }
@@ -79774,7 +79805,7 @@ var BABYLON;
                     }
                 }
                 if (material.occlusionTexture) {
-                    var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, material.occlusionTexture.index);
+                    var texture = GLTFLoader._GetProperty(this._gltf.textures, material.occlusionTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find occlusion texture " + material.occlusionTexture.index);
                     }
@@ -79785,7 +79816,7 @@ var BABYLON;
                     }
                 }
                 if (material.emissiveTexture) {
-                    var texture = GLTF2.GLTFUtils.GetArrayItem(this._gltf.textures, material.emissiveTexture.index);
+                    var texture = GLTFLoader._GetProperty(this._gltf.textures, material.emissiveTexture.index);
                     if (!texture) {
                         throw new Error(context + ": Failed to find emissive texture " + material.emissiveTexture.index);
                     }
@@ -79796,10 +79827,11 @@ var BABYLON;
                 var babylonMaterial = material.babylonMaterial;
                 var alphaMode = material.alphaMode || "OPAQUE";
                 switch (alphaMode) {
-                    case "OPAQUE":
+                    case "OPAQUE": {
                         // default is opaque
                         break;
-                    case "MASK":
+                    }
+                    case "MASK": {
                         babylonMaterial.alphaCutOff = (material.alphaCutoff == null ? 0.5 : material.alphaCutoff);
                         if (colorFactor) {
                             if (colorFactor[3] == 0) {
@@ -79813,7 +79845,8 @@ var BABYLON;
                             babylonMaterial.albedoTexture.hasAlpha = true;
                         }
                         break;
-                    case "BLEND":
+                    }
+                    case "BLEND": {
                         if (colorFactor) {
                             babylonMaterial.alpha = colorFactor[3];
                         }
@@ -79822,19 +79855,20 @@ var BABYLON;
                             babylonMaterial.useAlphaFromAlbedoTexture = true;
                         }
                         break;
-                    default:
-                        throw new Error(context + ": Invalid alpha mode '" + material.alphaMode + "'");
+                    }
+                    default: {
+                        throw new Error(context + ": Invalid alpha mode " + material.alphaMode);
+                    }
                 }
             };
             GLTFLoader.prototype._loadTexture = function (context, texture, coordinatesIndex) {
                 var _this = this;
-                if (coordinatesIndex === void 0) { coordinatesIndex = 0; }
-                var sampler = (texture.sampler == null ? {} : GLTF2.GLTFUtils.GetArrayItem(this._gltf.samplers, texture.sampler));
+                var sampler = (texture.sampler == null ? {} : GLTFLoader._GetProperty(this._gltf.samplers, texture.sampler));
                 if (!sampler) {
                     throw new Error(context + ": Failed to find sampler " + texture.sampler);
                 }
                 var noMipMaps = (sampler.minFilter === GLTF2.ETextureMinFilter.NEAREST || sampler.minFilter === GLTF2.ETextureMinFilter.LINEAR);
-                var samplingMode = GLTF2.GLTFUtils.GetTextureSamplingMode(sampler.magFilter, sampler.minFilter);
+                var samplingMode = GLTFLoader._GetTextureSamplingMode(sampler.magFilter, sampler.minFilter);
                 this._addPendingData(texture);
                 var babylonTexture = new BABYLON.Texture(null, this._babylonScene, noMipMaps, false, samplingMode, function () {
                     _this._tryCatchOnError(function () {
@@ -79858,24 +79892,19 @@ var BABYLON;
                     texture.dataReadyObservable.add(function (texture) {
                         babylonTexture.updateURL(texture.url);
                     });
-                    var image_1 = GLTF2.GLTFUtils.GetArrayItem(this._gltf.images, texture.source);
+                    var image_1 = GLTFLoader._GetProperty(this._gltf.images, texture.source);
                     if (!image_1) {
                         throw new Error(context + ": Failed to find source " + texture.source);
                     }
                     this._loadImage("#/images/" + image_1.index, image_1, function (data) {
                         texture.url = URL.createObjectURL(new Blob([data], { type: image_1.mimeType }));
-                        if (texture.dataReadyObservable) {
-                            texture.dataReadyObservable.notifyObservers(texture);
-                        }
+                        texture.dataReadyObservable.notifyObservers(texture);
+                        texture.dataReadyObservable = undefined;
                     });
                 }
                 babylonTexture.coordinatesIndex = coordinatesIndex || 0;
-                if (sampler.wrapS !== undefined) {
-                    babylonTexture.wrapU = GLTF2.GLTFUtils.GetTextureWrapMode(sampler.wrapS);
-                }
-                if (sampler.wrapT !== undefined) {
-                    babylonTexture.wrapV = GLTF2.GLTFUtils.GetTextureWrapMode(sampler.wrapT);
-                }
+                babylonTexture.wrapU = GLTFLoader._GetTextureWrapMode(sampler.wrapS);
+                babylonTexture.wrapV = GLTFLoader._GetTextureWrapMode(sampler.wrapT);
                 babylonTexture.name = texture.name || "texture" + texture.index;
                 if (this._parent.onTextureLoaded) {
                     this._parent.onTextureLoaded(babylonTexture);
@@ -79892,7 +79921,7 @@ var BABYLON;
                     }
                 }
                 else {
-                    var bufferView = GLTF2.GLTFUtils.GetArrayItem(this._gltf.bufferViews, image.bufferView);
+                    var bufferView = GLTFLoader._GetProperty(this._gltf.bufferViews, image.bufferView);
                     if (!bufferView) {
                         throw new Error(context + ": Failed to find buffer view " + image.bufferView);
                     }
@@ -79922,12 +79951,90 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._tryCatchOnError = function (handler) {
+                if (this._disposed) {
+                    return;
+                }
                 try {
                     handler();
                 }
                 catch (e) {
-                    this._onError(e.message);
+                    BABYLON.Tools.Error("glTF Loader: " + e.message);
+                    if (this._errorCallback) {
+                        this._errorCallback(e.message);
+                    }
+                    this.dispose();
                 }
+            };
+            GLTFLoader._AssignIndices = function (array) {
+                if (array) {
+                    for (var index = 0; index < array.length; index++) {
+                        array[index].index = index;
+                    }
+                }
+            };
+            GLTFLoader._GetProperty = function (array, index) {
+                if (!array || index == undefined || !array[index]) {
+                    return null;
+                }
+                return array[index];
+            };
+            GLTFLoader._GetTextureWrapMode = function (mode) {
+                // Set defaults if undefined
+                mode = mode == undefined ? GLTF2.ETextureWrapMode.REPEAT : mode;
+                switch (mode) {
+                    case GLTF2.ETextureWrapMode.CLAMP_TO_EDGE: return BABYLON.Texture.CLAMP_ADDRESSMODE;
+                    case GLTF2.ETextureWrapMode.MIRRORED_REPEAT: return BABYLON.Texture.MIRROR_ADDRESSMODE;
+                    case GLTF2.ETextureWrapMode.REPEAT: return BABYLON.Texture.WRAP_ADDRESSMODE;
+                    default:
+                        BABYLON.Tools.Warn("Invalid texture wrap mode (" + mode + ")");
+                        return BABYLON.Texture.WRAP_ADDRESSMODE;
+                }
+            };
+            GLTFLoader._GetTextureSamplingMode = function (magFilter, minFilter) {
+                // Set defaults if undefined
+                magFilter = magFilter == undefined ? GLTF2.ETextureMagFilter.LINEAR : magFilter;
+                minFilter = minFilter == undefined ? GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR : minFilter;
+                if (magFilter === GLTF2.ETextureMagFilter.LINEAR) {
+                    switch (minFilter) {
+                        case GLTF2.ETextureMinFilter.NEAREST: return BABYLON.Texture.LINEAR_NEAREST;
+                        case GLTF2.ETextureMinFilter.LINEAR: return BABYLON.Texture.LINEAR_LINEAR;
+                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.LINEAR_NEAREST_MIPNEAREST;
+                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_NEAREST: return BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST;
+                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return BABYLON.Texture.LINEAR_NEAREST_MIPLINEAR;
+                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR;
+                        default:
+                            BABYLON.Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
+                            return BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR;
+                    }
+                }
+                else {
+                    if (magFilter !== GLTF2.ETextureMagFilter.NEAREST) {
+                        BABYLON.Tools.Warn("Invalid texture magnification filter (" + magFilter + ")");
+                    }
+                    switch (minFilter) {
+                        case GLTF2.ETextureMinFilter.NEAREST: return BABYLON.Texture.NEAREST_NEAREST;
+                        case GLTF2.ETextureMinFilter.LINEAR: return BABYLON.Texture.NEAREST_LINEAR;
+                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST;
+                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_LINEAR_MIPNEAREST;
+                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return BABYLON.Texture.NEAREST_NEAREST_MIPLINEAR;
+                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.NEAREST_LINEAR_MIPLINEAR;
+                        default:
+                            BABYLON.Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
+                            return BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST;
+                    }
+                }
+            };
+            GLTFLoader._GetNumComponents = function (type) {
+                switch (type) {
+                    case "SCALAR": return 1;
+                    case "VEC2": return 2;
+                    case "VEC3": return 3;
+                    case "VEC4": return 4;
+                    case "MAT2": return 4;
+                    case "MAT3": return 9;
+                    case "MAT4": return 16;
+                }
+                return 0;
             };
             GLTFLoader.Extensions = {};
             return GLTFLoader;
@@ -79973,65 +80080,6 @@ var BABYLON;
             GLTFUtils.ValidateUri = function (uri) {
                 return (uri.indexOf("..") === -1);
             };
-            GLTFUtils.AssignIndices = function (array) {
-                if (array) {
-                    for (var index = 0; index < array.length; index++) {
-                        array[index].index = index;
-                    }
-                }
-            };
-            GLTFUtils.GetArrayItem = function (array, index) {
-                if (!array || !array[index]) {
-                    return null;
-                }
-                return array[index];
-            };
-            GLTFUtils.GetTextureWrapMode = function (mode) {
-                // Set defaults if undefined
-                mode = mode === undefined ? GLTF2.ETextureWrapMode.REPEAT : mode;
-                switch (mode) {
-                    case GLTF2.ETextureWrapMode.CLAMP_TO_EDGE: return BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    case GLTF2.ETextureWrapMode.MIRRORED_REPEAT: return BABYLON.Texture.MIRROR_ADDRESSMODE;
-                    case GLTF2.ETextureWrapMode.REPEAT: return BABYLON.Texture.WRAP_ADDRESSMODE;
-                    default:
-                        BABYLON.Tools.Warn("Invalid texture wrap mode (" + mode + ")");
-                        return BABYLON.Texture.WRAP_ADDRESSMODE;
-                }
-            };
-            GLTFUtils.GetTextureSamplingMode = function (magFilter, minFilter) {
-                // Set defaults if undefined
-                magFilter = magFilter === undefined ? GLTF2.ETextureMagFilter.LINEAR : magFilter;
-                minFilter = minFilter === undefined ? GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR : minFilter;
-                if (magFilter === GLTF2.ETextureMagFilter.LINEAR) {
-                    switch (minFilter) {
-                        case GLTF2.ETextureMinFilter.NEAREST: return BABYLON.Texture.LINEAR_NEAREST;
-                        case GLTF2.ETextureMinFilter.LINEAR: return BABYLON.Texture.LINEAR_LINEAR;
-                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.LINEAR_NEAREST_MIPNEAREST;
-                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_NEAREST: return BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST;
-                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return BABYLON.Texture.LINEAR_NEAREST_MIPLINEAR;
-                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR;
-                        default:
-                            BABYLON.Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
-                            return BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR;
-                    }
-                }
-                else {
-                    if (magFilter !== GLTF2.ETextureMagFilter.NEAREST) {
-                        BABYLON.Tools.Warn("Invalid texture magnification filter (" + magFilter + ")");
-                    }
-                    switch (minFilter) {
-                        case GLTF2.ETextureMinFilter.NEAREST: return BABYLON.Texture.NEAREST_NEAREST;
-                        case GLTF2.ETextureMinFilter.LINEAR: return BABYLON.Texture.NEAREST_LINEAR;
-                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST;
-                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_LINEAR_MIPNEAREST;
-                        case GLTF2.ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return BABYLON.Texture.NEAREST_NEAREST_MIPLINEAR;
-                        case GLTF2.ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.NEAREST_LINEAR_MIPLINEAR;
-                        default:
-                            BABYLON.Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
-                            return BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST;
-                    }
-                }
-            };
             return GLTFUtils;
         }());
         GLTF2.GLTFUtils = GLTFUtils;
@@ -80052,7 +80100,7 @@ var BABYLON;
             GLTFLoaderExtension.prototype._traverseNode = function (loader, context, node, action, parentNode) { return false; };
             GLTFLoaderExtension.prototype._loadNode = function (loader, context, node) { return false; };
             GLTFLoaderExtension.prototype._loadMaterial = function (loader, context, material, assign) { return false; };
-            GLTFLoaderExtension.prototype._loadExtension = function (property, action) {
+            GLTFLoaderExtension.prototype._loadExtension = function (context, property, action) {
                 var _this = this;
                 if (!property.extensions) {
                     return false;
@@ -80063,11 +80111,9 @@ var BABYLON;
                 }
                 // Clear out the extension before executing the action to avoid recursing into the same property.
                 property.extensions[this.name] = undefined;
-                action(extension, function () {
+                action(context + "extensions/" + this.name, extension, function () {
                     // Restore the extension after completing the action.
-                    if (property.extensions) {
-                        property.extensions[_this.name] = extension;
-                    }
+                    property.extensions[_this.name] = extension;
                 });
                 return true;
             };
@@ -80127,12 +80173,9 @@ var BABYLON;
                     configurable: true
                 });
                 MSFTLOD.prototype._traverseNode = function (loader, context, node, action, parentNode) {
-                    return this._loadExtension(node, function (extension, onComplete) {
-                        if (!loader._gltf.nodes) {
-                            return;
-                        }
+                    return this._loadExtension(context, node, function (context, extension, onComplete) {
                         for (var i = extension.ids.length - 1; i >= 0; i--) {
-                            var lodNode = GLTF2.GLTFUtils.GetArrayItem(loader._gltf.nodes, extension.ids[i]);
+                            var lodNode = GLTF2.GLTFLoader._GetProperty(loader._gltf.nodes, extension.ids[i]);
                             if (!lodNode) {
                                 throw new Error(context + ": Failed to find node " + extension.ids[i]);
                             }
@@ -80144,8 +80187,16 @@ var BABYLON;
                 };
                 MSFTLOD.prototype._loadNode = function (loader, context, node) {
                     var _this = this;
-                    return this._loadExtension(node, function (extension, onComplete) {
-                        var nodes = [node.index].concat(extension.ids).map(function (index) { return loader._gltf.nodes[index]; });
+                    return this._loadExtension(context, node, function (context, extension, onComplete) {
+                        var nodes = [node];
+                        for (var _i = 0, _a = extension.ids; _i < _a.length; _i++) {
+                            var index = _a[_i];
+                            var lodNode = GLTF2.GLTFLoader._GetProperty(loader._gltf.nodes, index);
+                            if (!lodNode) {
+                                throw new Error(context + ": Failed to find node " + index);
+                            }
+                            nodes.push(lodNode);
+                        }
                         loader._addLoaderPendingData(node);
                         _this._loadNodeLOD(loader, context, nodes, nodes.length - 1, function () {
                             loader._removeLoaderPendingData(node);
@@ -80160,9 +80211,7 @@ var BABYLON;
                     }, function () {
                         if (index !== nodes.length - 1) {
                             var previousNode = nodes[index + 1];
-                            if (previousNode.babylonMesh) {
-                                previousNode.babylonMesh.setEnabled(false);
-                            }
+                            previousNode.babylonMesh.setEnabled(false);
                         }
                         if (index === 0) {
                             onComplete();
@@ -80177,13 +80226,18 @@ var BABYLON;
                 };
                 MSFTLOD.prototype._loadMaterial = function (loader, context, material, assign) {
                     var _this = this;
-                    return this._loadExtension(material, function (extension, onComplete) {
-                        var materials = [material.index].concat(extension.ids).map(function (index) { return loader._gltf.materials[index]; });
+                    return this._loadExtension(context, material, function (context, extension, onComplete) {
+                        var materials = [material];
+                        for (var _i = 0, _a = extension.ids; _i < _a.length; _i++) {
+                            var index = _a[_i];
+                            var lodMaterial = GLTF2.GLTFLoader._GetProperty(loader._gltf.materials, index);
+                            if (!lodMaterial) {
+                                throw new Error(context + ": Failed to find material " + index);
+                            }
+                            materials.push(lodMaterial);
+                        }
                         loader._addLoaderPendingData(material);
                         _this._loadMaterialLOD(loader, context, materials, materials.length - 1, assign, function () {
-                            if (material.extensions) {
-                                material.extensions[_this.name] = extension;
-                            }
                             loader._removeLoaderPendingData(material);
                             onComplete();
                         });
@@ -80246,13 +80300,11 @@ var BABYLON;
                 });
                 KHRMaterialsPbrSpecularGlossiness.prototype._loadMaterial = function (loader, context, material, assign) {
                     var _this = this;
-                    return this._loadExtension(material, function (extension, onComplete) {
+                    return this._loadExtension(context, material, function (context, extension, onComplete) {
                         loader._createPbrMaterial(material);
                         loader._loadMaterialBaseProperties(context, material);
                         _this._loadSpecularGlossinessProperties(loader, context, material, extension);
-                        if (material.babylonMaterial) {
-                            assign(material.babylonMaterial, true);
-                        }
+                        assign(material.babylonMaterial, true);
                     });
                 };
                 KHRMaterialsPbrSpecularGlossiness.prototype._loadSpecularGlossinessProperties = function (loader, context, material, properties) {
@@ -80260,23 +80312,21 @@ var BABYLON;
                     babylonMaterial.albedoColor = properties.diffuseFactor ? BABYLON.Color3.FromArray(properties.diffuseFactor) : new BABYLON.Color3(1, 1, 1);
                     babylonMaterial.reflectivityColor = properties.specularFactor ? BABYLON.Color3.FromArray(properties.specularFactor) : new BABYLON.Color3(1, 1, 1);
                     babylonMaterial.microSurface = properties.glossinessFactor == null ? 1 : properties.glossinessFactor;
-                    if (loader._gltf.textures) {
-                        if (properties.diffuseTexture) {
-                            var texture = GLTF2.GLTFUtils.GetArrayItem(loader._gltf.textures, properties.diffuseTexture.index);
-                            if (!texture) {
-                                throw new Error(context + ": Failed to find diffuse texture " + properties.diffuseTexture.index);
-                            }
-                            babylonMaterial.albedoTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.diffuseTexture.texCoord);
+                    if (properties.diffuseTexture) {
+                        var texture = GLTF2.GLTFLoader._GetProperty(loader._gltf.textures, properties.diffuseTexture.index);
+                        if (!texture) {
+                            throw new Error(context + ": Failed to find diffuse texture " + properties.diffuseTexture.index);
                         }
-                        if (properties.specularGlossinessTexture) {
-                            var texture = GLTF2.GLTFUtils.GetArrayItem(loader._gltf.textures, properties.specularGlossinessTexture.index);
-                            if (!texture) {
-                                throw new Error(context + ": Failed to find diffuse texture " + properties.specularGlossinessTexture.index);
-                            }
-                            babylonMaterial.reflectivityTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.specularGlossinessTexture.texCoord);
-                            babylonMaterial.reflectivityTexture.hasAlpha = true;
-                            babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
+                        babylonMaterial.albedoTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.diffuseTexture.texCoord);
+                    }
+                    if (properties.specularGlossinessTexture) {
+                        var texture = GLTF2.GLTFLoader._GetProperty(loader._gltf.textures, properties.specularGlossinessTexture.index);
+                        if (!texture) {
+                            throw new Error(context + ": Failed to find diffuse texture " + properties.specularGlossinessTexture.index);
                         }
+                        babylonMaterial.reflectivityTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.specularGlossinessTexture.texCoord);
+                        babylonMaterial.reflectivityTexture.hasAlpha = true;
+                        babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
                     }
                     loader._loadMaterialAlphaProperties(context, material, properties.diffuseFactor);
                 };
