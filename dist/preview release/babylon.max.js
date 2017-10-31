@@ -11995,6 +11995,9 @@ var BABYLON;
                 timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
             }
             else {
+                if (this._currentNonTimestampToken) {
+                    return this._currentNonTimestampToken;
+                }
                 token._timeElapsedQuery = this._createTimeQuery();
                 if (timerQuery.beginQueryEXT) {
                     timerQuery.beginQueryEXT(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
@@ -12002,6 +12005,7 @@ var BABYLON;
                 else {
                     this._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
                 }
+                this._currentNonTimestampToken = token;
             }
             return token;
         };
@@ -12061,6 +12065,7 @@ var BABYLON;
                     this._deleteTimeQuery(token._timeElapsedQuery);
                     token._timeElapsedQuery = null;
                     token._timeElapsedQueryEnded = false;
+                    this._currentNonTimestampToken = null;
                 }
                 return result;
             }
@@ -17324,7 +17329,7 @@ var BABYLON;
             */
             this.onDisposeObservable = new BABYLON.Observable();
             /**
-            * An event triggered before rendering the scene (right after animations and physcis)
+            * An event triggered before rendering the scene (right after animations and physics)
             * @type {BABYLON.Observable}
             */
             this.onBeforeRenderObservable = new BABYLON.Observable();
@@ -17348,6 +17353,16 @@ var BABYLON;
             * @type {BABYLON.Observable}
             */
             this.onAfterDrawPhaseObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when physic simulation is about to be run
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforePhysicsObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when physic simulation has been done
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterPhysicsObservable = new BABYLON.Observable();
             /**
             * An event triggered when the scene is ready
             * @type {BABYLON.Observable}
@@ -20001,9 +20016,9 @@ var BABYLON;
                     this._animate();
                     // Physics
                     if (this._physicsEngine) {
-                        BABYLON.Tools.StartPerformanceCounter("Physics");
+                        this.onBeforePhysicsObservable.notifyObservers(this);
                         this._physicsEngine._step(defaultTimeStep);
-                        BABYLON.Tools.EndPerformanceCounter("Physics");
+                        this.onAfterPhysicsObservable.notifyObservers(this);
                     }
                     this._timeAccumulator -= defaultTimeStep;
                     this.onAfterStepObservable.notifyObservers(this);
@@ -20020,9 +20035,9 @@ var BABYLON;
                 this._animate();
                 // Physics
                 if (this._physicsEngine) {
-                    BABYLON.Tools.StartPerformanceCounter("Physics");
+                    this.onBeforePhysicsObservable.notifyObservers(this);
                     this._physicsEngine._step(deltaTime / 1000.0);
-                    BABYLON.Tools.EndPerformanceCounter("Physics");
+                    this.onAfterPhysicsObservable.notifyObservers(this);
                 }
             }
             // Before render
@@ -20351,6 +20366,8 @@ var BABYLON;
             this.onAfterSpritesRenderingObservable.clear();
             this.onBeforeDrawPhaseObservable.clear();
             this.onAfterDrawPhaseObservable.clear();
+            this.onBeforePhysicsObservable.clear();
+            this.onAfterPhysicsObservable.clear();
             this.detachControl();
             // Release sounds & sounds tracks
             if (BABYLON.AudioEngine) {
@@ -32351,8 +32368,7 @@ var BABYLON;
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
             if (defines.COLORGRADING) {
-                var texture = this.colorGradingTexture;
-                defines.COLORGRADING3D = (texture.getScene().getEngine().webGLVersion > 1) ? true : false;
+                defines.COLORGRADING3D = this.colorGradingTexture.is3D;
             }
             else {
                 defines.COLORGRADING3D = false;
@@ -51772,7 +51788,7 @@ var BABYLON;
             // Reaffect the filter.
             this._applyFilterValues();
             // Reaffect Render List.
-            shadowMap.renderList = renderList;
+            this._shadowMap.renderList = renderList;
         };
         ShadowGenerator.prototype._disposeBlurPostProcesses = function () {
             if (this._shadowMap2) {
@@ -75301,6 +75317,8 @@ var BABYLON;
             this._particlesRenderTime = new BABYLON.PerfCounter();
             this._captureSpritesRenderTime = false;
             this._spritesRenderTime = new BABYLON.PerfCounter();
+            this._capturePhysicsTime = false;
+            this._physicsTime = new BABYLON.PerfCounter();
             // Observers
             this._onBeforeActiveMeshesEvaluationObserver = null;
             this._onAfterActiveMeshesEvaluationObserver = null;
@@ -75314,6 +75332,8 @@ var BABYLON;
             this._onAfterParticlesRenderingObserver = null;
             this._onBeforeSpritesRenderingObserver = null;
             this._onAfterSpritesRenderingObserver = null;
+            this._onBeforePhysicsObserver = null;
+            this._onAfterPhysicsObserver = null;
             // Before render
             this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(function () {
                 if (_this._captureActiveMeshesEvaluationTime) {
@@ -75536,6 +75556,52 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(SceneInstrumentation.prototype, "physicsTimeCounter", {
+            /**
+             * Gets the perf counter used for physics time
+             */
+            get: function () {
+                return this._physicsTime;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneInstrumentation.prototype, "capturePhysicsTime", {
+            /**
+             * Gets the physics time capture status
+             */
+            get: function () {
+                return this._capturePhysicsTime;
+            },
+            /**
+             * Enable or disable the physics time capture
+             */
+            set: function (value) {
+                var _this = this;
+                if (value === this._capturePhysicsTime) {
+                    return;
+                }
+                this._capturePhysicsTime = value;
+                if (value) {
+                    this._onBeforePhysicsObserver = this.scene.onBeforePhysicsObservable.add(function () {
+                        BABYLON.Tools.StartPerformanceCounter("Physics");
+                        _this._physicsTime.beginMonitoring();
+                    });
+                    this._onAfterPhysicsObserver = this.scene.onAfterPhysicsObservable.add(function () {
+                        BABYLON.Tools.EndPerformanceCounter("Physics");
+                        _this._physicsTime.endMonitoring();
+                    });
+                }
+                else {
+                    this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
+                    this._onBeforePhysicsObserver = null;
+                    this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
+                    this._onAfterPhysicsObserver = null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(SceneInstrumentation.prototype, "frameTimeCounter", {
             /**
              * Gets the perf counter used for frame time capture
@@ -75669,6 +75735,10 @@ var BABYLON;
             this._onBeforeDrawPhaseObserver = null;
             this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver);
             this._onAfterDrawPhaseObserver = null;
+            this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
+            this._onBeforePhysicsObserver = null;
+            this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
+            this._onAfterPhysicsObserver = null;
             this.scene = null;
         };
         return SceneInstrumentation;
