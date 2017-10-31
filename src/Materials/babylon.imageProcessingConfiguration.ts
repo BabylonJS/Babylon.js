@@ -355,8 +355,7 @@ module BABYLON {
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
             if (defines.COLORGRADING) {
-                let texture = <BaseTexture>this.colorGradingTexture;
-                defines.COLORGRADING3D = ((<Scene>texture.getScene()).getEngine().webGLVersion > 1) ? true : false;                 
+                defines.COLORGRADING3D = this.colorGradingTexture!.is3D;
             } else {
                 defines.COLORGRADING3D = false;
             }
