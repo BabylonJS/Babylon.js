@@ -825,7 +825,6 @@
 
         public recreateShadowMap(): void {
             let shadowMap = this._shadowMap;
-
             if (!shadowMap) {
                 return;
             }
@@ -841,7 +840,7 @@
             // Reaffect the filter.
             this._applyFilterValues();
             // Reaffect Render List.
-            shadowMap.renderList = renderList;
+            this._shadowMap!.renderList = renderList;
         }
 
         private _disposeBlurPostProcesses(): void {
