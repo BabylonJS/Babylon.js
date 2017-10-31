@@ -607,17 +607,17 @@
         /**
          * Observable raised when the engine ends the current frame
          */
-        public onEndFrameObservable = new Observable<Engine>();      
+        public onEndFrameObservable = new Observable<Engine>();
 
         /**
          * Observable raised when the engine is about to compile a shader
          */
-        public onBeforeShaderCompilationObservable = new Observable<Engine>();    
+        public onBeforeShaderCompilationObservable = new Observable<Engine>();
 
         /**
          * Observable raised when the engine has jsut compiled a shader
          */
-        public onAfterShaderCompilationObservable = new Observable<Engine>();    
+        public onAfterShaderCompilationObservable = new Observable<Engine>();
 
         // Private Members
         private _gl: WebGLRenderingContext;
@@ -1607,8 +1607,8 @@
             this._gl.viewport(x, y, width, height);
 
             return currentViewport;
-        }       
-                
+        }
+
         public beginFrame(): void {
             this.onBeginFrameObservable.notifyObservers(this);
             this._measureFps();
@@ -2978,6 +2978,10 @@
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
                     this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                } else if (isTGA && BABYLON.Tools.UseFallbackTexture) {
+                    this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                } else if (isDDS && BABYLON.Tools.UseFallbackTexture) {
+                    this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 } else if (onError) {
                     onError();
                 }
@@ -5164,8 +5168,7 @@
 
                 timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
             } else {
-                if (this._currentNonTimestampToken)
-                {
+                if (this._currentNonTimestampToken) {
                     return this._currentNonTimestampToken;
                 }
 
@@ -5228,7 +5231,7 @@
                     this._deleteTimeQuery(token._startTimeQuery);
                     this._deleteTimeQuery(token._endTimeQuery);
                     token._startTimeQuery = null;
-                    token._endTimeQuery = null;                    
+                    token._endTimeQuery = null;
                 } else {
                     if (!token._timeElapsedQuery) {
                         return -1;
