@@ -2978,9 +2978,7 @@
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
                     this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if (isTGA && BABYLON.Tools.UseFallbackTexture) {
-                    this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if (isDDS && BABYLON.Tools.UseFallbackTexture) {
+                } else if ((isTGA || isDDS )&& BABYLON.Tools.UseFallbackTexture) {
                     this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 } else if (onError) {
                     onError();
