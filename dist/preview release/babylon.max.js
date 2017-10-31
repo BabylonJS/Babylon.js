@@ -10204,6 +10204,9 @@ var BABYLON;
                 if (isKTX) {
                     _this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 }
+                else if ((isTGA || isDDS) && BABYLON.Tools.UseFallbackTexture) {
+                    _this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                }
                 else if (onError) {
                     onError();
                 }
