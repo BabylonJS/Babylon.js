@@ -20,9 +20,12 @@ module BABYLON {
         
         private _captureParticlesRenderTime = false;
         private _particlesRenderTime = new PerfCounter();       
-        
+          
         private _captureSpritesRenderTime = false;
-        private _spritesRenderTime = new PerfCounter();              
+        private _spritesRenderTime = new PerfCounter();   
+
+        private _capturePhysicsTime = false;
+        private _physicsTime = new PerfCounter();         
 
         // Observers
         private _onBeforeActiveMeshesEvaluationObserver: Nullable<Observer<Scene>> = null;
@@ -41,7 +44,10 @@ module BABYLON {
         private _onAfterParticlesRenderingObserver: Nullable<Observer<Scene>> = null;
 
         private _onBeforeSpritesRenderingObserver: Nullable<Observer<Scene>> = null;
-        private _onAfterSpritesRenderingObserver: Nullable<Observer<Scene>> = null;        
+        private _onAfterSpritesRenderingObserver: Nullable<Observer<Scene>> = null;      
+        
+        private _onBeforePhysicsObserver: Nullable<Observer<Scene>> = null;
+        private _onAfterPhysicsObserver: Nullable<Observer<Scene>> = null;             
                 
         // Properties
         /**
@@ -213,6 +219,49 @@ module BABYLON {
 
                 this.scene.onAfterSpritesRenderingObservable.remove(this._onAfterSpritesRenderingObserver);
                 this._onAfterSpritesRenderingObserver = null;
+            }
+        }      
+
+        /**
+         * Gets the perf counter used for physics time
+         */
+        public get physicsTimeCounter(): PerfCounter {
+            return this._physicsTime;
+        }
+
+        /**
+         * Gets the physics time capture status
+         */
+        public get capturePhysicsTime(): boolean {
+            return this._capturePhysicsTime;
+        }        
+
+        /**
+         * Enable or disable the physics time capture
+         */        
+        public set capturePhysicsTime(value: boolean) {
+            if (value === this._capturePhysicsTime) {
+                return;
+            }
+
+            this._capturePhysicsTime = value;
+
+            if (value) {
+                this._onBeforePhysicsObserver = this.scene.onBeforePhysicsObservable.add(()=>{                    
+                    Tools.StartPerformanceCounter("Physics");
+                    this._physicsTime.beginMonitoring();
+                });
+
+                this._onAfterPhysicsObserver = this.scene.onAfterPhysicsObservable.add(()=>{                                        
+                    Tools.EndPerformanceCounter("Physics");
+                    this._physicsTime.endMonitoring();
+                });
+            } else {
+                this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
+                this._onBeforePhysicsObserver = null;
+
+                this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
+                this._onAfterPhysicsObserver = null;
             }
         }      
         
@@ -390,7 +439,13 @@ module BABYLON {
             this._onBeforeDrawPhaseObserver = null;
 
             this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver);
-            this._onAfterDrawPhaseObserver = null;            
+            this._onAfterDrawPhaseObserver = null;    
+            
+            this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
+            this._onBeforePhysicsObserver = null;
+
+            this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
+            this._onAfterPhysicsObserver = null;            
                 
             (<any>this.scene) = null;
         }

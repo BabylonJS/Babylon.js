@@ -944,7 +944,7 @@ var INSPECTOR;
             var str = '';
             var physicsImposter = this._obj;
             if (physicsImposter && physicsImposter.object) {
-                str = physicsImposter.object.name;
+                str = physicsImposter.object.name || "";
             } // otherwise nothing displayed        
             return str;
         };
@@ -3676,6 +3676,7 @@ var INSPECTOR;
             _this._sceneInstrumentation.captureInterFrameTime = true;
             _this._sceneInstrumentation.captureParticlesRenderTime = true;
             _this._sceneInstrumentation.captureSpritesRenderTime = true;
+            _this._sceneInstrumentation.capturePhysicsTime = true;
             _this._engineInstrumentation = new BABYLON.EngineInstrumentation(_this._engine);
             _this._engineInstrumentation.captureGPUFrameTime = true;
             // Build the stats panel: a div that will contains all stats
@@ -3783,6 +3784,12 @@ var INSPECTOR;
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.spritesRenderTimeCounter.current); }
+                });
+                elemLabel = _this._createStatLabel("Physics", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.physicsTimeCounter.current); }
                 });
                 elemLabel = _this._createStatLabel("Render", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);

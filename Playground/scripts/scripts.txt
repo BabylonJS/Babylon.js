@@ -30,3 +30,4 @@ instanced bones
 pointer events handling
 webvr
 gui
+physics
