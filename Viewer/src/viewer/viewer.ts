@@ -13,7 +13,7 @@ export abstract class AbstractViewer {
 
     protected configuration: ViewerConfiguration;
 
-    constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { defaultViewer: true }) {
+    constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
         if (containerElement.id) {
             this.baseId = containerElement.id;
