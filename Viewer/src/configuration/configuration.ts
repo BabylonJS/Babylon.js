@@ -216,7 +216,7 @@ export let defaultConfiguration: ViewerConfiguration = {
                 disableOnFullscreen: false*/
             },
             events: {
-                pointerdown: ['#fullscreen-button'/*, '#help-button'*/]
+                pointerdown: { '#fullscreen-button': true/*, '#help-button': true*/ }
             }
         },
         overlay: {

@@ -9,21 +9,21 @@ export interface ITemplateConfiguration {
     params?: { [key: string]: string | number | boolean | object };
     events?: {
         // pointer events
-        pointerdown?: boolean | Array<string>;
-        pointerup?: boolean | Array<string>;
-        pointermove?: boolean | Array<string>;
-        pointerover?: boolean | Array<string>;
-        pointerout?: boolean | Array<string>;
-        pointerenter?: boolean | Array<string>;
-        pointerleave?: boolean | Array<string>;
-        pointercancel?: boolean | Array<string>;
+        pointerdown?: boolean | { [id: string]: boolean; };
+        pointerup?: boolean | { [id: string]: boolean; };
+        pointermove?: boolean | { [id: string]: boolean; };
+        pointerover?: boolean | { [id: string]: boolean; };
+        pointerout?: boolean | { [id: string]: boolean; };
+        pointerenter?: boolean | { [id: string]: boolean; };
+        pointerleave?: boolean | { [id: string]: boolean; };
+        pointercancel?: boolean | { [id: string]: boolean; };
         //click, just in case
-        click?: boolean | Array<string>;
+        click?: boolean | { [id: string]: boolean; };
         // drag and drop
-        dragstart?: boolean | Array<string>;
-        drop?: boolean | Array<string>;
+        dragstart?: boolean | { [id: string]: boolean; };
+        drop?: boolean | { [id: string]: boolean; };
 
-        [key: string]: boolean | Array<string> | undefined;
+        [key: string]: boolean | { [id: string]: boolean; } | undefined;
     }
 }
 
@@ -251,7 +251,7 @@ export class Template {
     // TODO - Should events be removed as well? when are templates disposed?
     private registerEvents() {
         if (this._configuration.events) {
-            Object.keys(this._configuration.events).forEach(eventName => {
+            for (let eventName in this._configuration.events) {
                 if (this._configuration.events && this._configuration.events[eventName]) {
                     let functionToFire = (selector, event) => {
                         this.onEventTriggered.notifyObservers({ event: event, template: this, selector: selector });
@@ -260,15 +260,20 @@ export class Template {
                     // if boolean, set the parent as the event listener
                     if (typeof this._configuration.events[eventName] === 'boolean') {
                         this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
-                    } else {
-                        let selectorsArray: Array<string> = <Array<string>>this._configuration.events[eventName];
-                        selectorsArray.forEach(selector => {
+                    } else if (typeof this._configuration.events[eventName] === 'object') {
+                        let selectorsArray: Array<string> = Object.keys(this._configuration.events[eventName] || {});
+                        // strict null checl is working incorrectly, must override:
+                        let event = this._configuration.events[eventName] || {};
+                        selectorsArray.filter(selector => event[selector]).forEach(selector => {
+                            if (selector.indexOf('#') !== 0) {
+                                selector = '#' + selector;
+                            }
                             let htmlElement = <HTMLElement>this.parent.querySelector(selector);
                             htmlElement && htmlElement.addEventListener(eventName, functionToFire.bind(this, selector), false)
                         });
                     }
                 }
-            });
+            }
         }
     }
 
