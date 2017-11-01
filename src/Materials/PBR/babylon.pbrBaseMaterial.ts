@@ -74,7 +74,7 @@
         public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public USESPHERICALFROMREFLECTIONMAP = false;
-        public USESPHERICALINFRAGMENT = false;
+        public USESPHERICALINVERTEX = false;
         public REFLECTIONMAP_OPPOSITEZ = false;
         public LODINREFLECTIONALPHA = false;
         public GAMMAREFLECTION = false;
@@ -632,7 +632,10 @@
                             if (reflectionTexture.sphericalPolynomial) {
                                 defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 if (this._forceIrradianceInFragment || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
-                                    defines.USESPHERICALINFRAGMENT = true;
+                                    defines.USESPHERICALINVERTEX = false;
+                                }
+                                else {
+                                    defines.USESPHERICALINVERTEX = true;
                                 }
                             }
                         }
@@ -650,7 +653,7 @@
                         defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
                         defines.INVERTCUBICMAP = false;
                         defines.USESPHERICALFROMREFLECTIONMAP = false;
-                        defines.USESPHERICALINFRAGMENT = false;
+                        defines.USESPHERICALINVERTEX = false;
                         defines.REFLECTIONMAP_OPPOSITEZ = false;
                         defines.LODINREFLECTIONALPHA = false;
                         defines.GAMMAREFLECTION = false;
@@ -831,58 +834,71 @@
 
                 // Fallbacks
                 var fallbacks = new EffectFallbacks();
-                if (defines.ENVIRONMENTBRDF) {
-                    fallbacks.addFallback(0, "ENVIRONMENTBRDF");
-                }
-
-                if (defines.REFLECTION) {
-                    fallbacks.addFallback(0, "REFLECTION");
-                }
-
-                if (defines.REFRACTION) {
-                    fallbacks.addFallback(0, "REFRACTION");
-                }
-
-                if (defines.REFLECTIVITY) {
-                    fallbacks.addFallback(0, "REFLECTIVITY");
-                }
-
-                if (defines.BUMP) {
-                    fallbacks.addFallback(0, "BUMP");
-                }
-
-                if (defines.PARALLAX) {
-                    fallbacks.addFallback(1, "PARALLAX");
-                }
-
-                if (defines.PARALLAXOCCLUSION) {
-                    fallbacks.addFallback(0, "PARALLAXOCCLUSION");
-                }
-
-                if (defines.SPECULAROVERALPHA) {
-                    fallbacks.addFallback(0, "SPECULAROVERALPHA");
+                var fallbackRank = 0;
+                if (defines.USESPHERICALINVERTEX) {
+                    fallbacks.addFallback(fallbackRank++, "USESPHERICALINVERTEX");
                 }
 
                 if (defines.FOG) {
-                    fallbacks.addFallback(1, "FOG");
+                    fallbacks.addFallback(fallbackRank, "FOG");
                 }
-
                 if (defines.POINTSIZE) {
-                    fallbacks.addFallback(0, "POINTSIZE");
+                    fallbacks.addFallback(fallbackRank, "POINTSIZE");
                 }
-
                 if (defines.LOGARITHMICDEPTH) {
-                    fallbacks.addFallback(0, "LOGARITHMICDEPTH");
+                    fallbacks.addFallback(fallbackRank, "LOGARITHMICDEPTH");
+                }
+                if (defines.PARALLAX) {
+                    fallbacks.addFallback(fallbackRank, "PARALLAX");
+                }
+                if (defines.PARALLAXOCCLUSION) {
+                    fallbacks.addFallback(fallbackRank++, "PARALLAXOCCLUSION");
                 }
 
-                MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
+                if (defines.ENVIRONMENTBRDF) {
+                    fallbacks.addFallback(fallbackRank++, "ENVIRONMENTBRDF");
+                }
+
+                if (defines.TANGENT) {
+                    fallbacks.addFallback(fallbackRank++, "TANGENT");
+                }
+
+                if (defines.BUMP) {
+                    fallbacks.addFallback(fallbackRank++, "BUMP");
+                }
+
+                fallbackRank = MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights, fallbackRank++);
 
                 if (defines.SPECULARTERM) {
-                    fallbacks.addFallback(0, "SPECULARTERM");
+                    fallbacks.addFallback(fallbackRank++, "SPECULARTERM");
+                }
+
+                if (defines.USESPHERICALFROMREFLECTIONMAP) {
+                    fallbacks.addFallback(fallbackRank++, "USESPHERICALFROMREFLECTIONMAP");
+                }
+
+                if (defines.LIGHTMAP) {
+                    fallbacks.addFallback(fallbackRank++, "LIGHTMAP");
+                }
+
+                if (defines.NORMAL) {
+                    fallbacks.addFallback(fallbackRank++, "NORMAL");
+                }
+
+                if (defines.VERTEXCOLOR) {
+                    fallbacks.addFallback(fallbackRank++, "VERTEXCOLOR");
+                }
+
+                if (defines.EMISSIVE) {
+                    fallbacks.addFallback(fallbackRank++, "EMISSIVE");
                 }
 
                 if (defines.NUM_BONE_INFLUENCERS > 0) {
-                    fallbacks.addCPUSkinningFallback(0, mesh);
+                    fallbacks.addCPUSkinningFallback(fallbackRank++, mesh);
+                }
+
+                if (defines.MORPHTARGETS) {
+                    fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
                 }
 
                 //Attributes

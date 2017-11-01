@@ -68,7 +68,7 @@ varying vec2 vBumpUV;
 varying vec3 vPositionW;
 #ifdef NORMAL
     varying vec3 vNormalW;
-    #if defined(USESPHERICALFROMREFLECTIONMAP) && !defined(USESPHERICALINFRAGMENT)
+    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
         varying vec3 vEnvironmentIrradiance;
         
         #include<harmonicsFunctions>
@@ -129,7 +129,7 @@ void main(void) {
 
 	vNormalW = normalize(normalWorld * normalUpdated);
 
-    #if defined(USESPHERICALFROMREFLECTIONMAP) && !defined(USESPHERICALINFRAGMENT)
+    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
         vec3 reflectionVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
