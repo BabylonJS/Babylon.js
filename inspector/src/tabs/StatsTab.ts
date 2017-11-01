@@ -37,6 +37,7 @@ module INSPECTOR {
             this._sceneInstrumentation.captureParticlesRenderTime = true;
             this._sceneInstrumentation.captureSpritesRenderTime = true;
             this._sceneInstrumentation.capturePhysicsTime = true;
+            this._sceneInstrumentation.captureAnimationsTime = true;
 
             this._engineInstrumentation = new BABYLON.EngineInstrumentation(this._engine);
             this._engineInstrumentation.captureGPUFrameTime = true;
@@ -161,6 +162,12 @@ module INSPECTOR {
                     elem:elemValue, 
                     updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.spritesRenderTimeCounter.current)}
                 });
+                elemLabel = this._createStatLabel("Animations", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.animationsTimeCounter.current)}
+                });                       
                 elemLabel = this._createStatLabel("Physics", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 

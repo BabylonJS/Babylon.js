@@ -1,4 +1,30 @@
 <style>
+    nav-bar {
+        position: absolute;
+        height: 160px;
+        width: 100%;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.3);
+        color: white;
+        transition: 1s;
+        align-items: flex-start;
+        justify-content: space-around;
+        display: flex;
+
+        flex-direction: column;
+    }
+
+    /* Big screens have room for the entire navbar */
+
+    @media screen and (min-width: 768px) {
+        nav-bar {
+            align-items: center;
+            flex-direction: row;
+            justify-content: space-between;
+            height: 80px;
+        }
+    }
+
     div.flex-container {
         display: flex;
         width: 100%;
