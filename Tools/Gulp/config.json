@@ -26,6 +26,7 @@
             "picking",
             "collisions",
             "particles",
+            "gpuParticles",
             "solidParticles",
             "additionalMeshes",
             "meshBuilder",
@@ -218,6 +219,20 @@
             "shaders": [
                 "particles.vertex",
                 "particles.fragment"
+            ]
+        },
+        "gpuParticles": {
+            "files": [
+                "../../src/Particles/babylon.gpuParticleSystem.js"
+            ],
+            "dependUpon": [
+                "core"
+            ],
+            "shaders": [
+                "gpuRenderParticles.vertex",
+                "gpuRenderParticles.fragment",
+                "gpuUpdateParticles.vertex",
+                "gpuUpdateParticles.fragment"
             ]
         },
         "nullEngine": {

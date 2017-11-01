@@ -5,6 +5,8 @@
         public emitter: Nullable<AbstractMesh | Vector3> = null;       
         public renderingGroupId = 0;        
         public layerMask: number = 0x0FFFFFFF;
+        private _renderingEffect: Effect;
+        private _updateEffect: Effect;
 
         private _scene: Scene;
 
@@ -23,7 +25,26 @@
             this.id = name;
             this._scene = scene || Engine.LastCreatedScene;
 
-            scene.particleSystems.push(this);
+            this._scene.particleSystems.push(this);
+
+            this._renderingEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "velocity"], [], [], this._scene.getEngine());
+
+            let updateEffectOptions: EffectCreationOptions = {
+                attributes: ["position", "age", "life", "velocity"],
+                uniformsNames: [],
+                uniformBuffersNames: [],
+                samplers:[],
+                defines: "",
+                fallbacks: null,  
+                onCompiled: null,
+                onError: null,
+                indexParameters: null,
+                maxSimultaneousLights: 0,                                                      
+                transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outVelocity"]
+            };
+
+            this._updateEffect = new Effect("gpuUpdateParticles", updateEffectOptions, this._scene.getEngine());
+                                            
         }
 
         public animate(): void {

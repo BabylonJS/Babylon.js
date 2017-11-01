@@ -120,7 +120,8 @@
 
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
             return {
-                __SPECTOR_rebuildProgram: null,
+                transformFeedback: null,
+                __SPECTOR_rebuildProgram: null
             };
         }
 
