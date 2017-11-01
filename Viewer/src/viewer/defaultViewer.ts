@@ -25,42 +25,49 @@ export class DefaultViewer extends AbstractViewer {
         // navbar
         let viewerElement = this.templateManager.getTemplate('viewer');
         let navbar = this.templateManager.getTemplate('navBar');
-        let navbarHeight = navbar.parent.clientHeight + 'px';
+        if (viewerElement && navbar) {
+            let navbarHeight = navbar.parent.clientHeight + 'px';
 
-        let navbarShown: boolean = true;
-        let timeoutCancel /*: number*/;
+            let navbarShown: boolean = true;
+            let timeoutCancel /*: number*/;
 
-        let triggerNavbar = function (show: boolean = false, evt: PointerEvent) {
-            // only left-click on no-button.
-            if (evt.button > 0) return;
-            // clear timeout
-            timeoutCancel && clearTimeout(timeoutCancel);
-            // if state is the same, do nothing
-            if (show === navbarShown) return;
-            //showing? simply show it!
-            if (show) {
-                navbar.parent.style.bottom = show ? '0px' : '-' + navbarHeight;
-                navbarShown = show;
-            } else {
-                let visibilityTimeout = 2000;
-                if (navbar.configuration.params && navbar.configuration.params.visibilityTimeout !== undefined) {
-                    visibilityTimeout = <number>navbar.configuration.params.visibilityTimeout;
-                }
-                // not showing? set timeout until it is removed.
-                timeoutCancel = setTimeout(function () {
-                    navbar.parent.style.bottom = '-' + navbarHeight;
+            let triggerNavbar = function (show: boolean = false, evt: PointerEvent) {
+                // only left-click on no-button.
+                if (!navbar || evt.button > 0) return;
+                // clear timeout
+                timeoutCancel && clearTimeout(timeoutCancel);
+                // if state is the same, do nothing
+                if (show === navbarShown) return;
+                //showing? simply show it!
+                if (show) {
+                    navbar.parent.style.bottom = show ? '0px' : '-' + navbarHeight;
                     navbarShown = show;
-                }, visibilityTimeout);
+                } else {
+                    let visibilityTimeout = 2000;
+                    if (navbar.configuration.params && navbar.configuration.params.visibilityTimeout !== undefined) {
+                        visibilityTimeout = <number>navbar.configuration.params.visibilityTimeout;
+                    }
+                    // not showing? set timeout until it is removed.
+                    timeoutCancel = setTimeout(function () {
+                        if (navbar) {
+                            navbar.parent.style.bottom = '-' + navbarHeight;
+                        }
+                        navbarShown = show;
+                    }, visibilityTimeout);
+                }
             }
+
+
+
+            viewerElement.parent.addEventListener('pointerout', triggerNavbar.bind(this, false));
+            viewerElement.parent.addEventListener('pointerdown', triggerNavbar.bind(this, true));
+            viewerElement.parent.addEventListener('pointerup', triggerNavbar.bind(this, false));
+            navbar.parent.addEventListener('pointerover', triggerNavbar.bind(this, true))
+            // triggerNavbar(false);
+
+            // events registration
+            this.registerNavbarButtons();
         }
-
-
-
-        viewerElement.parent.addEventListener('pointerout', triggerNavbar.bind(this, false));
-        viewerElement.parent.addEventListener('pointerdown', triggerNavbar.bind(this, true));
-        viewerElement.parent.addEventListener('pointerup', triggerNavbar.bind(this, false));
-        navbar.parent.addEventListener('pointerover', triggerNavbar.bind(this, true))
-        // triggerNavbar(false);
 
         // close overlay button
         let closeButton = document.getElementById('close-button');
@@ -70,9 +77,6 @@ export class DefaultViewer extends AbstractViewer {
             })
         }
 
-        // events registration
-        this.registerNavbarButtons();
-
         return super.onTemplatesLoaded();
     }
 
@@ -80,7 +84,11 @@ export class DefaultViewer extends AbstractViewer {
         let isFullscreen = false;
 
         let navbar = this.templateManager.getTemplate('navBar');
-        let viewerElement = this.templateManager.getTemplate('viewer').parent;
+        let viewerTemplate = this.templateManager.getTemplate('viewer');
+        if (!navbar || !viewerTemplate) return;
+
+        let viewerElement = viewerTemplate.parent;
+
 
         navbar.onEventTriggered.add((data) => {
             switch (data.event.type) {
@@ -107,7 +115,6 @@ export class DefaultViewer extends AbstractViewer {
                     break;
             }
         });
-
     }
 
     protected prepareContainerElement() {
@@ -117,7 +124,9 @@ export class DefaultViewer extends AbstractViewer {
 
     public loadModel(model: any = this.configuration.model): Promise<Scene> {
         this.showLoadingScreen();
-        return super.loadModel(model, true).catch(() => {
+        return super.loadModel(model, true).catch((error) => {
+            console.log(error);
+            this.hideLoadingScreen();
             this.showOverlayScreen('error');
             return this.scene;
         });
@@ -148,6 +157,7 @@ export class DefaultViewer extends AbstractViewer {
 
     private setModelMetaData() {
         let navbar = this.templateManager.getTemplate('navBar');
+        if (!navbar) return;
 
         let metadataContainer = navbar.parent.querySelector('#model-metadata');
 
@@ -225,7 +235,10 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     public showOverlayScreen(subScreen: string) {
-        return this.templateManager.getTemplate('overlay').show((template => {
+        let template = this.templateManager.getTemplate('overlay');
+        if (!template) return Promise.reject('Overlay template not found');
+
+        return template.show((template => {
 
             var canvasRect = this.containerElement.getBoundingClientRect();
             var canvasPositioning = window.getComputedStyle(this.containerElement).position;
@@ -235,7 +248,11 @@ export class DefaultViewer extends AbstractViewer {
             template.parent.style.height = canvasRect.height + "px";
             template.parent.style.opacity = "1";
 
-            return this.templateManager.getTemplate(subScreen).show((template => {
+            let subTemplate = this.templateManager.getTemplate(subScreen);
+            if (!subTemplate) {
+                return Promise.reject(subScreen + ' template not found');
+            }
+            return subTemplate.show((template => {
                 template.parent.style.display = 'flex';
                 return Promise.resolve(template);
             }));
@@ -243,7 +260,10 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     public hideOverlayScreen() {
-        return this.templateManager.getTemplate('overlay').hide((template => {
+        let template = this.templateManager.getTemplate('overlay');
+        if (!template) return Promise.reject('Overlay template not found');
+
+        return template.hide((template => {
             template.parent.style.opacity = "0";
             let onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
@@ -268,7 +288,10 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     public showLoadingScreen() {
-        return this.templateManager.getTemplate('loadingScreen').show((template => {
+        let template = this.templateManager.getTemplate('loadingScreen');
+        if (!template) return Promise.reject('oading Screen template not found');
+
+        return template.show((template => {
 
             var canvasRect = this.containerElement.getBoundingClientRect();
             var canvasPositioning = window.getComputedStyle(this.containerElement).position;
@@ -284,7 +307,10 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     public hideLoadingScreen() {
-        return this.templateManager.getTemplate('loadingScreen').hide((template => {
+        let template = this.templateManager.getTemplate('loadingScreen');
+        if (!template) return Promise.reject('oading Screen template not found');
+
+        return template.hide((template => {
             template.parent.style.opacity = "0";
             let onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
@@ -416,6 +442,7 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     private extendClassWithConfig(object: any, config: any) {
+        if (!config) return;
         Object.keys(config).forEach(key => {
             if (key in object && typeof object[key] !== 'function') {
                 if (typeof object[key] === 'function') return;
