@@ -90,7 +90,7 @@ export class DefaultViewer extends AbstractViewer {
                         switch (data.selector) {
                             case '#fullscreen-button':
                                 if (!isFullscreen) {
-                                    let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen; // || viewerElement.parent.msRequestFullscreen || viewerElement.parent.mozRequestFullScreen 
+                                    let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
                                     requestFullScreen.call(viewerElement);
                                 } else {
                                     let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen
