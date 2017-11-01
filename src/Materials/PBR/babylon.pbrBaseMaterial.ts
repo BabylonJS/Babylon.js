@@ -885,12 +885,16 @@
                     fallbacks.addFallback(fallbackRank++, "NORMAL");
                 }
 
-                if (defines.VERTEXCOLOR) {
-                    fallbacks.addFallback(fallbackRank++, "VERTEXCOLOR");
+                if (defines.AMBIENT) {
+                    fallbacks.addFallback(fallbackRank++, "AMBIENT");
                 }
 
                 if (defines.EMISSIVE) {
                     fallbacks.addFallback(fallbackRank++, "EMISSIVE");
+                }
+
+                if (defines.VERTEXCOLOR) {
+                    fallbacks.addFallback(fallbackRank++, "VERTEXCOLOR");
                 }
 
                 if (defines.NUM_BONE_INFLUENCERS > 0) {
