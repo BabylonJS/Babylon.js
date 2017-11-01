@@ -11,7 +11,7 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
         libraryTarget: 'umd',
-        library: 'Viewer3D',
+        library: 'BabylonViewer',
         umdNamedDefine: true,
         devtoolModuleFilenameTemplate: '[absolute-resource-path]'
     },
