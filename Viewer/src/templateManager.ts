@@ -126,7 +126,7 @@ export class TemplateManager {
         return this.containerElement.querySelector('canvas');
     }
 
-    public getTemplate(name: string) {
+    public getTemplate(name: string): Template | undefined {
         return this.templates[name];
     }
 
