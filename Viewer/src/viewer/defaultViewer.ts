@@ -90,7 +90,7 @@ export class DefaultViewer extends AbstractViewer {
                         switch (data.selector) {
                             case '#fullscreen-button':
                                 if (!isFullscreen) {
-                                    let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen; // || viewerElement.parent.msRequestFullscreen || viewerElement.parent.mozRequestFullScreen 
+                                    let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
                                     requestFullScreen.call(viewerElement);
                                 } else {
                                     let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen
@@ -299,14 +299,15 @@ export class DefaultViewer extends AbstractViewer {
 
         let sceneConfig = this.configuration.scene || { defaultLight: true };
 
-        if (!sceneConfig.defaultLight && (this.configuration.lights && this.configuration.lights.length)) {
+        if (!sceneConfig.defaultLight && (this.configuration.lights && Object.keys(this.configuration.lights).length)) {
             // remove old lights
             this.scene.lights.forEach(l => {
                 l.dispose();
             });
 
-            this.configuration.lights.forEach((lightConfig, idx) => {
-                lightConfig.name = lightConfig.name || 'light-' + idx;
+            Object.keys(this.configuration.lights).forEach((name, idx) => {
+                let lightConfig = this.configuration.lights && this.configuration.lights[name] || { name: name, type: 0 };
+                lightConfig.name = name;
                 let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
                 let light = constructor();
 
@@ -354,9 +355,9 @@ export class DefaultViewer extends AbstractViewer {
         this.camera.maxZ = cameraConfig.maxZ || this.camera.maxZ;
 
         if (cameraConfig.behaviors) {
-            cameraConfig.behaviors.forEach((behaviorConfig) => {
-                this.setCameraBehavior(behaviorConfig, focusMeshes);
-            });
+            for (let name in cameraConfig.behaviors) {
+                this.setCameraBehavior(cameraConfig.behaviors[name], focusMeshes);
+            }
         };
 
         if (sceneConfig.autoRotate) {

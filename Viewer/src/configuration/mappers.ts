@@ -22,7 +22,7 @@ class HTMLMapper implements IMapper {
                 //convert html-style to json-style
                 let camelKey = kebabToCamel(key);
                 if (idx === split.length - 1) {
-                    let val: any = attr.nodeValue;
+                    let val: any = attr.nodeValue; // firefox warns nodeValue is deprecated, but I found no sign of it anywhere.
                     if (val === "true") {
                         val = true;
                     } else if (val === "false") {
