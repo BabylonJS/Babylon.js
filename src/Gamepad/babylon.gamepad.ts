@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class StickValues {
-        constructor(public x, public y) {
+        constructor(public x: number, public y: number) {
         }
     }
 
@@ -37,7 +37,7 @@
             return this._isConnected;
         }
 
-        constructor(public id: string, public index: number, public browserGamepad, leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
+        constructor(public id: string, public index: number, public browserGamepad: any, leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
             this.type = Gamepad.GAMEPAD;
             this._leftStickAxisX = leftStickX;
             this._leftStickAxisY = leftStickY;
@@ -106,7 +106,7 @@
             this._onbuttonup = callback;
         }
 
-        constructor(id: string, index: number, browserGamepad) {
+        constructor(id: string, index: number, browserGamepad: any) {
             super(id, index, browserGamepad);
             this.type = Gamepad.GENERIC;
             this._buttons = new Array(browserGamepad.buttons.length);

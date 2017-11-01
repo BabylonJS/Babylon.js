@@ -1,7 +1,7 @@
 module BABYLON {
     export class VRExperienceHelper {
         private _scene: BABYLON.Scene;
-        private _position;
+        private _position: Vector3;
         private _btnVR: HTMLButtonElement;
 
         // Can the system support WebVR, even if a headset isn't plugged in?
@@ -16,12 +16,12 @@ module BABYLON {
         // Are we presenting in the fullscreen fallback?
         private _fullscreenVRpresenting = false;
 
-        private _canvas: HTMLCanvasElement;
+        private _canvas: Nullable<HTMLCanvasElement>;
         private _webVRCamera: WebVRFreeCamera;
         private _vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
         private _deviceOrientationCamera: DeviceOrientationCamera;
         
-        private _onKeyDown;
+        private _onKeyDown: (event: KeyboardEvent) => void;
         private _onVrDisplayPresentChange: any;
         private _onVRDisplayChanged: (eventArgs:IDisplayChangedEventArgs) => void;
         private _onVRRequestPresentStart: () => void;
@@ -29,12 +29,12 @@ module BABYLON {
         
         public onEnteringVR: () => void;
         public onExitingVR: () => void;
-        public onControllerMeshLoaded: (WebVRController) => void;
+        public onControllerMeshLoaded: (controller: WebVRController) => void;
                 
-        constructor(scene: Scene, private webVROptions: WebVROptions = {}) {
+        constructor(scene: Scene, public webVROptions: WebVROptions = {}) {
             this._scene = scene;
 
-            if (!this._scene.activeCamera) {
+            if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
                 this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
             }
             else {
@@ -48,7 +48,9 @@ module BABYLON {
             this._scene.activeCamera = this._deviceOrientationCamera;
             this._position = this._scene.activeCamera.position;
             this._canvas = scene.getEngine().getRenderingCanvas();
-            this._scene.activeCamera.attachControl(this._canvas);
+            if (this._canvas) {
+                this._scene.activeCamera.attachControl(this._canvas);
+            }
 
             this._btnVR = <HTMLButtonElement>document.createElement("BUTTON");
             this._btnVR.className = "babylonVRicon";
@@ -65,20 +67,24 @@ module BABYLON {
             style.appendChild(document.createTextNode(css));
             document.getElementsByTagName('head')[0].appendChild(style);  
 
-            this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-            this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
-            this._btnVR.addEventListener("click", () => {
-                this.enterVR();
-            });
-
-            window.addEventListener("resize", () => {
+            if (this._canvas) {
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+                this._btnVR.addEventListener("click", () => {
+                    this.enterVR();
+                });
 
-                if (this._fullscreenVRpresenting && this._webVRready) {
-                    this.exitVR();
-                }
-            });
+                window.addEventListener("resize", () => {
+                    if (this._canvas) {
+                        this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
+                        this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+                    }
+
+                    if (this._fullscreenVRpresenting && this._webVRready) {
+                        this.exitVR();
+                    }
+                });
+            }
 
             document.addEventListener("fullscreenchange", () => { this._onFullscreenChange() }, false);
             document.addEventListener("mozfullscreenchange", () => { this._onFullscreenChange() }, false);
@@ -88,7 +94,7 @@ module BABYLON {
             document.body.appendChild(this._btnVR);
 
             // Exiting VR mode using 'ESC' key on desktop
-            this._onKeyDown = (event) => {
+            this._onKeyDown = (event: KeyboardEvent) => {
                 if (event.keyCode === 27 && this.isInVRMode()) {
                     this.exitVR();
                 }
@@ -146,7 +152,7 @@ module BABYLON {
             } else if (document.msIsFullScreen !== undefined) {
                 this._fullscreenVRpresenting = document.msIsFullScreen;
             }
-            if (!this._fullscreenVRpresenting) {
+            if (!this._fullscreenVRpresenting && this._canvas) {
                 this.exitVR();
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
@@ -221,7 +227,9 @@ module BABYLON {
                 this.updateButtonVisibility();
             }
             
-            this._scene.activeCamera.attachControl(this._canvas);
+            if (this._scene.activeCamera && this._canvas) {
+                this._scene.activeCamera.attachControl(this._canvas);
+            }
         }
 
         /**
@@ -239,7 +247,10 @@ module BABYLON {
             }
             this._deviceOrientationCamera.position = this._position;
             this._scene.activeCamera = this._deviceOrientationCamera;
-            this._scene.activeCamera.attachControl(this._canvas);
+
+            if (this._canvas) {
+                this._scene.activeCamera.attachControl(this._canvas);
+            }
 
             this.updateButtonVisibility();
         }
@@ -250,7 +261,10 @@ module BABYLON {
 
         public set position(value: Vector3) {
             this._position = value;
-            this._scene.activeCamera.position = value;
+
+            if (this._scene.activeCamera) {
+                this._scene.activeCamera.position = value;
+            }
         }
 
         public dispose() {

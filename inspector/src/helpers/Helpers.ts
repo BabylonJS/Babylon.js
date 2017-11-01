@@ -36,7 +36,7 @@ module INSPECTOR {
          * Check if some properties are defined for the given type.
          */
         private static _CheckIfTypeExists(type: string) {
-            let properties = PROPERTIES[type];
+            let properties = (<any>PROPERTIES)[type];
             if (properties) {
                 return true;
             }
@@ -59,7 +59,7 @@ module INSPECTOR {
          */
         private static _GetTypeFor(obj: any) {
             for (let type in PROPERTIES) {
-                let typeBlock = PROPERTIES[type];
+                let typeBlock = (<any>PROPERTIES)[type];
                 if (typeBlock.type) {
                     if (obj instanceof typeBlock.type) {
                         return type;
@@ -71,7 +71,7 @@ module INSPECTOR {
         /**
          * Returns the name of a function (workaround to get object type for IE11)
          */
-        private static _GetFnName(fn) {
+        private static _GetFnName(fn: any) {
             var f = typeof fn == 'function';
             var s = f && ((fn.name && ['', fn.name]) || fn.toString().match(/function ([^\(]+)/));
             return (!f && 'not a function') || (s && s[1] || 'anonymous');
@@ -90,9 +90,9 @@ module INSPECTOR {
         }
 
         /** Returns the given number with 2 decimal number max if a decimal part exists */
-        public static Trunc(nb): number {
+        public static Trunc(nb: number): number {
             if (Math.round(nb) !== nb) {
-                return nb.toFixed(2);
+                return (<any>nb.toFixed(2));
             }
             return nb;
         };
@@ -100,7 +100,7 @@ module INSPECTOR {
         /**
          * Useful function used to create a div
          */
-        public static CreateDiv(className?: string, parent?: HTMLElement): HTMLElement {
+        public static CreateDiv(className: Nullable<string> = null, parent?: HTMLElement): HTMLElement {
             return Helpers.CreateElement('div', className, parent);
         }
 
@@ -111,7 +111,7 @@ module INSPECTOR {
             return <HTMLInputElement>Helpers.CreateElement('input', className, parent);
         }
 
-        public static CreateElement(element: string, className?: string, parent?: HTMLElement): HTMLElement {
+        public static CreateElement(element: string, className: Nullable<string> = null, parent?: HTMLElement): HTMLElement {
             let elem = Inspector.DOCUMENT.createElement(element);
 
             if (className) {
@@ -140,8 +140,10 @@ module INSPECTOR {
             let div = Helpers.CreateDiv('', Inspector.DOCUMENT.body);
             div.style.display = 'none';
             div.appendChild(clone);
-            let value = Inspector.WINDOW.getComputedStyle(clone)[cssAttribute];
-            div.parentNode.removeChild(div);
+            let value = (<any>Inspector.WINDOW.getComputedStyle(clone))[cssAttribute];
+            if (div.parentNode)  {
+                div.parentNode.removeChild(div);
+            }
             return value;
         }
 
@@ -160,11 +162,11 @@ module INSPECTOR {
                         let style = Helpers.CreateElement('style', '', Inspector.DOCUMENT.body);
                         style.textContent = elem;
                     });
-                }, null, null, null, () => {
+                }, undefined, undefined, undefined, () => {
                     console.log("erreur");
                 });
 
-            }, null, null, null, () => {
+            }, undefined, undefined, undefined, () => {
                 console.log("erreur");
             });
 

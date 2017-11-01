@@ -1,5 +1,5 @@
 {
   "devDependencies": {
-    "xmlhttprequest": "^1.8.0"
+    "xhr2": "^0.1.4"
   }
 }

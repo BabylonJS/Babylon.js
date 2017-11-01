@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - DOM usage</title>
+        <style>
+            babylon {
+                width: 800px;
+                height: 500px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <babylon default-viewer="true">
+            <model url="https://ugcorigin.s-microsoft.com/12/2e77b8e3-0000-0000-7a48-6505db2f0ef9/952/1508427934473.gltf" title="The Bus!"
+                subtitle="Remix3D" thumbnail="http://d33wubrfki0l68.cloudfront.net/7e08139ddee0ec38005f4232346c7f7386831300/fd934/githubuniverse/remix3d.png">
+            </model>
+            <camera>
+                <behaviors array="true">
+                    <behavior type="0"></behavior>
+                </behaviors>
+            </camera>
+            <lights array="true">
+                <light type="1" shadow-enabled="true" position.y="0.5" direction.y="-1" intensity="4.5">
+                    <shadow-config use-blur-exponential-shadow-map="true" use-kernel-blur="true" blur-kernel="64" blur-scale="4">
+
+                    </shadow-config>
+                </light>
+            </lights>
+        </babylon>
+        <script src="viewer.js"></script>
+    </body>
+
+</html>
+<html>
+
+</html>

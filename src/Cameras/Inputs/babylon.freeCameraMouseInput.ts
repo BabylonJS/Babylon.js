@@ -9,13 +9,13 @@ module BABYLON {
         public angularSensibility = 2000.0;
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
-        private _onMouseMove: (e: MouseEvent) => any;
-        private _observer: Observer<PointerInfo>;
+        private _onMouseMove: Nullable<(e: MouseEvent) => any>;
+        private _observer: Nullable<Observer<PointerInfo>>;
 
-        private previousPosition: { x: number, y: number };
+        private previousPosition: Nullable<{ x: number, y: number }> = null;
 
         constructor(public touchEnabled = true) {
-        }           
+        }
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             var engine = this.camera.getEngine();
@@ -32,13 +32,15 @@ module BABYLON {
                         return;
                     }
 
-                    if(p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1){
+                    if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                         return;
                     }
 
-                    if (p.type === PointerEventTypes.POINTERDOWN) {
+                    let srcElement = <HTMLElement>(evt.srcElement || evt.target);
+
+                    if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
                         try {
-                            evt.srcElement.setPointerCapture(evt.pointerId);
+                            srcElement.setPointerCapture(evt.pointerId);
                         } catch (e) {
                             //Nothing to do with the error. Execution will continue.
                         }
@@ -53,9 +55,9 @@ module BABYLON {
                             element.focus();
                         }
                     }
-                    else if (p.type === PointerEventTypes.POINTERUP) {
+                    else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                         try {
-                            evt.srcElement.releasePointerCapture(evt.pointerId);
+                            srcElement.releasePointerCapture(evt.pointerId);
                         } catch (e) {
                             //Nothing to do with the error.
                         }
@@ -129,7 +131,10 @@ module BABYLON {
         detachControl(element: HTMLElement) {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
-                element.removeEventListener("mousemove", this._onMouseMove);
+
+                if (this._onMouseMove) {
+                    element.removeEventListener("mousemove", this._onMouseMove);
+                }
 
                 this._observer = null;
                 this._onMouseMove = null;
@@ -143,8 +148,8 @@ module BABYLON {
 
         getSimpleName() {
             return "mouse";
-        }      
+        }
     }
 
-    CameraInputTypes["FreeCameraMouseInput"] = FreeCameraMouseInput;
+    (<any>CameraInputTypes)["FreeCameraMouseInput"] = FreeCameraMouseInput;
 }

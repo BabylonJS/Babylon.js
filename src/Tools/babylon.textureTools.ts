@@ -9,7 +9,7 @@
 		 */
 		public static CreateResizedCopy(texture: BABYLON.Texture, width: number, height: number, useBilinearMode: boolean = true): BABYLON.Texture {
 			
-			var scene = texture.getScene();
+			var scene = <Scene>texture.getScene();
 			var engine = scene.getEngine();
 			
 			let rtt = new BABYLON.RenderTargetTexture(
@@ -18,7 +18,7 @@
 				scene,
 				!texture.noMipmap,
 				true,
-				texture._texture.type,
+				(<InternalTexture>texture._texture).type,
 				false,
 				texture._samplingMode,
 				false
@@ -36,7 +36,7 @@
             rtt.coordinatesIndex = texture.coordinatesIndex;
             rtt.level = texture.level;
             rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
-			rtt._texture.isReady = false;
+			(<InternalTexture>rtt._texture).isReady = false;
 
 			texture.wrapU = Texture.CLAMP_ADDRESSMODE;
 			texture.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -47,13 +47,17 @@
                     effect.setTexture("textureSampler", texture);
                 }
 
-                scene.postProcessManager.directRender([passPostProcess], rtt.getInternalTexture());
+				let internalTexture = rtt.getInternalTexture();
 
-                engine.unBindFramebuffer(rtt.getInternalTexture());
-                rtt.disposeFramebufferObjects();
-				passPostProcess.dispose();
+				if (internalTexture) {
+					scene.postProcessManager.directRender([passPostProcess], internalTexture);
 
-				rtt._texture.isReady = true;
+					engine.unBindFramebuffer(internalTexture);
+					rtt.disposeFramebufferObjects();
+					passPostProcess.dispose();
+
+					internalTexture.isReady = true;
+				}
             });
 
 			return rtt;

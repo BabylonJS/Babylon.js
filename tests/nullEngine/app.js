@@ -1,113 +1,141 @@
 var BABYLON = require("../../dist/preview release/babylon.max");
 var LOADERS = require("../../dist/preview release/loaders/babylonjs.loaders");
-global.XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+global.XMLHttpRequest = require('xhr2').XMLHttpRequest;
 
 var engine = new BABYLON.NullEngine();
-var scene = new BABYLON.Scene(engine);
 
-// //Create a light
-// var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(-60, 60, 80), scene);
+// //Adding a light
+// var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
 
-// //Create an Arc Rotate Camera - aimed negative z this time
-// var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, 1.0, 110, BABYLON.Vector3.Zero(), scene);
+// //Adding an Arc Rotate Camera
+// var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
 
-// //Creation of 6 spheres
-// var sphere1 = BABYLON.Mesh.CreateSphere("Sphere1", 10.0, 9.0, scene);
-// var sphere2 = BABYLON.Mesh.CreateSphere("Sphere2", 2.0, 9.0, scene);//Only two segments
-// var sphere3 = BABYLON.Mesh.CreateSphere("Sphere3", 10.0, 9.0, scene);
-// var sphere4 = BABYLON.Mesh.CreateSphere("Sphere4", 10.0, 9.0, scene);
-// var sphere5 = BABYLON.Mesh.CreateSphere("Sphere5", 10.0, 9.0, scene);
-// var sphere6 = BABYLON.Mesh.CreateSphere("Sphere6", 10.0, 9.0, scene);
+// // The first parameter can be used to specify which mesh to import. Here we import all meshes
+// BABYLON.SceneLoader.ImportMesh("", "https://playground.babylonjs.com/scenes/", "skull.babylon", scene, function (newMeshes) {
+//     // Set the target of the camera to the first imported mesh
+//     camera.target = newMeshes[0];
 
-// //Position the spheres
-// sphere1.position.x = 40;
-// sphere2.position.x = 25;
-// sphere3.position.x = 10;
-// sphere4.position.x = -5;
-// sphere5.position.x = -20;
-// sphere6.position.x = -35;
+//     console.log("Meshes loaded from babylon file: " + newMeshes.length);
+//     for (var index = 0; index < newMeshes.length; index++) {
+//         console.log(newMeshes[index].toString());
+//     }
 
-// //Creation of a plane
-// var plane = BABYLON.Mesh.CreatePlane("plane", 120, scene);
-// plane.position.y = -5;
-// plane.rotation.x = Math.PI / 2;
+//     BABYLON.SceneLoader.ImportMesh("", "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/", "DamagedHelmet.gltf", scene, function (meshes) {
+//         console.log("Meshes loaded from gltf file: " + meshes.length);
+//         for (var index = 0; index < meshes.length; index++) {
+//             console.log(meshes[index].toString());
+//         }
+//     });
 
-// //Creation of a material with wireFrame
-// var materialSphere1 = new BABYLON.StandardMaterial("texture1", scene);
-// materialSphere1.wireframe = true;
+//     console.log("render started")
+//     engine.runRenderLoop(function() {
+//         scene.render();
+//     })
+// });
+    
+// Setup environment
+// var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 90, BABYLON.Vector3.Zero(), scene);
+// camera.lowerBetaLimit = 0.1;
+// camera.upperBetaLimit = (Math.PI / 2) * 0.9;
+// camera.lowerRadiusLimit = 30;
+// camera.upperRadiusLimit = 150;
 
-// //Creation of a red material with alpha
-// var materialSphere2 = new BABYLON.StandardMaterial("texture2", scene);
-// materialSphere2.diffuseColor = new BABYLON.Color3(1, 0, 0); //Red
-// materialSphere2.alpha = 0.3;
+// // light1
+// var light = new BABYLON.DirectionalLight("dir01", new BABYLON.Vector3(-1, -2, -1), scene);
+// light.position = new BABYLON.Vector3(20, 40, 20);
+// light.intensity = 0.5;
 
-// //Creation of a material with an image texture
-// var materialSphere3 = new BABYLON.StandardMaterial("texture3", scene);
-// materialSphere3.diffuseTexture = new BABYLON.Texture("textures/misc.jpg", scene);
+// var lightSphere = BABYLON.Mesh.CreateSphere("sphere", 10, 2, scene);
+// lightSphere.position = light.position;
+// lightSphere.material = new BABYLON.StandardMaterial("light", scene);
+// lightSphere.material.emissiveColor = new BABYLON.Color3(1, 1, 0);
 
-// //Creation of a material with translated texture
-// var materialSphere4 = new BABYLON.StandardMaterial("texture4", scene);
-// materialSphere4.diffuseTexture = new BABYLON.Texture("textures/misc.jpg", scene);
-// materialSphere4.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
-// materialSphere4.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+// // light2
+// var light2 = new BABYLON.SpotLight("spot02", new BABYLON.Vector3(30, 40, 20),
+//                                             new BABYLON.Vector3(-1, -2, -1), 1.1, 16, scene);
+// light2.intensity = 0.5;
 
-// //Creation of a material with an alpha texture
-// var materialSphere5 = new BABYLON.StandardMaterial("texture5", scene);
-// materialSphere5.diffuseTexture = new BABYLON.Texture("textures/tree.png", scene);
-// materialSphere5.diffuseTexture.hasAlpha = true;//Has an alpha
+// var lightSphere2 = BABYLON.Mesh.CreateSphere("sphere", 10, 2, scene);
+// lightSphere2.position = light2.position;
+// lightSphere2.material = new BABYLON.StandardMaterial("light", scene);
+// lightSphere2.material.emissiveColor = new BABYLON.Color3(1, 1, 0);
 
-// //Creation of a material and show all the faces
-// var materialSphere6 = new BABYLON.StandardMaterial("texture6", scene);
-// materialSphere6.diffuseTexture = new BABYLON.Texture("textures/tree.png", scene);
-// materialSphere6.diffuseTexture.hasAlpha = true;//Have an alpha
-// materialSphere6.backFaceCulling = false;//Show all the faces of the element
+// // Ground
+// var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
+// var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+// groundMaterial.diffuseTexture = new BABYLON.Texture("textures/ground.jpg", scene);
+// groundMaterial.diffuseTexture.uScale = 6;
+// groundMaterial.diffuseTexture.vScale = 6;
+// groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+// ground.position.y = -2.05;
+// ground.material = groundMaterial;
 
-// //Creation of a repeated textured material
-// var materialPlane = new BABYLON.StandardMaterial("texturePlane", scene);
-// materialPlane.diffuseTexture = new BABYLON.Texture("textures/grass.jpg", scene);
-// materialPlane.diffuseTexture.uScale = 5.0;//Repeat 5 times on the Vertical Axes
-// materialPlane.diffuseTexture.vScale = 5.0;//Repeat 5 times on the Horizontal Axes
-// materialPlane.backFaceCulling = false;//Always show the front and the back of an element
+// // Torus
+// var torus = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
 
-// //Apply the materials to meshes
-// sphere1.material = materialSphere1;
-// sphere2.material = materialSphere2;
+// // Box
+// var box = BABYLON.Mesh.CreateBox("box", 3);
+// box.parent = torus;	
 
-// sphere3.material = materialSphere3;
-// sphere4.material = materialSphere4;
+// // Shadows
+// var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+// shadowGenerator.addShadowCaster(torus);
+// shadowGenerator.useExponentialShadowMap = true;
 
-// sphere5.material = materialSphere5;
-// sphere6.material = materialSphere6;
+// var shadowGenerator2 = new BABYLON.ShadowGenerator(1024, light2);
+// shadowGenerator2.addShadowCaster(torus);
+// shadowGenerator2.usePoissonSampling = true;
 
-// plane.material = materialPlane;
+// ground.receiveShadows = true;
 
-//Adding a light
-var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
+// // Animations
+// var alpha = 0;
+// scene.registerBeforeRender(function () {
+//     torus.rotation.x += 0.01;
+//     torus.rotation.z += 0.02;
 
-//Adding an Arc Rotate Camera
-var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
+//     torus.position = new BABYLON.Vector3(Math.cos(alpha) * 30, 10, Math.sin(alpha) * 30);
+//     alpha += 0.01;
 
-// The first parameter can be used to specify which mesh to import. Here we import all meshes
-BABYLON.SceneLoader.ImportMesh("", "https://playground.babylonjs.com/scenes/", "skull.babylon", scene, function (newMeshes) {
-    // Set the target of the camera to the first imported mesh
-    camera.target = newMeshes[0];
+// });
+// 	//Adding a light
+// 	var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
+    
+//         //Adding an Arc Rotate Camera
+//         var camera = new BABYLON.ArcRotateCamera("Camera", -0.5, 2.2, 100, BABYLON.Vector3.Zero(), scene);
+    
+//         // The first parameter can be used to specify which mesh to import. Here we import all meshes
+//         BABYLON.SceneLoader.ImportMesh("", "https://www.babylonjs-playground.com/scenes/", "skull.babylon", scene, function (newMeshes) {
+//             // Set the target of the camera to the first imported mesh
+//             camera.target = newMeshes[0];
+    
+//             newMeshes[0].material = new BABYLON.StandardMaterial("skull", scene);
+//             newMeshes[0].material.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+//         });
+    
+//         // Create the "God Rays" effect (volumetric light scattering)
+//         var godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, null, 100, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
+    
+//         // By default it uses a billboard to render the sun, just apply the desired texture
+//         // position and scale
+//         godrays.mesh.material.diffuseTexture = new BABYLON.Texture('https://www.babylonjs-playground.com/textures/sun.png', scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+//         godrays.mesh.material.diffuseTexture.hasAlpha = true;
+//         godrays.mesh.position = new BABYLON.Vector3(-150, 150, 150);
+//         godrays.mesh.scaling = new BABYLON.Vector3(350, 350, 350);
+    
+//         light.position = godrays.mesh.position;
 
-    console.log("Meshes loaded from babylon file: " + newMeshes.length);
-    for (var index = 0; index < newMeshes.length; index++) {
-        console.log(newMeshes[index].toString());
-    }
+// engine.runRenderLoop(function() {
+//     scene.render();
+// })
 
-    BABYLON.SceneLoader.ImportMesh("", "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/", "DamagedHelmet.gltf", scene, function (meshes) {
-        console.log("Meshes loaded from gltf file: " + meshes.length);
-        for (var index = 0; index < meshes.length; index++) {
-            console.log(meshes[index].toString());
-        }
-    });
-
-    console.log("render started")
+BABYLON.SceneLoader.Load("https://playground.babylonjs.com/scenes/", "skull.babylon", engine, (scene) => {
+    console.log('scene loaded!');
+    for (var index = 0; index < scene.meshes.length; index++) {
+        console.log(scene.meshes[index].name);
+    }    
     engine.runRenderLoop(function() {
         scene.render();
-    })
-});
-    
-
+    });
+  
+  }, progress => {}, (scene, err) => console.error('error:', err));

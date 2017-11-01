@@ -9,7 +9,7 @@ module BABYLON.GUI {
         private _imageHeight: number;
         private _loaded = false;
         private _stretch = Image.STRETCH_FILL;
-        private _source: string;
+        private _source: Nullable<string>;
         private _autoScale = false;
 
         private _sourceLeft = 0;
@@ -132,7 +132,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        public set source(value: string) {
+        public set source(value: Nullable<string>) {
             if (this._source === value) {
                 return;
             }
@@ -145,11 +145,13 @@ module BABYLON.GUI {
             this._domImage.onload = () => {
                 this._onImageLoaded();
             }
-            this._domImage.crossOrigin = "anonymous";
-            this._domImage.src = value;
+            if (value) {
+                this._domImage.crossOrigin = "anonymous";
+                this._domImage.src = value;
+            }
         }
 
-        constructor(public name?: string, url?: string) {
+        constructor(public name?: string, url: Nullable<string> = null) {
             super(name);
 
             this.source = url;
@@ -204,8 +206,10 @@ module BABYLON.GUI {
                             if (this._autoScale) {
                                 this.synchronizeSizeWithContent();
                             } 
-                            this._root.width = this.width;
-                            this._root.height = this.height;
+                            if (this._root) {
+                                this._root.width = this.width;
+                                this._root.height = this.height;
+                            }
                             break;
                     }
                 }

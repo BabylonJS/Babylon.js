@@ -42,7 +42,7 @@
             return this._sourceMesh.receiveShadows;
         }
 
-        public get material(): Material {
+        public get material(): Nullable<Material> {
             return this._sourceMesh.material;
         }
 
@@ -50,7 +50,7 @@
             return this._sourceMesh.visibility;
         }
 
-        public get skeleton(): Skeleton {
+        public get skeleton(): Nullable<Skeleton> {
             return this._sourceMesh.skeleton;
         }
 
@@ -72,7 +72,7 @@
         /**
          * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.  
          */
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray> {
             return this._sourceMesh.getVerticesData(kind, copyWhenShared);
         }
 
@@ -101,7 +101,7 @@
          * 
          * Returns the Mesh.  
          */
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): Mesh {
+        public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh {
             if (this.sourceMesh) {
                this.sourceMesh.setVerticesData(kind, data, updatable, stride);
             }
@@ -132,7 +132,7 @@
          * 
          * Returns the Mesh.  
          */
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
+        public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
             if (this.sourceMesh) {
                this.sourceMesh.updateVerticesData(kind, data, updateExtends, makeItUnique);
             }
@@ -146,7 +146,7 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: number): Mesh {
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null): Mesh {
             if (this.sourceMesh) {
                this.sourceMesh.setIndices(indices, totalVertices);
             }
@@ -163,11 +163,11 @@
         /**
          * Returns an array of indices (IndicesArray).  
          */
-        public getIndices(): IndicesArray {
+        public getIndices(): Nullable<IndicesArray> {
             return this._sourceMesh.getIndices();
         }
 
-        public get _positions(): Vector3[] {
+        public get _positions(): Nullable<Vector3[]> {
             return this._sourceMesh._positions;
         }
 
@@ -178,7 +178,9 @@
         public refreshBoundingInfo(): InstancedMesh {
             var meshBB = this._sourceMesh.getBoundingInfo();
 
-            this._boundingInfo = new BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
+            if (meshBB) {
+                this._boundingInfo = new BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
+            }
 
             this._updateBoundingInfo();
             return this;
@@ -202,7 +204,17 @@
          * Returns the current associated LOD AbstractMesh.  
          */
         public getLOD(camera: Camera): AbstractMesh {
-            this._currentLOD = <Mesh>this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
+            if (!camera) {
+                return this;
+            }
+
+            let boundingInfo = this.getBoundingInfo();
+
+            if (!boundingInfo) {
+                return this;
+            }
+
+            this._currentLOD = <Mesh>this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
 
             if (this._currentLOD === this.sourceMesh) {
                 return this;

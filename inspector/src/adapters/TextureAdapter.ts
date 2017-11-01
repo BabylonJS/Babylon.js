@@ -28,7 +28,7 @@ module INSPECTOR {
         }
 
         public getTools(): Array<AbstractTreeTool> {
-            let tools = [];
+            let tools = new Array<AbstractTreeTool>();
             // tools.push(new CameraPOV(this));
             return tools;
         }

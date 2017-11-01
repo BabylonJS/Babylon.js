@@ -120,6 +120,9 @@
         */
         public static get IsSupported(): boolean {
             var engine = Engine.LastCreatedEngine;
+            if (!engine) {
+                return false;
+            }
             return engine.getCaps().drawBuffersExtension;
         }
 
@@ -164,9 +167,10 @@
             };
 
             // Set up assets
+            let geometryBufferRenderer = <GeometryBufferRenderer>scene.enableGeometryBufferRenderer();
             this._createRandomTexture();
-            this._depthTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[0]; 
-            this._normalTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[1];
+            this._depthTexture = geometryBufferRenderer.getGBuffer().textures[0]; 
+            this._normalTexture = geometryBufferRenderer.getGBuffer().textures[1];
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(1.0);
@@ -215,7 +219,6 @@
 
         // Private Methods
         private _createBlurPostProcess(ssaoRatio: number, blurRatio: number): void {
-            var samples = 16;
             this._samplerOffsets = [];
             var expensive = this.expensiveBlur;
 
@@ -225,6 +228,10 @@
 
             this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurHPostProcess.onApply = (effect: Effect) => {
+                if (!this._scene.activeCamera) {
+                    return;
+                }
+
                 effect.setFloat("outSize", this._ssaoCombinePostProcess.width);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
                 effect.setFloat("far", this._scene.activeCamera.maxZ);
@@ -238,6 +245,10 @@
 
             this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurVPostProcess.onApply = (effect: Effect) => {
+                if (!this._scene.activeCamera) {
+                    return;
+                }
+
                 effect.setFloat("outSize", this._ssaoCombinePostProcess.height);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
                 effect.setFloat("far", this._scene.activeCamera.maxZ);
@@ -262,16 +273,11 @@
             var result = [];
             var vector, scale;
 
-            var rand = (min, max) => {
+            var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
             }
 
-            var lerp = (start, end, percent) => {
-                return (start + percent*(end - start));
-            }
-
             var i = 0;
-            var normal = new BABYLON.Vector3(0, 0, 1);
             while (i < numSamples) {
                vector = new BABYLON.Vector3(
                    rand(-1.0, 1.0),
@@ -279,7 +285,7 @@
                    rand(0.30, 1.0));
                vector.normalize();
                scale = i / numSamples;
-               scale = lerp(0.1, 1.0, scale*scale);
+               scale = Scalar.Lerp(0.1, 1.0, scale*scale);
                vector.scaleInPlace(scale);
 
 
@@ -310,6 +316,10 @@
                 if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", this._sampleSphere);
                     effect.setFloat("randTextureTiles", 4.0);
+                }
+
+                if (!this._scene.activeCamera) {
+                    return;
                 }
 
                 effect.setFloat("samplesFactor", 1 / this.samples);
@@ -350,7 +360,7 @@
 
             var context = this._randomTexture.getContext();
 
-            var rand = (min, max) => {
+            var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
             }
 

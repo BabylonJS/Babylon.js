@@ -73,16 +73,16 @@
         public upVector = Vector3.Up();
 
         @serialize()
-        public orthoLeft = null;
+        public orthoLeft: Nullable<number> = null;
 
         @serialize()
-        public orthoRight = null;
+        public orthoRight: Nullable<number> = null;
 
         @serialize()
-        public orthoBottom = null;
+        public orthoBottom: Nullable<number> = null;
 
         @serialize()
-        public orthoTop = null;
+        public orthoTop: Nullable<number> = null;
 
         @serialize()
         public fov = 0.8;
@@ -120,7 +120,7 @@
 
         public _cameraRigParams: any;
         public _rigCameras = new Array<Camera>();
-        public _rigPostProcess: PostProcess;
+        public _rigPostProcess: Nullable<PostProcess>;
         protected _webvrViewMatrix = Matrix.Identity();
         public _skipRendering = false;
         public _alternateCamera: Camera;
@@ -141,7 +141,7 @@
         public _postProcesses = new Array<PostProcess>();
         private _transformMatrix = Matrix.Zero();
 
-        public _activeMeshes = new SmartArray<Mesh>(256);
+        public _activeMeshes = new SmartArray<AbstractMesh>(256);
 
         private _globalPosition = Vector3.Zero();
         private _frustumPlanes: Plane[];
@@ -221,7 +221,7 @@
             return this._globalPosition;
         }
 
-        public getActiveMeshes(): SmartArray<Mesh> {
+        public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
         }
 
@@ -256,8 +256,6 @@
             if (!ignoreParentClass) {
                 super._updateCache();
             }
-
-            var engine = this.getEngine();
 
             this._cache.position.copyFrom(this.position);
             this._cache.upVector.copyFrom(this.upVector);
@@ -327,7 +325,7 @@
             return this._rigCameras;
         }
 
-        public get rigPostProcess(): PostProcess {
+        public get rigPostProcess(): Nullable<PostProcess> {
             return this._rigPostProcess;
         }
 
@@ -358,7 +356,7 @@
             }
         }
 
-        public attachPostProcess(postProcess: PostProcess, insertAt: number = null): number {
+        public attachPostProcess(postProcess: PostProcess, insertAt: Nullable<number> = null): number {
             if (!postProcess.isReusable() && this._postProcesses.indexOf(postProcess) > -1) {
                 Tools.Error("You're trying to reuse a post process not defined as reusable.");
                 return 0;
@@ -366,7 +364,6 @@
 
             if (insertAt == null || insertAt < 0) {
                 this._postProcesses.push(postProcess);
-
             } else {
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
@@ -374,30 +371,12 @@
             return this._postProcesses.indexOf(postProcess);
         }
 
-        public detachPostProcess(postProcess: PostProcess, atIndices: any = null): number[] {
-            var result = [];
-            var i: number;
-            var index: number;
-
-            if (!atIndices) {
-                var idx = this._postProcesses.indexOf(postProcess);
-                if (idx !== -1) {
-                    this._postProcesses.splice(idx, 1);
-                }
-            } else {
-                atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
-                // iterate descending, so can just splice as we go
-                for (i = atIndices.length - 1; i >= 0; i--) {
-                    if (this._postProcesses[atIndices[i]] !== postProcess) {
-                        result.push(i);
-                        continue;
-                    }
-                    index = atIndices[i];
-                    this._postProcesses.splice(index, 1);
-                }
+        public detachPostProcess(postProcess: PostProcess): void {
+            var idx = this._postProcesses.indexOf(postProcess);
+            if (idx !== -1) {
+                this._postProcesses.splice(idx, 1);
             }
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
-            return result;
         }
 
         public getWorldMatrix(): Matrix {
@@ -605,7 +584,10 @@
             // Remove from scene
             this.getScene().removeCamera(this);
             while (this._rigCameras.length > 0) {
-                this._rigCameras.pop().dispose();
+                let camera = this._rigCameras.pop();
+                if (camera) {
+                    camera.dispose();
+                }                
             }
 
             // Postprocesses
@@ -638,30 +620,30 @@
         }
 
         // ---- Camera rigs section ----
-        public get leftCamera(): FreeCamera {
+        public get leftCamera(): Nullable<FreeCamera> {
             if (this._rigCameras.length < 1) {
-                return undefined;
+                return null;
             }
             return (<FreeCamera>this._rigCameras[0]);
         }
 
-        public get rightCamera(): FreeCamera {
+        public get rightCamera(): Nullable<FreeCamera> {
             if (this._rigCameras.length < 2) {
-                return undefined;
+                return null;
             }
             return (<FreeCamera>this._rigCameras[1]);
         }
 
-        public getLeftTarget(): Vector3 {
+        public getLeftTarget(): Nullable<Vector3> {
             if (this._rigCameras.length < 1) {
-                return undefined;
+                return null;
             }
             return (<TargetCamera>this._rigCameras[0]).getTarget();
         }
 
-        public getRightTarget(): Vector3 {
+        public getRightTarget(): Nullable<Vector3> {
             if (this._rigCameras.length < 2) {
-                return undefined;
+                return null;
             }
             return (<TargetCamera>this._rigCameras[1]).getTarget();
         }
@@ -672,7 +654,11 @@
             }
 
             while (this._rigCameras.length > 0) {
-                this._rigCameras.pop().dispose();
+                let camera = this._rigCameras.pop();
+
+                if (camera) {
+                    camera.dispose();
+                }
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
@@ -683,8 +669,12 @@
 
             // create the rig cameras, unless none
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
-                this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
-                this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                let leftCamera = this.createRigCamera(this.name + "_L", 0);
+                let rightCamera = this.createRigCamera(this.name + "_R", 1);
+                if (leftCamera && rightCamera) {
+                    this._rigCameras.push(leftCamera);
+                    this._rigCameras.push(rightCamera);
+                }
             }
 
             switch (this.cameraRigMode) {
@@ -810,7 +800,7 @@
         /**
          * needs to be overridden by children so sub has required properties to be copied
          */
-        public createRigCamera(name: string, cameraIndex: number): Camera {
+        public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
             return null;
         }
 

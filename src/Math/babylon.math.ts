@@ -1,7 +1,4 @@
 ﻿module BABYLON {
-
-    declare var SIMD;
-
     export const ToGammaSpace = 1 / 2.2;
     export const ToLinearSpace = 2.2;
     export const Epsilon = 0.001;
@@ -41,7 +38,7 @@
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
          * Returns the Color3.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Color3 {
+        public toArray(array: FloatArray, index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
@@ -64,7 +61,7 @@
          * Returns a new array populated with 3 numeric elements : red, green and blue values.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -316,7 +313,7 @@
          * Adds in place the passed Color4 values to the current Color4.  
          * Returns the updated Color4.  
          */
-        public addInPlace(right): Color4 {
+        public addInPlace(right: Color4): Color4 {
             this.r += right.r;
             this.g += right.g;
             this.b += right.b;
@@ -328,7 +325,7 @@
          * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -627,7 +624,7 @@
          * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.  
          * Returns the Vector2.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector2 {
+        public toArray(array: FloatArray, index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
             return this;
@@ -636,7 +633,7 @@
          * Returns a new array with 2 elements : the Vector2 coordinates.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -1078,7 +1075,7 @@
          * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3.  
          * Returns the Vector3.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector3 {
+        public toArray(array: FloatArray, index: number = 0): Vector3 {
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
@@ -1314,6 +1311,28 @@
             return this;
         }
 
+        /**
+         * Return true is the vector is non uniform meaning x, y or z are not all the same.
+         */
+        public get isNonUniform(): boolean {
+            let absX = Math.abs(this.x);
+            let absY = Math.abs(this.y);
+            if (absX !== absY) {
+                return true;
+            }
+
+            let absZ = Math.abs(this.z);
+            if (absX !== absZ) {
+                return true;
+            }
+
+            if (absY !== absZ) {
+                return true;
+            }
+
+            return false;
+        }
+
         // Properties
         /**
          * Returns the length of the Vector3 (float).  
@@ -1387,7 +1406,7 @@
         /**
          * 
          */
-        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size) {
+        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number) {
             var d0 = Vector3.Dot(vector0, axis) - size;
             var d1 = Vector3.Dot(vector1, axis) - size;
 
@@ -1825,7 +1844,7 @@
          * Returns a new array populated with 4 elements : the Vector4 coordinates.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
 
             this.toArray(result, 0);
 
@@ -1836,7 +1855,7 @@
          * Populates the passed array from the passed index with the Vector4 coordinates.  
          * Returns the Vector4.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Vector4 {
+        public toArray(array: FloatArray, index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }
@@ -2887,6 +2906,7 @@
         private static _yAxis: Vector3 = Vector3.Zero();
         private static _zAxis: Vector3 = Vector3.Zero();
         private static _updateFlagSeed = 0;
+        private static _identityReadOnly = Matrix.Identity();
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
@@ -3386,7 +3406,7 @@
         /**
          * Returns the index-th row of the current matrix as a new Vector4.  
          */
-        public getRow(index: number): Vector4 {
+        public getRow(index: number): Nullable<Vector4> {
             if (index < 0 || index > 3) {
                 return null;
             }
@@ -3413,6 +3433,24 @@
         }
 
         /**
+         * Compute the transpose of the matrix.  
+         * Returns a new Matrix.  
+         */        
+        public transpose(): Matrix {
+            return Matrix.Transpose(this);
+        }
+
+        /**
+         * Compute the transpose of the matrix.  
+         * Returns the current matrix.  
+         */        
+        public transposeToRef(result: Matrix): Matrix {
+            Matrix.TransposeToRef(this, result);
+
+            return this;
+        }
+
+        /**
          * Sets the index-th row of the current matrix with the passed 4 x float values.
          * Returns the updated Matrix.    
          */
@@ -3429,6 +3467,15 @@
             this._markAsUpdated();
             return this;
         }
+
+        /**
+         * Static identity matrix to be used as readonly matrix
+         * Must not be updated.
+         */
+        public static get IdentityReadOnly(): Matrix {
+            return Matrix._identityReadOnly;
+        }
+
         /**
          * Returns a new Matrix set from the 16 passed floats.  
          */
@@ -3918,7 +3965,7 @@
         /**
          * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
          */
-        public static OrthoOffCenterRHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+        public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
             result.m[10] *= -1.0;
         }
@@ -4012,7 +4059,7 @@
         /**
          * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
          */
-        public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+        public static PerspectiveFovWebVRToRef(fov: {upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number}, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
 
             var rightHandedFactor = rightHanded ? -1 : 1;
 
@@ -4082,6 +4129,15 @@
         public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
 
+            Matrix.TransposeToRef(matrix, result);
+
+            return result;
+        }
+
+        /**
+         * Compute the transpose of the passed Matrix and store it in the result matrix.  
+         */
+        public static TransposeToRef(matrix: Matrix, result: Matrix): void {
             result.m[0] = matrix.m[0];
             result.m[1] = matrix.m[4];
             result.m[2] = matrix.m[8];
@@ -4101,8 +4157,6 @@
             result.m[13] = matrix.m[7];
             result.m[14] = matrix.m[11];
             result.m[15] = matrix.m[15];
-
-            return result;
         }
 
         /**
@@ -4292,7 +4346,7 @@
         /**
          * Returns the dot product (float) of the point coordinates and the plane normal.  
          */
-        public dotCoordinate(point): number {
+        public dotCoordinate(point: Vector3): number {
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
         }
 
@@ -4353,7 +4407,7 @@
         /**
          * Returns a new Plane defined by the three passed points.  
          */
-        static FromPoints(point1, point2, point3): Plane {
+        static FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
             var result = new Plane(0.0, 0.0, 0.0, 0.0);
             result.copyFromPoints(point1, point2, point3);
             return result;
@@ -4763,7 +4817,7 @@
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
         */
-        constructor(public path: Vector3[], firstNormal?: Vector3, raw?: boolean) {
+        constructor(public path: Vector3[], firstNormal: Nullable<Vector3> = null, raw?: boolean) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p] = path[p].clone(); // hard copy
             }
@@ -4814,7 +4868,7 @@
          * Forces the Path3D tangent, normal, binormal and distance recomputation.
          * Returns the same object updated.  
          */
-        public update(path: Vector3[], firstNormal?: Vector3): Path3D {
+        public update(path: Vector3[], firstNormal: Nullable<Vector3> = null): Path3D {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p].x = path[p].x;
                 this._curve[p].y = path[p].y;
@@ -4825,7 +4879,7 @@
         }
 
         // private function compute() : computes tangents, normals and binormals
-        private _compute(firstNormal) {
+        private _compute(firstNormal: Nullable<Vector3>): void {
             var l = this._curve.length;
 
             // first and last tangents
@@ -4910,7 +4964,7 @@
         // private function normalVector(v0, vt, va) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
-        private _normalVector(v0: Vector3, vt: Vector3, va: Vector3): Vector3 {
+        private _normalVector(v0: Vector3, vt: Vector3, va: Nullable<Vector3>): Vector3 {
             var normal0: Vector3;
             var tgl = vt.length();
             if (tgl === 0.0) {
@@ -4927,6 +4981,9 @@
                 }
                 else if (!Scalar.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
                     point = new Vector3(0.0, 0.0, 1.0);
+                }
+                else {
+                    point = Vector3.Zero();
                 }
                 normal0 = Vector3.Cross(vt, point);
             }
@@ -5013,8 +5070,9 @@
             totalPoints.push(points[points.length - 1].clone());
             var catmullRom = new Array<Vector3>();
             var step = 1.0 / nbPoints;
+            var amount = 0.0;
             for (var i = 0; i < totalPoints.length - 3; i++) {
-                var amount = 0.0;
+                amount = 0;
                 for (var c = 0; c < nbPoints; c++) {
                     catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
                     amount += step

@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.targetCamera.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class FollowCamera extends TargetCamera {
         @serialize()
         public radius: number = 12;
@@ -18,15 +16,15 @@ module BABYLON {
         public maxCameraSpeed: number = 20;
 
         @serializeAsMeshReference("lockedTargetId")
-        public lockedTarget: AbstractMesh;
+        public lockedTarget: Nullable<AbstractMesh>;
 
-        constructor(name: string, position: Vector3, scene: Scene, lockedTarget?: AbstractMesh) {
+        constructor(name: string, position: Vector3, scene: Scene, lockedTarget: Nullable<AbstractMesh> = null) {
             super(name, position, scene);
 
             this.lockedTarget = lockedTarget;
         }
 
-        private getRadians(degrees): number {
+        private getRadians(degrees: number): number {
             return degrees * Math.PI / 180;
         }
 
@@ -72,7 +70,9 @@ module BABYLON {
 
         public _checkInputs(): void {
             super._checkInputs();
-            this.follow(this.lockedTarget);
+            if (this.lockedTarget) {
+                this.follow(this.lockedTarget);
+            }
         }
 
         public getClassName(): string {
@@ -84,17 +84,20 @@ module BABYLON {
 
         private _cartesianCoordinates: Vector3 = Vector3.Zero();
 
-        constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: AbstractMesh, scene: Scene) {
+        constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: Nullable<AbstractMesh>, scene: Scene) {
             super(name, Vector3.Zero(), scene);
             this.follow();
         }
 
         private follow(): void {
+            if (!this.target) {
+                return;
+            }
             this._cartesianCoordinates.x = this.radius * Math.cos(this.alpha) * Math.cos(this.beta);
             this._cartesianCoordinates.y = this.radius * Math.sin(this.beta);
             this._cartesianCoordinates.z = this.radius * Math.sin(this.alpha) * Math.cos(this.beta);
 
-            var targetPosition = this.target.getAbsolutePosition();            
+            var targetPosition = this.target.getAbsolutePosition();
             this.position = targetPosition.add(this._cartesianCoordinates);
             this.setTarget(targetPosition);
         }

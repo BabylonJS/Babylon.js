@@ -237,7 +237,7 @@
         }
 
         private _parentedWorldMatrix: Matrix;
-        public _shadowGenerator: IShadowGenerator;
+        public _shadowGenerator: Nullable<IShadowGenerator>;
         public _excludedMeshesIds = new Array<string>();
         public _includedOnlyMeshesIds = new Array<string>();
 
@@ -302,7 +302,7 @@
         /**
          * Returns the Light associated shadow generator.  
          */
-        public getShadowGenerator(): IShadowGenerator {
+        public getShadowGenerator(): Nullable<IShadowGenerator> {
             return this._shadowGenerator;
         }
 
@@ -426,8 +426,13 @@
         /**
          * Returns a new Light object, named "name", from the current one.  
          */
-        public clone(name: string): Light {
-            return SerializationHelper.Clone(Light.GetConstructorFromName(this.getTypeID(), name, this.getScene()), this);
+        public clone(name: string): Nullable<Light> {
+            let constructor = Light.GetConstructorFromName(this.getTypeID(), name, this.getScene());
+
+            if (!constructor) {
+                return null;
+            }
+            return SerializationHelper.Clone(constructor, this);
         }
         /**
          * Serializes the current light into a Serialization object.  
@@ -470,7 +475,7 @@
          * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.  
          * This new light is named "name" and added to the passed scene.  
          */
-        static GetConstructorFromName(type: number, name: string, scene: Scene): () => Light {
+        static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light> {
             switch (type) {
                 case 0:
                     return () => new PointLight(name, Vector3.Zero(), scene);
@@ -481,13 +486,21 @@
                 case 3:
                     return () => new HemisphericLight(name, Vector3.Zero(), scene);
             }
+
+            return null;
         }
 
         /**
          * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.  
          */
-        public static Parse(parsedLight: any, scene: Scene): Light {
-            var light = SerializationHelper.Parse(Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene), parsedLight, scene);
+        public static Parse(parsedLight: any, scene: Scene): Nullable<Light> {
+            let constructor = Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene);
+
+            if (!constructor) {
+                return null;
+            }
+
+            var light = SerializationHelper.Parse(constructor, parsedLight, scene);
 
             // Inclusion / exclusions
             if (parsedLight.excludedMeshesIds) {
@@ -651,9 +664,9 @@
             return photometricScale;
         }
 
-        private _reorderLightsInScene(): void {
+        public _reorderLightsInScene(): void {
             var scene = this.getScene();
-            if (this.renderPriority != 0) {
+            if (this._renderPriority != 0) {
                 scene.requireLightSorting = true;
             }
             this.getScene().sortLightsByPriority();

@@ -46,8 +46,8 @@ module BABYLON.Internals {
             var right = texture.readPixels(0);
             var left = texture.readPixels(1);
 
-            var up: ArrayBufferView;
-            var down: ArrayBufferView;
+            var up: Nullable<ArrayBufferView>;
+            var down: Nullable<ArrayBufferView>;
             if (texture.isRenderTarget) {
                 up = texture.readPixels(3);
                 down = texture.readPixels(2);
@@ -104,7 +104,7 @@ module BABYLON.Internals {
 
             for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
                 var fileFace = this.FileFaces[faceIndex];
-                var dataArray = cubeInfo[fileFace.name];
+                var dataArray = (<any>cubeInfo)[fileFace.name];
                 var v = minUV;
 
                 // TODO: we could perform the summation directly into a SphericalPolynomial (SP), which is more efficient than SphericalHarmonic (SH).

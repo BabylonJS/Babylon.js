@@ -7,13 +7,13 @@ declare module BABYLON {
     }
     interface IGLTFLoaderData {
         json: Object;
-        bin: ArrayBufferView;
+        bin: Nullable<ArrayBufferView>;
     }
-    interface IGLTFLoader {
+    interface IGLTFLoader extends IDisposable {
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
     }
-    class GLTFFileLoader implements ISceneLoaderPluginAsync {
+    class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync {
         static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
         onParsed: (data: IGLTFLoaderData) => void;
@@ -27,30 +27,26 @@ declare module BABYLON {
          */
         onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
         /**
-         * Raised when the visible components (geometry, materials, textures, etc.) are first ready to be rendered.
-         * For assets with LODs, raised when the first LOD is complete.
-         * For assets without LODs, raised when the model is complete just before onComplete.
-         */
-        onReady: () => void;
-        /**
          * Raised when the asset is completely loaded, just before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
-         * For assets without LODs, raised when the model is complete just after onReady.
+         * For assets without LODs, raised when the model is complete just after onSuccess.
          */
         onComplete: () => void;
+        private _loader;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
+        dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         canDirectLoad(data: string): boolean;
-        private static _parse(data, onError);
-        private _getLoader(loaderData, onError);
-        private static _parseBinary(data, onError);
-        private static _parseV1(binaryReader, onError);
-        private static _parseV2(binaryReader, onError);
+        private static _parse(data);
+        private _getLoader(loaderData);
+        private static _parseBinary(data);
+        private static _parseV1(binaryReader);
+        private static _parseV2(binaryReader);
         private static _parseVersion(version);
         private static _compareVersion(a, b);
-        private static _decodeBufferToText(view);
+        private static _decodeBufferToText(buffer);
     }
 }
 
@@ -139,7 +135,9 @@ declare module BABYLON.GLTF1 {
     * Interfaces
     */
     interface IGLTFProperty {
-        extensions?: Object;
+        extensions?: {
+            [key: string]: any;
+        };
         extras?: Object;
     }
     interface IGLTFChildRootProperty extends IGLTFProperty {
@@ -203,10 +201,16 @@ declare module BABYLON.GLTF1 {
         functions: IGLTFTechniqueStatesFunctions;
     }
     interface IGLTFTechnique extends IGLTFChildRootProperty {
-        parameters: Object;
+        parameters: {
+            [key: string]: IGLTFTechniqueParameter;
+        };
         program: string;
-        attributes: Object;
-        uniforms: Object;
+        attributes: {
+            [key: string]: string;
+        };
+        uniforms: {
+            [key: string]: string;
+        };
         states: IGLTFTechniqueStates;
     }
     interface IGLTFMaterial extends IGLTFChildRootProperty {
@@ -214,7 +218,9 @@ declare module BABYLON.GLTF1 {
         values: string[];
     }
     interface IGLTFMeshPrimitive extends IGLTFProperty {
-        attributes: Object;
+        attributes: {
+            [key: string]: string;
+        };
         indices: string;
         material: string;
         mode?: number;
@@ -293,8 +299,12 @@ declare module BABYLON.GLTF1 {
     }
     interface IGLTFAnimation extends IGLTFChildRootProperty {
         channels?: IGLTFAnimationChannel[];
-        parameters?: Object;
-        samplers?: Object;
+        parameters?: {
+            [key: string]: string;
+        };
+        samplers?: {
+            [key: string]: IGLTFAnimationSampler;
+        };
     }
     interface IGLTFNodeInstanceSkin {
         skeletons: string[];
@@ -328,25 +338,61 @@ declare module BABYLON.GLTF1 {
     * Runtime
     */
     interface IGLTFRuntime {
-        extensions: Object;
-        accessors: Object;
-        buffers: Object;
-        bufferViews: Object;
-        meshes: Object;
-        lights: Object;
-        cameras: Object;
-        nodes: Object;
-        images: Object;
-        textures: Object;
-        shaders: Object;
-        programs: Object;
-        samplers: Object;
-        techniques: Object;
-        materials: Object;
-        animations: Object;
-        skins: Object;
+        extensions: {
+            [key: string]: any;
+        };
+        accessors: {
+            [key: string]: IGLTFAccessor;
+        };
+        buffers: {
+            [key: string]: IGLTFBuffer;
+        };
+        bufferViews: {
+            [key: string]: IGLTFBufferView;
+        };
+        meshes: {
+            [key: string]: IGLTFMesh;
+        };
+        lights: {
+            [key: string]: IGLTFLight;
+        };
+        cameras: {
+            [key: string]: IGLTFCamera;
+        };
+        nodes: {
+            [key: string]: IGLTFNode;
+        };
+        images: {
+            [key: string]: IGLTFImage;
+        };
+        textures: {
+            [key: string]: IGLTFTexture;
+        };
+        shaders: {
+            [key: string]: IGLTFShader;
+        };
+        programs: {
+            [key: string]: IGLTFProgram;
+        };
+        samplers: {
+            [key: string]: IGLTFSampler;
+        };
+        techniques: {
+            [key: string]: IGLTFTechnique;
+        };
+        materials: {
+            [key: string]: IGLTFMaterial;
+        };
+        animations: {
+            [key: string]: IGLTFAnimation;
+        };
+        skins: {
+            [key: string]: IGLTFSkins;
+        };
         currentScene?: Object;
-        scenes: Object;
+        scenes: {
+            [key: string]: IGLTFScene;
+        };
         extensionsUsed: string[];
         extensionsRequired?: string[];
         buffersCount: number;
@@ -384,8 +430,8 @@ declare module BABYLON.GLTF1 {
     class GLTFLoaderBase {
         static CreateRuntime(parsedData: any, scene: Scene, rootUrl: string): IGLTFRuntime;
         static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void, onProgress?: () => void): void;
-        static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): void;
-        static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void;
+        static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: Nullable<ArrayBufferView>) => void, onError: (message: string) => void): void;
+        static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: Nullable<ArrayBufferView>, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void;
         static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): void;
         static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void;
     }
@@ -397,6 +443,7 @@ declare module BABYLON.GLTF1 {
             [name: string]: GLTFLoaderExtension;
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
+        dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         private _loadShadersAsync(gltfRuntime, onload);

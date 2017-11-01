@@ -17,7 +17,7 @@ module BABYLON {
 
         // Used to draw the virtual joystick inside a 2D canvas on top of the WebGL rendering canvas
         private static _globalJoystickIndex: number = 0;
-        private static vjCanvas: HTMLCanvasElement;
+        private static vjCanvas: Nullable<HTMLCanvasElement>;
         private static vjCanvasContext: CanvasRenderingContext2D;
         private static vjCanvasWidth: number;
         private static vjCanvasHeight: number;
@@ -80,8 +80,10 @@ module BABYLON {
             this._onResize = evt => {
                 VirtualJoystick.vjCanvasWidth = window.innerWidth;
                 VirtualJoystick.vjCanvasHeight = window.innerHeight;
-                VirtualJoystick.vjCanvas.width = VirtualJoystick.vjCanvasWidth;
-                VirtualJoystick.vjCanvas.height = VirtualJoystick.vjCanvasHeight;
+                if (VirtualJoystick.vjCanvas) {
+                    VirtualJoystick.vjCanvas.width = VirtualJoystick.vjCanvasWidth;
+                    VirtualJoystick.vjCanvas.height = VirtualJoystick.vjCanvasHeight;
+                }
                 VirtualJoystick.halfWidth = VirtualJoystick.vjCanvasWidth / 2;
                 VirtualJoystick.halfHeight = VirtualJoystick.vjCanvasHeight / 2;
             }
@@ -104,7 +106,13 @@ module BABYLON {
                 VirtualJoystick.vjCanvas.style.msTouchAction = "none";
                 // Support for jQuery PEP polyfill
                 VirtualJoystick.vjCanvas.setAttribute("touch-action", "none");
-                VirtualJoystick.vjCanvasContext = VirtualJoystick.vjCanvas.getContext('2d');
+                let context = VirtualJoystick.vjCanvas.getContext('2d');
+
+                if (!context) {
+                    throw new Error("Unable to create canvas for virtual joystick");
+                }
+
+                VirtualJoystick.vjCanvasContext = context;
                 VirtualJoystick.vjCanvasContext.strokeStyle = "#ffffff";
                 VirtualJoystick.vjCanvasContext.lineWidth = 2;
                 document.body.appendChild(VirtualJoystick.vjCanvas);
@@ -284,15 +292,6 @@ module BABYLON {
                 default:
                     this._axisTargetedByUpAndDown = JoystickAxis.Y;
                     break;
-            }
-        }
-
-        private _clearCanvas(): void {
-            if (this._leftJoystick) {
-                VirtualJoystick.vjCanvasContext.clearRect(0, 0, VirtualJoystick.vjCanvasWidth / 2, VirtualJoystick.vjCanvasHeight);
-            }
-            else {
-                VirtualJoystick.vjCanvasContext.clearRect(VirtualJoystick.vjCanvasWidth / 2, 0, VirtualJoystick.vjCanvasWidth, VirtualJoystick.vjCanvasHeight);
             }
         }
 

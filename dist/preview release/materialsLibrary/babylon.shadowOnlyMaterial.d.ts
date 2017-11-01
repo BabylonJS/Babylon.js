@@ -1,14 +1,12 @@
 
 declare module BABYLON {
     class ShadowOnlyMaterial extends PushMaterial {
-        private _worldViewProjectionMatrix;
-        private _scaledDiffuse;
         private _renderId;
         private _activeLight;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         activeLight: IShadowLight;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;

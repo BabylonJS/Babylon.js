@@ -110,6 +110,11 @@
          */
         protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
+
+            if (!activeCamera) {
+                return;
+            }
+
             Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0, 
             this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
         }

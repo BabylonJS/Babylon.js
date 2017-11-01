@@ -1,34 +1,32 @@
 ﻿module BABYLON {
-    export type IndicesArray = number[] | Int32Array | Uint32Array | Uint16Array;
-
     export interface IGetSetVerticesData
     {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array;
-        getIndices(copyWhenShared?: boolean): IndicesArray;
-        setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
-        updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: IndicesArray): void;
+        getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray>;
+        getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
+        setVerticesData(kind: string, data: FloatArray, updatable: boolean): void;
+        updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): void;
+        setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
     }
 
     export class VertexData {
-        public positions: number[] | Float32Array;
-        public normals: number[] | Float32Array;
-        public tangents: number[] | Float32Array;
-        public uvs: number[] | Float32Array;
-        public uvs2: number[] | Float32Array;
-        public uvs3: number[] | Float32Array;
-        public uvs4: number[] | Float32Array;
-        public uvs5: number[] | Float32Array;
-        public uvs6: number[] | Float32Array;
-        public colors: number[] | Float32Array;
-        public matricesIndices: number[] | Float32Array;
-        public matricesWeights: number[] | Float32Array;
-        public matricesIndicesExtra: number[] | Float32Array;
-        public matricesWeightsExtra: number[] | Float32Array;
-        public indices: IndicesArray;
+        public positions: Nullable<FloatArray>;
+        public normals: Nullable<FloatArray>;
+        public tangents: Nullable<FloatArray>;
+        public uvs: Nullable<FloatArray>;
+        public uvs2: Nullable<FloatArray>;
+        public uvs3: Nullable<FloatArray>;
+        public uvs4: Nullable<FloatArray>;
+        public uvs5: Nullable<FloatArray>;
+        public uvs6: Nullable<FloatArray>;
+        public colors: Nullable<FloatArray>;
+        public matricesIndices: Nullable<FloatArray>;
+        public matricesWeights: Nullable<FloatArray>;
+        public matricesIndicesExtra: Nullable<FloatArray>;
+        public matricesWeightsExtra: Nullable<FloatArray>;
+        public indices: Nullable<IndicesArray>;
 
-        public set(data: number[] | Float32Array, kind: string) {
+        public set(data: FloatArray, kind: string) {
             switch (kind) {
                 case VertexBuffer.PositionKind:
                     this.positions = data;
@@ -113,7 +111,7 @@
             return this;
         }
 
-        private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable?: boolean): VertexData {
+        private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false): VertexData {
             if (this.positions) {
                 meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
             }
@@ -171,7 +169,7 @@
             }
 
             if (this.indices) {
-                meshOrGeometry.setIndices(this.indices);
+                meshOrGeometry.setIndices(this.indices, null, updatable);
             }
             return this;
         }
@@ -234,7 +232,7 @@
             }
 
             if (this.indices) {
-                meshOrGeometry.setIndices(this.indices);
+                meshOrGeometry.setIndices(this.indices, null);
             }
             return this;
         }
@@ -294,7 +292,9 @@
          * Merges the passed VertexData into the current one.  
          * Returns the modified VertexData.  
          */
-        public merge(other: VertexData): VertexData {
+        public merge(other: VertexData, options?: { tangentLength?: number }): VertexData {
+            options = options || {};
+
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
@@ -309,10 +309,14 @@
 
             this.positions = this._mergeElement(this.positions, other.positions);
 
+            if (!this.positions) {
+                return this;
+            }
+
             var count = this.positions.length / 3;
 
             this.normals = this._mergeElement(this.normals, other.normals, count * 3);
-            this.tangents = this._mergeElement(this.tangents, other.tangents, count * 4);
+            this.tangents = this._mergeElement(this.tangents, other.tangents, count * (options.tangentLength || 4));
             this.uvs = this._mergeElement(this.uvs, other.uvs, count * 2);
             this.uvs2 = this._mergeElement(this.uvs2, other.uvs2, count * 2);
             this.uvs3 = this._mergeElement(this.uvs3, other.uvs3, count * 2);
@@ -327,17 +331,17 @@
             return this;
         }
 
-        private _mergeElement(source: number[] | Float32Array, other: number[] | Float32Array, length = 0): number[] | Float32Array {
+        private _mergeElement(source: Nullable<FloatArray>, other: Nullable<FloatArray>, length = 0): Nullable<FloatArray> {
             if (!other && !source) {
                 return null;
             }
 
             if (!other) {
-                return this._mergeElement(source, new Float32Array(source.length), length);
+                return this._mergeElement(source, new Float32Array((<FloatArray>source).length), length);
             }
 
             if (!source) {
-                if (length === other.length) {
+                if (length === 0 || length === other.length) {
                     return other;
                 }
 
@@ -604,8 +608,8 @@
             // vertical distances (v)
             var path1: Vector3[];
             var path2: Vector3[];
-            var vertex1: Vector3;
-            var vertex2: Vector3;
+            var vertex1: Nullable<Vector3> = null;
+            var vertex2: Nullable<Vector3> = null;
             for (i = 0; i < minlg + closePathCorr; i++) {
                 vTotalDistance[i] = 0;
                 vs[i] = [0];
@@ -625,7 +629,8 @@
                     vs[i].push(dist);
                     vTotalDistance[i] = dist;
                 }
-                if (closeArray) {
+
+                if (closeArray && vertex2 && vertex1) {
                     path1 = pathArray[p];
                     path2 = pathArray[0];
                     if (i === minlg) {   // closePath
@@ -719,8 +724,9 @@
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
             // Colors
+            let colors: Nullable<Float32Array> = null;
             if (customColors) {
-                var colors = new Float32Array(customColors.length * 4);
+                colors = new Float32Array(customColors.length * 4);
                 for (var c = 0; c < customColors.length; c++) {
                     colors[c * 4] = customColors[c].r;
                     colors[c * 4 + 1] = customColors[c].g;
@@ -739,7 +745,7 @@
             vertexData.positions = positions32;
             vertexData.normals = normals32;
             vertexData.uvs = uvs32;
-            if (customColors) {
+            if (colors) {
                 vertexData.set(colors, VertexBuffer.ColorKind);
             }
 
@@ -773,7 +779,7 @@
             var depth = options.depth || options.size || 1;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
-            var faceColors: Color4[] = options.faceColors;
+            var faceColors = options.faceColors;
             var colors = [];
 
             // default face colors and UV if undefined
@@ -867,8 +873,8 @@
             var diameterX: number = options.diameterX || options.diameter || 1;
             var diameterY: number = options.diameterY || options.diameter || 1;
             var diameterZ: number = options.diameterZ || options.diameter || 1;
-            var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
-            var slice: number = (options.slice <= 0) ? 1.0 : options.slice || 1.0;
+            var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
+            var slice: number = options.slice && (options.slice <= 0) ? 1.0 : options.slice || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
@@ -940,12 +946,12 @@
             var diameterBottom: number = (options.diameterBottom === 0) ? 0 : options.diameterBottom || options.diameter || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
-            var hasRings: boolean = options.hasRings;
-            var enclose: boolean = options.enclose;
-            var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
+            var hasRings: boolean = options.hasRings ? true : false;
+            var enclose: boolean = options.enclose ? true : false
+            var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
-            var faceColors: Color4[] = options.faceColors;
+            var faceColors = options.faceColors;
             // default face colors and UV if undefined
             var quadNb: number = (arc !== 1 && enclose) ? 2 : 0;
             var ringNb: number = (hasRings) ? subdivisions : 1;
@@ -963,11 +969,11 @@
                 }
             }
 
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
-            var colors = [];
+            var indices = new Array<number>();
+            var positions = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
+            var colors = new Array<number>();
 
             var angle_step = Math.PI * 2 * arc / tessellation;
             var angle: number;
@@ -1088,11 +1094,15 @@
             var s: number;
             i = 0;
             for (s = 0; s < subdivisions; s++) {
+                let i0: number = 0;
+                let i1: number = 0;
+                let i2: number = 0;
+                let i3: number = 0;
                 for (j = 0; j < tessellation; j++) {
-                    var i0 = i * (e + 1) + j;
-                    var i1 = (i + 1) * (e + 1) + j;
-                    var i2 = i * (e + 1) + (j + 1);
-                    var i3 = (i + 1) * (e + 1) + (j + 1);
+                    i0 = i * (e + 1) + j;
+                    i1 = (i + 1) * (e + 1) + j;
+                    i2 = i * (e + 1) + (j + 1);
+                    i3 = (i + 1) * (e + 1) + (j + 1);
                     indices.push(i0, i1, i2);
                     indices.push(i3, i2, i1);
                 }
@@ -1106,7 +1116,7 @@
             }
 
             // Caps
-            var createCylinderCap = isTop => {
+            var createCylinderCap = (isTop: boolean) => {
                 var radius = isTop ? diameterTop / 2 : diameterBottom / 2;
                 if (radius === 0) {
                     return;
@@ -1117,7 +1127,7 @@
                 var circleVector;
                 var i: number;
                 var u: Vector4 = (isTop) ? faceUV[surfaceNb - 1] : faceUV[0];
-                var c: Color4;
+                var c: Nullable<Color4> = null;
                 if (faceColors) {
                     c = (isTop) ? faceColors[surfaceNb - 1] : faceColors[0];
                 }
@@ -1128,7 +1138,7 @@
                 positions.push(center.x, center.y, center.z);
                 normals.push(0, isTop ? 1 : -1, 0);
                 uvs.push(u.x + (u.z - u.x) * 0.5, u.y + (u.w - u.y) * 0.5);
-                if (faceColors) {
+                if (c) {
                     colors.push(c.r, c.g, c.b, c.a);
                 }
 
@@ -1142,7 +1152,7 @@
                     positions.push(circleVector.x, circleVector.y, circleVector.z);
                     normals.push(0, isTop ? 1 : -1, 0);
                     uvs.push(u.x + (u.z - u.x) * textureCoordinate.x, u.y + (u.w - u.y) * textureCoordinate.y);
-                    if (faceColors) {
+                    if (c) {
                         colors.push(c.r, c.g, c.b, c.a);
                     }
                 }
@@ -1386,10 +1396,10 @@
             var subdivisions = options.subdivisions || { w: 1, h: 1 };
             var precision = options.precision || { w: 1, h: 1 };
 
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
+            var indices = new Array<number>();
+            var positions = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
             var row: number, col: number, tileRow: number, tileCol: number;
 
             subdivisions.h = (subdivisions.h < 1) ? 1 : subdivisions.h;
@@ -1585,14 +1595,14 @@
          * Creates the VertexData of the Disc or regular Polygon.  
          */
         public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-            var positions = [];
-            var indices = [];
-            var normals = [];
-            var uvs = [];
+            var positions = new Array<number>();
+            var indices = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
 
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
-            var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
+            var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // positions and uvs
@@ -1637,9 +1647,9 @@
         /**
          * Re-creates the VertexData of the Polygon for sideOrientation.  
          */
-        public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?, fColors?, frontUVs?: Vector4, backUVs?: Vector4) {
+        public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?:Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4) {
 			var faceUV: Vector4[] = fUV || new Array<Vector4>(3);
-            var faceColors: Color4[] = fColors;
+            var faceColors = fColors;
             var colors = [];
 
             // default face colors and UV if undefined
@@ -1652,11 +1662,11 @@
                 }
             }
             
-            var positions = polygon.getVerticesData(VertexBuffer.PositionKind);
-			var normals = polygon.getVerticesData(VertexBuffer.NormalKind);
-			var uvs = polygon.getVerticesData(VertexBuffer.UVKind);
-			var indices = polygon.getIndices();
-
+            var positions = <FloatArray>polygon.getVerticesData(VertexBuffer.PositionKind);
+			var normals = <FloatArray>polygon.getVerticesData(VertexBuffer.NormalKind);
+			var uvs = <FloatArray>polygon.getVerticesData(VertexBuffer.UVKind);
+            var indices = <IndicesArray>polygon.getIndices();
+            
             // set face colours and textures
             var idx: number = 0;
             var face: number = 0;
@@ -1823,10 +1833,10 @@
                 0, 1, 1, 1, 0 //  15 - 19
             ];
 
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
+            var indices = new Array<number>();
+            var positions = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
 
             var current_indice = 0;
             // prepare array of 3 vector (empty) (to be worked in place, shared for each face)
@@ -2000,8 +2010,8 @@
                 face: [[15, 18, 21], [12, 20, 16], [6, 10, 2], [3, 0, 1], [9, 7, 13], [2, 8, 4, 0], [0, 4, 5, 1], [1, 5, 11, 7], [7, 11, 17, 13], [13, 17, 22, 18], [18, 22, 24, 21], [21, 24, 23, 20], [20, 23, 19, 16], [16, 19, 14, 10], [10, 14, 8, 2], [15, 9, 13, 18], [12, 15, 21, 20], [6, 12, 16, 10], [3, 6, 2, 0], [9, 3, 1, 7], [9, 15, 12, 6, 3], [22, 17, 11, 5, 4, 8, 14, 19, 23, 24]]
             };
 
-            var type: number = (options.type < 0 || options.type >= polyhedra.length) ? 0 : options.type || 0;
-            var size: number = options.size;
+            var type: number = options.type && (options.type < 0 || options.type >= polyhedra.length) ? 0 : options.type || 0;
+            var size = options.size;
             var sizeX: number = options.sizeX || size || 1;
             var sizeY: number = options.sizeY || size || 1;
             var sizeZ: number = options.sizeZ || size || 1;
@@ -2012,14 +2022,14 @@
             var flat = (options.flat === undefined) ? true : options.flat;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
-            var positions = [];
-            var indices = [];
-            var normals = [];
-            var uvs = [];
-            var colors = [];
+            var positions = new Array<number>();
+            var indices = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
+            var colors = new Array<number>();
             var index = 0;
             var faceIdx = 0;  // face cursor in the array "indexes"
-            var indexes = [];
+            var indexes = new Array<number>();
             var i = 0;
             var f = 0;
             var u: number, v: number, ang: number, x: number, y: number, tmp: number;
@@ -2103,10 +2113,10 @@
          * Creates the VertexData of the Torus Knot.  
          */
         public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
+            var indices = new Array<number>();
+            var positions = new Array<number>();
+            var normals = new Array<number>();
+            var uvs = new Array<number>();
 
             var radius = options.radius || 2;
             var tube = options.tube || 0.5;
@@ -2117,7 +2127,7 @@
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // Helper
-            var getPos = (angle) => {
+            var getPos = (angle: number) => {
 
                 var cu = Math.cos(angle);
                 var su = Math.sin(angle);
@@ -2235,15 +2245,21 @@
             var computeFacetPositions = false;
             var computeFacetPartitioning = false;
             var faceNormalSign = 1;
+            let ratio = 0;
             if (options) {
                 computeFacetNormals = (options.facetNormals) ? true : false;
                 computeFacetPositions = (options.facetPositions) ? true : false;
                 computeFacetPartitioning = (options.facetPartitioning) ? true : false;
                 faceNormalSign = (options.useRightHandedSystem === true) ? -1 : 1;
+                ratio = options.ratio || 0;
             }
 
             // facetPartitioning reinit if needed
-            if (computeFacetPartitioning) {
+            let xSubRatio = 0;
+            let ySubRatio = 0;
+            let zSubRatio = 0;
+            let subSq = 0;
+            if (computeFacetPartitioning && options && options.bbSize) {
                 var ox = 0;                 // X partitioning index for facet position
                 var oy = 0;                 // Y partinioning index for facet position
                 var oz = 0;                 // Z partinioning index for facet position
@@ -2263,10 +2279,10 @@
 
                 var bbSizeMax = (options.bbSize.x > options.bbSize.y) ? options.bbSize.x : options.bbSize.y;
                 bbSizeMax = (bbSizeMax > options.bbSize.z) ? bbSizeMax : options.bbSize.z;
-                var xSubRatio = options.subDiv.X * options.ratio / options.bbSize.x;
-                var ySubRatio = options.subDiv.Y * options.ratio / options.bbSize.y;
-                var zSubRatio = options.subDiv.Z * options.ratio / options.bbSize.z;
-                var subSq = options.subDiv.max * options.subDiv.max;
+                xSubRatio = options.subDiv.X * ratio / options.bbSize.x;
+                ySubRatio = options.subDiv.Y * ratio / options.bbSize.y;
+                zSubRatio = options.subDiv.Z * ratio / options.bbSize.z;
+                subSq = options.subDiv.max * options.subDiv.max;
                 options.facetPartitioning.length = 0;
             }
 
@@ -2309,34 +2325,34 @@
                 faceNormaly /= length;
                 faceNormalz /= length;
 
-                if (computeFacetNormals) {
+                if (computeFacetNormals && options) {
                     options.facetNormals[index].x = faceNormalx;
                     options.facetNormals[index].y = faceNormaly;
                     options.facetNormals[index].z = faceNormalz;
                 }
 
-                if (computeFacetPositions) {
+                if (computeFacetPositions && options) {
                     // compute and the facet barycenter coordinates in the array facetPositions 
                     options.facetPositions[index].x = (positions[v1x] + positions[v2x] + positions[v3x]) / 3.0;
                     options.facetPositions[index].y = (positions[v1y] + positions[v2y] + positions[v3y]) / 3.0;
                     options.facetPositions[index].z = (positions[v1z] + positions[v2z] + positions[v3z]) / 3.0;
                 }
 
-                if (computeFacetPartitioning) {
+                if (computeFacetPartitioning && options) {
                     // store the facet indexes in arrays in the main facetPartitioning array :
                     // compute each facet vertex (+ facet barycenter) index in the partiniong array
-                    ox = Math.floor((options.facetPositions[index].x - options.bInfo.minimum.x * options.ratio) * xSubRatio);
-                    oy = Math.floor((options.facetPositions[index].y - options.bInfo.minimum.y * options.ratio) * ySubRatio);
-                    oz = Math.floor((options.facetPositions[index].z - options.bInfo.minimum.z * options.ratio) * zSubRatio);
-                    b1x = Math.floor((positions[v1x] - options.bInfo.minimum.x * options.ratio) * xSubRatio);
-                    b1y = Math.floor((positions[v1y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
-                    b1z = Math.floor((positions[v1z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
-                    b2x = Math.floor((positions[v2x] - options.bInfo.minimum.x * options.ratio) * xSubRatio);
-                    b2y = Math.floor((positions[v2y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
-                    b2z = Math.floor((positions[v2z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
-                    b3x = Math.floor((positions[v3x] - options.bInfo.minimum.x * options.ratio) * xSubRatio);
-                    b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
-                    b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
+                    ox = Math.floor((options.facetPositions[index].x - options.bInfo.minimum.x * ratio) * xSubRatio);
+                    oy = Math.floor((options.facetPositions[index].y - options.bInfo.minimum.y * ratio) * ySubRatio);
+                    oz = Math.floor((options.facetPositions[index].z - options.bInfo.minimum.z * ratio) * zSubRatio);
+                    b1x = Math.floor((positions[v1x] - options.bInfo.minimum.x * ratio) * xSubRatio);
+                    b1y = Math.floor((positions[v1y] - options.bInfo.minimum.y * ratio) * ySubRatio);
+                    b1z = Math.floor((positions[v1z] - options.bInfo.minimum.z * ratio) * zSubRatio);
+                    b2x = Math.floor((positions[v2x] - options.bInfo.minimum.x * ratio) * xSubRatio);
+                    b2y = Math.floor((positions[v2y] - options.bInfo.minimum.y * ratio) * ySubRatio);
+                    b2z = Math.floor((positions[v2z] - options.bInfo.minimum.z * ratio) * zSubRatio);
+                    b3x = Math.floor((positions[v3x] - options.bInfo.minimum.x * ratio) * xSubRatio);
+                    b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * ratio) * ySubRatio);
+                    b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * ratio) * zSubRatio);
 
                     block_idx_v1 = b1x + options.subDiv.max * b1y + subSq * b1z;
                     block_idx_v2 = b2x + options.subDiv.max * b2y + subSq * b2z;
@@ -2390,7 +2406,7 @@
             }
         }
 
-        private static _ComputeSides(sideOrientation: number, positions: number[] | Float32Array, indices: number[] | Float32Array, normals: number[] | Float32Array, uvs: number[] | Float32Array, frontUVs?: Vector4, backUVs?: Vector4) {
+        private static _ComputeSides(sideOrientation: number, positions: FloatArray, indices: FloatArray, normals: FloatArray, uvs: FloatArray, frontUVs?: Vector4, backUVs?: Vector4) {
             var li: number = indices.length;
             var ln: number = normals.length;
             var i: number;
@@ -2441,8 +2457,8 @@
                     for (u = 0; u < lu; u++) {
                         uvs[u + lu] = uvs[u];                       
                     }
-                    var frontUVs = frontUVs ? frontUVs : new Vector4(0.0, 0.0, 1.0, 1.0);
-                    var backUVs = backUVs ? backUVs : new Vector4(0.0, 0.0, 1.0, 1.0); 
+                    frontUVs = frontUVs ? frontUVs : new Vector4(0.0, 0.0, 1.0, 1.0);
+                    backUVs = backUVs ? backUVs : new Vector4(0.0, 0.0, 1.0, 1.0); 
                     u = 0;
                     for (i = 0; i < lu / 2; i++) {    
                         uvs[u] = frontUVs.x + (frontUVs.z - frontUVs.x) * uvs[u];

@@ -3,37 +3,39 @@
         private _size: number;
         public _generateMipMaps: boolean;
         public isEnabled = true;
-        private _doNotChangeAspectRatio: boolean;
         private _currentRefreshId = -1;
         private _refreshRate = 1;
 
         public onGenerated: () => void;
 
-        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
-        private _indexBuffer: WebGLBuffer;
+        private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
+        private _indexBuffer: Nullable<WebGLBuffer>;
         private _effect: Effect;
 
         private _uniforms = new Array<string>();
         private _samplers = new Array<string>();
         private _fragment: any;
 
-        public _textures = new Array<Texture>();
-        private _floats = new Array<number>();
-        private _floatsArrays = {};
-        private _colors3 = new Array<Color3>();
-        private _colors4 = new Array<Color4>();
-        private _vectors2 = new Array<Vector2>();
-        private _vectors3 = new Array<Vector3>();
-        private _matrices = new Array<Matrix>();
+        public _textures: {[key: string]: Texture} = {};
+        private _floats: {[key: string]: number} = {};
+        private _floatsArrays: {[key: string]: number[]} = {};
+        private _colors3: {[key: string]: Color3} = {};
+        private _colors4: {[key: string]: Color4} = {};
+        private _vectors2: {[key: string]: Vector2} = {};
+        private _vectors3: {[key: string]: Vector3} = {};
+        private _matrices: {[key: string]: Matrix} = {};
 
-        private _fallbackTexture: Texture;
+        private _fallbackTexture: Nullable<Texture>;
 
         private _fallbackTextureUsed = false;
+        private _engine: Engine;
 
-        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps = true, public isCube = false) {
+        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
             super(null, scene, !generateMipMaps);
 
             scene._proceduralTextures.push(this);
+
+            this._engine = scene.getEngine();
 
             this.name = name;
             this.isRenderTarget = true;
@@ -44,14 +46,12 @@
 
             this._fallbackTexture = fallbackTexture;
 
-            var engine = scene.getEngine();
-
             if (isCube) {
-                this._texture = engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this._texture = this._engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
                 this.setFloat("face", 0);
             }
             else {
-                this._texture = engine.createRenderTargetTexture(size, generateMipMaps);
+                this._texture = this._engine.createRenderTargetTexture(size, generateMipMaps);
             }
 
             // VBO
@@ -61,13 +61,13 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
             this._createIndexBuffer();
         }
 
         private _createIndexBuffer(): void {
-            var engine = this.getScene().getEngine();
+            var engine = this._engine;
 
             // Indices
             var indices = [];
@@ -83,7 +83,12 @@
         }
 
         public _rebuild(): void {
-            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+            let vb = this._vertexBuffers[VertexBuffer.PositionKind];
+
+            if (vb) {
+                vb._rebuild();
+            }
+            
             this._createIndexBuffer();
 
             if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
@@ -94,14 +99,15 @@
         public reset(): void {
             if (this._effect === undefined) {
                 return;
-            }
-            var engine = this.getScene().getEngine();
+            }      
+            
+            var engine = this._engine;
             engine._releaseEffect(this._effect);
         }
 
 
         public isReady(): boolean {
-            var engine = this.getScene().getEngine();
+            var engine = this._engine;
             var shaders;
 
             if (!this._fragment) {
@@ -123,12 +129,15 @@
                 [VertexBuffer.PositionKind],
                 this._uniforms,
                 this._samplers,
-                "", null, null, () => {
+                "", undefined, undefined, () => {
                     this.releaseInternalTexture();
 
                     if (this._fallbackTexture) {
                         this._texture = this._fallbackTexture._texture;
-                        this._texture.incrementReferences();
+
+                        if (this._texture) {
+                            this._texture.incrementReferences();
+                        }
                     }
 
                     this._fallbackTextureUsed = true;
@@ -182,16 +191,16 @@
             return this._size;
         }
 
-        public resize(size, generateMipMaps) {
+        public resize(size: number, generateMipMaps: boolean): void {
             if (this._fallbackTextureUsed) {
                 return;
             }
 
             this.releaseInternalTexture();
-            this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
+            this._texture = this._engine.createRenderTargetTexture(size, generateMipMaps);
         }
 
-        private _checkUniform(uniformName): void {
+        private _checkUniform(uniformName: string): void {
             if (this._uniforms.indexOf(uniformName) === -1) {
                 this._uniforms.push(uniformName);
             }
@@ -255,9 +264,14 @@
             return this;
         }
 
-        public render(useCameraPostProcess?: boolean) {
+        public render(useCameraPostProcess?: boolean): void {
             var scene = this.getScene();
-            var engine = scene.getEngine();
+
+            if (!scene) {
+                return;
+            }
+
+            var engine = this._engine;
 
             // Render
             engine.enableEffect(this._effect);
@@ -302,7 +316,11 @@
             // Matrix      
             for (name in this._matrices) {
                 this._effect.setMatrix(name, this._matrices[name]);
-            }            
+            }           
+            
+            if (!this._texture) {
+                return;
+            }
 
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
@@ -347,7 +365,7 @@
 
         public clone(): ProceduralTexture {
             var textureSize = this.getSize();
-            var newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, this.getScene(), this._fallbackTexture, this._generateMipMaps);
+            var newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, <Scene>this.getScene(), this._fallbackTexture, this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
@@ -360,10 +378,16 @@
         }
 
         public dispose(): void {
-            var index = this.getScene()._proceduralTextures.indexOf(this);
+            let scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+
+            var index = scene._proceduralTextures.indexOf(this);
 
             if (index >= 0) {
-                this.getScene()._proceduralTextures.splice(index, 1);
+                scene._proceduralTextures.splice(index, 1);
             }
 
             var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
@@ -372,7 +396,7 @@
                 this._vertexBuffers[VertexBuffer.PositionKind] = null;
             }
 
-            if (this._indexBuffer && this.getScene().getEngine()._releaseBuffer(this._indexBuffer)) {
+            if (this._indexBuffer && this._engine._releaseBuffer(this._indexBuffer)) {
                 this._indexBuffer = null;
             }
 

@@ -4,7 +4,7 @@ module BABYLON {
         private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/vive/';
         private static readonly MODEL_FILENAME:string = 'wand.babylon';
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.VIVE;
         }
@@ -23,13 +23,12 @@ module BABYLON {
                 - LED
                 */
                 this._defaultModel = newMeshes[1];
+                this.attachToMesh(this._defaultModel);
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
                 }
-                this.attachToMesh(this._defaultModel);
             });
         }
-
 
         public get onLeftButtonStateChangedObservable() {
             return this.onMainButtonStateChangedObservable;

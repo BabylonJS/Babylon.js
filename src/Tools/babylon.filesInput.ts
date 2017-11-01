@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class FilesInput {
-        public static FilesToLoad: File[] = new Array<File>();
+        public static FilesToLoad: {[key: string]: File} = {};
 
         public onProcessFileCallback: (file: File, name: string, extension: string) => true = () => { return true; };
 
@@ -32,9 +32,9 @@
             this._errorCallback = errorCallback;
         }
 
-        private _dragEnterHandler: (any) => void;
-        private _dragOverHandler: (any) => void;
-        private _dropHandler: (any) => void;
+        private _dragEnterHandler: (e: any) => void;
+        private _dragOverHandler: (e: any) => void;
+        private _dropHandler: (e: any) => void;
 
         public monitorElementForDragNDrop(elementToMonitor: HTMLElement): void {
             if (elementToMonitor) {
@@ -92,11 +92,11 @@
         private _traverseFolder(folder: any, files: Array<any>, remaining: { count: number }, callback: () => void) {
             var reader = folder.createReader();
             var relativePath = folder.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
-            reader.readEntries(entries => {
+            reader.readEntries((entries: any) => {
                 remaining.count += entries.length;
                 for (let entry of entries) {
                     if (entry.isFile) {
-                        entry.file(file => {
+                        entry.file((file:any) => {
                             file.correctName = relativePath + file.name;
                             files.push(file);
 
@@ -144,7 +144,7 @@
             }
         }
 
-        public loadFiles(event): void {
+        public loadFiles(event: any): void {
             if (this._startingProcessingFilesCallback) this._startingProcessingFilesCallback();
 
             // Handling data transfer via drag'n'drop
@@ -158,14 +158,13 @@
             }
 
             if (this._filesToLoad && this._filesToLoad.length > 0) {
-                let files = [];
+                let files = new Array<File>();
                 let folders = [];
                 var items = event.dataTransfer ? event.dataTransfer.items : null;
 
                 for (var i = 0; i < this._filesToLoad.length; i++) {
                     let fileToLoad:any =  this._filesToLoad[i];
                     let name = fileToLoad.name.toLowerCase();
-                    let type = fileToLoad.type;
                     let entry;
 
                     fileToLoad.correctName = name;
