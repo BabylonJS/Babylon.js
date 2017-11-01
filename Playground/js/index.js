@@ -75,7 +75,7 @@
             markDirty();
         });
 
-        var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
+        var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
         var currentSnippetToken;
         var currentSnippetTitle = null;
         var currentSnippetDescription = null;
