@@ -9191,7 +9191,6 @@ var BABYLON;
                 return _this._vrDisplay = devices[0];
             };
             if (navigator.getVRDisplays) {
-                // TODO: Backwards compatible for 1.0?
                 navigator.getVRDisplays().then(getWebVRDevices).then(callback).catch(function (error) {
                     // TODO: System CANNOT support WebVR, despite API presence.
                     _this._vrSupported = false;

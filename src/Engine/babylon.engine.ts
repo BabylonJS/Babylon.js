@@ -1766,7 +1766,6 @@
             }
 
             if (navigator.getVRDisplays) {
-                // TODO: Backwards compatible for 1.0?
                 navigator.getVRDisplays().then(getWebVRDevices).then(callback).catch((error: () => void) => {
                     // TODO: System CANNOT support WebVR, despite API presence.
                     this._vrSupported = false;
