@@ -62,10 +62,12 @@ export interface ViewerConfiguration {
         minZ?: number;
         maxZ?: number;
         inertia?: number;
-        behaviors?: Array<number | {
-            type: number;
-            [propName: string]: any;
-        }>;
+        behaviors?: {
+            [name: string]: number | {
+                type: number;
+                [propName: string]: any;
+            };
+        };
 
         [propName: string]: any;
     },
@@ -93,33 +95,37 @@ export interface ViewerConfiguration {
             [propName: string]: any;
         }
     };
-    lights?: Array<{
-        type: number;
-        name?: string;
-        disabled?: boolean;
-        position?: { x: number, y: number, z: number };
-        target?: { x: number, y: number, z: number };
-        direction?: { x: number, y: number, z: number };
-        diffuse?: { r: number, g: number, b: number };
-        specular?: { r: number, g: number, b: number };
-        intensity?: number;
-        radius?: number;
-        shadownEnabled?: boolean; // only on specific lights!
-        shadowConfig?: {
-            useBlurExponentialShadowMap?: boolean;
-            useKernelBlur?: boolean;
-            blurKernel?: number;
-            blurScale?: number;
-            [propName: string]: any;
-        }
-        [propName: string]: any;
-
-        // no behaviors for light at the moment, but allowing configuration for future reference.
-        behaviors?: Array<number | {
+    lights?: {
+        [name: string]: {
             type: number;
+            name?: string;
+            disabled?: boolean;
+            position?: { x: number, y: number, z: number };
+            target?: { x: number, y: number, z: number };
+            direction?: { x: number, y: number, z: number };
+            diffuse?: { r: number, g: number, b: number };
+            specular?: { r: number, g: number, b: number };
+            intensity?: number;
+            radius?: number;
+            shadownEnabled?: boolean; // only on specific lights!
+            shadowConfig?: {
+                useBlurExponentialShadowMap?: boolean;
+                useKernelBlur?: boolean;
+                blurKernel?: number;
+                blurScale?: number;
+                [propName: string]: any;
+            }
             [propName: string]: any;
-        }>
-    }>
+
+            // no behaviors for light at the moment, but allowing configuration for future reference.
+            behaviors?: {
+                [name: string]: number | {
+                    type: number;
+                    [propName: string]: any;
+                };
+            };
+        }
+    },
     // engine configuration. optional!
     engine?: {
         antialiasing?: boolean;
@@ -232,14 +238,14 @@ export let defaultConfiguration: ViewerConfiguration = {
 
     },
     camera: {
-        behaviors: [
-            0,
-            {
+        behaviors: {
+            autoRotate: 0,
+            framing: {
                 type: 2,
                 zoomOnBoundingInfo: true,
                 zoomStopsAnimation: false
             }
-        ]
+        }
     },
     /*lights: [
         {
