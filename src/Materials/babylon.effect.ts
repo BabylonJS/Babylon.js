@@ -558,10 +558,10 @@
                 var engine = this._engine;
 
                 if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                    this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride);
+                    this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
                 }
                 else {
-                    this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
+                    this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines, undefined, this._transformFeedbackVaryings);
                 }
                 this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 

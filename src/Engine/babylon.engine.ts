@@ -2470,13 +2470,13 @@
                 ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         }
 
-        public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext): WebGLProgram {
+        public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
             context = context || this._gl;
 
             var vertexShader = compileRawShader(context, vertexCode, "vertex");
             var fragmentShader = compileRawShader(context, fragmentCode, "fragment");
 
-            return this._createShaderProgram(vertexShader, fragmentShader, context);
+            return this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
         }
 
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
