@@ -14,10 +14,15 @@ import 'babylonjs-materials';
 
 import { InitTags } from './initializer';
 
-// promise polyfill
-global.Promise = require('es6-promise').Promise;
+// promise polyfill, if needed!
+global.Promise = Promise || require('es6-promise').Promise;
 
-InitTags();
+export let disableInit: boolean = false;
+
+setTimeout(() => {
+    if (disableInit) return;
+    InitTags();
+});
 
 // public API for initialization
-export { AbstractViewer, InitTags };
+export { InitTags };
