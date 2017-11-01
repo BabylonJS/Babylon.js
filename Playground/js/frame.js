@@ -79,7 +79,9 @@
                     scene.render();
                 }
 
-                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                if (fpsLabel) {
+                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                }
             });
 
             var scene;
@@ -152,9 +154,13 @@
                             var snippetCode = JSON.parse(JSON.parse(xmlHttp.responseText)[0].jsonPayload).code;
                             compileAndRun(snippetCode);
 
-                            document.getElementById("refresh").addEventListener("click", function () {
+                            var refresh = document.getElementById("refresh");
+
+                            if (refresh) {
+                                refresh.addEventListener("click", function () {
                                 compileAndRun(snippetCode);
-                            });
+                                });
+                            }
                         }
                     }
                 };
@@ -166,7 +172,11 @@
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                 xmlHttp.send();
 
-                document.getElementById("link").href = "//www.babylonjs-playground.com/#" + hash;
+                var link = document.getElementById("link");
+
+                if (link) {
+                    link.href = "//www.babylonjs-playground.com/#" + hash;
+                }
             } catch (e) {
 
             }

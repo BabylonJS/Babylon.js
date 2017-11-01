@@ -128,7 +128,7 @@ module BABYLON.GUI {
             var canvas = document.createElement("canvas");
             canvas.width = radius * 2;
             canvas.height = radius * 2;
-            var context = canvas.getContext("2d");
+            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
             var image = context.getImageData(0, 0, radius * 2, radius * 2);
             var data = image.data;
             
@@ -362,8 +362,8 @@ module BABYLON.GUI {
             return false;
         }
 
-        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
-            if (!super._onPointerDown(coordinates, buttonIndex)) {
+        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
+            if (!super._onPointerDown(target, coordinates, buttonIndex)) {
                 return false;
             }            
 
@@ -384,19 +384,19 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerMove(coordinates: Vector2): void {
+        public _onPointerMove(target: Control, coordinates: Vector2): void {
             if (this._pointerIsDown) {
                 this._updateValueFromPointer(coordinates.x, coordinates.y);
             }
 
-            super._onPointerMove(coordinates);
+            super._onPointerMove(target, coordinates);
         }
 
-        protected _onPointerUp (coordinates: Vector2, buttonIndex: number): void {
+        public _onPointerUp (target: Control, coordinates: Vector2, buttonIndex: number): void {
             this._pointerIsDown = false;
             
             this._host._capturingControl = null;
-            super._onPointerUp(coordinates, buttonIndex);
+            super._onPointerUp(target, coordinates, buttonIndex);
         }     
     }    
 }

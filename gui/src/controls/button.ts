@@ -51,8 +51,8 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerEnter(): boolean {
-            if (!super._onPointerEnter()) {
+        public _onPointerEnter(target: Control): boolean {
+            if (!super._onPointerEnter(target)) {
                 return false;
             }
 
@@ -63,16 +63,16 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _onPointerOut(): void {
+        public _onPointerOut(target: Control): void {
             if (this.pointerOutAnimation) {
                 this.pointerOutAnimation();
             }
 
-            super._onPointerOut();
+            super._onPointerOut(target);
         }
 
-        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
-            if (!super._onPointerDown(coordinates, buttonIndex)) {
+        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
+            if (!super._onPointerDown(target, coordinates, buttonIndex)) {
                 return false;
             }
 
@@ -84,12 +84,12 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerUp(coordinates: Vector2, buttonIndex: number): void {
+        public _onPointerUp(target: Control, coordinates: Vector2, buttonIndex: number): void {
             if (this.pointerUpAnimation) {
                 this.pointerUpAnimation();
             }
 
-            super._onPointerUp(coordinates, buttonIndex);
+            super._onPointerUp(target, coordinates, buttonIndex);
         }        
 
         // Statics

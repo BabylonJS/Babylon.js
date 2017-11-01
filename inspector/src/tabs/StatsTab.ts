@@ -16,6 +16,9 @@ module INSPECTOR {
 
         private _updateLoopHandler : any;
 
+        private _sceneInstrumentation: BABYLON.SceneInstrumentation;
+        private _engineInstrumentation: BABYLON.EngineInstrumentation;
+
         constructor(tabbar:TabBar, insp:Inspector) {
             super(tabbar, 'Stats');        
 
@@ -24,6 +27,19 @@ module INSPECTOR {
             this._scene             = this._inspector.scene;
             this._engine            = this._scene.getEngine();
             this._glInfo            = this._engine.getGlInfo();
+
+            this._sceneInstrumentation = new BABYLON.SceneInstrumentation(this._scene);
+            this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
+            this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
+            this._sceneInstrumentation.captureFrameTime = true;
+            this._sceneInstrumentation.captureRenderTime = true;
+            this._sceneInstrumentation.captureInterFrameTime = true;
+            this._sceneInstrumentation.captureParticlesRenderTime = true;
+            this._sceneInstrumentation.captureSpritesRenderTime = true;
+            this._sceneInstrumentation.capturePhysicsTime = true;
+
+            this._engineInstrumentation = new BABYLON.EngineInstrumentation(this._engine);
+            this._engineInstrumentation.captureGPUFrameTime = true;
 
             // Build the stats panel: a div that will contains all stats
             this._panel             = Helpers.CreateDiv('tab-panel') as HTMLDivElement; 
@@ -58,7 +74,7 @@ module INSPECTOR {
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return this._engine.drawCalls.toString()}
+                    updateFct:() => { return this._sceneInstrumentation.drawCallsCounter.current.toString()}
                 });
 
                 elemLabel = this._createStatLabel("Total lights", this._panel);
@@ -125,49 +141,67 @@ module INSPECTOR {
                 let elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getEvaluateActiveMeshesDuration())}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.activeMeshesEvaluationTimeCounter.current)}
                 });
                 elemLabel = this._createStatLabel("Render targets", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getRenderTargetsDuration())}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.renderTargetsRenderTimeCounter.current)}
                 });
                 elemLabel = this._createStatLabel("Particles", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getParticlesDuration())}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.particlesRenderTimeCounter.current)}
                 });
                 elemLabel = this._createStatLabel("Sprites", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getSpritesDuration())}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.spritesRenderTimeCounter.current)}
                 });
+                elemLabel = this._createStatLabel("Physics", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.physicsTimeCounter.current)}
+                });                
                 elemLabel = this._createStatLabel("Render", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getRenderDuration())}
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.renderTimeCounter.current)}
                 });
                 elemLabel = this._createStatLabel("Frame", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getLastFrameDuration())}
-                });
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.frameTimeCounter.current)}
+                });                
                 elemLabel = this._createStatLabel("Inter-frame", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(this._scene.getInterFramePerfCounter())}
-                });                
+                    updateFct:() => { return BABYLON.Tools.Format(this._sceneInstrumentation.interFrameTimeCounter.current)}
+                });       
+                elemLabel = this._createStatLabel("GPU Frame time", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return BABYLON.Tools.Format(this._engineInstrumentation.gpuFrameTimeCounter.current * 0.000001)}
+                });                  
+                elemLabel = this._createStatLabel("GPU Frame time (average)", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return BABYLON.Tools.Format(this._engineInstrumentation.gpuFrameTimeCounter.average * 0.000001)}
+                });                                 
                 elemLabel = this._createStatLabel("Potential FPS", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return BABYLON.Tools.Format(1000.0 / this._scene.getLastFrameDuration(), 0)}
+                    updateFct:() => { return BABYLON.Tools.Format(1000.0 / this._sceneInstrumentation.frameTimeCounter.current, 0)}
                 });
                 elemLabel = this._createStatLabel("Resolution", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
@@ -234,6 +268,12 @@ module INSPECTOR {
                     elem:elemValue, 
                     updateFct:() => { return (this._engine.getCaps().vertexArrayObject ? "Yes" : "No")}
                 }); 
+                elemLabel = this._createStatLabel("Timer query", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return (this._engine.getCaps().timerQuery ? "Yes" : "No")}
+                });                 
             }
 
             title = Helpers.CreateDiv('stat-title2', this._panel);
@@ -290,6 +330,7 @@ module INSPECTOR {
 
         public dispose() {
             this._scene.unregisterAfterRender(this._updateLoopHandler);
+            this._sceneInstrumentation.dispose();
         }
 
         public active(b: boolean){

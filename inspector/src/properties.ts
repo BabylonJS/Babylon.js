@@ -1,19 +1,21 @@
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
+
 module INSPECTOR {
 
     export var PROPERTIES = {
         /** Format the given object : 
          * If a format function exists, returns the result of this function.
          * If this function doesn't exists, return the object type instead */
-        format: (obj: any) => {
+        format: (obj: any): any => {
             let type = Helpers.GET_TYPE(obj) || 'type_not_defined';
-            if (PROPERTIES[type] && PROPERTIES[type].format) {
-                return PROPERTIES[type].format(obj);
+            if ((<any>PROPERTIES)[type] && (<any>PROPERTIES)[type].format) {
+                return (<any>PROPERTIES)[type].format(obj);
             } else {
                 return Helpers.GET_TYPE(obj);
             }
         },
         'type_not_defined': {
-            properties: [],
+            properties: new Array(),
             format: () => ''
         },
         'Vector2': {
@@ -73,9 +75,6 @@ module INSPECTOR {
             ],
             format: (tex: BABYLON.Texture) => { return tex.name }
         },
-        'MapTexture': {
-            type: BABYLON.MapTexture
-        },
         'RenderTargetTexture': {
             type: BABYLON.RenderTargetTexture
         },
@@ -90,9 +89,6 @@ module INSPECTOR {
         },
         'HDRCubeTexture': {
             type: BABYLON.HDRCubeTexture
-        },
-        'FontTexture': {
-            type: BABYLON.FontTexture
         },
         'Sound': {
             type: BABYLON.Sound,
@@ -278,26 +274,6 @@ module INSPECTOR {
                 alpha: {min: 0, max: 1, step: 0.01}
             }
         },
-        'PrimitiveAlignment': {
-            type: BABYLON.PrimitiveAlignment,
-            properties: ['horizontal', 'vertical']
-        },
-        'PrimitiveThickness': {
-            type: BABYLON.PrimitiveThickness,
-            properties: ['topPixels', 'leftPixels', 'rightPixels', 'bottomPixels']
-        },
-        'BoundingInfo2D': {
-            type: BABYLON.BoundingInfo2D,
-            properties: ['radius', 'center', 'extent']
-        },
-        'SolidColorBrush2D': {
-            type: BABYLON.SolidColorBrush2D,
-            properties: ['color']
-        },
-        'GradientColorBrush2D': {
-            type: BABYLON.GradientColorBrush2D,
-            properties: ['color1', 'color2', 'translation', 'rotation', 'scale']
-        },
         'PBRMaterial': {
             type: BABYLON.PBRMaterial,
             properties: [
@@ -346,97 +322,7 @@ module INSPECTOR {
             slider: {
                 alpha: {min: 0, max: 1, step: 0.01}
             }
-        },
-        'Canvas2D': {
-            type: BABYLON.Canvas2D
-        },
-        'Canvas2DEngineBoundData': {
-            type: BABYLON.Canvas2DEngineBoundData
-        },
-        'Ellipse2D': {
-            type: BABYLON.Ellipse2D
-        },
-        'Ellipse2DInstanceData': {
-            type: BABYLON.Ellipse2DInstanceData
-        },
-        'Ellipse2DRenderCache': {
-            type: BABYLON.Ellipse2DRenderCache
-        },
-        'Group2D': {
-            type: BABYLON.Group2D
-        },
-        'IntersectInfo2D': {
-            type: BABYLON.IntersectInfo2D
-        },
-        'Lines2D': {
-            type: BABYLON.Lines2D
-        },
-        'Lines2DInstanceData': {
-            type: BABYLON.Lines2DInstanceData
-        },
-        'Lines2DRenderCache': {
-            type: BABYLON.Lines2DRenderCache
-        },
-        'PrepareRender2DContext': {
-            type: BABYLON.PrepareRender2DContext
-        },
-        'Prim2DBase': {
-            type: BABYLON.Prim2DBase
-        },
-        'Prim2DClassInfo': {
-            type: BABYLON.Prim2DClassInfo
-        },
-        'Prim2DPropInfo': {
-            type: BABYLON.Prim2DPropInfo
-        },
-        'Rectangle2D': {
-            type: BABYLON.Rectangle2D
-        },
-        'Rectangle2DInstanceData': {
-            type: BABYLON.Rectangle2DInstanceData
-        },
-        'Rectangle2DRenderCache': {
-            type: BABYLON.Rectangle2DRenderCache
-        },
-        'Render2DContext': {
-            type: BABYLON.Render2DContext
-        },
-        'RenderablePrim2D': {
-            type: BABYLON.RenderablePrim2D
-        },
-        'ScreenSpaceCanvas2D': {
-            type: BABYLON.ScreenSpaceCanvas2D
-        },
-        'Shape2D': {
-            type: BABYLON.Shape2D
-        },
-        'Shape2DInstanceData': {
-            type: BABYLON.Shape2DInstanceData
-        },
-        'Sprite2D': {
-            type: BABYLON.Sprite2D
-        },
-        'Sprite2DInstanceData': {
-            type: BABYLON.Sprite2DInstanceData
-        },
-        'Sprite2DRenderCache': {
-            type: BABYLON.Sprite2DRenderCache
-        },
-        'Text2D': {
-            type: BABYLON.Text2D
-        },
-        'Text2DInstanceData': {
-            type: BABYLON.Text2DInstanceData
-        },
-        'Text2DRenderCache': {
-            type: BABYLON.Text2DRenderCache
-        },
-        'WorldSpaceCanvas2D': {
-            type: BABYLON.WorldSpaceCanvas2D
-        },
-        'WorldSpaceCanvas2DNode': {
-            type: BABYLON.WorldSpaceCanvas2DNode
-        },
+        },  
         'PhysicsImpostor': {
             type: BABYLON.PhysicsImpostor,
             properties: [

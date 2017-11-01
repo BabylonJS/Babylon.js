@@ -67,14 +67,13 @@
             "optimizations",
             "highlights",
             "assetsManager",
-            "mapTexture",
-            "dynamicFloatArray",
             "serialization",
             "probes",
             "layer",
             "textureTools",
             "cameraBehaviors",
-            "nullEngine"
+            "nullEngine",
+            "instrumentation"
         ],
         "minimal": [
             "standardMaterial",
@@ -143,15 +142,14 @@
             "optimizations",
             "highlights",
             "assetsManager",
-            "mapTexture",
-            "dynamicFloatArray",
-            "imageProcessing",
             "serialization",
             "probes",
             "layer",
             "textureTools",
             "cameraBehaviors",
+            "instrumentation",
             "materialsLibrary/babylon.gridMaterial.js",
+            "materialsLibrary/babylon.backgroundMaterial.js",
             "loaders/babylon.glTFFileLoader.js"
         ],
         "distributed": [
@@ -161,6 +159,7 @@
     "workloads": {
         "core": {
             "files": [
+                "../../src/babylon.types.js",
                 "../../src/Events/babylon.keyboardEvents.js",
                 "../../src/Events/babylon.pointerEvents.js",
                 "../../src/Math/babylon.math.js",
@@ -205,9 +204,7 @@
                 "../../src/Materials/babylon.colorCurves.js"
             ],
             "shaderIncludes": [
-                "depthPrePass",
-                "imageProcessingDeclaration",
-                "imageProcessingFunctions"
+                "depthPrePass"
             ]
         },
         "particles": {
@@ -230,7 +227,17 @@
             "dependUpon": [
                 "core"
             ]
-        },        
+        },    
+        "instrumentation": {
+            "files": [
+                "../../src/Instrumentation/babylon.engineInstrumentation.js",
+                "../../src/Instrumentation/babylon.sceneInstrumentation.js",
+                "../../src/Instrumentation/babylon.timeToken.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },      
         "cameraBehaviors": {
             "files": [
                 "../../src/Behaviors/Cameras/babylon.framingBehavior.js",
@@ -383,7 +390,7 @@
                 "defaultUboDeclaration",
                 "shadowsFragmentFunctions",
                 "fresnelFunction",
-                "reflectionFunction",
+                "reflectionFunction",                
                 "imageProcessingDeclaration",
                 "imageProcessingFunctions",
                 "bumpFragmentFunctions",
@@ -439,7 +446,7 @@
                 "shadowsFragmentFunctions",
                 "pbrFunctions",
                 "imageProcessingDeclaration",
-                "imageProcessingFunctions",
+                "imageProcessingFunctions",                
                 "harmonicsFunctions",
                 "pbrLightFunctions",
                 "helperFunctions",
@@ -926,7 +933,6 @@
                 "additionalMeshes",
                 "standardMaterial",
                 "stringDictionary",
-                "dynamicFloatArray",
                 "actions"
             ],
             "shaders": [
@@ -1027,23 +1033,6 @@
         "assetsManager": {
             "files": [
                 "../../src/Tools/babylon.assetsManager.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "mapTexture": {
-            "files": [
-                "../../src/Materials/Textures/babylon.mapTexture.js",
-                "../../src/Tools/babylon.rectPackingMap.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "dynamicFloatArray": {
-            "files": [
-                "../../src/Tools/babylon.dynamicFloatArray.js"
             ],
             "dependUpon": [
                 "core"
@@ -1242,25 +1231,18 @@
             },
             {
                 "files": [
-                    "../../materialsLibrary/src/legacyPBR/babylon.legacyPBRMaterial.ts"
+                    "../../materialsLibrary/src/background/babylon.backgroundMaterial.ts"
                 ],
                 "shaderFiles": [
-                    "../../materialsLibrary/src/legacyPBR/legacyPbr.vertex.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbr.fragment.fx"
+                    "../../materialsLibrary/src/background/background.vertex.fx",
+                    "../../materialsLibrary/src/background/background.fragment.fx"
                 ],
                 "shadersIncludeFiles": [
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrFragmentDeclaration.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrFunctions.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrLightFunctions.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrLightFunctionsCall.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrUboDeclaration.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrVertexDeclaration.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyColorCurves.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyColorCurvesDefinition.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyColorGrading.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyColorGradingDefinition.fx"
+                    "../../materialsLibrary/src/background/backgroundFragmentDeclaration.fx",
+                    "../../materialsLibrary/src/background/backgroundUboDeclaration.fx",
+                    "../../materialsLibrary/src/background/backgroundVertexDeclaration.fx"
                 ],
-                "output": "babylon.legacyPbrMaterial.js"
+                "output": "babylon.backgroundMaterial.js"
             }
         ],
         "build": {

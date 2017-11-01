@@ -15,9 +15,9 @@ module BABYLON.GUI {
         private _blinkTimeout: number;
         private _blinkIsEven = false;
         private _cursorOffset = 0;        
-        private _scrollLeft: number;
+        private _scrollLeft: Nullable<number>;
         private _textWidth: number;
-        private _clickedCoordinate: number;
+        private _clickedCoordinate: Nullable<number>;
         
         public promptMessage = "Please enter text:";
 
@@ -400,8 +400,8 @@ module BABYLON.GUI {
             context.restore();
         }
 
-        protected _onPointerDown(coordinates: Vector2, buttonIndex: number): boolean {
-            if (!super._onPointerDown(coordinates, buttonIndex)) {
+        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
+            if (!super._onPointerDown(target, coordinates, buttonIndex)) {
                 return false;
             }
 
@@ -417,8 +417,8 @@ module BABYLON.GUI {
             return true;
         }
 
-        protected _onPointerUp(coordinates: Vector2, buttonIndex: number): void {
-            super._onPointerUp(coordinates, buttonIndex);
+        public _onPointerUp(target: Control, coordinates: Vector2, buttonIndex: number): void {
+            super._onPointerUp(target, coordinates, buttonIndex);
         }  
 
         public dispose() {

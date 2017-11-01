@@ -46,7 +46,7 @@
             return this._options.needAlphaTesting;
         }
 
-        private _checkUniform(uniformName): void {
+        private _checkUniform(uniformName: string): void {
             if (this._options.uniforms.indexOf(uniformName) === -1) {
                 this._options.uniforms.push(uniformName);
             }
@@ -204,7 +204,7 @@
             }
             
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
                 if (mesh.numBoneInfluencers > 4) {
@@ -265,6 +265,10 @@
         public bindOnlyWorldMatrix(world: Matrix): void {
             var scene = this.getScene();
 
+            if (!this._effect) {
+                return;
+            }
+
             if (this._options.uniforms.indexOf("world") !== -1) {
                 this._effect.setMatrix("world", world);
             }
@@ -283,7 +287,7 @@
             // Std values
             this.bindOnlyWorldMatrix(world);
 
-            if (this.getScene().getCachedMaterial() !== this) {
+            if (this._effect && this.getScene().getCachedMaterial() !== this) {
                 if (this._options.uniforms.indexOf("view") !== -1) {
                     this._effect.setMatrix("view", this.getScene().getViewMatrix());
                 }
@@ -473,9 +477,9 @@
             }
 
             // Float s   
-            serializationObject.floatArrays = {};
+            serializationObject.FloatArrays = {};
             for (name in this._floatsArrays) {
-                serializationObject.floatArrays[name] = this._floatsArrays[name];
+                serializationObject.FloatArrays[name] = this._floatsArrays[name];
             }
 
             // Color3    
@@ -579,14 +583,14 @@
 
             // Color3 arrays
             for (name in source.colors3Arrays) {
-                const colors: Color3[] = source.colors3Arrays[name].reduce((arr, num, i) => {
+                const colors: Color3[] = source.colors3Arrays[name].reduce((arr: Array<Array<number>>, num: number, i: number) => {
                     if (i % 3 === 0) {
                         arr.push([num]);
                     } else {
                         arr[arr.length - 1].push(num);
                     }
                     return arr;
-                }, []).map(color => Color3.FromArray(color));
+                }, []).map((color: ArrayLike<number>) => Color3.FromArray(color));
                 material.setColor3Array(name, colors);
             }
 

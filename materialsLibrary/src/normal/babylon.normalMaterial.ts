@@ -75,8 +75,6 @@ module BABYLON {
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public maxSimultaneousLights: number; 
 
-        private _worldViewProjectionMatrix = Matrix.Zero();
-        private _scaledDiffuse = new Color3();
         private _renderId: number;
 
         constructor(name: string, scene: Scene) {
@@ -91,7 +89,7 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -140,7 +138,7 @@ module BABYLON {
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
@@ -195,7 +193,7 @@ module BABYLON {
                     "vClipPlane", "diffuseMatrix"
                 ];
                 var samplers = ["diffuseSampler"];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
@@ -218,7 +216,7 @@ module BABYLON {
                         indexParameters: { maxSimultaneousLights: 4 }
                     }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -237,6 +235,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -262,7 +263,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                MaterialHelper.BindEyePosition(effect, scene);            
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);

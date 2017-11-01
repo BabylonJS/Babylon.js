@@ -2,16 +2,14 @@ module BABYLON {
 
     export class UniformBuffer {
         private _engine: Engine;
-        private _buffer: WebGLBuffer;
+        private _buffer: Nullable<WebGLBuffer>;
         private _data: number[];
         private _bufferData: Float32Array;
-        private _dynamic: boolean;
-        private _uniformName: string;
+        private _dynamic?: boolean;
         private _uniformLocations: { [key:string]:number; };
         private _uniformSizes: { [key:string]:number; };
         private _uniformLocationPointer: number;
         private _needSync: boolean;
-        private _cache: Float32Array;
         private _noUBO: boolean;
         private _currentEffect: Effect;
 
@@ -184,7 +182,7 @@ module BABYLON {
          * update the underlying WebGL uniform buffer to the GPU.
          */
         public isDynamic(): boolean {
-            return this._dynamic;
+            return this._dynamic !== undefined;
         }
 
         /**
@@ -197,7 +195,7 @@ module BABYLON {
         /**
          * The underlying WebGL Uniform buffer.
          */
-        public getBuffer(): WebGLBuffer {
+        public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer;
         }
 
@@ -313,7 +311,7 @@ module BABYLON {
          * @param {Color3} color
          */
         public addColor3(name: string, color: Color3) {
-            var temp = [];
+            var temp = new Array<number>();
             color.toArray(temp);
             this.addUniform(name, temp);
         }
@@ -325,7 +323,7 @@ module BABYLON {
          * @param {number} alpha
          */
         public addColor4(name: string, color: Color3, alpha: number) {
-            var temp = [];
+            var temp = new Array<number>();
             color.toArray(temp);
             temp.push(alpha);
             this.addUniform(name, temp);
@@ -337,7 +335,7 @@ module BABYLON {
          * @param {Vector3} vector
          */
         public addVector3(name: string, vector: Vector3) {
-            var temp = [];
+            var temp = new Array<number>();
             vector.toArray(temp);
             this.addUniform(name, temp);
         }
@@ -416,7 +414,7 @@ module BABYLON {
          * @param {number[]|Float32Array} data Flattened data
          * @param {number} size Size of the data.
          */
-        public updateUniform(uniformName: string, data: number[] | Float32Array, size: number) {
+        public updateUniform(uniformName: string, data: FloatArray, size: number) {
 
             var location = this._uniformLocations[uniformName];
             if (location === undefined) {
@@ -579,7 +577,7 @@ module BABYLON {
          * @param {string} name Name of the sampler.
          * @param {Texture} texture
          */
-        public setTexture(name: string, texture: BaseTexture) {
+        public setTexture(name: string, texture: Nullable<BaseTexture>) {
             this._currentEffect.setTexture(name, texture);
         }
 
@@ -588,7 +586,7 @@ module BABYLON {
          * @param {string} uniformName Name of the uniform, as used in the uniform block in the shader.
          * @param {number[]|Float32Array} data Flattened data
          */
-        public updateUniformDirectly(uniformName: string, data: number[] | Float32Array) {
+        public updateUniformDirectly(uniformName: string, data: FloatArray) {
             this.updateUniform(uniformName, data, data.length);
 
             this.update();
@@ -602,7 +600,7 @@ module BABYLON {
         public bindToEffect(effect: Effect, name: string): void {
             this._currentEffect = effect;
 
-            if (this._noUBO) {
+            if (this._noUBO || !this._buffer) {
                 return;
             }
             

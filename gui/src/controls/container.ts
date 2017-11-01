@@ -31,7 +31,7 @@ module BABYLON.GUI {
             return "Container";
         }           
 
-        public getChildByName(name: string): Control {
+        public getChildByName(name: string): Nullable<Control> {
             for (var child of this._children) {
                 if (child.name === name) {
                     return child;
@@ -41,7 +41,7 @@ module BABYLON.GUI {
             return null;
         }       
 
-        public getChildByType(name: string, type: string): Control {
+        public getChildByType(name: string, type: string): Nullable<Control> {
             for (var child of this._children) {
                 if (child.typeName === type) {
                     return child;
@@ -76,6 +76,8 @@ module BABYLON.GUI {
 
             if (index !== -1) {
                 this._children.splice(index, 1);
+
+                control.parent = null;
             }
 
             this._markAsDirty();
@@ -93,6 +95,8 @@ module BABYLON.GUI {
             }
 
             this._children.push(control);
+
+            control.parent = this;
 
             this._markAsDirty();
         }
@@ -120,7 +124,7 @@ module BABYLON.GUI {
             }
         }
 
-        public _link(root: Container, host: AdvancedDynamicTexture): void {
+        public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
             super._link(root, host);
 
             for (var child of this._children) {

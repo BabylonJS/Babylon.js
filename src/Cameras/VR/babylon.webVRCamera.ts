@@ -1,6 +1,6 @@
-declare var HMDVRDevice;
-declare var VRDisplay;
-declare var VRFrameData;
+declare var HMDVRDevice: any;
+declare var VRDisplay: any;
+declare var VRFrameData: any;
 
 module BABYLON {
     /**
@@ -24,9 +24,9 @@ module BABYLON {
         rotationQuaternion: Quaternion;
         devicePosition?: Vector3;
         deviceRotationQuaternion: Quaternion;
-        rawPose: DevicePose;
+        rawPose: Nullable<DevicePose>;
         deviceScaleFactor: number;
-        updateFromDevice(poseData: DevicePose);
+        updateFromDevice(poseData: DevicePose): void;
     }
 
     export interface WebVROptions {
@@ -38,25 +38,18 @@ module BABYLON {
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-        public _vrDevice = null;
-        public rawPose: DevicePose = null;
+        public _vrDevice: any = null;
+        public rawPose: Nullable<DevicePose> = null;
         private _onVREnabled: (success: boolean) => void;
         private _specsVersion: string = "1.1";
         private _attached: boolean = false;
 
-        private _oldSize: BABYLON.Size;
-        private _oldHardwareScaleFactor: number;
-
-        private _frameData;
-
-        private _quaternionCache: Quaternion;
-
-        private _positionOffset: Vector3 = Vector3.Zero();
+        private _frameData: any;
 
         protected _descendants: Array<Node> = [];
 
         public devicePosition = Vector3.Zero();
-        public deviceRotationQuaternion;
+        public deviceRotationQuaternion: Quaternion;
         public deviceScaleFactor: number = 1;
 
         public controllers: Array<WebVRController> = [];
@@ -156,18 +149,18 @@ module BABYLON {
             super.dispose();
         }
 
-        public getControllerByName(name: string): WebVRController {
+        public getControllerByName(name: string): Nullable<WebVRController> {
             for (var gp of this.controllers) {
                 if (gp.hand === name) {
                     return gp;
                 }
             }
 
-            return undefined;
+            return null;
         }
 
-        private _leftController: WebVRController;
-        public get leftController(): WebVRController {
+        private _leftController: Nullable<WebVRController>;
+        public get leftController(): Nullable<WebVRController> {
             if (!this._leftController) {
                 this._leftController = this.getControllerByName("left");
             }
@@ -175,8 +168,8 @@ module BABYLON {
             return this._leftController;
         };
 
-        private _rightController: WebVRController;
-        public get rightController(): WebVRController {
+        private _rightController: Nullable<WebVRController>;
+        public get rightController(): Nullable<WebVRController> {
             if (!this._rightController) {
                 this._rightController = this.getControllerByName("right");
             }
@@ -206,7 +199,7 @@ module BABYLON {
         updateFromDevice(poseData: DevicePose) {
             if (poseData && poseData.orientation) {
                 this.rawPose = poseData;
-                this.deviceRotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
+                this.deviceRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
 
                 if (this.getScene().useRightHandedSystem) {
                     this.deviceRotationQuaternion.z *= -1;
@@ -333,8 +326,8 @@ module BABYLON {
             return this._projectionMatrix;
         }
 
-        private _onGamepadConnectedObserver: Observer<Gamepad>;
-        private _onGamepadDisconnectedObserver: Observer<Gamepad>;
+        private _onGamepadConnectedObserver: Nullable<Observer<Gamepad>>;
+        private _onGamepadDisconnectedObserver: Nullable<Observer<Gamepad>>;
 
         public initControllers() {
             this.controllers = [];

@@ -3,9 +3,6 @@
 module BABYLON {
     export class GrassProceduralTexture extends ProceduralTexture {
         private _grassColors: Color3[];
-        private _herb1 = new Color3(0.29, 0.38, 0.02);
-        private _herb2 = new Color3(0.36, 0.49, 0.09);
-        private _herb3 = new Color3(0.51, 0.6, 0.28);
         private _groundColor = new Color3(1, 1, 1);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {

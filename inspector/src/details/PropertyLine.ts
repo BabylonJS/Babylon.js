@@ -8,34 +8,7 @@ module INSPECTOR {
         public static format(obj: any, prop: string): string {
             // Get original value;
             let value = obj[prop];
-            // test if type PrimitiveAlignment is available (only included in canvas2d)
-            if (BABYLON.PrimitiveAlignment) {
-                if (obj instanceof BABYLON.PrimitiveAlignment) {
-                    if (prop === 'horizontal') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignLeft:
-                                return 'left';
-                            case BABYLON.PrimitiveAlignment.AlignRight:
-                                return 'right';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    } else if (prop === 'vertical') {
-                        switch (value) {
-                            case BABYLON.PrimitiveAlignment.AlignTop:
-                                return 'top';
-                            case BABYLON.PrimitiveAlignment.AlignBottom:
-                                return 'bottom';
-                            case BABYLON.PrimitiveAlignment.AlignCenter:
-                                return 'center';
-                            case BABYLON.PrimitiveAlignment.AlignStretch:
-                                return 'stretch';
-                        }
-                    }
-                }
-            }
+            // test if type PrimitiveAlignment is available (only included in canvas2d)           
             return value;
         }
 
@@ -72,7 +45,7 @@ module INSPECTOR {
         /** The list of viewer element displayed at the end of the line (color, texture...) */
         private _elements: Array<BasicElement> = [];
         /** The property parent of this one. Used to update the value of this property and to retrieve the correct object */
-        private _parent: PropertyLine;
+        private _parent: Nullable<PropertyLine>;
         /** The input element to display if this property is 'simple' in order to update it */
         private _input: HTMLInputElement;
         /** Display input handler (stored to be removed afterwards) */
@@ -88,16 +61,13 @@ module INSPECTOR {
         private _onMouseDragHandler: EventListener;
         private _onMouseUpHandler: EventListener;
 
-        private _sliderfill: HTMLElement;
-        private _slidertrack: HTMLElement;
-
         private _textValue: HTMLElement;
         /** Save previous Y mouse position */
         private _prevY: number;
         /**Save value while slider is on */
         private _preValue: number;
 
-        constructor(prop: Property, parent?: PropertyLine, level: number = 0) {
+        constructor(prop: Property, parent: Nullable<PropertyLine> = null, level: number = 0) {
             this._property = prop;
             this._level = level;
             this._parent = parent;
@@ -224,13 +194,13 @@ module INSPECTOR {
         }
 
         /** Replaces the default display with an input */
-        private _displayInput(e) {
+        private _displayInput(e: any) {
             // Remove the displayInput event listener
             this._valueDiv.removeEventListener('click', this._displayInputHandler);
             // Set input value
             let valueTxt = this._valueDiv.textContent;
             this._valueDiv.textContent = "";
-            this._input.value = valueTxt;
+            this._input.value = valueTxt || "";
             this._valueDiv.appendChild(this._input);
             this._input.focus();
 
@@ -364,14 +334,6 @@ module INSPECTOR {
         }
 
         /**
-         * Returns true if the given instance is a simple type  
-         */
-        private static _IS_TYPE_SIMPLE(inst: any) {
-            let type = Helpers.GET_TYPE(inst);
-            return PropertyLine._SIMPLE_TYPE.indexOf(type) != -1;
-        }
-
-        /**
          * Returns true if the type of this property is simple, false otherwise.
          * Returns true if the value is null
          */
@@ -398,8 +360,10 @@ module INSPECTOR {
                 // Remove class unfolded
                 this._div.classList.remove('unfolded');
                 // remove html children
-                for (let child of this._children) {
-                    this._div.parentNode.removeChild(child.toHtml());
+                if (this._div.parentNode) {
+                    for (let child of this._children) {
+                        this._div.parentNode.removeChild(child.toHtml());
+                    }
                 }
             }
         }
@@ -412,16 +376,17 @@ module INSPECTOR {
                 // Remove class unfolded
                 this._div.classList.remove('unfolded');
                 // remove html children
-                for (let child of this._children) {
-                    this._div.parentNode.removeChild(child.toHtml());
+                if (this._div.parentNode) {
+                    for (let child of this._children) {
+                        this._div.parentNode.removeChild(child.toHtml());
+                    }
                 }
             } else {
                 // if children does not exists, generate it
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
                     let objToDetail = this.value;
-                    let propToDisplay = PROPERTIES[Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
-                    let propertyLine = null;
+                    let propToDisplay = (<any>PROPERTIES)[Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
 
                     for (let prop of propToDisplay) {
                         let infos = new Property(prop, this._property.value);
@@ -429,9 +394,11 @@ module INSPECTOR {
                         this._children.push(child);
                     }
                 }
-                // otherwise display it                    
-                for (let child of this._children) {
-                    this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
+                // otherwise display it    
+                if (this._div.parentNode) {                
+                    for (let child of this._children) {
+                        this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
+                    }
                 }
             }
         }
@@ -514,12 +481,12 @@ module INSPECTOR {
         private _isSliderType() { //Check if property have slider definition
             return this._property  && 
             PROPERTIES.hasOwnProperty(this._property.obj.constructor.name) &&
-            PROPERTIES[this._property.obj.constructor.name].hasOwnProperty('slider') && 
-            PROPERTIES[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
+            (<any>PROPERTIES)[this._property.obj.constructor.name].hasOwnProperty('slider') && 
+            (<any>PROPERTIES)[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
         }
 
         private _getSliderProperty() {
-            return PROPERTIES[this._property.obj.constructor.name].slider[this.name]
+            return (<any>PROPERTIES)[this._property.obj.constructor.name].slider[this.name]
         }
     }
 }

@@ -15,7 +15,7 @@ module BABYLON.GLTF2.Extensions {
         }
 
         protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
-            return this._loadExtension<IKHRMaterialsPbrSpecularGlossiness>(material, (extension, onComplete) => {
+            return this._loadExtension<IKHRMaterialsPbrSpecularGlossiness>(context, material, (context, extension, onComplete) => {
                 loader._createPbrMaterial(material);
                 loader._loadMaterialBaseProperties(context, material);
                 this._loadSpecularGlossinessProperties(loader, context, material, extension);
@@ -24,14 +24,14 @@ module BABYLON.GLTF2.Extensions {
         }
 
         private _loadSpecularGlossinessProperties(loader: GLTFLoader, context: string, material: IGLTFMaterial, properties: IKHRMaterialsPbrSpecularGlossiness): void {
-            var babylonMaterial = material.babylonMaterial as PBRMaterial;
+            const babylonMaterial = material.babylonMaterial as PBRMaterial;
 
             babylonMaterial.albedoColor = properties.diffuseFactor ? Color3.FromArray(properties.diffuseFactor) : new Color3(1, 1, 1);
             babylonMaterial.reflectivityColor = properties.specularFactor ? Color3.FromArray(properties.specularFactor) : new Color3(1, 1, 1);
             babylonMaterial.microSurface = properties.glossinessFactor == null ? 1 : properties.glossinessFactor;
 
             if (properties.diffuseTexture) {
-                var texture = GLTFUtils.GetArrayItem(loader._gltf.textures, properties.diffuseTexture.index);
+                const texture = GLTFLoader._GetProperty(loader._gltf.textures, properties.diffuseTexture.index);
                 if (!texture) {
                     throw new Error(context + ": Failed to find diffuse texture " + properties.diffuseTexture.index);
                 }
@@ -40,7 +40,7 @@ module BABYLON.GLTF2.Extensions {
             }
 
             if (properties.specularGlossinessTexture) {
-                var texture = GLTFUtils.GetArrayItem(loader._gltf.textures, properties.specularGlossinessTexture.index);
+                const texture = GLTFLoader._GetProperty(loader._gltf.textures, properties.specularGlossinessTexture.index);
                 if (!texture) {
                     throw new Error(context + ": Failed to find diffuse texture " + properties.specularGlossinessTexture.index);
                 }

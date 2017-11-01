@@ -277,7 +277,7 @@ module BABYLON {
             var upAxis = BoneLookController._tmpVecs[1];
             upAxis.copyFrom(this.upAxis);
 
-            if(this.upAxisSpace == Space.BONE){
+            if(this.upAxisSpace == Space.BONE && parentBone){
                 if (this._transformYawPitch){
                     Vector3.TransformCoordinatesToRef(upAxis, this._transformYawPitchInv, upAxis);
                 }
@@ -304,7 +304,7 @@ module BABYLON {
                 var spaceMat = BoneLookController._tmpMats[2];
                 var spaceMatInv = BoneLookController._tmpMats[3];
 
-                if(this.upAxisSpace == Space.BONE && upAxis.y == 1){
+                if(this.upAxisSpace == Space.BONE && upAxis.y == 1 && parentBone){
 
                     parentBone.getRotationMatrixToRef(Space.WORLD, this.mesh, spaceMat);
                     
@@ -337,14 +337,14 @@ module BABYLON {
 
                 spaceMat.invertToRef(spaceMatInv);
                 
-                var xzlen:number;
+                var xzlen: Nullable<number> = null;
 
                 if(checkPitch){
                     var localTarget = BoneLookController._tmpVecs[3];
                     target.subtractToRef(bonePos, localTarget);
                     Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
-                    var xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
+                    xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                     var pitch = Math.atan2(localTarget.y, xzlen);
                     var newPitch = pitch;
 
@@ -500,7 +500,7 @@ module BABYLON {
 
         }
 
-        private _getAngleDiff(ang1, ang2):number {
+        private _getAngleDiff(ang1: number, ang2: number):number {
 
             var angDiff = ang2 - ang1;
             angDiff %= Math.PI*2;
@@ -514,7 +514,7 @@ module BABYLON {
             return angDiff;
         }
 
-        private _getAngleBetween(ang1, ang2):number {
+        private _getAngleBetween(ang1: number, ang2: number):number {
 
             ang1 %= (2 * Math.PI);
             ang1 = (ang1 < 0) ? ang1 + (2 * Math.PI) : ang1;
@@ -537,7 +537,7 @@ module BABYLON {
             return ab;
         }
 
-        private _isAngleBetween(ang, ang1, ang2):boolean {
+        private _isAngleBetween(ang: number,ang1: number, ang2: number):boolean {
 
             ang %= (2 * Math.PI);
             ang = (ang < 0) ? ang + (2 * Math.PI) : ang;

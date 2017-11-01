@@ -1,6 +1,4 @@
-﻿/// <reference path="Tools\babylon.decorators.ts" />
-
-module BABYLON {
+﻿module BABYLON {
 
     /**
      * Node is the basic class for all scene objects (Mesh, Light Camera).
@@ -24,25 +22,24 @@ module BABYLON {
         public doNotSerialize = false;
 
         public animations = new Array<Animation>();
-        private _ranges: { [name: string]: AnimationRange; } = {};
+        private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
         public onReady: (node: Node) => void;
 
-        private _childrenFlag = -1;
         private _isEnabled = true;
         private _isReady = true;
         public _currentRenderId = -1;
         private _parentRenderId = -1;
 
-        public _waitingParentId: string;
+        public _waitingParentId: Nullable<string>;
 
         private _scene: Scene;
-        public _cache;
+        public _cache: any;
 
-        private _parentNode: Node;
+        private _parentNode: Nullable<Node>;
         private _children: Node[];
 
-        public set parent(parent: Node) {
+        public set parent(parent: Nullable<Node>) {
             if (this._parentNode === parent) {
                 return;
             }
@@ -64,7 +61,7 @@ module BABYLON {
             }
         }
 
-        public get parent(): Node {
+        public get parent(): Nullable<Node> {
             return this._parentNode;
         }
 
@@ -78,7 +75,7 @@ module BABYLON {
         */
         public onDisposeObservable = new Observable<Node>();
 
-        private _onDisposeObserver: Observer<Node>;
+        private _onDisposeObserver: Nullable<Observer<Node>>;
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -91,10 +88,10 @@ module BABYLON {
          * @param {string} name - the name and id to be given to this node
          * @param {BABYLON.Scene} the scene this node will be added to
          */
-        constructor(name: string, scene: Scene) {
+        constructor(name: string, scene: Nullable<Scene> = null) {
             this.name = name;
             this.id = name;
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = <Scene>(scene || Engine.LastCreatedScene);
             this.uniqueId = this._scene.getUniqueId();
             this._initCache();
         }
@@ -114,7 +111,7 @@ module BABYLON {
             var index = this._behaviors.indexOf(behavior);
 
             if (index !== -1) {
-                return;
+                return this;
             }
 
             behavior.attach(this);
@@ -127,20 +124,20 @@ module BABYLON {
             var index = this._behaviors.indexOf(behavior);
 
             if (index === -1) {
-                return;
-            } 
+                return this;
+            }
 
             this._behaviors[index].detach();
             this._behaviors.splice(index, 1);
 
             return this;
-        }     
-        
+        }
+
         public get behaviors(): Behavior<Node>[] {
             return this._behaviors;
         }
 
-        public getBehaviorByName(name: string): Behavior<Node> {
+        public getBehaviorByName(name: string): Nullable<Behavior<Node>> {
             for (var behavior of this._behaviors) {
                 if (behavior.name === name) {
                     return behavior;
@@ -182,7 +179,9 @@ module BABYLON {
         }
 
         public _markSyncedWithParent() {
-            this._parentRenderId = this.parent._currentRenderId;
+            if (this.parent) {
+                this._parentRenderId = this.parent._currentRenderId;
+            }
         }
 
         public isSynchronizedWithParent(): boolean {
@@ -303,13 +302,13 @@ module BABYLON {
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
         public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[] {
-            var results = [];
+            var results = new Array<Node>();
 
             this._getDescendants(results, directDescendantsOnly, predicate);
 
             return results;
-        }    
-        
+        }
+
         /**
          * Get all child-meshes of this node.
          */
@@ -344,7 +343,7 @@ module BABYLON {
             }
         }
 
-        public getAnimationByName(name: string): Animation {
+        public getAnimationByName(name: string): Nullable<Animation> {
             for (var i = 0; i < this.animations.length; i++) {
                 var animation = this.animations[i];
 
@@ -374,10 +373,10 @@ module BABYLON {
                     this.animations[i].deleteRange(name, deleteFrames);
                 }
             }
-            this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
         }
 
-        public getAnimationRange(name: string): AnimationRange {
+        public getAnimationRange(name: string): Nullable<AnimationRange> {
             return this._ranges[name];
         }
 
@@ -385,7 +384,7 @@ module BABYLON {
             var range = this.getAnimationRange(name);
 
             if (!range) {
-                return null;
+                return;
             }
 
             this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
@@ -394,10 +393,14 @@ module BABYLON {
         public serializeAnimationRanges(): any {
             var serializationRanges = [];
             for (var name in this._ranges) {
+                var localRange = this._ranges[name];
+                if (!localRange) {
+                    continue;
+                }
                 var range: any = {};
                 range.name = name;
-                range.from = this._ranges[name].from;
-                range.to = this._ranges[name].to;
+                range.from = localRange.from;
+                range.to = localRange.to;
                 serializationRanges.push(range);
             }
             return serializationRanges;
@@ -417,7 +420,7 @@ module BABYLON {
 
             this._behaviors = [];
         }
-        
+
         public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
             if (parsedNode.ranges) {
                 for (var index = 0; index < parsedNode.ranges.length; index++) {

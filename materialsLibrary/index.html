@@ -51,10 +51,11 @@
 	<script src="test/addpbr.js"></script>
 	<script src="test/addpbrmetallicroughness.js"></script>
 	<script src="test/addpbrspecularglossiness.js"></script>
-	<script src="test/addlegacypbr.js"></script>
 	<script src="test/addCell.js"></script>
+	<script src="test/addbackground.js"></script>
 	
 	<script>
+	var backgroundSkybox = null;
 	BABYLONDEVTOOLS.Loader.load(function() {
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
@@ -199,11 +200,11 @@
 
 				var pbr = preparePBR();
 
+				var back = prepareBackgroundMaterial();
+
 				var pbrmetallicroughness = preparePBRMetallicRoughness();
 
 				var pbrspecularglossiness = preparePBRSpecularGlossiness();
-
-				var legacypbr = prepareLegacyPBR();
 				
 				var triPlanar = prepareTriPlanar();
 				
@@ -220,11 +221,14 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'pbrmetallicroughness', 'pbrspecularglossiness', 'legacyPbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'pbrmetallicroughness', 'pbrspecularglossiness', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell', 'background']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
 					fur.resetFur();
+					if (backgroundSkybox) {
+						backgroundSkybox.setEnabled(false);
+					}
                     
 					switch (options.material) {
 						case "shadowOnly":
@@ -259,9 +263,6 @@
 						case "pbrspecularglossiness":
 							currentMaterial = pbrspecularglossiness;
 							break;
-						case "legacyPbr":
-							currentMaterial = legacypbr;
-							break;
 						case "fur":
 							currentMaterial = fur.material;
 							fur.configureFur(currentMesh);
@@ -281,6 +282,10 @@
                             break;
 						case "cell":
 							currentMaterial = cell;
+							break;
+						case "background":
+							currentMaterial = back;
+							backgroundSkybox.setEnabled(true);
 							break;
 						default:
 							currentMaterial = std;

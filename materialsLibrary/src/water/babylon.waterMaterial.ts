@@ -138,12 +138,10 @@ module BABYLON {
 		/*
 		* Private members
 		*/
-        private _mesh: AbstractMesh = null;
+        private _mesh: Nullable<AbstractMesh> = null;
 
         private _refractionRTT: RenderTargetTexture;
         private _reflectionRTT: RenderTargetTexture;
-
-        private _material: ShaderMaterial;
 
         private _reflectionTransform: Matrix = Matrix.Zero();
         private _lastTime: number = 0;
@@ -193,8 +191,13 @@ module BABYLON {
 
         // Methods
         public addToRenderList(node: any): void {
-            this._refractionRTT.renderList.push(node);
-            this._reflectionRTT.renderList.push(node);
+            if (this._refractionRTT.renderList) {
+                this._refractionRTT.renderList.push(node);
+            }
+
+            if (this._reflectionRTT.renderList) {
+                this._reflectionRTT.renderList.push(node);
+            }
         }
 
         public enableRenderTargets(enable: boolean): void {
@@ -204,7 +207,7 @@ module BABYLON {
             this._reflectionRTT.refreshRate = refreshRate;
         }
 
-        public getRenderList(): AbstractMesh[] {
+        public getRenderList(): Nullable<AbstractMesh[]> {
             return this._refractionRTT.renderList;
         }
 
@@ -220,7 +223,7 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -265,7 +268,7 @@ module BABYLON {
                 }
             }
 
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
 
@@ -352,7 +355,7 @@ module BABYLON {
                     // Water
                     "refractionSampler", "reflectionSampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -375,7 +378,7 @@ module BABYLON {
                     }, engine), defines);
 
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -394,6 +397,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect || !this._mesh) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -419,7 +425,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
@@ -487,8 +493,8 @@ module BABYLON {
             this._reflectionRTT.ignoreCameraViewport = true;
 
             var isVisible: boolean;
-            var clipPlane = null;
-            var savedViewMatrix;
+            var clipPlane: Nullable<Plane> = null;
+            var savedViewMatrix: Matrix;
             var mirrorMatrix = Matrix.Zero();
 
             this._refractionRTT.onBeforeRender = () => {
@@ -531,7 +537,7 @@ module BABYLON {
                 mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
                 scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
                 scene.getEngine().cullBackFaces = false;
-                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.position, mirrorMatrix);
+                scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
             };
 
             this._reflectionRTT.onAfterRender = () => {

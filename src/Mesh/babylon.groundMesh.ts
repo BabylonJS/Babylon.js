@@ -1,12 +1,9 @@
-﻿/// <reference path="babylon.mesh.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class GroundMesh extends Mesh {
         public generateOctree = false;
 
-        private _worldInverse = new Matrix();
         private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
-        
+
         public _subdivisionsX: number;
         public _subdivisionsY: number;
         public _width: number;
@@ -22,7 +19,7 @@ module BABYLON {
 
         public getClassName(): string {
             return "GroundMesh";
-        }        
+        }
 
         public get subdivisions(): number {
             return Math.min(this._subdivisionsX, this._subdivisionsY);
@@ -124,8 +121,6 @@ module BABYLON {
         // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
         private _getFacetAt(x: number, z: number): Vector4 {
             // retrieve col and row from x, z coordinates in the ground local system
-            var subdivisionsX = this._subdivisionsX;
-            var subdivisionsY = this._subdivisionsY;
             var col = Math.floor((x + this._maxX) * this._subdivisionsX / this._width);
             var row = Math.floor(-(z + this._maxZ) * this._subdivisionsY / this._height + this._subdivisionsY);
             var quad = this._heightQuads[row * this._subdivisionsX + col];
@@ -164,6 +159,11 @@ module BABYLON {
         // Returns the GroundMesh.  
         private _computeHeightQuads(): GroundMesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
+
+            if (!positions) {
+                return this;
+            }
+
             var v1 = Tmp.Vector3[3];
             var v2 = Tmp.Vector3[2];
             var v3 = Tmp.Vector3[1];

@@ -1,16 +1,16 @@
 ﻿module BABYLON {
     export class BaseSubMesh {
-        public _materialDefines: MaterialDefines;
-        public _materialEffect: Effect;
+        public _materialDefines: Nullable<MaterialDefines>;
+        public _materialEffect: Nullable<Effect>;
 
-        public get effect(): Effect {
+        public get effect(): Nullable<Effect> {
             return this._materialEffect;
         }       
 
-        public setEffect(effect: Effect, defines?: MaterialDefines) {
+        public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null) {
             if (this._materialEffect === effect) {
                 if (!effect) {
-                    this._materialDefines = undefined;
+                    this._materialDefines = null;
                 }
                 return;
             }
@@ -24,9 +24,9 @@
 
         private _mesh: AbstractMesh;
         private _renderingMesh: Mesh;
-        private _boundingInfo: BoundingInfo;
-        private _linesIndexBuffer: WebGLBuffer;
-        public _lastColliderWorldVertices: Vector3[];
+        private _boundingInfo: Nullable<BoundingInfo>;
+        private _linesIndexBuffer: Nullable<WebGLBuffer>;
+        public _lastColliderWorldVertices: Nullable<Vector3[]>;
         public _trianglePlanes: Plane[];
         public _lastColliderTransformMatrix: Matrix;
 
@@ -35,9 +35,13 @@
         public _distanceToCamera: number;
         public _id: number;
 
-        private _currentMaterial: Material;
+        private _currentMaterial: Nullable<Material>;
 
-        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
+        public static AddToMesh(materialIndex: number, verticesStart: number, verticesCount: number, indexStart: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true): SubMesh {
+            return new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox);
+        }
+
+        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart: number, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
             super();
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || <Mesh>mesh;
@@ -60,7 +64,7 @@
         /**
          * Returns the submesh BoudingInfo object.  
          */
-        public getBoundingInfo(): BoundingInfo {
+        public getBoundingInfo(): Nullable<BoundingInfo> {
             if (this.IsGlobal) {
                 return this._mesh.getBoundingInfo();
             }
@@ -94,7 +98,7 @@
         /**
          * Returns the submesh material.  
          */
-        public getMaterial(): Material {
+        public getMaterial(): Nullable<Material> {
             var rootMaterial = this._renderingMesh.material;
 
             if (rootMaterial && (<MultiMaterial>rootMaterial).getSubMaterial) {
@@ -103,7 +107,7 @@
 
                 if (this._currentMaterial !== effectiveMaterial) {
                     this._currentMaterial = effectiveMaterial;
-                    this._materialDefines = undefined;
+                    this._materialDefines = null;
                 }
 
                 return effectiveMaterial;
@@ -124,23 +128,29 @@
         public refreshBoundingInfo(): SubMesh {
             this._lastColliderWorldVertices = null;
 
-            if (this.IsGlobal) {
-                return;
+            if (this.IsGlobal || !this._renderingMesh || !this._renderingMesh.geometry) {
+                return this;
             }
             var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
-                return;
+                return this;
             }
 
-            var indices = this._renderingMesh.getIndices();
+            var indices = <IndicesArray>this._renderingMesh.getIndices();
             var extend: { minimum: Vector3, maximum: Vector3 };
 
             //is this the only submesh?
             if (this.indexStart === 0 && this.indexCount === indices.length) {
+                let boundingInfo = this._renderingMesh.getBoundingInfo();
+
+                if (!boundingInfo) {
+                    return this;
+                }
+
                 //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
-                extend = { minimum: this._renderingMesh.getBoundingInfo().minimum.clone(), maximum: this._renderingMesh.getBoundingInfo().maximum.clone() };
+                extend = { minimum: boundingInfo.minimum.clone(), maximum: boundingInfo.maximum.clone() };
             } else {
                 extend = Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount, this._renderingMesh.geometry.boundingBias);
             }
@@ -149,7 +159,13 @@
         }
 
         public _checkCollision(collider: Collider): boolean {
-            return this.getBoundingInfo()._checkCollision(collider);
+            let boundingInfo = this._renderingMesh.getBoundingInfo();
+
+            if (!boundingInfo) {
+                return false;
+            }
+
+            return boundingInfo._checkCollision(collider);
         }
 
         /**
@@ -157,10 +173,12 @@
          * Returns the Submesh.  
          */
         public updateBoundingInfo(world: Matrix): SubMesh {
-            if (!this.getBoundingInfo()) {
+            let boundingInfo = this.getBoundingInfo();
+
+            if (!boundingInfo) {
                 this.refreshBoundingInfo();
             }
-            this.getBoundingInfo().update(world);
+            (<BoundingInfo>boundingInfo).update(world);
             return this;
         }
 
@@ -169,7 +187,12 @@
          * Boolean returned.  
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            return this.getBoundingInfo().isInFrustum(frustumPlanes);
+            let boundingInfo = this.getBoundingInfo();
+            
+            if (!boundingInfo) {
+                return false;
+            }            
+            return boundingInfo.isInFrustum(frustumPlanes);
         }
 
         /**
@@ -177,7 +200,12 @@
          * Boolean returned.  
          */        
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
-            return this.getBoundingInfo().isCompletelyInFrustum(frustumPlanes);
+            let boundingInfo = this.getBoundingInfo();
+            
+            if (!boundingInfo) {
+                return false;
+            }                  
+            return boundingInfo.isCompletelyInFrustum(frustumPlanes);
         }
 
         /**
@@ -214,14 +242,19 @@
          * Boolean returned.  
          */
         public canIntersects(ray: Ray): boolean {
-            return ray.intersectsBox(this.getBoundingInfo().boundingBox);
+            let boundingInfo = this.getBoundingInfo();
+            
+            if (!boundingInfo) {
+                return false;
+            }            
+            return ray.intersectsBox(boundingInfo.boundingBox);
         }
 
         /**
          * Returns an object IntersectionInfo.  
          */
-        public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): IntersectionInfo {
-            var intersectInfo: IntersectionInfo = null;
+        public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+            var intersectInfo: Nullable<IntersectionInfo> = null;
 
             // LineMesh first as it's also a Mesh...
             if (this._mesh instanceof LinesMesh) {
@@ -289,7 +322,13 @@
             var result = new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh, false);
 
             if (!this.IsGlobal) {
-                result._boundingInfo = new BoundingInfo(this.getBoundingInfo().minimum, this.getBoundingInfo().maximum);
+                let boundingInfo = this.getBoundingInfo();
+                
+                if (!boundingInfo) {
+                    return result;
+                }   
+
+                result._boundingInfo = new BoundingInfo(boundingInfo.minimum, boundingInfo.maximum);
             }
 
             return result;
@@ -324,8 +363,8 @@
             var minVertexIndex = Number.MAX_VALUE;
             var maxVertexIndex = -Number.MAX_VALUE;
 
-            renderingMesh = renderingMesh || <Mesh>mesh;
-            var indices = renderingMesh.getIndices();
+            renderingMesh = (<Mesh>(renderingMesh || <Mesh>mesh));
+            var indices = <IndicesArray>renderingMesh.getIndices();
 
             for (var index = startIndex; index < startIndex + indexCount; index++) {
                 var vertexIndex = indices[index];

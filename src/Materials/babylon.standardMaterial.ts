@@ -69,6 +69,8 @@ module BABYLON {
         public MORPHTARGETS_NORMAL = false;
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
+        public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
+        public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
 
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;
@@ -78,6 +80,7 @@ module BABYLON {
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
+        public COLORGRADING3D = false;
         public SAMPLER3DGREENDEPTH = false;
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
@@ -97,56 +100,56 @@ module BABYLON {
                         ];
 
             for (var mode of modes) {
-                this[mode] = (mode === modeToEnable);
+                (<any>this)[mode] = (mode === modeToEnable);
             }
         }
     }
 
     export class StandardMaterial extends PushMaterial {
         @serializeAsTexture("diffuseTexture")
-        private _diffuseTexture: BaseTexture;
+        private _diffuseTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public diffuseTexture: BaseTexture;
+        public diffuseTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("ambientTexture")
-        private _ambientTexture: BaseTexture;
+        private _ambientTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public ambientTexture: BaseTexture;
+        public ambientTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("opacityTexture")
-        private _opacityTexture: BaseTexture;        
+        private _opacityTexture: Nullable<BaseTexture>;;        
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public opacityTexture: BaseTexture;    
+        public opacityTexture: Nullable<BaseTexture>;;    
 
         @serializeAsTexture("reflectionTexture")
-        private _reflectionTexture: BaseTexture;
+        private _reflectionTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public reflectionTexture: BaseTexture;        
+        public reflectionTexture: Nullable<BaseTexture>;        
 
         @serializeAsTexture("emissiveTexture")
-        private _emissiveTexture: BaseTexture;
+        private _emissiveTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public emissiveTexture: BaseTexture;     
+        public emissiveTexture: Nullable<BaseTexture>;;     
 
         @serializeAsTexture("specularTexture")
-        private _specularTexture: BaseTexture;
+        private _specularTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public specularTexture: BaseTexture;             
+        public specularTexture: Nullable<BaseTexture>;;             
 
         @serializeAsTexture("bumpTexture")
-        private _bumpTexture: BaseTexture;
+        private _bumpTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture: BaseTexture;         
+        public bumpTexture: Nullable<BaseTexture>;;         
 
         @serializeAsTexture("lightmapTexture")
-        private _lightmapTexture: BaseTexture;
+        private _lightmapTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public lightmapTexture: BaseTexture;            
+        public lightmapTexture: Nullable<BaseTexture>;;            
 
         @serializeAsTexture("refractionTexture")
-        private _refractionTexture: BaseTexture;
+        private _refractionTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public refractionTexture: BaseTexture;   
+        public refractionTexture: Nullable<BaseTexture>;;   
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
@@ -315,13 +318,13 @@ module BABYLON {
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the Standard Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -418,13 +421,13 @@ module BABYLON {
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
-        public get cameraColorGradingTexture(): BaseTexture {
+        public get cameraColorGradingTexture(): Nullable<BaseTexture> {
             return this._imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets the Color Grading 2D Lookup Texture.
          */
-        public set cameraColorGradingTexture(value: BaseTexture) {
+        public set cameraColorGradingTexture(value: Nullable<BaseTexture> ) {
             this._imageProcessingConfiguration.colorGradingTexture = value;
         }
 
@@ -434,7 +437,7 @@ module BABYLON {
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
-        public get cameraColorCurves(): ColorCurves {
+        public get cameraColorCurves(): Nullable<ColorCurves> {
             return this._imageProcessingConfiguration.colorCurves;
         }
         /**
@@ -443,7 +446,7 @@ module BABYLON {
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
-        public set cameraColorCurves(value: ColorCurves) {
+        public set cameraColorCurves(value: Nullable<ColorCurves>) {
             this._imageProcessingConfiguration.colorCurves = value;
         }        
 
@@ -465,11 +468,11 @@ module BABYLON {
                 this._renderTargets.reset();
 
                 if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._reflectionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
                 }
 
                 if (StandardMaterial.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._refractionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
                 }
 
                 return this._renderTargets;
@@ -503,15 +506,15 @@ module BABYLON {
             return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return this._diffuseTexture;
         }
 
         /**
          * Child classes can use it to update shaders
          */
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {            
-            if (this.isFrozen) {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {            
+            if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
@@ -696,6 +699,8 @@ module BABYLON {
                 defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
+
+                defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
             }
 
             if (defines._areImageProcessingDirty) {
@@ -880,7 +885,7 @@ module BABYLON {
                 this.buildUniformLayout();
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -953,6 +958,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -1038,9 +1046,9 @@ module BABYLON {
                             MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
 
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             } else {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? -1.0 : 1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
 
@@ -1125,7 +1133,7 @@ module BABYLON {
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition);
+                MaterialHelper.BindEyePosition(effect, scene);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 

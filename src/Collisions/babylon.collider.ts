@@ -72,7 +72,7 @@
         public initialPosition: Vector3;
         public nearestDistance: number;
         public intersectionPoint: Vector3;
-        public collidedMesh: AbstractMesh;
+        public collidedMesh: Nullable<AbstractMesh>;
 
         private _collisionPoint = Vector3.Zero();
         private _planeIntersectionPoint = Vector3.Zero();

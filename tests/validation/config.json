@@ -76,6 +76,7 @@
     },
     {
       "title": "Charting",
+      "renderCount": 3,
       "scriptToRun": "/Demos/Charting/charting.js",
       "functionToCall": "CreateChartingTestScene",
       "referenceImage": "charting.png"
@@ -181,24 +182,31 @@
     },
     {
       "title": "GLTF Normals",
-      "renderCount": 10,
+      "renderCount": 20,
       "scriptToRun": "/Demos/GLTFNormals/index.js",
       "functionToCall": "createScene",
       "referenceImage": "gltfnormals.png"
     },
     {
       "title": "PBR glossy",
-      "renderCount": 10,
+      "renderCount": 20,
+      "replace": "engine.setHardwareScalingLevel, //engine.setHardwareScalingLevel",
       "scriptToRun": "/Demos/PBRGlossy/index.js",
       "functionToCall": "CreatePBRGlossyScene",
       "referenceImage": "pbrglossy.png"
     },
     {
       "title": "PBR rough",
-      "renderCount": 10,
+      "renderCount": 20,
       "scriptToRun": "/Demos/PBRRough/index.js",
       "functionToCall": "CreatePBRRoughScene",
       "referenceImage": "PBRRough.png"
+    },
+    {
+      "title": "GLTF LOD",
+      "renderCount": 500,
+      "playgroundId": "#TC80RU#41",
+      "referenceImage": "GLTF LOD.png"
     },
     {
       "title": "Reflection probes",

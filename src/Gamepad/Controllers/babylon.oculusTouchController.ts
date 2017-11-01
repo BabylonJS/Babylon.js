@@ -9,7 +9,7 @@ module BABYLON {
 
         public onThumbRestChangedObservable = new Observable<ExtendedGamepadButton>();
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.OCULUS;
         }
@@ -38,10 +38,10 @@ module BABYLON {
                 */
 
                 this._defaultModel = newMeshes[1];
+                this.attachToMesh(this._defaultModel);
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
                 }
-                this.attachToMesh(this._defaultModel);
             });
         }
 

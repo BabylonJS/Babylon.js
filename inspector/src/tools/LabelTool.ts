@@ -1,15 +1,15 @@
 module INSPECTOR {
-     
+
     export class LabelTool extends AbstractTool {
 
         /** True if label are displayed, false otherwise */
-        private _isDisplayed         : boolean            = false;
-        private _advancedTexture     : BABYLON.GUI.AdvancedDynamicTexture = null;
-        private _labelInitialized    : boolean = false;
-        private _scene               : BABYLON.Scene = null;
-        private _guiLoaded      : boolean = false;
-        
-        constructor(parent:HTMLElement, inspector:Inspector) {
+        private _isDisplayed: boolean = false;
+        private _advancedTexture: Nullable<BABYLON.GUI.AdvancedDynamicTexture> = null;
+        private _labelInitialized: boolean = false;
+        private _scene: Nullable<BABYLON.Scene> = null;
+        private _guiLoaded: boolean = false;
+
+        constructor(parent: HTMLElement, inspector: Inspector) {
             super('fa-tags', parent, inspector, 'Display mesh names on the canvas');
 
             this._scene = inspector.scene;
@@ -17,7 +17,7 @@ module INSPECTOR {
 
         public dispose() {
 
-            if(this._advancedTexture){
+            if (this._advancedTexture) {
                 this._advancedTexture.dispose();
             }
         }
@@ -34,7 +34,7 @@ module INSPECTOR {
 
         private _initializeLabels() {
             // Check if the label are already initialized and quit if it's the case
-            if (this._labelInitialized) {
+            if (this._labelInitialized || !this._scene) {
                 return;
             }
 
@@ -52,7 +52,7 @@ module INSPECTOR {
             for (let m of this._scene.meshes) {
                 this._createLabel(m);
             }
-            
+
             this._scene.onNewMeshAddedObservable.add((m, s) => {
                 this._createLabel(m);
             });
@@ -64,7 +64,7 @@ module INSPECTOR {
             this._labelInitialized = true;
         }
 
-        private _createLabel(mesh: BABYLON.AbstractMesh){
+        private _createLabel(mesh: BABYLON.AbstractMesh) {
             // Don't create label for "system nodes" (starting and ending with ###)
             let name = mesh.name;
 
@@ -72,7 +72,7 @@ module INSPECTOR {
                 return;
             }
 
-            if(mesh){
+            if (mesh && this._advancedTexture) {
                 let rect1 = new BABYLON.GUI.Rectangle();
                 rect1.width = 4 + 10 * name.length + "px";
                 rect1.height = "22px";
@@ -85,11 +85,14 @@ module INSPECTOR {
                 label.fontSize = 12;
                 rect1.addControl(label);
 
-                rect1.linkWithMesh(mesh); 
+                rect1.linkWithMesh(mesh);
             }
         }
 
         private _removeLabel(mesh: BABYLON.AbstractMesh) {
+            if (!this._advancedTexture) {
+                return;
+            }
             for (let g of this._advancedTexture._rootContainer.children) {
                 let ed = g._linkedMesh;
                 if (ed === mesh) {
@@ -102,7 +105,7 @@ module INSPECTOR {
         // Action : Display/hide mesh names on the canvas
         public action() {
             // Don't toggle if the script is not loaded
-            if (!this._checkGUILoaded()) {
+            if (!this._checkGUILoaded() || !this._advancedTexture) {
                 return;
             }
 
@@ -113,8 +116,8 @@ module INSPECTOR {
             if (this._isDisplayed) {
                 this._initializeLabels();
                 this._advancedTexture._rootContainer.isVisible = true;
-            } 
-            
+            }
+
             // Or to hide them
             else {
                 this._advancedTexture._rootContainer.isVisible = false;

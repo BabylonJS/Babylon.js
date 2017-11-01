@@ -36,15 +36,15 @@ module BABYLON {
         }
 
         private _orientationChanged = () => {
-            this._screenOrientationAngle = (window.orientation !== undefined ? +window.orientation : (window.screen.orientation && window.screen.orientation['angle'] ? (<any>window.screen.orientation).angle : 0));
+            this._screenOrientationAngle = (window.orientation !== undefined ? +window.orientation : (window.screen.orientation && (<any>window.screen.orientation)['angle'] ? (<any>window.screen.orientation).angle : 0));
             this._screenOrientationAngle = -Tools.ToRadians(this._screenOrientationAngle / 2);
             this._screenQuaternion.copyFromFloats(0, Math.sin(this._screenOrientationAngle), 0, Math.cos(this._screenOrientationAngle));
         }
 
         private _deviceOrientation = (evt: DeviceOrientationEvent) => {
-            this._alpha = evt.alpha;
-            this._beta = evt.beta;
-            this._gamma = evt.gamma;
+            this._alpha = evt.alpha !== null ? evt.alpha : 0;
+            this._beta = evt.beta !== null ? evt.beta : 0;
+            this._gamma = evt.gamma !== null ? evt.gamma : 0;
         }
 
         detachControl(element: HTMLElement) {
@@ -73,5 +73,5 @@ module BABYLON {
         }
     }
 
-    CameraInputTypes["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
+    (<any>CameraInputTypes)["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
 }

@@ -30,7 +30,7 @@ module BABYLON {
         public static readonly GAMEPAD_ID_PREFIX:string = 'Spatial Controller (Spatial Interaction Source) ';
         private static readonly GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
 
-        private _loadedMeshInfo: LoadedMeshInfo;
+        private _loadedMeshInfo: Nullable<LoadedMeshInfo>;
         private readonly _mapping = {
             // Semantic button names
             buttons: ['thumbstick', 'trigger', 'grip', 'menu', 'trackpad'],
@@ -67,7 +67,7 @@ module BABYLON {
 
         public onTrackpadChangedObservable = new Observable<ExtendedGamepadButton>();
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.WINDOWS;
             this._loadedMeshInfo = null;
@@ -122,7 +122,7 @@ module BABYLON {
             }
 
             // Only emit events for buttons that we know how to map from index to name
-            let observable = this[this._mapping.buttonObservableNames[buttonName]];
+            let observable = (<any>this)[(<any>(this._mapping.buttonObservableNames))[buttonName]];
             if (observable) {
                 observable.notifyObservers(state);
             }
@@ -138,6 +138,11 @@ module BABYLON {
             }
 
             var meshInfo = this._loadedMeshInfo.buttonMeshes[buttonName];
+
+            if (!meshInfo.unpressed.rotationQuaternion || !meshInfo.pressed.rotationQuaternion || !meshInfo.value.rotationQuaternion) {
+                return;
+            }
+
             BABYLON.Quaternion.SlerpToRef(
                 meshInfo.unpressed.rotationQuaternion, 
                 meshInfo.pressed.rotationQuaternion, 
@@ -151,10 +156,18 @@ module BABYLON {
         }
         
         protected lerpAxisTransform(axis:number, axisValue: number) {
+            if (!this._loadedMeshInfo) {
+                return;
+            }
+
             let meshInfo = this._loadedMeshInfo.axisMeshes[axis];
             if (!meshInfo) {
                 return;
             }
+
+            if (!meshInfo.min.rotationQuaternion || !meshInfo.max.rotationQuaternion || !meshInfo.value.rotationQuaternion) {
+                return;
+            }            
 
             // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
             let lerpValue = axisValue * 0.5 + 0.5;
@@ -235,14 +248,14 @@ module BABYLON {
          * @param meshes list of meshes that make up the controller model to process
          * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
          */
-        private processModel(scene: Scene, meshes: AbstractMesh[]) : LoadedMeshInfo {
+        private processModel(scene: Scene, meshes: AbstractMesh[]) : Nullable<LoadedMeshInfo> {
             let loadedMeshInfo = null;
 
             // Create a new mesh to contain the glTF hierarchy
             let parentMesh = new BABYLON.Mesh(this.id + " " + this.hand, scene);
 
             // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
-            let childMesh : AbstractMesh = null;
+            let childMesh : Nullable<AbstractMesh> = null;
             for (let i = 0; i < meshes.length; i++) {
                 let mesh = meshes[i];
 
@@ -279,7 +292,7 @@ module BABYLON {
 
             // Button Meshes
             for (i = 0; i < this._mapping.buttons.length; i++) {
-                var buttonMeshName = this._mapping.buttonMeshNames[this._mapping.buttons[i]];
+                var buttonMeshName = (<any>this._mapping.buttonMeshNames)[this._mapping.buttons[i]];
                 if (!buttonMeshName) {
                     Tools.Log('Skipping unknown button at index: ' + i + ' with mapped name: ' + this._mapping.buttons[i]);
                     continue;
@@ -350,11 +363,11 @@ module BABYLON {
             return loadedMeshInfo;
             
             // Look through all children recursively. This will return null if no mesh exists with the given name.
-            function getChildByName(node, name) {
+            function getChildByName(node: Node, name: string) {
                 return node.getChildMeshes(false, n => n.name === name)[0];
             }
             // Look through only immediate children. This will return null if no mesh exists with the given name.
-            function getImmediateChildByName (node, name) : AbstractMesh {
+            function getImmediateChildByName (node: Node, name: string) : AbstractMesh {
                 return node.getChildMeshes(true, n => n.name == name)[0];
             }
         }
