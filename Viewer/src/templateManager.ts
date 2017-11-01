@@ -83,7 +83,7 @@ export class TemplateManager {
         }
 
         //build the html tree
-        let htmlTree = this.buildHTMLTree(templates).then(htmlTree => {
+        this.buildHTMLTree(templates).then(htmlTree => {
             internalInit(htmlTree, 'main');
         });
     }
@@ -102,6 +102,7 @@ export class TemplateManager {
         let promises = Object.keys(templates).map(name => {
             let template = new Template(name, templates[name]);
             this.templates[name] = template;
+            return template.initPromise;
         });
 
         return Promise.all(promises).then(() => {
@@ -196,8 +197,14 @@ export class Template {
 
     public getChildElements(): Array<string> {
         let childrenArray: string[] = [];
-        for (let i = 0; i < this.fragment.children.length; ++i) {
-            childrenArray.push(kebabToCamel(this.fragment.children.item(i).nodeName.toLowerCase()));
+        //Edge and IE don't support frage,ent.children
+        let children = this.fragment.children;
+        if (!children) {
+            // casting to HTMLCollection, as both NodeListOf and HTMLCollection have 'item()' and 'length'.
+            children = <HTMLCollection>this.fragment.querySelectorAll('*');
+        }
+        for (let i = 0; i < children.length; ++i) {
+            childrenArray.push(kebabToCamel(children.item(i).nodeName.toLowerCase()));
         }
         return childrenArray;
     }
