@@ -199,12 +199,12 @@ export class DefaultViewer extends AbstractViewer {
             if (texture) {
                 this.extendClassWithConfig(texture, this.configuration.skybox.cubeTexture);
 
-                let scale = this.configuration.skybox.scale || (this.scene.activeCamera.maxZ - this.scene.activeCamera.minZ) / 2;
+                let scale = this.configuration.skybox.scale || this.scene.activeCamera && (this.scene.activeCamera.maxZ - this.scene.activeCamera.minZ) / 2 || 1;
 
                 let box = this.scene.createDefaultSkybox(texture, this.configuration.skybox.pbr, scale, this.configuration.skybox.blur);
 
                 // before extending, set the material's imageprocessing configuration object, if needed:
-                if (this.configuration.skybox.material && this.configuration.skybox.material.imageProcessingConfiguration) {
+                if (this.configuration.skybox.material && this.configuration.skybox.material.imageProcessingConfiguration && box) {
                     (<StandardMaterial>box.material).imageProcessingConfiguration = new ImageProcessingConfiguration();
                 }
 
@@ -335,6 +335,7 @@ export class DefaultViewer extends AbstractViewer {
                 let lightConfig = this.configuration.lights && this.configuration.lights[name] || { name: name, type: 0 };
                 lightConfig.name = name;
                 let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
+                if (!constructor) return;
                 let light = constructor();
 
                 //enabled
@@ -347,11 +348,14 @@ export class DefaultViewer extends AbstractViewer {
                 //position. Some lights don't support shadows
                 if (light instanceof ShadowLight) {
                     if (lightConfig.shadowEnabled) {
-                        var shadowGenerator = new BABYLON.ShadowGenerator(512, light)
+                        var shadowGenerator = new BABYLON.ShadowGenerator(512, light);
                         this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                         // add the focues meshes to the shadow list
+                        let shadownMap = shadowGenerator.getShadowMap();
+                        if (!shadownMap) return;
+                        let renderList = shadownMap.renderList;
                         for (var index = 0; index < focusMeshes.length; index++) {
-                            shadowGenerator.getShadowMap().renderList.push(focusMeshes[index]);
+                            renderList && renderList.push(focusMeshes[index]);
                         }
                     }
                 }
