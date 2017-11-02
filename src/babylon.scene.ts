@@ -1624,7 +1624,6 @@
                 this._meshPickProceed = false;
 
                 this._updatePointerPosition(evt);      
-
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {

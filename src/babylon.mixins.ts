@@ -120,6 +120,7 @@ interface WebGLBuffer {
 }
 
 interface WebGLProgram {
+    transformFeedback: Nullable<WebGLTransformFeedback>;
     __SPECTOR_rebuildProgram: Nullable<(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void>;
 }
 
