@@ -142,7 +142,8 @@ var BABYLON;
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: null,
-                    maxSimultaneousLights: 4
+                    maxSimultaneousLights: 4,
+                    transformFeedbackVaryings: null
                 }, engine), defines);
             }
             if (!subMesh.effect || !subMesh.effect.isReady()) {
