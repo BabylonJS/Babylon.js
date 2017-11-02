@@ -4,6 +4,7 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 interface WebGLRenderingContext {
+    readonly RASTERIZER_DISCARD: number;
     readonly TEXTURE_3D: number;
     readonly TEXTURE_2D_ARRAY: number;
     readonly TEXTURE_WRAP_R: number;
@@ -16,6 +17,7 @@ interface WebGLRenderingContext {
 
     readonly TRANSFORM_FEEDBACK: number;
     readonly INTERLEAVED_ATTRIBS: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER: number;
     createTransformFeedback(): WebGLTransformFeedback;
     deleteTransformFeedback(transformFeedbac: WebGLTransformFeedback): void;
     bindTransformFeedback(target: number, transformFeedback: Nullable<WebGLTransformFeedback>): void;
