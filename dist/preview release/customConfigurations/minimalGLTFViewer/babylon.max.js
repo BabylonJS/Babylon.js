@@ -38276,6 +38276,8 @@ var BABYLON;
             this.buttons = [0, 1, 2];
             this.angularSensibilityX = 1000.0;
             this.angularSensibilityY = 1000.0;
+            this.angularTouchSensibilityX = this.angularSensibilityX;
+            this.angularTouchSensibilityY = this.angularSensibilityY;
             this.pinchPrecision = 12.0;
             /**
              * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
@@ -38287,6 +38289,8 @@ var BABYLON;
             this.multiTouchPanAndZoom = true;
             this._isPanClick = false;
             this.pinchInwards = true;
+            this._angularSensibilityX = this.angularSensibilityX;
+            this._angularSensibilityY = this.angularSensibilityY;
         }
         ArcRotateCameraPointersInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -38300,6 +38304,9 @@ var BABYLON;
             var previousMultiTouchPanPosition = { x: 0, y: 0, isPaning: false, isPinching: false };
             this._pointerInput = function (p, s) {
                 var evt = p.event;
+                var isTouch = p.event.pointerType === "touch";
+                _this._angularSensibilityX = isTouch ? _this.angularTouchSensibilityX : _this.angularSensibilityX;
+                _this._angularSensibilityY = isTouch ? _this.angularTouchSensibilityY : _this.angularSensibilityY;
                 if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
@@ -38345,7 +38352,7 @@ var BABYLON;
                     previousMultiTouchPanPosition.isPinching = false;
                     twoFingerActivityCount = 0;
                     initialDistance = 0;
-                    if (p.event.pointerType !== "touch") {
+                    if (!isTouch) {
                         pointB = null; // Mouse and pen are mono pointer
                     }
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
@@ -38389,8 +38396,8 @@ var BABYLON;
                         else {
                             var offsetX = evt.clientX - cacheSoloPointer.x;
                             var offsetY = evt.clientY - cacheSoloPointer.y;
-                            _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
-                            _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
+                            _this.camera.inertialAlphaOffset -= offsetX / _this._angularSensibilityX;
+                            _this.camera.inertialBetaOffset -= offsetY / _this._angularSensibilityY;
                         }
                         cacheSoloPointer.x = evt.clientX;
                         cacheSoloPointer.y = evt.clientY;
@@ -38419,7 +38426,7 @@ var BABYLON;
                             else {
                                 _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                     (_this.pinchPrecision *
-                                        ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
+                                        ((_this._angularSensibilityX + _this._angularSensibilityY) / 2) *
                                         direction);
                             }
                             if (_this.panningSensibility !== 0) {
@@ -38442,7 +38449,7 @@ var BABYLON;
                                 else {
                                     _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                         (_this.pinchPrecision *
-                                            ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
+                                            ((_this._angularSensibilityX + _this._angularSensibilityY) / 2) *
                                             direction);
                                 }
                                 previousMultiTouchPanPosition.isPaning = false;
@@ -38571,6 +38578,12 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "angularSensibilityY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "angularTouchSensibilityX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "angularTouchSensibilityY", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "pinchPrecision", void 0);
@@ -38719,6 +38732,38 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers) {
                     pointers.angularSensibilityY = value;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArcRotateCamera.prototype, "angularTouchSensibilityX", {
+            get: function () {
+                var pointers = this.inputs.attached["pointers"];
+                if (pointers)
+                    return pointers.angularTouchSensibilityX;
+                return 0;
+            },
+            set: function (value) {
+                var pointers = this.inputs.attached["pointers"];
+                if (pointers) {
+                    pointers.angularTouchSensibilityX = value;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArcRotateCamera.prototype, "angularTouchSensibilityY", {
+            get: function () {
+                var pointers = this.inputs.attached["pointers"];
+                if (pointers)
+                    return pointers.angularTouchSensibilityY;
+                return 0;
+            },
+            set: function (value) {
+                var pointers = this.inputs.attached["pointers"];
+                if (pointers) {
+                    pointers.angularTouchSensibilityY = value;
                 }
             },
             enumerable: true,
@@ -65638,22 +65683,24 @@ var BABYLON;
                 if (!_this._physicsEngine) {
                     return;
                 }
-                if (_this._options.ignoreParent && _this.object.parent) {
-                    _this._tmpPositionWithDelta.copyFrom(_this.object.getAbsolutePosition());
+                var m = BABYLON.Matrix.Compose(new BABYLON.Vector3(1, 1, 1), _this._deltaRotation || BABYLON.Quaternion.Identity(), _this._deltaPosition);
+                /*if (this._options.ignoreParent && this.object.parent) {
+                    this._tmpPositionWithDelta.copyFrom(this.object.getAbsolutePosition()).subtractInPlace(this._deltaPosition);
                     //this.object.getAbsolutePosition().subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
-                }
-                else {
-                    _this.object.position.subtractToRef(_this._deltaPosition, _this._tmpPositionWithDelta);
+                } else {
+                    this.object.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
                 }
                 //conjugate deltaRotation
-                if (_this.object.rotationQuaternion) {
-                    if (_this._deltaRotationConjugated) {
-                        _this.object.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this._tmpRotationWithDelta);
+                if (this.object.rotationQuaternion) {
+                    if (this._deltaRotationConjugated) {
+                        this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this._tmpRotationWithDelta);
+                    } else {
+                        this._tmpRotationWithDelta.copyFrom(this.object.rotationQuaternion);
                     }
-                    else {
-                        _this._tmpRotationWithDelta.copyFrom(_this.object.rotationQuaternion);
-                    }
-                }
+                }*/
+                var m2 = new BABYLON.Matrix();
+                _this.object.computeWorldMatrix(true).multiplyToRef(m, m2);
+                m2.decompose(new BABYLON.Vector3(0, 0, 0), _this._tmpRotationWithDelta, _this._tmpPositionWithDelta);
                 // Only if not disabled
                 if (!_this._options.disableBidirectionalTransformation) {
                     _this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(_this, _this._tmpPositionWithDelta, _this._tmpRotationWithDelta);
@@ -65673,6 +65720,24 @@ var BABYLON;
                     func(_this);
                 });
                 _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
+                var m = BABYLON.Matrix.Compose(new BABYLON.Vector3(1, 1, 1), _this._deltaRotation || BABYLON.Quaternion.Identity(), _this._deltaPosition.negate());
+                /*if (this._options.ignoreParent && this.object.parent) {
+                    this._tmpPositionWithDelta.copyFrom(this.object.getAbsolutePosition()).subtractInPlace(this._deltaPosition);
+                    //this.object.getAbsolutePosition().subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
+                } else {
+                    this.object.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
+                }
+                //conjugate deltaRotation
+                if (this.object.rotationQuaternion) {
+                    if (this._deltaRotationConjugated) {
+                        this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this._tmpRotationWithDelta);
+                    } else {
+                        this._tmpRotationWithDelta.copyFrom(this.object.rotationQuaternion);
+                    }
+                }*/
+                var m2 = new BABYLON.Matrix();
+                m.multiplyToRef(_this.object.computeWorldMatrix(true), m2);
+                m2.decompose(_this.object.scaling, _this.object.rotationQuaternion, _this.object.position);
                 if (_this._options.ignoreParent && _this.object.parent) {
                     _this.object.position.subtractInPlace(_this.object.parent.getAbsolutePosition());
                 }
@@ -66605,6 +66670,7 @@ var BABYLON;
                     returnValue = new this.BJSCANNON.Plane();
                     break;
                 case BABYLON.PhysicsImpostor.MeshImpostor:
+                    // should transform the vertex data to world coordinates!!
                     var rawVerts = object.getVerticesData ? object.getVerticesData(BABYLON.VertexBuffer.PositionKind) : [];
                     var rawFaces = object.getIndices ? object.getIndices() : [];
                     BABYLON.Tools.Warn("MeshImpostor only collides against spheres.");
@@ -66673,8 +66739,12 @@ var BABYLON;
             //make sure it is updated...
             object.computeWorldMatrix && object.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
+            var bInfo = object.getBoundingInfo();
+            if (!bInfo)
+                return;
             var center = impostor.getObjectCenter();
-            this._tmpDeltaPosition.copyFrom(object.position.subtract(center));
+            // this._tmpDeltaPosition.copyFrom(object.getAbsolutePivotPoint().subtract(center));
+            this._tmpDeltaPosition.copyFrom(bInfo.boundingBox.center.negate());
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
             if (!quaternion) {
