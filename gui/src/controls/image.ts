@@ -14,8 +14,12 @@ module BABYLON.GUI {
 
         private _sourceLeft = 0;
         private _sourceTop = 0;
-        private _sourceWidth= 0;
+        private _sourceWidth = 0;
         private _sourceHeight = 0;
+
+        private _cellWidth: number = 0;
+        private _cellHeight: number = 0;
+        private _cellId: number = 0;
 
         public get sourceLeft(): number {
             return this._sourceLeft;
@@ -29,7 +33,7 @@ module BABYLON.GUI {
             this._sourceLeft = value;
 
             this._markAsDirty();
-        }   
+        }
 
         public get sourceTop(): number {
             return this._sourceTop;
@@ -43,7 +47,7 @@ module BABYLON.GUI {
             this._sourceTop = value;
 
             this._markAsDirty();
-        }    
+        }
 
         public get sourceWidth(): number {
             return this._sourceWidth;
@@ -57,7 +61,7 @@ module BABYLON.GUI {
             this._sourceWidth = value;
 
             this._markAsDirty();
-        }  
+        }
 
         public get sourceHeight(): number {
             return this._sourceHeight;
@@ -71,7 +75,7 @@ module BABYLON.GUI {
             this._sourceHeight = value;
 
             this._markAsDirty();
-        }          
+        }
 
         public get autoScale(): boolean {
             return this._autoScale;
@@ -106,7 +110,7 @@ module BABYLON.GUI {
         public set domImage(value: HTMLImageElement) {
             this._domImage = value;
             this._loaded = false;
-            
+
             if (this._domImage.width) {
                 this._onImageLoaded();
             } else {
@@ -139,9 +143,9 @@ module BABYLON.GUI {
 
             this._loaded = false;
             this._source = value;
-            
+
             this._domImage = new DOMImage();
-            
+
             this._domImage.onload = () => {
                 this._onImageLoaded();
             }
@@ -149,6 +153,27 @@ module BABYLON.GUI {
                 this._domImage.crossOrigin = "anonymous";
                 this._domImage.src = value;
             }
+        }
+
+        get cellWidth(): number {
+            return this._cellWidth;
+        }
+        set cellWidth(value: number) {
+            this._cellWidth = value;
+        }
+
+        get cellHeight(): number {
+            return this._cellHeight;
+        }
+        set cellHeight(value: number) {
+            this._cellHeight = value;
+        }
+
+        get cellId(): number {
+            return this._cellId;
+        }
+        set cellId(value: number) {
+            this._cellId = value;
         }
 
         constructor(public name?: string, url: Nullable<string> = null) {
@@ -159,7 +184,7 @@ module BABYLON.GUI {
 
         protected _getTypeName(): string {
             return "Image";
-        }              
+        }
 
         public synchronizeSizeWithContent() {
             if (!this._loaded) {
@@ -171,7 +196,7 @@ module BABYLON.GUI {
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-            context.save();          
+            context.save();
             let x = this._sourceLeft;
             let y = this._sourceTop;
 
@@ -184,32 +209,39 @@ module BABYLON.GUI {
                     switch (this._stretch) {
                         case Image.STRETCH_NONE:
                             context.drawImage(this._domImage, x, y, width, height,
-                                              this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                                this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                             break;
                         case Image.STRETCH_FILL:
-                            context.drawImage(this._domImage, x, y, width, height, 
-                                                            this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                            context.drawImage(this._domImage, x, y, width, height,
+                                this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                             break;
                         case Image.STRETCH_UNIFORM:
-                            var hRatio = this._currentMeasure.width  / width;
-                            var vRatio =  this._currentMeasure.height / height;
+                            var hRatio = this._currentMeasure.width / width;
+                            var vRatio = this._currentMeasure.height / height;
                             var ratio = Math.min(hRatio, vRatio);
                             var centerX = (this._currentMeasure.width - width * ratio) / 2;
-                            var centerY = (this._currentMeasure.height - height * ratio) / 2; 
+                            var centerY = (this._currentMeasure.height - height * ratio) / 2;
 
                             context.drawImage(this._domImage, x, y, width, height,
-                                                            this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
+                                this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
                             break;
                         case Image.STRETCH_EXTEND:
                             context.drawImage(this._domImage, x, y, width, height,
-                                              this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                                this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                             if (this._autoScale) {
                                 this.synchronizeSizeWithContent();
-                            } 
+                            }
                             if (this._root) {
                                 this._root.width = this.width;
                                 this._root.height = this.height;
                             }
+                            break;
+                        case Image.ANIMATION_SHEET:
+                            let rowCount = this._domImage.naturalWidth / this.cellWidth;
+                            let column = (this.cellId / rowCount) >> 0;
+                            let row = this.cellId % rowCount;
+                            context.drawImage(this._domImage, this.cellWidth * row, this.cellHeight * column, this.cellWidth, this.cellHeight,
+                                this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                             break;
                     }
                 }
@@ -222,6 +254,7 @@ module BABYLON.GUI {
         private static _STRETCH_FILL = 1;
         private static _STRETCH_UNIFORM = 2;
         private static _STRETCH_EXTEND = 3;
+        private static _ANIMATION_SHEET = 4;
 
         public static get STRETCH_NONE(): number {
             return Image._STRETCH_NONE;
@@ -229,14 +262,18 @@ module BABYLON.GUI {
 
         public static get STRETCH_FILL(): number {
             return Image._STRETCH_FILL;
-        }       
+        }
 
         public static get STRETCH_UNIFORM(): number {
             return Image._STRETCH_UNIFORM;
-        }      
+        }
 
         public static get STRETCH_EXTEND(): number {
             return Image._STRETCH_EXTEND;
-        }                 
-    }    
+        }
+
+        public static get ANIMATION_SHEET(): number {
+            return Image._ANIMATION_SHEET;
+        }
+    }
 }
