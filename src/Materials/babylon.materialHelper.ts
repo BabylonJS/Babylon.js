@@ -277,32 +277,33 @@
             }
         }
 
-        public static HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbacks, maxSimultaneousLights = 4): void {
-            if (!defines["SHADOWS"]) {
-                return;
-            }
-
+        public static HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbacks, maxSimultaneousLights = 4, rank = 0): number {
+            let lightFallbackRank = 0;
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
                 }
 
                 if (lightIndex > 0) {
-                    fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
+                    lightFallbackRank = rank + lightIndex;
+                    fallbacks.addFallback(lightFallbackRank, "LIGHT" + lightIndex);
                 }
 
-                if (defines["SHADOW" + lightIndex]) {
-                    fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                }
+                if (!defines["SHADOWS"]) {
+                    if (defines["SHADOW" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOW" + lightIndex);
+                    }
 
-                if (defines["SHADOWPCF" + lightIndex]) {
-                    fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                }
+                    if (defines["SHADOWPCF" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOWPCF" + lightIndex);
+                    }
 
-                if (defines["SHADOWESM" + lightIndex]) {
-                    fallbacks.addFallback(0, "SHADOWESM" + lightIndex);
+                    if (defines["SHADOWESM" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOWESM" + lightIndex);
+                    }
                 }
             }
+            return lightFallbackRank++;
         }
 
         public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {
