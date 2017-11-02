@@ -26,12 +26,12 @@ varying vec3 vPositionW;
 #endif 
 
 #ifdef MAINUV2 
-	varying vec2 vMainUV2; 
+	varying vec2 vMainUV2;
 #endif 
 
 #ifdef NORMAL
 	varying vec3 vNormalW;
-	#if defined(USESPHERICALFROMREFLECTIONMAP) && !defined(USESPHERICALINFRAGMENT)
+	#if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
 		varying vec3 vEnvironmentIrradiance;
 	#endif
 #endif
@@ -565,7 +565,7 @@ void main(void) {
 
 	// _____________________________ Irradiance ________________________________
 	#ifdef USESPHERICALFROMREFLECTIONMAP
-		#if defined(NORMAL) && !defined(USESPHERICALINFRAGMENT)
+		#if defined(NORMAL) && defined(USESPHERICALINVERTEX)
 			environmentIrradiance = vEnvironmentIrradiance;
 		#else
 			vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
