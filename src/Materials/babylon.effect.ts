@@ -81,11 +81,12 @@
         public uniformBuffersNames: string[];
         public samplers: string[];
         public defines: any;
-        public fallbacks: EffectFallbacks;
-        public onCompiled: (effect: Effect) => void;
-        public onError: (effect: Effect, errors: string) => void;
+        public fallbacks: Nullable<EffectFallbacks>;
+        public onCompiled: Nullable<(effect: Effect) => void>;
+        public onError: Nullable<(effect: Effect, errors: string) => void>;
         public indexParameters: any;
         public maxSimultaneousLights: number;
+        public transformFeedbackVaryings: Nullable<string[]>;
     }
 
     export class Effect {
@@ -116,6 +117,7 @@
         private _fragmentSourceCode: string;
         private _vertexSourceCodeOverride: string;
         private _fragmentSourceCodeOverride: string;
+        private _transformFeedbackVaryings: Nullable<string[]>;
 
         public _program: WebGLProgram;
         private _valueCache: { [key: string]: any };
@@ -137,6 +139,7 @@
                 this.onCompiled = options.onCompiled;
                 this._fallbacks = options.fallbacks;
                 this._indexParameters = options.indexParameters;  
+                this._transformFeedbackVaryings = options.transformFeedbackVaryings;
 
                 if (options.uniformBuffersNames) {
                     for (var i = 0; i < options.uniformBuffersNames.length; i++) {
@@ -555,10 +558,10 @@
                 var engine = this._engine;
 
                 if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                    this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride);
+                    this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
                 }
                 else {
-                    this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
+                    this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines, undefined, this._transformFeedbackVaryings);
                 }
                 this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 
