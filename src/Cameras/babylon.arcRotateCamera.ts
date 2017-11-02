@@ -96,6 +96,36 @@
             }
         }
 
+        public get angularTouchSensibilityX(): number {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.angularTouchSensibilityX;
+
+            return 0;
+        }
+
+        public set angularTouchSensibilityX(value: number) {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers) {
+                pointers.angularTouchSensibilityX = value;
+            }
+        }
+
+        public get angularTouchSensibilityY(): number {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.angularTouchSensibilityY;
+
+            return 0;
+        }
+
+        public set angularTouchSensibilityY(value: number) {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers) {
+                pointers.angularTouchSensibilityY = value;
+            }
+        }
+
         public get pinchPrecision(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
