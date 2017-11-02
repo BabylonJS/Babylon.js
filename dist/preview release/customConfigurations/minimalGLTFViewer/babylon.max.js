@@ -5550,7 +5550,7 @@ var BABYLON;
         Observable.prototype.notifyObservers = function (eventData, mask, target, currentTarget) {
             if (mask === void 0) { mask = -1; }
             if (!this._observers.length) {
-                return false;
+                return true;
             }
             var state = this._eventState;
             state.mask = mask;
@@ -9753,6 +9753,10 @@ var BABYLON;
         Engine.prototype._deleteProgram = function (program) {
             if (program) {
                 program.__SPECTOR_rebuildProgram = null;
+                if (program.transformFeedback) {
+                    this.deleteTransformFeedback(program.transformFeedback);
+                    program.transformFeedback = null;
+                }
                 this._gl.deleteProgram(program);
             }
         };
@@ -9785,30 +9789,42 @@ var BABYLON;
                 fragmentElement: fragmentName
             }, ["position", "color", "options"], ["view", "projection"].concat(uniformsNames), ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         };
-        Engine.prototype.createRawShaderProgram = function (vertexCode, fragmentCode, context) {
+        Engine.prototype.createRawShaderProgram = function (vertexCode, fragmentCode, context, transformFeedbackVaryings) {
+            if (transformFeedbackVaryings === void 0) { transformFeedbackVaryings = null; }
             context = context || this._gl;
             var vertexShader = compileRawShader(context, vertexCode, "vertex");
             var fragmentShader = compileRawShader(context, fragmentCode, "fragment");
-            return this._createShaderProgram(vertexShader, fragmentShader, context);
+            return this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
         };
-        Engine.prototype.createShaderProgram = function (vertexCode, fragmentCode, defines, context) {
+        Engine.prototype.createShaderProgram = function (vertexCode, fragmentCode, defines, context, transformFeedbackVaryings) {
+            if (transformFeedbackVaryings === void 0) { transformFeedbackVaryings = null; }
             context = context || this._gl;
             this.onBeforeShaderCompilationObservable.notifyObservers(this);
             var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n" : "";
             var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
             var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
-            var program = this._createShaderProgram(vertexShader, fragmentShader, context);
+            var program = this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
             this.onAfterShaderCompilationObservable.notifyObservers(this);
             return program;
         };
-        Engine.prototype._createShaderProgram = function (vertexShader, fragmentShader, context) {
+        Engine.prototype._createShaderProgram = function (vertexShader, fragmentShader, context, transformFeedbackVaryings) {
+            if (transformFeedbackVaryings === void 0) { transformFeedbackVaryings = null; }
             var shaderProgram = context.createProgram();
             if (!shaderProgram) {
                 throw new Error("Unable to create program");
             }
             context.attachShader(shaderProgram, vertexShader);
             context.attachShader(shaderProgram, fragmentShader);
+            if (this.webGLVersion > 1 && transformFeedbackVaryings) {
+                var transformFeedback = this.createTransformFeedback();
+                this.bindTransformFeedback(transformFeedback);
+                this.setTranformFeedbackVaryings(shaderProgram, transformFeedbackVaryings);
+                shaderProgram.transformFeedback = transformFeedback;
+            }
             context.linkProgram(shaderProgram);
+            if (this.webGLVersion > 1 && transformFeedbackVaryings) {
+                this.bindTransformFeedback(null);
+            }
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
             if (!linked) {
                 context.validateProgram(shaderProgram);
@@ -12078,6 +12094,25 @@ var BABYLON;
         };
         Engine.prototype.getGlAlgorithmType = function (algorithmType) {
             return algorithmType === BABYLON.AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+        };
+        // Transform feedback
+        Engine.prototype.createTransformFeedback = function () {
+            return this._gl.createTransformFeedback();
+        };
+        Engine.prototype.deleteTransformFeedback = function (value) {
+            this._gl.deleteTransformFeedback(value);
+        };
+        Engine.prototype.bindTransformFeedback = function (value) {
+            this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
+        };
+        Engine.prototype.beginTransformFeedback = function () {
+            this._gl.beginTransformFeedback(this._gl.TRIANGLES);
+        };
+        Engine.prototype.endTransformFeedback = function () {
+            this._gl.endTransformFeedback();
+        };
+        Engine.prototype.setTranformFeedbackVaryings = function (program, value) {
+            this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
         };
         // Statics
         Engine.isSupported = function () {
@@ -25742,6 +25777,7 @@ var BABYLON;
                 this.onCompiled = options.onCompiled;
                 this._fallbacks = options.fallbacks;
                 this._indexParameters = options.indexParameters;
+                this._transformFeedbackVaryings = options.transformFeedbackVaryings;
                 if (options.uniformBuffersNames) {
                     for (var i = 0; i < options.uniformBuffersNames.length; i++) {
                         this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
@@ -26102,10 +26138,10 @@ var BABYLON;
             try {
                 var engine = this._engine;
                 if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                    this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride);
+                    this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
                 }
                 else {
-                    this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
+                    this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines, undefined, this._transformFeedbackVaryings);
                 }
                 this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
                 if (engine.webGLVersion > 1) {
@@ -52192,9 +52228,9 @@ var BABYLON;
             }
             return null;
         };
-        SceneLoader._loadData = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError) {
+        SceneLoader._loadData = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension) {
             var directLoad = SceneLoader._getDirectLoad(sceneFilename);
-            var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
+            var registeredPlugin = pluginExtension ? SceneLoader._getPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename));
             var plugin = registeredPlugin.plugin;
             var useArrayBuffer = registeredPlugin.isBinary;
             var database;
@@ -52278,7 +52314,7 @@ var BABYLON;
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        SceneLoader.ImportMesh = function (meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError) {
+        SceneLoader.ImportMesh = function (meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onProgress === void 0) { onProgress = null; }
             if (onError === void 0) { onError = null; }
@@ -52342,7 +52378,7 @@ var BABYLON;
                         }
                     }, progressHandler, errorHandler);
                 }
-            }, progressHandler, errorHandler);
+            }, progressHandler, errorHandler, pluginExtension);
         };
         /**
         * Load a scene
@@ -52353,8 +52389,8 @@ var BABYLON;
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        SceneLoader.Load = function (rootUrl, sceneFilename, engine, onSuccess, onProgress, onError) {
-            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onSuccess, onProgress, onError);
+        SceneLoader.Load = function (rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension) {
+            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onSuccess, onProgress, onError, pluginExtension);
         };
         /**
         * Append a scene
@@ -52365,7 +52401,7 @@ var BABYLON;
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        SceneLoader.Append = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError) {
+        SceneLoader.Append = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension) {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
@@ -52424,7 +52460,7 @@ var BABYLON;
                         scene.getEngine().hideLoadingUI();
                     });
                 }
-            }, progressHandler, errorHandler);
+            }, progressHandler, errorHandler, pluginExtension);
         };
         // Flags
         SceneLoader._ForceFullSceneLoadingForIncremental = false;
