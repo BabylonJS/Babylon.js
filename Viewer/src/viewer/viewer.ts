@@ -110,6 +110,7 @@ export abstract class AbstractViewer {
         let parts = modelUrl.split('/');
         let filename = parts.pop();
         let base = parts.join('/') + '/';
+        let plugin = (typeof model === 'string') ? undefined : model.loader;
 
         return Promise.resolve().then(() => {
             if (!this.scene || clearScene) return this.initScene();
@@ -121,7 +122,7 @@ export abstract class AbstractViewer {
                 }, undefined, (e, m, exception) => {
                     console.log(m, exception);
                     reject(m);
-                });
+                }, plugin);
             });
         }).then((meshes: Array<AbstractMesh>) => {
             return this.onModelLoaded(meshes);
