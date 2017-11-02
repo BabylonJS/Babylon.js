@@ -550,6 +550,9 @@ declare module BABYLON.GUI {
         private _sourceTop;
         private _sourceWidth;
         private _sourceHeight;
+        private _cellWidth;
+        private _cellHeight;
+        private _cellId;
         sourceLeft: number;
         sourceTop: number;
         sourceWidth: number;
@@ -559,6 +562,9 @@ declare module BABYLON.GUI {
         domImage: HTMLImageElement;
         private _onImageLoaded();
         source: Nullable<string>;
+        cellWidth: number;
+        cellHeight: number;
+        cellId: number;
         constructor(name?: string | undefined, url?: Nullable<string>);
         protected _getTypeName(): string;
         synchronizeSizeWithContent(): void;
@@ -567,10 +573,12 @@ declare module BABYLON.GUI {
         private static _STRETCH_FILL;
         private static _STRETCH_UNIFORM;
         private static _STRETCH_EXTEND;
+        private static _ANIMATION_SHEET;
         static readonly STRETCH_NONE: number;
         static readonly STRETCH_FILL: number;
         static readonly STRETCH_UNIFORM: number;
         static readonly STRETCH_EXTEND: number;
+        static readonly ANIMATION_SHEET: number;
     }
 }
 
