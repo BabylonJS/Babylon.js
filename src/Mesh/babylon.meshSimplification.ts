@@ -392,6 +392,10 @@
             var vertexReferences: Array<number> = [];
 
             var vertexInit = (i: number) => {
+                if (!positionData) {
+                    return;
+                }
+
                 var offset = i + submesh.verticesStart;
                 var position = Vector3.FromArray(positionData, offset * 3);
 
@@ -407,6 +411,10 @@
             AsyncLoop.SyncAsyncForLoop(totalVertices,(this.syncIterations / 4) >> 0, vertexInit,() => {
 
                 var indicesInit = (i: number) => {
+                    if (!indices) {
+                        return;
+                    }
+
                     var offset = (submesh.indexStart / 3) + i;
                     var pos = (offset * 3);
                     var i0 = indices[pos + 0];
@@ -483,6 +491,10 @@
                 vertex.id = vertexCount;
                 if (vertex.triangleCount) {
                     vertex.originalOffsets.forEach(originalOffset => {
+                        if (!normalData) {
+                            return;
+                        }
+
                         newPositionData.push(vertex.position.x);
                         newPositionData.push(vertex.position.y);
                         newPositionData.push(vertex.position.z);
@@ -510,7 +522,7 @@
             this._reconstructedMesh.subMeshes = [];
 
             var newIndicesArray: number[] = <number[]>this._reconstructedMesh.getIndices(); //[];
-            var originalIndices = this._mesh.getIndices();
+            var originalIndices = <IndicesArray>this._mesh.getIndices();
             for (i = 0; i < newTriangles.length; ++i) {
                 t = newTriangles[i]; //now get the new referencing point for each vertex
                 [0, 1, 2].forEach(idx => {

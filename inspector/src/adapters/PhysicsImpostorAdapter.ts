@@ -4,10 +4,10 @@ module INSPECTOR {
         extends Adapter
         implements IToolVisible {
 
-        private _viewer:BABYLON.Debug.PhysicsViewer;
+        private _viewer: BABYLON.Debug.PhysicsViewer;
         private _isVisible = false;
 
-        constructor(obj: BABYLON.PhysicsImpostor, viewer:BABYLON.Debug.PhysicsViewer) {
+        constructor(obj: BABYLON.PhysicsImpostor, viewer: BABYLON.Debug.PhysicsViewer) {
             super(obj);
             this._viewer = viewer;
         }
@@ -17,7 +17,7 @@ module INSPECTOR {
             let str = '';
             let physicsImposter = (<BABYLON.PhysicsImpostor>this._obj);
             if (physicsImposter && physicsImposter.object) {
-                str = (<BABYLON.AbstractMesh>physicsImposter.object).name;
+                str = (<BABYLON.AbstractMesh>physicsImposter.object).name || "";
             } // otherwise nothing displayed        
             return str;
         }
@@ -40,16 +40,16 @@ module INSPECTOR {
 
         public setVisible(b: boolean) {
             this._isVisible = b;
-            if(b){
+            if (b) {
                 this._viewer.showImpostor(this._obj);
-            }else{
+            } else {
                 this._viewer.hideImpostor(this._obj);
             }
         }
-        
+
         public isVisible(): boolean {
             return this._isVisible;
         }
-        
+
     }
 }

@@ -1,11 +1,9 @@
-﻿/// <reference path="babylon.mesh.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class GroundMesh extends Mesh {
         public generateOctree = false;
 
         private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
-        
+
         public _subdivisionsX: number;
         public _subdivisionsY: number;
         public _width: number;
@@ -21,7 +19,7 @@ module BABYLON {
 
         public getClassName(): string {
             return "GroundMesh";
-        }        
+        }
 
         public get subdivisions(): number {
             return Math.min(this._subdivisionsX, this._subdivisionsY);
@@ -161,6 +159,11 @@ module BABYLON {
         // Returns the GroundMesh.  
         private _computeHeightQuads(): GroundMesh {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
+
+            if (!positions) {
+                return this;
+            }
+
             var v1 = Tmp.Vector3[3];
             var v2 = Tmp.Vector3[2];
             var v3 = Tmp.Vector3[1];

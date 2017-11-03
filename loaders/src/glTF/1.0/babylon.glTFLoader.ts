@@ -110,7 +110,7 @@ module BABYLON.GLTF1 {
         }
     };
 
-    var getAttribute = (attributeParameter: IGLTFTechniqueParameter): string => {
+    var getAttribute = (attributeParameter: IGLTFTechniqueParameter): Nullable<string> => {
         if (attributeParameter.semantic === "NORMAL") {
             return "normal";
         } else if (attributeParameter.semantic === "POSITION") {
@@ -121,7 +121,7 @@ module BABYLON.GLTF1 {
             return "matricesWeights";
         } else if (attributeParameter.semantic === "COLOR") {
             return "color";
-        } else if (attributeParameter.semantic.indexOf("TEXCOORD_") !== -1) {
+        } else if (attributeParameter.semantic && attributeParameter.semantic.indexOf("TEXCOORD_") !== -1) {
             var channel = Number(attributeParameter.semantic.split("_")[1]);
             return "uv" + (channel === 0 ? "" : channel + 1);
         }
@@ -137,7 +137,11 @@ module BABYLON.GLTF1 {
         for (var anim in gltfRuntime.animations) {
             var animation: IGLTFAnimation = gltfRuntime.animations[anim];
 
-            var lastAnimation: Animation = null;
+            if (!animation.channels || !animation.samplers) {
+                continue;
+            }
+
+            var lastAnimation: Nullable<Animation> = null;
 
             for (var i = 0; i < animation.channels.length; i++) {
                 // Get parameters and load buffers
@@ -148,8 +152,8 @@ module BABYLON.GLTF1 {
                     continue;
                 }
 
-                var inputData: string = null;
-                var outputData: string = null;
+                var inputData: Nullable<string> = null;
+                var outputData: Nullable<string> = null;
 
                 if (animation.parameters) {
                     inputData = animation.parameters[sampler.input];
@@ -199,7 +203,7 @@ module BABYLON.GLTF1 {
                 }
 
                 // Create animation and key frames
-                var babylonAnimation: Animation = null;
+                var babylonAnimation: Nullable<Animation> = null;
                 var keys = [];
                 var arrayOffset = 0;
                 var modifyKey = false;
@@ -235,7 +239,7 @@ module BABYLON.GLTF1 {
                         // Warning on decompose
                         var mat = bone.getBaseMatrix();
 
-                        if (modifyKey) {
+                        if (modifyKey && lastAnimation) {
                             mat = lastAnimation.getKeys()[j].value;
                         }
 
@@ -260,13 +264,13 @@ module BABYLON.GLTF1 {
                             value: value
                         });
                     }
-                    else {
+                    else if (lastAnimation) {
                         lastAnimation.getKeys()[j].value = value;
                     }
                 }
 
                 // Finish
-                if (!modifyKey) {
+                if (!modifyKey && babylonAnimation) {
                     babylonAnimation.setKeys(keys);
                     targetNode.animations.push(babylonAnimation);
                 }
@@ -283,7 +287,7 @@ module BABYLON.GLTF1 {
     * Returns the bones transformation matrix
     */
     var configureBoneTransformation = (node: IGLTFNode): Matrix => {
-        var mat: Matrix = null;
+        var mat: Nullable<Matrix> = null;
 
         if (node.translation || node.rotation || node.scale) {
             var scale = Vector3.FromArray(node.scale || [1, 1, 1]);
@@ -302,7 +306,7 @@ module BABYLON.GLTF1 {
     /**
     * Returns the parent bone
     */
-    var getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Bone => {
+    var getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Nullable<Bone> => {
         // Try to find
         for (var i = 0; i < newSkeleton.bones.length; i++) {
             if (newSkeleton.bones[i].name === jointName) {
@@ -328,7 +332,7 @@ module BABYLON.GLTF1 {
 
                 if (child.jointName === jointName) {
                     var mat = configureBoneTransformation(node);
-                    var bone = new Bone(node.name, newSkeleton, getParentBone(gltfRuntime, skins, node.jointName, newSkeleton), mat);
+                    var bone = new Bone(node.name || "", newSkeleton, getParentBone(gltfRuntime, skins, node.jointName, newSkeleton), mat);
                     bone.id = nde;
                     return bone;
                 }
@@ -341,7 +345,7 @@ module BABYLON.GLTF1 {
     /**
     * Returns the appropriate root node
     */
-    var getNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Bone => {
+    var getNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Nullable<Bone> => {
         for (var i = 0; i < nodesToRoot.length; i++) {
             var nodeToRoot = nodesToRoot[i];
 
@@ -359,7 +363,7 @@ module BABYLON.GLTF1 {
     /**
     * Returns the node with the joint name
     */
-    var getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): IJointNode => {
+    var getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJointNode> => {
         var nodes = gltfRuntime.nodes;
         var node: IGLTFNode = nodes[jointName];
         if (node) {
@@ -410,7 +414,7 @@ module BABYLON.GLTF1 {
 
             // Create node to root bone
             var mat = configureBoneTransformation(node);
-            var bone = new Bone(node.name, newSkeleton, null, mat);
+            var bone = new Bone(node.name || "", newSkeleton, null, mat);
             bone.id = id;
             nodesToRoot.push({ bone: bone, node: node, id: id });
         }
@@ -421,7 +425,7 @@ module BABYLON.GLTF1 {
             var children = nodeToRoot.node.children;
 
             for (var j = 0; j < children.length; j++) {
-                var child: INodeToRoot = null;
+                var child: Nullable<INodeToRoot> = null;
 
                 for (var k = 0; k < nodesToRoot.length; k++) {
                     if (nodesToRoot[k].id === children[j]) {
@@ -444,7 +448,7 @@ module BABYLON.GLTF1 {
     var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, newSkeleton: Skeleton, id: string): Skeleton => {
 
         if (!newSkeleton) {
-            newSkeleton = new Skeleton(skins.name, "", gltfRuntime.scene);
+            newSkeleton = new Skeleton(skins.name || "", "", gltfRuntime.scene);
         }
 
         if (!skins.babylonSkeleton) {
@@ -461,6 +465,11 @@ module BABYLON.GLTF1 {
         // Joints
         for (var i = 0; i < skins.jointNames.length; i++) {
             var jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
+
+            if (!jointNode) {
+                continue;
+            }
+
             var node = jointNode.node;
 
             if (!node) {
@@ -479,10 +488,16 @@ module BABYLON.GLTF1 {
 
             // Search for parent bone
             var foundBone = false;
-            var parentBone: Bone = null;
+            var parentBone: Nullable<Bone> = null;
 
             for (var j = 0; j < i; j++) {
-                var joint: IGLTFNode = getJointNode(gltfRuntime, skins.jointNames[j]).node;
+                let jointNode = getJointNode(gltfRuntime, skins.jointNames[j]);
+
+                if (!jointNode) {
+                    continue;
+                }
+
+                var joint: IGLTFNode = jointNode.node;
 
                 if (!joint) {
                     Tools.Warn("Joint named " + skins.jointNames[j] + " does not exist when looking for parent");
@@ -521,7 +536,7 @@ module BABYLON.GLTF1 {
                 }
             }
 
-            var bone = new Bone(node.jointName, newSkeleton, parentBone, mat);
+            var bone = new Bone(node.jointName || "", newSkeleton, parentBone, mat);
             bone.id = id;
         }
 
@@ -530,7 +545,7 @@ module BABYLON.GLTF1 {
         newSkeleton.bones = [];
         
         for (var i = 0; i < skins.jointNames.length; i++) {
-            var jointNode: IJointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
+            var jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
 
             if (!jointNode) {
                 continue;
@@ -559,7 +574,7 @@ module BABYLON.GLTF1 {
     */
     var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
         if (!newMesh) {
-            newMesh = new Mesh(node.name, gltfRuntime.scene);
+            newMesh = new Mesh(node.name || "", gltfRuntime.scene);
             newMesh.id = id;
         }
 
@@ -599,7 +614,7 @@ module BABYLON.GLTF1 {
                 }
 
                 var attributes = primitive.attributes;
-                var accessor: IGLTFAccessor = null;
+                var accessor: Nullable<IGLTFAccessor> = null;
                 var buffer: any = null;
 
                 // Set positions, normal and uvs
@@ -664,7 +679,7 @@ module BABYLON.GLTF1 {
                 else {
                     // Set indices on the fly
                     var indices: number[] = [];
-                    for (var j = 0; j < tempVertexData.positions.length / 3; j++) {
+                    for (var j = 0; j < (<FloatArray>tempVertexData.positions).length / 3; j++) {
                         indices.push(j);
                     }
 
@@ -673,7 +688,6 @@ module BABYLON.GLTF1 {
                 }
 
                 vertexData.merge(tempVertexData);
-                tempVertexData = undefined;
 
                 // Sub material
                 var material = gltfRuntime.scene.getMaterialByID(primitive.material);
@@ -734,7 +748,7 @@ module BABYLON.GLTF1 {
     /**
     * Configures node from transformation matrix
     */
-    var configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode, parent: Node) => {
+    var configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode, parent: Nullable<Node>) => {
         if (node.matrix) {
             var position = new Vector3(0, 0, 0);
             var rotation = new Quaternion();
@@ -744,7 +758,7 @@ module BABYLON.GLTF1 {
 
             configureNode(newNode, position, rotation, scaling);
         }
-        else {
+        else if (node.translation && node.rotation && node.scale) {
             configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
         }
 
@@ -754,11 +768,11 @@ module BABYLON.GLTF1 {
     /**
     * Imports a node
     */
-    var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent: Node): Node => {
-        var lastNode: Node = null;
+    var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent: Nullable<Node>): Nullable<Node> => {
+        var lastNode: Nullable<Node> = null;
 
         if (gltfRuntime.importOnlyMeshes && (node.skin || node.meshes)) {
-            if (gltfRuntime.importMeshesNames.length > 0 && gltfRuntime.importMeshesNames.indexOf(node.name) === -1) {
+            if (gltfRuntime.importMeshesNames && gltfRuntime.importMeshesNames.length > 0 && gltfRuntime.importMeshesNames.indexOf(node.name || "") === -1) {
                 return null;
             }
         }
@@ -771,7 +785,7 @@ module BABYLON.GLTF1 {
                 var newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
                 newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(node.skin);
 
-                if (newMesh.skeleton === null) {
+                if (newMesh.skeleton === null && skin.babylonSkeleton) {
                     newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton, node.skin);
 
                     if (!skin.babylonSkeleton) {
@@ -797,7 +811,7 @@ module BABYLON.GLTF1 {
                 if (light.type === "ambient") {
                     var ambienLight: IGLTFAmbienLight = (<any>light)[light.type];
                     var hemiLight = new HemisphericLight(node.light, Vector3.Zero(), gltfRuntime.scene);
-                    hemiLight.name = node.name;
+                    hemiLight.name = node.name || "";
 
                     if (ambienLight.color) {
                         hemiLight.diffuse = Color3.FromArray(ambienLight.color);
@@ -808,7 +822,7 @@ module BABYLON.GLTF1 {
                 else if (light.type === "directional") {
                     var directionalLight: IGLTFDirectionalLight = (<any>light)[light.type];
                     var dirLight = new DirectionalLight(node.light, Vector3.Zero(), gltfRuntime.scene);
-                    dirLight.name = node.name;
+                    dirLight.name = node.name || "";
 
                     if (directionalLight.color) {
                         dirLight.diffuse = Color3.FromArray(directionalLight.color);
@@ -819,7 +833,7 @@ module BABYLON.GLTF1 {
                 else if (light.type === "point") {
                     var pointLight: IGLTFPointLight = (<any>light)[light.type];
                     var ptLight = new PointLight(node.light, Vector3.Zero(), gltfRuntime.scene);
-                    ptLight.name = node.name;
+                    ptLight.name = node.name || "";
 
                     if (pointLight.color) {
                         ptLight.diffuse = Color3.FromArray(pointLight.color);
@@ -830,7 +844,7 @@ module BABYLON.GLTF1 {
                 else if (light.type === "spot") {
                     var spotLight: IGLTFSpotLight = (<any>light)[light.type];
                     var spLight = new SpotLight(node.light, Vector3.Zero(), Vector3.Zero(), 0, 0, gltfRuntime.scene);
-                    spLight.name = node.name;
+                    spLight.name = node.name || "";
 
                     if (spotLight.color) {
                         spLight.diffuse = Color3.FromArray(spotLight.color);
@@ -856,9 +870,9 @@ module BABYLON.GLTF1 {
                 if (camera.type === "orthographic") {
                     var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene);
 
-                    orthoCamera.name = node.name;
+                    orthoCamera.name = node.name || "";
                     orthoCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
-                    orthoCamera.attachControl(gltfRuntime.scene.getEngine().getRenderingCanvas());
+                    orthoCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getRenderingCanvas());
 
                     lastNode = orthoCamera;
                 }
@@ -866,8 +880,8 @@ module BABYLON.GLTF1 {
                     var perspectiveCamera: IGLTFCameraPerspective = (<any>camera)[camera.type];
                     var persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene);
 
-                    persCamera.name = node.name;
-                    persCamera.attachControl(gltfRuntime.scene.getEngine().getRenderingCanvas());
+                    persCamera.name = node.name || "";
+                    persCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getRenderingCanvas());
 
                     if (!perspectiveCamera.aspectRatio) {
                         perspectiveCamera.aspectRatio = gltfRuntime.scene.getEngine().getRenderWidth() / gltfRuntime.scene.getEngine().getRenderHeight();
@@ -889,7 +903,7 @@ module BABYLON.GLTF1 {
                 return node.babylonNode;
             }
             else if (lastNode === null) {
-                var dummy = new Mesh(node.name, gltfRuntime.scene);
+                var dummy = new Mesh(node.name || "", gltfRuntime.scene);
                 node.babylonNode = dummy;
                 lastNode = dummy;
             }
@@ -916,12 +930,12 @@ module BABYLON.GLTF1 {
     /**
     * Traverses nodes and creates them
     */
-    var traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Node, meshIncluded?: boolean) => {
+    var traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<Node>, meshIncluded: boolean = false) => {
         var node: IGLTFNode = gltfRuntime.nodes[id];
-        var newNode: Node = null;
+        var newNode: Nullable<Node> = null;
 
-        if (gltfRuntime.importOnlyMeshes && !meshIncluded) {
-            if (gltfRuntime.importMeshesNames.indexOf(node.name) !== -1 || gltfRuntime.importMeshesNames.length === 0) {
+        if (gltfRuntime.importOnlyMeshes && !meshIncluded && gltfRuntime.importMeshesNames) {
+            if (gltfRuntime.importMeshesNames.indexOf(node.name || "") !== -1 || gltfRuntime.importMeshesNames.length === 0) {
                 meshIncluded = true;
             }
             else {
@@ -991,18 +1005,18 @@ module BABYLON.GLTF1 {
 
             if (type === EParameterType.FLOAT_MAT2 || type === EParameterType.FLOAT_MAT3 || type === EParameterType.FLOAT_MAT4) {
                 if (uniform.semantic && !uniform.source && !uniform.node) {
-                    GLTFUtils.SetMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial.getEffect());
+                    GLTFUtils.SetMatrix(gltfRuntime.scene, mesh, uniform, unif, <Effect>shaderMaterial.getEffect());
                 }
                 else if (uniform.semantic && (uniform.source || uniform.node)) {
-                    var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node);
+                    var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node || "");
                     if (source === null) {
-                        source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node);
+                        source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node || "");
                     }
                     if (source === null) {
                         continue;
                     }
 
-                    GLTFUtils.SetMatrix(gltfRuntime.scene, source, uniform, unif, shaderMaterial.getEffect());
+                    GLTFUtils.SetMatrix(gltfRuntime.scene, source, uniform, unif, <Effect>shaderMaterial.getEffect());
                 }
             }
             else {
@@ -1012,16 +1026,16 @@ module BABYLON.GLTF1 {
                 }
 
                 if (type === EParameterType.SAMPLER_2D) {
-                    var texture: Texture = gltfRuntime.textures[material.values ? value : uniform.value].babylonTexture;
+                    var texture = gltfRuntime.textures[material.values ? value : uniform.value].babylonTexture;
 
                     if (texture === null || texture === undefined) {
                         continue;
                     }
 
-                    shaderMaterial.getEffect().setTexture(unif, texture);
+                    (<Effect>shaderMaterial.getEffect()).setTexture(unif, texture);
                 }
                 else {
-                    GLTFUtils.SetUniform(shaderMaterial.getEffect(), unif, value, type);
+                    GLTFUtils.SetUniform(<Effect>(shaderMaterial.getEffect()), unif, value, type);
                 }
             }
         }
@@ -1054,9 +1068,9 @@ module BABYLON.GLTF1 {
                 continue;
             }
 
-            var onLoadTexture = (uniformName: string) => {
+            var onLoadTexture = (uniformName: Nullable<string>) => {
                 return (texture: Texture) => {
-                    if (uniform.value) {
+                    if (uniform.value && uniformName) {
                         // Static uniform
                         shaderMaterial.setTexture(uniformName, texture);
                         delete unTreatedUniforms[uniformName];
@@ -1268,17 +1282,19 @@ module BABYLON.GLTF1 {
                 setTimeout(() => onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(buffer.uri))));
             }
             else {
-                Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data)), onProgress, null, true, request => {
-                    onError(request.status + " " + request.statusText);
+                Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data)), onProgress, undefined, true, request => {
+                    if (request) {
+                        onError(request.status + " " + request.statusText);
+                    }
                 });
             }
         }
 
-        public static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): void {
+        public static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: Nullable<ArrayBufferView>) => void, onError: (message: string) => void): void {
             var texture: IGLTFTexture = gltfRuntime.textures[id];
 
             if (!texture || !texture.source) {
-                onError(null);
+                onError("");
                 return;
             }
 
@@ -1293,13 +1309,15 @@ module BABYLON.GLTF1 {
                 setTimeout(() => onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(source.uri))));
             }
             else {
-                Tools.LoadFile(gltfRuntime.rootUrl + source.uri, data => onSuccess(new Uint8Array(data)), null, null, true, request => {
-                    onError(request.status + " " + request.statusText);
+                Tools.LoadFile(gltfRuntime.rootUrl + source.uri, data => onSuccess(new Uint8Array(data)), undefined, undefined, true, request => {
+                    if (request) {
+                        onError(request.status + " " + request.statusText);
+                    }
                 });
             }
         }
 
-        public static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void {
+        public static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: Nullable<ArrayBufferView>, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void {
             var texture: IGLTFTexture = gltfRuntime.textures[id];
 
             if (texture.babylonTexture) {
@@ -1321,8 +1339,12 @@ module BABYLON.GLTF1 {
             var blobURL = URL.createObjectURL(blob);
             var revokeBlobURL = () => URL.revokeObjectURL(blobURL);
             var newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
-            newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
-            newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
+            if (sampler.wrapS !== undefined) {
+                newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
+            }
+            if (sampler.wrapT !== undefined) {
+                newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
+            }
             newTexture.name = id;
 
             texture.babylonTexture = newTexture;
@@ -1337,14 +1359,23 @@ module BABYLON.GLTF1 {
                 onSuccess(shaderString);
             }
             else {
-                Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, null, null, false, request => {
-                    onError(request.status + " " + request.statusText);
+                Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, undefined, undefined, false, request => {
+                    if (request) {
+                        onError(request.status + " " + request.statusText);
+                    }
                 });
             }
         }
 
         public static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void {
             var material: IGLTFMaterial = gltfRuntime.materials[id];
+            if (!material.technique) {
+                if (onError) {
+                    onError("No technique found.");
+                }
+                return;
+            }
+
             var technique: IGLTFTechnique = gltfRuntime.techniques[material.technique];
             if (!technique) {
                 var defaultMaterial = new StandardMaterial(id, gltfRuntime.scene);
@@ -1566,13 +1597,13 @@ module BABYLON.GLTF1 {
                         postLoad(gltfRuntime);
 
                         if (!BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                            onSuccess(meshes, null, skeletons);
+                            onSuccess(meshes, [], skeletons);
                         }
                     });
                 }, onProgress);
 
                 if (BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                    onSuccess(meshes, null, skeletons);
+                    onSuccess(meshes, [], skeletons);
                 }
             }, onError);
 

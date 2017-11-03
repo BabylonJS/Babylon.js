@@ -81,6 +81,19 @@
             return this._facetDataEnabled;
         }
 
+        // Normal matrix
+        private _nonUniformScaling = false;
+        public get nonUniformScaling(): boolean {
+            return this._nonUniformScaling;
+        }
+
+        public set nonUniformScaling(value: boolean) {
+            if (this._nonUniformScaling === value) {
+                return;
+            }
+            this._nonUniformScaling = true;
+            this._markSubMeshesAsMiscDirty();
+        }
 
         // Events
 
@@ -194,11 +207,11 @@
         public isBlocker = false;
         public enablePointerMoveEvents = false;
         public renderingGroupId = 0;
-        private _material: Material
-        public get material(): Material {
+        private _material: Nullable<Material>
+        public get material(): Nullable<Material> {
             return this._material;
         }
-        public set material(value: Material) {
+        public set material(value: Nullable<Material>) {
             if (this._material === value) {
                 return;
             }
@@ -379,7 +392,7 @@
         private _collisionsTransformMatrix = Matrix.Zero();
         private _collisionsScalingMatrix = Matrix.Zero();
         private _isDirty = false;
-        public _masterMesh: AbstractMesh;
+        public _masterMesh: Nullable<AbstractMesh>;
 
         public _boundingInfo: Nullable<BoundingInfo>;
         private _pivotMatrix = Matrix.Identity();
@@ -435,7 +448,7 @@
         }
 
         // Constructor
-        constructor(name: string, scene: Scene) {
+        constructor(name: string, scene: Nullable<Scene> = null) {
             super(name, scene);
 
             this.getScene().addMesh(this);
@@ -690,7 +703,7 @@
          * Returns the array of the requested vertex data kind. Used by the class Mesh. Returns null here. 
          * Returned type : float array or Float32Array 
          */
-        public getVerticesData(kind: string): Nullable<number[] | Float32Array> {
+        public getVerticesData(kind: string): Nullable<FloatArray> {
             return null;
         }
         /**
@@ -718,7 +731,7 @@
          * 
          * Returns the Mesh.  
          */
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): AbstractMesh {
+        public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {
             return this;
         }
 
@@ -746,7 +759,7 @@
          * 
          * Returns the Mesh.  
          */
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
+        public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
             return this;
         }
 
@@ -1376,6 +1389,15 @@
             // Post multiply inverse of pivotMatrix
             if (this._postMultiplyPivotMatrix) {
                 this._worldMatrix.multiplyToRef(this._pivotMatrixInverse, this._worldMatrix);
+            }
+
+            // Normal matrix
+            if (this.scaling.isNonUniform) {
+                this.nonUniformScaling = true;
+            } else if (this.parent && (<AbstractMesh>this.parent)._nonUniformScaling) {
+                this.nonUniformScaling = (<AbstractMesh>this.parent)._nonUniformScaling;
+            } else {
+                this.nonUniformScaling = false;
             }
 
             // Bounding info
@@ -2055,8 +2077,6 @@
          * Returns the AbstractMesh.  
          */
         public setParent(mesh: Nullable<AbstractMesh>): AbstractMesh {
-
-            var child = this;
             var parent = (<AbstractMesh>mesh);
 
             if (mesh == null) {
@@ -2065,17 +2085,17 @@
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
 
-                child.getWorldMatrix().decompose(scale, rotation, position);
+                this.getWorldMatrix().decompose(scale, rotation, position);
 
-                if (child.rotationQuaternion) {
-                    child.rotationQuaternion.copyFrom(rotation);
+                if (this.rotationQuaternion) {
+                    this.rotationQuaternion.copyFrom(rotation);
                 } else {
-                    rotation.toEulerAnglesToRef(child.rotation);
+                    rotation.toEulerAnglesToRef(this.rotation);
                 }
 
-                child.position.x = position.x;
-                child.position.y = position.y;
-                child.position.z = position.z;
+                this.position.x = position.x;
+                this.position.y = position.y;
+                this.position.z = position.z;
 
             } else {
 
@@ -2083,11 +2103,11 @@
                 var m1 = Tmp.Matrix[0];
 
                 parent.getWorldMatrix().invertToRef(m1);
-                Vector3.TransformCoordinatesToRef(child.position, m1, position);
+                Vector3.TransformCoordinatesToRef(this.position, m1, position);
 
-                child.position.copyFrom(position);
+                this.position.copyFrom(position);
             }
-            child.parent = parent;
+            this.parent = parent;
             return this;
         }
 
@@ -2385,10 +2405,10 @@
         public createNormals(updatable: boolean) {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
-            var normals: number[] | Float32Array;
+            var normals: FloatArray;
 
             if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                normals = (<number[] | Float32Array>this.getVerticesData(VertexBuffer.NormalKind));
+                normals = (<FloatArray>this.getVerticesData(VertexBuffer.NormalKind));
             } else {
                 normals = [];
             }
@@ -2441,9 +2461,9 @@
                 this._occlusionQuery = engine.createQuery();
             }
 
-            engine.beginQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
+            engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
-            engine.endQuery(this.occlusionQueryAlgorithmType);
+            engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
             this._isOcclusionQueryInProgress = true;
         }
 

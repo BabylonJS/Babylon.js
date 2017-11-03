@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
 
     export enum AssetTaskState {
         INIT,
@@ -11,6 +11,7 @@
         onSuccess: (task: IAssetTask) => void;
         onError: (task: IAssetTask, message?: string, exception?: any) => void;
         isCompleted: boolean;
+        name: string;
 
         taskState: AssetTaskState;
         errorObject: {
@@ -23,7 +24,7 @@
 
     export abstract class AbstractAssetTask implements IAssetTask {
 
-        constructor() {
+        constructor(public name: string) {
             this.taskState = AssetTaskState.INIT;
         }
 
@@ -79,13 +80,31 @@
 
     }
 
+    export interface IAssetsProgressEvent {
+        remainingCount: number;
+        totalCount: number;
+        task: IAssetTask;
+    }
+
+    export class AssetsProgressEvent implements IAssetsProgressEvent {
+        remainingCount: number;
+        totalCount: number;
+        task: IAssetTask;
+
+        constructor(remainingCount: number, totalCount: number, task: IAssetTask) {
+            this.remainingCount = remainingCount;
+            this.totalCount = totalCount;
+            this.task = task;
+        }
+    }
+
     export class MeshAssetTask extends AbstractAssetTask implements IAssetTask {
         public loadedMeshes: Array<AbstractMesh>;
         public loadedParticleSystems: Array<ParticleSystem>;
         public loadedSkeletons: Array<Skeleton>;
 
         constructor(public name: string, public meshesNames: any, public rootUrl: string, public sceneFilename: string) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -106,7 +125,7 @@
         public text: string;
 
         constructor(public name: string, public url: string) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -125,7 +144,7 @@
         public data: ArrayBuffer;
 
         constructor(public name: string, public url: string) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -145,7 +164,7 @@
         public image: HTMLImageElement;
 
         constructor(public name: string, public url: string) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -176,7 +195,7 @@
         public texture: Texture;
 
         constructor(public name: string, public url: string, public noMipmap?: boolean, public invertY?: boolean, public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -197,7 +216,7 @@
         public texture: CubeTexture;
 
         constructor(public name: string, public url: string, public extensions?: string[], public noMipmap?: boolean, public files?: string[]) {
-            super();
+            super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -218,7 +237,7 @@
         public texture: HDRCubeTexture;
 
         constructor(public name: string, public url: string, public size?: number, public noMipmap = false, public generateHarmonics = true, public useInGammaSpace = false, public usePMREMGenerator = false) {
-            super();
+            super(name);
         }
 
         public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
@@ -244,12 +263,14 @@
         public onFinish: (tasks: IAssetTask[]) => void;
         public onTaskSuccess: (task: IAssetTask) => void;
         public onTaskError: (task: IAssetTask) => void;
+        public onProgress: (remainingCount: number, totalCount: number, task: IAssetTask) => void;
 
         //Observables
 
         public onTaskSuccessObservable = new Observable<IAssetTask>();
         public onTaskErrorObservable = new Observable<IAssetTask>();
         public onTasksDoneObservable = new Observable<IAssetTask[]>();
+        public onProgressObservable = new Observable<IAssetsProgressEvent>();
 
         public useDefaultLoadingScreen = true;
 
@@ -307,8 +328,29 @@
             return task;
         }
 
-        private _decreaseWaitingTasksCount(): void {
+        private _decreaseWaitingTasksCount(task: AbstractAssetTask): void {
             this.waitingTasksCount--;
+
+            try {
+                if (this.onProgress) {
+                    this.onProgress(
+                        this.waitingTasksCount,
+                        this.tasks.length,
+                        task
+                    );
+                }
+
+                this.onProgressObservable.notifyObservers(
+                    new AssetsProgressEvent(
+                        this.waitingTasksCount,
+                        this.tasks.length,
+                        task
+                    )
+                );
+            } catch (e) {
+                Tools.Error("Error running progress callbacks.");
+                console.log(e);
+            }
 
             if (this.waitingTasksCount === 0) {
                 try {
@@ -334,7 +376,7 @@
                         this.onTaskSuccess(task);
                     }
                     this.onTaskSuccessObservable.notifyObservers(task);
-                    this._decreaseWaitingTasksCount();
+                    this._decreaseWaitingTasksCount(task);
                 } catch (e) {
                     error("Error executing task success callbacks", e);
                 }
@@ -350,7 +392,7 @@
                     this.onTaskError(task);
                 }
                 this.onTaskErrorObservable.notifyObservers(task);
-                this._decreaseWaitingTasksCount();
+                this._decreaseWaitingTasksCount(task);
             }
 
             task.run(this._scene, done, error);
@@ -384,4 +426,4 @@
             return this;
         }
     }
-} 
+}

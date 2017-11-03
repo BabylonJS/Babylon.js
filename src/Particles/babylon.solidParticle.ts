@@ -1,25 +1,26 @@
 module BABYLON {
     
         export class SolidParticle {
-            public idx: number = 0;                         // particle global index
-            public color = new Color4(1.0, 1.0, 1.0, 1.0);  // color
-            public position = Vector3.Zero();               // position
-            public rotation = Vector3.Zero();               // rotation
-            public rotationQuaternion: Quaternion;          // quaternion, will overwrite rotation
-            public scaling = Vector3.One();                 // scaling
-            public uvs = new Vector4(0.0, 0.0, 1.0, 1.0);   // uvs
-            public velocity = Vector3.Zero();               // velocity
-            public alive = true;                            // alive
-            public isVisible = true;                        // visibility
-            public _pos: number = 0;                        // index of this particle in the global "positions" array
-            public _ind: number = 0;                        // index of this particle in the global "indices" array
-            public _model: ModelShape;                      // model shape reference
-            public shapeId: number = 0;                     // model shape id
-            public idxInShape: number = 0;                  // index of the particle in its shape id
-            public _modelBoundingInfo: BoundingInfo;        // reference to the shape model BoundingInfo object
-            public _boundingInfo: BoundingInfo;             // particle BoundingInfo
-            public _sps: SolidParticleSystem;               // reference to the SPS what the particle belongs to
-            public _stillInvisible: boolean = false;         // still set as invisible in order to skip useless computations
+            public idx: number = 0;                                             // particle global index
+            public color: Nullable<Color4> = new Color4(1.0, 1.0, 1.0, 1.0);    // color
+            public position: Vector3 = Vector3.Zero();                                   // position
+            public rotation: Vector3 = Vector3.Zero();                                   // rotation
+            public rotationQuaternion: Nullable<Quaternion>;                    // quaternion, will overwrite rotation
+            public scaling: Vector3 = Vector3.One();                                     // scaling
+            public uvs: Vector4 = new Vector4(0.0, 0.0, 1.0, 1.0);                       // uvs
+            public velocity: Vector3 = Vector3.Zero();                                   // velocity
+            public pivot: Vector3 = Vector3.Zero();                                      // pivot point in the particle local space
+            public alive: boolean = true;                                                // alive
+            public isVisible: boolean = true;                                            // visibility
+            public _pos: number = 0;                                            // index of this particle in the global "positions" array
+            public _ind: number = 0;                                            // index of this particle in the global "indices" array
+            public _model: ModelShape;                                          // model shape reference
+            public shapeId: number = 0;                                         // model shape id
+            public idxInShape: number = 0;                                      // index of the particle in its shape id
+            public _modelBoundingInfo: BoundingInfo;                            // reference to the shape model BoundingInfo object
+            public _boundingInfo: BoundingInfo;                                 // particle BoundingInfo
+            public _sps: SolidParticleSystem;                                   // reference to the SPS what the particle belongs to
+            public _stillInvisible: boolean = false;                            // still set as invisible in order to skip useless computations
     
             /**
              * Creates a Solid Particle object.
@@ -32,11 +33,11 @@ module BABYLON {
              * `idxInShape` (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
              * `modelBoundingInfo` is the reference to the model BoundingInfo used for intersection computations.
              */
-            constructor(particleIndex: number, positionIndex: number, indiceIndex: number, model: ModelShape, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: BoundingInfo) {
+            constructor(particleIndex: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo: Nullable<BoundingInfo> = null) {
                 this.idx = particleIndex;
                 this._pos = positionIndex;
                 this._ind = indiceIndex;
-                this._model = model;
+                this._model = <ModelShape>model;
                 this.shapeId = shapeId;
                 this.idxInShape = idxInShape;
                 this._sps = sps;
@@ -60,11 +61,11 @@ module BABYLON {
             /**
              * legacy support, changed quaternion to rotationQuaternion
              */ 
-            public get quaternion(): Quaternion {
+            public get quaternion(): Nullable<Quaternion> {
                 return this.rotationQuaternion;
             }
     
-            public set quaternion(q: Quaternion) {
+            public set quaternion(q: Nullable<Quaternion>) {
                 this.rotationQuaternion = q;
             }
     
@@ -89,14 +90,15 @@ module BABYLON {
             public _shape: Vector3[];                   // flat array of model positions
             public _shapeUV: number[];                  // flat array of model UVs
             public _indicesLength: number = 0;          // length of the shape in the model indices array
-            public _positionFunction: (particle: SolidParticle, i: number, s: number) => void;
-            public _vertexFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void;
+            public _positionFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>;
+            public _vertexFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>;
     
             /**
              * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
              * SPS internal tool, don't use it manually.  
              */
-            constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[], posFunction: (particle: SolidParticle, i: number, s: number) => void, vtxFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void) {
+            constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[], 
+                            posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>) {
                 this.shapeID = id;
                 this._shape = shape;
                 this._indicesLength = indicesLength;

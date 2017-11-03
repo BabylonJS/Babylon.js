@@ -4,7 +4,7 @@ var BABYLON;
     /**
      * Class reading and parsing the MTL file bundled with the obj file.
      */
-    var MTLFileLoader = (function () {
+    var MTLFileLoader = /** @class */ (function () {
         function MTLFileLoader() {
             // All material loaded from the mtl will be set here
             this.materials = [];
@@ -27,7 +27,7 @@ var BABYLON;
             //Array with RGB colors
             var color;
             //New material
-            var material;
+            var material = null;
             //Look at each line
             for (var i = 0; i < lines.length; i++) {
                 var line = lines[i].trim();
@@ -53,7 +53,7 @@ var BABYLON;
                     // value is the name of the material read in the mtl file
                     material = new BABYLON.StandardMaterial(value, scene);
                 }
-                else if (key === "kd") {
+                else if (key === "kd" && material) {
                     // Diffuse color (color under white light) using RGB values
                     //value  = "r g b"
                     color = value.split(delimiter_pattern, 3).map(parseFloat);
@@ -61,7 +61,7 @@ var BABYLON;
                     //Set tghe color into the material
                     material.diffuseColor = BABYLON.Color3.FromArray(color);
                 }
-                else if (key === "ka") {
+                else if (key === "ka" && material) {
                     // Ambient color (color under shadow) using RGB values
                     //value = "r g b"
                     color = value.split(delimiter_pattern, 3).map(parseFloat);
@@ -69,7 +69,7 @@ var BABYLON;
                     //Set tghe color into the material
                     material.ambientColor = BABYLON.Color3.FromArray(color);
                 }
-                else if (key === "ks") {
+                else if (key === "ks" && material) {
                     // Specular color (color when light is reflected from shiny surface) using RGB values
                     //value = "r g b"
                     color = value.split(delimiter_pattern, 3).map(parseFloat);
@@ -77,31 +77,31 @@ var BABYLON;
                     //Set the color into the material
                     material.specularColor = BABYLON.Color3.FromArray(color);
                 }
-                else if (key === "ke") {
+                else if (key === "ke" && material) {
                     // Emissive color using RGB values
                     color = value.split(delimiter_pattern, 3).map(parseFloat);
                     material.emissiveColor = BABYLON.Color3.FromArray(color);
                 }
-                else if (key === "ns") {
+                else if (key === "ns" && material) {
                     //value = "Integer"
                     material.specularPower = parseFloat(value);
                 }
-                else if (key === "d") {
+                else if (key === "d" && material) {
                     //d is dissolve for current material. It mean alpha for BABYLON
                     material.alpha = parseFloat(value);
                     //Texture
                     //This part can be improved by adding the possible options of texture
                 }
-                else if (key === "map_ka") {
+                else if (key === "map_ka" && material) {
                     // ambient texture map with a loaded image
                     //We must first get the folder of the image
                     material.ambientTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 }
-                else if (key === "map_kd") {
+                else if (key === "map_kd" && material) {
                     // Diffuse texture map with a loaded image
                     material.diffuseTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 }
-                else if (key === "map_ks") {
+                else if (key === "map_ks" && material) {
                     // Specular texture map with a loaded image
                     //We must first get the folder of the image
                     material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
@@ -115,11 +115,11 @@ var BABYLON;
                     //
                     //    continue;
                 }
-                else if (key === "map_bump") {
+                else if (key === "map_bump" && material) {
                     //The bump texture
                     material.bumpTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 }
-                else if (key === "map_d") {
+                else if (key === "map_d" && material) {
                     // The dissolve of the material
                     material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                     //Options for illumination
@@ -165,7 +165,9 @@ var BABYLON;
                 }
             }
             //At the end of the file, add the last material
-            this.materials.push(material);
+            if (material) {
+                this.materials.push(material);
+            }
         };
         /**
          * Gets the texture for the material.
@@ -203,7 +205,7 @@ var BABYLON;
         return MTLFileLoader;
     }());
     BABYLON.MTLFileLoader = MTLFileLoader;
-    var OBJFileLoader = (function () {
+    var OBJFileLoader = /** @class */ (function () {
         function OBJFileLoader() {
             this.name = "obj";
             this.extensions = ".obj";
@@ -241,7 +243,7 @@ var BABYLON;
             //The complete path to the mtl file
             var pathOfFile = BABYLON.Tools.BaseUrl + rootUrl + url;
             // Loads through the babylon tools to allow fileInput search.
-            BABYLON.Tools.LoadFile(pathOfFile, onSuccess, null, null, false, function () { console.warn("Error - Unable to load " + pathOfFile); });
+            BABYLON.Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, function () { console.warn("Error - Unable to load " + pathOfFile); });
         };
         OBJFileLoader.prototype.importMesh = function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
             //get the meshes from OBJ file

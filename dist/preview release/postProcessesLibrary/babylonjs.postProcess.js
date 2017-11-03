@@ -27,7 +27,7 @@ var BABYLON;
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    var AsciiArtFontTexture = (function (_super) {
+    var AsciiArtFontTexture = /** @class */ (function (_super) {
         __extends(AsciiArtFontTexture, _super);
         /**
          * Create a new instance of the Ascii Art FontTexture class
@@ -37,7 +37,12 @@ var BABYLON;
          * @param scene the scene that owns the texture
          */
         function AsciiArtFontTexture(name, font, text, scene) {
+            if (scene === void 0) { scene = null; }
             var _this = _super.call(this, scene) || this;
+            scene = _this.getScene();
+            if (!scene) {
+                return _this;
+            }
             _this.name = name;
             _this._text == text;
             _this._font == font;
@@ -69,7 +74,7 @@ var BABYLON;
                 context.fillText(text[i], i * _this._charSize, -maxCharHeight.offset);
             }
             // Flush the text in the dynamic texture.
-            _this.getScene().getEngine().updateDynamicTexture(_this._texture, canvas, false, true);
+            scene.getEngine().updateDynamicTexture(_this._texture, canvas, false, true);
             return _this;
         }
         Object.defineProperty(AsciiArtFontTexture.prototype, "charSize", {
@@ -164,7 +169,7 @@ var BABYLON;
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
      */
-    var AsciiArtPostProcess = (function (_super) {
+    var AsciiArtPostProcess = /** @class */ (function (_super) {
         __extends(AsciiArtPostProcess, _super);
         /**
          * Instantiates a new Ascii Art Post Process.
@@ -231,7 +236,7 @@ var BABYLON;
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    var DigitalRainFontTexture = (function (_super) {
+    var DigitalRainFontTexture = /** @class */ (function (_super) {
         __extends(DigitalRainFontTexture, _super);
         /**
          * Create a new instance of the Digital Rain FontTexture class
@@ -241,7 +246,12 @@ var BABYLON;
          * @param scene the scene that owns the texture
          */
         function DigitalRainFontTexture(name, font, text, scene) {
+            if (scene === void 0) { scene = null; }
             var _this = _super.call(this, scene) || this;
+            scene = _this.getScene();
+            if (!scene) {
+                return _this;
+            }
             _this.name = name;
             _this._text == text;
             _this._font == font;
@@ -273,7 +283,7 @@ var BABYLON;
                 context.fillText(text[i], 0, i * _this._charSize - maxCharHeight.offset);
             }
             // Flush the text in the dynamic texture.
-            _this.getScene().getEngine().updateDynamicTexture(_this._texture, canvas, false, true);
+            scene.getEngine().updateDynamicTexture(_this._texture, canvas, false, true);
             return _this;
         }
         Object.defineProperty(DigitalRainFontTexture.prototype, "charSize", {
@@ -368,7 +378,7 @@ var BABYLON;
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
      */
-    var DigitalRainPostProcess = (function (_super) {
+    var DigitalRainPostProcess = /** @class */ (function (_super) {
         __extends(DigitalRainPostProcess, _super);
         /**
          * Instantiates a new Digital Rain Post Process.

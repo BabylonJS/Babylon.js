@@ -9,9 +9,9 @@
 
         private _depthTest: boolean;
         private _depthMask: boolean;
-        private _depthFunc: number;
-        private _cull: boolean;
-        private _cullFace: number;
+        private _depthFunc: Nullable<number>;
+        private _cull: Nullable<boolean>;
+        private _cullFace: Nullable<number>;
         private _zOffset: number;
 
         /**
@@ -38,11 +38,11 @@
             this._isZOffsetDirty = true;
         }
 
-        public get cullFace(): number {
+        public get cullFace(): Nullable<number> {
             return this._cullFace;
         }
 
-        public set cullFace(value: number) {
+        public set cullFace(value: Nullable<number>) {
             if (this._cullFace === value) {
                 return;
             }
@@ -51,11 +51,11 @@
             this._isCullFaceDirty = true;
         }
 
-        public get cull() {
+        public get cull(): Nullable<boolean> {
             return this._cull;
         }
 
-        public set cull(value: boolean) {
+        public set cull(value: Nullable<boolean>) {
             if (this._cull === value) {
                 return;
             }
@@ -64,11 +64,11 @@
             this._isCullDirty = true;
         }
 
-        public get depthFunc(): number {
+        public get depthFunc(): Nullable<number> {
             return this._depthFunc;
         }
 
-        public set depthFunc(value: number) {
+        public set depthFunc(value: Nullable<number>) {
             if (this._depthFunc === value) {
                 return;
             }
@@ -138,7 +138,7 @@
 
             // Cull face
             if (this._isCullFaceDirty) {
-                gl.cullFace(this.cullFace);
+                gl.cullFace(<number>this.cullFace);
                 this._isCullFaceDirty = false;
             }
 
@@ -160,7 +160,7 @@
 
             // Depth func
             if (this._isDepthFuncDirty) {
-                gl.depthFunc(this.depthFunc);
+                gl.depthFunc(<number>this.depthFunc);
                 this._isDepthFuncDirty = false;
             }
 

@@ -1,5 +1,3 @@
-/// <reference path="..\Math\babylon.math.ts" />
-
 module BABYLON {
     class IndexedVector2 extends Vector2 {
         constructor(original: Vector2, public index: number) {
@@ -77,7 +75,7 @@ module BABYLON {
                 result.push(new Vector2(
                     cx + Math.cos(angle) * radius,
                     cy + Math.sin(angle) * radius
-                    ));
+                ));
                 angle -= increment;
             }
 
@@ -138,16 +136,16 @@ module BABYLON {
         addHole(hole: Vector2[]): PolygonMeshBuilder {
             this._points.add(hole);
             var holepoints = new PolygonPoints();
-            holepoints.add(hole); 
+            holepoints.add(hole);
             this._holes.push(holepoints);
 
-            this._eholes.push(this._epoints.length/2);
+            this._eholes.push(this._epoints.length / 2);
             this._addToepoint(hole);
 
             return this;
         }
 
-        build(updatable: boolean = false, depth?:number): Mesh {
+        build(updatable: boolean = false, depth: number = 0): Mesh {
             var result = new Mesh(this._name, this._scene);
 
             var normals = new Array<number>();
@@ -171,11 +169,11 @@ module BABYLON {
 
             if (depth > 0) {
                 var positionscount = (positions.length / 3); //get the current pointcount
-               
+
                 this._points.elements.forEach((p) => { //add the elements at the depth
-                    normals.push(0, -1.0, 0);                   
-                    positions.push(p.x, -depth, p.y);                
-                    uvs.push(1-(p.x - bounds.min.x) / bounds.width,1-(p.y - bounds.min.y) / bounds.height);
+                    normals.push(0, -1.0, 0);
+                    positions.push(p.x, -depth, p.y);
+                    uvs.push(1 - (p.x - bounds.min.x) / bounds.width, 1 - (p.y - bounds.min.y) / bounds.height);
                 });
 
                 let totalCount = indices.length;
@@ -194,7 +192,7 @@ module BABYLON {
 
                 this._holes.forEach((hole) => {
                     this.addSide(positions, normals, uvs, indices, bounds, hole, depth, true);
-                });                               
+                });
             }
 
             result.setVerticesData(VertexBuffer.PositionKind, positions, updatable);
@@ -203,9 +201,9 @@ module BABYLON {
             result.setIndices(indices);
 
             return result;
-        } 
+        }
 
-       private addSide(positions: any[], normals: any[], uvs: any[], indices:any[],bounds: any, points: PolygonPoints, depth:number, flip:boolean ){
+        private addSide(positions: any[], normals: any[], uvs: any[], indices: any[], bounds: any, points: PolygonPoints, depth: number, flip: boolean) {
             var StartIndex: number = positions.length / 3;
             var ulength: number = 0;
             for (var i: number = 0; i < points.elements.length; i++) {
@@ -229,7 +227,7 @@ module BABYLON {
                 var v4 = new Vector3(0, 1, 0);
                 var vn = Vector3.Cross(v3, v4);
                 vn = vn.normalize();
-                
+
                 uvs.push(ulength / bounds.width, 0);
                 uvs.push(ulength / bounds.width, 1);
                 ulength += v3.length();
@@ -237,7 +235,7 @@ module BABYLON {
                 uvs.push((ulength / bounds.width), 1);
 
                 if (!flip) {
-                    normals.push(-vn.x,- vn.y, -vn.z);
+                    normals.push(-vn.x, - vn.y, -vn.z);
                     normals.push(-vn.x, -vn.y, -vn.z);
                     normals.push(-vn.x, -vn.y, -vn.z);
                     normals.push(-vn.x, -vn.y, -vn.z);
@@ -263,7 +261,7 @@ module BABYLON {
                     indices.push(StartIndex + 1);
                     indices.push(StartIndex + 2);
                     indices.push(StartIndex + 3);
-                }                
+                }
                 StartIndex += 4;
             };
         }

@@ -412,5 +412,10 @@ void main(void) {
 	#endif
 #endif
 
+#ifdef PREMULTIPLYALPHA
+	// Convert to associative (premultiplied) format if needed.
+	color.rgb *= color.a;
+#endif
+
 	gl_FragColor = color;
 }

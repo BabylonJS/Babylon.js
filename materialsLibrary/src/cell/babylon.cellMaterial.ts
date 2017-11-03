@@ -32,7 +32,7 @@ module BABYLON {
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public diffuseTexture: BaseTexture;
 
-        @serializeAsColor3("diffuseColor")
+        @serializeAsColor3("diffuse")
         public diffuseColor = new Color3(1, 1, 1);
 
         @serialize("computeHighLevel")
@@ -64,7 +64,7 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -116,7 +116,7 @@ module BABYLON {
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
@@ -192,7 +192,7 @@ module BABYLON {
                     }, engine), defines);
 
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -211,6 +211,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -237,7 +240,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                MaterialHelper.BindEyePosition(effect, scene);               
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);

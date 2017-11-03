@@ -72,12 +72,15 @@
                 this._sortDirection[property] *= -1;
             }
             let direction = this._sortDirection[property];
-            if (direction == 1) {
-                this._headerRow.querySelector(`#sort-direction-${property}`).classList.remove('fa-chevron-down');
-                this._headerRow.querySelector(`#sort-direction-${property}`).classList.add('fa-chevron-up');
-            } else {
-                this._headerRow.querySelector(`#sort-direction-${property}`).classList.remove('fa-chevron-up');
-                this._headerRow.querySelector(`#sort-direction-${property}`).classList.add('fa-chevron-down');
+            let query = this._headerRow.querySelector(`#sort-direction-${property}`);
+            if (query) {
+                if (direction == 1) {
+                    query.classList.remove('fa-chevron-down');
+                    query.classList.add('fa-chevron-up');
+                } else {
+                    query.classList.remove('fa-chevron-up');
+                    query.classList.add('fa-chevron-down');
+                }
             }
 
             let isString = (s: any) => {

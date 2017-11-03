@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var GridMaterialDefines = (function (_super) {
+    var GridMaterialDefines = /** @class */ (function (_super) {
         __extends(GridMaterialDefines, _super);
         function GridMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -33,7 +33,7 @@ var BABYLON;
      * The grid materials allows you to wrap any shape with a grid.
      * Colors are customizable.
      */
-    var GridMaterial = (function (_super) {
+    var GridMaterial = /** @class */ (function (_super) {
         __extends(GridMaterial, _super);
         /**
          * constructor
@@ -116,9 +116,9 @@ var BABYLON;
                 var attribs = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.NormalKind];
                 // Defines
                 var join = defines.toString();
-                subMesh.setEffect(scene.getEngine().createEffect("grid", attribs, ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"], [], join, null, this.onCompiled, this.onError), defines);
+                subMesh.setEffect(scene.getEngine().createEffect("grid", attribs, ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"], [], join, undefined, this.onCompiled, this.onError), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -132,6 +132,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices
             this.bindOnlyWorldMatrix(world);

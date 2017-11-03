@@ -74,7 +74,7 @@
         public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public USESPHERICALFROMREFLECTIONMAP = false;
-        public USESPHERICALINFRAGMENT = false;
+        public USESPHERICALINVERTEX = false;
         public REFLECTIONMAP_OPPOSITEZ = false;
         public LODINREFLECTIONALPHA = false;
         public GAMMAREFLECTION = false;
@@ -90,6 +90,8 @@
         
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
+        
+        public NONUNIFORMSCALING = false;
 
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
@@ -104,6 +106,7 @@
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
+        public COLORGRADING3D = false;
         public SAMPLER3DGREENDEPTH = false;
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
@@ -376,12 +379,6 @@
         protected _forceAlphaTest = false;
 
         /**
-         * Specifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
-         * in your scene composition.
-         */
-        protected _preMultiplyAlpha = false;
-
-        /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
          * And/Or occlude the blended part.
          */
@@ -392,7 +389,7 @@
          * from cos thetav and roughness: 
          * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
          */
-        protected _environmentBRDFTexture: BaseTexture = null;
+        protected _environmentBRDFTexture: Nullable<BaseTexture> = null;
 
         /**
          * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
@@ -414,13 +411,13 @@
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -635,7 +632,10 @@
                             if (reflectionTexture.sphericalPolynomial) {
                                 defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 if (this._forceIrradianceInFragment || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
-                                    defines.USESPHERICALINFRAGMENT = true;
+                                    defines.USESPHERICALINVERTEX = false;
+                                }
+                                else {
+                                    defines.USESPHERICALINVERTEX = true;
                                 }
                             }
                         }
@@ -653,7 +653,7 @@
                         defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
                         defines.INVERTCUBICMAP = false;
                         defines.USESPHERICALFROMREFLECTIONMAP = false;
-                        defines.USESPHERICALINFRAGMENT = false;
+                        defines.USESPHERICALINVERTEX = false;
                         defines.REFLECTIONMAP_OPPOSITEZ = false;
                         defines.LODINREFLECTIONALPHA = false;
                         defines.GAMMAREFLECTION = false;
@@ -765,35 +765,38 @@
                             return false;
                         }
                         defines.ENVIRONMENTBRDF = true;
+                    } else {
+                        defines.ENVIRONMENTBRDF = false;
                     }
 
                     if (this._shouldUseAlphaFromAlbedoTexture()) {
                         defines.ALPHAFROMALBEDO = true;
+                    } else {
+                        defines.ALPHAFROMALBEDO = false;
                     }
+
                 }
 
-                if (this._useSpecularOverAlpha) {
-                    defines.SPECULAROVERALPHA = true;
-                }
+                defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
 
-                if (this._usePhysicalLightFalloff) {
-                    defines.USEPHYSICALLIGHTFALLOFF = true;
-                }
+                defines.USEPHYSICALLIGHTFALLOFF = this._usePhysicalLightFalloff;
 
-                if (this._useRadianceOverAlpha) {
-                    defines.RADIANCEOVERALPHA = true;
-                }
+                defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
 
                 if ((this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
                     defines.METALLICWORKFLOW = true;
+                } else {
+                    defines.METALLICWORKFLOW = false;
                 }
 
                 if (!this.backFaceCulling && this._twoSidedLighting) {
                     defines.TWOSIDEDLIGHTING = true;
+                } else {
+                    defines.TWOSIDEDLIGHTING = false;
                 }
 
                 defines.ALPHATESTVALUE = this._alphaCutOff;
-                defines.PREMULTIPLYALPHA = this._preMultiplyAlpha;
+                defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.ALPHABLEND = this.needAlphaBlending();
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;
             }
@@ -812,7 +815,7 @@
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._forceAlphaTest);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._forceAlphaTest);
 
              // Attribs
             if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true)) {
@@ -831,58 +834,75 @@
 
                 // Fallbacks
                 var fallbacks = new EffectFallbacks();
-                if (defines.ENVIRONMENTBRDF) {
-                    fallbacks.addFallback(0, "ENVIRONMENTBRDF");
-                }
-
-                if (defines.REFLECTION) {
-                    fallbacks.addFallback(0, "REFLECTION");
-                }
-
-                if (defines.REFRACTION) {
-                    fallbacks.addFallback(0, "REFRACTION");
-                }
-
-                if (defines.REFLECTIVITY) {
-                    fallbacks.addFallback(0, "REFLECTIVITY");
-                }
-
-                if (defines.BUMP) {
-                    fallbacks.addFallback(0, "BUMP");
-                }
-
-                if (defines.PARALLAX) {
-                    fallbacks.addFallback(1, "PARALLAX");
-                }
-
-                if (defines.PARALLAXOCCLUSION) {
-                    fallbacks.addFallback(0, "PARALLAXOCCLUSION");
-                }
-
-                if (defines.SPECULAROVERALPHA) {
-                    fallbacks.addFallback(0, "SPECULAROVERALPHA");
+                var fallbackRank = 0;
+                if (defines.USESPHERICALINVERTEX) {
+                    fallbacks.addFallback(fallbackRank++, "USESPHERICALINVERTEX");
                 }
 
                 if (defines.FOG) {
-                    fallbacks.addFallback(1, "FOG");
+                    fallbacks.addFallback(fallbackRank, "FOG");
                 }
-
                 if (defines.POINTSIZE) {
-                    fallbacks.addFallback(0, "POINTSIZE");
+                    fallbacks.addFallback(fallbackRank, "POINTSIZE");
                 }
-
                 if (defines.LOGARITHMICDEPTH) {
-                    fallbacks.addFallback(0, "LOGARITHMICDEPTH");
+                    fallbacks.addFallback(fallbackRank, "LOGARITHMICDEPTH");
+                }
+                if (defines.PARALLAX) {
+                    fallbacks.addFallback(fallbackRank, "PARALLAX");
+                }
+                if (defines.PARALLAXOCCLUSION) {
+                    fallbacks.addFallback(fallbackRank++, "PARALLAXOCCLUSION");
                 }
 
-                MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
+                if (defines.ENVIRONMENTBRDF) {
+                    fallbacks.addFallback(fallbackRank++, "ENVIRONMENTBRDF");
+                }
+
+                if (defines.TANGENT) {
+                    fallbacks.addFallback(fallbackRank++, "TANGENT");
+                }
+
+                if (defines.BUMP) {
+                    fallbacks.addFallback(fallbackRank++, "BUMP");
+                }
+
+                fallbackRank = MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights, fallbackRank++);
 
                 if (defines.SPECULARTERM) {
-                    fallbacks.addFallback(0, "SPECULARTERM");
+                    fallbacks.addFallback(fallbackRank++, "SPECULARTERM");
+                }
+
+                if (defines.USESPHERICALFROMREFLECTIONMAP) {
+                    fallbacks.addFallback(fallbackRank++, "USESPHERICALFROMREFLECTIONMAP");
+                }
+
+                if (defines.LIGHTMAP) {
+                    fallbacks.addFallback(fallbackRank++, "LIGHTMAP");
+                }
+
+                if (defines.NORMAL) {
+                    fallbacks.addFallback(fallbackRank++, "NORMAL");
+                }
+
+                if (defines.AMBIENT) {
+                    fallbacks.addFallback(fallbackRank++, "AMBIENT");
+                }
+
+                if (defines.EMISSIVE) {
+                    fallbacks.addFallback(fallbackRank++, "EMISSIVE");
+                }
+
+                if (defines.VERTEXCOLOR) {
+                    fallbacks.addFallback(fallbackRank++, "VERTEXCOLOR");
                 }
 
                 if (defines.NUM_BONE_INFLUENCERS > 0) {
-                    fallbacks.addCPUSkinningFallback(0, mesh);
+                    fallbacks.addCPUSkinningFallback(fallbackRank++, mesh);
+                }
+
+                if (defines.MORPHTARGETS) {
+                    fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
                 }
 
                 //Attributes
@@ -968,7 +988,7 @@
                 this.buildUniformLayout();
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -1041,6 +1061,11 @@
             }
 
             var effect = subMesh.effect;
+
+            if (!effect) {
+                return;
+            }
+
             this._activeEffect = effect;
 
             // Matrices
@@ -1051,11 +1076,12 @@
             // Bones
             MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
+            let reflectionTexture: Nullable<BaseTexture> = null;
             if (mustRebind) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
 
                 this.bindViewProjection(effect);
-                var reflectionTexture = this._getReflectionTexture();
+                reflectionTexture = this._getReflectionTexture();
                 var refractionTexture = this._getRefractionTexture();
                                
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
@@ -1081,8 +1107,8 @@
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
 
-                            if (defines.USESPHERICALFROMREFLECTIONMAP) {
-                                var polynomials = reflectionTexture.sphericalPolynomial;
+                            var polynomials = reflectionTexture.sphericalPolynomial;
+                            if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
                                 this._activeEffect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
                                 this._activeEffect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
                                 this._activeEffect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
@@ -1259,7 +1285,7 @@
                 // Colors
                 scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
 
-                var eyePosition = scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.globalPosition;
+                var eyePosition = scene._forcedViewPosition ? scene._forcedViewPosition : (scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).globalPosition);
                 var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
                 effect.setFloat4("vEyePosition",
                     eyePosition.x,
@@ -1298,8 +1324,6 @@
             this._uniformBuffer.update();
 
             this._afterBind(mesh);
-
-            scene = null;
         }
 
         public getAnimatables(): IAnimatable[] {
@@ -1355,7 +1379,7 @@
             return this.getScene().environmentTexture;
         }
 
-        private _getRefractionTexture(): BaseTexture {
+        private _getRefractionTexture(): Nullable<BaseTexture> {
             if (this._refractionTexture) {
                 return this._refractionTexture;
             }

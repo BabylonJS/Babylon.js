@@ -9,6 +9,7 @@
     "lib": ["dom", "es2015.promise", "es5"],
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,    
+    "strictNullChecks": true
   }
 }

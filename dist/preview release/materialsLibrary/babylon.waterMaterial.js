@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var WaterMaterialDefines = (function (_super) {
+    var WaterMaterialDefines = /** @class */ (function (_super) {
         __extends(WaterMaterialDefines, _super);
         function WaterMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -46,7 +46,7 @@ var BABYLON;
         }
         return WaterMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var WaterMaterial = (function (_super) {
+    var WaterMaterial = /** @class */ (function (_super) {
         __extends(WaterMaterial, _super);
         /**
         * Constructor
@@ -158,8 +158,12 @@ var BABYLON;
         });
         // Methods
         WaterMaterial.prototype.addToRenderList = function (node) {
-            this._refractionRTT.renderList.push(node);
-            this._reflectionRTT.renderList.push(node);
+            if (this._refractionRTT.renderList) {
+                this._refractionRTT.renderList.push(node);
+            }
+            if (this._reflectionRTT.renderList) {
+                this._reflectionRTT.renderList.push(node);
+            }
         };
         WaterMaterial.prototype.enableRenderTargets = function (enable) {
             var refreshRate = enable ? 1 : 0;
@@ -220,7 +224,7 @@ var BABYLON;
                     }
                 }
             }
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
             if (defines._areMiscDirty) {
                 if (this._fresnelSeparate) {
@@ -307,7 +311,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -321,6 +325,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect || !this._mesh) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -340,7 +347,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             if (defines.SPECULARTERM) {

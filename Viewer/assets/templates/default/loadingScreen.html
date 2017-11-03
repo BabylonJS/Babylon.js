@@ -1,0 +1,41 @@
+<style>
+    /* Loading Screen element */
+
+    loading-screen {
+        position: absolute;
+        z-index: 100;
+        opacity: 1;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        -webkit-transition: opacity 2s ease;
+        -moz-transition: opacity 2s ease;
+        transition: opacity 2s ease;
+    }
+
+    img.loading-image {
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+    }
+
+    @-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<img class="loading-image" src="{{loadingImage}}">

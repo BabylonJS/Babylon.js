@@ -1,9 +1,9 @@
 module BABYLON {
     export class MorphTargetManager {
         private _targets = new Array<MorphTarget>();
-        private _targetObservable = new Array<Observer<boolean>>();
+        private _targetObservable = new Array<Nullable<Observer<boolean>>>();
         private _activeTargets = new SmartArray<MorphTarget>(16);
-        private _scene: Scene;
+        private _scene: Nullable<Scene>;
         private _influences: Float32Array;
         private _supportsNormals = false;
         private _supportsTangents = false;
@@ -11,16 +11,18 @@ module BABYLON {
         private _uniqueId = 0;
         private _tempInfluences = new Array<number>();
 
-        public constructor(scene?: Scene) {
+        public constructor(scene: Nullable<Scene> = null) {
             if (!scene) {
                 scene = Engine.LastCreatedScene;
             }
 
             this._scene = scene;
 
-            this._scene.morphTargetManagers.push(this);
+            if (this._scene) {
+                this._scene.morphTargetManagers.push(this);
 
-            this._uniqueId = scene.getUniqueId();
+                this._uniqueId = this._scene.getUniqueId();
+            }
         }
 
         public get uniqueId(): number {
@@ -58,20 +60,13 @@ module BABYLON {
         public getTarget(index: number): MorphTarget {
             return this._targets[index];
         }
-       
-        public addTarget(target: MorphTarget): void {
-            if (this._vertexCount) {
-                if (this._vertexCount !== target.getPositions().length / 3) {
-                    Tools.Error("Incompatible target. Targets must all have the same vertices count.");
-                    return;
-                }
-            }
 
+        public addTarget(target: MorphTarget): void {
             this._targets.push(target);
             this._targetObservable.push(target.onInfluenceChanged.add(needUpdate => {
                 this._syncActiveTargets(needUpdate);
             }));
-            this._syncActiveTargets(true);        
+            this._syncActiveTargets(true);
         }
 
         public removeTarget(target: MorphTarget): void {
@@ -80,7 +75,6 @@ module BABYLON {
                 this._targets.splice(index, 1);
 
                 target.onInfluenceChanged.remove(this._targetObservable.splice(index, 1)[0]);
-                this._vertexCount = 0;
                 this._syncActiveTargets(true);
             }
         }
@@ -104,9 +98,10 @@ module BABYLON {
 
         private _syncActiveTargets(needUpdate: boolean): void {
             let influenceCount = 0;
-            this._activeTargets.reset();            
+            this._activeTargets.reset();
             this._supportsNormals = true;
             this._supportsTangents = true;
+            this._vertexCount = 0;
             for (var target of this._targets) {
                 if (target.influence > 0) {
                     this._activeTargets.push(target);
@@ -115,8 +110,19 @@ module BABYLON {
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
                     this._supportsTangents = this._supportsTangents && target.hasTangents;
 
+                    const positions = target.getPositions();
+                    if (!positions) {
+                        Tools.Error("Invalid target. Target must positions.");
+                        return;
+                    }
+
+                    const vertexCount = positions.length / 3;
                     if (this._vertexCount === 0) {
-                        this._vertexCount = target.getPositions().length / 3;
+                        this._vertexCount = vertexCount;
+                    }
+                    else if (this._vertexCount !== vertexCount) {
+                        Tools.Error("Incompatible target. Targets must all have the same vertices count.");
+                        return;
                     }
                 }
             }
@@ -128,8 +134,8 @@ module BABYLON {
             for (var index = 0; index < influenceCount; index++) {
                 this._influences[index] = this._tempInfluences[index];
             }
-            
-            if (needUpdate) {
+
+            if (needUpdate && this._scene) {
                 // Flag meshes as dirty to resync with the active targets
                 for (var mesh of this._scene.meshes) {
                     if ((<any>mesh).morphTargetManager === this) {

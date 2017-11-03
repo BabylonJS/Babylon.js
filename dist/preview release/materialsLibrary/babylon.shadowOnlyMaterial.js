@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var BABYLON;
 (function (BABYLON) {
-    var ShadowOnlyMaterialDefines = (function (_super) {
+    var ShadowOnlyMaterialDefines = /** @class */ (function (_super) {
         __extends(ShadowOnlyMaterialDefines, _super);
         function ShadowOnlyMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -27,7 +27,7 @@ var BABYLON;
         }
         return ShadowOnlyMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var ShadowOnlyMaterial = (function (_super) {
+    var ShadowOnlyMaterial = /** @class */ (function (_super) {
         __extends(ShadowOnlyMaterial, _super);
         function ShadowOnlyMaterial(name, scene) {
             return _super.call(this, name, scene) || this;
@@ -86,7 +86,7 @@ var BABYLON;
                     }
                 }
             }
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
             // Attribs
@@ -139,7 +139,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: 1 }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -153,6 +153,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -167,7 +170,7 @@ var BABYLON;
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
                 this._activeEffect.setFloat("alpha", this.alpha);
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             // Lights
             if (scene.lightsEnabled) {

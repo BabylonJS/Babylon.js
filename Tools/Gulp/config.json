@@ -26,6 +26,7 @@
             "picking",
             "collisions",
             "particles",
+            "gpuParticles",
             "solidParticles",
             "additionalMeshes",
             "meshBuilder",
@@ -72,7 +73,8 @@
             "layer",
             "textureTools",
             "cameraBehaviors",
-            "nullEngine"
+            "nullEngine",
+            "instrumentation"
         ],
         "minimal": [
             "standardMaterial",
@@ -146,7 +148,9 @@
             "layer",
             "textureTools",
             "cameraBehaviors",
+            "instrumentation",
             "materialsLibrary/babylon.gridMaterial.js",
+            "materialsLibrary/babylon.backgroundMaterial.js",
             "loaders/babylon.glTFFileLoader.js"
         ],
         "distributed": [
@@ -217,6 +221,20 @@
                 "particles.fragment"
             ]
         },
+        "gpuParticles": {
+            "files": [
+                "../../src/Particles/babylon.gpuParticleSystem.js"
+            ],
+            "dependUpon": [
+                "core"
+            ],
+            "shaders": [
+                "gpuRenderParticles.vertex",
+                "gpuRenderParticles.fragment",
+                "gpuUpdateParticles.vertex",
+                "gpuUpdateParticles.fragment"
+            ]
+        },
         "nullEngine": {
             "files": [
                 "../../src/Engine/babylon.nullEngine.js"
@@ -224,7 +242,17 @@
             "dependUpon": [
                 "core"
             ]
-        },        
+        },    
+        "instrumentation": {
+            "files": [
+                "../../src/Instrumentation/babylon.engineInstrumentation.js",
+                "../../src/Instrumentation/babylon.sceneInstrumentation.js",
+                "../../src/Instrumentation/babylon.timeToken.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },      
         "cameraBehaviors": {
             "files": [
                 "../../src/Behaviors/Cameras/babylon.framingBehavior.js",
@@ -1218,25 +1246,18 @@
             },
             {
                 "files": [
-                    "../../materialsLibrary/src/legacyPBR/babylon.legacyPBRMaterial.ts"
+                    "../../materialsLibrary/src/background/babylon.backgroundMaterial.ts"
                 ],
                 "shaderFiles": [
-                    "../../materialsLibrary/src/legacyPBR/legacyPbr.vertex.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbr.fragment.fx"
+                    "../../materialsLibrary/src/background/background.vertex.fx",
+                    "../../materialsLibrary/src/background/background.fragment.fx"
                 ],
                 "shadersIncludeFiles": [
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrFragmentDeclaration.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrFunctions.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrLightFunctions.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrLightFunctionsCall.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrUboDeclaration.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyPbrVertexDeclaration.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyColorCurves.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyColorCurvesDefinition.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyColorGrading.fx",
-                    "../../materialsLibrary/src/legacyPBR/legacyColorGradingDefinition.fx"
+                    "../../materialsLibrary/src/background/backgroundFragmentDeclaration.fx",
+                    "../../materialsLibrary/src/background/backgroundUboDeclaration.fx",
+                    "../../materialsLibrary/src/background/backgroundVertexDeclaration.fx"
                 ],
-                "output": "babylon.legacyPbrMaterial.js"
+                "output": "babylon.backgroundMaterial.js"
             }
         ],
         "build": {

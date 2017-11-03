@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var SkyMaterialDefines = (function (_super) {
+    var SkyMaterialDefines = /** @class */ (function (_super) {
         __extends(SkyMaterialDefines, _super);
         function SkyMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -31,7 +31,7 @@ var BABYLON;
         }
         return SkyMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var SkyMaterial = (function (_super) {
+    var SkyMaterial = /** @class */ (function (_super) {
         __extends(SkyMaterial, _super);
         function SkyMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -101,7 +101,7 @@ var BABYLON;
                     "cameraPosition"
                 ], [], join, fallbacks, this.onCompiled, this.onError), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -115,6 +115,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);

@@ -38,7 +38,7 @@
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
          * Returns the Color3.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Color3 {
+        public toArray(array: FloatArray, index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
@@ -624,7 +624,7 @@
          * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.  
          * Returns the Vector2.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector2 {
+        public toArray(array: FloatArray, index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
             return this;
@@ -1075,7 +1075,7 @@
          * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3.  
          * Returns the Vector3.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector3 {
+        public toArray(array: FloatArray, index: number = 0): Vector3 {
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
@@ -1309,6 +1309,28 @@
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
             return this;
+        }
+
+        /**
+         * Return true is the vector is non uniform meaning x, y or z are not all the same.
+         */
+        public get isNonUniform(): boolean {
+            let absX = Math.abs(this.x);
+            let absY = Math.abs(this.y);
+            if (absX !== absY) {
+                return true;
+            }
+
+            let absZ = Math.abs(this.z);
+            if (absX !== absZ) {
+                return true;
+            }
+
+            if (absY !== absZ) {
+                return true;
+            }
+
+            return false;
         }
 
         // Properties
@@ -1833,7 +1855,7 @@
          * Populates the passed array from the passed index with the Vector4 coordinates.  
          * Returns the Vector4.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Vector4 {
+        public toArray(array: FloatArray, index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }
@@ -3411,6 +3433,24 @@
         }
 
         /**
+         * Compute the transpose of the matrix.  
+         * Returns a new Matrix.  
+         */        
+        public transpose(): Matrix {
+            return Matrix.Transpose(this);
+        }
+
+        /**
+         * Compute the transpose of the matrix.  
+         * Returns the current matrix.  
+         */        
+        public transposeToRef(result: Matrix): Matrix {
+            Matrix.TransposeToRef(this, result);
+
+            return this;
+        }
+
+        /**
          * Sets the index-th row of the current matrix with the passed 4 x float values.
          * Returns the updated Matrix.    
          */
@@ -4089,6 +4129,15 @@
         public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
 
+            Matrix.TransposeToRef(matrix, result);
+
+            return result;
+        }
+
+        /**
+         * Compute the transpose of the passed Matrix and store it in the result matrix.  
+         */
+        public static TransposeToRef(matrix: Matrix, result: Matrix): void {
             result.m[0] = matrix.m[0];
             result.m[1] = matrix.m[4];
             result.m[2] = matrix.m[8];
@@ -4108,8 +4157,6 @@
             result.m[13] = matrix.m[7];
             result.m[14] = matrix.m[11];
             result.m[15] = matrix.m[15];
-
-            return result;
         }
 
         /**

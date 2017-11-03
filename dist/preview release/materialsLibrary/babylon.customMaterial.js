@@ -18,7 +18,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var BABYLON;
 (function (BABYLON) {
     // old version of standard material updated every 3 months
-    var StandardMaterialDefines_OldVer = (function (_super) {
+    var StandardMaterialDefines_OldVer = /** @class */ (function (_super) {
         __extends(StandardMaterialDefines_OldVer, _super);
         function StandardMaterialDefines_OldVer() {
             var _this = _super.call(this) || this;
@@ -89,6 +89,7 @@ var BABYLON;
             _this.CONTRAST = false;
             _this.COLORCURVES = false;
             _this.COLORGRADING = false;
+            _this.COLORGRADING3D = false;
             _this.SAMPLER3DGREENDEPTH = false;
             _this.SAMPLER3DBGRMAP = false;
             _this.IMAGEPROCESSINGPOSTPROCESS = false;
@@ -111,7 +112,7 @@ var BABYLON;
         return StandardMaterialDefines_OldVer;
     }(BABYLON.MaterialDefines));
     BABYLON.StandardMaterialDefines_OldVer = StandardMaterialDefines_OldVer;
-    var StandardMaterial_OldVer = (function (_super) {
+    var StandardMaterial_OldVer = /** @class */ (function (_super) {
         __extends(StandardMaterial_OldVer, _super);
         function StandardMaterial_OldVer(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -563,7 +564,7 @@ var BABYLON;
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -670,7 +671,7 @@ var BABYLON;
                 }, engine), defines);
                 this.buildUniformLayout();
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             defines._renderId = scene.getRenderId();
@@ -731,6 +732,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -869,7 +873,7 @@ var BABYLON;
                 BABYLON.MaterialHelper.BindClipPlane(effect, scene);
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
             if (this._mustRebind(scene, effect) || !this.isFrozen) {
@@ -1382,19 +1386,19 @@ var BABYLON;
         return StandardMaterial_OldVer;
     }(BABYLON.PushMaterial));
     BABYLON.StandardMaterial_OldVer = StandardMaterial_OldVer;
-    var CustomShaderStructure = (function () {
+    var CustomShaderStructure = /** @class */ (function () {
         function CustomShaderStructure() {
         }
         return CustomShaderStructure;
     }());
     BABYLON.CustomShaderStructure = CustomShaderStructure;
-    var ShaderSpecialParts = (function () {
+    var ShaderSpecialParts = /** @class */ (function () {
         function ShaderSpecialParts() {
         }
         return ShaderSpecialParts;
     }());
     BABYLON.ShaderSpecialParts = ShaderSpecialParts;
-    var ShaderForVer3_0 = (function (_super) {
+    var ShaderForVer3_0 = /** @class */ (function (_super) {
         __extends(ShaderForVer3_0, _super);
         function ShaderForVer3_0() {
             var _this = _super.call(this) || this;
@@ -1895,14 +1899,14 @@ vColor=color;\n\
         return ShaderForVer3_0;
     }(CustomShaderStructure));
     BABYLON.ShaderForVer3_0 = ShaderForVer3_0;
-    var StandardShaderVersions = (function () {
+    var StandardShaderVersions = /** @class */ (function () {
         function StandardShaderVersions() {
         }
         StandardShaderVersions.Ver3_0 = "3.0.0";
         return StandardShaderVersions;
     }());
     BABYLON.StandardShaderVersions = StandardShaderVersions;
-    var CustomMaterial = (function (_super) {
+    var CustomMaterial = /** @class */ (function (_super) {
         __extends(CustomMaterial, _super);
         function CustomMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -1950,11 +1954,14 @@ vColor=color;\n\
                 return this._createdShaderName;
             this._isCreatedShader = false;
             CustomMaterial.ShaderIndexer++;
-            var name = name + "custom_" + CustomMaterial.ShaderIndexer;
+            var name = "custom_" + CustomMaterial.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
             var fn_afterBind = this._afterBind;
             this._afterBind = function (m, e) {
+                if (!e) {
+                    return;
+                }
                 _this.AttachAfterBind(m, e);
                 try {
                     fn_afterBind(m, e);

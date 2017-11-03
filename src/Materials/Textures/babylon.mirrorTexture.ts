@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.renderTargetTexture.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class MirrorTexture extends RenderTargetTexture {
         public mirrorPlane = new Plane(0, 1, 0, 1);
 
@@ -30,7 +28,7 @@ module BABYLON {
         public set blurKernel(value: number) {
             this.blurKernelX = value;
             this.blurKernelY = value;
-        }        
+        }
 
         public set blurKernelX(value: number) {
             if (this._blurKernelX === value) {
@@ -43,7 +41,7 @@ module BABYLON {
 
         public get blurKernelX(): number {
             return this._blurKernelX;
-        }        
+        }
 
         public set blurKernelY(value: number) {
             if (this._blurKernelY === value) {
@@ -56,7 +54,7 @@ module BABYLON {
 
         public get blurKernelY(): number {
             return this._blurKernelY;
-        }             
+        }
 
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
@@ -75,7 +73,7 @@ module BABYLON {
 
                 scene.getEngine().cullBackFaces = false;
 
-                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.globalPosition, this._mirrorMatrix);
+                scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).globalPosition, this._mirrorMatrix);
             });
 
             this.onAfterRenderObservable.add(() => {
@@ -85,20 +83,20 @@ module BABYLON {
 
                 delete scene.clipPlane;
             });
-        }     
+        }
 
         private _preparePostProcesses(): void {
             this.clearPostProcesses(true);
 
             if (this._blurKernelX && this._blurKernelY) {
-                var engine = this.getScene().getEngine();
+                var engine = (<Scene>this.getScene()).getEngine();
 
                 var textureType = engine.getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
 
                 this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;
 
-                if (this._blurRatio === 1 && this.samples < 2) {
+                if (this._blurRatio === 1 && this.samples < 2 && this._texture) {
                     this._blurX.outputTexture = this._texture;
                 } else {
                     this._blurX.alwaysForcePOT = true;
@@ -109,16 +107,22 @@ module BABYLON {
                 this._blurY.alwaysForcePOT = this._blurRatio !== 1;
 
                 this.addPostProcess(this._blurX);
-                this.addPostProcess(this._blurY);   
+                this.addPostProcess(this._blurY);
             }
-        }   
+        }
 
         public clone(): MirrorTexture {
+            let scene = this.getScene();
+
+            if (!scene) {
+                return this;
+            }
+
             var textureSize = this.getSize();
             var newTexture = new MirrorTexture(
                 this.name,
                 textureSize.width,
-                this.getScene(),
+                scene,
                 this._renderTargetOptions.generateMipMaps,
                 this._renderTargetOptions.type,
                 this._renderTargetOptions.samplingMode,
@@ -131,7 +135,9 @@ module BABYLON {
 
             // Mirror Texture
             newTexture.mirrorPlane = this.mirrorPlane.clone();
-            newTexture.renderList = this.renderList.slice(0);
+            if (this.renderList) {
+                newTexture.renderList = this.renderList.slice(0);
+            }
 
             return newTexture;
         }

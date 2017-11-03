@@ -12,14 +12,14 @@
     export interface IParticleSystem {
         id: string;
         name: string;
-        emitter: AbstractMesh | Vector3;
+        emitter: Nullable<AbstractMesh | Vector3>; 
         renderingGroupId: number;
         layerMask: number;
         isStarted(): boolean;
         animate(): void;
         render(): number;
         dispose(): void;
-        clone(name: string, newEmitter: any): IParticleSystem;
+        clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
         serialize(): any;
 
         rebuild(): void
@@ -35,7 +35,7 @@
 
         public id: string;
         public renderingGroupId = 0;
-        public emitter: AbstractMesh | Vector3 = null;
+        public emitter: Nullable<AbstractMesh | Vector3> = null;
         public emitRate = 10;
         public manualEmitCount = -1;
         public updateSpeed = 0.01;
@@ -53,7 +53,7 @@
         public minAngularSpeed = 0;
         public maxAngularSpeed = 0;
 
-        public particleTexture: Texture;
+        public particleTexture: Nullable<Texture>;
 
         public layerMask: number = 0x0FFFFFFF;
 
@@ -69,7 +69,7 @@
         */
         public onDisposeObservable = new Observable<ParticleSystem>();
 
-        private _onDisposeObserver: Observer<ParticleSystem>;
+        private _onDisposeObserver: Nullable<Observer<ParticleSystem>>;
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -78,7 +78,7 @@
         }
 
         public updateFunction: (particles: Particle[]) => void;
-        public onAnimationEnd: () => void = null;
+        public onAnimationEnd: Nullable<() => void> = null;
 
         public blendMode = ParticleSystem.BLENDMODE_ONEONE;
 
@@ -103,11 +103,11 @@
         private _stockParticles = new Array<Particle>();
         private _newPartsExcess = 0;
         private _vertexData: Float32Array;
-        private _vertexBuffer: Buffer;
+        private _vertexBuffer: Nullable<Buffer>;
         private _vertexBuffers: { [key: string]: VertexBuffer } = {};
-        private _indexBuffer: WebGLBuffer;
+        private _indexBuffer: Nullable<WebGLBuffer>;
         private _effect: Effect;
-        private _customEffect: Effect;
+        private _customEffect: Nullable<Effect>;
         private _cachedDefines: string;
 
         private _scaledColorStep = new Color4(0, 0, 0, 0);
@@ -137,7 +137,7 @@
         }
         // end of sheet animation
 
-        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect, private _isAnimationSheetEnabled: boolean = false, epsilon: number = 0.01) {
+        constructor(public name: string, capacity: number, scene: Scene, customEffect: Nullable<Effect> = null, private _isAnimationSheetEnabled: boolean = false, epsilon: number = 0.01) {
             this.id = name;
             this._capacity = capacity;
 
@@ -238,7 +238,7 @@
         }
 
         public recycleParticle(particle: Particle): void {
-            var lastParticle = this.particles.pop();
+            var lastParticle = <Particle>this.particles.pop();
 
             if (lastParticle !== particle) {
                 lastParticle.copyTo(particle);
@@ -336,7 +336,7 @@
                 }
 
                 if (this._stockParticles.length !== 0) {
-                    particle = this._stockParticles.pop();
+                    particle = <Particle>this._stockParticles.pop();
                     particle.age = 0;
                     particle.cellIndex = this.startSpriteCellID;
                 } else {
@@ -484,10 +484,12 @@
                 offset += 4;
             }
 
-            this._vertexBuffer.update(this._vertexData);
+            if (this._vertexBuffer) {
+                this._vertexBuffer.update(this._vertexData);
+            }
         }
 
-        public appendParticleVertexes: (offset: number, particle: Particle) => void = null;
+        public appendParticleVertexes: Nullable<(offset: number, particle: Particle) => void> = null;
 
         private appenedParticleVertexesWithSheet(offset: number, particle: Particle) {
             this._appendParticleVertexWithAnimation(offset++, particle, 0, 0);
@@ -506,7 +508,9 @@
         public rebuild(): void {
             this._createIndexBuffer();
 
-            this._vertexBuffer._rebuild();
+            if (this._vertexBuffer) {
+                this._vertexBuffer._rebuild();
+            }
         }
 
         public render(): number {
@@ -591,7 +595,7 @@
 
         // Clone
         public clone(name: string, newEmitter: any): ParticleSystem {
-            var custom: Effect = null;
+            var custom: Nullable<Effect> = null;
             var program: any = null;
             if (this.customShader != null) {
                 program = this.customShader;
@@ -673,7 +677,7 @@
 
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
             var name = parsedParticleSystem.name;
-            var custom: Effect = null;
+            var custom: Nullable<Effect> = null;
             var program: any = null;
             if (parsedParticleSystem.customShader) {
                 program = parsedParticleSystem.customShader;

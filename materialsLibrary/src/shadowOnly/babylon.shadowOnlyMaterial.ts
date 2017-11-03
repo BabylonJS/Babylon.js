@@ -32,7 +32,7 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -86,7 +86,7 @@ module BABYLON {
                 }
             }
 
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
 
@@ -155,7 +155,7 @@ module BABYLON {
                         indexParameters: { maxSimultaneousLights: 1 }
                     }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -174,6 +174,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -194,7 +197,7 @@ module BABYLON {
 
                 this._activeEffect.setFloat("alpha", this.alpha);
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                MaterialHelper.BindEyePosition(effect, scene);             
             }
 
             // Lights

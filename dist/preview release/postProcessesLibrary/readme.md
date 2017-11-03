@@ -36,7 +36,7 @@ Afterwards it can be imported to the project using:
 
 ```
 import * as BABYLON from 'babylonjs';
-import from 'babylonjs-post-process';
+import 'babylonjs-post-process';
 ```
 
 This will extend Babylon's namespace with the post processes available:

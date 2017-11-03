@@ -187,7 +187,7 @@
             for (; subIndex < subMeshes.length; subIndex++) {
                 subMesh = subMeshes.data[subIndex];
                 subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
-                subMesh._distanceToCamera = subMesh.getBoundingInfo().boundingSphere.centerWorld.subtract(cameraPosition).length();
+                subMesh._distanceToCamera = (<BoundingInfo>subMesh.getBoundingInfo()).boundingSphere.centerWorld.subtract(cameraPosition).length();
             }
 
             let sortedArray = subMeshes.data.slice(0, subMeshes.length);
@@ -202,7 +202,7 @@
                 if (transparent) {
                     let material = subMesh.getMaterial();
 
-                    if (material.needDepthPrePass) {
+                    if (material && material.needDepthPrePass) {
                         let engine = material.getScene().getEngine();
                         engine.setColorWrite(false);
                         engine.setAlphaTesting(true);
@@ -320,6 +320,10 @@
             var material = subMesh.getMaterial();
             var mesh = subMesh.getMesh();
 
+            if (!material) {
+                return;
+            }
+
             if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) { // Transparent
                 this._transparentSubMeshes.push(subMesh);
             } else if (material.needAlphaTesting()) { // Alpha test
@@ -356,7 +360,7 @@
 
             // Particles
             var activeCamera = this._scene.activeCamera;
-            this._scene._particlesDuration.beginMonitoring();
+            this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
 
@@ -369,7 +373,8 @@
                     this._scene._activeParticles.addCount(particleSystem.render(), false);
                 }
             }
-            this._scene._particlesDuration.endMonitoring(false);
+            this._scene.onAfterParticlesRenderingObservable.notifyObservers(this._scene);
+            
         }
 
         private _renderSprites(): void {
@@ -379,7 +384,7 @@
 
             // Sprites       
             var activeCamera = this._scene.activeCamera;
-            this._scene._spritesDuration.beginMonitoring();
+            this._scene.onBeforeSpritesRenderingObservable.notifyObservers(this._scene);
             for (var id = 0; id < this._spriteManagers.length; id++) {
                 var spriteManager = this._spriteManagers.data[id];
 
@@ -387,7 +392,7 @@
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration.endMonitoring(false);
+            this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
         }
     }
 } 

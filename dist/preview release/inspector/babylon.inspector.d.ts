@@ -22,7 +22,7 @@ declare module INSPECTOR {
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement, newColors?: {
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: Nullable<HTMLElement>, newColors?: {
             backgroundColor?: string;
             backgroundColorLighter?: string;
             backgroundColorLighter2?: string;
@@ -519,7 +519,7 @@ declare module INSPECTOR {
         private _prevY;
         /**Save value while slider is on */
         private _preValue;
-        constructor(prop: Property, parent?: PropertyLine, level?: number);
+        constructor(prop: Property, parent?: Nullable<PropertyLine>, level?: number);
         /**
          * Init the input element and al its handler :
          * - a click in the window remove the input and restore the old property value
@@ -709,7 +709,7 @@ declare module INSPECTOR {
         private _elem;
         /** The tooltip div */
         private _infoDiv;
-        constructor(elem: HTMLElement, tip: string, attachTo?: HTMLElement);
+        constructor(elem: HTMLElement, tip: string, attachTo?: Nullable<HTMLElement>);
     }
 }
 
@@ -745,12 +745,12 @@ declare module INSPECTOR {
         /**
          * Useful function used to create a div
          */
-        static CreateDiv(className?: string, parent?: HTMLElement): HTMLElement;
+        static CreateDiv(className?: Nullable<string>, parent?: HTMLElement): HTMLElement;
         /**
          * Useful function used to create a input
          */
         static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement;
-        static CreateElement(element: string, className?: string, parent?: HTMLElement): HTMLElement;
+        static CreateElement(element: string, className?: Nullable<string>, parent?: HTMLElement): HTMLElement;
         /**
          * Removes all children of the given div.
          */
@@ -846,7 +846,7 @@ declare module INSPECTOR {
         /** Set the given item as active in the tree */
         activateNode(item: TreeItem): void;
         /** Returns the treeitem corersponding to the given obj, null if not found */
-        getItemFor(_obj: any): TreeItem;
+        getItemFor(_obj: any): Nullable<TreeItem>;
         filter(filter: string): void;
         /** Builds the tree panel */
         protected abstract _getTree(): Array<TreeItem>;
@@ -984,6 +984,8 @@ declare module INSPECTOR {
         private _engine;
         private _glInfo;
         private _updateLoopHandler;
+        private _sceneInstrumentation;
+        private _engineInstrumentation;
         constructor(tabbar: TabBar, insp: Inspector);
         private _createStatLabel(content, parent);
         /** Update each properties of the stats panel */
@@ -1028,7 +1030,7 @@ declare module INSPECTOR {
          */
         switchMeshTab(mesh?: BABYLON.AbstractMesh): void;
         /** Returns the active tab */
-        getActiveTab(): Tab;
+        getActiveTab(): Nullable<Tab>;
         getActiveTabIndex(): number;
         readonly inspector: Inspector;
         /**

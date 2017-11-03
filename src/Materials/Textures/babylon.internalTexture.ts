@@ -11,9 +11,11 @@ module BABYLON {
         public static DATASOURCE_CUBE = 7;
         public static DATASOURCE_CUBERAW = 8;
         public static DATASOURCE_CUBEPREFILTERED = 9;
+        public static DATASOURCE_RAW3D = 10;
 
         public isReady: boolean;
         public isCube: boolean;
+        public is3D: boolean;
         public url: string;
         public samplingMode: number;
         public generateMipMaps: boolean;
@@ -23,14 +25,16 @@ module BABYLON {
         public onLoadedObservable = new Observable<InternalTexture>();
         public width: number;
         public height: number;
+        public depth: number;
         public baseWidth: number;
         public baseHeight: number;
+        public baseDepth: number;
         public invertY: boolean;
 
         // Private
         public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
         public _buffer: Nullable<ArrayBuffer | HTMLImageElement>;
-        public _bufferView: ArrayBufferView;
+        public _bufferView: Nullable<ArrayBufferView>;
         public _bufferViewArray: Nullable<ArrayBufferView[]>;
         public _size: number;
         public _extension: string;
@@ -44,6 +48,7 @@ module BABYLON {
         public _cachedCoordinatesMode: Nullable<number>;
         public _cachedWrapU: Nullable<number>;
         public _cachedWrapV: Nullable<number>;
+        public _cachedWrapR: Nullable<number>;
         public _cachedAnisotropicFilteringLevel: Nullable<number>;
         public _isDisabled: boolean;
         public _compression: Nullable<string>;
@@ -78,12 +83,16 @@ module BABYLON {
             this._references++;
         }
 
-        public updateSize(width: number, height: number): void {
+        public updateSize(width: int, height: int, depth: int = 1): void {
             this.width = width;
             this.height = height;
-            this._size = width * height;
+            this.depth = depth;
+
             this.baseWidth = width;
             this.baseHeight = height;
+            this.baseDepth = depth;
+
+            this._size = width * height * depth;
         }
 
         public _rebuild(): void {
@@ -111,7 +120,15 @@ module BABYLON {
                     proxy._swapAndDie(this);
 
                     this.isReady = true;
-                return;                    
+                return;
+
+                case InternalTexture.DATASOURCE_RAW3D:
+                    proxy = this._engine.createRawTexture3D(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps, 
+                        this.invertY, this.samplingMode, this._compression); 
+                    proxy._swapAndDie(this);
+
+                    this.isReady = true;
+                return;
                 
                 case InternalTexture.DATASOURCE_DYNAMIC:
                     proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode); 

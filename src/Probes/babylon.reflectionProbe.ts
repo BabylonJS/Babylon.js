@@ -50,13 +50,18 @@
                 Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
                 scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+
+                scene._forcedViewPosition = this.position;
             });
 
             this._renderTargetTexture.onAfterUnbindObservable.add(() => {
+                scene._forcedViewPosition = null;
                 scene.updateTransformMatrix(true);
             });
 
-            this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+            if (scene.activeCamera) {
+                this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+            }
         }
 
         public get samples(): number {
@@ -83,7 +88,7 @@
             return this._renderTargetTexture;
         }
 
-        public get renderList(): AbstractMesh[] {
+        public get renderList(): Nullable<AbstractMesh[]> {
             return this._renderTargetTexture.renderList;
         }
 
@@ -111,7 +116,7 @@
 
             if (this._renderTargetTexture) {
                 this._renderTargetTexture.dispose();
-                this._renderTargetTexture = null;
+                (<any>this._renderTargetTexture) = null;
             }
         }
     }    

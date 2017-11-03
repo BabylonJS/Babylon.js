@@ -14,7 +14,7 @@ module BABYLON.GLTF1 {
          * @param shaderMaterial: the shader material
          */
         public static SetMatrix(scene: Scene, source: Node, parameter: IGLTFTechniqueParameter, uniformName: string, shaderMaterial: ShaderMaterial | Effect): void {
-            var mat: Matrix = null;
+            var mat: Nullable<Matrix> = null;
 
             if (parameter.semantic === "MODEL") {
                 mat = source.getWorldMatrix();
@@ -56,11 +56,13 @@ module BABYLON.GLTF1 {
                 debugger;
             }
 
-            switch (parameter.type) {
-                case EParameterType.FLOAT_MAT2: shaderMaterial.setMatrix2x2(uniformName, Matrix.GetAsMatrix2x2(mat)); break;
-                case EParameterType.FLOAT_MAT3: shaderMaterial.setMatrix3x3(uniformName, Matrix.GetAsMatrix3x3(mat)); break;
-                case EParameterType.FLOAT_MAT4: shaderMaterial.setMatrix(uniformName, mat); break;
-                default: break;
+            if (mat) {
+                switch (parameter.type) {
+                    case EParameterType.FLOAT_MAT2: shaderMaterial.setMatrix2x2(uniformName, Matrix.GetAsMatrix2x2(mat)); break;
+                    case EParameterType.FLOAT_MAT3: shaderMaterial.setMatrix3x3(uniformName, Matrix.GetAsMatrix3x3(mat)); break;
+                    case EParameterType.FLOAT_MAT4: shaderMaterial.setMatrix(uniformName, mat); break;
+                    default: break;
+                }
             }
         }
 
@@ -250,6 +252,6 @@ module BABYLON.GLTF1 {
         }
 
         // The GLTF default material
-        private static _DefaultMaterial: ShaderMaterial = null;
+        private static _DefaultMaterial: Nullable<ShaderMaterial> = null;
     }
 }

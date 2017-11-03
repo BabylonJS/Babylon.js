@@ -84,11 +84,11 @@ declare module BABYLON {
         readonly reflectionTexture: RenderTargetTexture;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
-        getRenderList(): AbstractMesh[];
+        getRenderList(): Nullable<AbstractMesh[]>;
         readonly renderTargetsEnabled: boolean;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         private _createRenderTargets(scene, renderTargetSize);

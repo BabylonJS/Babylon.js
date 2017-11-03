@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var FurMaterialDefines = (function (_super) {
+    var FurMaterialDefines = /** @class */ (function (_super) {
         __extends(FurMaterialDefines, _super);
         function FurMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -42,7 +42,7 @@ var BABYLON;
         }
         return FurMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var FurMaterial = (function (_super) {
+    var FurMaterial = /** @class */ (function (_super) {
         __extends(FurMaterial, _super);
         function FurMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -147,7 +147,7 @@ var BABYLON;
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
             // Get correct effect      
@@ -212,7 +212,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -226,6 +226,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -248,7 +251,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             if (scene.lightsEnabled && !this.disableLighting) {
@@ -312,7 +315,10 @@ var BABYLON;
             }
             if (this._meshes) {
                 for (var i = 1; i < this._meshes.length; i++) {
-                    this._meshes[i].material.dispose(forceDisposeEffect);
+                    var mat = this._meshes[i].material;
+                    if (mat) {
+                        mat.dispose(forceDisposeEffect);
+                    }
                     this._meshes[i].dispose();
                 }
             }

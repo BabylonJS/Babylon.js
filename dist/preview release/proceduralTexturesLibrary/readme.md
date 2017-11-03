@@ -36,7 +36,7 @@ Afterwards it can be imported to the project using:
 
 ```
 import * as BABYLON from 'babylonjs';
-import from 'babylonjs-procedural-textures';
+import 'babylonjs-procedural-textures';
 ```
 
 This will extend Babylon's namespace with the procedural textures available:

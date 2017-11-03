@@ -5,7 +5,7 @@ module INSPECTOR {
         implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
 
         /** Keep track of the axis of the actual object */
-        private _axesViewer: BABYLON.Debug.AxesViewer;
+        private _axesViewer: Nullable<BABYLON.Debug.AxesViewer>;
 
         constructor(obj: BABYLON.AbstractMesh) {
             super(obj);
@@ -79,10 +79,12 @@ module INSPECTOR {
         private _drawAxis() {
             this._obj.computeWorldMatrix();
 
+            let mesh = this._obj as BABYLON.AbstractMesh;
+
             // Axis
-            var x = new BABYLON.Vector3(8 / (this._obj as BABYLON.AbstractMesh).scaling.x, 0, 0);
-            var y = new BABYLON.Vector3(0, 8 / (this._obj as BABYLON.AbstractMesh).scaling.y, 0);
-            var z = new BABYLON.Vector3(0, 0, 8 / (this._obj as BABYLON.AbstractMesh).scaling.z);
+            var x = new BABYLON.Vector3(8 / Math.abs(mesh.scaling.x), 0, 0);
+            var y = new BABYLON.Vector3(0, 8 / Math.abs(mesh.scaling.y), 0);
+            var z = new BABYLON.Vector3(0, 0, 8 / Math.abs(mesh.scaling.z));
 
             this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
             this._axesViewer.update(this._obj.position, x, y, z);

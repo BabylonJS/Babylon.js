@@ -19,6 +19,7 @@ if (BABYLON.Engine.isSupported()) {
     var currentSkybox;
     var enableDebugLayer = false;
     var currentPluginName;
+    var toExecuteAfterSceneCreation;
 
     canvas.addEventListener("contextmenu", function(evt) {
         evt.preventDefault();
@@ -104,6 +105,9 @@ if (BABYLON.Engine.isSupported()) {
         if (currentPluginName === "gltf") {
             var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("Assets/environment.dds", currentScene);
             currentSkybox = currentScene.createDefaultSkybox(hdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
+
+            // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+            currentScene.activeCamera.alpha += Math.PI;
         }
 
         // In case of error during loading, meshes will be empty and clearColor is set to red
@@ -128,6 +132,11 @@ if (BABYLON.Engine.isSupported()) {
                 currentScene.activeCamera.keysRight.push(68); // D
             }
         }
+
+        if (toExecuteAfterSceneCreation) {
+            toExecuteAfterSceneCreation();
+        }
+
     };
 
     var sceneError = function (sceneFile, babylonScene, message) {
@@ -150,11 +159,22 @@ if (BABYLON.Engine.isSupported()) {
     filesInput.onProcessFileCallback = (function (file, name, extension) {
         if (extension === "dds") {
             BABYLON.FilesInput.FilesToLoad[name] = file;
-            var newHdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("file:" + file.correctName, currentScene);
-            if (currentSkybox) {
-                currentSkybox.dispose();
+            var loadTexture = () => {
+                if (currentPluginName === "gltf") { // currentPluginName is updated only once scene is loaded
+                    var newHdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("file:" + file.correctName, currentScene);
+                    if (currentSkybox) {
+                        currentSkybox.dispose();
+                    }
+                    currentSkybox = currentScene.createDefaultSkybox(newHdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
+                }
             }
-            currentSkybox = currentScene.createDefaultSkybox(newHdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
+            if (currentScene) {
+                loadTexture();
+            }
+            else {
+                // Postpone texture loading until scene is loaded
+                toExecuteAfterSceneCreation = loadTexture;
+            }
             return false;
         }
         return true;

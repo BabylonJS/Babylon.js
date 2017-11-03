@@ -5,9 +5,9 @@ module BABYLON.GUI {
         private _alpha = 1; 
         private _alphaSet = false; 
         private _zIndex = 0;
-        public _root: Container;
+        public _root: Nullable<Container>;
         public _host: AdvancedDynamicTexture;
-        public parent: Container;
+        public parent: Nullable<Container>;
         public _currentMeasure = Measure.Empty();
         private _fontFamily = "Arial";
         private _fontStyle = "";
@@ -39,7 +39,7 @@ module BABYLON.GUI {
         private _cachedOffsetX: number;
         private _cachedOffsetY: number;
         private _isVisible = true;
-        public _linkedMesh: AbstractMesh;
+        public _linkedMesh: Nullable<AbstractMesh>;
         private _fontSet = false;
         private _dummyVector2 = Vector2.Zero();
         private _downCount = 0;
@@ -522,7 +522,7 @@ module BABYLON.GUI {
             this.notRenderable = false;
         }
 
-        public linkWithMesh(mesh: AbstractMesh): void {
+        public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
             if (!this._host || this._root !== this._host._rootContainer) {
                 Tools.Error("Cannot link a control to a mesh if the control is not at root level");
                 return;
@@ -573,7 +573,7 @@ module BABYLON.GUI {
             }
         }
 
-        public _link(root: Container, host: AdvancedDynamicTexture): void {
+        public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
             this._root = root;
             this._host = host;
         }

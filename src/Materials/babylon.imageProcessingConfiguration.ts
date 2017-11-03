@@ -13,6 +13,7 @@ module BABYLON {
         EXPOSURE: boolean;
         COLORCURVES: boolean;
         COLORGRADING: boolean;
+        COLORGRADING3D: boolean;
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
@@ -29,7 +30,7 @@ module BABYLON {
          * Color curves setup used in the effect if colorCurvesEnabled is set to true 
          */
         @serializeAsColorCurves()
-        public colorCurves = new ColorCurves();
+        public colorCurves: Nullable<ColorCurves> = new ColorCurves();
 
         @serialize()
         private _colorCurvesEnabled = false;
@@ -55,7 +56,7 @@ module BABYLON {
          * Color grading LUT texture used in the effect if colorGradingEnabled is set to true 
          */
         @serializeAsTexture()
-        public colorGradingTexture: BaseTexture;
+        public colorGradingTexture: Nullable<BaseTexture>;
 
         @serialize()
         private _colorGradingEnabled = false;
@@ -78,7 +79,7 @@ module BABYLON {
         }
 
         @serialize()
-        private _colorGradingWithGreenDepth = false;
+        private _colorGradingWithGreenDepth = true;
         /**
          * Gets wether the color grading effect is using a green depth for the 3d Texture.
          */
@@ -98,7 +99,7 @@ module BABYLON {
         }
 
         @serialize()
-        private _colorGradingBGR = false;
+        private _colorGradingBGR = true;
         /**
          * Gets wether the color grading texture contains BGR values.
          */
@@ -338,11 +339,13 @@ module BABYLON {
                 defines.CONTRAST = false;
                 defines.EXPOSURE = false;
                 defines.COLORCURVES = false;
-                defines.COLORGRADING = false;  
-                defines.IMAGEPROCESSING = false;              
+                defines.COLORGRADING = false;
+                defines.COLORGRADING3D = false;
+                defines.IMAGEPROCESSING = false;
                 defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
                 return;
             }
+
             defines.VIGNETTE = this.vignetteEnabled;
             defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
@@ -351,6 +354,11 @@ module BABYLON {
             defines.EXPOSURE = (this.exposure !== 1.0);
             defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
             defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
+            if (defines.COLORGRADING) {
+                defines.COLORGRADING3D = this.colorGradingTexture!.is3D;
+            } else {
+                defines.COLORGRADING3D = false;
+            }
             defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
@@ -371,7 +379,7 @@ module BABYLON {
          */
         public bind(effect: Effect, aspectRatio = 1) : void {
             // Color Curves
-            if (this._colorCurvesEnabled) {
+            if (this._colorCurvesEnabled && this.colorCurves) {
                 ColorCurves.Bind(this.colorCurves, effect);
             }
 
