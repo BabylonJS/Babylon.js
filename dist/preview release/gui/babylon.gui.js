@@ -3215,6 +3215,9 @@ var BABYLON;
                 _this._sourceTop = 0;
                 _this._sourceWidth = 0;
                 _this._sourceHeight = 0;
+                _this._cellWidth = 0;
+                _this._cellHeight = 0;
+                _this._cellId = -1;
                 _this.source = url;
                 return _this;
             }
@@ -3353,6 +3356,36 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Image.prototype, "cellWidth", {
+                get: function () {
+                    return this._cellWidth;
+                },
+                set: function (value) {
+                    this._cellWidth = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "cellHeight", {
+                get: function () {
+                    return this._cellHeight;
+                },
+                set: function (value) {
+                    this._cellHeight = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "cellId", {
+                get: function () {
+                    return this._cellId;
+                },
+                set: function (value) {
+                    this._cellId = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Image.prototype._getTypeName = function () {
                 return "Image";
             };
@@ -3365,10 +3398,22 @@ var BABYLON;
             };
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
-                var x = this._sourceLeft;
-                var y = this._sourceTop;
-                var width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
-                var height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+                var x, y, width, height;
+                if (this.cellId == -1) {
+                    x = this._sourceLeft;
+                    y = this._sourceTop;
+                    width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
+                    height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+                }
+                else {
+                    var rowCount = this._domImage.naturalWidth / this.cellWidth;
+                    var column = (this.cellId / rowCount) >> 0;
+                    var row = this.cellId % rowCount;
+                    x = this.cellWidth * row;
+                    y = this.cellHeight * column;
+                    width = this.cellWidth;
+                    height = this.cellHeight;
+                }
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     if (this._loaded) {
