@@ -467,6 +467,8 @@ var INSPECTOR;
                 'radius',
                 'angularSensibilityX',
                 'angularSensibilityY',
+                'angularTouchSensibilityX',
+                'angularTouchSensibilityY',
                 'target',
                 'lowerAlphaLimit',
                 'lowerBetaLimit',
