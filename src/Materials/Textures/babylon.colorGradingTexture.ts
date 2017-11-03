@@ -24,6 +24,8 @@ module BABYLON {
          */
         private static _noneEmptyLineRegex = /\S+/;
 
+        private _engine: Engine;
+
         /**
          * Instantiates a ColorGradingTexture from the following parameters.
          * 
@@ -37,13 +39,17 @@ module BABYLON {
                 return;
             }
 
+            this._engine = scene.getEngine();
             this._textureMatrix = Matrix.Identity();
             this.name = url;
             this.url = url;
             this.hasAlpha = false;
             this.isCube = false;
+            this.is3D = this._engine.webGLVersion > 1;
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this.wrapR = Texture.CLAMP_ADDRESSMODE;
+
             this.anisotropicFilteringLevel = 1;
 
             this._texture = this._getFromCache(url, true);
@@ -69,12 +75,20 @@ module BABYLON {
          * Occurs when the file being loaded is a .3dl LUT file.
          */
         private load3dlTexture() {
-            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+            var engine = this._engine;
+            var texture: InternalTexture;
+            if (engine.webGLVersion === 1) {
+                texture = engine.createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+            } 
+            else {
+                texture = engine.createRawTexture3D(null, 1, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+            }
+
             this._texture = texture;
 
             var callback = (text: string) => {
-                var data: Uint8Array;
-                var tempData: Float32Array;
+                var data: Nullable<Uint8Array> = null;
+                var tempData: Nullable<Float32Array> = null;
 
                 var line: string;
                 var lines = text.split('\n');
@@ -110,9 +124,11 @@ module BABYLON {
 
                         var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 4;
 
-                        tempData[pixelStorageIndex + 0] = r;
-                        tempData[pixelStorageIndex + 1] = g;
-                        tempData[pixelStorageIndex + 2] = b;
+                        if (tempData) {
+                            tempData[pixelStorageIndex + 0] = r;
+                            tempData[pixelStorageIndex + 1] = g;
+                            tempData[pixelStorageIndex + 2] = b;
+                        }
 
                         pixelIndexSlice++;
                         if (pixelIndexSlice % size == 0) {
@@ -126,18 +142,26 @@ module BABYLON {
                     }
                 }
 
-                for (let i = 0; i < tempData.length; i++) {
-                    if (i > 0 && (i+1) % 4 === 0) {
-                        data[i] = 255;
-                    }
-                    else {
-                        var value = tempData[i];
-                        data[i] = (value / maxColor * 255);
+                if (tempData && data) {
+                    for (let i = 0; i < tempData.length; i++) {
+                        if (i > 0 && (i+1) % 4 === 0) {
+                            data[i] = 255;
+                        }
+                        else {
+                            var value = tempData[i];
+                            data[i] = (value / maxColor * 255);
+                        }
                     }
                 }
 
-                texture.updateSize(size * size, size);
-                this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
+                if (texture.is3D) {
+                    texture.updateSize(size, size, size);
+                    engine.updateRawTexture3D(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
+                }
+                else {
+                    texture.updateSize(size * size, size);
+                    engine.updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
+                }
             }
 
             Tools.LoadFile(this.url, callback);
@@ -157,7 +181,7 @@ module BABYLON {
          * Clones the color gradind texture.
          */
         public clone(): ColorGradingTexture {
-            var newTexture = new ColorGradingTexture(this.url, this.getScene());
+            var newTexture = new ColorGradingTexture(this.url, <Scene>this.getScene());
 
             // Base texture
             newTexture.level = this.level;
@@ -188,7 +212,7 @@ module BABYLON {
          * @param rootUrl The root url of the data assets to load
          * @return A color gradind texture
          */
-        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): ColorGradingTexture {
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<ColorGradingTexture> {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
                 texture = new BABYLON.ColorGradingTexture(parsedTexture.name, scene);

@@ -6,18 +6,18 @@ module BABYLON.GLTF2 {
 
         public abstract get name(): string;
 
-        protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean { return false; }
+        protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: Nullable<IGLTFNode>): boolean { return false; }
 
         protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean { return false; }
 
         protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean { return false; }
 
-        protected _loadExtension<T>(property: IGLTFProperty, action: (extension: T, onComplete: () => void) => void): boolean {
+        protected _loadExtension<T>(context: string, property: IGLTFProperty, action: (context: string, extension: T, onComplete: () => void) => void): boolean {
             if (!property.extensions) {
                 return false;
             }
 
-            var extension = property.extensions[this.name] as T;
+            const extension = property.extensions[this.name] as T;
             if (!extension) {
                 return false;
             }
@@ -25,9 +25,9 @@ module BABYLON.GLTF2 {
             // Clear out the extension before executing the action to avoid recursing into the same property.
             property.extensions[this.name] = undefined;
 
-            action(extension, () => {
+            action(context + "extensions/" + this.name, extension, () => {
                 // Restore the extension after completing the action.
-                property.extensions[this.name] = extension;
+                property.extensions![this.name] = extension;
             });
 
             return true;
@@ -39,7 +39,7 @@ module BABYLON.GLTF2 {
 
         public static _Extensions: GLTFLoaderExtension[] = [];
 
-        public static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean {
+        public static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: Nullable<IGLTFNode>): boolean {
             return this._ApplyExtensions(extension => extension._traverseNode(loader, context, node, action, parentNode));
         }
 
@@ -52,13 +52,12 @@ module BABYLON.GLTF2 {
         }
 
         private static _ApplyExtensions(action: (extension: GLTFLoaderExtension) => boolean) {
-            var extensions = GLTFLoaderExtension._Extensions;
+            const extensions = GLTFLoaderExtension._Extensions;
             if (!extensions) {
                 return false;
             }
 
-            for (var i = 0; i < extensions.length; i++) {
-                var extension = extensions[i];
+            for (const extension of extensions) {
                 if (extension.enabled && action(extension)) {
                     return true;
                 }

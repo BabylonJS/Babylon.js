@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.targetCamera.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class FollowCamera extends TargetCamera {
         @serialize()
         public radius: number = 12;
@@ -99,7 +97,7 @@ module BABYLON {
             this._cartesianCoordinates.y = this.radius * Math.sin(this.beta);
             this._cartesianCoordinates.z = this.radius * Math.sin(this.alpha) * Math.cos(this.beta);
 
-            var targetPosition = this.target.getAbsolutePosition();            
+            var targetPosition = this.target.getAbsolutePosition();
             this.position = targetPosition.add(this._cartesianCoordinates);
             this.setTarget(targetPosition);
         }

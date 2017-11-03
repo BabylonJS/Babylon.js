@@ -61,6 +61,7 @@
             private _normals: number[] = new Array<number>();
             private _colors: number[] = new Array<number>();
             private _uvs: number[] = new Array<number>();
+            private _indices32: IndicesArray;
             private _positions32: Float32Array;
             private _normals32: Float32Array;           // updated normals for the VBO
             private _fixedNormal32: Float32Array;       // initial normal references
@@ -73,7 +74,7 @@
             private _alwaysVisible: boolean = false;
             private _depthSort: boolean = false;
             private _shapeCounter: number = 0;
-            private _copy: SolidParticle = new SolidParticle(null, null, null, null, null, null, null);
+            private _copy: SolidParticle = new SolidParticle(0, 0, 0, null, 0, 0, this);
             private _shape: Vector3[];
             private _shapeUV: number[];
             private _color: Color4 = new Color4(0, 0, 0, 0);
@@ -119,7 +120,6 @@
                 function(p1, p2) {
                     return (p2.sqDistance - p1.sqDistance);
                 };
-            private _depthSortedIndices: IndicesArray;
             private _needs32Bits: boolean = false;
             public _bSphereOnly: boolean = false;
             public _bSphereRadiusFactor: number = 1.0;
@@ -141,10 +141,10 @@
                 this.name = name;
                 this._scene = scene || Engine.LastCreatedScene;
                 this._camera = <TargetCamera>scene.activeCamera;
-                this._pickable = options ? options.isPickable : false;
-                this._depthSort = options ? options.enableDepthSort : false;
-                this._particlesIntersect = options ? options.particleIntersection : false;
-                this._bSphereOnly= options ? options.boundingSphereOnly : false;
+                this._pickable = options ? <boolean>options.isPickable : false;
+                this._depthSort = options ? <boolean>options.enableDepthSort : false;
+                this._particlesIntersect = options ? <boolean>options.particleIntersection : false;
+                this._bSphereOnly= options ? <boolean>options.boundingSphereOnly : false;
                 this._bSphereRadiusFactor = (options && options.bSphereRadiusFactor) ? options.bSphereRadiusFactor : 1.0;
                 if (options && options.updatable) {
                     this._updatable = options.updatable;
@@ -169,6 +169,7 @@
                     this.addShape(triangle, 1);
                     triangle.dispose();
                 }
+                this._indices32 = (this._needs32Bits) ? new Uint32Array(this._indices) : new Uint16Array(this._indices);
                 this._positions32 = new Float32Array(this._positions);
                 this._uvs32 = new Float32Array(this._uvs);
                 this._colors32 = new Float32Array(this._colors);
@@ -180,14 +181,9 @@
                 if (this._mustUnrotateFixedNormals) {  // the particles could be created already rotated in the mesh with a positionFunction
                     this._unrotateFixedNormals();
                 }
+
                 var vertexData = new VertexData();
-                if (this._depthSort) {
-                    this._depthSortedIndices = (this._needs32Bits) ? new Uint32Array(this._indices) : new Uint16Array(this._indices);
-                    vertexData.indices = this._depthSortedIndices;
-                }
-                else {
-                    vertexData.indices = this._indices;
-                }
+                vertexData.indices = this._indices32;
                 vertexData.set(this._positions32, VertexBuffer.PositionKind);
                 vertexData.set(this._normals32, VertexBuffer.NormalKind);
                 if (this._uvs32) {
@@ -202,10 +198,13 @@
                 this.mesh.isPickable = this._pickable;
     
                 // free memory
-                this._positions = null;
-                this._normals = null;
-                this._uvs = null;
-                this._colors = null;
+                if (!this._depthSort) {
+                    (<any>this._indices) = null;
+                }
+                (<any>this._positions) = null;
+                (<any>this._normals) = null;
+                (<any>this._uvs) = null;
+                (<any>this._colors) = null;
     
                 if (!this._updatable) {
                     this.particles.length = 0;
@@ -225,13 +224,13 @@
             */
             public digest(mesh: Mesh, options?: { facetNb?: number; number?: number; delta?: number }): SolidParticleSystem {
                 var size: number = (options && options.facetNb) || 1;
-                var number: number = (options && options.number);
+                var number: number = (options && options.number) || 0;
                 var delta: number = (options && options.delta) || 0;
-                var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
-                var meshInd = mesh.getIndices();
-                var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
-                var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
-                var meshNor = mesh.getVerticesData(VertexBuffer.NormalKind);
+                var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
+                var meshInd = <IndicesArray>mesh.getIndices();
+                var meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
+                var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+                var meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
     
                 var f: number = 0;                              // facet counter
                 var totalFacets: number = meshInd.length / 3;   // a facet is a triangle, so 3 indices
@@ -400,6 +399,10 @@
                     this._vertex.x *= this._copy.scaling.x;
                     this._vertex.y *= this._copy.scaling.y;
                     this._vertex.z *= this._copy.scaling.z;
+
+                    this._vertex.x += this._copy.pivot.x;
+                    this._vertex.y += this._copy.pivot.y;
+                    this._vertex.z += this._copy.pivot.z;
     
                     Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
                     positions.push(this._copy.position.x + this._rotated.x, this._copy.position.y + this._rotated.y, this._copy.position.z + this._rotated.z);
@@ -477,7 +480,7 @@
             }
     
             // adds a new particle object in the particles array
-            private _addParticle(idx: number, idxpos: number, idxind: number, model: ModelShape, shapeId: number, idxInShape: number, bInfo?: BoundingInfo): SolidParticle {
+            private _addParticle(idx: number, idxpos: number, idxind: number, model: ModelShape, shapeId: number, idxInShape: number, bInfo: Nullable<BoundingInfo> = null): SolidParticle {
                 var sp = new SolidParticle(idx, idxpos, idxind, model, shapeId, idxInShape, this, bInfo);
                 this.particles.push(sp);
                 return sp;
@@ -492,11 +495,11 @@
             * `vertexFunction` is an optional javascript function to called for each vertex of each particle on SPS creation
             */
             public addShape(mesh: Mesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any }): number {
-                var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
-                var meshInd = mesh.getIndices();
-                var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
-                var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
-                var meshNor = mesh.getVerticesData(VertexBuffer.NormalKind);
+                var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
+                var meshInd = <IndicesArray>mesh.getIndices();
+                var meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
+                var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+                var meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
                 var bbInfo;
                 if (this._particlesIntersect) {
                     bbInfo = mesh.getBoundingInfo();
@@ -522,10 +525,10 @@
                         sp = this._addParticle(idx, currentPos, currentInd, modelShape, this._shapeCounter, i, bbInfo);
                         sp.position.copyFrom(currentCopy.position);
                         sp.rotation.copyFrom(currentCopy.rotation);
-                        if (currentCopy.rotationQuaternion) {
+                        if (currentCopy.rotationQuaternion && sp.rotationQuaternion) {
                             sp.rotationQuaternion.copyFrom(currentCopy.rotationQuaternion);
                         }
-                        if (currentCopy.color) {
+                        if (currentCopy.color && sp.color) {
                             sp.color.copyFrom(currentCopy.color);
                         }
                         sp.scaling.copyFrom(currentCopy.scaling);
@@ -569,6 +572,10 @@
                     this._vertex.x *= this._copy.scaling.x;
                     this._vertex.y *= this._copy.scaling.y;
                     this._vertex.z *= this._copy.scaling.z;
+
+                    this._vertex.x += this._copy.pivot.x;
+                    this._vertex.y += this._copy.pivot.y;
+                    this._vertex.z += this._copy.pivot.z;
     
                     Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
     
@@ -674,8 +681,10 @@
                         Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
                     }
                     else {      // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
-                        this._minimum.copyFrom(this.mesh._boundingInfo.boundingBox.minimum);
-                        this._maximum.copyFrom(this.mesh._boundingInfo.boundingBox.maximum);
+                        if (this.mesh._boundingInfo) {
+                            this._minimum.copyFrom(this.mesh._boundingInfo.boundingBox.minimum);
+                            this._maximum.copyFrom(this.mesh._boundingInfo.boundingBox.maximum);
+                        }
                     }
                 }
     
@@ -691,7 +700,15 @@
     
                     // call to custom user function to update the particle properties
                     this.updateParticle(this._particle);
-    
+
+                    // camera-particle distance for depth sorting
+                    if (this._depthSort && this._depthSortParticles) {
+                        var dsp = this.depthSortedParticles[p];
+                        dsp.ind = this._particle._ind;
+                        dsp.indicesLength = this._particle._model._indicesLength;
+                        dsp.sqDistance = Vector3.DistanceSquared(this._particle.position, this._camInvertedPosition);
+                    }
+
                     // skip the computations for inactive or already invisible particles
                     if (!this._particle.alive || (this._particle._stillInvisible && !this._particle.isVisible)) {
                         // increment indexes for the next particle
@@ -721,15 +738,7 @@
                             }
                             this._quaternionToRotationMatrix();
                         }
-    
-                        // camera-particle distance for depth sorting
-                        if (this._depthSort && this._depthSortParticles) {
-                            var dsp = this.depthSortedParticles[p];
-                            dsp.ind = this._particle._ind;
-                            dsp.indicesLength = this._particle._model._indicesLength;
-                            dsp.sqDistance = Vector3.DistanceSquared(this._particle.position, this._camInvertedPosition);
-                        }
-    
+       
                         // particle vertex loop
                         for (pt = 0; pt < this._shape.length; pt++) {
                             idx = index + pt * 3;
@@ -748,6 +757,10 @@
                             this._vertex.x *= this._particle.scaling.x;
                             this._vertex.y *= this._particle.scaling.y;
                             this._vertex.z *= this._particle.scaling.z;
+
+                            this._vertex.x += this._particle.pivot.x;
+                            this._vertex.y += this._particle.pivot.y;
+                            this._vertex.z += this._particle.pivot.z;
     
                             this._rotated.x = this._vertex.x * this._rotMatrix.m[0] + this._vertex.y * this._rotMatrix.m[4] + this._vertex.z * this._rotMatrix.m[8];
                             this._rotated.y = this._vertex.x * this._rotMatrix.m[1] + this._vertex.y * this._rotMatrix.m[5] + this._vertex.z * this._rotMatrix.m[9];
@@ -793,7 +806,7 @@
                                 this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;                          
                             }
     
-                            if (this._computeParticleColor) {
+                            if (this._computeParticleColor && this._particle.color) {
                                 this._colors32[colidx] = this._particle.color.r;
                                 this._colors32[colidx + 1] = this._particle.color.g;
                                 this._colors32[colidx + 2] = this._particle.color.b;
@@ -820,7 +833,7 @@
                             this._normals32[idx] = 0.0;
                             this._normals32[idx + 1] = 0.0;
                             this._normals32[idx + 2] = 0.0;
-                            if (this._computeParticleColor) {
+                            if (this._computeParticleColor && this._particle.color) {
                                 this._colors32[colidx] = this._particle.color.r;
                                 this._colors32[colidx + 1] = this._particle.color.g;
                                 this._colors32[colidx + 2] = this._particle.color.b;
@@ -906,11 +919,11 @@
                             lind = this.depthSortedParticles[sorted].indicesLength;
                             sind = this.depthSortedParticles[sorted].ind;
                             for (var i = 0; i < lind; i++) {
-                                this._depthSortedIndices[sid] = this._indices[sind + i];
+                                this._indices32[sid] = this._indices[sind + i];
                                 sid++;
                             }
                         }
-                        this.mesh.updateIndices(this._depthSortedIndices);
+                        this.mesh.updateIndices(this._indices32);
                     }
                 }
                 if (this._computeBoundingBox) {
@@ -964,17 +977,18 @@
                 this.mesh.dispose();
                 this.vars = null;
                 // drop references to internal big arrays for the GC
-                this._positions = null;
-                this._indices = null;
-                this._normals = null;
-                this._uvs = null;
-                this._colors = null;
-                this._positions32 = null;
-                this._normals32 = null;
-                this._fixedNormal32 = null;
-                this._uvs32 = null;
-                this._colors32 = null;
-                this.pickedParticles = null;
+                (<any>this._positions) = null;
+                (<any>this._indices) = null;
+                (<any>this._normals) = null;
+                (<any>this._uvs) = null;
+                (<any>this._colors) = null;
+                (<any>this._indices32) = null;
+                (<any>this._positions32) = null;
+                (<any>this._normals32) = null;
+                (<any>this._fixedNormal32) = null;
+                (<any>this._uvs32) = null;
+                (<any>this._colors32) = null;
+                (<any>this.pickedParticles) = null;
             }
     
             /**
@@ -1021,7 +1035,12 @@
             */
             public set isVisibilityBoxLocked(val: boolean) {
                 this._isVisibilityBoxLocked = val;
-                this.mesh.getBoundingInfo().isLocked = val;
+
+                let boundingInfo = this.mesh.getBoundingInfo();
+
+                if (boundingInfo) {
+                    boundingInfo.isLocked = val;
+                }
             }
     
             public get isVisibilityBoxLocked(): boolean {

@@ -9,27 +9,27 @@ module BABYLON.GUI {
 
     export class AdvancedDynamicTexture extends DynamicTexture {
         private _isDirty = false;
-        private _renderObserver: Observer<Camera>;
-        private _resizeObserver: Observer<Engine>;
-        private _preKeyboardObserver: Observer<KeyboardInfoPre>;
-        private _pointerMoveObserver: Observer<PointerInfoPre>;
-        private _pointerObserver: Observer<PointerInfo>;
-        private _canvasPointerOutObserver: Observer<Engine>;
+        private _renderObserver: Nullable<Observer<Camera>>;
+        private _resizeObserver: Nullable<Observer<Engine>>;
+        private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
+        private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
+        private _pointerObserver: Nullable<Observer<PointerInfo>>;
+        private _canvasPointerOutObserver: Nullable<Observer<Engine>>;
         private _background: string;
         public _rootContainer = new Container("root");
         public _lastPickedControl: Control;
-        public _lastControlOver: Control;
-        public _lastControlDown: Control;
-        public _capturingControl: Control;
+        public _lastControlOver: Nullable<Control>;
+        public _lastControlDown: Nullable<Control>;
+        public _capturingControl: Nullable<Control>;
         public _shouldBlockPointer: boolean;
-        public _layerToDispose: Layer;
+        public _layerToDispose: Nullable<Layer>;
         public _linkedControls = new Array<Control>();
         private _isFullscreen = false;
         private _fullscreenViewport = new Viewport(0, 0, 1, 1);
         private _idealWidth = 0;
         private _idealHeight = 0;
         private _renderAtIdealSize = false;
-        private _focusedControl: IFocusableControl;
+        private _focusedControl: Nullable<IFocusableControl>;
         private _blockNextFocusCheck = false;
 
         public get background(): string {
@@ -86,7 +86,7 @@ module BABYLON.GUI {
             this._onResize();
         }    
 
-        public get layer(): Layer {
+        public get layer(): Nullable<Layer> {
             return this._layerToDispose;
         }   
 
@@ -94,11 +94,11 @@ module BABYLON.GUI {
             return this._rootContainer;
         }
 
-        public get focusedControl(): IFocusableControl {
+        public get focusedControl(): Nullable<IFocusableControl> {
             return this._focusedControl;
         }
 
-        public set focusedControl(control: IFocusableControl) {
+        public set focusedControl(control: Nullable<IFocusableControl>) {
             if (this._focusedControl == control) {
                 return;
             }
@@ -114,11 +114,17 @@ module BABYLON.GUI {
             this._focusedControl = control;
         }
        
-        constructor(name: string, width = 0, height = 0, scene: Scene, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
+        constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
 
-            this._renderObserver = this.getScene().onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
-            this._preKeyboardObserver = this.getScene().onPreKeyboardObservable.add(info => {
+            scene = this.getScene();
+
+            if (!scene || !this._texture) {
+                return;
+            }
+
+            this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
+            this._preKeyboardObserver = scene.onPreKeyboardObservable.add(info => {
                 if (!this._focusedControl) {
                     return;
                 }
@@ -135,7 +141,7 @@ module BABYLON.GUI {
             this.hasAlpha = true;
 
             if (!width || !height) {
-                this._resizeObserver = this.getScene().getEngine().onResizeObservable.add(() => this._onResize());
+                this._resizeObserver = scene.getEngine().onResizeObservable.add(() => this._onResize());
                 this._onResize();
             }
 
@@ -171,23 +177,29 @@ module BABYLON.GUI {
             return this;
         }
 
-        public dispose() {
-            this.getScene().onBeforeCameraRenderObservable.remove(this._renderObserver);
+        public dispose(): void {
+            let scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+
+            scene.onBeforeCameraRenderObservable.remove(this._renderObserver);
 
             if (this._resizeObserver) {
-                this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
+                scene.getEngine().onResizeObservable.remove(this._resizeObserver);
             }
 
             if (this._pointerMoveObserver) {
-                this.getScene().onPrePointerObservable.remove(this._pointerMoveObserver);
+                scene.onPrePointerObservable.remove(this._pointerMoveObserver);
             }
 
             if (this._pointerObserver) {
-                this.getScene().onPointerObservable.remove(this._pointerObserver);
+                scene.onPointerObservable.remove(this._pointerObserver);
             }
 
             if (this._canvasPointerOutObserver) {
-                this.getScene().getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
+                scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
             }
 
             if (this._layerToDispose) {
@@ -202,8 +214,14 @@ module BABYLON.GUI {
         }
 
         private _onResize(): void {
+            let scene = this.getScene();
+            
+            if (!scene) {
+                return;
+            }            
+
             // Check size
-            var engine = this.getScene().getEngine();
+            var engine = scene.getEngine();
             var textureSize = this.getSize();
             var renderWidth = engine.getRenderWidth();
             var renderHeight = engine.getRenderHeight();
@@ -243,6 +261,11 @@ module BABYLON.GUI {
 
             if (this._isFullscreen && this._linkedControls.length) {
                 var scene = this.getScene();
+
+                if (!scene) {
+                    return;
+                }
+
                 var globalViewport = this._getGlobalViewport(scene);
 
                 for (var control of this._linkedControls) {
@@ -260,7 +283,7 @@ module BABYLON.GUI {
                         continue;
                     }
                     
-                    var position = mesh.getBoundingInfo().boundingSphere.center;
+                    var position = (<BoundingInfo>mesh.getBoundingInfo()).boundingSphere.center;
                     var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
 
                     if (projectedPosition.z < 0 || projectedPosition.z > 1) {
@@ -305,6 +328,11 @@ module BABYLON.GUI {
 
         private _doPicking(x: number, y: number, type: number, buttonIndex: number): void {
             var scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+
             var engine = scene.getEngine();
             var textureSize = this.getSize();
 
@@ -334,6 +362,10 @@ module BABYLON.GUI {
 
         public attach(): void {
             var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
+
             this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
                 if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE 
                     && pi.type !== BABYLON.PointerEventTypes.POINTERUP
@@ -341,7 +373,15 @@ module BABYLON.GUI {
                     return;
                 }
 
+                if (!scene) {
+                    return;
+                }
+
                 let camera = scene.cameraToUseForPointers || scene.activeCamera;
+
+                if (!camera) {
+                    return;
+                }
                 let engine = scene.getEngine();
                 let viewport = camera.viewport;
                 let x = (scene.pointerX / engine.getHardwareScalingLevel() - viewport.x * engine.getRenderWidth()) / viewport.width;
@@ -358,6 +398,9 @@ module BABYLON.GUI {
 
         public attachToMesh(mesh: AbstractMesh, supportPointerMove = true): void {
             var scene = this.getScene();
+            if (!scene) {
+                return;
+            }            
             this._pointerObserver = scene.onPointerObservable.add((pi, state) => {
                 if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE 
                     && pi.type !== BABYLON.PointerEventTypes.POINTERUP
@@ -365,10 +408,13 @@ module BABYLON.GUI {
                     return;
                 }
 
-                if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
+                if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                     var uv = pi.pickInfo.getTextureCoordinates();
-                    var size = this.getSize();
-                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pi.event.button);
+
+                    if (uv) {
+                        let size = this.getSize();
+                        this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pi.event.button);
+                    }
                 } else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
                     if (this._lastControlDown) {
                         this._lastControlDown.forcePointerUp();
@@ -445,7 +491,7 @@ module BABYLON.GUI {
             return result;
         }
 
-        public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Scene = null): AdvancedDynamicTexture {
+        public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(name, 0, 0, scene);
 
             // Display

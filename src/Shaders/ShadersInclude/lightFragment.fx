@@ -1,5 +1,5 @@
 ﻿#ifdef LIGHT{X}
-    #if defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
+    #if defined(SHADOWONLY) || (defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X}))
         //No light calculation
     #else
 		#ifdef PBR
@@ -54,26 +54,36 @@
 				#endif
 			#endif
 		#endif
+
+		#ifdef SHADOWONLY
+			#ifndef SHADOWINUSE
+				#define SHADOWINUSE
+			#endif
+			globalShadow += shadow;
+			shadowLightCount += 1.0;
+		#endif
 	#else
 		shadow = 1.;
 	#endif
 
-	#ifdef CUSTOMUSERLIGHTING
-		diffuseBase += computeCustomDiffuseLighting(info, diffuseBase, shadow);
-		#ifdef SPECULARTERM
-			specularBase += computeCustomSpecularLighting(info, specularBase, shadow);
+	#ifndef SHADOWONLY
+		#ifdef CUSTOMUSERLIGHTING
+			diffuseBase += computeCustomDiffuseLighting(info, diffuseBase, shadow);
+			#ifdef SPECULARTERM
+				specularBase += computeCustomSpecularLighting(info, specularBase, shadow);
+			#endif
+		#elif defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X})
+			diffuseBase += lightmapColor * shadow;
+			#ifdef SPECULARTERM
+				#ifndef LIGHTMAPNOSPECULAR{X}
+					specularBase += info.specular * shadow * lightmapColor;
+				#endif
+			#endif
+		#else
+			diffuseBase += info.diffuse * shadow;
+			#ifdef SPECULARTERM
+				specularBase += info.specular * shadow;
+			#endif
 		#endif
-    #elif defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X})
-	    diffuseBase += lightmapColor * shadow;
-	    #ifdef SPECULARTERM
-            #ifndef LIGHTMAPNOSPECULAR{X}
-                specularBase += info.specular * shadow * lightmapColor;
-            #endif
-        #endif
-    #else
-	    diffuseBase += info.diffuse * shadow;
-	    #ifdef SPECULARTERM
-		    specularBase += info.specular * shadow;
-	    #endif
 	#endif
 #endif

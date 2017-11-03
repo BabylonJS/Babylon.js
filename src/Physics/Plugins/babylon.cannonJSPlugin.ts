@@ -36,8 +36,7 @@
         }
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
-            // Delta is in seconds, should be provided in milliseconds
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -113,9 +112,14 @@
 
         private _processChildMeshes(mainImpostor: PhysicsImpostor) {
             var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes(true) : [];
-            let currentRotation: Quaternion = mainImpostor.object.rotationQuaternion;
+            let currentRotation: Nullable<Quaternion> = mainImpostor.object.rotationQuaternion;
             if (meshChildren.length) {
                 var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
+
+                    if (!currentRotation || ! mesh.rotationQuaternion) {
+                        return;
+                    }
+
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
@@ -276,18 +280,17 @@
         }
 
         private _createHeightmap(object: IPhysicsEnabledObject, pointDepth?: number) {
-            var pos = object.getVerticesData(VertexBuffer.PositionKind);
+            var pos = <FloatArray>(object.getVerticesData(VertexBuffer.PositionKind));
             var matrix = new Array<Array<any>>();
 
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
-
-            var dim = Math.min(object.getBoundingInfo().boundingBox.extendSizeWorld.x, object.getBoundingInfo().boundingBox.extendSizeWorld.z);
-
+            let boundingInfo = <BoundingInfo>(object.getBoundingInfo());
+            var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.z);
+            var minY = boundingInfo.boundingBox.extendSizeWorld.y;
+            
             var elementSize = dim * 2 / arraySize;
-
-            var minY = object.getBoundingInfo().boundingBox.extendSizeWorld.y;
 
             for (var i = 0; i < pos.length; i = i + 3) {
                 var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
@@ -350,6 +353,11 @@
             this._tmpDeltaPosition.copyFrom(object.position.subtract(center));
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
+
+            if (!quaternion) {
+                return;
+            }
+
             //is shape is a plane or a heightmap, it must be rotated 90 degs in the X axis.
             if (impostor.type === PhysicsImpostor.PlaneImpostor || impostor.type === PhysicsImpostor.HeightmapImpostor || impostor.type === PhysicsImpostor.CylinderImpostor) {
                 //-90 DEG in X, precalculated
@@ -362,6 +370,7 @@
             //If it is a heightfield, if should be centered.
             if (impostor.type === PhysicsImpostor.HeightmapImpostor) {
                 var mesh = <AbstractMesh>(<any>object);
+                let boundingInfo = <BoundingInfo>mesh.getBoundingInfo();
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
                 mesh.rotationQuaternion = this._tmpUnityRotation;
@@ -376,17 +385,17 @@
                 mesh.rotationQuaternion = rotationQuaternion;
 
                 //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
-                var p = Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSizeWorld.x, 0, -mesh.getBoundingInfo().boundingBox.extendSizeWorld.z);
+                var p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
                 mesh.setPivotMatrix(p);
                 mesh.computeWorldMatrix(true);
 
                 //calculate the translation
-                var translation = mesh.getBoundingInfo().boundingBox.centerWorld.subtract(center).subtract(mesh.position).negate();
+                var translation = boundingInfo.boundingBox.centerWorld.subtract(center).subtract(mesh.position).negate();
 
-                this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSizeWorld.y, translation.z);
+                this._tmpPosition.copyFromFloats(translation.x, translation.y - boundingInfo.boundingBox.extendSizeWorld.y, translation.z);
                 //add it inverted to the delta
-                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.centerWorld.subtract(c));
-                this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSizeWorld.y;
+                this._tmpDeltaPosition.copyFrom(boundingInfo.boundingBox.centerWorld.subtract(c));
+                this._tmpDeltaPosition.y += boundingInfo.boundingBox.extendSizeWorld.y;
 
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
@@ -403,7 +412,9 @@
 
         public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
             impostor.object.position.copyFrom(impostor.physicsBody.position);
-            impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+            if (impostor.object.rotationQuaternion) {
+                impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+            }
         }
 
         public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
@@ -423,14 +434,18 @@
             impostor.physicsBody.angularVelocity.copy(velocity);
         }
 
-        public getLinearVelocity(impostor: PhysicsImpostor): Vector3 {
+        public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
             var v = impostor.physicsBody.velocity;
-            if (!v) return null;
+            if (!v) {
+                return null;
+            }
             return new Vector3(v.x, v.y, v.z)
         }
-        public getAngularVelocity(impostor: PhysicsImpostor): Vector3 {
+        public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
             var v = impostor.physicsBody.angularVelocity;
-            if (!v) return null;
+            if (!v) {
+                return null;
+            }
             return new Vector3(v.x, v.y, v.z)
         }
 
@@ -505,10 +520,12 @@
             mesh.position.y = body.position.y;
             mesh.position.z = body.position.z;
 
-            mesh.rotationQuaternion.x = body.quaternion.x;
-            mesh.rotationQuaternion.y = body.quaternion.y;
-            mesh.rotationQuaternion.z = body.quaternion.z;
-            mesh.rotationQuaternion.w = body.quaternion.w;
+            if (mesh.rotationQuaternion) {
+                mesh.rotationQuaternion.x = body.quaternion.x;
+                mesh.rotationQuaternion.y = body.quaternion.y;
+                mesh.rotationQuaternion.z = body.quaternion.z;
+                mesh.rotationQuaternion.w = body.quaternion.w;
+            }
         }
 
         public getRadius(impostor: PhysicsImpostor): number {

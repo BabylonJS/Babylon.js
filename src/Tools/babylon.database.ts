@@ -11,7 +11,7 @@ module BABYLON {
         private isSupported: boolean;
 
         // Handling various flavors of prefixed version of IndexedDB
-        private idbFactory = <IDBFactory> (window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
+        private idbFactory = <IDBFactory>(window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
 
         static IsUASupportingBlobStorage = true;
         static IDBStorageEnabled = true;
@@ -68,7 +68,7 @@ module BABYLON {
 
             var timeStampUsed = false;
             var manifestURL = this.currentSceneUrl + ".manifest";
-            
+
             var xhr: XMLHttpRequest = new XMLHttpRequest();
 
             if (navigator.onLine) {
@@ -78,7 +78,7 @@ module BABYLON {
             }
             xhr.open("GET", manifestURL, true);
 
-            xhr.addEventListener("load",() => {
+            xhr.addEventListener("load", () => {
                 if (xhr.status === 200 || Tools.ValidateXHRData(xhr, 1)) {
                     try {
                         var manifestFile = JSON.parse(xhr.response);
@@ -124,12 +124,11 @@ module BABYLON {
         }
 
         public openAsync(successCallback: () => void, errorCallback: () => void) {
-            function handleError() {
-                that.isSupported = false;
+            let handleError = () => {
+                this.isSupported = false;
                 if (errorCallback) errorCallback();
             }
 
-            var that = this;
             if (!this.idbFactory || !(this._enableSceneOffline || this._enableTexturesOffline)) {
                 // Your browser doesn't support IndexedDB
                 this.isSupported = false;
@@ -278,7 +277,7 @@ module BABYLON {
                     xhr.open("GET", url, true);
                     xhr.responseType = "blob";
 
-                    xhr.addEventListener("load",() => {
+                    xhr.addEventListener("load", () => {
                         if (xhr.status === 200 && this.db) {
                             // Blob as response (XHR2)
                             blob = xhr.response;
@@ -289,7 +288,8 @@ module BABYLON {
                             transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    var error = (<any>event.srcElement)['error'];
+                                    let srcElement = <any>(event.srcElement || event.target);
+                                    var error = srcElement.error;
                                     if (error && error.name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
@@ -533,7 +533,7 @@ module BABYLON {
                     xhr.onprogress = progressCallback;
                 }
 
-                xhr.addEventListener("load",() => {
+                xhr.addEventListener("load", () => {
                     if (xhr.status === 200 || Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
                         // Blob as response (XHR2)
                         //fileData = xhr.responseText;

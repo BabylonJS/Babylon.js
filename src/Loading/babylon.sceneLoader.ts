@@ -138,9 +138,9 @@
             return null;
         }
 
-        private static _loadData(rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any) => void, onProgress: (event: ProgressEvent) => void, onError: (message: Nullable<string>, exception?: any) => void): void {
+        private static _loadData(rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any) => void, onProgress: (event: ProgressEvent) => void, onError: (message: Nullable<string>, exception?: any) => void, pluginExtension?: string): void {
             var directLoad = SceneLoader._getDirectLoad(sceneFilename);
-            var registeredPlugin = directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename);
+            var registeredPlugin = pluginExtension ? SceneLoader._getPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename));
             var plugin = registeredPlugin.plugin;
             var useArrayBuffer = registeredPlugin.isBinary;
             var database: Database;
@@ -187,7 +187,7 @@
             }
             // Loading file from disk via input file or drag'n'drop
             else {
-                var fileOrString = <any> sceneFilename;
+                var fileOrString = <any>sceneFilename;
 
                 if (fileOrString.name) { // File
                     Tools.ReadFile(fileOrString, dataCallback, onProgress, useArrayBuffer);
@@ -234,7 +234,7 @@
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void> = null, onProgress: Nullable<(event: ProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
+        public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void> = null, onProgress: Nullable<(event: ProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension?: string): void {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
                 return;
@@ -297,7 +297,7 @@
                         }
                     }, progressHandler, errorHandler);
                 }
-            }, progressHandler, errorHandler);
+            }, progressHandler, errorHandler, pluginExtension);
         }
 
         /**
@@ -309,8 +309,8 @@
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        public static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void {
-            SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError);
+        public static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void, pluginExtension?: string): void {
+            SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension);
         }
 
         /**
@@ -322,7 +322,7 @@
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
-        public static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void): void {
+        public static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void, pluginExtension?: string): void {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
                 return;
@@ -387,7 +387,7 @@
                         scene.getEngine().hideLoadingUI();
                     });
                 }
-            }, progressHandler, errorHandler);
+            }, progressHandler, errorHandler, pluginExtension);
         }
     };
 }

@@ -80,7 +80,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
     var renderData = getRenderData(canvas, engine);
     if (!test.onlyVisual) {
 
-        if (compare(renderData, resultCanvas)) { 
+        if (compare(renderData, resultCanvas)) {
             result.classList.add("failed");
             result.innerHTML = "×";
             console.log("failed");
@@ -104,7 +104,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
     currentScene.executeWhenReady(function () {
         var renderCount = test.renderCount || 1;
 
-        engine.runRenderLoop(function() {
+        engine.runRenderLoop(function () {
             currentScene.render();
             renderCount--;
 
@@ -117,7 +117,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
     });
 }
 
-function 
+function
 
 
 runTest(index) {
@@ -179,7 +179,7 @@ runTest(index) {
         });
     }
     else if (test.playgroundId) {
-        var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
+        var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
         var pgRoot = "/playground"
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
@@ -211,7 +211,7 @@ runTest(index) {
 
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
-                request.onreadystatechange = null; 
+                request.onreadystatechange = null;
 
                 var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
                 scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
@@ -220,7 +220,7 @@ runTest(index) {
 
                 if (test.replace) {
                     var split = test.replace.split(",");
-                    for (var i = 0; i < split.length; i+= 2) {
+                    for (var i = 0; i < split.length; i += 2) {
                         var source = split[i].trim();
                         var destination = split[i + 1].trim();
                         scriptToRun = scriptToRun.replace(source, destination);
@@ -242,7 +242,7 @@ runTest(index) {
         };
 
         request.send(null);
-        
+
     }
 }
 
@@ -261,7 +261,7 @@ var xhr = new XMLHttpRequest();
 
 xhr.open("GET", "config.json", true);
 
-xhr.addEventListener("load",function() {
+xhr.addEventListener("load", function () {
     if (xhr.status === 200) {
 
         config = JSON.parse(xhr.responseText);

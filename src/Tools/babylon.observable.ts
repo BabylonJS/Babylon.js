@@ -177,6 +177,10 @@
          * @param mask
          */
         public notifyObservers(eventData: Nullable<T>, mask: number = -1, target?: any, currentTarget?: any): boolean {
+            if (!this._observers.length) {
+                return true;
+            }
+
             let state = this._eventState;
             state.mask = mask;
             state.target = target;

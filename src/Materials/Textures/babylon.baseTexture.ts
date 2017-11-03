@@ -51,10 +51,16 @@
         public wrapV = Texture.WRAP_ADDRESSMODE;
 
         @serialize()
+        public wrapR = Texture.WRAP_ADDRESSMODE;
+
+        @serialize()
         public anisotropicFilteringLevel = BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
 
         @serialize()
         public isCube = false;
+
+        @serialize()
+        public is3D = false;
 
         @serialize()
         public gammaSpace = true;

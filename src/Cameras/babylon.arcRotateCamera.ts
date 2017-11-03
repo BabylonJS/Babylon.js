@@ -1,7 +1,4 @@
-﻿/// <reference path="babylon.targetCamera.ts" />
-/// <reference path="..\Tools\babylon.tools.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class ArcRotateCamera extends TargetCamera {
         @serialize()
         public alpha: number;
@@ -88,7 +85,7 @@ module BABYLON {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityY;
-            
+
             return 0;
         }
 
@@ -127,7 +124,7 @@ module BABYLON {
             if (pointers) {
                 pointers.pinchDeltaPercentage = value;
             }
-        }        
+        }
 
         public get panningSensibility(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
@@ -226,7 +223,7 @@ module BABYLON {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 mousewheel.wheelDeltaPercentage = value;
-        }        
+        }
 
         //-- end properties for backward compatibility for inputs
 
@@ -279,7 +276,7 @@ module BABYLON {
 
         public get framingBehavior(): Nullable<FramingBehavior> {
             return this._framingBehavior;
-        }        
+        }
 
         public get useFramingBehavior(): boolean {
             return this._framingBehavior != null;
@@ -297,13 +294,13 @@ module BABYLON {
                 this.removeBehavior(this._framingBehavior);
                 this._framingBehavior = null;
             }
-        }        
+        }
 
         private _autoRotationBehavior: Nullable<AutoRotationBehavior>;
 
         public get autoRotationBehavior(): Nullable<AutoRotationBehavior> {
             return this._autoRotationBehavior;
-        }   
+        }
 
         public get useAutoRotationBehavior(): boolean {
             return this._autoRotationBehavior != null;
@@ -317,14 +314,14 @@ module BABYLON {
             if (value) {
                 this._autoRotationBehavior = new AutoRotationBehavior();
                 this.addBehavior(this._autoRotationBehavior);
-            } else if(this._autoRotationBehavior) {
+            } else if (this._autoRotationBehavior) {
                 this.removeBehavior(this._autoRotationBehavior);
                 this._autoRotationBehavior = null;
             }
-        }        
+        }
 
         public onMeshTargetChangedObservable = new Observable<AbstractMesh>();
-        
+
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
         public checkCollisions = false;
@@ -382,7 +379,7 @@ module BABYLON {
 
         protected _getTargetPosition(): Vector3 {
             if (this._targetHost && this._targetHost.getAbsolutePosition) {
-                var pos : Vector3 = this._targetHost.getAbsolutePosition();
+                var pos: Vector3 = this._targetHost.getAbsolutePosition();
                 if (this._targetBoundingCenter) {
                     pos.addToRef(this._targetBoundingCenter, this._target);
                 } else {
@@ -399,7 +396,7 @@ module BABYLON {
             return this._target;
         }
 
-       // State
+        // State
 
         /**
          * Store current camera state (fov, position, etc..)
@@ -407,7 +404,7 @@ module BABYLON {
         private _storedAlpha: number;
         private _storedBeta: number;
         private _storedRadius: number;
-        private _storedTarget: Vector3;     
+        private _storedTarget: Vector3;
 
         public storeState(): Camera {
             this._storedAlpha = this.alpha;
@@ -436,7 +433,7 @@ module BABYLON {
             this.inertialRadiusOffset = 0;
             this.inertialPanningX = 0;
             this.inertialPanningY = 0;
-        
+
             return true;
         }
 
@@ -618,8 +615,8 @@ module BABYLON {
 
         public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {
 
-            if ((<any>target).getBoundingInfo){
-                if (toBoundingCenter){
+            if ((<any>target).getBoundingInfo) {
+                if (toBoundingCenter) {
                     this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
                 } else {
                     this._targetBoundingCenter = null;
@@ -632,7 +629,7 @@ module BABYLON {
                 var newTarget = <Vector3>target;
                 var currentTarget = this._getTargetPosition();
                 if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
-                   return;
+                    return;
                 }
                 this._targetHost = null;
                 this._target = newTarget;
@@ -740,7 +737,7 @@ module BABYLON {
         }
 
         public focusOn(meshesOrMinMaxVectorAndDistance: AbstractMesh[] | { min: Vector3, max: Vector3, distance: number }, doNotUpdateMaxZ = false): void {
-            var meshesOrMinMaxVector: { min: Vector3, max: Vector3};
+            var meshesOrMinMaxVector: { min: Vector3, max: Vector3 };
             var distance: number;
 
             if ((<any>meshesOrMinMaxVectorAndDistance).min === undefined) { // meshes
@@ -766,7 +763,7 @@ module BABYLON {
          * Override Camera.createRigCamera
          */
         public createRigCamera(name: string, cameraIndex: number): Camera {
-            var alphaShift : number = 0;
+            var alphaShift: number = 0;
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
@@ -777,7 +774,7 @@ module BABYLON {
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                     alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? -1 : 1);
                     break;
-           }
+            }
             var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this._target, this.getScene());
             rigCam._cameraRigParams = {};
             return rigCam;
@@ -788,7 +785,7 @@ module BABYLON {
          * Override Camera._updateRigCameras
          */
         public _updateRigCameras() {
-            var camLeft  = <ArcRotateCamera>this._rigCameras[0];
+            var camLeft = <ArcRotateCamera>this._rigCameras[0];
             var camRight = <ArcRotateCamera>this._rigCameras[1];
 
             camLeft.beta = camRight.beta = this.beta;
@@ -799,11 +796,11 @@ module BABYLON {
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    camLeft.alpha  = this.alpha - this._cameraRigParams.stereoHalfAngle;
+                    camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
                     break;
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
-                    camLeft.alpha  = this.alpha + this._cameraRigParams.stereoHalfAngle;
+                    camLeft.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
                     camRight.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     break;
             }

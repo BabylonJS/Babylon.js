@@ -25,13 +25,13 @@
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration, doNotBuild = false): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild = false): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -58,7 +58,7 @@
                     scene = BABYLON.Engine.LastCreatedScene;
                 }
 
-                this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
+                this._imageProcessingConfiguration = (<Scene>scene).imageProcessingConfiguration;
             }
             else {
                 this._imageProcessingConfiguration = configuration;
@@ -78,13 +78,13 @@
         /**
          * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
          */
-        public get colorCurves(): ColorCurves {
+        public get colorCurves(): Nullable<ColorCurves> {
             return this.imageProcessingConfiguration.colorCurves;
         }
         /**
          * Sets Color curves setup used in the effect if colorCurvesEnabled is set to true .
          */
-        public set colorCurves(value: ColorCurves) {
+        public set colorCurves(value: Nullable<ColorCurves>) {
             this.imageProcessingConfiguration.colorCurves = value;
         }
 
@@ -104,13 +104,13 @@
         /**
          * Gets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
          */
-        public get colorGradingTexture(): BaseTexture {
+        public get colorGradingTexture(): Nullable<BaseTexture> {
             return this.imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
          */
-        public set colorGradingTexture(value: BaseTexture) {
+        public set colorGradingTexture(value: Nullable<BaseTexture>) {
             this.imageProcessingConfiguration.colorGradingTexture = value;
         }
 
@@ -304,6 +304,7 @@
             CONTRAST: false,
             COLORCURVES: false,
             COLORGRADING: false,
+            COLORGRADING3D: false,
             FROMLINEARSPACE: false,
             SAMPLER3DGREENDEPTH: false,
             SAMPLER3DBGRMAP: false,
@@ -311,7 +312,7 @@
             EXPOSURE: false,
         }
 
-        constructor(name: string, options: number | PostProcessOptions, camera?: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable,
                                             null, textureType, "postprocess", null, true);
 

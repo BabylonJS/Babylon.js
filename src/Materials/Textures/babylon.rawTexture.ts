@@ -1,8 +1,9 @@
 ﻿module BABYLON {
     export class RawTexture extends Texture {
+        private _engine: Engine;
         constructor(data: ArrayBufferView, width: number, height: number, public format: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(null, scene, !generateMipMaps, invertY);
-
+            this._engine = scene.getEngine();
             this._texture = scene.getEngine().createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode);
 
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -10,7 +11,7 @@
         }
 
         public update(data: ArrayBufferView): void {
-            this.getScene().getEngine().updateRawTexture(this._texture, data, this.format, this._invertY);
+            this._engine.updateRawTexture(this._texture, data, this.format, this._invertY);
         }
 
         // Statics

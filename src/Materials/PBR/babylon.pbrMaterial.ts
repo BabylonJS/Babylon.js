@@ -381,14 +381,6 @@
         public twoSidedLighting = false;
 
         /**
-         * Specifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
-         * in your scene composition.
-         */
-        @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public preMultiplyAlpha = false;
-
-        /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
          * And/Or occlude the blended part.
          */
@@ -504,13 +496,13 @@
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
-        public get cameraColorGradingTexture(): BaseTexture {
+        public get cameraColorGradingTexture(): Nullable<BaseTexture> {
             return this._imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets the Color Grading 2D Lookup Texture.
          */
-        public set cameraColorGradingTexture(value: BaseTexture) {
+        public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
             this._imageProcessingConfiguration.colorGradingTexture = value;
         }
 
@@ -520,7 +512,7 @@
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
-        public get cameraColorCurves(): ColorCurves {
+        public get cameraColorCurves(): Nullable<ColorCurves> {
             return this._imageProcessingConfiguration.colorCurves;
         }
         /**
@@ -529,7 +521,7 @@
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
-        public set cameraColorCurves(value: ColorCurves) {
+        public set cameraColorCurves(value: Nullable<ColorCurves>) {
             this._imageProcessingConfiguration.colorCurves = value;
         }
 

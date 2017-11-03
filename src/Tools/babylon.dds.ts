@@ -391,20 +391,20 @@
 
             let computeFormats = false;
 
-            if (info.isFourCC && ext) {
+            if (info.isFourCC) {
                 fourCC = header[off_pfFourCC];
                 switch (fourCC) {
                 case FOURCC_DXT1:
                     blockBytes = 8;
-                    internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT1_EXT;
+                    internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT1_EXT;
                     break;
                 case FOURCC_DXT3:
                     blockBytes = 16;
-                    internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT3_EXT;
+                    internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT3_EXT;
                     break;
                 case FOURCC_DXT5:
                     blockBytes = 16;
-                    internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                    internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT5_EXT;
                     break;
                 case FOURCC_D3DFMT_R16G16B16A16F:  
                     computeFormats = true;
@@ -462,14 +462,14 @@
 
                         if (!info.isCompressed && info.isFourCC) {
                             dataLength = width * height * 4;
-                            var floatArray: Nullable<ArrayBufferView> = null;
+                            var FloatArray: Nullable<ArrayBufferView> = null;
 
                             if (engine.badOS || engine.badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
                                 if (bpp === 128) {
-                                    floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);                                    
+                                    FloatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);                                    
                                 }
                                 else if (bpp === 64) {
-                                    floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    FloatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 }
 
                                 info.textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -478,20 +478,20 @@
                             }
                             else {
                                 if (bpp === 128) {
-                                    floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    FloatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
-                                    floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    FloatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
 
                                     info.textureType = Engine.TEXTURETYPE_FLOAT;
                                     format = engine._getWebGLTextureType(info.textureType);    
                                     internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);                            
                                 } else { // 64
-                                    floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    FloatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 }
                             }
 
-                            if (floatArray) {
-                                engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
+                            if (FloatArray) {
+                                engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, FloatArray);
                             }
                         } else if (info.isRGB) {
                             if (bpp === 24) {

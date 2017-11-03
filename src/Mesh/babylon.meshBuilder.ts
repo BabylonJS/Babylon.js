@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class MeshBuilder {
-        private static updateSideOrientation(orientation: number, scene: Scene): number {
+        private static updateSideOrientation(orientation?: number): number {
             if (orientation == Mesh.DOUBLESIDE) {
                 return Mesh.DOUBLESIDE;
             }
@@ -24,12 +24,12 @@
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Scene): Mesh {
+        public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
             var box = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             box._originalBuilderSideOrientation = options.sideOrientation;
-            
+
             var vertexData = VertexData.CreateBox(options);
 
             vertexData.applyToMesh(box, options.updatable);
@@ -53,9 +53,9 @@
         public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: any): Mesh {
             var sphere = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             sphere._originalBuilderSideOrientation = options.sideOrientation;
-            
+
             var vertexData = VertexData.CreateSphere(options);
 
             vertexData.applyToMesh(sphere, options.updatable);
@@ -74,12 +74,12 @@
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation    
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
+        public static CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
             var disc = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             disc._originalBuilderSideOrientation = options.sideOrientation;
-            
+
             var vertexData = VertexData.CreateDisc(options);
 
             vertexData.applyToMesh(disc, options.updatable);
@@ -102,9 +102,9 @@
         public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Scene): Mesh {
             var sphere = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             sphere._originalBuilderSideOrientation = options.sideOrientation;
-            
+
             var vertexData = VertexData.CreateIcoSphere(options);
 
             vertexData.applyToMesh(sphere, options.updatable);
@@ -134,11 +134,11 @@
          * Moreover, you can use the parameter `color` with `instance` (to update the ribbon), only if you previously used it at creation time.  
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }, scene?: Scene): Mesh {
+        public static CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }, scene: Nullable<Scene> = null): Mesh {
             var pathArray = options.pathArray;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             var instance = options.instance;
             var updatable = options.updatable;
 
@@ -147,10 +147,10 @@
                 // only pathArray and sideOrientation parameters are taken into account for positions update
                 Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Tmp.Vector3[0]);         // minimum
                 Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, Tmp.Vector3[1]);
-                var positionFunction = (positions: number[] | Float32Array) => {
+                var positionFunction = (positions: FloatArray) => {
                     var minlg = pathArray[0].length;
                     var i = 0;
-                    var ns = (instance._originalBuilderSideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = ((<Mesh>instance)._originalBuilderSideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -191,13 +191,13 @@
                         }
                     }
                 };
-                var positions = instance.getVerticesData(VertexBuffer.PositionKind);
+                var positions = <FloatArray>instance.getVerticesData(VertexBuffer.PositionKind);
                 positionFunction(positions);
                 instance._boundingInfo = new BoundingInfo(Tmp.Vector3[0], Tmp.Vector3[1]);
                 instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
                 if (options.colors) {
-                    var colors = instance.getVerticesData(VertexBuffer.ColorKind);
+                    var colors = <FloatArray>instance.getVerticesData(VertexBuffer.ColorKind);
                     for (var c = 0; c < options.colors.length; c++) {
                         colors[c * 4] = options.colors[c].r;
                         colors[c * 4 + 1] = options.colors[c].g;
@@ -207,7 +207,7 @@
                     instance.updateVerticesData(VertexBuffer.ColorKind, colors, false, false);
                 }
                 if (options.uvs) {
-                    var uvs = instance.getVerticesData(VertexBuffer.UVKind);
+                    var uvs = <FloatArray>instance.getVerticesData(VertexBuffer.UVKind);
                     for (var i = 0; i < options.uvs.length; i++) {
                         uvs[i * 2] = options.uvs[i].x;
                         uvs[i * 2 + 1] = options.uvs[i].y;
@@ -216,7 +216,7 @@
                 }
                 if (!instance.areNormalsFrozen || instance.isFacetDataEnabled) {
                     var indices = instance.getIndices();
-                    var normals = instance.getVerticesData(VertexBuffer.NormalKind);
+                    var normals = <FloatArray>instance.getVerticesData(VertexBuffer.NormalKind);
                     var params = instance.isFacetDataEnabled ? instance.getFacetDataParameters() : null;
                     VertexData.ComputeNormals(positions, indices, normals, params);
 
@@ -290,10 +290,10 @@
          */
         public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
             var cylinder = new Mesh(name, scene);
-            
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             cylinder._originalBuilderSideOrientation = options.sideOrientation;
-            
+
             var vertexData = VertexData.CreateCylinder(options);
 
             vertexData.applyToMesh(cylinder, options.updatable);
@@ -315,9 +315,9 @@
         public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
             var torus = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             torus._originalBuilderSideOrientation = options.sideOrientation;
-            
+
             var vertexData = VertexData.CreateTorus(options);
 
             vertexData.applyToMesh(torus, options.updatable);
@@ -340,9 +340,9 @@
         public static CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
             var torusKnot = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             torusKnot._originalBuilderSideOrientation = options.sideOrientation;
-            
+
             var vertexData = VertexData.CreateTorusKnot(options);
 
             vertexData.applyToMesh(torusKnot, options.updatable);
@@ -362,12 +362,12 @@
          * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.      
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateLineSystem(name: string, options: { lines: Vector3[][], updatable: boolean, instance?: LinesMesh }, scene: Nullable<Scene>): LinesMesh {
+        public static CreateLineSystem(name: string, options: { lines: Vector3[][], updatable: boolean, instance: Nullable<LinesMesh> }, scene: Nullable<Scene>): LinesMesh {
             var instance = options.instance;
             var lines = options.lines;
 
             if (instance) { // lines update
-                var positionFunction = (positions: number[] | Float32Array) => {
+                var positionFunction = (positions: FloatArray) => {
                     var i = 0;
                     for (var l = 0; l < lines.length; l++) {
                         var points = lines[l];
@@ -382,7 +382,7 @@
                 instance.updateMeshPositions(positionFunction, false);
                 return instance;
             }
-            
+
             // line system creation
             var lineSystem = new LinesMesh(name, scene);
             var vertexData = VertexData.CreateLineSystem(options);
@@ -418,7 +418,7 @@
          * When updating an instance, remember that only point positions can change, not the number of points.      
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh {
+        public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh }, scene: Nullable<Scene> = null): LinesMesh {
             var points = options.points;
             var instance = options.instance;
             var gapSize = options.gapSize || 1;
@@ -498,18 +498,18 @@
          * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.  
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
-        public static ExtrudeShape(name: string, options: { shape: Vector3[], path: Vector3[], scale?: number, rotation?: number, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
+        public static ExtrudeShape(name: string, options: { shape: Vector3[], path: Vector3[], scale?: number, rotation?: number, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
             var path = options.path;
             var shape = options.shape;
             var scale = options.scale || 1;
             var rotation = options.rotation || 0;
             var cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            var instance = options.instance;
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            var instance = options.instance || null;
             var invertUV = options.invertUV || false;
 
-            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance, invertUV, options.frontUVs, options.backUVs);
+            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable ? true : false, sideOrientation, instance, invertUV, options.frontUVs || null, options.backUVs || null);
         }
 
         /**
@@ -557,10 +557,10 @@
             var ribbonClosePath = options.ribbonClosePath || false;
             var cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
-            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance, invertUV, options.frontUVs, options.backUVs);
+            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable ? true : false, sideOrientation, instance || null, invertUV, options.frontUVs || null, options.backUVs || null);
         }
 
         /**
@@ -588,7 +588,7 @@
             var radius = options.radius || 1;
             var tessellation = options.tessellation || 64;
             var updatable = options.updatable;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             var cap = options.cap || Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
             var paths = new Array();
@@ -635,9 +635,9 @@
         public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean, sourcePlane?: Plane }, scene: Scene): Mesh {
             var plane = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             plane._originalBuilderSideOrientation = options.sideOrientation;
-            
+
             var vertexData = VertexData.CreatePlane(options);
 
             vertexData.applyToMesh(plane, options.updatable);
@@ -724,7 +724,7 @@
         public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
             var width = options.width || 10.0;
             var height = options.height || 10.0;
-            var subdivisions = options.subdivisions || 1|0;
+            var subdivisions = options.subdivisions || 1 | 0;
             var minHeight = options.minHeight || 0.0;
             var maxHeight = options.maxHeight || 1.0;
             var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
@@ -747,6 +747,11 @@
                 // Getting height map data
                 var canvas = document.createElement("canvas");
                 var context = canvas.getContext("2d");
+
+                if (!context) {
+                    throw new Error("Unable to get 2d context for CreateGroundFromHeightMap");
+                }
+
                 var bufferWidth = img.width;
                 var bufferHeight = img.height;
                 canvas.width = bufferWidth;
@@ -788,37 +793,37 @@
          * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4).  
          * Remember you can only change the shape positions, not their number when updating a polygon.
          */
-        public static CreatePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-			var shape = options.shape;
-			var holes = options.holes || [];
-			var depth = options.depth || 0;
-			var contours: Array<Vector2> = [];
-			var hole: Array<Vector2> = [];
-            
-			for(var i=0; i < shape.length; i++) {
-				contours[i] = new Vector2(shape[i].x, shape[i].z);
-			}
-			var epsilon = 0.00000001;
-			if(contours[0].equalsWithEpsilon(contours[contours.length - 1], epsilon)) {
+        public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            var shape = options.shape;
+            var holes = options.holes || [];
+            var depth = options.depth || 0;
+            var contours: Array<Vector2> = [];
+            var hole: Array<Vector2> = [];
+
+            for (var i = 0; i < shape.length; i++) {
+                contours[i] = new Vector2(shape[i].x, shape[i].z);
+            }
+            var epsilon = 0.00000001;
+            if (contours[0].equalsWithEpsilon(contours[contours.length - 1], epsilon)) {
                 contours.pop();
-			}
-			
-			var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene);
-			for(var hNb = 0; hNb < holes.length; hNb++) {
-				hole = [];
-				for(var hPoint = 0; hPoint < holes[hNb].length; hPoint++) {
-					hole.push(new Vector2(holes[hNb][hPoint].x, holes[hNb][hPoint].z));
-				}
-				polygonTriangulation.addHole(hole);
-			}
-			var polygon = polygonTriangulation.build(options.updatable, depth);
+            }
+
+            var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene);
+            for (var hNb = 0; hNb < holes.length; hNb++) {
+                hole = [];
+                for (var hPoint = 0; hPoint < holes[hNb].length; hPoint++) {
+                    hole.push(new Vector2(holes[hNb][hPoint].x, holes[hNb][hPoint].z));
+                }
+                polygonTriangulation.addHole(hole);
+            }
+            var polygon = polygonTriangulation.build(options.updatable, depth);
             polygon._originalBuilderSideOrientation = options.sideOrientation;
-			var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
-            vertexData.applyToMesh(polygon, options.updatable);			
-			
+            var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
+            vertexData.applyToMesh(polygon, options.updatable);
+
             return polygon;
-		};
+        };
 
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction. 
@@ -826,10 +831,10 @@
          * Please read this tutorial : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors  
 		*/
 
-		public static ExtrudePolygon(name: string, options: {shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}, scene: Scene): Mesh {
-			return MeshBuilder.CreatePolygon(name, options, scene);
-		};
-         
+        public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
+            return MeshBuilder.CreatePolygon(name, options, scene);
+        };
+
 
         /**
          * Creates a tube mesh.    
@@ -866,17 +871,17 @@
             if (options.radius !== undefined) {
                 radius = options.radius;
             };
-            var tessellation = options.tessellation || 64|0;
-            var radiusFunction = options.radiusFunction;
+            var tessellation = options.tessellation || 64 | 0;
+            var radiusFunction = options.radiusFunction || null;
             var cap = options.cap || Mesh.NO_CAP;
             var invertUV = options.invertUV || false;
             var updatable = options.updatable;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
-            options.arc = (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.arc = options.arc && (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
 
             // tube geometry
-            var tubePathArray = (path: Vector3[], path3D: Path3D, circlePaths: Vector3[][], radius: number, tessellation: number, 
-                                radiusFunction: { (i: number, distance: number): number; }, cap: number, arc: number) => {
+            var tubePathArray = (path: Vector3[], path3D: Path3D, circlePaths: Vector3[][], radius: number, tessellation: number,
+                radiusFunction: Nullable<{ (i: number, distance: number): number; }>, cap: number, arc: number) => {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var distances = path3D.getDistances();
@@ -942,7 +947,7 @@
                 var arc = options.arc || (<any>instance).arc;
                 path3D = ((<any>instance).path3D).update(path);
                 pathArray = tubePathArray(path, path3D, (<any>instance).pathArray, radius, (<any>instance).tessellation, radiusFunction, (<any>instance).cap, arc);
-                instance = MeshBuilder.CreateRibbon(null, { pathArray: pathArray, instance: instance });
+                instance = MeshBuilder.CreateRibbon("", { pathArray: pathArray, instance: instance });
                 (<any>instance).path3D = path3D;
                 (<any>instance).pathArray = pathArray;
                 (<any>instance).arc = arc;
@@ -988,9 +993,9 @@
         public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
             var polyhedron = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             polyhedron._originalBuilderSideOrientation = options.sideOrientation;
-            
+
             var vertexData = VertexData.CreatePolyhedron(options);
 
             vertexData.applyToMesh(polyhedron, options.updatable);
@@ -1008,7 +1013,7 @@
          * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal.  
          */
         public static CreateDecal(name: string, sourceMesh: AbstractMesh, options: { position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number }): Mesh {
-            var indices = sourceMesh.getIndices();
+            var indices = <IndicesArray>sourceMesh.getIndices();
             var positions = sourceMesh.getVerticesData(VertexBuffer.PositionKind);
             var normals = sourceMesh.getVerticesData(VertexBuffer.NormalKind);
             var position = options.position || Vector3.Zero();
@@ -1019,7 +1024,7 @@
             // Getting correct rotation
             if (!normal) {
                 var target = new Vector3(0, 0, 1);
-                var camera = sourceMesh.getScene().activeCamera;
+                var camera = <Camera>sourceMesh.getScene().activeCamera;
                 var cameraWorldTarget = Vector3.TransformCoordinates(target, camera.getWorldMatrix());
 
                 normal = camera.globalPosition.subtract(cameraWorldTarget);
@@ -1044,8 +1049,12 @@
             var currentVertexDataIndex = 0;
 
             var extractDecalVector3 = (indexId: number): PositionNormalVertex => {
-                var vertexId = indices[indexId];
                 var result = new PositionNormalVertex();
+                if (!indices || !positions || !normals) {
+                    return result;
+                }
+
+                var vertexId = indices[indexId];
                 result.position = new Vector3(positions[vertexId * 3], positions[vertexId * 3 + 1], positions[vertexId * 3 + 2]);
 
                 // Send vector to decal local world
@@ -1057,7 +1066,7 @@
 
                 return result;
             }; // Inspired by https://github.com/mrdoob/three.js/blob/eee231960882f6f3b6113405f524956145148146/examples/js/geometries/DecalGeometry.js
-            var clip = (vertices: PositionNormalVertex[], axis: Vector3): PositionNormalVertex[]=> {
+            var clip = (vertices: PositionNormalVertex[], axis: Vector3): PositionNormalVertex[] => {
                 if (vertices.length === 0) {
                     return vertices;
                 }
@@ -1079,7 +1088,10 @@
                     var v2Out: boolean;
                     var v3Out: boolean;
                     var total = 0;
-                    var nV1: PositionNormalVertex, nV2: PositionNormalVertex, nV3: PositionNormalVertex, nV4: PositionNormalVertex;
+                    let nV1: Nullable<PositionNormalVertex> = null;
+                    let nV2: Nullable<PositionNormalVertex> = null;
+                    let nV3: Nullable<PositionNormalVertex> = null;
+                    let nV4: Nullable<PositionNormalVertex> = null;
 
                     var d1 = Vector3.Dot(vertices[index].position, axis) - clipSize;
                     var d2 = Vector3.Dot(vertices[index + 1].position, axis) - clipSize;
@@ -1128,13 +1140,15 @@
                                 nV4 = clipVertices(vertices[index + 2], nV2);
                             }
 
-                            result.push(nV1.clone());
-                            result.push(nV2.clone());
-                            result.push(nV3);
+                            if (nV1 && nV2 && nV3 && nV4) {
+                                result.push(nV1.clone());
+                                result.push(nV2.clone());
+                                result.push(nV3);
 
-                            result.push(nV4);
-                            result.push(nV3.clone());
-                            result.push(nV2.clone());
+                                result.push(nV4);
+                                result.push(nV3.clone());
+                                result.push(nV2.clone());
+                            }
                             break;
                         case 2:
                             if (!v1Out) {
@@ -1214,20 +1228,22 @@
         }
 
         // Privates
-        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, cap: number, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh, invertUV: boolean, frontUVs: Vector4, backUVs: Vector4): Mesh {
+        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: Nullable<number>, rotation: Nullable<number>, scaleFunction: Nullable<{ (i: number, distance: number): number; }>,
+            rotateFunction: Nullable<{ (i: number, distance: number): number; }>, rbCA: boolean, rbCP: boolean, cap: number, custom: boolean,
+            scene: Nullable<Scene>, updtbl: boolean, side: number, instance: Nullable<Mesh>, invertUV: boolean, frontUVs: Nullable<Vector4>, backUVs: Nullable<Vector4>): Mesh {
             // extrusion geometry
-            var extrusionPathArray = (shape: Vector3[], curve: Vector3[], path3D: Path3D, shapePaths: Vector3[][], scale: number, rotation: number, 
-                                        scaleFunction:{ (i: number, distance: number): number; } , rotateFunction:{ (i: number, distance: number): number; } , cap: number, custom: boolean) => {
+            var extrusionPathArray = (shape: Vector3[], curve: Vector3[], path3D: Path3D, shapePaths: Vector3[][], scale: Nullable<number>, rotation: Nullable<number>,
+                scaleFunction: Nullable<{ (i: number, distance: number): number; }>, rotateFunction: Nullable<{ (i: number, distance: number): number; }>, cap: number, custom: boolean) => {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var binormals = path3D.getBinormals();
                 var distances = path3D.getDistances();
 
                 var angle = 0;
-                var returnScale: { (i: number, distance: number): number; } = () => { return scale; };
-                var returnRotation: { (i: number, distance: number): number; } = () => { return rotation; };
-                var rotate: { (i: number, distance: number): number; } = custom ? rotateFunction : returnRotation;
-                var scl: { (i: number, distance: number): number; } = custom ? scaleFunction : returnScale;
+                var returnScale: { (i: number, distance: number): number; } = () => { return scale !== null ? scale : 1; };
+                var returnRotation: { (i: number, distance: number): number; } = () => { return rotation!== null ? rotation : 0; };
+                var rotate: { (i: number, distance: number): number; } = custom && rotateFunction ? rotateFunction : returnRotation;
+                var scl: { (i: number, distance: number): number; } = custom && scaleFunction ? scaleFunction : returnScale;
                 var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
                 var rotationMatrix: Matrix = Tmp.Matrix[0];
 
@@ -1248,7 +1264,7 @@
                     index++;
                 }
                 // cap
-                var capPath = (shapePath: Vector3[])  => {
+                var capPath = (shapePath: Vector3[]) => {
                     var pointCap = Array<Vector3>();
                     var barycenter = Vector3.Zero();
                     var i: number;
@@ -1288,7 +1304,7 @@
             if (instance) { // instance update
                 path3D = ((<any>instance).path3D).update(curve);
                 pathArray = extrusionPathArray(shape, curve, (<any>instance).path3D, (<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, (<any>instance).cap, custom);
-                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, scene, null, null, instance);
+                instance = Mesh.CreateRibbon("", pathArray, false, false, 0, scene || undefined, false, 0, instance);
 
                 return instance;
             }
@@ -1297,7 +1313,7 @@
             var newShapePaths = new Array<Array<Vector3>>();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
-            var extrudedGeneric = MeshBuilder.CreateRibbon(name, {pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV, frontUVs: frontUVs, backUVs: backUVs}, scene);
+            var extrudedGeneric = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV, frontUVs: frontUVs || undefined, backUVs: backUVs || undefined }, scene);
             (<any>extrudedGeneric).pathArray = pathArray;
             (<any>extrudedGeneric).path3D = path3D;
             (<any>extrudedGeneric).cap = cap;

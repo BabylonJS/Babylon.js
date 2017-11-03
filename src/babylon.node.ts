@@ -1,6 +1,4 @@
-﻿/// <reference path="Tools\babylon.decorators.ts" />
-
-module BABYLON {
+﻿module BABYLON {
 
     /**
      * Node is the basic class for all scene objects (Mesh, Light Camera).
@@ -90,10 +88,10 @@ module BABYLON {
          * @param {string} name - the name and id to be given to this node
          * @param {BABYLON.Scene} the scene this node will be added to
          */
-        constructor(name: string, scene: Scene) {
+        constructor(name: string, scene: Nullable<Scene> = null) {
             this.name = name;
             this.id = name;
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = <Scene>(scene || Engine.LastCreatedScene);
             this.uniqueId = this._scene.getUniqueId();
             this._initCache();
         }
@@ -127,14 +125,14 @@ module BABYLON {
 
             if (index === -1) {
                 return this;
-            } 
+            }
 
             this._behaviors[index].detach();
             this._behaviors.splice(index, 1);
 
             return this;
-        }     
-        
+        }
+
         public get behaviors(): Behavior<Node>[] {
             return this._behaviors;
         }
@@ -309,8 +307,8 @@ module BABYLON {
             this._getDescendants(results, directDescendantsOnly, predicate);
 
             return results;
-        }    
-        
+        }
+
         /**
          * Get all child-meshes of this node.
          */
@@ -422,7 +420,7 @@ module BABYLON {
 
             this._behaviors = [];
         }
-        
+
         public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
             if (parsedNode.ranges) {
                 for (var index = 0; index < parsedNode.ranges.length; index++) {

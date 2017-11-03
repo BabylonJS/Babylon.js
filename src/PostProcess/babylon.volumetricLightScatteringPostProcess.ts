@@ -100,13 +100,13 @@
          */
         constructor(name: string, ratio: any, camera: Camera, mesh?: Mesh, samples: number = 100, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, scene?: Scene) {
             super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
-            scene = (camera === null) ? scene : camera.getScene(); // parameter "scene" can be null.
+            scene = <Scene>((camera === null) ? scene : camera.getScene()) // parameter "scene" can be null.
 
-            var engine = scene.getEngine();
+            engine = scene.getEngine();
             this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
             // Configure mesh
-            this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
+            this.mesh = (<Mesh>((mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene)));
 
             // Configure
             this._createPass(scene, ratio.passRatio || ratio);
@@ -120,7 +120,7 @@
             };
 
             this.onApplyObservable.add((effect: Effect) => {
-                this._updateMeshScreenCoordinates(scene);
+                this._updateMeshScreenCoordinates(<Scene>scene);
 
                 effect.setTexture("lightScatteringSampler", this._volumetricLightScatteringRTT);
                 effect.setFloat("exposure", this.exposure);
@@ -139,7 +139,7 @@
             var mesh = subMesh.getMesh();
 
             // Render this.mesh as default
-            if (mesh === this.mesh) {
+            if (mesh === this.mesh && mesh.material) {
                 return mesh.material.isReady(mesh);
             }
 
@@ -168,7 +168,7 @@
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0"); 
             }
@@ -265,12 +265,18 @@
                 if (this._meshExcluded(mesh)) {
                     return;
                 }
+                
+                let material = subMesh.getMaterial();
+
+                if (!material) {
+                    return;
+                }
 
                 var scene = mesh.getScene();
                 var engine = scene.getEngine();
 
                 // Culling
-                engine.setState(subMesh.getMaterial().backFaceCulling);
+                engine.setState(material.backFaceCulling);
 
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -287,7 +293,7 @@
                         if (subMesh.effect) {
                             effect = subMesh.effect;
                         } else {
-                            effect = subMesh.getMaterial().getEffect();
+                            effect = <Effect>material.getEffect();
                         }
                     }
 
@@ -295,11 +301,9 @@
                     mesh._bind(subMesh, effect, Material.TriangleFillMode);
 
                     if (mesh === this.mesh) {
-                        subMesh.getMaterial().bind(mesh.getWorldMatrix(), mesh);
+                        material.bind(mesh.getWorldMatrix(), mesh);
                     }
                     else {
-                        var material: any = subMesh.getMaterial();
-
                         this._volumetricLightScatteringPass.setMatrix("viewProjection", scene.getTransformMatrix());
 
                         // Alpha test
@@ -314,7 +318,7 @@
                         }
 
                         // Bones
-                        if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                             this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                         }
                     }
@@ -364,8 +368,12 @@
                     // Sort sub meshes
                     for (index = 0; index < transparentSubMeshes.length; index++) {
                         var submesh = transparentSubMeshes.data[index];
-                        submesh._alphaIndex = submesh.getMesh().alphaIndex;
-                        submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(scene.activeCamera.position).length();
+                        let boundingInfo = submesh.getBoundingInfo();
+
+                        if (boundingInfo && scene.activeCamera) {
+                            submesh._alphaIndex = submesh.getMesh().alphaIndex;
+                            submesh._distanceToCamera = boundingInfo.boundingSphere.centerWorld.subtract(scene.activeCamera.position).length();
+                        }
                     }
 
                     var sortedArray = transparentSubMeshes.data.slice(0, transparentSubMeshes.length);

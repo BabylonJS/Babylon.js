@@ -1,5 +1,5 @@
 ﻿(function () {
-    var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
+    var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
     var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
@@ -43,7 +43,7 @@
         xhr.send(null);
     };
 
-    var showError = function(error) {
+    var showError = function (error) {
         console.warn(error);
     };
 
@@ -61,7 +61,7 @@
             }
 
             var canvas = document.getElementById("renderCanvas");
-            engine = new BABYLON.Engine(canvas, true, {stencil: true});
+            engine = new BABYLON.Engine(canvas, true, { stencil: true });
             BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault = true;
 
             engine.runRenderLoop(function () {
@@ -79,7 +79,9 @@
                     scene.render();
                 }
 
-                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                if (fpsLabel) {
+                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                }
             });
 
             var scene;
@@ -152,21 +154,29 @@
                             var snippetCode = JSON.parse(JSON.parse(xmlHttp.responseText)[0].jsonPayload).code;
                             compileAndRun(snippetCode);
 
-                            document.getElementById("refresh").addEventListener("click", function () {
-                                compileAndRun(snippetCode);
-                            });
+                            var refresh = document.getElementById("refresh");
+
+                            if (refresh) {
+                                refresh.addEventListener("click", function () {
+                                    compileAndRun(snippetCode);
+                                });
+                            }
                         }
                     }
                 };
 
                 var hash = location.hash.substr(1);
                 currentSnippetToken = hash.split("#")[0];
-                if(!hash.split("#")[1]) hash += "#0";
+                if (!hash.split("#")[1]) hash += "#0";
 
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                 xmlHttp.send();
 
-                document.getElementById("link").href = "//www.babylonjs-playground.com/#" + hash;
+                var link = document.getElementById("link");
+
+                if (link) {
+                    link.href = "//www.babylonjs-playground.com/#" + hash;
+                }
             } catch (e) {
 
             }

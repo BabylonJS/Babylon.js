@@ -101,7 +101,7 @@ module BABYLON.GUI {
         private static _TempCompose1 = Matrix2D.Identity();
         private static _TempCompose2 = Matrix2D.Identity();
 
-        public static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: Matrix2D,  result: Matrix2D): void {
+        public static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: Nullable<Matrix2D>,  result: Matrix2D): void {
             Matrix2D.TranslationToRef(tx, ty, Matrix2D._TempPreTranslationMatrix);
 
             Matrix2D.ScalingToRef(scaleX, scaleY, Matrix2D._TempScalingMatrix);
