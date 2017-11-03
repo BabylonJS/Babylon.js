@@ -253,7 +253,13 @@
         * An event triggered before animating the scene
         * @type {BABYLON.Observable}
         */
-        public onBeforeAnimationsObservable = new Observable<Scene>();        
+        public onBeforeAnimationsObservable = new Observable<Scene>();       
+        
+        /**
+        * An event triggered after animations processing
+        * @type {BABYLON.Observable}
+        */
+        public onAfterAnimationsObservable = new Observable<Scene>();               
 
         /**
         * An event triggered before draw calls are ready to be sent
@@ -353,6 +359,8 @@
         * @type {BABYLON.Observable}
         */
         public onAfterSpritesRenderingObservable = new Observable<Scene>();          
+
+         
 
         /**
         * An event triggered when a camera is created
@@ -3296,6 +3304,7 @@
                 // Animations
                 this._animationRatio = defaultTimeStep * (60.0 / 1000.0);
                 this._animate();
+                this.onAfterAnimationsObservable.notifyObservers(this);
 
                 // Physics
                 if (this._physicsEngine) {
@@ -3318,6 +3327,7 @@
               var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
               this._animationRatio = deltaTime * (60.0 / 1000.0);
               this._animate();
+              this.onAfterAnimationsObservable.notifyObservers(this);
 
               // Physics
               if (this._physicsEngine) {
@@ -3707,6 +3717,8 @@
             this.onAfterDrawPhaseObservable.clear();
             this.onBeforePhysicsObservable.clear();
             this.onAfterPhysicsObservable.clear();
+            this.onBeforeAnimationsObservable.clear();
+            this.onAfterAnimationsObservable.clear();
 
             this.detachControl();
 
