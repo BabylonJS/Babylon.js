@@ -8931,6 +8931,14 @@ var BABYLON;
                 this._gl.disable(this._gl.DITHER);
             }
         };
+        Engine.prototype.setRasterizerState = function (value) {
+            if (value) {
+                this._gl.disable(this._gl.RASTERIZER_DISCARD);
+            }
+            else {
+                this._gl.enable(this._gl.RASTERIZER_DISCARD);
+            }
+        };
         /**
          * stop executing a render loop function and remove it from the execution array
          * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
@@ -12105,14 +12113,18 @@ var BABYLON;
         Engine.prototype.bindTransformFeedback = function (value) {
             this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
         };
-        Engine.prototype.beginTransformFeedback = function () {
-            this._gl.beginTransformFeedback(this._gl.TRIANGLES);
+        Engine.prototype.beginTransformFeedback = function (usePoints) {
+            if (usePoints === void 0) { usePoints = true; }
+            this._gl.beginTransformFeedback(usePoints ? this._gl.POINTS : this._gl.TRIANGLES);
         };
         Engine.prototype.endTransformFeedback = function () {
             this._gl.endTransformFeedback();
         };
         Engine.prototype.setTranformFeedbackVaryings = function (program, value) {
             this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
+        };
+        Engine.prototype.bindTransformFeedbackBuffer = function (value) {
+            this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
         };
         // Statics
         Engine.isSupported = function () {
@@ -22193,6 +22205,8 @@ var BABYLON;
             }
             if (!this._cachedTextureMatrix) {
                 this._cachedTextureMatrix = BABYLON.Matrix.Zero();
+            }
+            if (!this._projectionModeMatrix) {
                 this._projectionModeMatrix = BABYLON.Matrix.Zero();
             }
             this._cachedUOffset = this.uOffset;
