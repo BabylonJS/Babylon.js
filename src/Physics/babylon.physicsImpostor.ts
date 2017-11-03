@@ -387,7 +387,7 @@ module BABYLON {
 
             if (!this._options.disableBidirectionalTransformation) {
                 let bInfo = this.object.getBoundingInfo();
-                bInfo && this.object.rotationQuaternion && this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePosition(), this.object.rotationQuaternion);
+                bInfo && this.object.rotationQuaternion && this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePivotPoint(), this.object.rotationQuaternion);
             }
 
             this._onBeforePhysicsStepCallbacks.forEach((func) => {
