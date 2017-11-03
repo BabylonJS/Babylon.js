@@ -83,7 +83,9 @@ vec4 applyImageProcessing(vec4 result) {
 
 	// Going back to gamma space
 	result.rgb = toGammaSpace(result.rgb);
+#if !(defined(ALPHABLEND) && defined(PREMULTIPLYALPHA))
 	result.rgb = clamp(result.rgb, 0.0, 1.0);
+#endif
 
 #ifdef CONTRAST
 	// Contrast
