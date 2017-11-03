@@ -199,6 +199,22 @@ module BABYLON.GUI {
             context.save();
 
             let x, y, width, height;
+            if (this.cellId == -1) {
+                x = this._sourceLeft;
+                y = this._sourceTop;
+
+                width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
+                height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+            }
+            else {
+                let rowCount = this._domImage.naturalWidth / this.cellWidth;
+                let column = (this.cellId / rowCount) >> 0;
+                let row = this.cellId % rowCount;
+
+                x = this.cellWidth * row;
+                y = this.cellHeight * column;
+                width = this.cellWidth;
+                height = this.cellHeight;
             }
 
             this._applyStates(context);
