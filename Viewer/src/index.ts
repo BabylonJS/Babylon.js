@@ -1,3 +1,5 @@
+import { viewerManager } from './viewer/viewerManager';
+import { DefaultViewer } from './viewer/defaultViewer';
 import { AbstractViewer } from './viewer/viewer';
 
 /**
@@ -25,4 +27,4 @@ setTimeout(() => {
 });
 
 // public API for initialization
-export { InitTags };
+export { InitTags, DefaultViewer, AbstractViewer, viewerManager };
