@@ -1766,7 +1766,6 @@
             }
 
             if (navigator.getVRDisplays) {
-                // TODO: Backwards compatible for 1.0?
                 navigator.getVRDisplays().then(getWebVRDevices).then(callback).catch((error: () => void) => {
                     // TODO: System CANNOT support WebVR, despite API presence.
                     this._vrSupported = false;
@@ -2422,6 +2421,12 @@
         public _deleteProgram(program: WebGLProgram): void {
             if (program) {
                 program.__SPECTOR_rebuildProgram = null;
+
+                if (program.transformFeedback) {
+                    this.deleteTransformFeedback(program.transformFeedback);
+                    program.transformFeedback = null;
+                }
+
                 this._gl.deleteProgram(program);
             }
         }
@@ -2474,7 +2479,7 @@
             return this._createShaderProgram(vertexShader, fragmentShader, context);
         }
 
-        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext): WebGLProgram {
+        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
             context = context || this._gl;
 
             this.onBeforeShaderCompilationObservable.notifyObservers(this);
@@ -2483,14 +2488,14 @@
             var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
             var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
 
-            let program = this._createShaderProgram(vertexShader, fragmentShader, context);
+            let program = this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
 
             this.onAfterShaderCompilationObservable.notifyObservers(this);
 
             return program;
         }
 
-        private _createShaderProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext): WebGLProgram {
+        private _createShaderProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
             var shaderProgram = context.createProgram();
 
             if (!shaderProgram) {
@@ -2500,7 +2505,19 @@
             context.attachShader(shaderProgram, vertexShader);
             context.attachShader(shaderProgram, fragmentShader);
 
+            if (this.webGLVersion > 1 && transformFeedbackVaryings) {
+                let transformFeedback = this.createTransformFeedback();
+
+                this.bindTransformFeedback(transformFeedback);
+                this.setTranformFeedbackVaryings(shaderProgram, transformFeedbackVaryings);
+                shaderProgram.transformFeedback = transformFeedback;
+            }
+
             context.linkProgram(shaderProgram);
+
+            if (this.webGLVersion > 1 && transformFeedbackVaryings) {
+                this.bindTransformFeedback(null);
+            }
 
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
@@ -5249,6 +5266,31 @@
 
         private getGlAlgorithmType(algorithmType: number): number {
             return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
+        }
+
+        // Transform feedback
+        public createTransformFeedback(): WebGLTransformFeedback {
+            return this._gl.createTransformFeedback();
+        }
+
+        public deleteTransformFeedback(value: WebGLTransformFeedback): void {
+            this._gl.deleteTransformFeedback(value);
+        }
+
+        public bindTransformFeedback(value: Nullable<WebGLTransformFeedback>): void {
+            this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
+        }
+
+        public beginTransformFeedback(): void {
+            this._gl.beginTransformFeedback(this._gl.TRIANGLES);
+        }
+
+        public endTransformFeedback(): void {
+            this._gl.endTransformFeedback();
+        }
+
+        public setTranformFeedbackVaryings(program: WebGLProgram, value: string[]): void {
+            this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
         }
 
         // Statics

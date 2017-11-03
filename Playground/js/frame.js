@@ -1,5 +1,5 @@
 ﻿(function () {
-    var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
+    var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
     var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
@@ -43,7 +43,7 @@
         xhr.send(null);
     };
 
-    var showError = function(error) {
+    var showError = function (error) {
         console.warn(error);
     };
 
@@ -61,7 +61,7 @@
             }
 
             var canvas = document.getElementById("renderCanvas");
-            engine = new BABYLON.Engine(canvas, true, {stencil: true});
+            engine = new BABYLON.Engine(canvas, true, { stencil: true });
             BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault = true;
 
             engine.runRenderLoop(function () {
@@ -158,7 +158,7 @@
 
                             if (refresh) {
                                 refresh.addEventListener("click", function () {
-                                compileAndRun(snippetCode);
+                                    compileAndRun(snippetCode);
                                 });
                             }
                         }
@@ -167,7 +167,7 @@
 
                 var hash = location.hash.substr(1);
                 currentSnippetToken = hash.split("#")[0];
-                if(!hash.split("#")[1]) hash += "#0";
+                if (!hash.split("#")[1]) hash += "#0";
 
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                 xmlHttp.send();

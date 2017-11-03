@@ -1,5 +1,6 @@
 import { mapperManager } from './mappers';
-import { ViewerConfiguration, defaultConfiguration } from './configuration';
+import { ViewerConfiguration } from './configuration';
+import { getConfigurationType } from './types';
 
 import * as merge from 'lodash.merge';
 
@@ -11,11 +12,9 @@ export class ConfigurationLoader {
 
         let loadedConfig = merge({}, initConfig);
 
-        if (loadedConfig.defaultViewer) {
-            loadedConfig = merge(loadedConfig, defaultConfiguration);
-        } else {
-            loadedConfig = merge(defaultConfiguration, loadedConfig);
-        }
+        let extendedConfiguration = getConfigurationType(loadedConfig && loadedConfig.extends);
+
+        loadedConfig = merge(extendedConfiguration, loadedConfig);
 
         if (loadedConfig.configuration) {
 
@@ -40,6 +39,10 @@ export class ConfigurationLoader {
         } else {
             return Promise.resolve(loadedConfig);
         }
+    }
+
+    public getConfigurationType(type: string) {
+
     }
 
     private loadFile(url: string): Promise<any> {

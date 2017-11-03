@@ -25,7 +25,10 @@ module BABYLON {
         private _spritesRenderTime = new PerfCounter();   
 
         private _capturePhysicsTime = false;
-        private _physicsTime = new PerfCounter();         
+        private _physicsTime = new PerfCounter();     
+        
+        private _captureAnimationsTime = false;
+        private _animationsTime = new PerfCounter();            
 
         // Observers
         private _onBeforeActiveMeshesEvaluationObserver: Nullable<Observer<Scene>> = null;
@@ -47,7 +50,9 @@ module BABYLON {
         private _onAfterSpritesRenderingObserver: Nullable<Observer<Scene>> = null;      
         
         private _onBeforePhysicsObserver: Nullable<Observer<Scene>> = null;
-        private _onAfterPhysicsObserver: Nullable<Observer<Scene>> = null;             
+        private _onAfterPhysicsObserver: Nullable<Observer<Scene>> = null;     
+        
+        private _onAfterAnimationsObserver: Nullable<Observer<Scene>> = null;    
                 
         // Properties
         /**
@@ -264,6 +269,41 @@ module BABYLON {
                 this._onAfterPhysicsObserver = null;
             }
         }      
+
+
+        /**
+         * Gets the perf counter used for animations time
+         */
+        public get animationsTimeCounter(): PerfCounter {
+            return this._animationsTime;
+        }
+
+        /**
+         * Gets the animations time capture status
+         */
+        public get captureAnimationsTime(): boolean {
+            return this._captureAnimationsTime;
+        }        
+
+        /**
+         * Enable or disable the animations time capture
+         */        
+        public set captureAnimationsTime(value: boolean) {
+            if (value === this._captureAnimationsTime) {
+                return;
+            }
+
+            this._captureAnimationsTime = value;
+
+            if (value) {
+                this._onAfterAnimationsObserver = this.scene.onAfterAnimationsObservable.add(()=>{                    
+                    this._animationsTime.endMonitoring();
+                });
+            } else {
+                this.scene.onAfterAnimationsObservable.remove(this._onAfterAnimationsObserver);
+                this._onAfterAnimationsObserver = null;
+            }
+        }              
         
         /**
          * Gets the perf counter used for frame time capture
@@ -384,6 +424,10 @@ module BABYLON {
                     this._spritesRenderTime.fetchNewFrame();
                 }
 
+                if (this._captureAnimationsTime) {
+                    this._animationsTime.beginMonitoring();
+                }
+
                 this.scene.getEngine()._drawCalls.fetchNewFrame();
             });
 
@@ -445,7 +489,10 @@ module BABYLON {
             this._onBeforePhysicsObserver = null;
 
             this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
-            this._onAfterPhysicsObserver = null;            
+            this._onAfterPhysicsObserver = null;    
+            
+            this.scene.onAfterAnimationsObservable.remove(this._onAfterAnimationsObserver);
+            this._onAfterAnimationsObserver = null;            
                 
             (<any>this.scene) = null;
         }

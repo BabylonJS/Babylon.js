@@ -5549,6 +5549,9 @@ var BABYLON;
          */
         Observable.prototype.notifyObservers = function (eventData, mask, target, currentTarget) {
             if (mask === void 0) { mask = -1; }
+            if (!this._observers.length) {
+                return false;
+            }
             var state = this._eventState;
             state.mask = mask;
             state.target = target;
@@ -9188,7 +9191,6 @@ var BABYLON;
                 return _this._vrDisplay = devices[0];
             };
             if (navigator.getVRDisplays) {
-                // TODO: Backwards compatible for 1.0?
                 navigator.getVRDisplays().then(getWebVRDevices).then(callback).catch(function (error) {
                     // TODO: System CANNOT support WebVR, despite API presence.
                     _this._vrSupported = false;
@@ -17347,6 +17349,11 @@ var BABYLON;
             */
             this.onBeforeAnimationsObservable = new BABYLON.Observable();
             /**
+            * An event triggered after animations processing
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterAnimationsObservable = new BABYLON.Observable();
+            /**
             * An event triggered before draw calls are ready to be sent
             * @type {BABYLON.Observable}
             */
@@ -20017,6 +20024,7 @@ var BABYLON;
                     // Animations
                     this._animationRatio = defaultTimeStep * (60.0 / 1000.0);
                     this._animate();
+                    this.onAfterAnimationsObservable.notifyObservers(this);
                     // Physics
                     if (this._physicsEngine) {
                         this.onBeforePhysicsObservable.notifyObservers(this);
@@ -20036,6 +20044,7 @@ var BABYLON;
                 var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
                 this._animationRatio = deltaTime * (60.0 / 1000.0);
                 this._animate();
+                this.onAfterAnimationsObservable.notifyObservers(this);
                 // Physics
                 if (this._physicsEngine) {
                     this.onBeforePhysicsObservable.notifyObservers(this);
@@ -20371,6 +20380,8 @@ var BABYLON;
             this.onAfterDrawPhaseObservable.clear();
             this.onBeforePhysicsObservable.clear();
             this.onAfterPhysicsObservable.clear();
+            this.onBeforeAnimationsObservable.clear();
+            this.onAfterAnimationsObservable.clear();
             this.detachControl();
             // Release sounds & sounds tracks
             if (BABYLON.AudioEngine) {
@@ -75322,6 +75333,8 @@ var BABYLON;
             this._spritesRenderTime = new BABYLON.PerfCounter();
             this._capturePhysicsTime = false;
             this._physicsTime = new BABYLON.PerfCounter();
+            this._captureAnimationsTime = false;
+            this._animationsTime = new BABYLON.PerfCounter();
             // Observers
             this._onBeforeActiveMeshesEvaluationObserver = null;
             this._onAfterActiveMeshesEvaluationObserver = null;
@@ -75337,6 +75350,7 @@ var BABYLON;
             this._onAfterSpritesRenderingObserver = null;
             this._onBeforePhysicsObserver = null;
             this._onAfterPhysicsObserver = null;
+            this._onAfterAnimationsObserver = null;
             // Before render
             this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(function () {
                 if (_this._captureActiveMeshesEvaluationTime) {
@@ -75357,6 +75371,9 @@ var BABYLON;
                 }
                 if (_this._captureSpritesRenderTime) {
                     _this._spritesRenderTime.fetchNewFrame();
+                }
+                if (_this._captureAnimationsTime) {
+                    _this._animationsTime.beginMonitoring();
                 }
                 _this.scene.getEngine()._drawCalls.fetchNewFrame();
             });
@@ -75605,6 +75622,45 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(SceneInstrumentation.prototype, "animationsTimeCounter", {
+            /**
+             * Gets the perf counter used for animations time
+             */
+            get: function () {
+                return this._animationsTime;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneInstrumentation.prototype, "captureAnimationsTime", {
+            /**
+             * Gets the animations time capture status
+             */
+            get: function () {
+                return this._captureAnimationsTime;
+            },
+            /**
+             * Enable or disable the animations time capture
+             */
+            set: function (value) {
+                var _this = this;
+                if (value === this._captureAnimationsTime) {
+                    return;
+                }
+                this._captureAnimationsTime = value;
+                if (value) {
+                    this._onAfterAnimationsObserver = this.scene.onAfterAnimationsObservable.add(function () {
+                        _this._animationsTime.endMonitoring();
+                    });
+                }
+                else {
+                    this.scene.onAfterAnimationsObservable.remove(this._onAfterAnimationsObserver);
+                    this._onAfterAnimationsObserver = null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(SceneInstrumentation.prototype, "frameTimeCounter", {
             /**
              * Gets the perf counter used for frame time capture
@@ -75742,6 +75798,8 @@ var BABYLON;
             this._onBeforePhysicsObserver = null;
             this.scene.onAfterPhysicsObservable.remove(this._onAfterPhysicsObserver);
             this._onAfterPhysicsObserver = null;
+            this.scene.onAfterAnimationsObservable.remove(this._onAfterAnimationsObserver);
+            this._onAfterAnimationsObserver = null;
             this.scene = null;
         };
         return SceneInstrumentation;

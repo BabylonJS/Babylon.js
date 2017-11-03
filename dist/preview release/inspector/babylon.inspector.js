@@ -1304,10 +1304,11 @@ var INSPECTOR;
          */
         MeshAdapter.prototype._drawAxis = function () {
             this._obj.computeWorldMatrix();
+            var mesh = this._obj;
             // Axis
-            var x = new BABYLON.Vector3(8 / this._obj.scaling.x, 0, 0);
-            var y = new BABYLON.Vector3(0, 8 / this._obj.scaling.y, 0);
-            var z = new BABYLON.Vector3(0, 0, 8 / this._obj.scaling.z);
+            var x = new BABYLON.Vector3(8 / Math.abs(mesh.scaling.x), 0, 0);
+            var y = new BABYLON.Vector3(0, 8 / Math.abs(mesh.scaling.y), 0);
+            var z = new BABYLON.Vector3(0, 0, 8 / Math.abs(mesh.scaling.z));
             this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
             this._axesViewer.update(this._obj.position, x, y, z);
         };
@@ -3677,6 +3678,7 @@ var INSPECTOR;
             _this._sceneInstrumentation.captureParticlesRenderTime = true;
             _this._sceneInstrumentation.captureSpritesRenderTime = true;
             _this._sceneInstrumentation.capturePhysicsTime = true;
+            _this._sceneInstrumentation.captureAnimationsTime = true;
             _this._engineInstrumentation = new BABYLON.EngineInstrumentation(_this._engine);
             _this._engineInstrumentation.captureGPUFrameTime = true;
             // Build the stats panel: a div that will contains all stats
@@ -3784,6 +3786,12 @@ var INSPECTOR;
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.spritesRenderTimeCounter.current); }
+                });
+                elemLabel = _this._createStatLabel("Animations", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.animationsTimeCounter.current); }
                 });
                 elemLabel = _this._createStatLabel("Physics", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
