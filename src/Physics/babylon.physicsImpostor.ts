@@ -16,13 +16,17 @@ module BABYLON {
         rotation?: Vector3;
         parent?: any;
         getBoundingInfo(): Nullable<BoundingInfo>;
-        computeWorldMatrix?(force: boolean): void;
+        computeWorldMatrix(force: boolean): Matrix;
         getWorldMatrix?(): Matrix;
         getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
         getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
         getIndices?(): Nullable<IndicesArray>;
         getScene?(): Scene;
         getAbsolutePosition(): Vector3;
+        getAbsolutePivotPoint(): Vector3;
+        rotate(axis: Vector3, amount: number, space?: Space): IPhysicsEnabledObject;
+        translate(axis: Vector3, distance: number, space?: Space): IPhysicsEnabledObject;
+        setAbsolutePosition(absolutePosition: Vector3): IPhysicsEnabledObject;
     }
 
     export class PhysicsImpostor {
@@ -370,9 +374,6 @@ module BABYLON {
             }
         }
 
-        private _tmpPositionWithDelta: Vector3 = Vector3.Zero();
-        private _tmpRotationWithDelta: Quaternion = new Quaternion();
-
         /**
          * this function is executed by the physics engine.
          */
@@ -381,23 +382,12 @@ module BABYLON {
                 return;
             }
 
-            if (this._options.ignoreParent && this.object.parent) {
-                this._tmpPositionWithDelta.copyFrom(this.object.getAbsolutePosition());
-                //this.object.getAbsolutePosition().subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
-            } else {
-                this.object.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
-            }
-            //conjugate deltaRotation
-            if (this.object.rotationQuaternion) {
-                if (this._deltaRotationConjugated) {
-                    this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this._tmpRotationWithDelta);
-                } else {
-                    this._tmpRotationWithDelta.copyFrom(this.object.rotationQuaternion);
-                }
-            }
-            // Only if not disabled
+            this.object.translate(this._deltaPosition, -1);
+            this._deltaRotationConjugated && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this.object.rotationQuaternion);
+
             if (!this._options.disableBidirectionalTransformation) {
-                this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, this._tmpPositionWithDelta, this._tmpRotationWithDelta);
+                let bInfo = this.object.getBoundingInfo();
+                bInfo && this.object.rotationQuaternion && this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePosition(), this.object.rotationQuaternion);
             }
 
             this._onBeforePhysicsStepCallbacks.forEach((func) => {
@@ -413,21 +403,11 @@ module BABYLON {
                 return;
             }
 
-            this._onAfterPhysicsStepCallbacks.forEach((func) => {
-                func(this);
-            });
-
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
-
-            if (this._options.ignoreParent && this.object.parent) {
-                this.object.position.subtractInPlace(this.object.parent.getAbsolutePosition());
-            } else {
-                this.object.position.addInPlace(this._deltaPosition)
-            }
-
-            if (this._deltaRotation && this.object.rotationQuaternion) {
-                this.object.rotationQuaternion.multiplyInPlace(this._deltaRotation);
-            }
+            // take the position set and make it the absolute position of this object.
+            this.object.setAbsolutePosition(this.object.position);
+            this._deltaRotation && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
+            this.object.translate(this._deltaPosition, 1);
         }
 
         /**
