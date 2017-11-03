@@ -9,7 +9,7 @@ window['BABYLON'] = BABYLON;
 
 export class DefaultViewer extends AbstractViewer {
 
-    private camera: ArcRotateCamera;
+    public camera: ArcRotateCamera;
 
     public initScene(): Promise<Scene> {
         return super.initScene().then(() => {
