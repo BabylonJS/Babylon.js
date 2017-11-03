@@ -116,7 +116,7 @@
             if (meshChildren.length) {
                 var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
 
-                    if (!currentRotation || ! mesh.rotationQuaternion) {
+                    if (!currentRotation || !mesh.rotationQuaternion) {
                         return;
                     }
 
@@ -263,10 +263,20 @@
                     returnValue = new this.BJSCANNON.Plane();
                     break;
                 case PhysicsImpostor.MeshImpostor:
+                    // should transform the vertex data to world coordinates!!
                     var rawVerts = object.getVerticesData ? object.getVerticesData(VertexBuffer.PositionKind) : [];
                     var rawFaces = object.getIndices ? object.getIndices() : [];
+                    if (!rawVerts) return;
+                    let transform = object.computeWorldMatrix(true);
+                    // convert rawVerts to object space
+                    var temp = new Array<number>();
+                    var index: number;
+                    for (index = 0; index < rawVerts.length; index += 3) {
+                        Vector3.TransformCoordinates(Vector3.FromArray(rawVerts, index), transform).toArray(temp, index);
+                    }
+
                     Tools.Warn("MeshImpostor only collides against spheres.");
-                    returnValue = new this.BJSCANNON.Trimesh(<number[]>rawVerts, <number[]>rawFaces);
+                    returnValue = new this.BJSCANNON.Trimesh(temp, <number[]>rawFaces);
                     break;
                 case PhysicsImpostor.HeightmapImpostor:
                     returnValue = this._createHeightmap(object);
@@ -289,7 +299,7 @@
             let boundingInfo = <BoundingInfo>(object.getBoundingInfo());
             var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.z);
             var minY = boundingInfo.boundingBox.extendSizeWorld.y;
-            
+
             var elementSize = dim * 2 / arraySize;
 
             for (var i = 0; i < pos.length; i = i + 3) {
@@ -349,8 +359,11 @@
             //make sure it is updated...
             object.computeWorldMatrix && object.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
+            let bInfo = object.getBoundingInfo();
+            if (!bInfo) return;
             var center = impostor.getObjectCenter();
-            this._tmpDeltaPosition.copyFrom(object.position.subtract(center));
+            //m.getAbsolutePosition().subtract(m.getBoundingInfo().boundingBox.centerWorld)
+            this._tmpDeltaPosition.copyFrom(object.getAbsolutePosition().subtract(center));
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
 
@@ -400,8 +413,8 @@
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             } else if (impostor.type === PhysicsImpostor.MeshImpostor) {
-                this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
-                this._tmpPosition.copyFrom(object.position);
+                //this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
+                //this._tmpPosition.copyFrom(object.position);
             }
 
             impostor.setDeltaPosition(this._tmpDeltaPosition);
