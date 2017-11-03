@@ -1447,6 +1447,14 @@
             }
         }
 
+        public setRasterizerState(value: boolean): void {
+            if (value) {
+                this._gl.disable(this._gl.RASTERIZER_DISCARD);
+            } else {
+                this._gl.enable(this._gl.RASTERIZER_DISCARD);
+            }
+        }        
+
         /**
          * stop executing a render loop function and remove it from the execution array
          * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
@@ -2470,13 +2478,13 @@
                 ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         }
 
-        public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext): WebGLProgram {
+        public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
             context = context || this._gl;
 
             var vertexShader = compileRawShader(context, vertexCode, "vertex");
             var fragmentShader = compileRawShader(context, fragmentCode, "fragment");
 
-            return this._createShaderProgram(vertexShader, fragmentShader, context);
+            return this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
         }
 
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
@@ -5281,8 +5289,8 @@
             this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
         }
 
-        public beginTransformFeedback(): void {
-            this._gl.beginTransformFeedback(this._gl.TRIANGLES);
+        public beginTransformFeedback(usePoints: boolean = true): void {
+            this._gl.beginTransformFeedback(usePoints ? this._gl.POINTS : this._gl.TRIANGLES);
         }
 
         public endTransformFeedback(): void {
@@ -5291,6 +5299,10 @@
 
         public setTranformFeedbackVaryings(program: WebGLProgram, value: string[]): void {
             this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
+        }
+
+        public bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void {
+            this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
         }
 
         // Statics

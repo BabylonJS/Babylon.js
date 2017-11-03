@@ -54,7 +54,8 @@ module BABYLON {
 
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
-
+                let isTouch = (<any>p.event).pointerType === "touch";
+                
                 if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
@@ -105,7 +106,7 @@ module BABYLON {
                     twoFingerActivityCount = 0;
                     initialDistance = 0;
 
-                    if ((<any>p.event).pointerType !== "touch") {
+                    if (!isTouch) {
                         pointB = null; // Mouse and pen are mono pointer
                     }
 
