@@ -316,9 +316,12 @@
 
             if (!this._cachedTextureMatrix) {
                 this._cachedTextureMatrix = Matrix.Zero();
+            }
+            
+            if (!this._projectionModeMatrix) {
                 this._projectionModeMatrix = Matrix.Zero();
             }
-
+            
             this._cachedUOffset = this.uOffset;
             this._cachedVOffset = this.vOffset;
             this._cachedUScale = this.uScale;
