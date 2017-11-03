@@ -1,3 +1,4 @@
+import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
 import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight } from 'babylonjs';
@@ -21,6 +22,10 @@ export abstract class AbstractViewer {
             this.baseId = containerElement.id = 'bjs' + Math.random().toString(32).substr(2, 8);
         }
 
+        // add this viewer to the viewer manager
+        viewerManager.addViewer(this);
+
+        // create a new template manager. TODO - singleton?
         this.templateManager = new TemplateManager(containerElement);
 
         this.prepareContainerElement();
