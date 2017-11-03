@@ -12,12 +12,6 @@ module BABYLON {
         public angularSensibilityY = 1000.0;
 
         @serialize()
-        public angularTouchSensibilityX = this.angularSensibilityX;
-
-        @serialize()
-        public angularTouchSensibilityY = this.angularSensibilityY;
-
-        @serialize()
         public pinchPrecision = 12.0;
 
         /**
@@ -38,9 +32,6 @@ module BABYLON {
 
         private _isPanClick: boolean = false;
         public pinchInwards = true;
-
-        private _angularSensibilityX = this.angularSensibilityX;
-        private _angularSensibilityY = this.angularSensibilityY;
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
         private _observer: Nullable<Observer<PointerInfo>>;
@@ -64,9 +55,6 @@ module BABYLON {
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
                 let isTouch = (<any>p.event).pointerType === "touch";
-                
-                this._angularSensibilityX = isTouch ? this.angularTouchSensibilityX : this.angularSensibilityX;
-                this._angularSensibilityY = isTouch ? this.angularTouchSensibilityY : this.angularSensibilityY;
                 
                 if (engine.isInVRExclusivePointerMode) {
                     return;
@@ -163,8 +151,8 @@ module BABYLON {
                         } else {
                             var offsetX = evt.clientX - cacheSoloPointer.x;
                             var offsetY = evt.clientY - cacheSoloPointer.y;
-                            this.camera.inertialAlphaOffset -= offsetX / this._angularSensibilityX;
-                            this.camera.inertialBetaOffset -= offsetY / this._angularSensibilityY;
+                            this.camera.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
+                            this.camera.inertialBetaOffset -= offsetY / this.angularSensibilityY;
                         }
 
                         cacheSoloPointer.x = evt.clientX;
@@ -197,7 +185,7 @@ module BABYLON {
                             } else {
                                 this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                     (this.pinchPrecision *
-                                        ((this._angularSensibilityX + this._angularSensibilityY) / 2) *
+                                        ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
                                         direction);
                             }
 
@@ -223,7 +211,7 @@ module BABYLON {
                                 } else {
                                     this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                         (this.pinchPrecision *
-                                            ((this._angularSensibilityX + this._angularSensibilityY) / 2) *
+                                            ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
                                             direction);
                                 }
                                 previousMultiTouchPanPosition.isPaning = false;

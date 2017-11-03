@@ -38290,8 +38290,6 @@ var BABYLON;
             this.buttons = [0, 1, 2];
             this.angularSensibilityX = 1000.0;
             this.angularSensibilityY = 1000.0;
-            this.angularTouchSensibilityX = this.angularSensibilityX;
-            this.angularTouchSensibilityY = this.angularSensibilityY;
             this.pinchPrecision = 12.0;
             /**
              * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
@@ -38303,8 +38301,6 @@ var BABYLON;
             this.multiTouchPanAndZoom = true;
             this._isPanClick = false;
             this.pinchInwards = true;
-            this._angularSensibilityX = this.angularSensibilityX;
-            this._angularSensibilityY = this.angularSensibilityY;
         }
         ArcRotateCameraPointersInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -38319,8 +38315,6 @@ var BABYLON;
             this._pointerInput = function (p, s) {
                 var evt = p.event;
                 var isTouch = p.event.pointerType === "touch";
-                _this._angularSensibilityX = isTouch ? _this.angularTouchSensibilityX : _this.angularSensibilityX;
-                _this._angularSensibilityY = isTouch ? _this.angularTouchSensibilityY : _this.angularSensibilityY;
                 if (engine.isInVRExclusivePointerMode) {
                     return;
                 }
@@ -38410,8 +38404,8 @@ var BABYLON;
                         else {
                             var offsetX = evt.clientX - cacheSoloPointer.x;
                             var offsetY = evt.clientY - cacheSoloPointer.y;
-                            _this.camera.inertialAlphaOffset -= offsetX / _this._angularSensibilityX;
-                            _this.camera.inertialBetaOffset -= offsetY / _this._angularSensibilityY;
+                            _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                            _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                         }
                         cacheSoloPointer.x = evt.clientX;
                         cacheSoloPointer.y = evt.clientY;
@@ -38440,7 +38434,7 @@ var BABYLON;
                             else {
                                 _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                     (_this.pinchPrecision *
-                                        ((_this._angularSensibilityX + _this._angularSensibilityY) / 2) *
+                                        ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
                                         direction);
                             }
                             if (_this.panningSensibility !== 0) {
@@ -38463,7 +38457,7 @@ var BABYLON;
                                 else {
                                     _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
                                         (_this.pinchPrecision *
-                                            ((_this._angularSensibilityX + _this._angularSensibilityY) / 2) *
+                                            ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
                                             direction);
                                 }
                                 previousMultiTouchPanPosition.isPaning = false;
@@ -38592,12 +38586,6 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "angularSensibilityY", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCameraPointersInput.prototype, "angularTouchSensibilityX", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCameraPointersInput.prototype, "angularTouchSensibilityY", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "pinchPrecision", void 0);
@@ -38746,38 +38734,6 @@ var BABYLON;
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers) {
                     pointers.angularSensibilityY = value;
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ArcRotateCamera.prototype, "angularTouchSensibilityX", {
-            get: function () {
-                var pointers = this.inputs.attached["pointers"];
-                if (pointers)
-                    return pointers.angularTouchSensibilityX;
-                return 0;
-            },
-            set: function (value) {
-                var pointers = this.inputs.attached["pointers"];
-                if (pointers) {
-                    pointers.angularTouchSensibilityX = value;
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ArcRotateCamera.prototype, "angularTouchSensibilityY", {
-            get: function () {
-                var pointers = this.inputs.attached["pointers"];
-                if (pointers)
-                    return pointers.angularTouchSensibilityY;
-                return 0;
-            },
-            set: function (value) {
-                var pointers = this.inputs.attached["pointers"];
-                if (pointers) {
-                    pointers.angularTouchSensibilityY = value;
                 }
             },
             enumerable: true,
