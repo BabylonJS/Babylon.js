@@ -19,7 +19,7 @@ module BABYLON.GUI {
 
         private _cellWidth: number = 0;
         private _cellHeight: number = 0;
-        private _cellId: number = 0;
+        private _cellId: number = -1;
 
         public get sourceLeft(): number {
             return this._sourceLeft;
@@ -197,11 +197,9 @@ module BABYLON.GUI {
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
-            let x = this._sourceLeft;
-            let y = this._sourceTop;
 
-            let width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
-            let height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+            let x, y, width, height;
+            }
 
             this._applyStates(context);
             if (this._processMeasures(parentMeasure, context)) {
@@ -236,13 +234,6 @@ module BABYLON.GUI {
                                 this._root.height = this.height;
                             }
                             break;
-                        case Image.ANIMATION_SHEET:
-                            let rowCount = this._domImage.naturalWidth / this.cellWidth;
-                            let column = (this.cellId / rowCount) >> 0;
-                            let row = this.cellId % rowCount;
-                            context.drawImage(this._domImage, this.cellWidth * row, this.cellHeight * column, this.cellWidth, this.cellHeight,
-                                this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                            break;
                     }
                 }
             }
@@ -254,7 +245,6 @@ module BABYLON.GUI {
         private static _STRETCH_FILL = 1;
         private static _STRETCH_UNIFORM = 2;
         private static _STRETCH_EXTEND = 3;
-        private static _ANIMATION_SHEET = 4;
 
         public static get STRETCH_NONE(): number {
             return Image._STRETCH_NONE;
@@ -270,10 +260,6 @@ module BABYLON.GUI {
 
         public static get STRETCH_EXTEND(): number {
             return Image._STRETCH_EXTEND;
-        }
-
-        public static get ANIMATION_SHEET(): number {
-            return Image._ANIMATION_SHEET;
         }
     }
 }

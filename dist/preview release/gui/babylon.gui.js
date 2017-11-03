@@ -3217,7 +3217,7 @@ var BABYLON;
                 _this._sourceHeight = 0;
                 _this._cellWidth = 0;
                 _this._cellHeight = 0;
-                _this._cellId = 0;
+                _this._cellId = -1;
                 _this.source = url;
                 return _this;
             }
@@ -3398,10 +3398,22 @@ var BABYLON;
             };
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
-                var x = this._sourceLeft;
-                var y = this._sourceTop;
-                var width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
-                var height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+                var x, y, width, height;
+                if (this.cellId == -1) {
+                    x = this._sourceLeft;
+                    y = this._sourceTop;
+                    width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
+                    height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+                }
+                else {
+                    var rowCount = this._domImage.naturalWidth / this.cellWidth;
+                    var column = (this.cellId / rowCount) >> 0;
+                    var row = this.cellId % rowCount;
+                    x = this.cellWidth * row;
+                    y = this.cellHeight * column;
+                    width = this.cellWidth;
+                    height = this.cellHeight;
+                }
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     if (this._loaded) {
@@ -3429,12 +3441,6 @@ var BABYLON;
                                     this._root.width = this.width;
                                     this._root.height = this.height;
                                 }
-                                break;
-                            case Image.ANIMATION_SHEET:
-                                var rowCount = this._domImage.naturalWidth / this.cellWidth;
-                                var column = (this.cellId / rowCount) >> 0;
-                                var row = this.cellId % rowCount;
-                                context.drawImage(this._domImage, this.cellWidth * row, this.cellHeight * column, this.cellWidth, this.cellHeight, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                                 break;
                         }
                     }
@@ -3469,19 +3475,11 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Image, "ANIMATION_SHEET", {
-                get: function () {
-                    return Image._ANIMATION_SHEET;
-                },
-                enumerable: true,
-                configurable: true
-            });
             // Static
             Image._STRETCH_NONE = 0;
             Image._STRETCH_FILL = 1;
             Image._STRETCH_UNIFORM = 2;
             Image._STRETCH_EXTEND = 3;
-            Image._ANIMATION_SHEET = 4;
             return Image;
         }(GUI.Control));
         GUI.Image = Image;

@@ -568,12 +568,10 @@ declare module BABYLON.GUI {
         private static _STRETCH_FILL;
         private static _STRETCH_UNIFORM;
         private static _STRETCH_EXTEND;
-        private static _ANIMATION_SHEET;
         static readonly STRETCH_NONE: number;
         static readonly STRETCH_FILL: number;
         static readonly STRETCH_UNIFORM: number;
         static readonly STRETCH_EXTEND: number;
-        static readonly ANIMATION_SHEET: number;
     }
 }
 
