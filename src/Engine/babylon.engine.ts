@@ -531,7 +531,7 @@
         }
 
         public static get Version(): string {
-            return "3.1-beta";
+            return "3.1-beta-1";
         }
 
         // Updatable statics so stick with vars here
