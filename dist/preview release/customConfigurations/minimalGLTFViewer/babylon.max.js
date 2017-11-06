@@ -51703,8 +51703,7 @@ var BABYLON;
                 if (!_this._scene || !_this._scene.getEngine()) {
                     return;
                 }
-                var subMesh = subMeshes[currentIndex];
-                if (_this.isReady(subMesh, options ? options.useInstances : false)) {
+                while (_this.isReady(subMeshes[currentIndex], options ? options.useInstances : false)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
                         if (onCompiled) {
