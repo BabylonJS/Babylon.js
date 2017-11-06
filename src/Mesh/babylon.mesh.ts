@@ -1140,7 +1140,7 @@
             var offset = 0;
             var instancesCount = 0;
 
-            var world = this.getWorldMatrix();
+            var world = this.getWorldMatrix(true);
             if (batch.renderSelf[subMesh._id]) {
                 world.copyToArray(this._instancesData, offset);
                 offset += 16;
@@ -1150,7 +1150,7 @@
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix().copyToArray(this._instancesData, offset);
+                    instance.getWorldMatrix(true).copyToArray(this._instancesData, offset);
                     offset += 16;
                     instancesCount++;
                 }
@@ -1190,7 +1190,7 @@
                 if (batch.renderSelf[subMesh._id]) {
                     // Draw
                     if (onBeforeDraw) {
-                        onBeforeDraw(false, this.getWorldMatrix(), effectiveMaterial);
+                        onBeforeDraw(false, this.getWorldMatrix(true), effectiveMaterial);
                     }
 
                     this._draw(subMesh, fillMode, this._overridenInstanceCount);
@@ -1203,7 +1203,7 @@
                         var instance = visibleInstancesForSubMesh[instanceIndex];
 
                         // World
-                        var world = instance.getWorldMatrix();
+                        var world = instance.getWorldMatrix(true);
                         if (onBeforeDraw) {
                             onBeforeDraw(true, world, effectiveMaterial);
                         }
@@ -1301,7 +1301,7 @@
                 this._bind(subMesh, effect, fillMode);
             }
 
-            var world = this.getWorldMatrix();
+            var world = this.getWorldMatrix(true);
 
             if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
