@@ -374,6 +374,10 @@ module BABYLON {
             }
         }
 
+        //temp variables for parent rotation calculations
+        private _mats: Array<Matrix> = [new Matrix(), new Matrix()];
+        private _tmpQuat: Quaternion = new Quaternion();
+
         /**
          * this function is executed by the physics engine.
          */
@@ -384,10 +388,15 @@ module BABYLON {
 
             this.object.translate(this._deltaPosition, -1);
             this._deltaRotationConjugated && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this.object.rotationQuaternion);
-
+            if (this.object.parent) {
+                this.object.computeWorldMatrix(false).getRotationMatrixToRef(this._mats[0]);
+                Quaternion.FromRotationMatrixToRef(this._mats[0], this._tmpQuat);
+                this._tmpQuat.normalize();
+            } else {
+                this._tmpQuat.copyFrom(this.object.rotationQuaternion || new Quaternion());
+            }
             if (!this._options.disableBidirectionalTransformation) {
-                let bInfo = this.object.getBoundingInfo();
-                bInfo && this.object.rotationQuaternion && this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePivotPoint(), this.object.rotationQuaternion);
+                this.object.rotationQuaternion && this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePivotPoint(), this._tmpQuat);
             }
 
             this._onBeforePhysicsStepCallbacks.forEach((func) => {
@@ -404,6 +413,14 @@ module BABYLON {
             }
 
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
+            // object has now its world rotation. needs to be converted to local.
+            if (this.object.parent && this.object.rotationQuaternion) {
+                this.object.parent.computeWorldMatrix(false).getRotationMatrixToRef(this._mats[0]);
+                Quaternion.FromRotationMatrixToRef(this._mats[0], this._tmpQuat);
+                this._tmpQuat.conjugateInPlace();
+                this._tmpQuat.normalize();
+                this._tmpQuat.multiplyToRef(this.object.rotationQuaternion, this.object.rotationQuaternion);
+            }
             // take the position set and make it the absolute position of this object.
             this.object.setAbsolutePosition(this.object.position);
             this._deltaRotation && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
