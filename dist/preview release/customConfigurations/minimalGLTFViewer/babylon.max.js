@@ -46626,6 +46626,9 @@ var BABYLON;
             get: function () {
                 return this._colorShader;
             },
+            set: function (value) {
+                // Do nothing
+            },
             enumerable: true,
             configurable: true
         });
@@ -65644,8 +65647,9 @@ var BABYLON;
             this._onPhysicsCollideCallbacks = [];
             this._deltaPosition = BABYLON.Vector3.Zero();
             this._isDisposed = false;
-            this._tmpPositionWithDelta = BABYLON.Vector3.Zero();
-            this._tmpRotationWithDelta = new BABYLON.Quaternion();
+            //temp variables for parent rotation calculations
+            this._mats = [new BABYLON.Matrix(), new BABYLON.Matrix()];
+            this._tmpQuat = new BABYLON.Quaternion();
             /**
              * this function is executed by the physics engine.
              */
@@ -65653,25 +65657,18 @@ var BABYLON;
                 if (!_this._physicsEngine) {
                     return;
                 }
-                if (_this._options.ignoreParent && _this.object.parent) {
-                    _this._tmpPositionWithDelta.copyFrom(_this.object.getAbsolutePosition());
-                    //this.object.getAbsolutePosition().subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
+                _this.object.translate(_this._deltaPosition, -1);
+                _this._deltaRotationConjugated && _this.object.rotationQuaternion && _this.object.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this.object.rotationQuaternion);
+                if (_this.object.parent) {
+                    _this.object.computeWorldMatrix(false).getRotationMatrixToRef(_this._mats[0]);
+                    BABYLON.Quaternion.FromRotationMatrixToRef(_this._mats[0], _this._tmpQuat);
+                    _this._tmpQuat.normalize();
                 }
                 else {
-                    _this.object.position.subtractToRef(_this._deltaPosition, _this._tmpPositionWithDelta);
+                    _this._tmpQuat.copyFrom(_this.object.rotationQuaternion || new BABYLON.Quaternion());
                 }
-                //conjugate deltaRotation
-                if (_this.object.rotationQuaternion) {
-                    if (_this._deltaRotationConjugated) {
-                        _this.object.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this._tmpRotationWithDelta);
-                    }
-                    else {
-                        _this._tmpRotationWithDelta.copyFrom(_this.object.rotationQuaternion);
-                    }
-                }
-                // Only if not disabled
                 if (!_this._options.disableBidirectionalTransformation) {
-                    _this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(_this, _this._tmpPositionWithDelta, _this._tmpRotationWithDelta);
+                    _this.object.rotationQuaternion && _this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(_this, /*bInfo.boundingBox.centerWorld*/ _this.object.getAbsolutePivotPoint(), _this._tmpQuat);
                 }
                 _this._onBeforePhysicsStepCallbacks.forEach(function (func) {
                     func(_this);
@@ -65684,19 +65681,19 @@ var BABYLON;
                 if (!_this._physicsEngine) {
                     return;
                 }
-                _this._onAfterPhysicsStepCallbacks.forEach(function (func) {
-                    func(_this);
-                });
                 _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
-                if (_this._options.ignoreParent && _this.object.parent) {
-                    _this.object.position.subtractInPlace(_this.object.parent.getAbsolutePosition());
+                // object has now its world rotation. needs to be converted to local.
+                if (_this.object.parent && _this.object.rotationQuaternion) {
+                    _this.object.parent.computeWorldMatrix(false).getRotationMatrixToRef(_this._mats[0]);
+                    BABYLON.Quaternion.FromRotationMatrixToRef(_this._mats[0], _this._tmpQuat);
+                    _this._tmpQuat.conjugateInPlace();
+                    _this._tmpQuat.normalize();
+                    _this._tmpQuat.multiplyToRef(_this.object.rotationQuaternion, _this.object.rotationQuaternion);
                 }
-                else {
-                    _this.object.position.addInPlace(_this._deltaPosition);
-                }
-                if (_this._deltaRotation && _this.object.rotationQuaternion) {
-                    _this.object.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
-                }
+                // take the position set and make it the absolute position of this object.
+                _this.object.setAbsolutePosition(_this.object.position);
+                _this._deltaRotation && _this.object.rotationQuaternion && _this.object.rotationQuaternion.multiplyToRef(_this._deltaRotation, _this.object.rotationQuaternion);
+                _this.object.translate(_this._deltaPosition, 1);
             };
             /**
              * Legacy collision detection event support
@@ -66620,10 +66617,31 @@ var BABYLON;
                     returnValue = new this.BJSCANNON.Plane();
                     break;
                 case BABYLON.PhysicsImpostor.MeshImpostor:
+                    // should transform the vertex data to world coordinates!!
                     var rawVerts = object.getVerticesData ? object.getVerticesData(BABYLON.VertexBuffer.PositionKind) : [];
                     var rawFaces = object.getIndices ? object.getIndices() : [];
+                    if (!rawVerts)
+                        return;
+                    // get only scale! so the object could transform correctly.
+                    var oldPosition = object.position.clone();
+                    var oldRotation = object.rotation && object.rotation.clone();
+                    var oldQuaternion = object.rotationQuaternion && object.rotationQuaternion.clone();
+                    object.position.copyFromFloats(0, 0, 0);
+                    object.rotation && object.rotation.copyFromFloats(0, 0, 0);
+                    object.rotationQuaternion && object.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+                    var transform = object.computeWorldMatrix(true);
+                    // convert rawVerts to object space
+                    var temp = new Array();
+                    var index;
+                    for (index = 0; index < rawVerts.length; index += 3) {
+                        BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(rawVerts, index), transform).toArray(temp, index);
+                    }
                     BABYLON.Tools.Warn("MeshImpostor only collides against spheres.");
-                    returnValue = new this.BJSCANNON.Trimesh(rawVerts, rawFaces);
+                    returnValue = new this.BJSCANNON.Trimesh(temp, rawFaces);
+                    //now set back the transformation!
+                    object.position.copyFrom(oldPosition);
+                    oldRotation && object.rotation && object.rotation.copyFrom(oldRotation);
+                    oldQuaternion && object.rotationQuaternion && object.rotationQuaternion.copyFrom(oldQuaternion);
                     break;
                 case BABYLON.PhysicsImpostor.HeightmapImpostor:
                     returnValue = this._createHeightmap(object);
@@ -66688,8 +66706,12 @@ var BABYLON;
             //make sure it is updated...
             object.computeWorldMatrix && object.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
+            var bInfo = object.getBoundingInfo();
+            if (!bInfo)
+                return;
             var center = impostor.getObjectCenter();
-            this._tmpDeltaPosition.copyFrom(object.position.subtract(center));
+            //m.getAbsolutePosition().subtract(m.getBoundingInfo().boundingBox.centerWorld)
+            this._tmpDeltaPosition.copyFrom(object.getAbsolutePivotPoint().subtract(center));
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
             if (!quaternion) {
@@ -66731,7 +66753,7 @@ var BABYLON;
             }
             else if (impostor.type === BABYLON.PhysicsImpostor.MeshImpostor) {
                 this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
-                this._tmpPosition.copyFrom(object.position);
+                //this._tmpPosition.copyFrom(object.position);
             }
             impostor.setDeltaPosition(this._tmpDeltaPosition);
             //Now update the impostor object
@@ -66742,10 +66764,14 @@ var BABYLON;
             impostor.object.position.copyFrom(impostor.physicsBody.position);
             if (impostor.object.rotationQuaternion) {
                 impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+                //impostor.object.rotationQuaternion.y *= -1;
+                //impostor.object.rotationQuaternion.z *= -1;
             }
         };
         CannonJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
             impostor.physicsBody.position.copy(newPosition);
+            //newRotation.y *= -1;
+            //newRotation.z *= -1;
             impostor.physicsBody.quaternion.copy(newRotation);
         };
         CannonJSPlugin.prototype.isSupported = function () {
