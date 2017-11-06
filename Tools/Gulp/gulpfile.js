@@ -473,21 +473,22 @@ gulp.task("typescript-all", function (cb) {
  * Watch ts files and fire repective tasks.
  */
 gulp.task("watch", [], function () {
-    var tasks = [gulp.watch(config.typescript, ["typescript-compile"])];
+    var interval = 1000;
+    var tasks = [gulp.watch(config.typescript, { interval: interval}, ["typescript-compile"])];
 
     config.modules.map(function (module) {
         config[module].libraries.map(function (library) {
-            tasks.push(gulp.watch(library.files, function () {
+            tasks.push(gulp.watch(library.files, { interval: interval}, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                     .pipe(debug());
             }));
-            tasks.push(gulp.watch(library.shaderFiles, function () {
+            tasks.push(gulp.watch(library.shaderFiles, { interval: interval}, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                     .pipe(debug())
             }));
-            tasks.push(gulp.watch(library.sassFiles, function () {
+            tasks.push(gulp.watch(library.sassFiles, { interval: interval}, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                     .pipe(debug())
