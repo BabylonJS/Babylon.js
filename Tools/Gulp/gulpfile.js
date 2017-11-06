@@ -66,6 +66,11 @@ var externalTsConfig = {
     strictNullChecks: true
 };
 
+var minimist = require("minimist");
+var commandLineOptions = minimist(process.argv.slice(2), {
+    boolean: "public"
+});
+
 function processDependency(kind, dependency, filesToLoad) {
     if (dependency.dependUpon) {
         for (var i = 0; i < dependency.dependUpon.length; i++) {
@@ -505,11 +510,16 @@ gulp.task("deployLocalDev", function () {
  * Embedded webserver for test convenience.
  */
 gulp.task("webserver", function () {
-    gulp.src('../../.').pipe(webserver({
-        host: '0.0.0.0',
+    var options = {
         port: 1338,
         livereload: false
-    }));
+    };
+
+    if (commandLineOptions.public) {
+        options.host = "0.0.0.0";
+    }
+
+    gulp.src("../../.").pipe(webserver(options));
 });
 
 /**
