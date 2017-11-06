@@ -9,23 +9,23 @@ var addModuleExports = require("./gulp-addModuleExports");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
 var rename = require("gulp-rename");
-var cleants = require('gulp-clean-ts-extends');
-var changedInPlace = require('gulp-changed-in-place');
-var runSequence = require('run-sequence');
+var cleants = require("gulp-clean-ts-extends");
+var changedInPlace = require("gulp-changed-in-place");
+var runSequence = require("run-sequence");
 var replace = require("gulp-replace");
 var uncommentShader = require("./gulp-removeShaderComments");
-var expect = require('gulp-expect-file');
-var optimisejs = require('gulp-optimize-js');
-var webserver = require('gulp-webserver');
-var path = require('path');
-var sass = require('gulp-sass');
-var webpack = require('webpack-stream');
+var expect = require("gulp-expect-file");
+var optimisejs = require("gulp-optimize-js");
+var webserver = require("gulp-webserver");
+var path = require("path");
+var sass = require("gulp-sass");
+var webpack = require("webpack-stream");
 
 var config = require("./config.json");
 
-var del = require('del');
+var del = require("del");
 
-var debug = require('gulp-debug');
+var debug = require("gulp-debug");
 var includeShadersStream;
 var shadersStream;
 var workersStream;
@@ -39,9 +39,9 @@ var referenceSearchRegex = /\/\/\/ <reference.*/g;
  */
 var tsConfig = {
     noResolve: true,
-    target: 'ES5',
+    target: "ES5",
     declarationFiles: true,
-    typescript: require('typescript'),
+    typescript: require("typescript"),
     experimentalDecorators: true,
     isolatedModules: false,
     noImplicitAny: true,
@@ -54,9 +54,9 @@ var tsProject = typescript.createProject(tsConfig);
 
 var externalTsConfig = {
     noResolve: false,
-    target: 'ES5',
+    target: "ES5",
     declarationFiles: true,
-    typescript: require('typescript'),
+    typescript: require("typescript"),
     experimentalDecorators: true,
     isolatedModules: false,
     noImplicitAny: true,
@@ -65,6 +65,11 @@ var externalTsConfig = {
     noUnusedLocals: true,
     strictNullChecks: true
 };
+
+var minimist = require("minimist");
+var commandLineOptions = minimist(process.argv.slice(2), {
+    boolean: "public"
+});
 
 function processDependency(kind, dependency, filesToLoad) {
     if (dependency.dependUpon) {
@@ -125,13 +130,13 @@ function determineFilesToProcess(kind) {
  */
 function shadersName(filename) {
     return path.basename(filename)
-        .replace('.fragment', 'Pixel')
-        .replace('.vertex', 'Vertex')
-        .replace('.fx', 'Shader');
+        .replace(".fragment", "Pixel")
+        .replace(".vertex", "Vertex")
+        .replace(".fx", "Shader");
 }
 
 function includeShadersName(filename) {
-    return path.basename(filename).replace('.fx', '');
+    return path.basename(filename).replace(".fx", "");
 }
 
 /*
@@ -218,7 +223,7 @@ gulp.task("build", ["shaders"], function () {
 /*
 * Compiles all typescript files and creating a js and a declaration file.
 */
-gulp.task('typescript-compile', function () {
+gulp.task("typescript-compile", function () {
     var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject());
@@ -226,11 +231,11 @@ gulp.task('typescript-compile', function () {
     //If this gulp task is running on travis, file the build!
     if (process.env.TRAVIS) {
         var error = false;
-        tsResult.on('error', function () {
+        tsResult.on("error", function () {
             error = true;
-        }).on('end', function () {
+        }).on("end", function () {
             if (error) {
-                console.log('Typescript compile failed');
+                console.log("Typescript compile failed");
                 process.exit(1);
             }
         });
@@ -249,7 +254,7 @@ gulp.task('typescript-compile', function () {
                 {
                     includeContent: false,
                     sourceRoot: (filePath) => {
-                        return '';
+                        return "";
                     }
                 }))
             .pipe(gulp.dest(config.build.srcOutputDirectory))
@@ -267,7 +272,7 @@ var buildExternalLibraries = function (settings) {
     let mergedTasks = merge2(tasks);
 
     if (settings.build.buildAsModule) {
-        mergedTasks.on('end', function () {
+        mergedTasks.on("end", function () {
             //generate js file list
             let files = settings.libraries.filter(function (lib) {
                 return !lib.doNotIncludeInBundle;
@@ -278,7 +283,7 @@ var buildExternalLibraries = function (settings) {
             var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
             let srcTask = gulp.src(files)
-                .pipe(concat(settings.build.outputFilename + '.js'))
+                .pipe(concat(settings.build.outputFilename + ".js"))
                 .pipe(replace(extendsSearchRegex, ""))
                 .pipe(replace(decorateSearchRegex, ""))
                 .pipe(replace(referenceSearchRegex, ""))
@@ -295,7 +300,7 @@ var buildExternalLibraries = function (settings) {
             });
 
             let dtsTask = gulp.src(dtsFiles)
-                .pipe(concat(settings.build.outputFilename + '.module.d.ts'))
+                .pipe(concat(settings.build.outputFilename + ".module.d.ts"))
                 .pipe(replace(referenceSearchRegex, ""))
                 .pipe(addDtsExport(settings.build.moduleDeclaration, settings.build.moduleName, true, settings.build.extendsRoot))
                 .pipe(gulp.dest(outputDirectory));
@@ -314,25 +319,25 @@ var buildExternalLibrary = function (library, settings, watch) {
 
     var includeShader = gulp.src(library.shadersIncludeFiles || [], { base: settings.build.srcOutputDirectory })
         .pipe(uncommentShader())
-        .pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, library.output + '.include.fx'))
+        .pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, library.output + ".include.fx"))
         .pipe(gulp.dest(settings.build.srcOutputDirectory));
 
     var shader = gulp.src(library.shaderFiles || [], { base: settings.build.srcOutputDirectory })
         .pipe(uncommentShader())
-        .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, library.output + '.fx'))
+        .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, library.output + ".fx"))
         .pipe(gulp.dest(settings.build.srcOutputDirectory));
 
     var dev = tsProcess.js
         .pipe(sourcemaps.write("./", {
             includeContent: false,
             sourceRoot: (filePath) => {
-                return '';
+                return "";
             }
         })).pipe(gulp.dest(settings.build.srcOutputDirectory));
 
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
     var css = gulp.src(library.sassFiles || [])
-        .pipe(sass().on('error', sass.logError))
+        .pipe(sass().on("error", sass.logError))
         .pipe(concat(library.output.replace(".js", ".css")))
         .pipe(gulp.dest(outputDirectory));
 
@@ -394,7 +399,7 @@ var buildExternalLibrary = function (library, settings, watch) {
         }
 
         if (library.webpack) {
-            return waitAll.on('end', function () {
+            return waitAll.on("end", function () {
                 webpack(require(library.webpack))
                     .pipe(rename(library.output.replace(".js", ".bundle.js")))
                     .pipe(gulp.dest(outputDirectory))
@@ -467,22 +472,23 @@ gulp.task("typescript-all", function (cb) {
 /**
  * Watch ts files and fire repective tasks.
  */
-gulp.task('watch', [], function () {
-    var tasks = [gulp.watch(config.typescript, ['typescript-compile'])];
+gulp.task("watch", [], function () {
+    var interval = 1000;
+    var tasks = [gulp.watch(config.typescript, { interval: interval}, ["typescript-compile"])];
 
     config.modules.map(function (module) {
         config[module].libraries.map(function (library) {
-            tasks.push(gulp.watch(library.files, function () {
+            tasks.push(gulp.watch(library.files, { interval: interval}, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                     .pipe(debug());
             }));
-            tasks.push(gulp.watch(library.shaderFiles, function () {
+            tasks.push(gulp.watch(library.shaderFiles, { interval: interval}, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                     .pipe(debug())
             }));
-            tasks.push(gulp.watch(library.sassFiles, function () {
+            tasks.push(gulp.watch(library.sassFiles, { interval: interval}, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                     .pipe(debug())
@@ -496,30 +502,35 @@ gulp.task('watch', [], function () {
 /**
  * Embedded local dev env management.
  */
-gulp.task('deployLocalDev', function () {
-    gulp.src('../../localDev/template/**.*')
-        .pipe(gulp.dest('../../localDev/src/'));
+gulp.task("deployLocalDev", function () {
+    gulp.src("../../localDev/template/**.*")
+        .pipe(gulp.dest("../../localDev/src/"));
 });
 
 /**
  * Embedded webserver for test convenience.
  */
-gulp.task('webserver', function () {
-    gulp.src('../../.').pipe(webserver({
-        host: '0.0.0.0',
+gulp.task("webserver", function () {
+    var options = {
         port: 1338,
         livereload: false
-    }));
+    };
+
+    if (commandLineOptions.public) {
+        options.host = "0.0.0.0";
+    }
+
+    gulp.src("../../.").pipe(webserver(options));
 });
 
 /**
  * Combine Webserver and Watch as long as vscode does not handle multi tasks.
  */
-gulp.task('run', ['watch', 'webserver'], function () {
+gulp.task("run", ["watch", "webserver"], function () {
 });
 
-gulp.task('clean-JS-MAP', function () {
+gulp.task("clean-JS-MAP", function () {
     return del([
-        '../../src/**/*.js.map', '../../src/**/*.js'
+        "../../src/**/*.js.map", "../../src/**/*.js"
     ], { force: true });
 });
