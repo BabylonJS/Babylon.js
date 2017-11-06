@@ -267,6 +267,13 @@
                     var rawVerts = object.getVerticesData ? object.getVerticesData(VertexBuffer.PositionKind) : [];
                     var rawFaces = object.getIndices ? object.getIndices() : [];
                     if (!rawVerts) return;
+                    // get only scale! so the object could transform correctly.
+                    let oldPosition = object.position.clone();
+                    let oldRotation = object.rotation && object.rotation.clone();
+                    let oldQuaternion = object.rotationQuaternion && object.rotationQuaternion.clone();
+                    object.position.copyFromFloats(0, 0, 0);
+                    object.rotation && object.rotation.copyFromFloats(0, 0, 0);
+                    object.rotationQuaternion && object.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
                     let transform = object.computeWorldMatrix(true);
                     // convert rawVerts to object space
                     var temp = new Array<number>();
@@ -277,6 +284,10 @@
 
                     Tools.Warn("MeshImpostor only collides against spheres.");
                     returnValue = new this.BJSCANNON.Trimesh(temp, <number[]>rawFaces);
+                    //now set back the transformation!
+                    object.position.copyFrom(oldPosition);
+                    oldRotation && object.rotation && object.rotation.copyFrom(oldRotation);
+                    oldQuaternion && object.rotationQuaternion && object.rotationQuaternion.copyFrom(oldQuaternion);
                     break;
                 case PhysicsImpostor.HeightmapImpostor:
                     returnValue = this._createHeightmap(object);
@@ -413,7 +424,7 @@
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             } else if (impostor.type === PhysicsImpostor.MeshImpostor) {
-                //this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
+                this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
                 //this._tmpPosition.copyFrom(object.position);
             }
 
@@ -427,11 +438,15 @@
             impostor.object.position.copyFrom(impostor.physicsBody.position);
             if (impostor.object.rotationQuaternion) {
                 impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+                //impostor.object.rotationQuaternion.y *= -1;
+                //impostor.object.rotationQuaternion.z *= -1;
             }
         }
 
         public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
             impostor.physicsBody.position.copy(newPosition);
+            //newRotation.y *= -1;
+            //newRotation.z *= -1;
             impostor.physicsBody.quaternion.copy(newRotation);
         }
 
