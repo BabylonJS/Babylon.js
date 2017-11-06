@@ -626,9 +626,7 @@
                     return;
                 }
 
-                let subMesh = subMeshes[currentIndex];
-
-                if (this.isReady(subMesh, options ? options.useInstances : false)) {
+                while (this.isReady(subMeshes[currentIndex], options ? options.useInstances : false)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
                         if (onCompiled) {

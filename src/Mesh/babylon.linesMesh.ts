@@ -68,6 +68,10 @@
             return this._colorShader;
         }
 
+        public set material(value: Material) {
+            // Do nothing
+        }
+
         public get checkCollisions(): boolean {
             return false;
         }
