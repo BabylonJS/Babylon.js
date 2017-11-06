@@ -8471,7 +8471,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-alpha";
+                return "3.1-beta";
             },
             enumerable: true,
             configurable: true
@@ -13710,12 +13710,15 @@ var BABYLON;
          * Returns the last update of the World matrix
          * Returns a Matrix.
          */
-        AbstractMesh.prototype.getWorldMatrix = function () {
+        AbstractMesh.prototype.getWorldMatrix = function (useCachedVersion) {
+            if (useCachedVersion === void 0) { useCachedVersion = false; }
             if (this._masterMesh) {
                 return this._masterMesh.getWorldMatrix();
             }
-            if (this._currentRenderId !== this.getScene().getRenderId() || !this.isSynchronized()) {
-                this.computeWorldMatrix();
+            if (!useCachedVersion) {
+                if (this._currentRenderId !== this.getScene().getRenderId() || !this.isSynchronized()) {
+                    this.computeWorldMatrix();
+                }
             }
             return this._worldMatrix;
         };
@@ -14114,7 +14117,6 @@ var BABYLON;
                 return this._worldMatrix;
             }
             if (!force && this.isSynchronized(true)) {
-                this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
             this._cache.position.copyFrom(this.position);
@@ -23466,7 +23468,7 @@ var BABYLON;
             }
             var offset = 0;
             var instancesCount = 0;
-            var world = this.getWorldMatrix();
+            var world = this.getWorldMatrix(true);
             if (batch.renderSelf[subMesh._id]) {
                 world.copyToArray(this._instancesData, offset);
                 offset += 16;
@@ -23475,7 +23477,7 @@ var BABYLON;
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix().copyToArray(this._instancesData, offset);
+                    instance.getWorldMatrix(true).copyToArray(this._instancesData, offset);
                     offset += 16;
                     instancesCount++;
                 }
@@ -23509,7 +23511,7 @@ var BABYLON;
                 if (batch.renderSelf[subMesh._id]) {
                     // Draw
                     if (onBeforeDraw) {
-                        onBeforeDraw(false, this.getWorldMatrix(), effectiveMaterial);
+                        onBeforeDraw(false, this.getWorldMatrix(true), effectiveMaterial);
                     }
                     this._draw(subMesh, fillMode, this._overridenInstanceCount);
                 }
@@ -23518,7 +23520,7 @@ var BABYLON;
                     for (var instanceIndex = 0; instanceIndex < visibleInstancesForSubMesh.length; instanceIndex++) {
                         var instance = visibleInstancesForSubMesh[instanceIndex];
                         // World
-                        var world = instance.getWorldMatrix();
+                        var world = instance.getWorldMatrix(true);
                         if (onBeforeDraw) {
                             onBeforeDraw(true, world, effectiveMaterial);
                         }
@@ -23596,7 +23598,7 @@ var BABYLON;
             if (!hardwareInstancedRendering) {
                 this._bind(subMesh, effect, fillMode);
             }
-            var world = this.getWorldMatrix();
+            var world = this.getWorldMatrix(true);
             if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
             }
