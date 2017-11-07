@@ -66,7 +66,7 @@ module BABYLON {
             });     
         }
 
-        detachControl(element : HTMLElement) {
+        detachControl(element: Nullable<HTMLElement>) {
             if (this._scene) {
                 if (this._onKeyboardObserver) {
                     this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);

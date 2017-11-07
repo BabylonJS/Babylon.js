@@ -41,7 +41,7 @@ module BABYLON {
             this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
         }
 
-        public detachControl(element: HTMLElement) {
+        public detachControl(element: Nullable<HTMLElement>) {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
                 this._observer = null;
