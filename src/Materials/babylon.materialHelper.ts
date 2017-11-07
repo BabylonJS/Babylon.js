@@ -69,10 +69,10 @@
             }
         }
 
-        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): boolean {
+        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true): boolean {
             if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
                 return false;
-            }               
+            }
 
             defines._normals = defines._needNormals;
             defines._uvs = defines._needUVs;
@@ -92,8 +92,9 @@
             }
 
             if (useVertexColor) {
-                defines["VERTEXCOLOR"] = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
-                defines["VERTEXALPHA"] = mesh.hasVertexAlpha;
+                var hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+                defines["VERTEXCOLOR"] = hasVertexColors;
+                defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
             }
 
             if (useBones) {
@@ -103,7 +104,7 @@
                 } else {
                     defines["NUM_BONE_INFLUENCERS"] = 0;
                     defines["BonesPerMesh"] = 0;
-                }           
+                }
             }
 
             if (useMorphTargets) {
