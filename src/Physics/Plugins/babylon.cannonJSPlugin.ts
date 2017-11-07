@@ -293,7 +293,20 @@
                     oldQuaternion && object.rotationQuaternion && object.rotationQuaternion.copyFrom(oldQuaternion);
                     break;
                 case PhysicsImpostor.HeightmapImpostor:
+                    let oldPosition2 = object.position.clone();
+                    let oldRotation2 = object.rotation && object.rotation.clone();
+                    let oldQuaternion2 = object.rotationQuaternion && object.rotationQuaternion.clone();
+                    object.position.copyFromFloats(0, 0, 0);
+                    object.rotation && object.rotation.copyFromFloats(0, 0, 0);
+                    object.rotationQuaternion && object.rotationQuaternion.copyFrom(impostor.getParentsRotation());
+                    object.rotationQuaternion && object.parent && object.rotationQuaternion.conjugateInPlace();
+                    object.rotationQuaternion && object.rotationQuaternion.multiplyInPlace(this._minus90X);
+
                     returnValue = this._createHeightmap(object);
+                    object.position.copyFrom(oldPosition2);
+                    oldRotation2 && object.rotation && object.rotation.copyFrom(oldRotation2);
+                    oldQuaternion2 && object.rotationQuaternion && object.rotationQuaternion.copyFrom(oldQuaternion2);
+                    object.computeWorldMatrix(true);
                     break;
                 case PhysicsImpostor.ParticleImpostor:
                     returnValue = new this.BJSCANNON.Particle();
@@ -305,21 +318,29 @@
 
         private _createHeightmap(object: IPhysicsEnabledObject, pointDepth?: number) {
             var pos = <FloatArray>(object.getVerticesData(VertexBuffer.PositionKind));
+            let transform = object.computeWorldMatrix(true);
+            // convert rawVerts to object space
+            var temp = new Array<number>();
+            var index: number;
+            for (index = 0; index < pos.length; index += 3) {
+                Vector3.TransformCoordinates(Vector3.FromArray(pos, index), transform).toArray(temp, index);
+            }
+            pos = temp;
             var matrix = new Array<Array<any>>();
 
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
             let boundingInfo = <BoundingInfo>(object.getBoundingInfo());
-            var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.z);
-            var minY = boundingInfo.boundingBox.extendSizeWorld.y;
+            var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.y);
+            var minY = boundingInfo.boundingBox.extendSizeWorld.z;
 
             var elementSize = dim * 2 / arraySize;
 
             for (var i = 0; i < pos.length; i = i + 3) {
                 var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
-                var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1);
-                var y = pos[i + 1] + minY;
+                var z = Math.round(((pos[i + 1]) / elementSize - arraySize / 2) * -1);
+                var y = -pos[i + 2] + minY;
                 if (!matrix[x]) {
                     matrix[x] = [];
                 }
