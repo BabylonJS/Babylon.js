@@ -186,8 +186,6 @@ module BABYLON {
     }
 
     export interface ITextureAssetTask extends IAssetTask {
-        onSuccess: (task: ITextureAssetTask) => void;
-        onError: (task: ITextureAssetTask, ) => void;
         texture: Texture;
     }
 
