@@ -450,6 +450,10 @@
             return (this.alpha < 1.0);
         }
 
+        public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+            return (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
+        }
+
         public needAlphaTesting(): boolean {
             return false;
         }
