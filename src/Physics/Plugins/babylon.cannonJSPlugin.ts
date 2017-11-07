@@ -273,7 +273,10 @@
                     let oldQuaternion = object.rotationQuaternion && object.rotationQuaternion.clone();
                     object.position.copyFromFloats(0, 0, 0);
                     object.rotation && object.rotation.copyFromFloats(0, 0, 0);
-                    object.rotationQuaternion && object.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+                    object.rotationQuaternion && object.rotationQuaternion.copyFrom(impostor.getParentsRotation());
+
+                    object.rotationQuaternion && object.parent && object.rotationQuaternion.conjugateInPlace();
+
                     let transform = object.computeWorldMatrix(true);
                     // convert rawVerts to object space
                     var temp = new Array<number>();
