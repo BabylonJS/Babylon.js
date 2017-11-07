@@ -716,7 +716,7 @@
 
         // Cache
         private _internalTexturesCache = new Array<InternalTexture>();
-        protected _activeTexture: number;
+        protected _activeTextureChannel: number;
         protected _activeTexturesCache: { [key: string]: Nullable<WebGLTexture> } = {};
         protected _currentEffect: Nullable<Effect>;
         protected _currentProgram: Nullable<WebGLProgram>;
@@ -4448,17 +4448,17 @@
             this._currentEffect = null;
         }
 
-        private activateTexture(texture: number): void {
-            if (this._activeTexture !== texture) {
-                this._gl.activeTexture(texture);
-                this._activeTexture = texture;
+        private activateTextureChannel(textureChannel: number): void {
+            if (this._activeTextureChannel !== textureChannel) {
+                this._gl.activeTexture(textureChannel);
+                this._activeTextureChannel = textureChannel;
             }
         }
 
         public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>): void {
-            if (this._activeTexturesCache[this._activeTexture] !== texture) {
+            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                this._activeTexturesCache[this._activeTexture] = texture;
+                this._activeTexturesCache[this._activeTextureChannel] = texture;
             }
         }
 
@@ -4467,7 +4467,7 @@
                 return;
             }
 
-            this.activateTexture(this._gl.TEXTURE0 + channel);
+            this.activateTextureChannel(this._gl.TEXTURE0 + channel);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         }
 
@@ -4477,7 +4477,7 @@
 
         public unbindAllTextures(): void {
             for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this.activateTexture((<any>this._gl)["TEXTURE" + channel]);
+                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 if (this.webGLVersion > 1) {
@@ -4491,33 +4491,34 @@
                 return;
             }
 
-            this._gl.uniform1i(uniform, channel);
-            this._setTexture(channel, texture);
+            if (this._setTexture(channel, texture)) {
+                this._gl.uniform1i(uniform, channel);
+            }
         }
 
-        private _setTexture(channel: number, texture: Nullable<BaseTexture>): void {
+        private _setTexture(channel: number, texture: Nullable<BaseTexture>): boolean {
             // Not ready?
             if (!texture) {
                 if (this._activeTexturesCache[channel] != null) {
-                    this.activateTexture((<any>this._gl)["TEXTURE" + channel]);
+                    this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                     if (this.webGLVersion > 1) {
                         this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
                     }
                 }
-                return;
+                return false;
             }
 
             // Video
             var alreadyActivated = false;
             if ((<VideoTexture>texture).video) {
-                this.activateTexture((<any>this._gl)["TEXTURE" + channel]);
+                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                 alreadyActivated = true;
                 (<VideoTexture>texture).update();
             } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
                 texture.delayLoad();
-                return;
+                return false;
             }
 
             let internalTexture: InternalTexture;
@@ -4534,12 +4535,12 @@
                 internalTexture = this.emptyTexture;
             }
 
-            if (this._activeTexturesCache[channel] === internalTexture) {
-                return;
+            if (!alreadyActivated) {
+                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
             }
 
-            if (!alreadyActivated) {
-                this.activateTexture((<any>this._gl)["TEXTURE" + channel]);
+            if (this._activeTexturesCache[this._activeTextureChannel] === internalTexture) {
+                return false;
             }
 
             if (internalTexture && internalTexture.is3D) {
@@ -4641,6 +4642,8 @@
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
             }
+
+            return true;
         }
 
         public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void {
