@@ -13725,7 +13725,7 @@ var BABYLON;
             this._renderId = renderId;
         };
         /**
-         * Returns the last update of the World matrix
+         * Returns the latest update of the World matrix
          * Returns a Matrix.
          */
         AbstractMesh.prototype.getWorldMatrix = function () {
@@ -13739,7 +13739,7 @@ var BABYLON;
         };
         Object.defineProperty(AbstractMesh.prototype, "worldMatrixFromCache", {
             /**
-             * Returns directly the last state of the mesh World matrix.
+             * Returns directly the latest state of the mesh World matrix.
              * A Matrix is returned.
              */
             get: function () {
@@ -25536,6 +25536,7 @@ var BABYLON;
             var boundingInfo = this.getBoundingInfo();
             if (!boundingInfo) {
                 this.refreshBoundingInfo();
+                boundingInfo = this.getBoundingInfo();
             }
             boundingInfo.update(world);
             return this;
@@ -65665,8 +65666,9 @@ var BABYLON;
             this._deltaPosition = BABYLON.Vector3.Zero();
             this._isDisposed = false;
             //temp variables for parent rotation calculations
-            this._mats = [new BABYLON.Matrix(), new BABYLON.Matrix()];
+            //private _mats: Array<Matrix> = [new Matrix(), new Matrix()];
             this._tmpQuat = new BABYLON.Quaternion();
+            this._tmpQuat2 = new BABYLON.Quaternion();
             /**
              * this function is executed by the physics engine.
              */
@@ -65676,10 +65678,9 @@ var BABYLON;
                 }
                 _this.object.translate(_this._deltaPosition, -1);
                 _this._deltaRotationConjugated && _this.object.rotationQuaternion && _this.object.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this.object.rotationQuaternion);
-                if (_this.object.parent) {
-                    _this.object.computeWorldMatrix(false).getRotationMatrixToRef(_this._mats[0]);
-                    BABYLON.Quaternion.FromRotationMatrixToRef(_this._mats[0], _this._tmpQuat);
-                    _this._tmpQuat.normalize();
+                if (_this.object.parent && _this.object.rotationQuaternion) {
+                    _this.getParentsRotation();
+                    _this._tmpQuat.multiplyToRef(_this.object.rotationQuaternion, _this._tmpQuat);
                 }
                 else {
                     _this._tmpQuat.copyFrom(_this.object.rotationQuaternion || new BABYLON.Quaternion());
@@ -65701,10 +65702,8 @@ var BABYLON;
                 _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
                 // object has now its world rotation. needs to be converted to local.
                 if (_this.object.parent && _this.object.rotationQuaternion) {
-                    _this.object.parent.computeWorldMatrix(false).getRotationMatrixToRef(_this._mats[0]);
-                    BABYLON.Quaternion.FromRotationMatrixToRef(_this._mats[0], _this._tmpQuat);
+                    _this.getParentsRotation();
                     _this._tmpQuat.conjugateInPlace();
-                    _this._tmpQuat.normalize();
                     _this._tmpQuat.multiplyToRef(_this.object.rotationQuaternion, _this.object.rotationQuaternion);
                 }
                 // take the position set and make it the absolute position of this object.
@@ -66031,6 +66030,21 @@ var BABYLON;
             else {
                 BABYLON.Tools.Warn("Function to remove was not found");
             }
+        };
+        PhysicsImpostor.prototype.getParentsRotation = function () {
+            var parent = this.object.parent;
+            this._tmpQuat.copyFromFloats(0, 0, 0, 1);
+            while (parent) {
+                if (parent.rotationQuaternion) {
+                    this._tmpQuat2.copyFrom(parent.rotationQuaternion);
+                }
+                else {
+                    BABYLON.Quaternion.RotationYawPitchRollToRef(parent.rotation.y, parent.rotation.x, parent.rotation.z, this._tmpQuat2);
+                }
+                this._tmpQuat.multiplyToRef(this._tmpQuat2, this._tmpQuat);
+                parent = parent.parent;
+            }
+            return this._tmpQuat;
         };
         /**
          * Apply a force
@@ -66645,7 +66659,8 @@ var BABYLON;
                     var oldQuaternion = object.rotationQuaternion && object.rotationQuaternion.clone();
                     object.position.copyFromFloats(0, 0, 0);
                     object.rotation && object.rotation.copyFromFloats(0, 0, 0);
-                    object.rotationQuaternion && object.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+                    object.rotationQuaternion && object.rotationQuaternion.copyFrom(impostor.getParentsRotation());
+                    object.rotationQuaternion && object.parent && object.rotationQuaternion.conjugateInPlace();
                     var transform = object.computeWorldMatrix(true);
                     // convert rawVerts to object space
                     var temp = new Array();
@@ -66661,7 +66676,19 @@ var BABYLON;
                     oldQuaternion && object.rotationQuaternion && object.rotationQuaternion.copyFrom(oldQuaternion);
                     break;
                 case BABYLON.PhysicsImpostor.HeightmapImpostor:
+                    var oldPosition2 = object.position.clone();
+                    var oldRotation2 = object.rotation && object.rotation.clone();
+                    var oldQuaternion2 = object.rotationQuaternion && object.rotationQuaternion.clone();
+                    object.position.copyFromFloats(0, 0, 0);
+                    object.rotation && object.rotation.copyFromFloats(0, 0, 0);
+                    object.rotationQuaternion && object.rotationQuaternion.copyFrom(impostor.getParentsRotation());
+                    object.rotationQuaternion && object.parent && object.rotationQuaternion.conjugateInPlace();
+                    object.rotationQuaternion && object.rotationQuaternion.multiplyInPlace(this._minus90X);
                     returnValue = this._createHeightmap(object);
+                    object.position.copyFrom(oldPosition2);
+                    oldRotation2 && object.rotation && object.rotation.copyFrom(oldRotation2);
+                    oldQuaternion2 && object.rotationQuaternion && object.rotationQuaternion.copyFrom(oldQuaternion2);
+                    object.computeWorldMatrix(true);
                     break;
                 case BABYLON.PhysicsImpostor.ParticleImpostor:
                     returnValue = new this.BJSCANNON.Particle();
@@ -66671,18 +66698,26 @@ var BABYLON;
         };
         CannonJSPlugin.prototype._createHeightmap = function (object, pointDepth) {
             var pos = (object.getVerticesData(BABYLON.VertexBuffer.PositionKind));
+            var transform = object.computeWorldMatrix(true);
+            // convert rawVerts to object space
+            var temp = new Array();
+            var index;
+            for (index = 0; index < pos.length; index += 3) {
+                BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(pos, index), transform).toArray(temp, index);
+            }
+            pos = temp;
             var matrix = new Array();
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
             var boundingInfo = (object.getBoundingInfo());
-            var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.z);
-            var minY = boundingInfo.boundingBox.extendSizeWorld.y;
+            var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.y);
+            var minY = boundingInfo.boundingBox.extendSizeWorld.z;
             var elementSize = dim * 2 / arraySize;
             for (var i = 0; i < pos.length; i = i + 3) {
                 var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
-                var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1);
-                var y = pos[i + 1] + minY;
+                var z = Math.round(((pos[i + 1]) / elementSize - arraySize / 2) * -1);
+                var y = -pos[i + 2] + minY;
                 if (!matrix[x]) {
                     matrix[x] = [];
                 }
@@ -67657,7 +67692,7 @@ var BABYLON;
                     isRGB: (header[off_pfFlags] & DDPF_RGB) === DDPF_RGB,
                     isLuminance: (header[off_pfFlags] & DDPF_LUMINANCE) === DDPF_LUMINANCE,
                     isCube: (header[off_caps2] & DDSCAPS2_CUBEMAP) === DDSCAPS2_CUBEMAP,
-                    isCompressed: (fourCC === FOURCC_DXT1 || fourCC === FOURCC_DXT3 || FOURCC_DXT1 === FOURCC_DXT5),
+                    isCompressed: (fourCC === FOURCC_DXT1 || fourCC === FOURCC_DXT3 || fourCC === FOURCC_DXT5),
                     dxgiFormat: dxgiFormat,
                     textureType: textureType
                 };

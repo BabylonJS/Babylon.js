@@ -1,6 +1,5 @@
 window.prepareBackgroundMaterial = function() {
 	var backSky = new BABYLON.BackgroundMaterial("backSky", scene);
-	//var hdrTexture = new BABYLON.HDRCubeTexture("../assets/textures/hdr/environment.hdr", scene, 512);
 	var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("/playground/textures/environment.dds", scene);
 	hdrTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE
 	backSky.reflectionTexture = hdrTexture;

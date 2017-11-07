@@ -4,9 +4,9 @@ module INSPECTOR {
 
         /** True if label are displayed, false otherwise */
         private _isDisplayed: boolean = false;
-        private _advancedTexture: Nullable<BABYLON.GUI.AdvancedDynamicTexture> = null;
+        private _advancedTexture: BABYLON.Nullable<BABYLON.GUI.AdvancedDynamicTexture> = null;
         private _labelInitialized: boolean = false;
-        private _scene: Nullable<BABYLON.Scene> = null;
+        private _scene: BABYLON.Nullable<BABYLON.Scene> = null;
         private _guiLoaded: boolean = false;
 
         constructor(parent: HTMLElement, inspector: Inspector) {

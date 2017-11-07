@@ -1,6 +1,6 @@
 window.prepareCell = function() {
     var cell = new BABYLON.CellMaterial("cell", scene);
-	cell.diffuseTexture = new BABYLON.Texture("../assets/textures//amiga.jpg", scene);
+	cell.diffuseTexture = new BABYLON.Texture("/playground/textures/amiga.jpg", scene);
 	cell.diffuseTexture.uScale = cell.diffuseTexture.vScale = 3;
 	cell.computeHighLevel = true;
 

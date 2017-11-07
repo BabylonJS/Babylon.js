@@ -57,8 +57,8 @@ var Test = (function () {
         */
 
         //Sounds
-        var jump = new BABYLON.Sound("Jump", "/assets/sounds/jump.wav", scene);
-        var explosion = new BABYLON.Sound("Explosion", "/assets/sounds/explosion.wav", scene);
+        var jump = new BABYLON.Sound("Jump", "test/jump.wav", scene);
+        var explosion = new BABYLON.Sound("Explosion", "test/explosion.wav", scene);
         jump.setVolume(0.1);
         window.addEventListener("keydown", function (evt) {
             if (evt.keyCode === 32) {
@@ -70,7 +70,7 @@ var Test = (function () {
         var skybox = BABYLON.Mesh.CreateBox("skyBox", 500.0, scene);
         var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
         skyboxMaterial.backFaceCulling = false;
-        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/assets/textures/skybox/TropicalSunnyDay", scene);
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/playground/textures/TropicalSunnyDay", scene);
         skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
         skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -172,28 +172,28 @@ var Test = (function () {
 
         //Creation of a material with an image texture
         var materialSphere3 = new BABYLON.StandardMaterial("texture3", scene);
-        materialSphere3.diffuseTexture = new BABYLON.Texture("/assets/textures/amiga.jpg", scene);
+        materialSphere3.diffuseTexture = new BABYLON.Texture("/playground/textures/amiga.jpg", scene);
 
         //Creation of a material with translated texture
         var materialSphere4 = new BABYLON.StandardMaterial("texture4", scene);
-        materialSphere4.diffuseTexture = new BABYLON.Texture("/assets/textures/floor.png", scene);
+        materialSphere4.diffuseTexture = new BABYLON.Texture("/playground/textures/floor.png", scene);
         materialSphere4.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
         materialSphere4.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
 
         //Creation of a material with an alpha texture
         var materialSphere5 = new BABYLON.StandardMaterial("texture5", scene);
-        materialSphere5.diffuseTexture = new BABYLON.Texture("/assets/textures/rock.png", scene);
+        materialSphere5.diffuseTexture = new BABYLON.Texture("/playground/textures/rock.png", scene);
         materialSphere5.diffuseTexture.hasAlpha = true;//Has an alpha
 
         //Creation of a material and show all the faces
         var materialSphere6 = new BABYLON.StandardMaterial("texture6", scene);
-        materialSphere6.diffuseTexture = new BABYLON.Texture("/assets/textures/grass.png", scene);
+        materialSphere6.diffuseTexture = new BABYLON.Texture("/playground/textures/grass.png", scene);
         materialSphere6.diffuseTexture.hasAlpha = true;//Have an alpha
         materialSphere6.backFaceCulling = false;//Show all the faces of the element
 
         //Creation of a repeated textured material
         var materialPlane = new BABYLON.StandardMaterial("texturePlane", scene);
-        materialPlane.diffuseTexture = new BABYLON.Texture("/assets/textures/mixMap.png", scene);
+        materialPlane.diffuseTexture = new BABYLON.Texture("/playground/textures/mixMap.png", scene);
         materialPlane.diffuseTexture.uScale = 5.0;
         materialPlane.diffuseTexture.vScale = 5.0;
         materialPlane.backFaceCulling = false;
