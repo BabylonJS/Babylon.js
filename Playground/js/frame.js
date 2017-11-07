@@ -63,7 +63,6 @@
             var canvas = document.getElementById("renderCanvas");
             engine = new BABYLON.Engine(canvas, true, { stencil: true });
             BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault = true;
-
             engine.runRenderLoop(function () {
                 if (engine.scenes.length === 0) {
                     return;
@@ -85,7 +84,16 @@
             });
 
             var scene;
-            if (code.indexOf("createScene") !== -1) { // createScene
+            if (code.indexOf("delayCreateScene") !== -1) { // createScene
+                eval(code);
+                scene = delayCreateScene();
+                if (!scene) {
+                    showError("delayCreateScene function must return a scene.", null);
+                    return;
+                }
+
+                zipCode = code + "\r\n\r\nvar scene = createScene();";
+            } if (code.indexOf("createScene") !== -1) { // createScene
                 eval(code);
                 scene = createScene();
                 if (!scene) {

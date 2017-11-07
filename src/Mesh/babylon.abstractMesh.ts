@@ -820,24 +820,22 @@
         }
 
         /**
-         * Returns the last update of the World matrix
+         * Returns the latest update of the World matrix
          * Returns a Matrix.  
          */
-        public getWorldMatrix(useCachedVersion = false): Matrix {
+        public getWorldMatrix(): Matrix {
             if (this._masterMesh) {
                 return this._masterMesh.getWorldMatrix();
             }
 
-            if (!useCachedVersion) {
-                if (this._currentRenderId !== this.getScene().getRenderId() || !this.isSynchronized()) {
-                    this.computeWorldMatrix();
-                }
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this.computeWorldMatrix();
             }
             return this._worldMatrix;
         }
 
         /**
-         * Returns directly the last state of the mesh World matrix. 
+         * Returns directly the latest state of the mesh World matrix. 
          * A Matrix is returned.    
          */
         public get worldMatrixFromCache(): Matrix {

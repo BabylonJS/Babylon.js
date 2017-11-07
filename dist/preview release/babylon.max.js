@@ -5628,12 +5628,12 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.observable.js.map
 
+
 var BABYLON;
 (function (BABYLON) {
     var SmartArray = /** @class */ (function () {
         function SmartArray(capacity) {
             this.length = 0;
-            this._duplicateId = 0;
             this.data = new Array(capacity);
             this._id = SmartArray._GlobalId++;
         }
@@ -5642,29 +5642,17 @@ var BABYLON;
             if (this.length > this.data.length) {
                 this.data.length *= 2;
             }
-            if (!value.__smartArrayFlags) {
-                value.__smartArrayFlags = {};
-            }
-            value.__smartArrayFlags[this._id] = this._duplicateId;
         };
         SmartArray.prototype.forEach = function (func) {
             for (var index = 0; index < this.length; index++) {
                 func(this.data[index]);
             }
         };
-        SmartArray.prototype.pushNoDuplicate = function (value) {
-            if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
-                return false;
-            }
-            this.push(value);
-            return true;
-        };
         SmartArray.prototype.sort = function (compareFn) {
             this.data.sort(compareFn);
         };
         SmartArray.prototype.reset = function () {
             this.length = 0;
-            this._duplicateId++;
         };
         SmartArray.prototype.dispose = function () {
             this.reset();
@@ -5684,18 +5672,6 @@ var BABYLON;
                 this.data[this.length++] = (array.data || array)[index];
             }
         };
-        SmartArray.prototype.concatWithNoDuplicate = function (array) {
-            if (array.length === 0) {
-                return;
-            }
-            if (this.length + array.length > this.data.length) {
-                this.data.length = (this.length + array.length) * 2;
-            }
-            for (var index = 0; index < array.length; index++) {
-                var item = (array.data || array)[index];
-                this.pushNoDuplicate(item);
-            }
-        };
         SmartArray.prototype.indexOf = function (value) {
             var position = this.data.indexOf(value);
             if (position >= this.length) {
@@ -5711,6 +5687,46 @@ var BABYLON;
         return SmartArray;
     }());
     BABYLON.SmartArray = SmartArray;
+    var SmartArrayNoDuplicate = /** @class */ (function (_super) {
+        __extends(SmartArrayNoDuplicate, _super);
+        function SmartArrayNoDuplicate() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._duplicateId = 0;
+            return _this;
+        }
+        SmartArrayNoDuplicate.prototype.push = function (value) {
+            _super.prototype.push.call(this, value);
+            if (!value.__smartArrayFlags) {
+                value.__smartArrayFlags = {};
+            }
+            value.__smartArrayFlags[this._id] = this._duplicateId;
+        };
+        SmartArrayNoDuplicate.prototype.pushNoDuplicate = function (value) {
+            if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
+                return false;
+            }
+            this.push(value);
+            return true;
+        };
+        SmartArrayNoDuplicate.prototype.reset = function () {
+            _super.prototype.reset.call(this);
+            this._duplicateId++;
+        };
+        SmartArrayNoDuplicate.prototype.concatWithNoDuplicate = function (array) {
+            if (array.length === 0) {
+                return;
+            }
+            if (this.length + array.length > this.data.length) {
+                this.data.length = (this.length + array.length) * 2;
+            }
+            for (var index = 0; index < array.length; index++) {
+                var item = (array.data || array)[index];
+                this.pushNoDuplicate(item);
+            }
+        };
+        return SmartArrayNoDuplicate;
+    }(SmartArray));
+    BABYLON.SmartArrayNoDuplicate = SmartArrayNoDuplicate;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.smartArray.js.map
@@ -8471,7 +8487,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta";
+                return "3.1-beta-1";
             },
             enumerable: true,
             configurable: true
@@ -11395,23 +11411,23 @@ var BABYLON;
             }
             this._currentEffect = null;
         };
-        Engine.prototype.activateTexture = function (texture) {
-            if (this._activeTexture !== texture) {
-                this._gl.activeTexture(texture);
-                this._activeTexture = texture;
+        Engine.prototype.activateTextureChannel = function (textureChannel) {
+            if (this._activeTextureChannel !== textureChannel) {
+                this._gl.activeTexture(textureChannel);
+                this._activeTextureChannel = textureChannel;
             }
         };
         Engine.prototype._bindTextureDirectly = function (target, texture) {
-            if (this._activeTexturesCache[this._activeTexture] !== texture) {
+            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                this._activeTexturesCache[this._activeTexture] = texture;
+                this._activeTexturesCache[this._activeTextureChannel] = texture;
             }
         };
         Engine.prototype._bindTexture = function (channel, texture) {
             if (channel < 0) {
                 return;
             }
-            this.activateTexture(this._gl.TEXTURE0 + channel);
+            this.activateTextureChannel(this._gl.TEXTURE0 + channel);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         };
         Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
@@ -11419,7 +11435,7 @@ var BABYLON;
         };
         Engine.prototype.unbindAllTextures = function () {
             for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this.activateTexture(this._gl["TEXTURE" + channel]);
+                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 if (this.webGLVersion > 1) {
@@ -11431,32 +11447,33 @@ var BABYLON;
             if (channel < 0) {
                 return;
             }
-            this._gl.uniform1i(uniform, channel);
-            this._setTexture(channel, texture);
+            if (this._setTexture(channel, texture)) {
+                this._gl.uniform1i(uniform, channel);
+            }
         };
         Engine.prototype._setTexture = function (channel, texture) {
             // Not ready?
             if (!texture) {
                 if (this._activeTexturesCache[channel] != null) {
-                    this.activateTexture(this._gl["TEXTURE" + channel]);
+                    this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                     if (this.webGLVersion > 1) {
                         this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
                     }
                 }
-                return;
+                return false;
             }
             // Video
             var alreadyActivated = false;
             if (texture.video) {
-                this.activateTexture(this._gl["TEXTURE" + channel]);
+                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                 alreadyActivated = true;
                 texture.update();
             }
             else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
                 texture.delayLoad();
-                return;
+                return false;
             }
             var internalTexture;
             if (texture.isReady()) {
@@ -11471,11 +11488,11 @@ var BABYLON;
             else {
                 internalTexture = this.emptyTexture;
             }
-            if (this._activeTexturesCache[channel] === internalTexture) {
-                return;
-            }
             if (!alreadyActivated) {
-                this.activateTexture(this._gl["TEXTURE" + channel]);
+                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
+            }
+            if (this._activeTexturesCache[this._activeTextureChannel] === internalTexture) {
+                return false;
             }
             if (internalTexture && internalTexture.is3D) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture);
@@ -11566,6 +11583,7 @@ var BABYLON;
                 }
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
             }
+            return true;
         };
         Engine.prototype.setTextureArray = function (channel, uniform, textures) {
             if (channel < 0 || !uniform) {
@@ -13707,24 +13725,21 @@ var BABYLON;
             this._renderId = renderId;
         };
         /**
-         * Returns the last update of the World matrix
+         * Returns the latest update of the World matrix
          * Returns a Matrix.
          */
-        AbstractMesh.prototype.getWorldMatrix = function (useCachedVersion) {
-            if (useCachedVersion === void 0) { useCachedVersion = false; }
+        AbstractMesh.prototype.getWorldMatrix = function () {
             if (this._masterMesh) {
                 return this._masterMesh.getWorldMatrix();
             }
-            if (!useCachedVersion) {
-                if (this._currentRenderId !== this.getScene().getRenderId() || !this.isSynchronized()) {
-                    this.computeWorldMatrix();
-                }
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this.computeWorldMatrix();
             }
             return this._worldMatrix;
         };
         Object.defineProperty(AbstractMesh.prototype, "worldMatrixFromCache", {
             /**
-             * Returns directly the last state of the mesh World matrix.
+             * Returns directly the latest state of the mesh World matrix.
              * A Matrix is returned.
              */
             get: function () {
@@ -17659,7 +17674,7 @@ var BABYLON;
             this.probesEnabled = true;
             this.reflectionProbes = new Array();
             this._actionManagers = new Array();
-            this._meshesForIntersections = new BABYLON.SmartArray(256);
+            this._meshesForIntersections = new BABYLON.SmartArrayNoDuplicate(256);
             // Procedural textures
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
@@ -17685,10 +17700,10 @@ var BABYLON;
             this._isDisposed = false;
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._processedMaterials = new BABYLON.SmartArray(256);
-            this._renderTargets = new BABYLON.SmartArray(256);
+            this._renderTargets = new BABYLON.SmartArrayNoDuplicate(256);
             this._activeParticleSystems = new BABYLON.SmartArray(256);
-            this._activeSkeletons = new BABYLON.SmartArray(32);
-            this._softwareSkinnedMeshes = new BABYLON.SmartArray(32);
+            this._activeSkeletons = new BABYLON.SmartArrayNoDuplicate(32);
+            this._softwareSkinnedMeshes = new BABYLON.SmartArrayNoDuplicate(32);
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._useAlternateCameraConfiguration = false;
@@ -23468,7 +23483,7 @@ var BABYLON;
             }
             var offset = 0;
             var instancesCount = 0;
-            var world = this.getWorldMatrix(true);
+            var world = this.getWorldMatrix();
             if (batch.renderSelf[subMesh._id]) {
                 world.copyToArray(this._instancesData, offset);
                 offset += 16;
@@ -23477,7 +23492,7 @@ var BABYLON;
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix(true).copyToArray(this._instancesData, offset);
+                    instance.getWorldMatrix().copyToArray(this._instancesData, offset);
                     offset += 16;
                     instancesCount++;
                 }
@@ -23511,7 +23526,7 @@ var BABYLON;
                 if (batch.renderSelf[subMesh._id]) {
                     // Draw
                     if (onBeforeDraw) {
-                        onBeforeDraw(false, this.getWorldMatrix(true), effectiveMaterial);
+                        onBeforeDraw(false, this.getWorldMatrix(), effectiveMaterial);
                     }
                     this._draw(subMesh, fillMode, this._overridenInstanceCount);
                 }
@@ -23520,7 +23535,7 @@ var BABYLON;
                     for (var instanceIndex = 0; instanceIndex < visibleInstancesForSubMesh.length; instanceIndex++) {
                         var instance = visibleInstancesForSubMesh[instanceIndex];
                         // World
-                        var world = instance.getWorldMatrix(true);
+                        var world = instance.getWorldMatrix();
                         if (onBeforeDraw) {
                             onBeforeDraw(true, world, effectiveMaterial);
                         }
@@ -23598,7 +23613,7 @@ var BABYLON;
             if (!hardwareInstancedRendering) {
                 this._bind(subMesh, effect, fillMode);
             }
-            var world = this.getWorldMatrix(true);
+            var world = this.getWorldMatrix();
             if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
             }
@@ -25521,6 +25536,7 @@ var BABYLON;
             var boundingInfo = this.getBoundingInfo();
             if (!boundingInfo) {
                 this.refreshBoundingInfo();
+                boundingInfo = this.getBoundingInfo();
             }
             boundingInfo.update(world);
             return this;
@@ -26330,11 +26346,12 @@ var BABYLON;
             return changed;
         };
         Effect.prototype.bindUniformBuffer = function (buffer, name) {
-            if (Effect._baseCache[this._uniformBuffersNames[name]] === buffer) {
+            var bufferName = this._uniformBuffersNames[name];
+            if (Effect._baseCache[bufferName] === buffer) {
                 return;
             }
-            Effect._baseCache[this._uniformBuffersNames[name]] = buffer;
-            this._engine.bindUniformBufferBase(buffer, this._uniformBuffersNames[name]);
+            Effect._baseCache[bufferName] = buffer;
+            this._engine.bindUniformBufferBase(buffer, bufferName);
         };
         Effect.prototype.bindUniformBlock = function (blockName, index) {
             this._engine.bindUniformBlock(this._program, blockName, index);
@@ -65803,8 +65820,9 @@ var BABYLON;
             this._deltaPosition = BABYLON.Vector3.Zero();
             this._isDisposed = false;
             //temp variables for parent rotation calculations
-            this._mats = [new BABYLON.Matrix(), new BABYLON.Matrix()];
+            //private _mats: Array<Matrix> = [new Matrix(), new Matrix()];
             this._tmpQuat = new BABYLON.Quaternion();
+            this._tmpQuat2 = new BABYLON.Quaternion();
             /**
              * this function is executed by the physics engine.
              */
@@ -65814,10 +65832,9 @@ var BABYLON;
                 }
                 _this.object.translate(_this._deltaPosition, -1);
                 _this._deltaRotationConjugated && _this.object.rotationQuaternion && _this.object.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this.object.rotationQuaternion);
-                if (_this.object.parent) {
-                    _this.object.computeWorldMatrix(false).getRotationMatrixToRef(_this._mats[0]);
-                    BABYLON.Quaternion.FromRotationMatrixToRef(_this._mats[0], _this._tmpQuat);
-                    _this._tmpQuat.normalize();
+                if (_this.object.parent && _this.object.rotationQuaternion) {
+                    _this.getParentsRotation();
+                    _this._tmpQuat.multiplyToRef(_this.object.rotationQuaternion, _this._tmpQuat);
                 }
                 else {
                     _this._tmpQuat.copyFrom(_this.object.rotationQuaternion || new BABYLON.Quaternion());
@@ -65839,10 +65856,8 @@ var BABYLON;
                 _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
                 // object has now its world rotation. needs to be converted to local.
                 if (_this.object.parent && _this.object.rotationQuaternion) {
-                    _this.object.parent.computeWorldMatrix(false).getRotationMatrixToRef(_this._mats[0]);
-                    BABYLON.Quaternion.FromRotationMatrixToRef(_this._mats[0], _this._tmpQuat);
+                    _this.getParentsRotation();
                     _this._tmpQuat.conjugateInPlace();
-                    _this._tmpQuat.normalize();
                     _this._tmpQuat.multiplyToRef(_this.object.rotationQuaternion, _this.object.rotationQuaternion);
                 }
                 // take the position set and make it the absolute position of this object.
@@ -66169,6 +66184,21 @@ var BABYLON;
             else {
                 BABYLON.Tools.Warn("Function to remove was not found");
             }
+        };
+        PhysicsImpostor.prototype.getParentsRotation = function () {
+            var parent = this.object.parent;
+            this._tmpQuat.copyFromFloats(0, 0, 0, 1);
+            while (parent) {
+                if (parent.rotationQuaternion) {
+                    this._tmpQuat2.copyFrom(parent.rotationQuaternion);
+                }
+                else {
+                    BABYLON.Quaternion.RotationYawPitchRollToRef(parent.rotation.y, parent.rotation.x, parent.rotation.z, this._tmpQuat2);
+                }
+                this._tmpQuat.multiplyToRef(this._tmpQuat2, this._tmpQuat);
+                parent = parent.parent;
+            }
+            return this._tmpQuat;
         };
         /**
          * Apply a force
@@ -66783,7 +66813,8 @@ var BABYLON;
                     var oldQuaternion = object.rotationQuaternion && object.rotationQuaternion.clone();
                     object.position.copyFromFloats(0, 0, 0);
                     object.rotation && object.rotation.copyFromFloats(0, 0, 0);
-                    object.rotationQuaternion && object.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+                    object.rotationQuaternion && object.rotationQuaternion.copyFrom(impostor.getParentsRotation());
+                    object.rotationQuaternion && object.parent && object.rotationQuaternion.conjugateInPlace();
                     var transform = object.computeWorldMatrix(true);
                     // convert rawVerts to object space
                     var temp = new Array();
@@ -66799,7 +66830,19 @@ var BABYLON;
                     oldQuaternion && object.rotationQuaternion && object.rotationQuaternion.copyFrom(oldQuaternion);
                     break;
                 case BABYLON.PhysicsImpostor.HeightmapImpostor:
+                    var oldPosition2 = object.position.clone();
+                    var oldRotation2 = object.rotation && object.rotation.clone();
+                    var oldQuaternion2 = object.rotationQuaternion && object.rotationQuaternion.clone();
+                    object.position.copyFromFloats(0, 0, 0);
+                    object.rotation && object.rotation.copyFromFloats(0, 0, 0);
+                    object.rotationQuaternion && object.rotationQuaternion.copyFrom(impostor.getParentsRotation());
+                    object.rotationQuaternion && object.parent && object.rotationQuaternion.conjugateInPlace();
+                    object.rotationQuaternion && object.rotationQuaternion.multiplyInPlace(this._minus90X);
                     returnValue = this._createHeightmap(object);
+                    object.position.copyFrom(oldPosition2);
+                    oldRotation2 && object.rotation && object.rotation.copyFrom(oldRotation2);
+                    oldQuaternion2 && object.rotationQuaternion && object.rotationQuaternion.copyFrom(oldQuaternion2);
+                    object.computeWorldMatrix(true);
                     break;
                 case BABYLON.PhysicsImpostor.ParticleImpostor:
                     returnValue = new this.BJSCANNON.Particle();
@@ -66809,18 +66852,26 @@ var BABYLON;
         };
         CannonJSPlugin.prototype._createHeightmap = function (object, pointDepth) {
             var pos = (object.getVerticesData(BABYLON.VertexBuffer.PositionKind));
+            var transform = object.computeWorldMatrix(true);
+            // convert rawVerts to object space
+            var temp = new Array();
+            var index;
+            for (index = 0; index < pos.length; index += 3) {
+                BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(pos, index), transform).toArray(temp, index);
+            }
+            pos = temp;
             var matrix = new Array();
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
             var boundingInfo = (object.getBoundingInfo());
-            var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.z);
-            var minY = boundingInfo.boundingBox.extendSizeWorld.y;
+            var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.y);
+            var minY = boundingInfo.boundingBox.extendSizeWorld.z;
             var elementSize = dim * 2 / arraySize;
             for (var i = 0; i < pos.length; i = i + 3) {
                 var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
-                var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1);
-                var y = pos[i + 1] + minY;
+                var z = Math.round(((pos[i + 1]) / elementSize - arraySize / 2) * -1);
+                var y = -pos[i + 2] + minY;
                 if (!matrix[x]) {
                     matrix[x] = [];
                 }
@@ -67795,7 +67846,7 @@ var BABYLON;
                     isRGB: (header[off_pfFlags] & DDPF_RGB) === DDPF_RGB,
                     isLuminance: (header[off_pfFlags] & DDPF_LUMINANCE) === DDPF_LUMINANCE,
                     isCube: (header[off_caps2] & DDSCAPS2_CUBEMAP) === DDSCAPS2_CUBEMAP,
-                    isCompressed: (fourCC === FOURCC_DXT1 || fourCC === FOURCC_DXT3 || FOURCC_DXT1 === FOURCC_DXT5),
+                    isCompressed: (fourCC === FOURCC_DXT1 || fourCC === FOURCC_DXT3 || fourCC === FOURCC_DXT5),
                     dxgiFormat: dxgiFormat,
                     textureType: textureType
                 };
@@ -69283,7 +69334,7 @@ var BABYLON;
             this.maxDepth = maxDepth;
             this.dynamicContent = new Array();
             this._maxBlockCapacity = maxBlockCapacity || 64;
-            this._selectionContent = new BABYLON.SmartArray(1024);
+            this._selectionContent = new BABYLON.SmartArrayNoDuplicate(1024);
             this._creationFunc = creationFunc;
         }
         // Methods
@@ -75410,8 +75461,8 @@ var BABYLON;
         NullEngine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset, count) {
         };
         NullEngine.prototype._bindTextureDirectly = function (target, texture) {
-            if (this._activeTexturesCache[this._activeTexture] !== texture) {
-                this._activeTexturesCache[this._activeTexture] = texture;
+            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
+                this._activeTexturesCache[this._activeTextureChannel] = texture;
             }
         };
         NullEngine.prototype._bindTexture = function (channel, texture) {

@@ -50,7 +50,7 @@ module BABYLON {
             }
         }
 
-        detachControl(element: HTMLElement) {
+        detachControl(element: Nullable<HTMLElement>) {
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         }
 

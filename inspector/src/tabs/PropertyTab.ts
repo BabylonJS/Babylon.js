@@ -106,11 +106,11 @@ module INSPECTOR {
         }
 
         /** Returns the treeitem corersponding to the given obj, null if not found */
-        public getItemFor(_obj: any): Nullable<TreeItem> {
+        public getItemFor(_obj: any): BABYLON.Nullable<TreeItem> {
             let obj = _obj as BABYLON.AbstractMesh;
 
             // Search recursively
-            let searchObjectInTree = (object: any, treeItem: TreeItem): Nullable<TreeItem> => {
+            let searchObjectInTree = (object: any, treeItem: TreeItem): BABYLON.Nullable<TreeItem> => {
                 if (treeItem.correspondsTo(object)) {
                     return treeItem;
                 }

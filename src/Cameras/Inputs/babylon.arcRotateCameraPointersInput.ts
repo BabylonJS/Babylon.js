@@ -314,7 +314,7 @@ module BABYLON {
             ]);
         }
 
-        public detachControl(element: HTMLElement) {
+        public detachControl(element: Nullable<HTMLElement>) {
             if (this._onLostFocus) {
                 Tools.UnregisterTopRootEvents([
                     { name: "blur", handler: this._onLostFocus }

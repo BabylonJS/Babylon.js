@@ -177,6 +177,7 @@
 
             if (!boundingInfo) {
                 this.refreshBoundingInfo();
+                boundingInfo = this.getBoundingInfo();
             }
             (<BoundingInfo>boundingInfo).update(world);
             return this;

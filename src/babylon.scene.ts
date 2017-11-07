@@ -785,7 +785,7 @@
         public actionManager: ActionManager;
 
         public _actionManagers = new Array<ActionManager>();
-        private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
+        private _meshesForIntersections = new SmartArrayNoDuplicate<AbstractMesh>(256);
 
         // Procedural textures
         public proceduralTexturesEnabled = true;
@@ -845,10 +845,10 @@
 
         private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
-        private _renderTargets = new SmartArray<RenderTargetTexture>(256);
+        private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
         public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
-        private _activeSkeletons = new SmartArray<Skeleton>(32);
-        private _softwareSkinnedMeshes = new SmartArray<Mesh>(32);
+        private _activeSkeletons = new SmartArrayNoDuplicate<Skeleton>(32);
+        private _softwareSkinnedMeshes = new SmartArrayNoDuplicate<Mesh>(32);
 
         private _renderingManager: RenderingManager;
         private _physicsEngine: Nullable<PhysicsEngine>;

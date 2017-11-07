@@ -22,13 +22,13 @@ module INSPECTOR {
 
         private _initialTab: number;
 
-        private _parentElement: Nullable<HTMLElement>;
+        private _parentElement: BABYLON.Nullable<HTMLElement>;
 
         /** The inspector is created with the given engine.
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab: number = 0, parentElement: Nullable<HTMLElement> = null, newColors?: {
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab: number = 0, parentElement: BABYLON.Nullable<HTMLElement> = null, newColors?: {
             backgroundColor?: string,
             backgroundColorLighter?: string,
             backgroundColorLighter2?: string,
