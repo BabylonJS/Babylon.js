@@ -5628,12 +5628,12 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.observable.js.map
 
+
 var BABYLON;
 (function (BABYLON) {
     var SmartArray = /** @class */ (function () {
         function SmartArray(capacity) {
             this.length = 0;
-            this._duplicateId = 0;
             this.data = new Array(capacity);
             this._id = SmartArray._GlobalId++;
         }
@@ -5642,29 +5642,17 @@ var BABYLON;
             if (this.length > this.data.length) {
                 this.data.length *= 2;
             }
-            if (!value.__smartArrayFlags) {
-                value.__smartArrayFlags = {};
-            }
-            value.__smartArrayFlags[this._id] = this._duplicateId;
         };
         SmartArray.prototype.forEach = function (func) {
             for (var index = 0; index < this.length; index++) {
                 func(this.data[index]);
             }
         };
-        SmartArray.prototype.pushNoDuplicate = function (value) {
-            if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
-                return false;
-            }
-            this.push(value);
-            return true;
-        };
         SmartArray.prototype.sort = function (compareFn) {
             this.data.sort(compareFn);
         };
         SmartArray.prototype.reset = function () {
             this.length = 0;
-            this._duplicateId++;
         };
         SmartArray.prototype.dispose = function () {
             this.reset();
@@ -5684,18 +5672,6 @@ var BABYLON;
                 this.data[this.length++] = (array.data || array)[index];
             }
         };
-        SmartArray.prototype.concatWithNoDuplicate = function (array) {
-            if (array.length === 0) {
-                return;
-            }
-            if (this.length + array.length > this.data.length) {
-                this.data.length = (this.length + array.length) * 2;
-            }
-            for (var index = 0; index < array.length; index++) {
-                var item = (array.data || array)[index];
-                this.pushNoDuplicate(item);
-            }
-        };
         SmartArray.prototype.indexOf = function (value) {
             var position = this.data.indexOf(value);
             if (position >= this.length) {
@@ -5711,6 +5687,46 @@ var BABYLON;
         return SmartArray;
     }());
     BABYLON.SmartArray = SmartArray;
+    var SmartArrayNoDuplicate = /** @class */ (function (_super) {
+        __extends(SmartArrayNoDuplicate, _super);
+        function SmartArrayNoDuplicate() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._duplicateId = 0;
+            return _this;
+        }
+        SmartArrayNoDuplicate.prototype.push = function (value) {
+            _super.prototype.push.call(this, value);
+            if (!value.__smartArrayFlags) {
+                value.__smartArrayFlags = {};
+            }
+            value.__smartArrayFlags[this._id] = this._duplicateId;
+        };
+        SmartArrayNoDuplicate.prototype.pushNoDuplicate = function (value) {
+            if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
+                return false;
+            }
+            this.push(value);
+            return true;
+        };
+        SmartArrayNoDuplicate.prototype.reset = function () {
+            _super.prototype.reset.call(this);
+            this._duplicateId++;
+        };
+        SmartArrayNoDuplicate.prototype.concatWithNoDuplicate = function (array) {
+            if (array.length === 0) {
+                return;
+            }
+            if (this.length + array.length > this.data.length) {
+                this.data.length = (this.length + array.length) * 2;
+            }
+            for (var index = 0; index < array.length; index++) {
+                var item = (array.data || array)[index];
+                this.pushNoDuplicate(item);
+            }
+        };
+        return SmartArrayNoDuplicate;
+    }(SmartArray));
+    BABYLON.SmartArrayNoDuplicate = SmartArrayNoDuplicate;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.smartArray.js.map
@@ -8471,7 +8487,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta";
+                return "3.1-beta-1";
             },
             enumerable: true,
             configurable: true
@@ -11395,23 +11411,23 @@ var BABYLON;
             }
             this._currentEffect = null;
         };
-        Engine.prototype.activateTexture = function (texture) {
-            if (this._activeTexture !== texture) {
-                this._gl.activeTexture(texture);
-                this._activeTexture = texture;
+        Engine.prototype.activateTextureChannel = function (textureChannel) {
+            if (this._activeTextureChannel !== textureChannel) {
+                this._gl.activeTexture(textureChannel);
+                this._activeTextureChannel = textureChannel;
             }
         };
         Engine.prototype._bindTextureDirectly = function (target, texture) {
-            if (this._activeTexturesCache[this._activeTexture] !== texture) {
+            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                this._activeTexturesCache[this._activeTexture] = texture;
+                this._activeTexturesCache[this._activeTextureChannel] = texture;
             }
         };
         Engine.prototype._bindTexture = function (channel, texture) {
             if (channel < 0) {
                 return;
             }
-            this.activateTexture(this._gl.TEXTURE0 + channel);
+            this.activateTextureChannel(this._gl.TEXTURE0 + channel);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         };
         Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
@@ -11419,7 +11435,7 @@ var BABYLON;
         };
         Engine.prototype.unbindAllTextures = function () {
             for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this.activateTexture(this._gl["TEXTURE" + channel]);
+                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 if (this.webGLVersion > 1) {
@@ -11431,32 +11447,33 @@ var BABYLON;
             if (channel < 0) {
                 return;
             }
-            this._gl.uniform1i(uniform, channel);
-            this._setTexture(channel, texture);
+            if (this._setTexture(channel, texture)) {
+                this._gl.uniform1i(uniform, channel);
+            }
         };
         Engine.prototype._setTexture = function (channel, texture) {
             // Not ready?
             if (!texture) {
                 if (this._activeTexturesCache[channel] != null) {
-                    this.activateTexture(this._gl["TEXTURE" + channel]);
+                    this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                     if (this.webGLVersion > 1) {
                         this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
                     }
                 }
-                return;
+                return false;
             }
             // Video
             var alreadyActivated = false;
             if (texture.video) {
-                this.activateTexture(this._gl["TEXTURE" + channel]);
+                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                 alreadyActivated = true;
                 texture.update();
             }
             else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
                 texture.delayLoad();
-                return;
+                return false;
             }
             var internalTexture;
             if (texture.isReady()) {
@@ -11471,11 +11488,11 @@ var BABYLON;
             else {
                 internalTexture = this.emptyTexture;
             }
-            if (this._activeTexturesCache[channel] === internalTexture) {
-                return;
-            }
             if (!alreadyActivated) {
-                this.activateTexture(this._gl["TEXTURE" + channel]);
+                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
+            }
+            if (this._activeTexturesCache[this._activeTextureChannel] === internalTexture) {
+                return false;
             }
             if (internalTexture && internalTexture.is3D) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture);
@@ -11566,6 +11583,7 @@ var BABYLON;
                 }
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
             }
+            return true;
         };
         Engine.prototype.setTextureArray = function (channel, uniform, textures) {
             if (channel < 0 || !uniform) {
@@ -13710,15 +13728,12 @@ var BABYLON;
          * Returns the last update of the World matrix
          * Returns a Matrix.
          */
-        AbstractMesh.prototype.getWorldMatrix = function (useCachedVersion) {
-            if (useCachedVersion === void 0) { useCachedVersion = false; }
+        AbstractMesh.prototype.getWorldMatrix = function () {
             if (this._masterMesh) {
                 return this._masterMesh.getWorldMatrix();
             }
-            if (!useCachedVersion) {
-                if (this._currentRenderId !== this.getScene().getRenderId() || !this.isSynchronized()) {
-                    this.computeWorldMatrix();
-                }
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this.computeWorldMatrix();
             }
             return this._worldMatrix;
         };
@@ -17659,7 +17674,7 @@ var BABYLON;
             this.probesEnabled = true;
             this.reflectionProbes = new Array();
             this._actionManagers = new Array();
-            this._meshesForIntersections = new BABYLON.SmartArray(256);
+            this._meshesForIntersections = new BABYLON.SmartArrayNoDuplicate(256);
             // Procedural textures
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
@@ -17685,10 +17700,10 @@ var BABYLON;
             this._isDisposed = false;
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._processedMaterials = new BABYLON.SmartArray(256);
-            this._renderTargets = new BABYLON.SmartArray(256);
+            this._renderTargets = new BABYLON.SmartArrayNoDuplicate(256);
             this._activeParticleSystems = new BABYLON.SmartArray(256);
-            this._activeSkeletons = new BABYLON.SmartArray(32);
-            this._softwareSkinnedMeshes = new BABYLON.SmartArray(32);
+            this._activeSkeletons = new BABYLON.SmartArrayNoDuplicate(32);
+            this._softwareSkinnedMeshes = new BABYLON.SmartArrayNoDuplicate(32);
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._useAlternateCameraConfiguration = false;
@@ -23468,7 +23483,7 @@ var BABYLON;
             }
             var offset = 0;
             var instancesCount = 0;
-            var world = this.getWorldMatrix(true);
+            var world = this.getWorldMatrix();
             if (batch.renderSelf[subMesh._id]) {
                 world.copyToArray(this._instancesData, offset);
                 offset += 16;
@@ -23477,7 +23492,7 @@ var BABYLON;
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix(true).copyToArray(this._instancesData, offset);
+                    instance.getWorldMatrix().copyToArray(this._instancesData, offset);
                     offset += 16;
                     instancesCount++;
                 }
@@ -23511,7 +23526,7 @@ var BABYLON;
                 if (batch.renderSelf[subMesh._id]) {
                     // Draw
                     if (onBeforeDraw) {
-                        onBeforeDraw(false, this.getWorldMatrix(true), effectiveMaterial);
+                        onBeforeDraw(false, this.getWorldMatrix(), effectiveMaterial);
                     }
                     this._draw(subMesh, fillMode, this._overridenInstanceCount);
                 }
@@ -23520,7 +23535,7 @@ var BABYLON;
                     for (var instanceIndex = 0; instanceIndex < visibleInstancesForSubMesh.length; instanceIndex++) {
                         var instance = visibleInstancesForSubMesh[instanceIndex];
                         // World
-                        var world = instance.getWorldMatrix(true);
+                        var world = instance.getWorldMatrix();
                         if (onBeforeDraw) {
                             onBeforeDraw(true, world, effectiveMaterial);
                         }
@@ -23598,7 +23613,7 @@ var BABYLON;
             if (!hardwareInstancedRendering) {
                 this._bind(subMesh, effect, fillMode);
             }
-            var world = this.getWorldMatrix(true);
+            var world = this.getWorldMatrix();
             if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
             }
@@ -26330,11 +26345,12 @@ var BABYLON;
             return changed;
         };
         Effect.prototype.bindUniformBuffer = function (buffer, name) {
-            if (Effect._baseCache[this._uniformBuffersNames[name]] === buffer) {
+            var bufferName = this._uniformBuffersNames[name];
+            if (Effect._baseCache[bufferName] === buffer) {
                 return;
             }
-            Effect._baseCache[this._uniformBuffersNames[name]] = buffer;
-            this._engine.bindUniformBufferBase(buffer, this._uniformBuffersNames[name]);
+            Effect._baseCache[bufferName] = buffer;
+            this._engine.bindUniformBufferBase(buffer, bufferName);
         };
         Effect.prototype.bindUniformBlock = function (blockName, index) {
             this._engine.bindUniformBlock(this._program, blockName, index);
@@ -69283,7 +69299,7 @@ var BABYLON;
             this.maxDepth = maxDepth;
             this.dynamicContent = new Array();
             this._maxBlockCapacity = maxBlockCapacity || 64;
-            this._selectionContent = new BABYLON.SmartArray(1024);
+            this._selectionContent = new BABYLON.SmartArrayNoDuplicate(1024);
             this._creationFunc = creationFunc;
         }
         // Methods
@@ -75410,8 +75426,8 @@ var BABYLON;
         NullEngine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset, count) {
         };
         NullEngine.prototype._bindTextureDirectly = function (target, texture) {
-            if (this._activeTexturesCache[this._activeTexture] !== texture) {
-                this._activeTexturesCache[this._activeTexture] = texture;
+            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
+                this._activeTexturesCache[this._activeTextureChannel] = texture;
             }
         };
         NullEngine.prototype._bindTexture = function (channel, texture) {
