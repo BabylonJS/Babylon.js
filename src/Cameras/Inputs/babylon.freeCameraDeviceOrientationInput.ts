@@ -47,7 +47,7 @@ module BABYLON {
             this._gamma = evt.gamma !== null ? evt.gamma : 0;
         }
 
-        detachControl(element: HTMLElement) {
+        detachControl(element: Nullable<HTMLElement>) {
             window.removeEventListener("orientationchange", this._orientationChanged);
             window.removeEventListener("deviceorientation", this._deviceOrientation);
         }
