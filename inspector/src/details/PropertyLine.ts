@@ -45,7 +45,7 @@ module INSPECTOR {
         /** The list of viewer element displayed at the end of the line (color, texture...) */
         private _elements: Array<BasicElement> = [];
         /** The property parent of this one. Used to update the value of this property and to retrieve the correct object */
-        private _parent: Nullable<PropertyLine>;
+        private _parent: BABYLON.Nullable<PropertyLine>;
         /** The input element to display if this property is 'simple' in order to update it */
         private _input: HTMLInputElement;
         /** Display input handler (stored to be removed afterwards) */
@@ -67,7 +67,7 @@ module INSPECTOR {
         /**Save value while slider is on */
         private _preValue: number;
 
-        constructor(prop: Property, parent: Nullable<PropertyLine> = null, level: number = 0) {
+        constructor(prop: Property, parent: BABYLON.Nullable<PropertyLine> = null, level: number = 0) {
             this._property = prop;
             this._level = level;
             this._parent = parent;

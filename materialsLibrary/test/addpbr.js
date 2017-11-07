@@ -1,14 +1,13 @@
 window.preparePBR = function() {
 	var pbr = new BABYLON.PBRMaterial("pbr", scene);
 
-	pbr.albedoTexture = new BABYLON.Texture("../assets/textures/amiga.jpg", scene);
+	pbr.albedoTexture = new BABYLON.Texture("/playground/textures/amiga.jpg", scene);
 	pbr.albedoTexture.uScale = 5;
 	pbr.albedoTexture.vScale = 5;
     
-    var hdrTexture = new BABYLON.HDRCubeTexture("../assets/textures/hdr/environment.hdr", scene, 512);
+    var hdrTexture = new BABYLON.HDRCubeTexture("/playground/textures/environment.hdr", scene, 512);
 
-    //var colorGradingTexture = new BABYLON.ColorGradingTexture("../assets/textures/ColorGrading.3DL", scene);
-    
+   
     // Uncomment for PMREM Generation
     // var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 128, false, true, false, true);
     pbr.reflectionTexture = hdrTexture;
@@ -16,8 +15,7 @@ window.preparePBR = function() {
     pbr.linkRefractionWithTransparency = true;
     pbr.indexOfRefraction = 0.52;
 
-	// var colorGrading = new BABYLON.ColorGradingTexture("../assets/textures/lateSunset.3DL", scene);
-	var colorGrading = new BABYLON.Texture("../assets/textures/colorGrade.png", scene, true);
+	var colorGrading = new BABYLON.Texture("/playground/textures/colorGrade.png", scene, true);
 	pbr.cameraColorGradingTexture = colorGrading;
 	pbr.colorGradingEnabled = true;
 
