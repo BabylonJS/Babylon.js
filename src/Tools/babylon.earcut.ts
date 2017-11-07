@@ -74,7 +74,7 @@ module Earcut {
 
     // create a circular doubly linked list from polygon points in the specified winding order
     function linkedList(data: number[], start: number, end: number, dim: number, clockwise: boolean): Node {
-        var i, last: Nullable<Node> = null;
+        var i, last: BABYLON.Nullable<Node> = null;
 
         if (clockwise === (signedArea(data, start, end, dim) > 0)) {
             for (i = start; i < end; i += dim) last = insertNode(i, data[i], data[i + 1], (<Node>last));

@@ -375,8 +375,24 @@ module BABYLON {
         }
 
         //temp variables for parent rotation calculations
-        private _mats: Array<Matrix> = [new Matrix(), new Matrix()];
+        //private _mats: Array<Matrix> = [new Matrix(), new Matrix()];
         private _tmpQuat: Quaternion = new Quaternion();
+        private _tmpQuat2: Quaternion = new Quaternion();
+
+        public getParentsRotation() {
+            let parent = this.object.parent;
+            this._tmpQuat.copyFromFloats(0, 0, 0, 1);
+            while (parent) {
+                if (parent.rotationQuaternion) {
+                    this._tmpQuat2.copyFrom(parent.rotationQuaternion);
+                } else {
+                    Quaternion.RotationYawPitchRollToRef(parent.rotation.y, parent.rotation.x, parent.rotation.z, this._tmpQuat2)
+                }
+                this._tmpQuat.multiplyToRef(this._tmpQuat2, this._tmpQuat);
+                parent = parent.parent;
+            }
+            return this._tmpQuat;
+        }
 
         /**
          * this function is executed by the physics engine.
@@ -388,10 +404,9 @@ module BABYLON {
 
             this.object.translate(this._deltaPosition, -1);
             this._deltaRotationConjugated && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this.object.rotationQuaternion);
-            if (this.object.parent) {
-                this.object.computeWorldMatrix(false).getRotationMatrixToRef(this._mats[0]);
-                Quaternion.FromRotationMatrixToRef(this._mats[0], this._tmpQuat);
-                this._tmpQuat.normalize();
+            if (this.object.parent && this.object.rotationQuaternion) {
+                this.getParentsRotation();
+                this._tmpQuat.multiplyToRef(this.object.rotationQuaternion, this._tmpQuat);
             } else {
                 this._tmpQuat.copyFrom(this.object.rotationQuaternion || new Quaternion());
             }
@@ -415,10 +430,8 @@ module BABYLON {
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
             // object has now its world rotation. needs to be converted to local.
             if (this.object.parent && this.object.rotationQuaternion) {
-                this.object.parent.computeWorldMatrix(false).getRotationMatrixToRef(this._mats[0]);
-                Quaternion.FromRotationMatrixToRef(this._mats[0], this._tmpQuat);
+                this.getParentsRotation();
                 this._tmpQuat.conjugateInPlace();
-                this._tmpQuat.normalize();
                 this._tmpQuat.multiplyToRef(this.object.rotationQuaternion, this.object.rotationQuaternion);
             }
             // take the position set and make it the absolute position of this object.

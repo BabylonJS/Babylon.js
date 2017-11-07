@@ -100,7 +100,7 @@ module INSPECTOR {
         /**
          * Useful function used to create a div
          */
-        public static CreateDiv(className: Nullable<string> = null, parent?: HTMLElement): HTMLElement {
+        public static CreateDiv(className: BABYLON.Nullable<string> = null, parent?: HTMLElement): HTMLElement {
             return Helpers.CreateElement('div', className, parent);
         }
 
@@ -111,7 +111,7 @@ module INSPECTOR {
             return <HTMLInputElement>Helpers.CreateElement('input', className, parent);
         }
 
-        public static CreateElement(element: string, className: Nullable<string> = null, parent?: HTMLElement): HTMLElement {
+        public static CreateElement(element: string, className: BABYLON.Nullable<string> = null, parent?: HTMLElement): HTMLElement {
             let elem = Inspector.DOCUMENT.createElement(element);
 
             if (className) {

@@ -79,7 +79,7 @@
             }
         }
 
-        public select(frustumPlanes: Plane[], selection: SmartArray<T>, allowDuplicate?: boolean): void {
+        public select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void {
             if (BoundingBox.IsInFrustum(this._boundingVectors, frustumPlanes)) {
                 if (this.blocks) {
                     for (var index = 0; index < this.blocks.length; index++) {
@@ -97,7 +97,7 @@
             }
         }
 
-        public intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void {
+        public intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void {
             if (BoundingBox.IntersectsSphere(this._minPoint, this._maxPoint, sphereCenter, sphereRadius)) {
                 if (this.blocks) {
                     for (var index = 0; index < this.blocks.length; index++) {
@@ -115,7 +115,7 @@
             }
         }
 
-        public intersectsRay(ray: Ray, selection: SmartArray<T>): void {
+        public intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void {
             if (ray.intersectsBoxMinMax(this._minPoint, this._maxPoint)) {
                 if (this.blocks) {
                     for (var index = 0; index < this.blocks.length; index++) {

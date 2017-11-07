@@ -20,7 +20,7 @@ interface WebGLRenderingContext {
     readonly TRANSFORM_FEEDBACK_BUFFER: number;
     createTransformFeedback(): WebGLTransformFeedback;
     deleteTransformFeedback(transformFeedbac: WebGLTransformFeedback): void;
-    bindTransformFeedback(target: number, transformFeedback: Nullable<WebGLTransformFeedback>): void;
+    bindTransformFeedback(target: number, transformFeedback: BABYLON.Nullable<WebGLTransformFeedback>): void;
     beginTransformFeedback(primitiveMode: number): void;
     endTransformFeedback(): void;
     transformFeedbackVaryings(program: WebGLProgram, varyings: string[], bufferMode: number): void;
