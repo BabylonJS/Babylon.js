@@ -113,6 +113,11 @@ namespace BABYLON {
         backgroundYRotation: number;
 
         /**
+         * Compute automatically the size of the elements to best fit with the scene.
+         */
+        sizeAuto: boolean;
+
+        /**
          * Sets up the inmage processing in the scene.
          * true by default.
          */
@@ -194,6 +199,7 @@ namespace BABYLON {
                 skyboxColor: new BABYLON.Color3(0.2, 0.2, 0.3),
 
                 backgroundYRotation: 0,
+                sizeAuto: true,
 
                 setupImageProcessing: true,
                 environmentTexture: this._environmentTextureCDNUrl,
@@ -430,7 +436,14 @@ namespace BABYLON {
          */
         private _setupGround(): void {
             if (!this._ground) {
-                this._ground = Mesh.CreatePlane("BackgroundPlane", this._options.groundSize, this._scene);
+                let size = this._options.groundSize;
+                if (this._options.sizeAuto) {
+                    if (this._scene.activeCamera instanceof ArcRotateCamera &&
+                        this._scene.activeCamera.upperRadiusLimit) {
+                        size = this._scene.activeCamera.upperRadiusLimit * 0.9;
+                    }
+                }
+                this._ground = Mesh.CreatePlane("BackgroundPlane", size, this._scene);
             }
             
             this._ground.rotation.x = Math.PI / 2; // Face up by default.
@@ -527,7 +540,14 @@ namespace BABYLON {
          */
         private _setupSkybox(): void {
             if (!this._skybox) {
-                this._skybox = Mesh.CreateBox("BackgroundSkybox", this._options.skyboxSize, this._scene, undefined, BABYLON.Mesh.BACKSIDE);
+                let size = this._options.skyboxSize;
+                if (this._options.sizeAuto) {
+                    if (this._scene.activeCamera instanceof ArcRotateCamera &&
+                        this._scene.activeCamera.upperRadiusLimit) {
+                        size = this._scene.activeCamera.upperRadiusLimit;
+                    }
+                }
+                this._skybox = Mesh.CreateBox("BackgroundSkybox", size, this._scene, undefined, BABYLON.Mesh.BACKSIDE);
             }
             this._skybox.parent = this._rootMesh;
         }
