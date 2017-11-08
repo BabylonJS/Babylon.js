@@ -4341,7 +4341,7 @@
             return hdrSkybox;
         }
 
-        public createDefaultEnvironment(options: IEnvironmentHelperOptions): Nullable<EnvironmentHelper> {
+        public createDefaultEnvironment(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
             if (BABYLON.EnvironmentHelper) {
                 return new EnvironmentHelper(options, this);
             }
