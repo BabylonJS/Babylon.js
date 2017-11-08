@@ -78,6 +78,11 @@ module BABYLON {
         private _attachedCamera: Nullable<ArcRotateCamera>;
 		private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;	
 		private _onMeshTargetChangedObserver: Nullable<Observer<AbstractMesh>>;
+
+		public init(): void {
+			// Do notihng
+		}
+		
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {

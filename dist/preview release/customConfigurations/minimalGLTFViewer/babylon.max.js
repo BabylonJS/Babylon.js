@@ -12293,11 +12293,21 @@ var BABYLON;
             return this._scene.getEngine();
         };
         Node.prototype.addBehavior = function (behavior) {
+            var _this = this;
             var index = this._behaviors.indexOf(behavior);
             if (index !== -1) {
                 return this;
             }
-            behavior.attach(this);
+            if (this._scene.isLoading) {
+                // We defer the attach when the scene will be loaded
+                var observer = this._scene.onDataLoadedObservable.add(function () {
+                    behavior.attach(_this);
+                    _this._scene.onDataLoadedObservable.remove(observer);
+                });
+            }
+            else {
+                behavior.attach(this);
+            }
             this._behaviors.push(behavior);
             return this;
         };
@@ -17487,6 +17497,11 @@ var BABYLON;
             */
             this.onAfterSpritesRenderingObservable = new BABYLON.Observable();
             /**
+            * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
+            * @type {BABYLON.Observable}
+            */
+            this.onDataLoadedObservable = new BABYLON.Observable();
+            /**
             * An event triggered when a camera is created
             * @type {BABYLON.Observable}
             */
@@ -18925,14 +18940,25 @@ var BABYLON;
             this._pendingData.push(data);
         };
         Scene.prototype._removePendingData = function (data) {
+            var wasLoading = this.isLoading;
             var index = this._pendingData.indexOf(data);
             if (index !== -1) {
                 this._pendingData.splice(index, 1);
+            }
+            if (wasLoading && !this.isLoading) {
+                this.onDataLoadedObservable.notifyObservers(this);
             }
         };
         Scene.prototype.getWaitingItemsCount = function () {
             return this._pendingData.length;
         };
+        Object.defineProperty(Scene.prototype, "isLoading", {
+            get: function () {
+                return this._pendingData.length > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Registers a function to be executed when the scene is ready.
          * @param {Function} func - the function to be executed.
@@ -20446,6 +20472,7 @@ var BABYLON;
             this.onAfterPhysicsObservable.clear();
             this.onBeforeAnimationsObservable.clear();
             this.onAfterAnimationsObservable.clear();
+            this.onDataLoadedObservable.clear();
             this.detachControl();
             // Release sounds & sounds tracks
             if (BABYLON.AudioEngine) {
@@ -49606,7 +49633,10 @@ var BABYLON;
             _this._engine = scene.getEngine();
             _this.name = name;
             _this.isRenderTarget = true;
+            _this._initialSizeParameter = size;
             _this._processSizeParameter(size);
+            _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () {
+            });
             _this._generateMipMaps = generateMipMaps ? true : false;
             _this._doNotChangeAspectRatio = doNotChangeAspectRatio;
             // Rendering groups
@@ -49703,6 +49733,11 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        RenderTargetTexture.prototype._onRatioRescale = function () {
+            if (this._sizeRatio) {
+                this.resize(this._initialSizeParameter);
+            }
+        };
         RenderTargetTexture.prototype._processSizeParameter = function (size) {
             if (size.ratio) {
                 this._sizeRatio = size.ratio;
@@ -50096,6 +50131,10 @@ var BABYLON;
                 this._postProcessManager = null;
             }
             this.clearPostProcesses(true);
+            if (this._resizeObserver) {
+                this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
+                this._resizeObserver = null;
+            }
             this.renderList = null;
             // Remove from custom render targets
             var scene = this.getScene();
@@ -50310,17 +50349,6 @@ var BABYLON;
             _this._blurKernelY = 0;
             _this._blurRatio = 1.0;
             _this.ignoreCameraViewport = true;
-            _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () {
-                if (size.ratio) {
-                    _this.resize(size);
-                    if (!_this._adaptiveBlurKernel) {
-                        _this._preparePostProcesses();
-                    }
-                }
-                if (_this._adaptiveBlurKernel) {
-                    _this._autoComputeBlurKernel();
-                }
-            });
             _this.onBeforeRenderObservable.add(function () {
                 BABYLON.Matrix.ReflectionToRef(_this.mirrorPlane, _this._mirrorMatrix);
                 _this._savedViewMatrix = scene.getViewMatrix();
@@ -50403,6 +50431,17 @@ var BABYLON;
             this.blurKernelX = this._adaptiveBlurKernel * dw;
             this.blurKernelY = this._adaptiveBlurKernel * dh;
         };
+        MirrorTexture.prototype._onRatioRescale = function () {
+            if (this._sizeRatio) {
+                this.resize(this._initialSizeParameter);
+                if (!this._adaptiveBlurKernel) {
+                    this._preparePostProcesses();
+                }
+            }
+            if (this._adaptiveBlurKernel) {
+                this._autoComputeBlurKernel();
+            }
+        };
         MirrorTexture.prototype._preparePostProcesses = function () {
             this.clearPostProcesses(true);
             if (this._blurKernelX && this._blurKernelY) {
@@ -50447,13 +50486,6 @@ var BABYLON;
             var serializationObject = _super.prototype.serialize.call(this);
             serializationObject.mirrorPlane = this.mirrorPlane.asArray();
             return serializationObject;
-        };
-        MirrorTexture.prototype.dispose = function () {
-            if (this._resizeObserver) {
-                this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
-                this._resizeObserver = null;
-            }
-            _super.prototype.dispose.call(this);
         };
         return MirrorTexture;
     }(BABYLON.RenderTargetTexture));

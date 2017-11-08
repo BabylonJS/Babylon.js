@@ -902,6 +902,11 @@ declare module BABYLON {
         */
         onAfterSpritesRenderingObservable: Observable<Scene>;
         /**
+        * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
+        * @type {BABYLON.Observable}
+        */
+        onDataLoadedObservable: Observable<Scene>;
+        /**
         * An event triggered when a camera is created
         * @type {BABYLON.Observable}
         */
@@ -1302,6 +1307,7 @@ declare module BABYLON {
         _addPendingData(data: any): void;
         _removePendingData(data: any): void;
         getWaitingItemsCount(): number;
+        readonly isLoading: boolean;
         /**
          * Registers a function to be executed when the scene is ready.
          * @param {Function} func - the function to be executed.
@@ -14262,6 +14268,36 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: Nullable<AbstractMesh[]>;
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class AnaglyphPostProcess extends PostProcess {
         private _passedProcess;
         constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean);
@@ -14784,36 +14820,6 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: Nullable<AbstractMesh[]>;
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
     }
 }
 
@@ -18598,13 +18604,13 @@ declare module BABYLON {
         private _blurKernelX;
         private _blurKernelY;
         private _blurRatio;
-        private _resizeObserver;
         blurRatio: number;
         adaptiveBlurKernel: number;
         blurKernel: number;
         blurKernelX: number;
         blurKernelY: number;
         private _autoComputeBlurKernel();
+        protected _onRatioRescale(): void;
         constructor(name: string, size: number | {
             width: number;
             height: number;
@@ -18614,7 +18620,6 @@ declare module BABYLON {
         private _preparePostProcesses();
         clone(): MirrorTexture;
         serialize(): any;
-        dispose(): void;
     }
 }
 
@@ -18706,6 +18711,7 @@ declare module BABYLON {
         ignoreCameraViewport: boolean;
         private _postProcessManager;
         private _postProcesses;
+        private _resizeObserver;
         /**
         * An event triggered when the texture is unbind.
         * @type {BABYLON.Observable}
@@ -18744,7 +18750,13 @@ declare module BABYLON {
             width: number;
             height: number;
         };
-        private _sizeRatio;
+        protected _initialSizeParameter: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        };
+        protected _sizeRatio: Nullable<number>;
         _generateMipMaps: boolean;
         protected _renderingManager: RenderingManager;
         _waitingRenderList: string[];
@@ -18756,6 +18768,7 @@ declare module BABYLON {
         protected _renderTargetOptions: RenderTargetCreationOptions;
         readonly renderTargetOptions: RenderTargetCreationOptions;
         protected _engine: Engine;
+        protected _onRatioRescale(): void;
         constructor(name: string, size: number | {
             width: number;
             height: number;
