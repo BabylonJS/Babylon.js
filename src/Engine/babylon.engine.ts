@@ -531,7 +531,7 @@
         }
 
         public static get Version(): string {
-            return "3.1-beta-1";
+            return "3.1-beta-2";
         }
 
         // Updatable statics so stick with vars here
@@ -3379,7 +3379,7 @@
             }
         }
 
-        public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
+        public createRenderTargetTexture(size: number | {width: number, height: number}, options: boolean | RenderTargetCreationOptions): InternalTexture {
             let fullOptions = new RenderTargetCreationOptions();
 
             if (options !== undefined && typeof options === "object") {
@@ -3409,8 +3409,8 @@
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
 
-            var width = size.width || size;
-            var height = size.height || size;
+            var width =  (<{width: number, height: number}>size).width || <number>size;
+            var height = (<{width: number, height: number}>size).height || <number>size;
 
             var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
 
