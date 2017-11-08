@@ -8,9 +8,12 @@
 
         private _blurX: BlurPostProcess;
         private _blurY: BlurPostProcess;
+        private _adaptiveBlurKernel = 0;
         private _blurKernelX = 0;
         private _blurKernelY = 0;
         private _blurRatio = 1.0;
+
+        private _resizeObserver: Nullable<Observer<Engine>>;
 
         public set blurRatio(value: number) {
             if (this._blurRatio === value) {
@@ -24,6 +27,11 @@
         public get blurRatio(): number {
             return this._blurRatio;
         }
+
+        public set adaptiveBlurKernel(value: number) {
+            this._adaptiveBlurKernel = value;
+            this._autoComputeBlurKernel();
+        }        
 
         public set blurKernel(value: number) {
             this.blurKernelX = value;
@@ -56,10 +64,26 @@
             return this._blurKernelY;
         }
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
+        private _autoComputeBlurKernel(): void {
+            let engine = this.getScene()!.getEngine();
+
+            let dw = this.getRenderWidth() / engine.getRenderWidth();
+            let dh = this.getRenderHeight() / engine.getRenderHeight();
+            this.blurKernelX = this._adaptiveBlurKernel * dw;
+            this.blurKernelY = this._adaptiveBlurKernel * dh;
+        }
+
+        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
             this.ignoreCameraViewport = true;
+
+            if ((<{ratio: number}>size).ratio) {
+                this._resizeObserver = this.getScene()!.getEngine().onResizeObservable.add(() => {
+                    this.resize(size);
+                    this._autoComputeBlurKernel();
+                });
+            }
 
             this.onBeforeRenderObservable.add(() => {
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
@@ -152,6 +176,14 @@
             serializationObject.mirrorPlane = this.mirrorPlane.asArray();
 
             return serializationObject;
+        }
+
+        public dispose(): void {
+            if (this._resizeObserver) {
+                this.getScene()!.getEngine().onResizeObservable.remove(this._resizeObserver);
+                this._resizeObserver = null;
+            }
+            super.dispose();
         }
     }
 } 

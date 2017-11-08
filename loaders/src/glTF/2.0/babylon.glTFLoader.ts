@@ -323,6 +323,7 @@ module BABYLON.GLTF2 {
             }
 
             node.babylonMesh = new Mesh(node.name || "mesh" + node.index, this._babylonScene);
+            node.babylonMesh.hasVertexAlpha = true;
 
             this._loadTransform(node);
 
@@ -1383,10 +1384,12 @@ module BABYLON.GLTF2 {
             const alphaMode = material.alphaMode || "OPAQUE";
             switch (alphaMode) {
                 case "OPAQUE": {
-                    // default is opaque
+                    babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
                     break;
                 }
                 case "MASK": {
+                    babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHATEST;
+
                     babylonMaterial.alphaCutOff = (material.alphaCutoff == null ? 0.5 : material.alphaCutoff);
 
                     if (colorFactor) {
@@ -1404,6 +1407,8 @@ module BABYLON.GLTF2 {
                     break;
                 }
                 case "BLEND": {
+                    babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
+
                     if (colorFactor) {
                         babylonMaterial.alpha = colorFactor[3];
                     }
