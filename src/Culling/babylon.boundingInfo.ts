@@ -60,7 +60,7 @@
          * @param center New center of the bounding info
          * @param extend New extend of the bounding info
          */
-        public center(center: Vector3, extend: Vector3): BoundingInfo {
+        public centerOn(center: Vector3, extend: Vector3): BoundingInfo {
             this.minimum = center.subtract(extend);
             this.maximum = center.add(extend);
 
