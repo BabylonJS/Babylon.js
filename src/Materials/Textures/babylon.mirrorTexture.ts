@@ -6,8 +6,8 @@
         private _mirrorMatrix = Matrix.Zero();
         private _savedViewMatrix: Matrix;
 
-        private _blurX: BlurPostProcess;
-        private _blurY: BlurPostProcess;
+        private _blurX: Nullable<BlurPostProcess>;
+        private _blurY: Nullable<BlurPostProcess>;
         private _adaptiveBlurKernel = 0;
         private _blurKernelX = 0;
         private _blurKernelY = 0;
@@ -138,6 +138,18 @@
 
                 this.addPostProcess(this._blurX);
                 this.addPostProcess(this._blurY);
+            }
+            else { 
+                if (this._blurY) {
+                    this.removePostProcess(this._blurY);
+                    this._blurY.dispose();
+                    this._blurY = null;
+                }
+                if (this._blurX) {
+                    this.removePostProcess(this._blurX);
+                    this._blurX.dispose();
+                    this._blurX = null;
+                }
             }
         }
 
