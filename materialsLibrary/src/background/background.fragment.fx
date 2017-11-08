@@ -37,39 +37,39 @@ varying vec3 vNormalW;
 
 // Reflection
 #ifdef REFLECTION
-	#ifdef REFLECTIONMAP_3D
-		#define sampleReflection(s, c) textureCube(s, c)
+    #ifdef REFLECTIONMAP_3D
+        #define sampleReflection(s, c) textureCube(s, c)
 
-		uniform samplerCube reflectionSampler;
-		
-		#ifdef TEXTURELODSUPPORT
-			#define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
-		#else
-			uniform samplerCube reflectionSamplerLow;
-			uniform samplerCube reflectionSamplerHigh;
-		#endif
-	#else
-		#define sampleReflection(s, c) texture2D(s, c)
+        uniform samplerCube reflectionSampler;
+        
+        #ifdef TEXTURELODSUPPORT
+            #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+        #else
+            uniform samplerCube reflectionSamplerLow;
+            uniform samplerCube reflectionSamplerHigh;
+        #endif
+    #else
+        #define sampleReflection(s, c) texture2D(s, c)
 
-		uniform sampler2D reflectionSampler;
+        uniform sampler2D reflectionSampler;
 
-		#ifdef TEXTURELODSUPPORT
-			#define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
-		#else
-			uniform samplerCube reflectionSamplerLow;
-			uniform samplerCube reflectionSamplerHigh;
-		#endif
-	#endif
+        #ifdef TEXTURELODSUPPORT
+            #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
+        #else
+            uniform samplerCube reflectionSamplerLow;
+            uniform samplerCube reflectionSamplerHigh;
+        #endif
+    #endif
 
-	#ifdef REFLECTIONMAP_SKYBOX
-		varying vec3 vPositionUVW;
-	#else
-		#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-			varying vec3 vDirectionW;
-		#endif
-	#endif
+    #ifdef REFLECTIONMAP_SKYBOX
+        varying vec3 vPositionUVW;
+    #else
+        #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+            varying vec3 vDirectionW;
+        #endif
+    #endif
 
-	#include<reflectionFunction>
+    #include<reflectionFunction>
 #endif
 
 // Forces linear space for image processing
@@ -98,6 +98,17 @@ varying vec3 vNormalW;
 // Fog
 #include<fogFragmentDeclaration>
 
+#ifdef REFLECTIONFRESNEL
+    #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
+
+    vec3 fresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectance90, float smoothness)
+    {
+        // Schlick fresnel approximation, extended with basic smoothness term so that rough surfaces do not approach reflectance90 at grazing angle
+        float weight = mix(FRESNEL_MAXIMUM_ON_ROUGH, 1.0, smoothness);
+        return reflectance0 + weight * (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotN, 0., 1.), 5.0);
+    }
+#endif
+
 void main(void) {
 #include<clipPlaneFragment>
 
@@ -124,23 +135,23 @@ void main(void) {
 #endif
 
 // _____________________________ REFLECTION ______________________________________
-vec3 environmentColor = vec3(1., 1., 1.);
+vec3 reflectionColor = vec3(1., 1., 1.);
 #ifdef REFLECTION
-	vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
-	#ifdef REFLECTIONMAP_OPPOSITEZ
-		reflectionVector.z *= -1.0;
-	#endif
+    vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
+    #ifdef REFLECTIONMAP_OPPOSITEZ
+        reflectionVector.z *= -1.0;
+    #endif
 
-	// _____________________________ 2D vs 3D Maps ________________________________
-	#ifdef REFLECTIONMAP_3D
-		vec3 reflectionCoords = reflectionVector;
-	#else
-		vec2 reflectionCoords = reflectionVector.xy;
-		#ifdef REFLECTIONMAP_PROJECTION
-			reflectionCoords /= reflectionVector.z;
-		#endif
-		reflectionCoords.y = 1.0 - reflectionCoords.y;
-	#endif
+    // _____________________________ 2D vs 3D Maps ________________________________
+    #ifdef REFLECTIONMAP_3D
+        vec3 reflectionCoords = reflectionVector;
+    #else
+        vec2 reflectionCoords = reflectionVector.xy;
+        #ifdef REFLECTIONMAP_PROJECTION
+            reflectionCoords /= reflectionVector.z;
+        #endif
+        reflectionCoords.y = 1.0 - reflectionCoords.y;
+    #endif
 
     #ifdef REFLECTIONBLUR
         float reflectionLOD = vReflectionInfos.y;
@@ -148,20 +159,20 @@ vec3 environmentColor = vec3(1., 1., 1.);
         #ifdef TEXTURELODSUPPORT
             // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
             reflectionLOD = reflectionLOD * log2(vReflectionMicrosurfaceInfos.x) * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
-            environmentColor = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD).rgb;
+            reflectionColor = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD).rgb;
         #else
             float lodReflectionNormalized = clamp(reflectionLOD, 0., 1.);
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
 
             vec3 reflectionSpecularMid = sampleReflection(reflectionSampler, reflectionCoords).rgb;
             if(lodReflectionNormalizedDoubled < 1.0){
-                environmentColor = mix(
+                reflectionColor = mix(
                     sampleReflection(reflectionSamplerHigh, reflectionCoords).rgb,
                     reflectionSpecularMid,
                     lodReflectionNormalizedDoubled
                 );
             } else {
-                environmentColor = mix(
+                reflectionColor = mix(
                     reflectionSpecularMid,
                     sampleReflection(reflectionSamplerLow, reflectionCoords).rgb,
                     lodReflectionNormalizedDoubled - 1.0
@@ -169,19 +180,20 @@ vec3 environmentColor = vec3(1., 1., 1.);
             }
         #endif
     #else
-        environmentColor = sampleReflection(reflectionSampler, reflectionCoords).rgb;
+        vec4 reflectionSample = sampleReflection(reflectionSampler, reflectionCoords);
+        reflectionColor = reflectionSample.rgb;
     #endif
 
     #ifdef GAMMAREFLECTION
-        environmentColor = toLinearSpace(environmentColor.rgb);
+        reflectionColor = toLinearSpace(reflectionColor.rgb);
     #endif
 
     // _____________________________ Levels _____________________________________
-    environmentColor *= vReflectionInfos.x;
+    reflectionColor *= vReflectionInfos.x;
 #endif
 
-// _____________________________ Alpha Information _______________________________
-vec3 groundColor = vec3(1., 1., 1.);
+// _____________________________ Diffuse Information _______________________________
+vec3 diffuseColor = vec3(1., 1., 1.);
 float finalAlpha = alpha;
 #ifdef DIFFUSE
     vec4 diffuseMap = texture2D(diffuseSampler, vDiffuseUV);
@@ -196,14 +208,18 @@ float finalAlpha = alpha;
         finalAlpha *= diffuseMap.a;
     #endif
 
-    groundColor = diffuseMap.rgb;
+    diffuseColor = diffuseMap.rgb;
 #endif
 
-    // _____________________________ MIX ________________________________________
-    vec3 colorBase = environmentColor * groundColor;
+// _____________________________ MIX ________________________________________
+#ifdef REFLECTIONFRESNEL
+    vec3 colorBase = diffuseColor;
+#else
+    vec3 colorBase = reflectionColor * diffuseColor;
+#endif
     colorBase = max(colorBase, 0.0);
 
-    // ___________________________ COMPOSE _______________________________________
+// ___________________________ COMPOSE _______________________________________
 #ifdef USERGBCOLOR
     vec3 finalColor = colorBase;
 #else
@@ -212,13 +228,27 @@ float finalAlpha = alpha;
     finalColor += colorBase.b * vTertiaryColor.rgb * vTertiaryColor.a;
 #endif
 
-#ifdef SHADOWINUSE
-    finalColor = mix(finalColor * shadowLevel, finalColor, globalShadow);
+// ___________________________ FRESNELS _______________________________________
+#ifdef REFLECTIONFRESNEL
+    vec3 reflectionAmount = vReflectionControl.xxx;
+    vec3 reflectionReflectance0 = vReflectionControl.yyy;
+    vec3 reflectionReflectance90 = vReflectionControl.zzz;
+    float VdotN = dot(normalize(vEyePosition), normalW);
+
+    vec3 planarReflectionFresnel = fresnelSchlickEnvironmentGGX(clamp(VdotN, 0.0, 1.0), reflectionReflectance0, reflectionReflectance90, 1.0);
+    reflectionAmount *= planarReflectionFresnel;
+
+    #ifdef REFLECTIONFALLOFF
+        float reflectionDistanceFalloff = 1.0 - clamp(length(vPositionW.xyz - vBackgroundCenter) * vReflectionControl.w, 0.0, 1.0);
+        reflectionDistanceFalloff *= reflectionDistanceFalloff;
+        reflectionAmount *= reflectionDistanceFalloff;
+    #endif
+
+    finalColor = mix(finalColor, reflectionColor, clamp(reflectionAmount, 0., 1.));
 #endif
 
 #ifdef OPACITYFRESNEL
-    // TODO. Change by camera forward Direction.
-    float viewAngleToFloor = dot(normalW, normalize(vEyePosition));
+    float viewAngleToFloor = dot(normalW, normalize(vEyePosition - vBackgroundCenter));
 
     // Fade out the floor plane as the angle between the floor and the camera tends to 0 (starting from startAngle)
     const float startAngle = 0.1;
@@ -227,22 +257,28 @@ float finalAlpha = alpha;
     finalAlpha *= fadeFactor * fadeFactor;
 #endif
 
-    vec4 color = vec4(finalColor, finalAlpha);
+// ___________________________ SHADOWS _______________________________________
+#ifdef SHADOWINUSE
+    finalColor = mix(finalColor * shadowLevel, finalColor, globalShadow);
+#endif
+
+// ___________________________ FINALIZE _______________________________________
+vec4 color = vec4(finalColor, finalAlpha);
 
 #include<fogFragment>
 
 #ifdef IMAGEPROCESSINGPOSTPROCESS
-	// Sanitize output incase invalid normals or tangents have caused div by 0 or undefined behavior
-	// this also limits the brightness which helpfully reduces over-sparkling in bloom (native handles this in the bloom blur shader)
-	color.rgb = clamp(color.rgb, 0., 30.0);
+    // Sanitize output incase invalid normals or tangents have caused div by 0 or undefined behavior
+    // this also limits the brightness which helpfully reduces over-sparkling in bloom (native handles this in the bloom blur shader)
+    color.rgb = clamp(color.rgb, 0., 30.0);
 #else
-	// Alway run even to ensure going back to gamma space.
-	color = applyImageProcessing(color);
+    // Alway run even to ensure going back to gamma space.
+    color = applyImageProcessing(color);
 #endif
 
 #ifdef PREMULTIPLYALPHA
-	// Convert to associative (premultiplied) format if needed.
-	color.rgb *= color.a;
+    // Convert to associative (premultiplied) format if needed.
+    color.rgb *= color.a;
 #endif
 
     gl_FragColor = color;

@@ -6360,6 +6360,14 @@ var BABYLON;
              */
             _this.REFLECTIONBLUR = false;
             /**
+             * True if you want the material to fade to reflection at grazing angle.
+             */
+            _this.REFLECTIONFRESNEL = false;
+            /**
+             * True if you want the material to falloff as far as you move away from the scene center.
+             */
+            _this.REFLECTIONFALLOFF = false;
+            /**
              * False if the current Webgl implementation does not support the texture lod extension.
              */
             _this.TEXTURELODSUPPORT = false;
@@ -6448,7 +6456,13 @@ var BABYLON;
             _this.shadowLights = null;
             _this.shadowBlurScale = 1;
             _this.shadowLevel = 0;
+            _this.sceneCenter = BABYLON.Vector3.Zero();
             _this.opacityFresnel = true;
+            _this.reflectionFresnel = false;
+            _this.reflectionFalloffDistance = 0.0;
+            _this.reflectionAmount = 1.0;
+            _this.reflectionReflectance0 = 0.05;
+            _this.reflectionReflectance90 = 0.5;
             _this.useRGBColor = true;
             /**
              * Number of Simultaneous lights allowed on the material.
@@ -6461,6 +6475,7 @@ var BABYLON;
             _this._imageProcessingObserver = null;
             // Temp values kept as cache in the material.
             _this._renderTargets = new BABYLON.SmartArray(16);
+            _this._reflectionControls = BABYLON.Vector4.Zero();
             // Setup the default processing configuration to the scene.
             _this._attachImageProcessingConfiguration(null);
             _this.getRenderTargetTextures = function () {
@@ -6754,9 +6769,22 @@ var BABYLON;
                                 defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
                                 break;
                         }
+                        if (this.reflectionFresnel) {
+                            defines.REFLECTIONFRESNEL = true;
+                            defines.REFLECTIONFALLOFF = this.reflectionFalloffDistance > 0;
+                            this._reflectionControls.x = this.reflectionAmount;
+                            this._reflectionControls.y = this.reflectionReflectance0;
+                            this._reflectionControls.z = this.reflectionReflectance90;
+                            this._reflectionControls.w = this.reflectionFalloffDistance;
+                        }
+                        else {
+                            defines.REFLECTIONFRESNEL = false;
+                            defines.REFLECTIONFALLOFF = false;
+                        }
                     }
                     else {
                         defines.REFLECTION = false;
+                        defines.REFLECTIONFALLOFF = false;
                         defines.REFLECTIONBLUR = false;
                         defines.REFLECTIONMAP_3D = false;
                         defines.REFLECTIONMAP_SPHERICAL = false;
@@ -6831,6 +6859,7 @@ var BABYLON;
                     "vPrimaryColor", "vSecondaryColor", "vTertiaryColor",
                     "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos",
                     "shadowLevel", "alpha",
+                    "vBackgroundCenter", "vReflectionControl",
                     "vDiffuseInfos", "diffuseMatrix",
                 ];
                 var samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
@@ -6887,6 +6916,8 @@ var BABYLON;
             this._uniformBuffer.addUniform("pointSize", 1);
             this._uniformBuffer.addUniform("shadowLevel", 1);
             this._uniformBuffer.addUniform("alpha", 1);
+            this._uniformBuffer.addUniform("vBackgroundCenter", 3);
+            this._uniformBuffer.addUniform("vReflectionControl", 4);
             this._uniformBuffer.create();
         };
         /**
@@ -6974,6 +7005,10 @@ var BABYLON;
                             this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
                             this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
                             this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
+                        }
+                        if (defines.REFLECTIONFRESNEL) {
+                            this._uniformBuffer.updateFloat3("vBackgroundCenter", this.sceneCenter.x, this.sceneCenter.y, this.sceneCenter.z);
+                            this._uniformBuffer.updateFloat4("vReflectionControl", this._reflectionControls.x, this._reflectionControls.y, this._reflectionControls.z, this._reflectionControls.w);
                         }
                     }
                 }
@@ -7122,11 +7157,47 @@ var BABYLON;
             BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], BackgroundMaterial.prototype, "shadowLevel", void 0);
         __decorate([
+            BABYLON.serializeAsVector3()
+        ], BackgroundMaterial.prototype, "_sceneCenter", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        ], BackgroundMaterial.prototype, "sceneCenter", void 0);
+        __decorate([
             BABYLON.serialize()
         ], BackgroundMaterial.prototype, "_opacityFresnel", void 0);
         __decorate([
             BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
         ], BackgroundMaterial.prototype, "opacityFresnel", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BackgroundMaterial.prototype, "_reflectionFresnel", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        ], BackgroundMaterial.prototype, "reflectionFresnel", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BackgroundMaterial.prototype, "_reflectionFalloffDistance", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        ], BackgroundMaterial.prototype, "reflectionFalloffDistance", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BackgroundMaterial.prototype, "_reflectionAmount", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        ], BackgroundMaterial.prototype, "reflectionAmount", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BackgroundMaterial.prototype, "_reflectionReflectance0", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        ], BackgroundMaterial.prototype, "reflectionReflectance0", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BackgroundMaterial.prototype, "_reflectionReflectance90", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        ], BackgroundMaterial.prototype, "reflectionReflectance90", void 0);
         __decorate([
             BABYLON.serialize()
         ], BackgroundMaterial.prototype, "_useRGBColor", void 0);
@@ -7150,10 +7221,10 @@ var BABYLON;
 //# sourceMappingURL=babylon.backgroundMaterial.js.map
 
 BABYLON.Effect.ShadersStore['backgroundVertexShader'] = "precision highp float;\n#include<__decl__backgroundVertex>\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef MAINUV1\nvarying vec2 vMainUV1;\n#endif\n#ifdef MAINUV2\nvarying vec2 vMainUV2; \n#endif\n#if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0\nvarying vec2 vDiffuseUV;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#ifdef REFLECTIONMAP_SKYBOX\nvarying vec3 vPositionUVW;\n#endif\n#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)\nvarying vec3 vDirectionW;\n#endif\nvoid main(void) {\n#ifdef REFLECTIONMAP_SKYBOX\nvPositionUVW=position;\n#endif \n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nmat3 normalWorld=mat3(finalWorld);\n#ifdef NONUNIFORMSCALING\nnormalWorld=transposeMat3(inverseMat3(normalWorld));\n#endif\nvNormalW=normalize(normalWorld*normal);\n#endif\n#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)\nvDirectionW=normalize(vec3(finalWorld*vec4(position,0.0)));\n#endif\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef MAINUV1\nvMainUV1=uv;\n#endif \n#ifdef MAINUV2\nvMainUV2=uv2;\n#endif\n#if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0 \nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
-BABYLON.Effect.ShadersStore['backgroundPixelShader'] = "#ifdef TEXTURELODSUPPORT\n#extension GL_EXT_shader_texture_lod : enable\n#endif\nprecision highp float;\n#include<__decl__backgroundFragment>\n\nuniform vec3 vEyePosition;\n\nvarying vec3 vPositionW;\n#ifdef MAINUV1\nvarying vec2 vMainUV1;\n#endif \n#ifdef MAINUV2 \nvarying vec2 vMainUV2; \n#endif \n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef DIFFUSE\n#if DIFFUSEDIRECTUV == 1\n#define vDiffuseUV vMainUV1\n#elif DIFFUSEDIRECTUV == 2\n#define vDiffuseUV vMainUV2\n#else\nvarying vec2 vDiffuseUV;\n#endif\nuniform sampler2D diffuseSampler;\n#endif\n\n#ifdef REFLECTION\n#ifdef REFLECTIONMAP_3D\n#define sampleReflection(s,c) textureCube(s,c)\nuniform samplerCube reflectionSampler;\n#ifdef TEXTURELODSUPPORT\n#define sampleReflectionLod(s,c,l) textureCubeLodEXT(s,c,l)\n#else\nuniform samplerCube reflectionSamplerLow;\nuniform samplerCube reflectionSamplerHigh;\n#endif\n#else\n#define sampleReflection(s,c) texture2D(s,c)\nuniform sampler2D reflectionSampler;\n#ifdef TEXTURELODSUPPORT\n#define sampleReflectionLod(s,c,l) texture2DLodEXT(s,c,l)\n#else\nuniform samplerCube reflectionSamplerLow;\nuniform samplerCube reflectionSamplerHigh;\n#endif\n#endif\n#ifdef REFLECTIONMAP_SKYBOX\nvarying vec3 vPositionUVW;\n#else\n#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)\nvarying vec3 vDirectionW;\n#endif\n#endif\n#include<reflectionFunction>\n#endif\n\n#ifndef FROMLINEARSPACE\n#define FROMLINEARSPACE;\n#endif\n\n#ifndef SHADOWONLY\n#define SHADOWONLY;\n#endif\n#include<imageProcessingDeclaration>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<helperFunctions>\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n#include<imageProcessingFunctions>\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(0.0,1.0,0.0);\n#endif\n\nfloat shadow=1.;\nfloat globalShadow=0.;\nfloat shadowLightCount=0.;\n#include<lightFragment>[0..maxSimultaneousLights]\n#ifdef SHADOWINUSE\nglobalShadow/=shadowLightCount;\n#else\nglobalShadow=1.0;\n#endif\n\nvec3 environmentColor=vec3(1.,1.,1.);\n#ifdef REFLECTION\nvec3 reflectionVector=computeReflectionCoords(vec4(vPositionW,1.0),normalW);\n#ifdef REFLECTIONMAP_OPPOSITEZ\nreflectionVector.z*=-1.0;\n#endif\n\n#ifdef REFLECTIONMAP_3D\nvec3 reflectionCoords=reflectionVector;\n#else\nvec2 reflectionCoords=reflectionVector.xy;\n#ifdef REFLECTIONMAP_PROJECTION\nreflectionCoords/=reflectionVector.z;\n#endif\nreflectionCoords.y=1.0-reflectionCoords.y;\n#endif\n#ifdef REFLECTIONBLUR\nfloat reflectionLOD=vReflectionInfos.y;\n#ifdef TEXTURELODSUPPORT\n\nreflectionLOD=reflectionLOD*log2(vReflectionMicrosurfaceInfos.x)*vReflectionMicrosurfaceInfos.y+vReflectionMicrosurfaceInfos.z;\nenvironmentColor=sampleReflectionLod(reflectionSampler,reflectionCoords,reflectionLOD).rgb;\n#else\nfloat lodReflectionNormalized=clamp(reflectionLOD,0.,1.);\nfloat lodReflectionNormalizedDoubled=lodReflectionNormalized*2.0;\nvec3 reflectionSpecularMid=sampleReflection(reflectionSampler,reflectionCoords).rgb;\nif(lodReflectionNormalizedDoubled<1.0){\nenvironmentColor=mix(\nsampleReflection(reflectionSamplerHigh,reflectionCoords).rgb,\nreflectionSpecularMid,\nlodReflectionNormalizedDoubled\n);\n} else {\nenvironmentColor=mix(\nreflectionSpecularMid,\nsampleReflection(reflectionSamplerLow,reflectionCoords).rgb,\nlodReflectionNormalizedDoubled-1.0\n);\n}\n#endif\n#else\nenvironmentColor=sampleReflection(reflectionSampler,reflectionCoords).rgb;\n#endif\n#ifdef GAMMAREFLECTION\nenvironmentColor=toLinearSpace(environmentColor.rgb);\n#endif\n\nenvironmentColor*=vReflectionInfos.x;\n#endif\n\nvec3 groundColor=vec3(1.,1.,1.);\nfloat finalAlpha=alpha;\n#ifdef DIFFUSE\nvec4 diffuseMap=texture2D(diffuseSampler,vDiffuseUV);\n#ifdef GAMMADIFFUSE\ndiffuseMap.rgb=toLinearSpace(diffuseMap.rgb);\n#endif\n\ndiffuseMap.rgb*=vDiffuseInfos.y;\n#ifdef DIFFUSEHASALPHA\nfinalAlpha*=diffuseMap.a;\n#endif\ngroundColor=diffuseMap.rgb;\n#endif\n\nvec3 colorBase=environmentColor*groundColor;\ncolorBase=max(colorBase,0.0);\n\n#ifdef USERGBCOLOR\nvec3 finalColor=colorBase;\n#else\nvec3 finalColor=colorBase.r*vPrimaryColor.rgb*vPrimaryColor.a;\nfinalColor+=colorBase.g*vSecondaryColor.rgb*vSecondaryColor.a;\nfinalColor+=colorBase.b*vTertiaryColor.rgb*vTertiaryColor.a;\n#endif\n#ifdef SHADOWINUSE\nfinalColor=mix(finalColor*shadowLevel,finalColor,globalShadow);\n#endif\n#ifdef OPACITYFRESNEL\n\nfloat viewAngleToFloor=dot(normalW,normalize(vEyePosition));\n\nconst float startAngle=0.1;\nfloat fadeFactor=clamp(viewAngleToFloor/startAngle,0.0,1.0);\nfinalAlpha*=fadeFactor*fadeFactor;\n#endif\nvec4 color=vec4(finalColor,finalAlpha);\n#include<fogFragment>\n#ifdef IMAGEPROCESSINGPOSTPROCESS\n\n\ncolor.rgb=clamp(color.rgb,0.,30.0);\n#else\n\ncolor=applyImageProcessing(color);\n#endif\n#ifdef PREMULTIPLYALPHA\n\ncolor.rgb*=color.a;\n#endif\ngl_FragColor=color;\n}";
+BABYLON.Effect.ShadersStore['backgroundPixelShader'] = "#ifdef TEXTURELODSUPPORT\n#extension GL_EXT_shader_texture_lod : enable\n#endif\nprecision highp float;\n#include<__decl__backgroundFragment>\n\nuniform vec3 vEyePosition;\n\nvarying vec3 vPositionW;\n#ifdef MAINUV1\nvarying vec2 vMainUV1;\n#endif \n#ifdef MAINUV2 \nvarying vec2 vMainUV2; \n#endif \n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef DIFFUSE\n#if DIFFUSEDIRECTUV == 1\n#define vDiffuseUV vMainUV1\n#elif DIFFUSEDIRECTUV == 2\n#define vDiffuseUV vMainUV2\n#else\nvarying vec2 vDiffuseUV;\n#endif\nuniform sampler2D diffuseSampler;\n#endif\n\n#ifdef REFLECTION\n#ifdef REFLECTIONMAP_3D\n#define sampleReflection(s,c) textureCube(s,c)\nuniform samplerCube reflectionSampler;\n#ifdef TEXTURELODSUPPORT\n#define sampleReflectionLod(s,c,l) textureCubeLodEXT(s,c,l)\n#else\nuniform samplerCube reflectionSamplerLow;\nuniform samplerCube reflectionSamplerHigh;\n#endif\n#else\n#define sampleReflection(s,c) texture2D(s,c)\nuniform sampler2D reflectionSampler;\n#ifdef TEXTURELODSUPPORT\n#define sampleReflectionLod(s,c,l) texture2DLodEXT(s,c,l)\n#else\nuniform samplerCube reflectionSamplerLow;\nuniform samplerCube reflectionSamplerHigh;\n#endif\n#endif\n#ifdef REFLECTIONMAP_SKYBOX\nvarying vec3 vPositionUVW;\n#else\n#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)\nvarying vec3 vDirectionW;\n#endif\n#endif\n#include<reflectionFunction>\n#endif\n\n#ifndef FROMLINEARSPACE\n#define FROMLINEARSPACE;\n#endif\n\n#ifndef SHADOWONLY\n#define SHADOWONLY;\n#endif\n#include<imageProcessingDeclaration>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<helperFunctions>\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n#include<imageProcessingFunctions>\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\n#ifdef REFLECTIONFRESNEL\n#define FRESNEL_MAXIMUM_ON_ROUGH 0.25\nvec3 fresnelSchlickEnvironmentGGX(float VdotN,vec3 reflectance0,vec3 reflectance90,float smoothness)\n{\n\nfloat weight=mix(FRESNEL_MAXIMUM_ON_ROUGH,1.0,smoothness);\nreturn reflectance0+weight*(reflectance90-reflectance0)*pow(clamp(1.0-VdotN,0.,1.),5.0);\n}\n#endif\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(0.0,1.0,0.0);\n#endif\n\nfloat shadow=1.;\nfloat globalShadow=0.;\nfloat shadowLightCount=0.;\n#include<lightFragment>[0..maxSimultaneousLights]\n#ifdef SHADOWINUSE\nglobalShadow/=shadowLightCount;\n#else\nglobalShadow=1.0;\n#endif\n\nvec3 reflectionColor=vec3(1.,1.,1.);\n#ifdef REFLECTION\nvec3 reflectionVector=computeReflectionCoords(vec4(vPositionW,1.0),normalW);\n#ifdef REFLECTIONMAP_OPPOSITEZ\nreflectionVector.z*=-1.0;\n#endif\n\n#ifdef REFLECTIONMAP_3D\nvec3 reflectionCoords=reflectionVector;\n#else\nvec2 reflectionCoords=reflectionVector.xy;\n#ifdef REFLECTIONMAP_PROJECTION\nreflectionCoords/=reflectionVector.z;\n#endif\nreflectionCoords.y=1.0-reflectionCoords.y;\n#endif\n#ifdef REFLECTIONBLUR\nfloat reflectionLOD=vReflectionInfos.y;\n#ifdef TEXTURELODSUPPORT\n\nreflectionLOD=reflectionLOD*log2(vReflectionMicrosurfaceInfos.x)*vReflectionMicrosurfaceInfos.y+vReflectionMicrosurfaceInfos.z;\nreflectionColor=sampleReflectionLod(reflectionSampler,reflectionCoords,reflectionLOD).rgb;\n#else\nfloat lodReflectionNormalized=clamp(reflectionLOD,0.,1.);\nfloat lodReflectionNormalizedDoubled=lodReflectionNormalized*2.0;\nvec3 reflectionSpecularMid=sampleReflection(reflectionSampler,reflectionCoords).rgb;\nif(lodReflectionNormalizedDoubled<1.0){\nreflectionColor=mix(\nsampleReflection(reflectionSamplerHigh,reflectionCoords).rgb,\nreflectionSpecularMid,\nlodReflectionNormalizedDoubled\n);\n} else {\nreflectionColor=mix(\nreflectionSpecularMid,\nsampleReflection(reflectionSamplerLow,reflectionCoords).rgb,\nlodReflectionNormalizedDoubled-1.0\n);\n}\n#endif\n#else\nvec4 reflectionSample=sampleReflection(reflectionSampler,reflectionCoords);\nreflectionColor=reflectionSample.rgb;\n#endif\n#ifdef GAMMAREFLECTION\nreflectionColor=toLinearSpace(reflectionColor.rgb);\n#endif\n\nreflectionColor*=vReflectionInfos.x;\n#endif\n\nvec3 diffuseColor=vec3(1.,1.,1.);\nfloat finalAlpha=alpha;\n#ifdef DIFFUSE\nvec4 diffuseMap=texture2D(diffuseSampler,vDiffuseUV);\n#ifdef GAMMADIFFUSE\ndiffuseMap.rgb=toLinearSpace(diffuseMap.rgb);\n#endif\n\ndiffuseMap.rgb*=vDiffuseInfos.y;\n#ifdef DIFFUSEHASALPHA\nfinalAlpha*=diffuseMap.a;\n#endif\ndiffuseColor=diffuseMap.rgb;\n#endif\n\n#ifdef REFLECTIONFRESNEL\nvec3 colorBase=diffuseColor;\n#else\nvec3 colorBase=reflectionColor*diffuseColor;\n#endif\ncolorBase=max(colorBase,0.0);\n\n#ifdef USERGBCOLOR\nvec3 finalColor=colorBase;\n#else\nvec3 finalColor=colorBase.r*vPrimaryColor.rgb*vPrimaryColor.a;\nfinalColor+=colorBase.g*vSecondaryColor.rgb*vSecondaryColor.a;\nfinalColor+=colorBase.b*vTertiaryColor.rgb*vTertiaryColor.a;\n#endif\n\n#ifdef REFLECTIONFRESNEL\nvec3 reflectionAmount=vReflectionControl.xxx;\nvec3 reflectionReflectance0=vReflectionControl.yyy;\nvec3 reflectionReflectance90=vReflectionControl.zzz;\nfloat VdotN=dot(normalize(vEyePosition),normalW);\nvec3 planarReflectionFresnel=fresnelSchlickEnvironmentGGX(clamp(VdotN,0.0,1.0),reflectionReflectance0,reflectionReflectance90,1.0);\nreflectionAmount*=planarReflectionFresnel;\n#ifdef REFLECTIONFALLOFF\nfloat reflectionDistanceFalloff=1.0-clamp(length(vPositionW.xyz-vBackgroundCenter)*vReflectionControl.w,0.0,1.0);\nreflectionDistanceFalloff*=reflectionDistanceFalloff;\nreflectionAmount*=reflectionDistanceFalloff;\n#endif\nfinalColor=mix(finalColor,reflectionColor,clamp(reflectionAmount,0.,1.));\n#endif\n#ifdef OPACITYFRESNEL\nfloat viewAngleToFloor=dot(normalW,normalize(vEyePosition-vBackgroundCenter));\n\nconst float startAngle=0.1;\nfloat fadeFactor=clamp(viewAngleToFloor/startAngle,0.0,1.0);\nfinalAlpha*=fadeFactor*fadeFactor;\n#endif\n\n#ifdef SHADOWINUSE\nfinalColor=mix(finalColor*shadowLevel,finalColor,globalShadow);\n#endif\n\nvec4 color=vec4(finalColor,finalAlpha);\n#include<fogFragment>\n#ifdef IMAGEPROCESSINGPOSTPROCESS\n\n\ncolor.rgb=clamp(color.rgb,0.,30.0);\n#else\n\ncolor=applyImageProcessing(color);\n#endif\n#ifdef PREMULTIPLYALPHA\n\ncolor.rgb*=color.a;\n#endif\ngl_FragColor=color;\n}";
 
-BABYLON.Effect.IncludesShadersStore['backgroundFragmentDeclaration'] = " uniform vec4 vPrimaryColor;\nuniform vec4 vSecondaryColor;\nuniform vec4 vTertiaryColor;\nuniform float shadowLevel;\nuniform float alpha;\n#ifdef DIFFUSE\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef REFLECTION\nuniform vec2 vReflectionInfos;\nuniform mat4 reflectionMatrix;\nuniform vec3 vReflectionMicrosurfaceInfos;\n#endif";
-BABYLON.Effect.IncludesShadersStore['backgroundUboDeclaration'] = "layout(std140,column_major) uniform;\nuniform Material\n{\nuniform vec4 vPrimaryColor;\nuniform vec4 vSecondaryColor;\nuniform vec4 vTertiaryColor;\nuniform vec2 vDiffuseInfos;\nuniform vec2 vReflectionInfos;\nuniform mat4 diffuseMatrix;\nuniform mat4 reflectionMatrix;\nuniform vec3 vReflectionMicrosurfaceInfos;\nuniform float pointSize;\nuniform float shadowLevel;\nuniform float alpha;\n};\nuniform Scene {\nmat4 viewProjection;\nmat4 view;\n};";
+BABYLON.Effect.IncludesShadersStore['backgroundFragmentDeclaration'] = " uniform vec4 vPrimaryColor;\nuniform vec4 vSecondaryColor;\nuniform vec4 vTertiaryColor;\nuniform float shadowLevel;\nuniform float alpha;\n#ifdef DIFFUSE\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef REFLECTION\nuniform vec2 vReflectionInfos;\nuniform mat4 reflectionMatrix;\nuniform vec3 vReflectionMicrosurfaceInfos;\n#endif\n#if defined(REFLECTIONFRESNEL) || defined(OPACITYFRESNEL)\nuniform vec3 vBackgroundCenter;\n#endif\n#ifdef REFLECTIONFRESNEL\nuniform vec4 vReflectionControl;\n#endif";
+BABYLON.Effect.IncludesShadersStore['backgroundUboDeclaration'] = "layout(std140,column_major) uniform;\nuniform Material\n{\nuniform vec4 vPrimaryColor;\nuniform vec4 vSecondaryColor;\nuniform vec4 vTertiaryColor;\nuniform vec2 vDiffuseInfos;\nuniform vec2 vReflectionInfos;\nuniform mat4 diffuseMatrix;\nuniform mat4 reflectionMatrix;\nuniform vec3 vReflectionMicrosurfaceInfos;\nuniform float pointSize;\nuniform float shadowLevel;\nuniform float alpha;\n#if defined(REFLECTIONFRESNEL) || defined(OPACITYFRESNEL)\nuniform vec3 vBackgroundCenter;\n#endif\n#ifdef REFLECTIONFRESNEL\nuniform vec4 vReflectionControl;\n#endif\n};\nuniform Scene {\nmat4 viewProjection;\nmat4 view;\n};";
 BABYLON.Effect.IncludesShadersStore['backgroundVertexDeclaration'] = "uniform mat4 view;\nuniform mat4 viewProjection;\nuniform float shadowLevel;\n#ifdef DIFFUSE\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef REFLECTION\nuniform vec2 vReflectionInfos;\nuniform mat4 reflectionMatrix;\nuniform vec3 vReflectionMicrosurfaceInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif";
 
 
