@@ -13,3 +13,11 @@
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
 #endif
+
+#if defined(REFLECTIONFRESNEL) || defined(OPACITYFRESNEL)
+    uniform vec3 vBackgroundCenter;
+#endif
+
+#ifdef REFLECTIONFRESNEL
+    uniform vec4 vReflectionControl;
+#endif

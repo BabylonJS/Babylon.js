@@ -81,6 +81,10 @@ module BABYLON {
 		private _lastInteractionTime = -Infinity;
 		private _cameraRotationSpeed: number = 0;
 
+		public init(): void {
+			// Do notihng
+		}
+
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             let scene = this._attachedCamera.getScene();

@@ -36,6 +36,16 @@ namespace BABYLON {
         public REFLECTIONBLUR = false;
 
         /**
+         * True if you want the material to fade to reflection at grazing angle.
+         */
+        public REFLECTIONFRESNEL = false;
+
+        /**
+         * True if you want the material to falloff as far as you move away from the scene center.
+         */
+        public REFLECTIONFALLOFF = false;
+
+        /**
          * False if the current Webgl implementation does not support the texture lod extension.
          */
         public TEXTURELODSUPPORT = false;
@@ -213,6 +223,15 @@ namespace BABYLON {
         public shadowLevel: float = 0;
 
         /**
+         * In case of opacity Fresnel or reflection falloff, this is use as a scene center.
+         * It is usually zero but might be interesting to modify according to your setup.
+         */
+        @serializeAsVector3()
+        protected _sceneCenter: Vector3;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public sceneCenter: Vector3 = Vector3.Zero();
+
+        /**
          * This helps specifying that the material is falling off to the sky box at grazing angle.
          * This helps ensuring a nice transition when the camera goes under the ground.
          */
@@ -220,6 +239,48 @@ namespace BABYLON {
         protected _opacityFresnel: boolean;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public opacityFresnel: boolean = true;
+
+        /**
+         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle. 
+         * This helps adding a mirror texture on the ground.
+         */
+        @serialize()
+        protected _reflectionFresnel: boolean;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public reflectionFresnel: boolean = false;
+
+        /**
+         * This helps specifying the falloff radius off the reflection texture from the sceneCenter.
+         * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
+         */
+        @serialize()
+        protected _reflectionFalloffDistance: number;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public reflectionFalloffDistance: number = 0.0;
+
+        /**
+         * This specifies the weight of the reflection against the background in case of reflection Fresnel.
+         */
+        @serialize()
+        protected _reflectionAmount: number;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public reflectionAmount: number = 1.0;
+
+        /**
+         * This specifies the weight of the reflection at grazing angle.
+         */
+        @serialize()
+        protected _reflectionReflectance0: number;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public reflectionReflectance0: number = 0.05;
+
+        /**
+         * This specifies the weight of the reflection at a perpendicular point of view.
+         */
+        @serialize()
+        protected _reflectionReflectance90: number;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public reflectionReflectance90: number = 0.5;
 
         /**
          * Helps to directly use the maps channels instead of their level.
@@ -399,6 +460,7 @@ namespace BABYLON {
 
         // Temp values kept as cache in the material.
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
+        private _reflectionControls = BABYLON.Vector4.Zero();
 
         /**
          * constructor
@@ -545,8 +607,23 @@ namespace BABYLON {
                                 defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
                                 break;
                         }
+
+                        if (this.reflectionFresnel) {
+                            defines.REFLECTIONFRESNEL = true;
+                            defines.REFLECTIONFALLOFF = this.reflectionFalloffDistance > 0;
+
+                            this._reflectionControls.x = this.reflectionAmount;
+                            this._reflectionControls.y = this.reflectionReflectance0;
+                            this._reflectionControls.z = this.reflectionReflectance90;
+                            this._reflectionControls.w = this.reflectionFalloffDistance;
+                        }
+                        else {
+                            defines.REFLECTIONFRESNEL = false;
+                            defines.REFLECTIONFALLOFF = false;
+                        }
                     } else {
                         defines.REFLECTION = false;
+                        defines.REFLECTIONFALLOFF = false;
                         defines.REFLECTIONBLUR = false;
                         defines.REFLECTIONMAP_3D = false;
                         defines.REFLECTIONMAP_SPHERICAL = false;
@@ -641,6 +718,8 @@ namespace BABYLON {
 
                         "shadowLevel", "alpha",
 
+                        "vBackgroundCenter", "vReflectionControl",
+
                         "vDiffuseInfos", "diffuseMatrix",
                 ];
 
@@ -708,6 +787,9 @@ namespace BABYLON {
             this._uniformBuffer.addUniform("pointSize", 1);
             this._uniformBuffer.addUniform("shadowLevel", 1);
             this._uniformBuffer.addUniform("alpha", 1);
+            this._uniformBuffer.addUniform("vBackgroundCenter", 3);
+            this._uniformBuffer.addUniform("vReflectionControl", 4);
+        
             this._uniformBuffer.create();
         }
 
@@ -818,6 +900,11 @@ namespace BABYLON {
                             this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
                             this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
                             this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
+                        }
+
+                        if (defines.REFLECTIONFRESNEL) {
+                            this._uniformBuffer.updateFloat3("vBackgroundCenter", this.sceneCenter.x, this.sceneCenter.y, this.sceneCenter.z);
+                            this._uniformBuffer.updateFloat4("vReflectionControl", this._reflectionControls.x, this._reflectionControls.y, this._reflectionControls.z, this._reflectionControls.w);
                         }
                     }
                 }

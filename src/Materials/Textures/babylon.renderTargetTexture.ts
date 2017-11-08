@@ -35,7 +35,9 @@
         public ignoreCameraViewport: boolean = false;
 
         private _postProcessManager: Nullable<PostProcessManager>;
-        private _postProcesses: PostProcess[];
+        private _postProcesses: PostProcess[];        
+
+        private _resizeObserver: Nullable<Observer<Engine>>;
 
         // Events
 
@@ -103,7 +105,8 @@
 
         public clearColor: Color4;
         protected _size: number | {width: number, height: number};
-        private _sizeRatio: Nullable<number>;
+        protected _initialSizeParameter: number | {width: number, height: number} | {ratio: number}
+        protected _sizeRatio: Nullable<number>;
         public _generateMipMaps: boolean;
         protected _renderingManager: RenderingManager;
         public _waitingRenderList: string[];
@@ -119,6 +122,12 @@
 
         protected _engine: Engine;
 
+        protected _onRatioRescale(): void {
+            if (this._sizeRatio) {
+                this.resize(this._initialSizeParameter);
+            }
+        }
+
         constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
@@ -130,8 +139,12 @@
             this._engine = scene.getEngine();
             this.name = name;
             this.isRenderTarget = true;
+            this._initialSizeParameter = size;
 
             this._processSizeParameter(size);
+
+            this._resizeObserver = this.getScene()!.getEngine().onResizeObservable.add(() => {
+            });            
 
             this._generateMipMaps = generateMipMaps ? true : false;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
@@ -647,6 +660,11 @@
             }
 
             this.clearPostProcesses(true);
+
+            if (this._resizeObserver) {
+                this.getScene()!.getEngine().onResizeObservable.remove(this._resizeObserver);
+                this._resizeObserver = null;
+            }
 
             this.renderList = null;
 
