@@ -1,6 +1,4 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
-
-namespace BABYLON {
+﻿namespace BABYLON {
     /**
      * Background material defines definition.
      */
@@ -116,9 +114,19 @@ namespace BABYLON {
     }
 
     /**
-     * Background material 
+     * Background material used to create an efficient environement around your scene.
      */
     export class BackgroundMaterial extends BABYLON.PushMaterial {
+
+        /**
+         * Standard reflectance value at parallel view angle.
+         */
+        public static standardReflectance0 = 0.05;
+
+        /**
+         * Standard reflectance value at grazing angle.
+         */
+        public static standardReflectance90 = 0.5;
 
         /**
          * Key light Color (multiply against the R channel of the environement texture)
@@ -281,6 +289,24 @@ namespace BABYLON {
         protected _reflectionReflectance90: number;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionReflectance90: number = 0.5;
+
+        /**
+         * Sets the reflection reflectance fresnel values according to the default standard
+         * empirically know to work well :-)
+         */
+        public set reflectionStandardFresnelWeight(value: number) {
+            let reflectionWeight = value;
+    
+            if (reflectionWeight < 0.5) {
+                reflectionWeight = reflectionWeight * 2.0;
+                this.reflectionReflectance0 = BackgroundMaterial.standardReflectance0 * reflectionWeight;
+                this.reflectionReflectance90 = BackgroundMaterial.standardReflectance90 * reflectionWeight;
+            } else {
+                reflectionWeight = reflectionWeight * 2.0 - 1.0;
+                this.reflectionReflectance0 = BackgroundMaterial.standardReflectance0 + (1.0 - BackgroundMaterial.standardReflectance0) * reflectionWeight;
+                this.reflectionReflectance90 = BackgroundMaterial.standardReflectance90 + (1.0 - BackgroundMaterial.standardReflectance90) * reflectionWeight;
+            }
+        }
 
         /**
          * Helps to directly use the maps channels instead of their level.
