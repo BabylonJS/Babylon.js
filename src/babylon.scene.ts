@@ -360,7 +360,11 @@
         */
         public onAfterSpritesRenderingObservable = new Observable<Scene>();          
 
-         
+        /**
+        * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
+        * @type {BABYLON.Observable}
+        */
+        public onDataLoadedObservable = new Observable<Scene>();            
 
         /**
         * An event triggered when a camera is created
@@ -1893,15 +1897,24 @@
         }
 
         public _removePendingData(data: any): void {
+            var wasLoading = this.isLoading;
             var index = this._pendingData.indexOf(data);
 
             if (index !== -1) {
                 this._pendingData.splice(index, 1);
             }
+
+            if (wasLoading && !this.isLoading) {
+                this.onDataLoadedObservable.notifyObservers(this);
+            }
         }
 
         public getWaitingItemsCount(): number {
             return this._pendingData.length;
+        }
+
+        public get isLoading(): boolean {
+            return this._pendingData.length > 0;
         }
 
         /**
@@ -3718,6 +3731,7 @@
             this.onAfterPhysicsObservable.clear();
             this.onBeforeAnimationsObservable.clear();
             this.onAfterAnimationsObservable.clear();
+            this.onDataLoadedObservable.clear();
 
             this.detachControl();
 

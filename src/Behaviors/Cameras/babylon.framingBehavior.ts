@@ -145,8 +145,12 @@ module BABYLON {
 		private _onMeshTargetChangedObserver: Nullable<Observer<AbstractMesh>>;
         private _attachedCamera: Nullable<ArcRotateCamera>;
         private _isPointerDown = false;
-        private _lastInteractionTime = -Infinity;
-
+		private _lastInteractionTime = -Infinity;
+		
+		public init(): void {
+			// Do notihng
+		}
+		
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
 			let scene = this._attachedCamera.getScene();
