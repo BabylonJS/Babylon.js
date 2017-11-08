@@ -548,6 +548,7 @@ var BABYLON;
                     return;
                 }
                 node.babylonMesh = new BABYLON.Mesh(node.name || "mesh" + node.index, this._babylonScene);
+                node.babylonMesh.hasVertexAlpha = true;
                 this._loadTransform(node);
                 if (node.mesh != null) {
                     var mesh = GLTFLoader._GetProperty(this._gltf.meshes, node.mesh);
@@ -1498,10 +1499,11 @@ var BABYLON;
                 var alphaMode = material.alphaMode || "OPAQUE";
                 switch (alphaMode) {
                     case "OPAQUE": {
-                        // default is opaque
+                        babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
                         break;
                     }
                     case "MASK": {
+                        babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
                         babylonMaterial.alphaCutOff = (material.alphaCutoff == null ? 0.5 : material.alphaCutoff);
                         if (colorFactor) {
                             if (colorFactor[3] == 0) {
@@ -1517,6 +1519,7 @@ var BABYLON;
                         break;
                     }
                     case "BLEND": {
+                        babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
                         if (colorFactor) {
                             babylonMaterial.alpha = colorFactor[3];
                         }

@@ -17217,7 +17217,7 @@ var BABYLON;
             if (!material) {
                 return;
             }
-            if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) {
+            if (material.needAlphaBlending() || material.needAlphaBlendingForMesh(mesh)) {
                 this._transparentSubMeshes.push(subMesh);
             }
             else if (material.needAlphaTesting()) {
@@ -26584,8 +26584,9 @@ var BABYLON;
                 defines.markAsUnprocessed();
             }
         };
-        MaterialHelper.PrepareDefinesForAttributes = function (mesh, defines, useVertexColor, useBones, useMorphTargets) {
+        MaterialHelper.PrepareDefinesForAttributes = function (mesh, defines, useVertexColor, useBones, useMorphTargets, useVertexAlpha) {
             if (useMorphTargets === void 0) { useMorphTargets = false; }
+            if (useVertexAlpha === void 0) { useVertexAlpha = true; }
             if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
                 return false;
             }
@@ -26604,8 +26605,9 @@ var BABYLON;
                 defines["UV2"] = false;
             }
             if (useVertexColor) {
-                defines["VERTEXCOLOR"] = mesh.useVertexColors && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind);
-                defines["VERTEXALPHA"] = mesh.hasVertexAlpha;
+                var hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind);
+                defines["VERTEXCOLOR"] = hasVertexColors;
+                defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
             }
             if (useBones) {
                 if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
@@ -27307,6 +27309,9 @@ var BABYLON;
         };
         Material.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0);
+        };
+        Material.prototype.needAlphaBlendingForMesh = function (mesh) {
+            return (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
         };
         Material.prototype.needAlphaTesting = function () {
             return false;
@@ -35033,7 +35038,7 @@ var BABYLON;
             _this._linkRefractionWithTransparency = false;
             _this._useLightmapAsShadowmap = false;
             /**
-             * Specifies that the alpha is coming form the albedo channel alpha channel.
+             * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
              */
             _this._useAlphaFromAlbedoTexture = false;
             /**
@@ -35127,6 +35132,10 @@ var BABYLON;
              */
             _this._useAlphaFresnel = false;
             /**
+             * The transparency mode of the material.
+             */
+            _this._transparencyMode = null;
+            /**
              * Specifies the environment BRDF texture used to comput the scale and offset roughness values
              * from cos thetav and roughness:
              * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
@@ -35196,12 +35205,53 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(PBRBaseMaterial.prototype, "transparencyMode", {
+            /**
+             * Gets the current transparency mode.
+             */
+            get: function () {
+                return this._transparencyMode;
+            },
+            /**
+             * Sets the transparency mode of the material.
+             */
+            set: function (value) {
+                if (this._transparencyMode === value) {
+                    return;
+                }
+                this._transparencyMode = value;
+                this._forceAlphaTest = (value === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND);
+                this._markAllSubMeshesAsTexturesDirty();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         */
         PBRBaseMaterial.prototype.needAlphaBlending = function () {
+            if (this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE ||
+                this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST) {
+                return false;
+            }
+            return _super.prototype.needAlphaBlending.call(this);
+        };
+        /**
+         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         */
+        PBRBaseMaterial.prototype.needAlphaBlendingForMesh = function (mesh) {
             if (this._linkRefractionWithTransparency) {
                 return false;
             }
-            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
+            if (this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE ||
+                this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST) {
+                return false;
+            }
+            return _super.prototype.needAlphaBlendingForMesh.call(this, mesh) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
         };
+        /**
+         * Specifies whether or not the meshes using this material should be rendered in alpha test mode.
+         */
         PBRBaseMaterial.prototype.needAlphaTesting = function () {
             if (this._forceAlphaTest) {
                 return true;
@@ -35209,10 +35259,13 @@ var BABYLON;
             if (this._linkRefractionWithTransparency) {
                 return false;
             }
-            return this._albedoTexture != null && this._albedoTexture.hasAlpha;
+            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
         };
+        /**
+         * Specifies whether or not the alpha value of the albedo texture should be used for alpha blending.
+         */
         PBRBaseMaterial.prototype._shouldUseAlphaFromAlbedoTexture = function () {
-            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture;
+            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
         };
         PBRBaseMaterial.prototype.getAlphaTestTexture = function () {
             return this._albedoTexture;
@@ -35474,7 +35527,7 @@ var BABYLON;
                 }
                 defines.ALPHATESTVALUE = this._alphaCutOff;
                 defines.PREMULTIPLYALPHA = (this.alphaMode === BABYLON.Engine.ALPHA_PREMULTIPLIED || this.alphaMode === BABYLON.Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
-                defines.ALPHABLEND = this.needAlphaBlending();
+                defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;
             }
             if (defines._areImageProcessingDirty) {
@@ -35489,7 +35542,7 @@ var BABYLON;
             // Values that need to be evaluated on every frame
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._forceAlphaTest);
             // Attribs
-            if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true)) {
+            if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE)) {
                 if (mesh) {
                     if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
                         mesh.createNormals(true);
@@ -35985,6 +36038,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], PBRBaseMaterial.prototype, "useLogarithmicDepth", null);
+        __decorate([
+            BABYLON.serialize()
+        ], PBRBaseMaterial.prototype, "transparencyMode", null);
         return PBRBaseMaterial;
     }(BABYLON.PushMaterial));
     BABYLON.PBRBaseMaterial = PBRBaseMaterial;
@@ -36043,35 +36099,10 @@ var BABYLON;
                  */
                 _this.occlusionStrength = 1.0;
                 _this._transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
+                _this._useAlphaFromAlbedoTexture = true;
                 _this._useAmbientInGrayScale = true;
                 return _this;
             }
-            Object.defineProperty(PBRBaseSimpleMaterial.prototype, "transparencyMode", {
-                /**
-                 * Gets the current transparency mode.
-                 */
-                get: function () {
-                    return this._transparencyMode;
-                },
-                /**
-                 * Sets the transparency mode of the material.
-                 */
-                set: function (value) {
-                    if (this._transparencyMode === value) {
-                        return;
-                    }
-                    this._transparencyMode = value;
-                    if (value === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND) {
-                        this._forceAlphaTest = true;
-                    }
-                    else {
-                        this._forceAlphaTest = false;
-                    }
-                    this._markAllSubMeshesAsTexturesDirty();
-                },
-                enumerable: true,
-                configurable: true
-            });
             Object.defineProperty(PBRBaseSimpleMaterial.prototype, "doubleSided", {
                 /**
                  * Gets the current double sided mode.
@@ -36093,34 +36124,6 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            /**
-             * Specifies wether or not the alpha value of the albedo texture should be used.
-             */
-            PBRBaseSimpleMaterial.prototype._shouldUseAlphaFromAlbedoTexture = function () {
-                return this._albedoTexture && this._albedoTexture.hasAlpha && this._transparencyMode !== BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
-            };
-            /**
-             * Specifies wether or not the meshes using this material should be rendered in alpha blend mode.
-             */
-            PBRBaseSimpleMaterial.prototype.needAlphaBlending = function () {
-                if (this._linkRefractionWithTransparency) {
-                    return false;
-                }
-                return (this.alpha < 1.0) ||
-                    (this._shouldUseAlphaFromAlbedoTexture() &&
-                        (this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND ||
-                            this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND));
-            };
-            /**
-             * Specifies wether or not the meshes using this material should be rendered in alpha test mode.
-             */
-            PBRBaseSimpleMaterial.prototype.needAlphaTesting = function () {
-                if (this._linkRefractionWithTransparency) {
-                    return false;
-                }
-                return this._shouldUseAlphaFromAlbedoTexture() &&
-                    this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
-            };
             /**
              * Return the active textures of the material.
              */
@@ -36187,9 +36190,6 @@ var BABYLON;
                 BABYLON.serialize(),
                 BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty", "_alphaCutOff")
             ], PBRBaseSimpleMaterial.prototype, "alphaCutOff", void 0);
-            __decorate([
-                BABYLON.serialize()
-            ], PBRBaseSimpleMaterial.prototype, "transparencyMode", null);
             __decorate([
                 BABYLON.serialize()
             ], PBRBaseSimpleMaterial.prototype, "doubleSided", null);
@@ -36284,7 +36284,7 @@ var BABYLON;
             _this.linkRefractionWithTransparency = false;
             _this.useLightmapAsShadowmap = false;
             /**
-             * Specifies that the alpha is coming form the albedo channel alpha channel.
+             * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
              */
             _this.useAlphaFromAlbedoTexture = false;
             /**
