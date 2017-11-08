@@ -22,7 +22,8 @@
 - Complete rework of Unity3D exporter. [Doc here](http://doc.babylonjs.com/resources/intro) ([MackeyK24](https://github.com/MackeyK24))
 
 ## Updates
-- Added scene.onDataLoadedObservable which is raised when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed ([deltakosh](https://github.com/deltakosh))
+- Added `mesh.normalizeToUnitCube` to uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units) ([deltakosh](https://github.com/deltakosh))
+- Added `scene.onDataLoadedObservable` which is raised when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed ([deltakosh](https://github.com/deltakosh))
 - Support for adaptiveKernelBlur on MirrorTexture ([deltakosh](https://github.com/deltakosh))
 - Support for non uniform scaling. Normals are now correctly computed ([deltakosh](https://github.com/deltakosh))
 - Added `MultiObserver`. [Doc here](http://doc.babylonjs.com/overviews/observables#multiobserver) ([deltakosh](https://github.com/deltakosh))

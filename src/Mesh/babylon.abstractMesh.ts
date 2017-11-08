@@ -208,6 +208,7 @@
         public enablePointerMoveEvents = false;
         public renderingGroupId = 0;
         private _material: Nullable<Material>
+
         public get material(): Nullable<Material> {
             return this._material;
         }
@@ -797,6 +798,26 @@
         }
 
         /**
+         * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units).
+         * @param includeDescendants Take the hierarchy's bounding box instead of the mesh's bounding box.
+         */
+        public normalizeToUnitCube(includeDescendants = true): AbstractMesh {            
+            let boundingVectors = this.getHierarchyBoundingVectors(includeDescendants);
+            let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+            let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+            
+            if (maxDimension === 0) {
+                return this;
+            }
+
+            let scale = 1 / maxDimension;
+
+            this.scaling.scaleInPlace(scale);
+
+            return this;
+        }
+
+        /**
          * Sets a mesh new object BoundingInfo.
          * Returns the AbstractMesh.  
          */
@@ -1176,8 +1197,9 @@
 
         /**
          * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
+         * @param includeDescendants Include bounding info from descendants as well (true by default).
          */
-        public getHierarchyBoundingVectors(): { min: Vector3, max: Vector3 }{
+        public getHierarchyBoundingVectors(includeDescendants = true): { min: Vector3, max: Vector3 }{
             this.computeWorldMatrix(true);
 
             let min: Vector3;
@@ -1192,24 +1214,26 @@
                 max = boundingInfo.boundingBox.maximumWorld;
             }
 
-            let descendants = this.getDescendants(false);
+            if (includeDescendants) {
+                let descendants = this.getDescendants(false);
 
-            for (var descendant of descendants) {
-                let childMesh = <AbstractMesh>descendant;
+                for (var descendant of descendants) {
+                    let childMesh = <AbstractMesh>descendant;
 
-                childMesh.computeWorldMatrix(true);
-                let childBoundingInfo = childMesh.getBoundingInfo();
+                    childMesh.computeWorldMatrix(true);
+                    let childBoundingInfo = childMesh.getBoundingInfo();
 
-                if (childMesh.getTotalVertices() === 0 || !childBoundingInfo) {
-                    continue;
+                    if (childMesh.getTotalVertices() === 0 || !childBoundingInfo) {
+                        continue;
+                    }
+                    let boundingBox = childBoundingInfo.boundingBox;
+
+                    var minBox = boundingBox.minimumWorld;
+                    var maxBox = boundingBox.maximumWorld;
+
+                    Tools.CheckExtends(minBox, min, max);
+                    Tools.CheckExtends(maxBox, min, max);
                 }
-                let boundingBox = childBoundingInfo.boundingBox;
-
-                var minBox = boundingBox.minimumWorld;
-                var maxBox = boundingBox.maximumWorld;
-
-                Tools.CheckExtends(minBox, min, max);
-                Tools.CheckExtends(maxBox, min, max);
             }
 
             return {
