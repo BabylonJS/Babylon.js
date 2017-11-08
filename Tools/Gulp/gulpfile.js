@@ -402,6 +402,7 @@ var buildExternalLibrary = function (library, settings, watch) {
             return waitAll.on("end", function () {
                 webpack(require(library.webpack))
                     .pipe(rename(library.output.replace(".js", ".bundle.js")))
+                    .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
                     .pipe(gulp.dest(outputDirectory))
             });
         }
@@ -474,21 +475,21 @@ gulp.task("typescript-all", function (cb) {
  */
 gulp.task("watch", [], function () {
     var interval = 1000;
-    var tasks = [gulp.watch(config.typescript, { interval: interval}, ["typescript-compile"])];
+    var tasks = [gulp.watch(config.typescript, { interval: interval }, ["typescript-compile"])];
 
     config.modules.map(function (module) {
         config[module].libraries.map(function (library) {
-            tasks.push(gulp.watch(library.files, { interval: interval}, function () {
+            tasks.push(gulp.watch(library.files, { interval: interval }, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                     .pipe(debug());
             }));
-            tasks.push(gulp.watch(library.shaderFiles, { interval: interval}, function () {
+            tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                     .pipe(debug())
             }));
-            tasks.push(gulp.watch(library.sassFiles, { interval: interval}, function () {
+            tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function () {
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                     .pipe(debug())
