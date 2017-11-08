@@ -13,8 +13,6 @@
         private _blurKernelY = 0;
         private _blurRatio = 1.0;
 
-        private _resizeObserver: Nullable<Observer<Engine>>;
-
         public set blurRatio(value: number) {
             if (this._blurRatio === value) {
                 return;
@@ -73,23 +71,23 @@
             this.blurKernelY = this._adaptiveBlurKernel * dh;
         }
 
+        protected _onRatioRescale(): void {
+            if (this._sizeRatio) {
+                this.resize(this._initialSizeParameter);
+                if (!this._adaptiveBlurKernel) {
+                    this._preparePostProcesses();
+                }
+            }
+
+            if (this._adaptiveBlurKernel) {
+                this._autoComputeBlurKernel();
+            }
+        }
+
         constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
             this.ignoreCameraViewport = true;
-
-            this._resizeObserver = this.getScene()!.getEngine().onResizeObservable.add(() => {
-                if ((<{ratio: number}>size).ratio) {
-                    this.resize(size);
-                    if (!this._adaptiveBlurKernel) {
-                        this._preparePostProcesses();
-                    }
-                }
-
-                if (this._adaptiveBlurKernel) {
-                    this._autoComputeBlurKernel();
-                }
-            });
 
             this.onBeforeRenderObservable.add(() => {
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
@@ -194,14 +192,6 @@
             serializationObject.mirrorPlane = this.mirrorPlane.asArray();
 
             return serializationObject;
-        }
-
-        public dispose(): void {
-            if (this._resizeObserver) {
-                this.getScene()!.getEngine().onResizeObservable.remove(this._resizeObserver);
-                this._resizeObserver = null;
-            }
-            super.dispose();
         }
     }
 } 

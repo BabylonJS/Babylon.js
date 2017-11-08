@@ -1,4 +1,5 @@
-var babylonDependency; try { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("../babylon.max")); } catch (e) { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("babylonjs")); } 
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
 var BABYLON = babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -4500,14 +4501,16 @@ var BABYLON;
                 if (root && root["BABYLON"]) {
                     return;
                 }
+                var f = factory();
+                
     if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
+        module.exports = f;
     else if(typeof define === 'function' && define.amd)
         define([], factory);
     else if(typeof exports === 'object')
-        exports["GUI"] = factory();
+        exports["GUI"] = f;
     else {
-        root["BABYLON"]["GUI"] = factory();
+        root["BABYLON"]["GUI"] = f;
     }
 })(this, function() {
     return BABYLON.GUI;

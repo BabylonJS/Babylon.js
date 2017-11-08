@@ -12293,11 +12293,22 @@ var BABYLON;
             return this._scene.getEngine();
         };
         Node.prototype.addBehavior = function (behavior) {
+            var _this = this;
             var index = this._behaviors.indexOf(behavior);
             if (index !== -1) {
                 return this;
             }
-            behavior.attach(this);
+            behavior.init();
+            if (this._scene.isLoading) {
+                // We defer the attach when the scene will be loaded
+                var observer = this._scene.onDataLoadedObservable.add(function () {
+                    behavior.attach(_this);
+                    _this._scene.onDataLoadedObservable.remove(observer);
+                });
+            }
+            else {
+                behavior.attach(this);
+            }
             this._behaviors.push(behavior);
             return this;
         };
@@ -17487,6 +17498,11 @@ var BABYLON;
             */
             this.onAfterSpritesRenderingObservable = new BABYLON.Observable();
             /**
+            * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
+            * @type {BABYLON.Observable}
+            */
+            this.onDataLoadedObservable = new BABYLON.Observable();
+            /**
             * An event triggered when a camera is created
             * @type {BABYLON.Observable}
             */
@@ -18925,14 +18941,25 @@ var BABYLON;
             this._pendingData.push(data);
         };
         Scene.prototype._removePendingData = function (data) {
+            var wasLoading = this.isLoading;
             var index = this._pendingData.indexOf(data);
             if (index !== -1) {
                 this._pendingData.splice(index, 1);
+            }
+            if (wasLoading && !this.isLoading) {
+                this.onDataLoadedObservable.notifyObservers(this);
             }
         };
         Scene.prototype.getWaitingItemsCount = function () {
             return this._pendingData.length;
         };
+        Object.defineProperty(Scene.prototype, "isLoading", {
+            get: function () {
+                return this._pendingData.length > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Registers a function to be executed when the scene is ready.
          * @param {Function} func - the function to be executed.
@@ -20446,6 +20473,7 @@ var BABYLON;
             this.onAfterPhysicsObservable.clear();
             this.onBeforeAnimationsObservable.clear();
             this.onAfterAnimationsObservable.clear();
+            this.onDataLoadedObservable.clear();
             this.detachControl();
             // Release sounds & sounds tracks
             if (BABYLON.AudioEngine) {
@@ -49760,7 +49788,10 @@ var BABYLON;
             _this._engine = scene.getEngine();
             _this.name = name;
             _this.isRenderTarget = true;
+            _this._initialSizeParameter = size;
             _this._processSizeParameter(size);
+            _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () {
+            });
             _this._generateMipMaps = generateMipMaps ? true : false;
             _this._doNotChangeAspectRatio = doNotChangeAspectRatio;
             // Rendering groups
@@ -49857,6 +49888,11 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        RenderTargetTexture.prototype._onRatioRescale = function () {
+            if (this._sizeRatio) {
+                this.resize(this._initialSizeParameter);
+            }
+        };
         RenderTargetTexture.prototype._processSizeParameter = function (size) {
             if (size.ratio) {
                 this._sizeRatio = size.ratio;
@@ -50250,6 +50286,10 @@ var BABYLON;
                 this._postProcessManager = null;
             }
             this.clearPostProcesses(true);
+            if (this._resizeObserver) {
+                this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
+                this._resizeObserver = null;
+            }
             this.renderList = null;
             // Remove from custom render targets
             var scene = this.getScene();
@@ -50464,17 +50504,6 @@ var BABYLON;
             _this._blurKernelY = 0;
             _this._blurRatio = 1.0;
             _this.ignoreCameraViewport = true;
-            _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () {
-                if (size.ratio) {
-                    _this.resize(size);
-                    if (!_this._adaptiveBlurKernel) {
-                        _this._preparePostProcesses();
-                    }
-                }
-                if (_this._adaptiveBlurKernel) {
-                    _this._autoComputeBlurKernel();
-                }
-            });
             _this.onBeforeRenderObservable.add(function () {
                 BABYLON.Matrix.ReflectionToRef(_this.mirrorPlane, _this._mirrorMatrix);
                 _this._savedViewMatrix = scene.getViewMatrix();
@@ -50557,6 +50586,17 @@ var BABYLON;
             this.blurKernelX = this._adaptiveBlurKernel * dw;
             this.blurKernelY = this._adaptiveBlurKernel * dh;
         };
+        MirrorTexture.prototype._onRatioRescale = function () {
+            if (this._sizeRatio) {
+                this.resize(this._initialSizeParameter);
+                if (!this._adaptiveBlurKernel) {
+                    this._preparePostProcesses();
+                }
+            }
+            if (this._adaptiveBlurKernel) {
+                this._autoComputeBlurKernel();
+            }
+        };
         MirrorTexture.prototype._preparePostProcesses = function () {
             this.clearPostProcesses(true);
             if (this._blurKernelX && this._blurKernelY) {
@@ -50601,13 +50641,6 @@ var BABYLON;
             var serializationObject = _super.prototype.serialize.call(this);
             serializationObject.mirrorPlane = this.mirrorPlane.asArray();
             return serializationObject;
-        };
-        MirrorTexture.prototype.dispose = function () {
-            if (this._resizeObserver) {
-                this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
-                this._resizeObserver = null;
-            }
-            _super.prototype.dispose.call(this);
         };
         return MirrorTexture;
     }(BABYLON.RenderTargetTexture));
@@ -65901,6 +65934,7 @@ var BABYLON;
                 }
                 _this.object.translate(_this._deltaPosition, -1);
                 _this._deltaRotationConjugated && _this.object.rotationQuaternion && _this.object.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this.object.rotationQuaternion);
+                _this.object.computeWorldMatrix(false);
                 if (_this.object.parent && _this.object.rotationQuaternion) {
                     _this.getParentsRotation();
                     _this._tmpQuat.multiplyToRef(_this.object.rotationQuaternion, _this._tmpQuat);
@@ -65922,6 +65956,9 @@ var BABYLON;
                 if (!_this._physicsEngine) {
                     return;
                 }
+                _this._onAfterPhysicsStepCallbacks.forEach(function (func) {
+                    func(_this);
+                });
                 _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
                 // object has now its world rotation. needs to be converted to local.
                 if (_this.object.parent && _this.object.rotationQuaternion) {
@@ -67039,14 +67076,10 @@ var BABYLON;
             impostor.object.position.copyFrom(impostor.physicsBody.position);
             if (impostor.object.rotationQuaternion) {
                 impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
-                //impostor.object.rotationQuaternion.y *= -1;
-                //impostor.object.rotationQuaternion.z *= -1;
             }
         };
         CannonJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
             impostor.physicsBody.position.copy(newPosition);
-            //newRotation.y *= -1;
-            //newRotation.z *= -1;
             impostor.physicsBody.quaternion.copy(newRotation);
         };
         CannonJSPlugin.prototype.isSupported = function () {
@@ -74575,6 +74608,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        FramingBehavior.prototype.init = function () {
+            // Do notihng
+        };
         FramingBehavior.prototype.attach = function (camera) {
             var _this = this;
             this._attachedCamera = camera;
@@ -74931,6 +74967,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        BouncingBehavior.prototype.init = function () {
+            // Do notihng
+        };
         BouncingBehavior.prototype.attach = function (camera) {
             var _this = this;
             this._attachedCamera = camera;
@@ -75131,6 +75170,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        AutoRotationBehavior.prototype.init = function () {
+            // Do notihng
+        };
         AutoRotationBehavior.prototype.attach = function (camera) {
             var _this = this;
             this._attachedCamera = camera;
@@ -76204,14 +76246,17 @@ BABYLON.Effect.IncludesShadersStore={"depthPrePass":"#ifdef DEPTHPREPASS\ngl_Fra
                 if (root && root["BABYLON"]) {
                     return;
                 }
+                var f = factory();
+                var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+globalObject["BABYLON"] = f;
     if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
+        module.exports = f;
     else if(typeof define === 'function' && define.amd)
         define([], factory);
     else if(typeof exports === 'object')
-        exports["BABYLON"] = factory();
+        exports["BABYLON"] = f;
     else {
-        root["BABYLON"] = factory();
+        root["BABYLON"] = f;
     }
 })(this, function() {
     return BABYLON;
