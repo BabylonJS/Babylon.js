@@ -50464,12 +50464,17 @@ var BABYLON;
             _this._blurKernelY = 0;
             _this._blurRatio = 1.0;
             _this.ignoreCameraViewport = true;
-            if (size.ratio) {
-                _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () {
+            _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () {
+                if (size.ratio) {
                     _this.resize(size);
+                    if (!_this._adaptiveBlurKernel) {
+                        _this._preparePostProcesses();
+                    }
+                }
+                if (_this._adaptiveBlurKernel) {
                     _this._autoComputeBlurKernel();
-                });
-            }
+                }
+            });
             _this.onBeforeRenderObservable.add(function () {
                 BABYLON.Matrix.ReflectionToRef(_this.mirrorPlane, _this._mirrorMatrix);
                 _this._savedViewMatrix = scene.getViewMatrix();
