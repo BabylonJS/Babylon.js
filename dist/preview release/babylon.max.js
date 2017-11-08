@@ -12845,7 +12845,7 @@ var BABYLON;
          * @param center New center of the bounding info
          * @param extend New extend of the bounding info
          */
-        BoundingInfo.prototype.center = function (center, extend) {
+        BoundingInfo.prototype.centerOn = function (center, extend) {
             this.minimum = center.subtract(extend);
             this.maximum = center.add(extend);
             this.boundingBox = new BABYLON.BoundingBox(this.minimum, this.maximum);
