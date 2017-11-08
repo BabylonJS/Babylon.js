@@ -52621,7 +52621,7 @@ var BABYLON;
             };
             if (directLoad) {
                 dataCallback(directLoad);
-                return;
+                return registeredPlugin.plugin;
             }
             if (rootUrl.indexOf("file:") === -1) {
                 if (scene.getEngine().enableOfflineSupport) {
@@ -52642,9 +52642,9 @@ var BABYLON;
                 }
                 else {
                     onError("Unable to find file named " + sceneFilename);
-                    return;
                 }
             }
+            return registeredPlugin.plugin;
         };
         // Public functions
         SceneLoader.GetPluginForExtension = function (extension) {
@@ -52684,7 +52684,7 @@ var BABYLON;
             if (onError === void 0) { onError = null; }
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
-                return;
+                return null;
             }
             var loadingToken = {};
             scene._addPendingData(loadingToken);
@@ -52704,7 +52704,7 @@ var BABYLON;
                     onProgress(event);
                 }
             };
-            SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data) {
+            return SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data) {
                 if (plugin.importMesh) {
                     var syncedPlugin = plugin;
                     var meshes = new Array();
@@ -52754,7 +52754,7 @@ var BABYLON;
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
         SceneLoader.Load = function (rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension) {
-            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onSuccess, onProgress, onError, pluginExtension);
+            return SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onSuccess, onProgress, onError, pluginExtension);
         };
         /**
         * Append a scene
@@ -52768,7 +52768,7 @@ var BABYLON;
         SceneLoader.Append = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension) {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
-                return;
+                return null;
             }
             if (SceneLoader.ShowLoadingScreen) {
                 scene.getEngine().displayLoadingUI();
@@ -52792,7 +52792,7 @@ var BABYLON;
                     onProgress(event);
                 }
             };
-            SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data) {
+            return SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data) {
                 if (plugin.load) {
                     var syncedPlugin = plugin;
                     if (!syncedPlugin.load(scene, data, rootUrl, errorHandler)) {
