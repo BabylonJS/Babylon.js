@@ -13714,6 +13714,22 @@ var BABYLON;
             return this._boundingInfo;
         };
         /**
+         * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units).
+         * @param includeDescendants Take the hierarchy's bounding box instead of the mesh's bounding box.
+         */
+        AbstractMesh.prototype.normalizeToUnitCube = function (includeDescendants) {
+            if (includeDescendants === void 0) { includeDescendants = true; }
+            var boundingVectors = this.getHierarchyBoundingVectors(includeDescendants);
+            var sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+            var maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+            if (maxDimension === 0) {
+                return this;
+            }
+            var scale = 1 / maxDimension;
+            this.scaling.scaleInPlace(scale);
+            return this;
+        };
+        /**
          * Sets a mesh new object BoundingInfo.
          * Returns the AbstractMesh.
          */
@@ -14071,8 +14087,10 @@ var BABYLON;
         };
         /**
          * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
+         * @param includeDescendants Include bounding info from descendants as well (true by default).
          */
-        AbstractMesh.prototype.getHierarchyBoundingVectors = function () {
+        AbstractMesh.prototype.getHierarchyBoundingVectors = function (includeDescendants) {
+            if (includeDescendants === void 0) { includeDescendants = true; }
             this.computeWorldMatrix(true);
             var min;
             var max;
@@ -14085,20 +14103,22 @@ var BABYLON;
                 min = boundingInfo.boundingBox.minimumWorld;
                 max = boundingInfo.boundingBox.maximumWorld;
             }
-            var descendants = this.getDescendants(false);
-            for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
-                var descendant = descendants_1[_i];
-                var childMesh = descendant;
-                childMesh.computeWorldMatrix(true);
-                var childBoundingInfo = childMesh.getBoundingInfo();
-                if (childMesh.getTotalVertices() === 0 || !childBoundingInfo) {
-                    continue;
+            if (includeDescendants) {
+                var descendants = this.getDescendants(false);
+                for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
+                    var descendant = descendants_1[_i];
+                    var childMesh = descendant;
+                    childMesh.computeWorldMatrix(true);
+                    var childBoundingInfo = childMesh.getBoundingInfo();
+                    if (childMesh.getTotalVertices() === 0 || !childBoundingInfo) {
+                        continue;
+                    }
+                    var boundingBox = childBoundingInfo.boundingBox;
+                    var minBox = boundingBox.minimumWorld;
+                    var maxBox = boundingBox.maximumWorld;
+                    BABYLON.Tools.CheckExtends(minBox, min, max);
+                    BABYLON.Tools.CheckExtends(maxBox, min, max);
                 }
-                var boundingBox = childBoundingInfo.boundingBox;
-                var minBox = boundingBox.minimumWorld;
-                var maxBox = boundingBox.maximumWorld;
-                BABYLON.Tools.CheckExtends(minBox, min, max);
-                BABYLON.Tools.CheckExtends(maxBox, min, max);
             }
             return {
                 min: min,
