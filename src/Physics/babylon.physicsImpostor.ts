@@ -427,6 +427,10 @@ module BABYLON {
                 return;
             }
 
+            this._onAfterPhysicsStepCallbacks.forEach((func) => {
+                func(this);
+            });
+
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
             // object has now its world rotation. needs to be converted to local.
             if (this.object.parent && this.object.rotationQuaternion) {
