@@ -78,12 +78,18 @@
 
             this.ignoreCameraViewport = true;
 
-            if ((<{ratio: number}>size).ratio) {
-                this._resizeObserver = this.getScene()!.getEngine().onResizeObservable.add(() => {
+            this._resizeObserver = this.getScene()!.getEngine().onResizeObservable.add(() => {
+                if ((<{ratio: number}>size).ratio) {
                     this.resize(size);
+                    if (!this._adaptiveBlurKernel) {
+                        this._preparePostProcesses();
+                    }
+                }
+
+                if (this._adaptiveBlurKernel) {
                     this._autoComputeBlurKernel();
-                });
-            }
+                }
+            });
 
             this.onBeforeRenderObservable.add(() => {
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
