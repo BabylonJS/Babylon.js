@@ -933,11 +933,44 @@ declare namespace BABYLON {
         protected _shadowLevel: float;
         shadowLevel: float;
         /**
+         * In case of opacity Fresnel or reflection falloff, this is use as a scene center.
+         * It is usually zero but might be interesting to modify according to your setup.
+         */
+        protected _sceneCenter: Vector3;
+        sceneCenter: Vector3;
+        /**
          * This helps specifying that the material is falling off to the sky box at grazing angle.
          * This helps ensuring a nice transition when the camera goes under the ground.
          */
         protected _opacityFresnel: boolean;
         opacityFresnel: boolean;
+        /**
+         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle.
+         * This helps adding a mirror texture on the ground.
+         */
+        protected _reflectionFresnel: boolean;
+        reflectionFresnel: boolean;
+        /**
+         * This helps specifying the falloff radius off the reflection texture from the sceneCenter.
+         * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
+         */
+        protected _reflectionFalloffDistance: number;
+        reflectionFalloffDistance: number;
+        /**
+         * This specifies the weight of the reflection against the background in case of reflection Fresnel.
+         */
+        protected _reflectionAmount: number;
+        reflectionAmount: number;
+        /**
+         * This specifies the weight of the reflection at grazing angle.
+         */
+        protected _reflectionReflectance0: number;
+        reflectionReflectance0: number;
+        /**
+         * This specifies the weight of the reflection at a perpendicular point of view.
+         */
+        protected _reflectionReflectance90: number;
+        reflectionReflectance90: number;
         /**
          * Helps to directly use the maps channels instead of their level.
          */
@@ -1030,6 +1063,7 @@ declare namespace BABYLON {
          */
         cameraColorCurves: Nullable<ColorCurves>;
         private _renderTargets;
+        private _reflectionControls;
         /**
          * constructor
          * @param name The name of the material

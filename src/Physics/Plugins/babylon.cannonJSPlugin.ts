@@ -462,15 +462,11 @@
             impostor.object.position.copyFrom(impostor.physicsBody.position);
             if (impostor.object.rotationQuaternion) {
                 impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
-                //impostor.object.rotationQuaternion.y *= -1;
-                //impostor.object.rotationQuaternion.z *= -1;
             }
         }
 
         public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
             impostor.physicsBody.position.copy(newPosition);
-            //newRotation.y *= -1;
-            //newRotation.z *= -1;
             impostor.physicsBody.quaternion.copy(newRotation);
         }
 
