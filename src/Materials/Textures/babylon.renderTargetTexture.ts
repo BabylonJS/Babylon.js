@@ -102,7 +102,8 @@
         }
 
         public clearColor: Color4;
-        protected _size: number;
+        protected _size: number | {width: number, height: number};
+        private _sizeRatio: Nullable<number>;
         public _generateMipMaps: boolean;
         protected _renderingManager: RenderingManager;
         public _waitingRenderList: string[];
@@ -116,7 +117,9 @@
             return this._renderTargetOptions;
         }
 
-        constructor(name: string, size: any, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
+        protected _engine: Engine;
+
+        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
 
@@ -124,9 +127,12 @@
                 return;
             }
 
+            this._engine = scene.getEngine();
             this.name = name;
             this.isRenderTarget = true;
-            this._size = size;
+
+            this._processSizeParameter(size);
+
             this._generateMipMaps = generateMipMaps ? true : false;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
@@ -151,13 +157,25 @@
             }
 
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
                 this.coordinatesMode = Texture.INVCUBIC_MODE;
                 this._textureMatrix = Matrix.Identity();
             } else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
+                this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
             }
 
+        }
+
+        private _processSizeParameter(size: number | {width: number, height: number} | {ratio: number}): void {
+            if ((<{ratio: number}>size).ratio) {
+                this._sizeRatio = (<{ratio: number}>size).ratio;
+                this._size = {
+                    width: this._bestReflectionRenderTargetDimension(this._engine.getRenderWidth(), this._sizeRatio),
+                    height: this._bestReflectionRenderTargetDimension(this._engine.getRenderHeight(), this._sizeRatio)
+                }
+            } else {            
+                this._size = <number | {width: number, height: number}>size;
+            }
         }
 
         public get samples(): number {
@@ -255,7 +273,27 @@
         }
 
         public getRenderSize(): number {
-            return this._size;
+            if ((<{width: number, height: number}>this._size).width) {
+                return (<{width: number, height: number}>this._size).width;
+            }
+
+            return <number>this._size;
+        }
+
+        public getRenderWidth(): number {
+            if ((<{width: number, height: number}>this._size).width) {
+                return (<{width: number, height: number}>this._size).width;
+            }
+
+            return <number>this._size;
+        }
+
+        public getRenderHeight(): number {
+            if ((<{width: number, height: number}>this._size).width) {
+                return (<{width: number, height: number}>this._size).height;
+            }
+
+            return <number>this._size;
         }
 
         public get canRescale(): boolean {
@@ -263,7 +301,7 @@
         }
 
         public scale(ratio: number): void {
-            var newSize = this._size * ratio;
+            var newSize = this.getRenderSize() * ratio;
 
             this.resize(newSize);
         }
@@ -276,21 +314,21 @@
             return super.getReflectionTextureMatrix();
         }
 
-        public resize(size: any) {
+        public resize(size: number | {width: number, height: number} | {ratio: number}) {
             this.releaseInternalTexture();
             let scene = this.getScene();
             
             if (!scene) {
                 return;
-            } 
-
-            if (this.isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
-            } else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
-
-            this._size = size;
+            
+            this._processSizeParameter(size);
+            
+            if (this.isCube) {
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
+            } else {
+                this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
+            }
         }
 
         public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false) {
@@ -350,7 +388,7 @@
             let camera: Nullable<Camera>;
             if (this.activeCamera) {
                 camera = this.activeCamera;
-                engine.setViewport(this.activeCamera.viewport, this._size, this._size);
+                engine.setViewport(this.activeCamera.viewport, this.getRenderWidth(), this.getRenderHeight());
 
                 if (this.activeCamera !== scene.activeCamera) {
                     scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
@@ -359,7 +397,7 @@
             else {
                 camera = scene.activeCamera;
                 if (camera) {
-                    engine.setViewport(camera.viewport, this._size, this._size);
+                    engine.setViewport(camera.viewport, this.getRenderWidth(), this.getRenderHeight());
                 }
             }
 
@@ -435,6 +473,15 @@
             scene.resetCachedMaterial();
         }
 
+        private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {
+            let minimum = 128;
+            let x = renderDimension * scale;
+            let curved = Tools.NearestPOT(x + (minimum * minimum / (minimum + x)));
+            
+            // Ensure we don't exceed the render dimension (while staying POT)
+            return Math.min(Tools.FloorPOT(renderDimension), curved);
+        }
+
         private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength: number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
             var scene = this.getScene();
             
@@ -487,7 +534,7 @@
 
             // Dump ?
             if (dumpForDebug) {
-                Tools.DumpFramebuffer(this._size, this._size, engine);
+                Tools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
             }
 
             // Unbind

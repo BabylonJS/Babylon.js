@@ -269,7 +269,7 @@
         protected _useLightmapAsShadowmap = false;
         
         /**
-         * Specifies that the alpha is coming form the albedo channel alpha channel.
+         * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
          */
         protected _useAlphaFromAlbedoTexture = false;
         
@@ -385,6 +385,11 @@
         protected _useAlphaFresnel = false;
 
         /**
+         * The transparency mode of the material.
+         */
+        protected _transparencyMode: Nullable<number> = null;
+
+        /**
          * Specifies the environment BRDF texture used to comput the scale and offset roughness values
          * from cos thetav and roughness: 
          * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
@@ -487,13 +492,60 @@
             this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
         }
 
+        /**
+         * Gets the current transparency mode.
+         */
+        @serialize()
+        public get transparencyMode(): Nullable<number> {
+            return this._transparencyMode;
+        }
+
+        /**
+         * Sets the transparency mode of the material.
+         */
+        public set transparencyMode(value: Nullable<number>) {
+            if (this._transparencyMode === value) {
+                return;
+            }
+
+            this._transparencyMode = value;
+
+            this._forceAlphaTest = (value === PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND);
+
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+
+        /**
+         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         */
         public needAlphaBlending(): boolean {
+            if (this._transparencyMode === PBRMaterial.PBRMATERIAL_OPAQUE ||
+                this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST) {
+                return false;
+            }
+
+            return super.needAlphaBlending();
+        }
+
+        /**
+         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         */
+        public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
             if (this._linkRefractionWithTransparency) {
                 return false;
             }
-            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
+
+            if (this._transparencyMode === PBRMaterial.PBRMATERIAL_OPAQUE ||
+                this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST) {
+                return false;
+            }
+
+            return super.needAlphaBlendingForMesh(mesh) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
         }
 
+        /**
+         * Specifies whether or not the meshes using this material should be rendered in alpha test mode.
+         */
         public needAlphaTesting(): boolean {
             if (this._forceAlphaTest) {
                 return true;
@@ -502,11 +554,15 @@
             if (this._linkRefractionWithTransparency) {
                 return false;
             }
-            return this._albedoTexture != null && this._albedoTexture.hasAlpha;
+
+            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST;
         }
 
+        /**
+         * Specifies whether or not the alpha value of the albedo texture should be used for alpha blending.
+         */
         protected _shouldUseAlphaFromAlbedoTexture(): boolean {
-            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture;
+            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE;
         }
 
         public getAlphaTestTexture(): BaseTexture {
@@ -797,7 +853,7 @@
 
                 defines.ALPHATESTVALUE = this._alphaCutOff;
                 defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
-                defines.ALPHABLEND = this.needAlphaBlending();
+                defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
                 defines.ALPHAFRESNEL = this._useAlphaFresnel;
             }
 
@@ -817,8 +873,8 @@
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._forceAlphaTest);
 
-             // Attribs
-            if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true)) {
+            // Attribs
+            if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE)) {
                 if (mesh) {
                     if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                         mesh.createNormals(true);
