@@ -12840,6 +12840,18 @@ var BABYLON;
             this.boundingBox._update(world);
             this.boundingSphere._update(world);
         };
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        BoundingInfo.prototype.center = function (center, extend) {
+            this.minimum = center.subtract(extend);
+            this.maximum = center.add(extend);
+            this.boundingBox = new BABYLON.BoundingBox(this.minimum, this.maximum);
+            this.boundingSphere = new BABYLON.BoundingSphere(this.minimum, this.maximum);
+            return this;
+        };
         BoundingInfo.prototype.isInFrustum = function (frustumPlanes) {
             if (!this.boundingSphere.isInFrustum(frustumPlanes))
                 return false;
