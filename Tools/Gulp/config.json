@@ -245,7 +245,7 @@
             "dependUpon": [
                 "core"
             ]
-        },    
+        },
         "instrumentation": {
             "files": [
                 "../../src/Instrumentation/babylon.engineInstrumentation.js",
@@ -255,7 +255,7 @@
             "dependUpon": [
                 "core"
             ]
-        },      
+        },
         "cameraBehaviors": {
             "files": [
                 "../../src/Behaviors/Cameras/babylon.framingBehavior.js",
@@ -408,7 +408,7 @@
                 "defaultUboDeclaration",
                 "shadowsFragmentFunctions",
                 "fresnelFunction",
-                "reflectionFunction",                
+                "reflectionFunction",
                 "imageProcessingDeclaration",
                 "imageProcessingFunctions",
                 "bumpFragmentFunctions",
@@ -464,7 +464,7 @@
                 "shadowsFragmentFunctions",
                 "pbrFunctions",
                 "imageProcessingDeclaration",
-                "imageProcessingFunctions",                
+                "imageProcessingFunctions",
                 "harmonicsFunctions",
                 "pbrLightFunctions",
                 "helperFunctions",
@@ -1645,7 +1645,8 @@
                 ],
                 "output": "babylon.inspector.js",
                 "webpack": "../../inspector/webpack.config.js",
-                "bundle": "true"
+                "bundle": "true",
+                "moduleDeclaration": "GUI"
             }
         ],
         "build": {

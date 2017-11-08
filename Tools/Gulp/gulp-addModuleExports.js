@@ -1,34 +1,45 @@
 var gutil = require('gulp-util');
 var through = require('through2');
 
-module.exports = function (varName, subModule, extendsRoot) {
+/**
+ * The parameters for this function has grown during development.
+ * Eventually, this function will need to be reorganized. 
+ */
+module.exports = function (varName, subModule, extendsRoot, requireOnly) {
     return through.obj(function (file, enc, cb) {
 
-        var optionalRequire = `var babylonDependency; try { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("../babylon.max")); } catch (e) { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("babylonjs")); } 
+        var optionalRequire = `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
 var BABYLON = babylonDependency;
 `;
         function moduleExportAddition(varName) {
 
-            let basicInit = `root["BABYLON"]${(subModule && !extendsRoot) ? '["' + varName + '"]' : ''} = factory();`;
+            let base = subModule ? 'BABYLON' : varName;
+
+            let basicInit = `root["${base}"]${(subModule && !extendsRoot) ? '["' + varName + '"]' : ''} = f;`;
+            let sadGlobalPolution = (!subModule) ? `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+globalObject["${base}"] = f;` : '';
             /*if (extendsRoot) {
                 basicInit = `__extends(root["BABYLON"], factory()); `
             }*/
 
             return `\n\n(function universalModuleDefinition(root, factory) {
-                if (root && root["BABYLON"]) {
+                if (root && root["${base}"]) {
                     return;
                 }
+                var f = factory();
+                ${sadGlobalPolution}
     if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
+        module.exports = f;
     else if(typeof define === 'function' && define.amd)
         define([], factory);
     else if(typeof exports === 'object')
-        exports["${varName}"] = factory();
+        exports["${varName}"] = f;
     else {
         ${basicInit}
     }
 })(this, function() {
-    return BABYLON${(subModule && !extendsRoot) ? '.' + varName : ''};
+    return ${base}${(subModule && !extendsRoot) ? '.' + varName : ''};
 });
 `;
         }
@@ -65,10 +76,13 @@ var BABYLON = babylonDependency;
         }
 
         try {
-            let pretext = subModule ? optionalRequire : '';
-            file.contents = new Buffer(pretext.concat(decorateAddition).concat(new Buffer(extendsAddition.concat(String(file.contents)).concat(moduleExportAddition(varName)))));
+            if (requireOnly) {
+                file.contents = new Buffer(optionalRequire.concat(String(file.contents)));
+            } else {
+                let pretext = subModule ? optionalRequire : '';
+                file.contents = new Buffer(pretext.concat(decorateAddition).concat(new Buffer(extendsAddition.concat(String(file.contents)).concat(moduleExportAddition(varName)))));
+            }
             this.push(file);
-
         } catch (err) {
             this.emit('error', new gutil.PluginError('gulp-add-module-exports', err, { fileName: file.path }));
         }

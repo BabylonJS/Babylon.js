@@ -114,6 +114,7 @@
                 return this;
             }
 
+            behavior.init();
             if (this._scene.isLoading) {
                 // We defer the attach when the scene will be loaded
                 var observer = this._scene.onDataLoadedObservable.add(() => {
