@@ -12298,6 +12298,7 @@ var BABYLON;
             if (index !== -1) {
                 return this;
             }
+            behavior.init();
             if (this._scene.isLoading) {
                 // We defer the attach when the scene will be loaded
                 var observer = this._scene.onDataLoadedObservable.add(function () {
@@ -65933,6 +65934,7 @@ var BABYLON;
                 }
                 _this.object.translate(_this._deltaPosition, -1);
                 _this._deltaRotationConjugated && _this.object.rotationQuaternion && _this.object.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this.object.rotationQuaternion);
+                _this.object.computeWorldMatrix(false);
                 if (_this.object.parent && _this.object.rotationQuaternion) {
                     _this.getParentsRotation();
                     _this._tmpQuat.multiplyToRef(_this.object.rotationQuaternion, _this._tmpQuat);
@@ -65954,6 +65956,9 @@ var BABYLON;
                 if (!_this._physicsEngine) {
                     return;
                 }
+                _this._onAfterPhysicsStepCallbacks.forEach(function (func) {
+                    func(_this);
+                });
                 _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
                 // object has now its world rotation. needs to be converted to local.
                 if (_this.object.parent && _this.object.rotationQuaternion) {
@@ -67071,14 +67076,10 @@ var BABYLON;
             impostor.object.position.copyFrom(impostor.physicsBody.position);
             if (impostor.object.rotationQuaternion) {
                 impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
-                //impostor.object.rotationQuaternion.y *= -1;
-                //impostor.object.rotationQuaternion.z *= -1;
             }
         };
         CannonJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
             impostor.physicsBody.position.copy(newPosition);
-            //newRotation.y *= -1;
-            //newRotation.z *= -1;
             impostor.physicsBody.quaternion.copy(newRotation);
         };
         CannonJSPlugin.prototype.isSupported = function () {
@@ -74607,6 +74608,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        FramingBehavior.prototype.init = function () {
+            // Do notihng
+        };
         FramingBehavior.prototype.attach = function (camera) {
             var _this = this;
             this._attachedCamera = camera;
@@ -74963,6 +74967,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        BouncingBehavior.prototype.init = function () {
+            // Do notihng
+        };
         BouncingBehavior.prototype.attach = function (camera) {
             var _this = this;
             this._attachedCamera = camera;
@@ -75163,6 +75170,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        AutoRotationBehavior.prototype.init = function () {
+            // Do notihng
+        };
         AutoRotationBehavior.prototype.attach = function (camera) {
             var _this = this;
             this._attachedCamera = camera;
@@ -76236,14 +76246,17 @@ BABYLON.Effect.IncludesShadersStore={"depthPrePass":"#ifdef DEPTHPREPASS\ngl_Fra
                 if (root && root["BABYLON"]) {
                     return;
                 }
+                var f = factory();
+                var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+globalObject["BABYLON"] = f;
     if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
+        module.exports = f;
     else if(typeof define === 'function' && define.amd)
         define([], factory);
     else if(typeof exports === 'object')
-        exports["BABYLON"] = factory();
+        exports["BABYLON"] = f;
     else {
-        root["BABYLON"] = factory();
+        root["BABYLON"] = f;
     }
 })(this, function() {
     return BABYLON;
