@@ -429,9 +429,6 @@
 
                 var oldPivot = mesh.getPivotMatrix() || Matrix.Translation(0, 0, 0);
 
-                //rotation is back
-                mesh.rotationQuaternion = rotationQuaternion;
-
                 //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
                 var p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
                 mesh.setPivotMatrix(p);
@@ -444,6 +441,8 @@
                 //add it inverted to the delta
                 this._tmpDeltaPosition.copyFrom(boundingInfo.boundingBox.centerWorld.subtract(c));
                 this._tmpDeltaPosition.y += boundingInfo.boundingBox.extendSizeWorld.y;
+                //rotation is back
+                mesh.rotationQuaternion = rotationQuaternion;
 
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
