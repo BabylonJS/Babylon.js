@@ -404,6 +404,7 @@ module BABYLON {
 
             this.object.translate(this._deltaPosition, -1);
             this._deltaRotationConjugated && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this.object.rotationQuaternion);
+            this.object.computeWorldMatrix(false);
             if (this.object.parent && this.object.rotationQuaternion) {
                 this.getParentsRotation();
                 this._tmpQuat.multiplyToRef(this.object.rotationQuaternion, this._tmpQuat);
