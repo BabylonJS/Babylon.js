@@ -170,7 +170,7 @@ namespace BABYLON {
         /**
          * Default environment texture URL.
          */
-        private static _environmentTextureCDNUrl = "https://assets.babylonjs.com/environments/emvironmentSpecular.dds";
+        private static _environmentTextureCDNUrl = "https://assets.babylonjs.com/environments/environmentSpecular.dds";
 
         /**
          * Creates the default options for the helper.
