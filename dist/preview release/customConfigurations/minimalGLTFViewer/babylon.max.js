@@ -5109,6 +5109,25 @@ var BABYLON;
         Scalar.PercentToRange = function (percent, min, max) {
             return ((max - min) * percent + min);
         };
+        /**
+         * Returns the angle converted to equivalent value between -Math.PI and Math.PI radians.
+         * @param angle The angle to normalize in radian.
+         * @return The converted angle.
+         */
+        Scalar.NormalizeRadians = function (angle) {
+            // More precise but slower version kept for reference.
+            // angle = angle % Tools.TwoPi;
+            // angle = (angle + Tools.TwoPi) % Tools.TwoPi;
+            //if (angle > Math.PI) {
+            //	angle -= Tools.TwoPi;
+            //}
+            angle -= (Scalar.TwoPi * Math.floor((angle + Math.PI) / Scalar.TwoPi));
+            return angle;
+        };
+        /**
+         * Two pi constants convenient for computation.
+         */
+        Scalar.TwoPi = Math.PI * 2;
         return Scalar;
     }());
     BABYLON.Scalar = Scalar;
@@ -5852,6 +5871,12 @@ var BABYLON;
             if (index < 0)
                 return path;
             return path.substring(index + 1);
+        };
+        Tools.GetFolderPath = function (uri) {
+            var index = uri.lastIndexOf("/");
+            if (index < 0)
+                return "";
+            return uri.substring(0, index + 1);
         };
         Tools.GetDOMTextContent = function (element) {
             var result = "";
@@ -58140,7 +58165,7 @@ var BABYLON;
                 if (!_this._scene.activeCamera) {
                     return;
                 }
-                effect.setFloat("outSize", _this._ssaoCombinePostProcess.width);
+                effect.setFloat("outSize", _this._ssaoCombinePostProcess.width > 0 ? _this._ssaoCombinePostProcess.width : _this._originalColorPostProcess.width);
                 effect.setFloat("near", _this._scene.activeCamera.minZ);
                 effect.setFloat("far", _this._scene.activeCamera.maxZ);
                 effect.setFloat("radius", _this.radius);
@@ -58154,7 +58179,7 @@ var BABYLON;
                 if (!_this._scene.activeCamera) {
                     return;
                 }
-                effect.setFloat("outSize", _this._ssaoCombinePostProcess.height);
+                effect.setFloat("outSize", _this._ssaoCombinePostProcess.height > 0 ? _this._ssaoCombinePostProcess.height : _this._originalColorPostProcess.height);
                 effect.setFloat("near", _this._scene.activeCamera.minZ);
                 effect.setFloat("far", _this._scene.activeCamera.maxZ);
                 effect.setFloat("radius", _this.radius);
