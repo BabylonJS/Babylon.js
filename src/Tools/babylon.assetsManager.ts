@@ -304,7 +304,7 @@ module BABYLON {
             return task;
         }
 
-        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): ITextureAssetTask {
+        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): IAssetTask {
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
             this.tasks.push(task);
 
