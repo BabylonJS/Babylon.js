@@ -66944,8 +66944,6 @@ var BABYLON;
                 //get original center with no rotation
                 var c = center.clone();
                 var oldPivot = mesh.getPivotMatrix() || BABYLON.Matrix.Translation(0, 0, 0);
-                //rotation is back
-                mesh.rotationQuaternion = rotationQuaternion;
                 //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
                 var p = BABYLON.Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
                 mesh.setPivotMatrix(p);
@@ -66956,6 +66954,8 @@ var BABYLON;
                 //add it inverted to the delta
                 this._tmpDeltaPosition.copyFrom(boundingInfo.boundingBox.centerWorld.subtract(c));
                 this._tmpDeltaPosition.y += boundingInfo.boundingBox.extendSizeWorld.y;
+                //rotation is back
+                mesh.rotationQuaternion = rotationQuaternion;
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             }
@@ -68698,9 +68698,12 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    // load the inspector using require, if not present in the global namespace.
     var DebugLayer = /** @class */ (function () {
         function DebugLayer(scene) {
             this._scene = scene;
+            // load inspector using require, if it doesn't exist on the global namespace.
+            INSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : (typeof require !== 'undefined' ? require('INSPECTOR') : undefined);
         }
         /** Creates the inspector window. */
         DebugLayer.prototype._createInspector = function (config) {
@@ -81507,16 +81510,16 @@ var BABYLON;
 
 
 (function universalModuleDefinition(root, factory) {
+                var f = factory();
                 if (root && root["BABYLON"]) {
                     return;
                 }
-                var f = factory();
                 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
 globalObject["BABYLON"] = f;
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define([], factory);
+        define(["BABYLON"], factory);
     else if(typeof exports === 'object')
         exports["BABYLON"] = f;
     else {

@@ -4498,15 +4498,15 @@ var BABYLON;
 
 
 (function universalModuleDefinition(root, factory) {
+                var f = factory();
                 if (root && root["BABYLON"]) {
                     return;
                 }
-                var f = factory();
                 
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define([], factory);
+        define(["GUI"], factory);
     else if(typeof exports === 'object')
         exports["GUI"] = f;
     else {
