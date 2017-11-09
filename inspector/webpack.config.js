@@ -4,7 +4,7 @@ module.exports = {
         "../../dist/preview release/inspector/babylon.inspector.min.js"
     ],
     output: {
-        libraryTarget: "umd",
+        libraryTarget: "var",
         library: "INSPECTOR",
         umdNamedDefine: true
     },

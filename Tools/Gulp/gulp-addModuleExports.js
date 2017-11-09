@@ -5,7 +5,7 @@ var through = require('through2');
  * The parameters for this function has grown during development.
  * Eventually, this function will need to be reorganized. 
  */
-module.exports = function (varName, subModule, extendsRoot, requireOnly) {
+module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon) {
     return through.obj(function (file, enc, cb) {
 
         var optionalRequire = `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
@@ -24,15 +24,15 @@ globalObject["${base}"] = f;` : '';
             }*/
 
             return `\n\n(function universalModuleDefinition(root, factory) {
+                var f = factory();
                 if (root && root["${base}"]) {
                     return;
                 }
-                var f = factory();
                 ${sadGlobalPolution}
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define([], factory);
+        define(["${varName}"], factory);
     else if(typeof exports === 'object')
         exports["${varName}"] = f;
     else {
@@ -76,8 +76,9 @@ globalObject["${base}"] = f;` : '';
         }
 
         try {
-            if (requireOnly) {
-                file.contents = new Buffer(optionalRequire.concat(String(file.contents)));
+            if (externalUsingBabylon) {
+                //file.contents = new Buffer(optionalRequire.concat(String(file.contents)));
+                file.contents = new Buffer(optionalRequire.concat(new Buffer(String(file.contents).concat(moduleExportAddition(varName)))));
             } else {
                 let pretext = subModule ? optionalRequire : '';
                 file.contents = new Buffer(pretext.concat(decorateAddition).concat(new Buffer(extendsAddition.concat(String(file.contents)).concat(moduleExportAddition(varName)))));
