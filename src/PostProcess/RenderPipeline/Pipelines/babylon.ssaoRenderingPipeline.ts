@@ -74,8 +74,8 @@
 
         private _originalColorPostProcess: PassPostProcess;
         private _ssaoPostProcess: PostProcess;
-        private _blurHPostProcess: PostProcess;
-        private _blurVPostProcess: PostProcess;
+        private _blurHPostProcess: BlurPostProcess;
+        private _blurVPostProcess: BlurPostProcess;
         private _ssaoCombinePostProcess: PostProcess;
 
         private _firstUpdate: boolean = true;
@@ -153,39 +153,20 @@
 
         // Private Methods
         private _createBlurPostProcess(ratio: number): void {
-            /*
-            var samplerOffsets = [
-                -8.0, -6.0, -4.0, -2.0,
-                0.0,
-                2.0, 4.0, 6.0, 8.0
-            ];
-            */
-            var samplerOffsets = new Array<number>();
+            var size = 16;
 
-            for (var i = -8; i < 8; i++) {
-                samplerOffsets.push(i * 2);
-            }
+            this._blurHPostProcess = new BlurPostProcess("BlurH", new Vector2(1, 0), size, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._blurVPostProcess = new BlurPostProcess("BlurV", new Vector2(0, 1), size, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
 
-            this._blurHPostProcess = new PostProcess("BlurH", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16");
-            this._blurHPostProcess.onApply = (effect: Effect) => {
-                effect.setFloat("outSize", this._ssaoCombinePostProcess.width);
-                effect.setTexture("depthSampler", this._depthTexture);
+            this._blurHPostProcess.onActivateObservable.add(() => {
+                let dw = this._blurHPostProcess.width / this._scene.getEngine().getRenderWidth();
+                this._blurHPostProcess.kernel = size * dw;
+            });
 
-                if (this._firstUpdate) {
-                    effect.setArray("samplerOffsets", samplerOffsets);
-                }
-            };
-
-            this._blurVPostProcess = new PostProcess("BlurV", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 16");
-            this._blurVPostProcess.onApply = (effect: Effect) => {
-                effect.setFloat("outSize", this._ssaoCombinePostProcess.height);
-                effect.setTexture("depthSampler", this._depthTexture);
-
-                if (this._firstUpdate) {
-                    effect.setArray("samplerOffsets", samplerOffsets);
-                    this._firstUpdate = false;
-                }
-            };
+            this._blurVPostProcess.onActivateObservable.add(() => {
+                let dw = this._blurVPostProcess.height / this._scene.getEngine().getRenderHeight();
+                this._blurVPostProcess.kernel = size * dw;
+            });
         }
 
         public _rebuild() {
