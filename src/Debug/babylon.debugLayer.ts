@@ -1,7 +1,6 @@
 module BABYLON {
 
     // declare INSPECTOR namespace for compilation issue
-    declare var require: any;
     declare var INSPECTOR: any;
     // load the inspector using require, if not present in the global namespace.
 
@@ -11,10 +10,12 @@ module BABYLON {
         // The inspector instance
         private _inspector: any;
 
+        private BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
+
         constructor(scene: Scene) {
             this._scene = scene;
             // load inspector using require, if it doesn't exist on the global namespace.
-            INSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : (typeof require !== 'undefined' ? require('INSPECTOR') : undefined);
+
         }
 
         /** Creates the inspector window. */
@@ -36,7 +37,9 @@ module BABYLON {
             let initialTab = config.initialTab || 0;
             let parentElement = config.parentElement || null;
             if (!this._inspector) {
-                this._inspector = new INSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
+                this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
+
+                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
             } // else nothing to do,; instance is already existing
         }
 
@@ -72,7 +75,7 @@ module BABYLON {
                 colorBot?: string
             }
         } = {}) {
-            if (typeof INSPECTOR == 'undefined') {
+            if (typeof this.BJSINSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
                 Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, config));
             } else {
