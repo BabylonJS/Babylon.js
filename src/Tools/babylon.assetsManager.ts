@@ -7,9 +7,9 @@ module BABYLON {
         ERROR
     }
 
-    export interface IAssetTask {
-        onSuccess: (task: IAssetTask) => void;
-        onError: (task: IAssetTask, message?: string, exception?: any) => void;
+    export interface IAssetTask<T extends AbstractAssetTask> {
+        onSuccess: (task: T) => void;
+        onError: (task: T, message?: string, exception?: any) => void;
         isCompleted: boolean;
         name: string;
 
@@ -22,14 +22,14 @@ module BABYLON {
         runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
 
-    export abstract class AbstractAssetTask implements IAssetTask {
+    export abstract class AbstractAssetTask implements IAssetTask<AbstractAssetTask> {
 
         constructor(public name: string) {
             this.taskState = AssetTaskState.INIT;
         }
 
-        onSuccess: (task: IAssetTask) => void;
-        onError: (task: IAssetTask, message?: string, exception?: any) => void;
+        onSuccess: (task: this) => void;
+        onError: (task: this, message?: string, exception?: any) => void;
 
         isCompleted: boolean = false;
         taskState: AssetTaskState;
@@ -83,22 +83,22 @@ module BABYLON {
     export interface IAssetsProgressEvent {
         remainingCount: number;
         totalCount: number;
-        task: IAssetTask;
+        task: AbstractAssetTask;
     }
 
     export class AssetsProgressEvent implements IAssetsProgressEvent {
         remainingCount: number;
         totalCount: number;
-        task: IAssetTask;
+        task: AbstractAssetTask;
 
-        constructor(remainingCount: number, totalCount: number, task: IAssetTask) {
+        constructor(remainingCount: number, totalCount: number, task: AbstractAssetTask) {
             this.remainingCount = remainingCount;
             this.totalCount = totalCount;
             this.task = task;
         }
     }
 
-    export class MeshAssetTask extends AbstractAssetTask implements IAssetTask {
+    export class MeshAssetTask extends AbstractAssetTask implements IAssetTask<MeshAssetTask> {
         public loadedMeshes: Array<AbstractMesh>;
         public loadedParticleSystems: Array<ParticleSystem>;
         public loadedSkeletons: Array<Skeleton>;
@@ -121,7 +121,7 @@ module BABYLON {
         }
     }
 
-    export class TextFileAssetTask extends AbstractAssetTask implements IAssetTask {
+    export class TextFileAssetTask extends AbstractAssetTask implements IAssetTask<TextFileAssetTask> {
         public text: string;
 
         constructor(public name: string, public url: string) {
@@ -140,7 +140,7 @@ module BABYLON {
         }
     }
 
-    export class BinaryFileAssetTask extends AbstractAssetTask implements IAssetTask {
+    export class BinaryFileAssetTask extends AbstractAssetTask implements IAssetTask<BinaryFileAssetTask> {
         public data: ArrayBuffer;
 
         constructor(public name: string, public url: string) {
@@ -160,7 +160,7 @@ module BABYLON {
         }
     }
 
-    export class ImageAssetTask extends AbstractAssetTask implements IAssetTask {
+    export class ImageAssetTask extends AbstractAssetTask implements IAssetTask<ImageAssetTask> {
         public image: HTMLImageElement;
 
         constructor(public name: string, public url: string) {
@@ -185,11 +185,11 @@ module BABYLON {
         }
     }
 
-    export interface ITextureAssetTask extends IAssetTask {
-        texture: Texture;
+    export interface ITextureAssetTask<TEX extends BaseTexture, T extends AbstractAssetTask> extends IAssetTask<T> {
+        texture: TEX;
     }
 
-    export class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask {
+    export class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<Texture, TextureAssetTask> {
         public texture: Texture;
 
         constructor(public name: string, public url: string, public noMipmap?: boolean, public invertY?: boolean, public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
@@ -210,7 +210,7 @@ module BABYLON {
         }
     }
 
-    export class CubeTextureAssetTask extends AbstractAssetTask implements IAssetTask {
+    export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<CubeTexture, CubeTextureAssetTask> {
         public texture: CubeTexture;
 
         constructor(public name: string, public url: string, public extensions?: string[], public noMipmap?: boolean, public files?: string[]) {
@@ -231,7 +231,7 @@ module BABYLON {
         }
     }
 
-    export class HDRCubeTextureAssetTask extends AbstractAssetTask implements IAssetTask {
+    export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<HDRCubeTexture, HDRCubeTextureAssetTask> {
         public texture: HDRCubeTexture;
 
         constructor(public name: string, public url: string, public size?: number, public noMipmap = false, public generateHarmonics = true, public useInGammaSpace = false, public usePMREMGenerator = false) {
@@ -258,16 +258,16 @@ module BABYLON {
         protected tasks = new Array<AbstractAssetTask>();
         protected waitingTasksCount = 0;
 
-        public onFinish: (tasks: IAssetTask[]) => void;
-        public onTaskSuccess: (task: IAssetTask) => void;
-        public onTaskError: (task: IAssetTask) => void;
-        public onProgress: (remainingCount: number, totalCount: number, task: IAssetTask) => void;
+        public onFinish: (tasks: IAssetTask<AbstractAssetTask>[]) => void;
+        public onTaskSuccess: (task: IAssetTask<AbstractAssetTask>) => void;
+        public onTaskError: (task: IAssetTask<AbstractAssetTask>) => void;
+        public onProgress: (remainingCount: number, totalCount: number, task: IAssetTask<AbstractAssetTask>) => void;
 
         //Observables
 
-        public onTaskSuccessObservable = new Observable<IAssetTask>();
-        public onTaskErrorObservable = new Observable<IAssetTask>();
-        public onTasksDoneObservable = new Observable<IAssetTask[]>();
+        public onTaskSuccessObservable = new Observable<IAssetTask<AbstractAssetTask>>();
+        public onTaskErrorObservable = new Observable<IAssetTask<AbstractAssetTask>>();
+        public onTasksDoneObservable = new Observable<IAssetTask<AbstractAssetTask>[]>();
         public onProgressObservable = new Observable<IAssetsProgressEvent>();
 
         public useDefaultLoadingScreen = true;
@@ -276,35 +276,35 @@ module BABYLON {
             this._scene = scene;
         }
 
-        public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): IAssetTask {
+        public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): MeshAssetTask {
             var task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
             this.tasks.push(task);
 
             return task;
         }
 
-        public addTextFileTask(taskName: string, url: string): IAssetTask {
+        public addTextFileTask(taskName: string, url: string): TextFileAssetTask {
             var task = new TextFileAssetTask(taskName, url);
             this.tasks.push(task);
 
             return task;
         }
 
-        public addBinaryFileTask(taskName: string, url: string): IAssetTask {
+        public addBinaryFileTask(taskName: string, url: string): BinaryFileAssetTask {
             var task = new BinaryFileAssetTask(taskName, url);
             this.tasks.push(task);
 
             return task;
         }
 
-        public addImageTask(taskName: string, url: string): IAssetTask {
+        public addImageTask(taskName: string, url: string): ImageAssetTask {
             var task = new ImageAssetTask(taskName, url);
             this.tasks.push(task);
 
             return task;
         }
 
-        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): IAssetTask {
+        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): TextureAssetTask {
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
             this.tasks.push(task);
 
@@ -312,14 +312,14 @@ module BABYLON {
         }
 
 
-        public addCubeTextureTask(name: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]): IAssetTask {
+        public addCubeTextureTask(name: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]): CubeTextureAssetTask {
             var task = new CubeTextureAssetTask(name, url, extensions, noMipmap, files);
             this.tasks.push(task);
 
             return task;
         }
 
-        public addHDRCubeTextureTask(name: string, url: string, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false): IAssetTask {
+        public addHDRCubeTextureTask(name: string, url: string, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false): HDRCubeTextureAssetTask {
             var task = new HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator);
             this.tasks.push(task);
 
