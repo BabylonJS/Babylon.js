@@ -801,7 +801,7 @@
          * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units).
          * @param includeDescendants Take the hierarchy's bounding box instead of the mesh's bounding box.
          */
-        public normalizeToUnitCube(includeDescendants = true): AbstractMesh {            
+        public normalizeToUnitCube(includeDescendants = true): AbstractMesh {
             let boundingVectors = this.getHierarchyBoundingVectors(includeDescendants);
             let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
             let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);

@@ -152,6 +152,14 @@
             return path.substring(index + 1);
         }
 
+        public static GetFolderPath(uri: string): string {
+            var index = uri.lastIndexOf("/");
+            if (index < 0)
+                return "";
+
+            return uri.substring(0, index + 1);
+        }
+
         public static GetDOMTextContent(element: HTMLElement): string {
             var result = "";
             var child = element.firstChild;
