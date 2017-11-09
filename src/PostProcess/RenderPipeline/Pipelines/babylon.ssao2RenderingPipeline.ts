@@ -232,7 +232,7 @@
                     return;
                 }
 
-                effect.setFloat("outSize", this._ssaoCombinePostProcess.width);
+                effect.setFloat("outSize", this._ssaoCombinePostProcess.width > 0 ? this._ssaoCombinePostProcess.width : this._originalColorPostProcess.width);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
                 effect.setFloat("far", this._scene.activeCamera.maxZ);
                 effect.setFloat("radius", this.radius);
@@ -249,7 +249,7 @@
                     return;
                 }
 
-                effect.setFloat("outSize", this._ssaoCombinePostProcess.height);
+                effect.setFloat("outSize", this._ssaoCombinePostProcess.height > 0 ? this._ssaoCombinePostProcess.height : this._originalColorPostProcess.height);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
                 effect.setFloat("far", this._scene.activeCamera.maxZ);
                 effect.setFloat("radius", this.radius);

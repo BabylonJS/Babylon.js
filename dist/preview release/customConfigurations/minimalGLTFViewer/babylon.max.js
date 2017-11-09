@@ -58165,7 +58165,7 @@ var BABYLON;
                 if (!_this._scene.activeCamera) {
                     return;
                 }
-                effect.setFloat("outSize", _this._ssaoCombinePostProcess.width);
+                effect.setFloat("outSize", _this._ssaoCombinePostProcess.width > 0 ? _this._ssaoCombinePostProcess.width : _this._originalColorPostProcess.width);
                 effect.setFloat("near", _this._scene.activeCamera.minZ);
                 effect.setFloat("far", _this._scene.activeCamera.maxZ);
                 effect.setFloat("radius", _this.radius);
@@ -58179,7 +58179,7 @@ var BABYLON;
                 if (!_this._scene.activeCamera) {
                     return;
                 }
-                effect.setFloat("outSize", _this._ssaoCombinePostProcess.height);
+                effect.setFloat("outSize", _this._ssaoCombinePostProcess.height > 0 ? _this._ssaoCombinePostProcess.height : _this._originalColorPostProcess.height);
                 effect.setFloat("near", _this._scene.activeCamera.minZ);
                 effect.setFloat("far", _this._scene.activeCamera.maxZ);
                 effect.setFloat("radius", _this.radius);
