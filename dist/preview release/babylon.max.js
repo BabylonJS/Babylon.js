@@ -68880,9 +68880,9 @@ var BABYLON;
     // load the inspector using require, if not present in the global namespace.
     var DebugLayer = /** @class */ (function () {
         function DebugLayer(scene) {
+            this.BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
             this._scene = scene;
             // load inspector using require, if it doesn't exist on the global namespace.
-            INSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : (typeof require !== 'undefined' ? require('INSPECTOR') : undefined);
         }
         /** Creates the inspector window. */
         DebugLayer.prototype._createInspector = function (config) {
@@ -68891,7 +68891,8 @@ var BABYLON;
             var initialTab = config.initialTab || 0;
             var parentElement = config.parentElement || null;
             if (!this._inspector) {
-                this._inspector = new INSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
+                this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
+                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
             } // else nothing to do,; instance is already existing
         };
         DebugLayer.prototype.isVisible = function () {
@@ -68913,7 +68914,7 @@ var BABYLON;
         };
         DebugLayer.prototype.show = function (config) {
             if (config === void 0) { config = {}; }
-            if (typeof INSPECTOR == 'undefined') {
+            if (typeof this.BJSINSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
                 BABYLON.Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, config));
             }
