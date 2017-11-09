@@ -1,7 +1,9 @@
 module BABYLON {
 
     // declare INSPECTOR namespace for compilation issue
+    declare var require: any;
     declare var INSPECTOR: any;
+    // load the inspector using require, if not present in the global namespace.
 
     export class DebugLayer {
         private _scene: Scene;
@@ -11,6 +13,8 @@ module BABYLON {
 
         constructor(scene: Scene) {
             this._scene = scene;
+            // load inspector using require, if it doesn't exist on the global namespace.
+            INSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : (typeof require !== 'undefined' ? require('INSPECTOR') : undefined);
         }
 
         /** Creates the inspector window. */

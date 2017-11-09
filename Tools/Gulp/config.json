@@ -1646,7 +1646,7 @@
                 "output": "babylon.inspector.js",
                 "webpack": "../../inspector/webpack.config.js",
                 "bundle": "true",
-                "moduleDeclaration": "GUI"
+                "moduleDeclaration": "INSPECTOR"
             }
         ],
         "build": {
