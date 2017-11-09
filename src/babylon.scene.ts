@@ -4341,6 +4341,13 @@
             return hdrSkybox;
         }
 
+        public createDefaultEnvironment(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
+            if (BABYLON.EnvironmentHelper) {
+                return new EnvironmentHelper(options, this);
+            }
+            return null;
+        }
+
         public createDefaultVRExperience(webVROptions: WebVROptions = {}) {
             this.VRHelper = new BABYLON.VRExperienceHelper(this, webVROptions);
         }

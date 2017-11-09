@@ -74,7 +74,9 @@
             "textureTools",
             "cameraBehaviors",
             "nullEngine",
-            "instrumentation"
+            "instrumentation",
+            "backgroundMaterial",
+            "environmentHelper"
         ],
         "minimal": [
             "standardMaterial",
@@ -149,8 +151,9 @@
             "textureTools",
             "cameraBehaviors",
             "instrumentation",
+            "backgroundMaterial",
+            "environmentHelper",
             "materialsLibrary/babylon.gridMaterial.js",
-            "materialsLibrary/babylon.backgroundMaterial.js",
             "loaders/babylon.glTFFileLoader.js"
         ],
         "distributed": [
@@ -1080,6 +1083,69 @@
                 "layer.vertex",
                 "layer.fragment"
             ]
+        },
+        "backgroundMaterial": {
+            "files": [
+                "../../src/Materials/Background/babylon.backgroundMaterial.js"
+            ],
+            "dependUpon": [
+                "core"
+            ],
+            "shaders": [
+                "background.vertex",
+                "background.fragment"
+            ],
+            "shaderIncludes": [
+                "bonesDeclaration",
+                "instancesDeclaration",
+                "pointCloudVertexDeclaration",
+                "bumpVertexDeclaration",
+                "clipPlaneVertexDeclaration",
+                "fogVertexDeclaration",
+                "morphTargetsVertexGlobalDeclaration",
+                "morphTargetsVertexDeclaration",
+                "logDepthDeclaration",
+                "morphTargetsVertex",
+                "instancesVertex",
+                "bonesVertex",
+                "bumpVertex",
+                "clipPlaneVertex",
+                "fogVertex",
+                "shadowsVertex",
+                "pointCloudVertex",
+                "logDepthVertex",
+                "helperFunctions",
+                "lightFragmentDeclaration",
+                "lightsFragmentFunctions",
+                "lightUboDeclaration",
+                "backgroundVertexDeclaration",
+                "backgroundFragmentDeclaration",
+                "backgroundUboDeclaration",
+                "shadowsFragmentFunctions",
+                "fresnelFunction",
+                "reflectionFunction",
+                "imageProcessingDeclaration",
+                "imageProcessingFunctions",
+                "bumpFragmentFunctions",
+                "clipPlaneFragmentDeclaration",
+                "logDepthDeclaration",
+                "fogFragmentDeclaration",
+                "clipPlaneFragment",
+                "bumpFragment",
+                "lightFragment",
+                "logDepthFragment",
+                "fogFragment"
+            ]
+        },
+        "environmentHelper": {
+            "files": [
+                "../../src/Helpers/babylon.environmentHelper.js"
+            ],
+            "dependUpon": [
+                "core",
+                "backgroundMaterial",
+                "additionalTextures"
+            ]
         }
     },
     "typescript": [
@@ -1243,21 +1309,6 @@
                     "../../materialsLibrary/src/cell/cell.fragment.fx"
                 ],
                 "output": "babylon.cellMaterial.js"
-            },
-            {
-                "files": [
-                    "../../materialsLibrary/src/background/babylon.backgroundMaterial.ts"
-                ],
-                "shaderFiles": [
-                    "../../materialsLibrary/src/background/background.vertex.fx",
-                    "../../materialsLibrary/src/background/background.fragment.fx"
-                ],
-                "shadersIncludeFiles": [
-                    "../../materialsLibrary/src/background/backgroundFragmentDeclaration.fx",
-                    "../../materialsLibrary/src/background/backgroundUboDeclaration.fx",
-                    "../../materialsLibrary/src/background/backgroundVertexDeclaration.fx"
-                ],
-                "output": "babylon.backgroundMaterial.js"
             }
         ],
         "build": {
@@ -1595,7 +1646,7 @@
                 "output": "babylon.inspector.js",
                 "webpack": "../../inspector/webpack.config.js",
                 "bundle": "true",
-                "moduleDeclaration": "GUI"
+                "moduleDeclaration": "INSPECTOR"
             }
         ],
         "build": {
