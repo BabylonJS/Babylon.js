@@ -77635,7 +77635,7 @@ var BABYLON;
         /**
          * Default environment texture URL.
          */
-        EnvironmentHelper._environmentTextureCDNUrl = "https://assets.babylonjs.com/environments/emvironmentSpecular.dds";
+        EnvironmentHelper._environmentTextureCDNUrl = "https://assets.babylonjs.com/environments/environmentSpecular.dds";
         return EnvironmentHelper;
     }());
     BABYLON.EnvironmentHelper = EnvironmentHelper;
