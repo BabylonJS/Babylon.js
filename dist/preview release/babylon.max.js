@@ -77496,7 +77496,10 @@ var BABYLON;
              * you wish in the ground reflection.
              */
             get: function () {
-                return this._groundMirror.renderList;
+                if (this._groundMirror) {
+                    return this._groundMirror.renderList;
+                }
+                return null;
             },
             enumerable: true,
             configurable: true
