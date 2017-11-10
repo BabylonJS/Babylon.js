@@ -274,10 +274,12 @@ module BABYLON.GUI {
             this._applyStates(context);
             if (this._processMeasures(parentMeasure, context)) {
                 
-                context.shadowColor = this.shadowColor;
-                context.shadowBlur = this.shadowBlur;
-                context.shadowOffsetX = this.shadowOffsetX;
-                context.shadowOffsetY = this.shadowOffsetY;
+                if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
 
                 // Background
                 if (this._isFocused) {
@@ -292,9 +294,11 @@ module BABYLON.GUI {
                     context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                 }
                 
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
+                if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                }
 
                 if (!this._fontOffset) {
                     this._fontOffset = Control._GetFontOffset(context.font);
