@@ -274,9 +274,22 @@ module BABYLON.GUI {
                     this._colorWheelCanvas = this._createColorWheelCanvas(radius, wheelThickness);
                 }
 
+                this._updateSquareProps();
+
+                if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){                
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY; 
+                    
+                    context.fillRect(this._squareLeft, this._squareTop, this._squareSize, this._squareSize);
+                }
+
                 context.drawImage(this._colorWheelCanvas, left, top);
 
-                this._updateSquareProps();
+                context.shadowBlur = 0;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 0;
 
                 this._drawGradientSquare(this._h, 
                                         this._squareLeft,

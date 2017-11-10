@@ -198,6 +198,11 @@ module BABYLON.GUI {
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
+            context.shadowColor = this.shadowColor;
+            context.shadowBlur = this.shadowBlur;
+            context.shadowOffsetX = this.shadowOffsetX;
+            context.shadowOffsetY = this.shadowOffsetY;
+
             let x, y, width, height;
             if (this.cellId == -1) {
                 x = this._sourceLeft;

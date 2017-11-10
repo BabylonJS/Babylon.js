@@ -119,8 +119,17 @@ module BABYLON.GUI {
 
         protected _localDraw(context: CanvasRenderingContext2D): void {
             if (this._background) {
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
+                
                 context.fillStyle = this._background;
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                
+                context.shadowBlur = 0;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 0;        
             }
         }
 
