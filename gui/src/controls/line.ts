@@ -146,6 +146,13 @@ module BABYLON.GUI {
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
+            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
+            }
+
             this._applyStates(context);
             if (this._processMeasures(parentMeasure, context)) {
                 context.strokeStyle = this.color;
