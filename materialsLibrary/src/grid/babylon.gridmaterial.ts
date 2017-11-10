@@ -86,6 +86,10 @@ module BABYLON {
             return this.opacity < 1.0;
         }
 
+        public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+            return this.needAlphaBlending();
+        }
+
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
