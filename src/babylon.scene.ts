@@ -2028,6 +2028,18 @@
             }
         }
 
+        /**
+         * Stops and removes all animations that have been applied to the scene
+         */
+        public stopAllAnimations(): void {
+            if (this._activeAnimatables) {
+                for (let i = 0; i < this._activeAnimatables.length; i++) {
+                    this._activeAnimatables[i].stop();
+                }
+                this._activeAnimatables = [];
+            }
+        }
+
         private _animate(): void {
             if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
@@ -3673,6 +3685,8 @@
             this.morphTargetManagers = [];
 
             this.importedMeshesFiles = new Array<string>();
+
+            this.stopAllAnimations();
 
             this.resetCachedMaterial();
 

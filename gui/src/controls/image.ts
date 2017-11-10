@@ -245,7 +245,7 @@ module BABYLON.GUI {
                             if (this._autoScale) {
                                 this.synchronizeSizeWithContent();
                             }
-                            if (this._root) {
+                            if (this._root && this._root.parent) { // Will update root size if root is not the top root
                                 this._root.width = this.width;
                                 this._root.height = this.height;
                             }

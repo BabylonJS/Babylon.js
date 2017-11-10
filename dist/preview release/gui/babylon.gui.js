@@ -3438,7 +3438,7 @@ var BABYLON;
                                 if (this._autoScale) {
                                     this.synchronizeSizeWithContent();
                                 }
-                                if (this._root) {
+                                if (this._root && this._root.parent) {
                                     this._root.width = this.width;
                                     this._root.height = this.height;
                                 }
