@@ -1468,7 +1468,7 @@
                     this._reflectionTexture.dispose();
                 }
 
-                if (this._environmentBRDFTexture) {
+                if (this._environmentBRDFTexture && this.getScene()._environmentBRDFTexture !== this._environmentBRDFTexture) {
                     this._environmentBRDFTexture.dispose();
                 }
 
