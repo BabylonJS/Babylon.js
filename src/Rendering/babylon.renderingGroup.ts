@@ -324,7 +324,7 @@
                 return;
             }
 
-            if (material.needAlphaBlending() || material.needAlphaBlendingForMesh(mesh)) { // Transparent
+            if (material.needAlphaBlendingForMesh(mesh)) { // Transparent
                 this._transparentSubMeshes.push(subMesh);
             } else if (material.needAlphaTesting()) { // Alpha test
                 if (material.needDepthPrePass) {
