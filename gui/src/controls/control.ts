@@ -1075,7 +1075,7 @@ module BABYLON.GUI {
                 panel.addControl(control);
                 header.paddingRight = "5px";
             }
-
+            
             header.shadowBlur = control.shadowBlur;
             header.shadowColor = control.shadowColor;
             header.shadowOffsetX = control.shadowOffsetX;
