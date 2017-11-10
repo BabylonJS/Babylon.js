@@ -36,19 +36,27 @@
         // facetData private properties
         private _facetPositions: Vector3[];             // facet local positions
         private _facetNormals: Vector3[];               // facet local normals
-        private _facetPartitioning: number[][];           // partitioning array of facet index arrays
+        private _facetPartitioning: number[][];         // partitioning array of facet index arrays
         private _facetNb: number = 0;                   // facet number
         private _partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partioning space  
         private _partitioningBBoxRatio: number = 1.01;  // the partioning array space is by default 1% bigger than the bounding box
         private _facetDataEnabled: boolean = false;     // is the facet data feature enabled on this mesh ?
-        private _facetParameters: any = {};                  // keep a reference to the object parameters to avoid memory re-allocation
+        private _facetParameters: any = {};             // keep a reference to the object parameters to avoid memory re-allocation
         private _bbSize: Vector3 = Vector3.Zero();      // bbox size approximated for facet data
-        private _subDiv = {                         // actual number of subdivisions per axis for ComputeNormals()
+        private _subDiv = {                             // actual number of subdivisions per axis for ComputeNormals()
             max: 1,
             X: 1,
             Y: 1,
             Z: 1
         };
+        private _facetDepthSort: boolean = false;                           // is the facet depth sort enabled
+        private _originalIndices: IndicesArray;                             // copy of the original indices array
+        private _depthSortedFacets: {ind: number, sqDistance: number}[];    // array of depth sorted facets
+        private _facetDepthSortFunction: (f1: {ind: number, sqDistance: number}, f2: {ind: number, sqDistance: number}) => number;  // facet depth sort function
+        private _facetDepthSortFrom: Vector3;                               // location where to depth sort from
+        private _facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
+        private _invertedMatrix: Matrix;                                    // Mesh inverted World Matrix
+
         /**
          * Read-only : the number of facets in the mesh
          */
@@ -73,6 +81,27 @@
         }
         public set partitioningBBoxRatio(ratio: number) {
             this._partitioningBBoxRatio = ratio;
+        }
+        /**
+         * Boolean : must the facet be depth sorted on next call to `updateFacetData()` ?  
+         * Works only for updatable meshes.  
+         */
+        public get mustDepthSortFacets(): boolean {
+            return this._facetDepthSort;
+        }
+        public set mustDepthSortFacets(sort: boolean) {
+            this._facetDepthSort = sort;
+        }
+        /**
+         * The location (Vector3) where the facet depth sort must be computed from.  
+         * By default, the active camera position.  
+         * Used only when facet depth sort is enabled.  
+         */
+        public get facetDepthSortFrom(): Vector3 {
+            return this._facetDepthSortFrom;
+        }
+        public set facetDepthSortFrom(location: Vector3) {
+            this._facetDepthSortFrom = location;
         }
         /**
          * Read-only boolean : is the feature facetData enabled ?
@@ -2180,7 +2209,7 @@
             if (!this._facetPartitioning) {
                 this._facetPartitioning = new Array<number[]>();
             }
-            this._facetNb = (<IndicesArray>this.getIndices()).length / 3;
+            this._facetNb = ((<IndicesArray>this.getIndices()).length / 3)|0;
             this._partitioningSubdivisions = (this._partitioningSubdivisions) ? this._partitioningSubdivisions : 10;   // default nb of partitioning subdivisions = 10
             this._partitioningBBoxRatio = (this._partitioningBBoxRatio) ? this._partitioningBBoxRatio : 1.01;          // default ratio 1.01 = the partitioning is 1% bigger than the bounding box
             for (var f = 0; f < this._facetNb; f++) {
@@ -2203,11 +2232,31 @@
             }
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
+            var indicesForComputeNormals = indices;
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
-
+            
             if (!bInfo) {
                 return this;
+            }
+
+            if (this._facetDepthSort && !this._originalIndices) {
+                // init arrays, matrix and sort function on first call
+                this._originalIndices = new Uint32Array(indices!);
+                this._facetDepthSortFunction = function(f1, f2) {
+                    return (f2.sqDistance - f1.sqDistance);
+                };
+                if (!this._facetDepthSortFrom) {
+                    var camera = this.getScene().activeCamera;
+                    this._facetDepthSortFrom = (camera) ? camera.position : Vector3.Zero();
+                }
+                this._depthSortedFacets = [];
+                for (var f = 0; f < this._facetNb; f++) {
+                    var depthSortedFacet = {ind: f * 3, sqDistance: 0.0};
+                    this._depthSortedFacets.push(depthSortedFacet);
+                }
+                this._invertedMatrix = Matrix.Identity();
+                this._facetDepthSortOrigin = Vector3.Zero();
             }
 
             this._bbSize.x = (bInfo.maximum.x - bInfo.minimum.x > Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : Epsilon;
@@ -2230,7 +2279,27 @@
             this._facetParameters.bbSize = this._bbSize;
             this._facetParameters.subDiv = this._subDiv;
             this._facetParameters.ratio = this.partitioningBBoxRatio;
-            VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
+            this._facetParameters.depthSort = this._facetDepthSort;
+            if (this._facetDepthSort) {
+                this.computeWorldMatrix(true);
+                this._worldMatrix.invertToRef(this._invertedMatrix);
+                Vector3.TransformCoordinatesToRef(this._facetDepthSortFrom, this._invertedMatrix, this._facetDepthSortOrigin);   
+                this._facetParameters.distanceTo = this._facetDepthSortOrigin;
+                indicesForComputeNormals = this._originalIndices;
+            }
+            this._facetParameters.depthSortedFacets = this._depthSortedFacets;
+            VertexData.ComputeNormals(positions, indicesForComputeNormals, normals, this._facetParameters);
+
+            if (this._facetDepthSort) {
+                this._depthSortedFacets.sort(this._facetDepthSortFunction);
+                for (var sorted = 0; sorted < this._facetNb; sorted++) {
+                    var sind = this._depthSortedFacets[sorted].ind;
+                    indices![sorted * 3] = this._originalIndices[sind];
+                    indices![sorted * 3 + 1] = this._originalIndices[sind + 1];
+                    indices![sorted * 3 + 2] = this._originalIndices[sind + 2];
+                }
+                this.updateIndices(indices!);
+            }
 
             return this;
         }
@@ -2400,6 +2469,7 @@
             }
             return closest;
         }
+
         /**
          * Returns the object "parameter" set with all the expected parameters for facetData computation by ComputeNormals()  
          */
@@ -2413,11 +2483,19 @@
         public disableFacetData(): AbstractMesh {
             if (this._facetDataEnabled) {
                 this._facetDataEnabled = false;
-                this._facetPositions = new Array<Vector3>();;
-                this._facetNormals = new Array<Vector3>();;
-                this._facetPartitioning = new Array<number[]>();;
+                this._facetPositions = new Array<Vector3>();
+                this._facetNormals = new Array<Vector3>();
+                this._facetPartitioning = new Array<number[]>();
                 this._facetParameters = null;
+                this._originalIndices = new Uint32Array(0);
             }
+            return this;
+        }
+        /**
+         * Updates the AbstractMesh indices array. Actually, used by the Mesh object.
+         * Returns the mesh.
+         */
+        public updateIndices(indices: IndicesArray): AbstractMesh {
             return this;
         }
 
