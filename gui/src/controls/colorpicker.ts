@@ -287,9 +287,11 @@ module BABYLON.GUI {
 
                 context.drawImage(this._colorWheelCanvas, left, top);
 
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
+                if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                }
 
                 this._drawGradientSquare(this._h, 
                                         this._squareLeft,
