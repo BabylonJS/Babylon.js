@@ -270,7 +270,10 @@ namespace BABYLON {
          * you wish in the ground reflection.
          */
         public get groundMirrorRenderList(): Nullable<AbstractMesh[]> {
-            return this._groundMirror!.renderList;
+            if (this._groundMirror) {
+                return this._groundMirror.renderList;
+            }
+            return null;
         }
 
         private _groundMaterial: Nullable<BackgroundMaterial>;
