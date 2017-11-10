@@ -147,6 +147,11 @@ module BABYLON.GUI {
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
+            context.shadowColor = this.shadowColor;
+            context.shadowBlur = this.shadowBlur;
+            context.shadowOffsetX = this.shadowOffsetX;
+            context.shadowOffsetY = this.shadowOffsetY;
+
             this._applyStates(context);
             if (this._processMeasures(parentMeasure, context)) {
                 // Main bar
@@ -183,12 +188,20 @@ module BABYLON.GUI {
                     context.arc(left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
                     context.fill();
 
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+
                     context.strokeStyle = this._borderColor;
                     context.stroke();
                 }
                 else {
                     context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                     
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+
                     context.strokeStyle = this._borderColor;
                     context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                 }
