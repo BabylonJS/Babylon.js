@@ -106,6 +106,12 @@ module BABYLON.GUI {
                     break;
             }
 
+            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
+            }
 
             context.fillText(text, this._currentMeasure.left + x, y);
         }

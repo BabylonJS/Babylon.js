@@ -33,7 +33,6 @@ module BABYLON.GUI {
 
         private _createKey(key: string, propertySet: Nullable<KeyPropertySet>) {
             var button = Button.CreateSimpleButton(key, key);
-            
            
             button.width = propertySet && propertySet.width ? propertySet.width : this.defaultButtonWidth;
             button.height = propertySet && propertySet.height ? propertySet.height : this.defaultButtonHeight;
@@ -46,6 +45,11 @@ module BABYLON.GUI {
         
             button.thickness = 0;
             button.isFocusInvisible = true;
+
+            button.shadowColor = this.shadowColor;
+            button.shadowBlur = this.shadowBlur;
+            button.shadowOffsetX = this.shadowOffsetX;
+            button.shadowOffsetY = this.shadowOffsetY;
         
             button.onPointerUpObservable.add(() => {
                 this.onKeyPressObservable.notifyObservers(key);

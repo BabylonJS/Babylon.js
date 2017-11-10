@@ -23,7 +23,7 @@ module BABYLON {
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
     }
 
-    export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync {
+    export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         public static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         public static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
 
@@ -100,6 +100,12 @@ module BABYLON {
 
         public canDirectLoad(data: string): boolean {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
+        }
+
+        public rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
+
+        public createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
+            return new GLTFFileLoader();
         }
 
         private static _parse(data: string | ArrayBuffer): IGLTFLoaderData {
