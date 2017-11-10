@@ -6175,7 +6175,7 @@ var BABYLON;
                     if (req.readyState === (XMLHttpRequest.DONE || 4)) {
                         req.onreadystatechange = function () { }; //some browsers have issues where onreadystatechange can be called multiple times with the same value
                         if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
-                            callback(!useArrayBuffer ? req.responseText : req.response);
+                            callback(!useArrayBuffer ? req.responseText : req.response, req.responseURL);
                         }
                         else {
                             var e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
@@ -52585,18 +52585,24 @@ var BABYLON;
         SceneLoader._loadData = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension) {
             var directLoad = SceneLoader._getDirectLoad(sceneFilename);
             var registeredPlugin = pluginExtension ? SceneLoader._getPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename));
-            var plugin = registeredPlugin.plugin;
+            var plugin;
+            if (registeredPlugin.plugin.createPlugin) {
+                plugin = registeredPlugin.plugin.createPlugin();
+            }
+            else {
+                plugin = registeredPlugin.plugin;
+            }
             var useArrayBuffer = registeredPlugin.isBinary;
             var database;
-            SceneLoader.OnPluginActivatedObservable.notifyObservers(registeredPlugin.plugin);
-            var dataCallback = function (data) {
+            SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
+            var dataCallback = function (data, responseURL) {
                 if (scene.isDisposed) {
                     onError("Scene has been disposed");
                     return;
                 }
                 scene.database = database;
                 try {
-                    onSuccess(plugin, data);
+                    onSuccess(plugin, data, responseURL);
                 }
                 catch (e) {
                     onError(null, e);
@@ -52611,7 +52617,7 @@ var BABYLON;
             };
             if (directLoad) {
                 dataCallback(directLoad);
-                return registeredPlugin.plugin;
+                return plugin;
             }
             if (rootUrl.indexOf("file:") === -1) {
                 if (scene.getEngine().enableOfflineSupport) {
@@ -52634,7 +52640,7 @@ var BABYLON;
                     onError("Unable to find file named " + sceneFilename);
                 }
             }
-            return registeredPlugin.plugin;
+            return plugin;
         };
         // Public functions
         SceneLoader.GetPluginForExtension = function (extension) {
@@ -52694,7 +52700,10 @@ var BABYLON;
                     onProgress(event);
                 }
             };
-            return SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data) {
+            return SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data, responseURL) {
+                if (plugin.rewriteRootURL) {
+                    rootUrl = plugin.rewriteRootURL(rootUrl, responseURL);
+                }
                 if (plugin.importMesh) {
                     var syncedPlugin = plugin;
                     var meshes = new Array();
@@ -52782,7 +52791,7 @@ var BABYLON;
                     onProgress(event);
                 }
             };
-            return SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data) {
+            return SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data, responseURL) {
                 if (plugin.load) {
                     var syncedPlugin = plugin;
                     if (!syncedPlugin.load(scene, data, rootUrl, errorHandler)) {
@@ -77008,7 +77017,10 @@ var BABYLON;
              * you wish in the ground reflection.
              */
             get: function () {
-                return this._groundMirror.renderList;
+                if (this._groundMirror) {
+                    return this._groundMirror.renderList;
+                }
+                return null;
             },
             enumerable: true,
             configurable: true
@@ -77550,6 +77562,9 @@ var BABYLON;
         };
         GLTFFileLoader.prototype.canDirectLoad = function (data) {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
+        };
+        GLTFFileLoader.prototype.createPlugin = function () {
+            return new GLTFFileLoader();
         };
         GLTFFileLoader._parse = function (data) {
             if (data instanceof ArrayBuffer) {

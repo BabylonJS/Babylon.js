@@ -55,6 +55,9 @@ var BABYLON;
         GLTFFileLoader.prototype.canDirectLoad = function (data) {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         };
+        GLTFFileLoader.prototype.createPlugin = function () {
+            return new GLTFFileLoader();
+        };
         GLTFFileLoader._parse = function (data) {
             if (data instanceof ArrayBuffer) {
                 return GLTFFileLoader._parseBinary(data);
