@@ -3671,18 +3671,7 @@ var INSPECTOR;
             _this._scene = _this._inspector.scene;
             _this._engine = _this._scene.getEngine();
             _this._glInfo = _this._engine.getGlInfo();
-            _this._sceneInstrumentation = new BABYLON.SceneInstrumentation(_this._scene);
-            _this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
-            _this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
-            _this._sceneInstrumentation.captureFrameTime = true;
-            _this._sceneInstrumentation.captureRenderTime = true;
-            _this._sceneInstrumentation.captureInterFrameTime = true;
-            _this._sceneInstrumentation.captureParticlesRenderTime = true;
-            _this._sceneInstrumentation.captureSpritesRenderTime = true;
-            _this._sceneInstrumentation.capturePhysicsTime = true;
-            _this._sceneInstrumentation.captureAnimationsTime = true;
-            _this._engineInstrumentation = new BABYLON.EngineInstrumentation(_this._engine);
-            _this._engineInstrumentation.captureGPUFrameTime = true;
+            _this._connectToInstrumentation();
             // Build the stats panel: a div that will contains all stats
             _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
             _this._panel.classList.add("stats-panel");
@@ -3947,6 +3936,23 @@ var INSPECTOR;
             }
             return _this;
         }
+        StatsTab.prototype._connectToInstrumentation = function () {
+            if (this._sceneInstrumentation) {
+                return;
+            }
+            this._sceneInstrumentation = new BABYLON.SceneInstrumentation(this._scene);
+            this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
+            this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
+            this._sceneInstrumentation.captureFrameTime = true;
+            this._sceneInstrumentation.captureRenderTime = true;
+            this._sceneInstrumentation.captureInterFrameTime = true;
+            this._sceneInstrumentation.captureParticlesRenderTime = true;
+            this._sceneInstrumentation.captureSpritesRenderTime = true;
+            this._sceneInstrumentation.capturePhysicsTime = true;
+            this._sceneInstrumentation.captureAnimationsTime = true;
+            this._engineInstrumentation = new BABYLON.EngineInstrumentation(this._engine);
+            this._engineInstrumentation.captureGPUFrameTime = true;
+        };
         StatsTab.prototype._createStatLabel = function (content, parent) {
             var elem = INSPECTOR.Helpers.CreateDiv('stat-label', parent);
             elem.textContent = content;
@@ -3962,10 +3968,14 @@ var INSPECTOR;
         StatsTab.prototype.dispose = function () {
             this._scene.unregisterAfterRender(this._updateLoopHandler);
             this._sceneInstrumentation.dispose();
+            this._sceneInstrumentation = null;
+            this._engineInstrumentation.dispose();
+            this._engineInstrumentation = null;
         };
         StatsTab.prototype.active = function (b) {
             _super.prototype.active.call(this, b);
             if (b) {
+                this._connectToInstrumentation();
                 this._scene.registerAfterRender(this._updateLoopHandler);
             }
         };

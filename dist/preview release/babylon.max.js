@@ -12987,6 +12987,7 @@ var BABYLON;
                 Y: 1,
                 Z: 1
             };
+            _this._facetDepthSort = false; // is the facet depth sort enabled
             // Normal matrix
             _this._nonUniformScaling = false;
             // Events
@@ -13190,6 +13191,35 @@ var BABYLON;
             },
             set: function (ratio) {
                 this._partitioningBBoxRatio = ratio;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "mustDepthSortFacets", {
+            /**
+             * Boolean : must the facet be depth sorted on next call to `updateFacetData()` ?
+             * Works only for updatable meshes.
+             */
+            get: function () {
+                return this._facetDepthSort;
+            },
+            set: function (sort) {
+                this._facetDepthSort = sort;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "facetDepthSortFrom", {
+            /**
+             * The location (Vector3) where the facet depth sort must be computed from.
+             * By default, the active camera position.
+             * Used only when facet depth sort is enabled.
+             */
+            get: function () {
+                return this._facetDepthSortFrom;
+            },
+            set: function (location) {
+                this._facetDepthSortFrom = location;
             },
             enumerable: true,
             configurable: true
@@ -14712,8 +14742,9 @@ var BABYLON;
          * By default, all the mesh children are also disposed unless the parameter `doNotRecurse` is set to `true`.
          * Returns nothing.
          */
-        AbstractMesh.prototype.dispose = function (doNotRecurse) {
+        AbstractMesh.prototype.dispose = function (doNotRecurse, disposeMaterialAndTextures) {
             var _this = this;
+            if (disposeMaterialAndTextures === void 0) { disposeMaterialAndTextures = false; }
             var index;
             // Action manager
             if (this.actionManager) {
@@ -14786,6 +14817,12 @@ var BABYLON;
             engine.wipeCaches();
             // Remove from scene
             this.getScene().removeMesh(this);
+            this._cache = null;
+            if (disposeMaterialAndTextures) {
+                if (this.material) {
+                    this.material.dispose(false, true);
+                }
+            }
             if (!doNotRecurse) {
                 // Particles
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
@@ -14955,7 +14992,7 @@ var BABYLON;
             if (!this._facetPartitioning) {
                 this._facetPartitioning = new Array();
             }
-            this._facetNb = this.getIndices().length / 3;
+            this._facetNb = (this.getIndices().length / 3) | 0;
             this._partitioningSubdivisions = (this._partitioningSubdivisions) ? this._partitioningSubdivisions : 10; // default nb of partitioning subdivisions = 10
             this._partitioningBBoxRatio = (this._partitioningBBoxRatio) ? this._partitioningBBoxRatio : 1.01; // default ratio 1.01 = the partitioning is 1% bigger than the bounding box
             for (var f = 0; f < this._facetNb; f++) {
@@ -14977,10 +15014,29 @@ var BABYLON;
             }
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = this.getIndices();
+            var indicesForComputeNormals = indices;
             var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
             if (!bInfo) {
                 return this;
+            }
+            if (this._facetDepthSort && !this._originalIndices) {
+                // init arrays, matrix and sort function on first call
+                this._originalIndices = new Uint32Array(indices);
+                this._facetDepthSortFunction = function (f1, f2) {
+                    return (f2.sqDistance - f1.sqDistance);
+                };
+                if (!this._facetDepthSortFrom) {
+                    var camera = this.getScene().activeCamera;
+                    this._facetDepthSortFrom = (camera) ? camera.position : BABYLON.Vector3.Zero();
+                }
+                this._depthSortedFacets = [];
+                for (var f = 0; f < this._facetNb; f++) {
+                    var depthSortedFacet = { ind: f * 3, sqDistance: 0.0 };
+                    this._depthSortedFacets.push(depthSortedFacet);
+                }
+                this._invertedMatrix = BABYLON.Matrix.Identity();
+                this._facetDepthSortOrigin = BABYLON.Vector3.Zero();
             }
             this._bbSize.x = (bInfo.maximum.x - bInfo.minimum.x > BABYLON.Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : BABYLON.Epsilon;
             this._bbSize.y = (bInfo.maximum.y - bInfo.minimum.y > BABYLON.Epsilon) ? bInfo.maximum.y - bInfo.minimum.y : BABYLON.Epsilon;
@@ -15002,7 +15058,26 @@ var BABYLON;
             this._facetParameters.bbSize = this._bbSize;
             this._facetParameters.subDiv = this._subDiv;
             this._facetParameters.ratio = this.partitioningBBoxRatio;
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
+            this._facetParameters.depthSort = this._facetDepthSort;
+            if (this._facetDepthSort) {
+                this.computeWorldMatrix(true);
+                this._worldMatrix.invertToRef(this._invertedMatrix);
+                BABYLON.Vector3.TransformCoordinatesToRef(this._facetDepthSortFrom, this._invertedMatrix, this._facetDepthSortOrigin);
+                this._facetParameters.distanceTo = this._facetDepthSortOrigin;
+                indicesForComputeNormals = this._originalIndices;
+            }
+            this._facetParameters.depthSortedFacets = this._depthSortedFacets;
+            BABYLON.VertexData.ComputeNormals(positions, indicesForComputeNormals, normals, this._facetParameters);
+            if (this._facetDepthSort) {
+                this._depthSortedFacets.sort(this._facetDepthSortFunction);
+                for (var sorted = 0; sorted < this._facetNb; sorted++) {
+                    var sind = this._depthSortedFacets[sorted].ind;
+                    indices[sorted * 3] = this._originalIndices[sind];
+                    indices[sorted * 3 + 1] = this._originalIndices[sind + 1];
+                    indices[sorted * 3 + 2] = this._originalIndices[sind + 2];
+                }
+                this.updateIndices(indices);
+            }
             return this;
         };
         /**
@@ -15185,13 +15260,18 @@ var BABYLON;
             if (this._facetDataEnabled) {
                 this._facetDataEnabled = false;
                 this._facetPositions = new Array();
-                ;
                 this._facetNormals = new Array();
-                ;
                 this._facetPartitioning = new Array();
-                ;
                 this._facetParameters = null;
+                this._originalIndices = new Uint32Array(0);
             }
+            return this;
+        };
+        /**
+         * Updates the AbstractMesh indices array. Actually, used by the Mesh object.
+         * Returns the mesh.
+         */
+        AbstractMesh.prototype.updateIndices = function (indices) {
             return this;
         };
         /**
@@ -17285,7 +17365,7 @@ var BABYLON;
             if (!material) {
                 return;
             }
-            if (material.needAlphaBlending() || material.needAlphaBlendingForMesh(mesh)) {
+            if (material.needAlphaBlendingForMesh(mesh)) {
                 this._transparentSubMeshes.push(subMesh);
             }
             else if (material.needAlphaTesting()) {
@@ -19113,6 +19193,17 @@ var BABYLON;
                 animatable.stop(animationName);
             }
         };
+        /**
+         * Stops and removes all animations that have been applied to the scene
+         */
+        Scene.prototype.stopAllAnimations = function () {
+            if (this._activeAnimatables) {
+                for (var i = 0; i < this._activeAnimatables.length; i++) {
+                    this._activeAnimatables[i].stop();
+                }
+                this._activeAnimatables = [];
+            }
+        };
         Scene.prototype._animate = function () {
             if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
@@ -20480,6 +20571,7 @@ var BABYLON;
             this.skeletons = [];
             this.morphTargetManagers = [];
             this.importedMeshesFiles = new Array();
+            this.stopAllAnimations();
             this.resetCachedMaterial();
             if (this._depthRenderer) {
                 this._depthRenderer.dispose();
@@ -23952,8 +24044,9 @@ var BABYLON;
          * Disposes the mesh.
          * This also frees the memory allocated under the hood to all the buffers used by WebGL.
          */
-        Mesh.prototype.dispose = function (doNotRecurse) {
+        Mesh.prototype.dispose = function (doNotRecurse, disposeMaterialAndTextures) {
             var _this = this;
+            if (disposeMaterialAndTextures === void 0) { disposeMaterialAndTextures = false; }
             this.morphTargetManager = null;
             if (this._geometry) {
                 this._geometry.releaseForMesh(this, true);
@@ -23983,7 +24076,7 @@ var BABYLON;
                     highlightLayer.removeExcludedMesh(this);
                 }
             }
-            _super.prototype.dispose.call(this, doNotRecurse);
+            _super.prototype.dispose.call(this, doNotRecurse, disposeMaterialAndTextures);
         };
         /**
          * Modifies the mesh geometry according to a displacement map.
@@ -27402,7 +27495,7 @@ var BABYLON;
             return (this.alpha < 1.0);
         };
         Material.prototype.needAlphaBlendingForMesh = function (mesh) {
-            return (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
+            return this.needAlphaBlending() || (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
         };
         Material.prototype.needAlphaTesting = function () {
             return false;
@@ -30146,6 +30239,10 @@ var BABYLON;
          * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
          * bbSize : optional bounding box size data, required for facetPartitioning computation
          * bInfo : optional bounding info, required for facetPartitioning computation
+         * useRightHandedSystem: optional boolean to for right handed system computation
+         * depthSort : optional boolean to enable the facet depth sort computation
+         * distanceTo : optional Vector3 to compute the facet depth from this location
+         * depthSortedFacets : optional array of depthSortedFacets to store the facet distances from the reference location
          */
         VertexData.ComputeNormals = function (positions, indices, normals, options) {
             // temporary scalar variables
@@ -30172,14 +30269,24 @@ var BABYLON;
             var computeFacetNormals = false;
             var computeFacetPositions = false;
             var computeFacetPartitioning = false;
+            var computeDepthSort = false;
             var faceNormalSign = 1;
             var ratio = 0;
+            var distanceTo = null;
             if (options) {
                 computeFacetNormals = (options.facetNormals) ? true : false;
                 computeFacetPositions = (options.facetPositions) ? true : false;
                 computeFacetPartitioning = (options.facetPartitioning) ? true : false;
                 faceNormalSign = (options.useRightHandedSystem === true) ? -1 : 1;
                 ratio = options.ratio || 0;
+                computeDepthSort = (options.depthSort) ? true : false;
+                distanceTo = (options.distanceTo);
+                if (computeDepthSort) {
+                    if (distanceTo === undefined) {
+                        distanceTo = BABYLON.Vector3.Zero();
+                    }
+                    var depthSortedFacets = options.depthSortedFacets;
+                }
             }
             // facetPartitioning reinit if needed
             var xSubRatio = 0;
@@ -30289,6 +30396,11 @@ var BABYLON;
                     if (!(block_idx_o == block_idx_v1 || block_idx_o == block_idx_v2 || block_idx_o == block_idx_v3)) {
                         options.facetPartitioning[block_idx_o].push(index);
                     }
+                }
+                if (computeDepthSort && options && options.facetPositions) {
+                    var dsf = depthSortedFacets[index];
+                    dsf.ind = index * 3;
+                    dsf.sqDistance = BABYLON.Vector3.DistanceSquared(options.facetPositions[index], distanceTo);
                 }
                 // compute the normals anyway
                 normals[v1x] += faceNormalx; // accumulate all the normals per face
@@ -35317,31 +35429,38 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(PBRBaseMaterial.prototype, "_disableAlphaBlending", {
+            /**
+             * Returns true if alpha blending should be disabled.
+             */
+            get: function () {
+                return (this._linkRefractionWithTransparency ||
+                    this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE ||
+                    this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
-         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         * Specifies whether or not this material should be rendered in alpha blend mode.
          */
         PBRBaseMaterial.prototype.needAlphaBlending = function () {
-            if (this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE ||
-                this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST) {
+            if (this._disableAlphaBlending) {
                 return false;
             }
-            return _super.prototype.needAlphaBlending.call(this);
+            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
         };
         /**
-         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         * Specifies whether or not this material should be rendered in alpha blend mode for the given mesh.
          */
         PBRBaseMaterial.prototype.needAlphaBlendingForMesh = function (mesh) {
-            if (this._linkRefractionWithTransparency) {
+            if (this._disableAlphaBlending) {
                 return false;
             }
-            if (this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE ||
-                this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST) {
-                return false;
-            }
-            return _super.prototype.needAlphaBlendingForMesh.call(this, mesh) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
+            return _super.prototype.needAlphaBlendingForMesh.call(this, mesh);
         };
         /**
-         * Specifies whether or not the meshes using this material should be rendered in alpha test mode.
+         * Specifies whether or not this material should be rendered in alpha test mode.
          */
         PBRBaseMaterial.prototype.needAlphaTesting = function () {
             if (this._forceAlphaTest) {
@@ -36094,7 +36213,7 @@ var BABYLON;
                 if (this._reflectionTexture) {
                     this._reflectionTexture.dispose();
                 }
-                if (this._environmentBRDFTexture) {
+                if (this._environmentBRDFTexture && this.getScene()._environmentBRDFTexture !== this._environmentBRDFTexture) {
                     this._environmentBRDFTexture.dispose();
                 }
                 if (this._emissiveTexture) {
