@@ -451,7 +451,7 @@
         }
 
         public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-            return (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
+            return this.needAlphaBlending() || (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
         }
 
         public needAlphaTesting(): boolean {

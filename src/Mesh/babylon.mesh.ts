@@ -1588,7 +1588,7 @@
          * Disposes the mesh.
          * This also frees the memory allocated under the hood to all the buffers used by WebGL.
          */
-        public dispose(doNotRecurse?: boolean): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures: boolean = false): void {
             this.morphTargetManager = null;
 
             if (this._geometry) {
@@ -1623,7 +1623,7 @@
                     highlightLayer.removeExcludedMesh(this);
                 }
             }
-            super.dispose(doNotRecurse);
+            super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
         /**
