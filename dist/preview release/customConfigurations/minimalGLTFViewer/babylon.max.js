@@ -14712,8 +14712,9 @@ var BABYLON;
          * By default, all the mesh children are also disposed unless the parameter `doNotRecurse` is set to `true`.
          * Returns nothing.
          */
-        AbstractMesh.prototype.dispose = function (doNotRecurse) {
+        AbstractMesh.prototype.dispose = function (doNotRecurse, disposeMaterialAndTextures) {
             var _this = this;
+            if (disposeMaterialAndTextures === void 0) { disposeMaterialAndTextures = false; }
             var index;
             // Action manager
             if (this.actionManager) {
@@ -14786,6 +14787,12 @@ var BABYLON;
             engine.wipeCaches();
             // Remove from scene
             this.getScene().removeMesh(this);
+            this._cache = null;
+            if (disposeMaterialAndTextures) {
+                if (this.material) {
+                    this.material.dispose(false, true);
+                }
+            }
             if (!doNotRecurse) {
                 // Particles
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
@@ -17285,7 +17292,7 @@ var BABYLON;
             if (!material) {
                 return;
             }
-            if (material.needAlphaBlending() || material.needAlphaBlendingForMesh(mesh)) {
+            if (material.needAlphaBlendingForMesh(mesh)) {
                 this._transparentSubMeshes.push(subMesh);
             }
             else if (material.needAlphaTesting()) {
@@ -23952,8 +23959,9 @@ var BABYLON;
          * Disposes the mesh.
          * This also frees the memory allocated under the hood to all the buffers used by WebGL.
          */
-        Mesh.prototype.dispose = function (doNotRecurse) {
+        Mesh.prototype.dispose = function (doNotRecurse, disposeMaterialAndTextures) {
             var _this = this;
+            if (disposeMaterialAndTextures === void 0) { disposeMaterialAndTextures = false; }
             this.morphTargetManager = null;
             if (this._geometry) {
                 this._geometry.releaseForMesh(this, true);
@@ -23983,7 +23991,7 @@ var BABYLON;
                     highlightLayer.removeExcludedMesh(this);
                 }
             }
-            _super.prototype.dispose.call(this, doNotRecurse);
+            _super.prototype.dispose.call(this, doNotRecurse, disposeMaterialAndTextures);
         };
         /**
          * Modifies the mesh geometry according to a displacement map.
@@ -27402,7 +27410,7 @@ var BABYLON;
             return (this.alpha < 1.0);
         };
         Material.prototype.needAlphaBlendingForMesh = function (mesh) {
-            return (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
+            return this.needAlphaBlending() || (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
         };
         Material.prototype.needAlphaTesting = function () {
             return false;
@@ -35317,31 +35325,38 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(PBRBaseMaterial.prototype, "_disableAlphaBlending", {
+            /**
+             * Returns true if alpha blending should be disabled.
+             */
+            get: function () {
+                return (this._linkRefractionWithTransparency ||
+                    this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE ||
+                    this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
-         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         * Specifies whether or not this material should be rendered in alpha blend mode.
          */
         PBRBaseMaterial.prototype.needAlphaBlending = function () {
-            if (this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE ||
-                this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST) {
+            if (this._disableAlphaBlending) {
                 return false;
             }
-            return _super.prototype.needAlphaBlending.call(this);
+            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
         };
         /**
-         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         * Specifies whether or not this material should be rendered in alpha blend mode for the given mesh.
          */
         PBRBaseMaterial.prototype.needAlphaBlendingForMesh = function (mesh) {
-            if (this._linkRefractionWithTransparency) {
+            if (this._disableAlphaBlending) {
                 return false;
             }
-            if (this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE ||
-                this._transparencyMode === BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST) {
-                return false;
-            }
-            return _super.prototype.needAlphaBlendingForMesh.call(this, mesh) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
+            return _super.prototype.needAlphaBlendingForMesh.call(this, mesh);
         };
         /**
-         * Specifies whether or not the meshes using this material should be rendered in alpha test mode.
+         * Specifies whether or not this material should be rendered in alpha test mode.
          */
         PBRBaseMaterial.prototype.needAlphaTesting = function () {
             if (this._forceAlphaTest) {
@@ -36094,7 +36109,7 @@ var BABYLON;
                 if (this._reflectionTexture) {
                     this._reflectionTexture.dispose();
                 }
-                if (this._environmentBRDFTexture) {
+                if (this._environmentBRDFTexture && this.getScene()._environmentBRDFTexture !== this._environmentBRDFTexture) {
                     this._environmentBRDFTexture.dispose();
                 }
                 if (this._emissiveTexture) {

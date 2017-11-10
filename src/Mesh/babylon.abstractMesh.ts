@@ -1888,7 +1888,7 @@
          * By default, all the mesh children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
          * Returns nothing.  
          */
-        public dispose(doNotRecurse?: boolean): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures: boolean = false): void {
             var index: number;
 
             // Action manager
@@ -1983,6 +1983,13 @@
 
             // Remove from scene
             this.getScene().removeMesh(this);
+
+            this._cache = null;
+            if (disposeMaterialAndTextures) {
+                if (this.material) {
+                    this.material.dispose(false, true);
+                }
+            }
 
             if (!doNotRecurse) {
                 // Particles
