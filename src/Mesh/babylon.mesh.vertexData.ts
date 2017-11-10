@@ -2216,9 +2216,14 @@
          * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
          * bbSize : optional bounding box size data, required for facetPartitioning computation
          * bInfo : optional bounding info, required for facetPartitioning computation
+         * useRightHandedSystem: optional boolean to for right handed system computation
+         * depthSort : optional boolean to enable the facet depth sort computation
+         * distanceTo : optional Vector3 to compute the facet depth from this location
+         * depthSortedFacets : optional array of depthSortedFacets to store the facet distances from the reference location
          */
         public static ComputeNormals(positions: any, indices: any, normals: any,
-            options?: { facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any, useRightHandedSystem?: boolean }): void {
+            options?: { facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any, 
+                useRightHandedSystem?: boolean, depthSort?: boolean, distanceTo?: Vector3, depthSortedFacets?: any }): void {
 
             // temporary scalar variables
             var index = 0;                      // facet index     
@@ -2244,14 +2249,24 @@
             var computeFacetNormals = false;
             var computeFacetPositions = false;
             var computeFacetPartitioning = false;
+            var computeDepthSort = false;
             var faceNormalSign = 1;
             let ratio = 0;
+            var distanceTo: Nullable<Vector3> = null;
             if (options) {
                 computeFacetNormals = (options.facetNormals) ? true : false;
                 computeFacetPositions = (options.facetPositions) ? true : false;
                 computeFacetPartitioning = (options.facetPartitioning) ? true : false;
                 faceNormalSign = (options.useRightHandedSystem === true) ? -1 : 1;
                 ratio = options.ratio || 0;
+                computeDepthSort = (options.depthSort) ? true : false;
+                distanceTo = <Vector3>(options.distanceTo);
+                if (computeDepthSort) {
+                    if (distanceTo === undefined) {
+                        distanceTo = Vector3.Zero();
+                    } 
+                    var depthSortedFacets = options.depthSortedFacets;
+                }
             }
 
             // facetPartitioning reinit if needed
@@ -2375,6 +2390,12 @@
                     if (!(block_idx_o == block_idx_v1 || block_idx_o == block_idx_v2 || block_idx_o == block_idx_v3)) {
                         options.facetPartitioning[block_idx_o].push(index);
                     }
+                }
+
+                if (computeDepthSort && options && options.facetPositions) {
+                    var dsf = depthSortedFacets[index];
+                    dsf.ind = index * 3;
+                    dsf.sqDistance = Vector3.DistanceSquared(options.facetPositions[index], distanceTo!)
                 }
 
                 // compute the normals anyway
