@@ -81,9 +81,18 @@ module BABYLON.GUI {
             if (this._processMeasures(parentMeasure, context)) {
                 let actualWidth = this._currentMeasure.width - this._thickness;
                 let actualHeight = this._currentMeasure.height - this._thickness;
+
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
                 
                 context.fillStyle = this._background;
                 context.fillRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, actualWidth, actualHeight);   
+
+                context.shadowBlur = 0;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 0;
 
                 if (this._isChecked) {
                     context.fillStyle = this.color;

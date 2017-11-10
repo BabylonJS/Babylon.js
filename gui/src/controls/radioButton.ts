@@ -102,12 +102,21 @@ module BABYLON.GUI {
                 let actualWidth = this._currentMeasure.width - this._thickness;
                 let actualHeight = this._currentMeasure.height - this._thickness;
 
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
+                
                 // Outer
                 Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
                             this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                 
                 context.fillStyle = this._background;
                 context.fill();
+
+                context.shadowBlur = 0;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 0;
 
                 context.strokeStyle = this.color;
                 context.lineWidth = this._thickness;
