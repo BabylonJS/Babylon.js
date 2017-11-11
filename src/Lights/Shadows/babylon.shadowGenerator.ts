@@ -605,21 +605,26 @@
         public forceCompilation(onCompiled: (generator: ShadowGenerator) => void, options?: { useInstances: boolean }): void {
             let shadowMap = this.getShadowMap();
             if (!shadowMap) {
+                onCompiled(this);
+                return;
+            }
+
+            let renderList = shadowMap.renderList;
+            if (!renderList) {
+                onCompiled(this);
                 return;
             }
 
             var subMeshes = new Array<SubMesh>();
-            var currentIndex = 0;
-
-            let renderList = shadowMap.renderList;
-
-            if (!renderList) {
-                return;
-            }
-
             for (var mesh of renderList) {
                 subMeshes.push(...mesh.subMeshes);
             }
+            if (subMeshes.length === 0) {
+                onCompiled(this);
+                return;
+            }
+
+            var currentIndex = 0;
 
             var checkReady = () => {
                 if (!this._scene || !this._scene.getEngine()) {
@@ -629,18 +634,14 @@
                 while (this.isReady(subMeshes[currentIndex], options ? options.useInstances : false)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
-                        if (onCompiled) {
-                            onCompiled(this);
-                        }
+                        onCompiled(this);
                         return;
                     }
                 }
                 setTimeout(checkReady, 16);
             };
 
-            if (subMeshes.length > 0) {
-                checkReady();
-            }
+            checkReady();
         }
 
         /**

@@ -419,20 +419,34 @@ module BABYLON.GLTF2 {
                             this._parent.onMaterialLoaded(babylonMaterial);
                         }
 
-                        if (this._parent.onBeforeMaterialReadyAsync) {
-                            this._addLoaderPendingData(material);
-                            this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[index] != null, () => {
-                                this._tryCatchOnError(() => {
-                                    subMaterials[index] = babylonMaterial;
-                                    this._removeLoaderPendingData(material);
-                                });
-                            });
-                        } else {
+                        this._addPendingData(material);
+                        this._compileMaterialAsync(babylonMaterial, node.babylonMesh, () => {
                             subMaterials[index] = babylonMaterial;
-                        }
+                            this._removePendingData(material);
+                        });
                     });
                 }
             };
+        }
+
+        private _compileMaterialAsync(babylonMaterial: Material, babylonMesh: Mesh, onSuccess: () => void): void {
+            if (!this._parent.compileMaterials) {
+                onSuccess();
+                return;
+            }
+
+            if (this._parent.useClipPlane) {
+                babylonMaterial.forceCompilation(babylonMesh, () => {
+                    babylonMaterial.forceCompilation(babylonMesh, () => {
+                        this._tryCatchOnError(onSuccess);
+                    }, { clipPlane: true });
+                });
+            }
+            else {
+                babylonMaterial.forceCompilation(babylonMesh, () => {
+                    this._tryCatchOnError(onSuccess);
+                });
+            }
         }
 
         private _loadAllVertexDataAsync(context: string, mesh: IGLTFMesh, onSuccess: () => void): void {
@@ -1212,8 +1226,10 @@ module BABYLON.GLTF2 {
         public _removePendingData(data: any): void {
             if (!this._renderReady) {
                 if (--this._renderPendingCount === 0) {
-                    this._renderReady = true;
-                    this._onRenderReady();
+                    this._compileShadowGeneratorsAsync(() => {
+                        this._renderReady = true;
+                        this._onRenderReady();
+                    });
                 }
             }
 
@@ -1251,6 +1267,39 @@ module BABYLON.GLTF2 {
             action();
 
             this._removeLoaderPendingData(tracker);
+        }
+
+        private _compileShadowGeneratorsAsync(onSuccess: () => void): void {
+            if (!this._parent.compileShadowGenerators) {
+                onSuccess();
+                return;
+            }
+
+            let lights = this._babylonScene.lights;
+
+            let remaining = lights.length;
+            for (let light of lights) {
+                let generator = light.getShadowGenerator();
+                if (!generator) {
+                    --remaining;
+                }
+            }
+
+            if (remaining === 0) {
+                onSuccess();
+                return;
+            }
+
+            for (let light of lights) {
+                let generator = light.getShadowGenerator();
+                if (generator) {
+                    generator.forceCompilation(() => {
+                        if (--remaining === 0) {
+                            this._tryCatchOnError(onSuccess);
+                        }
+                    });
+                }
+            }
         }
 
         private _getDefaultMaterial(): Material {
