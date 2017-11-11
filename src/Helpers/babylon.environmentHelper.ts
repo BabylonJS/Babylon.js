@@ -150,6 +150,12 @@ namespace BABYLON {
         toneMappingEnabled: boolean;
     }
 
+    interface ISceneSize {
+        groundSize: number,
+        skyboxSize: number,
+        rootPosition: Vector3
+    }
+
     /**
      * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
      * It includes by default a skybox and a ground relying on the BackgroundMaterial.
@@ -180,8 +186,8 @@ namespace BABYLON {
                 createGround: true,
                 groundSize: 15,
                 groundTexture: this._groundTextureCDNUrl,
-                groundColor: new BABYLON.Color3(0.2, 0.2, 0.3),
-                groundOpacity: 1,
+                groundColor: new BABYLON.Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
+                groundOpacity: 0.85,
                 enableGroundShadow: true,
                 groundShadowLevel: 0.5,
 
@@ -196,7 +202,7 @@ namespace BABYLON {
                 createSkybox: true,
                 skyboxSize: 20,
                 skyboxTexture: this._skyboxTextureCDNUrl,
-                skyboxColor: new BABYLON.Color3(0.2, 0.2, 0.3),
+                skyboxColor: new BABYLON.Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
 
                 backgroundYRotation: 0,
                 sizeAuto: true,
@@ -204,7 +210,7 @@ namespace BABYLON {
                 setupImageProcessing: true,
                 environmentTexture: this._environmentTextureCDNUrl,
                 cameraExposure: 0.8,
-                cameraContrast: 1.6,
+                cameraContrast: 1.2,
                 toneMappingEnabled: true,
             };
         }
@@ -416,8 +422,9 @@ namespace BABYLON {
             }
             this._rootMesh.rotation.y = this._options.backgroundYRotation;
 
+            const sceneSize = this._getSceneSize();
             if (this._options.createGround) {
-                this._setupGround();
+                this._setupGround(sceneSize);
                 this._setupGroundMaterial();
                 this._setupGroundDiffuseTexture();
 
@@ -428,30 +435,62 @@ namespace BABYLON {
             }
 
             if (this._options.createSkybox) {
-                this._setupSkybox();
+                this._setupSkybox(sceneSize);
                 this._setupSkyboxMaterial();
                 this._setupSkyboxReflectionTexture();
             }
+
+            this._rootMesh.position.x = sceneSize.rootPosition.x;
+            this._rootMesh.position.z = sceneSize.rootPosition.z;
+            this._rootMesh.position.y = sceneSize.rootPosition.y;
+        }
+
+        /**
+         * Get the scene sizes according to the setup.
+         */
+        private _getSceneSize(): ISceneSize {
+            let groundSize = this._options.groundSize;
+            let skyboxSize = this._options.skyboxSize;
+            const sceneExtends = this._scene.getWorldExtends();
+            const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
+            const rootPosition = sceneExtends.min.add(sceneDiagonal.scale(0.5));
+            let bias = 0.0001;
+
+            if (this._options.sizeAuto) {
+                if (this._scene.activeCamera instanceof ArcRotateCamera &&
+                    this._scene.activeCamera.upperRadiusLimit) {
+                    groundSize = this._scene.activeCamera.upperRadiusLimit * 2;
+                }
+
+                if (this._scene.activeCamera) {
+                    bias = (this._scene.activeCamera.maxZ - this._scene.activeCamera.minZ) / 10000;
+                }
+
+                const sceneDiagonalLenght = sceneDiagonal.length();
+                if (sceneDiagonalLenght > groundSize) {
+                    groundSize = sceneDiagonalLenght * 2;
+                }
+
+                // 10 % bigger.
+                groundSize *= 1.1;
+                skyboxSize *= 1.5;
+            }
+            rootPosition.y = sceneExtends.min.y - bias;
+
+            return { groundSize, skyboxSize, rootPosition };
         }
 
         /**
          * Setup the ground according to the specified options.
          */
-        private _setupGround(): void {
+        private _setupGround(sceneSize: ISceneSize): void {
             if (!this._ground) {
-                let size = this._options.groundSize;
-                if (this._options.sizeAuto) {
-                    if (this._scene.activeCamera instanceof ArcRotateCamera &&
-                        this._scene.activeCamera.upperRadiusLimit) {
-                        size = this._scene.activeCamera.upperRadiusLimit * 0.9;
-                    }
-                }
-                this._ground = Mesh.CreatePlane("BackgroundPlane", size, this._scene);
+                this._ground = Mesh.CreatePlane("BackgroundPlane", sceneSize.groundSize, this._scene);
+                this._ground.rotation.x = Math.PI / 2; // Face up by default.
+                this._ground.parent = this._rootMesh;
             }
             
-            this._ground.rotation.x = Math.PI / 2; // Face up by default.
             this._ground.receiveShadows = this._options.enableGroundShadow;
-            this._ground.parent = this._rootMesh;
         }
 
         /**
@@ -469,6 +508,7 @@ namespace BABYLON {
             this._groundMaterial.secondaryLevel = 0;
             this._groundMaterial.tertiaryLevel = 0;
             this._groundMaterial.useRGBColor = false;
+            this._groundMaterial.enableNoise = true;
             
             if (this._ground) {
                 this._ground.material = this._groundMaterial;
@@ -515,6 +555,7 @@ namespace BABYLON {
                 this._groundMirror.anisotropicFilteringLevel = 1;
                 this._groundMirror.wrapU = wrapping;
                 this._groundMirror.wrapV = wrapping;
+                this._groundMirror.gammaSpace = false;
             }
             
             this._groundMirror.clearColor = new BABYLON.Color4(
@@ -541,16 +582,9 @@ namespace BABYLON {
         /**
          * Setup the skybox according to the specified options.
          */
-        private _setupSkybox(): void {
+        private _setupSkybox(sceneSize: ISceneSize): void {
             if (!this._skybox) {
-                let size = this._options.skyboxSize;
-                if (this._options.sizeAuto) {
-                    if (this._scene.activeCamera instanceof ArcRotateCamera &&
-                        this._scene.activeCamera.upperRadiusLimit) {
-                        size = this._scene.activeCamera.upperRadiusLimit;
-                    }
-                }
-                this._skybox = Mesh.CreateBox("BackgroundSkybox", size, this._scene, undefined, BABYLON.Mesh.BACKSIDE);
+                this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, BABYLON.Mesh.BACKSIDE);
             }
             this._skybox.parent = this._rootMesh;
         }
@@ -571,6 +605,7 @@ namespace BABYLON {
             this._skyboxMaterial.primaryColor = this._options.skyboxColor;
             this._skyboxMaterial.secondaryLevel = 0;
             this._skyboxMaterial.tertiaryLevel = 0;
+            this._skyboxMaterial.enableNoise = true;
 
             this._skybox.material = this._skyboxMaterial;
         }
