@@ -118,6 +118,11 @@ namespace BABYLON {
         sizeAuto: boolean;
 
         /**
+         * Default position of the rootMesh if autoSize is not true.
+         */
+        rootPosition: Vector3;
+
+        /**
          * Sets up the inmage processing in the scene.
          * true by default.
          */
@@ -206,6 +211,7 @@ namespace BABYLON {
 
                 backgroundYRotation: 0,
                 sizeAuto: true,
+                rootPosition: Vector3.Zero(),
 
                 setupImageProcessing: true,
                 environmentTexture: this._environmentTextureCDNUrl,
@@ -451,9 +457,9 @@ namespace BABYLON {
         private _getSceneSize(): ISceneSize {
             let groundSize = this._options.groundSize;
             let skyboxSize = this._options.skyboxSize;
+            let rootPosition = this._options.rootPosition;
             const sceneExtends = this._scene.getWorldExtends();
             const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
-            const rootPosition = sceneExtends.min.add(sceneDiagonal.scale(0.5));
             let bias = 0.0001;
 
             if (this._options.sizeAuto) {
@@ -474,8 +480,9 @@ namespace BABYLON {
                 // 10 % bigger.
                 groundSize *= 1.1;
                 skyboxSize *= 1.5;
+                rootPosition = sceneExtends.min.add(sceneDiagonal.scale(0.5));
+                rootPosition.y = sceneExtends.min.y - bias;
             }
-            rootPosition.y = sceneExtends.min.y - bias;
 
             return { groundSize, skyboxSize, rootPosition };
         }

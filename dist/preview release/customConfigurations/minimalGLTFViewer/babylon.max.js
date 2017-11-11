@@ -76946,6 +76946,7 @@ var BABYLON;
                 skyboxColor: new BABYLON.Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
                 backgroundYRotation: 0,
                 sizeAuto: true,
+                rootPosition: BABYLON.Vector3.Zero(),
                 setupImageProcessing: true,
                 environmentTexture: this._environmentTextureCDNUrl,
                 cameraExposure: 0.8,
@@ -77160,9 +77161,9 @@ var BABYLON;
         EnvironmentHelper.prototype._getSceneSize = function () {
             var groundSize = this._options.groundSize;
             var skyboxSize = this._options.skyboxSize;
+            var rootPosition = this._options.rootPosition;
             var sceneExtends = this._scene.getWorldExtends();
             var sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
-            var rootPosition = sceneExtends.min.add(sceneDiagonal.scale(0.5));
             var bias = 0.0001;
             if (this._options.sizeAuto) {
                 if (this._scene.activeCamera instanceof BABYLON.ArcRotateCamera &&
@@ -77179,8 +77180,9 @@ var BABYLON;
                 // 10 % bigger.
                 groundSize *= 1.1;
                 skyboxSize *= 1.5;
+                rootPosition = sceneExtends.min.add(sceneDiagonal.scale(0.5));
+                rootPosition.y = sceneExtends.min.y - bias;
             }
-            rootPosition.y = sceneExtends.min.y - bias;
             return { groundSize: groundSize, skyboxSize: skyboxSize, rootPosition: rootPosition };
         };
         /**
