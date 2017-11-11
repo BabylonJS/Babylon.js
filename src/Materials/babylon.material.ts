@@ -565,7 +565,7 @@
         /**
          * Force shader compilation including textures ready check
          */
-        public forceCompilation(mesh: AbstractMesh, onCompiled: (material: Material) => void, options?: { alphaTest: boolean, clipPlane: boolean }): void {
+        public forceCompilation(mesh: AbstractMesh, onCompiled: (material: Material) => void, options?: { alphaTest?: boolean, clipPlane?: boolean }): void {
             var subMesh = new BaseSubMesh();
             var scene = this.getScene();
             var engine = scene.getEngine();
@@ -582,7 +582,7 @@
                 var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
 
-                engine.setAlphaTesting(options ? options.alphaTest : this.needAlphaTesting());
+                engine.setAlphaTesting((options && options.alphaTest != null) ? options.alphaTest : !this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
 
                 if (options && options.clipPlane) {
                     scene.clipPlane = new Plane(0, 0, 0, 1);
