@@ -192,7 +192,7 @@ namespace BABYLON {
                 groundSize: 15,
                 groundTexture: this._groundTextureCDNUrl,
                 groundColor: new BABYLON.Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
-                groundOpacity: 0.85,
+                groundOpacity: 0.9,
                 enableGroundShadow: true,
                 groundShadowLevel: 0.5,
 
@@ -435,7 +435,7 @@ namespace BABYLON {
                 this._setupGroundDiffuseTexture();
 
                 if (this._options.enableGroundMirror) {
-                    this._setupGroundMirrorTexture();
+                    this._setupGroundMirrorTexture(sceneSize);
                     this._setupMirrorInGroundMaterial();
                 }
             }
@@ -548,7 +548,7 @@ namespace BABYLON {
         /**
          * Setup the ground mirror texture according to the specified options.
          */
-        private _setupGroundMirrorTexture(): void {
+        private _setupGroundMirrorTexture(sceneSize: ISceneSize): void {
             let wrapping = BABYLON.Texture.CLAMP_ADDRESSMODE;
             if (!this._groundMirror) {
                 this._groundMirror = new BABYLON.MirrorTexture("BackgroundPlaneMirrorTexture", 
@@ -558,11 +558,22 @@ namespace BABYLON {
                     this._options.groundMirrorTextureType,
                     BABYLON.Texture.BILINEAR_SAMPLINGMODE,
                     true);
-                this._groundMirror.mirrorPlane = new BABYLON.Plane(0, -1, 0, 0);
+                this._groundMirror.mirrorPlane = new BABYLON.Plane(0, -1, 0, sceneSize.rootPosition.y);
                 this._groundMirror.anisotropicFilteringLevel = 1;
                 this._groundMirror.wrapU = wrapping;
                 this._groundMirror.wrapV = wrapping;
                 this._groundMirror.gammaSpace = false;
+
+                if (this._groundMirror.renderList) {
+                    for (let i = 0; i < this._scene.meshes.length; i++) {
+                        const mesh = this._scene.meshes[i];
+                        if (mesh !== this._ground && 
+                            mesh !== this._skybox &&
+                            mesh !== this._rootMesh) {
+                            this._groundMirror.renderList.push(mesh);
+                        }
+                    }
+                }
             }
             
             this._groundMirror.clearColor = new BABYLON.Color4(
