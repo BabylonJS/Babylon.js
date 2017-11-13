@@ -1073,26 +1073,17 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Uri is missing");
                 }
 
-                if (GLTFUtils.IsBase64(buffer.uri)) {
-                    const data = GLTFUtils.DecodeBase64(buffer.uri);
-                    buffer.loadedData = new Uint8Array(data);
-                    onSuccess(buffer.loadedData);
+                buffer.loadedObservable = new Observable<IGLTFBuffer>();
+                buffer.loadedObservable.add(buffer => {
+                    onSuccess(buffer.loadedData!);
                     this._removePendingData(buffer);
-                }
-                else {
+                });
 
-                    buffer.loadedObservable = new Observable<IGLTFBuffer>();
-                    buffer.loadedObservable.add(buffer => {
-                        onSuccess(buffer.loadedData!);
-                        this._removePendingData(buffer);
-                    });
-
-                    this._loadUri(context, buffer.uri, data => {
-                        buffer.loadedData = data;
-                        buffer.loadedObservable!.notifyObservers(buffer);
-                        buffer.loadedObservable = undefined;
-                    });
-                }
+                this._loadUriAsync(context, buffer.uri, data => {
+                    buffer.loadedData = data;
+                    buffer.loadedObservable!.notifyObservers(buffer);
+                    buffer.loadedObservable = undefined;
+                });
             }
         }
 
@@ -1464,7 +1455,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find source " + texture.source);
                 }
 
-                this._loadImage("#/images/" + image.index, image, data => {
+                this._loadImageAsync("#/images/" + image.index, image, data => {
                     texture.url = URL.createObjectURL(new Blob([data], { type: image.mimeType }));
                     texture.dataReadyObservable!.notifyObservers(texture);
                     texture.dataReadyObservable = undefined;
@@ -1483,14 +1474,9 @@ module BABYLON.GLTF2 {
             return babylonTexture;
         }
 
-        private _loadImage(context: string, image: IGLTFImage, onSuccess: (data: ArrayBufferView) => void): void {
+        private _loadImageAsync(context: string, image: IGLTFImage, onSuccess: (data: ArrayBufferView) => void): void {
             if (image.uri) {
-                if (GLTFUtils.IsBase64(image.uri)) {
-                    onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(image.uri)));
-                }
-                else {
-                    this._loadUri(context, image.uri, onSuccess);
-                }
+                this._loadUriAsync(context, image.uri, onSuccess);
             }
             else {
                 const bufferView = GLTFLoader._GetProperty(this._gltf.bufferViews, image.bufferView);
@@ -1502,7 +1488,12 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public _loadUri(context: string, uri: string, onSuccess: (data: ArrayBufferView) => void): void {
+        public _loadUriAsync(context: string, uri: string, onSuccess: (data: ArrayBufferView) => void): void {
+            if (GLTFUtils.IsBase64(uri)) {
+                onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(uri)));
+                return;
+            }
+
             if (!GLTFUtils.ValidateUri(uri)) {
                 throw new Error(context + ": Uri '" + uri + "' is invalid");
             }
