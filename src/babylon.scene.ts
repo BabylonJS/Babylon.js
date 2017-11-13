@@ -4376,8 +4376,8 @@
             return null;
         }
 
-        public createDefaultVRExperience(webVROptions: WebVROptions = {}) {
-            this.VRHelper = new BABYLON.VRExperienceHelper(this, webVROptions);
+        public createDefaultVRExperience(webVROptions: WebVROptions = {}): VRExperienceHelper {
+            return new BABYLON.VRExperienceHelper(this, webVROptions);
         }
 
         // Tags
