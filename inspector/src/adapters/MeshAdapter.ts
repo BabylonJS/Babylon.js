@@ -6,9 +6,10 @@ module INSPECTOR {
 
         /** Keep track of the axis of the actual object */
         private _axesViewer: BABYLON.Nullable<BABYLON.Debug.AxesViewer>;
+        private onBeforeRenderObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Scene>>;
 
-        constructor(obj: BABYLON.AbstractMesh) {
-            super(obj);
+        constructor(mesh: BABYLON.AbstractMesh) {
+            super(mesh);
         }
 
         /** Returns the name displayed in the tree */
@@ -56,13 +57,15 @@ module INSPECTOR {
             return (this._obj as BABYLON.AbstractMesh).showBoundingBox = b;
         }
 
-        public debug(b: boolean) {
+        public debug(enable: boolean) {
             // Draw axis the first time
             if (!this._axesViewer) {
                  this._drawAxis();
             }
             // Display or hide axis
-            if (!b && this._axesViewer) {
+            if (!enable && this._axesViewer) {
+                let mesh = this._obj as BABYLON.AbstractMesh;
+                mesh.getScene().onBeforeRenderObservable.remove(this.onBeforeRenderObserver);
                 this._axesViewer.dispose();
                 this._axesViewer = null;
             }
@@ -79,15 +82,21 @@ module INSPECTOR {
         private _drawAxis() {
             this._obj.computeWorldMatrix();
 
-            let mesh = this._obj as BABYLON.AbstractMesh;
+            let mesh = this._obj as BABYLON.Mesh;
 
             // Axis
-            var x = new BABYLON.Vector3(8 / Math.abs(mesh.scaling.x), 0, 0);
-            var y = new BABYLON.Vector3(0, 8 / Math.abs(mesh.scaling.y), 0);
-            var z = new BABYLON.Vector3(0, 0, 8 / Math.abs(mesh.scaling.z));
+            var x = new BABYLON.Vector3(1, 0, 0);
+            var y = new BABYLON.Vector3(0, 1, 0);
+            var z = new BABYLON.Vector3(0, 0, 1);
 
             this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
-            this._axesViewer.update(this._obj.position, x, y, z);
+
+            this.onBeforeRenderObserver = mesh.getScene().onBeforeRenderObservable.add(() => {
+                let matrix = mesh.getWorldMatrix();
+                let extend = mesh.getBoundingInfo()!.boundingBox.extendSizeWorld;
+                this._axesViewer!.scaleLines = Math.max(extend.x, extend.y, extend.z) * 2;
+                this._axesViewer!.update(this._obj.position, BABYLON.Vector3.TransformNormal(x, matrix), BABYLON.Vector3.TransformNormal(y, matrix), BABYLON.Vector3.TransformNormal(z, matrix));
+            });
         }
     }
 }
