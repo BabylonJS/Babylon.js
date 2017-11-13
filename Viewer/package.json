@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-viewer",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "A viewer using BabylonJS to display 3D elements natively",
     "scripts": {
         "start:server": "webpack-dev-server",
