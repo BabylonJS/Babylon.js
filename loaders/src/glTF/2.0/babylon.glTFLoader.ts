@@ -33,6 +33,11 @@ module BABYLON.GLTF2 {
         readonly BYTES_PER_ELEMENT: number;
     }
 
+    interface GLTFLoaderRequest extends XMLHttpRequest {
+        _loaded: Nullable<number>;
+        _total: Nullable<number>;
+    }
+
     export class GLTFLoader implements IGLTFLoader {
         public _gltf: IGLTF;
         public _babylonScene: Scene;
@@ -46,7 +51,7 @@ module BABYLON.GLTF2 {
         private _progressCallback: (event: ProgressEvent) => void;
         private _errorCallback: (message: string) => void;
         private _renderReady = false;
-        private _requests = new Array<XMLHttpRequest>();
+        private _requests = new Array<GLTFLoaderRequest>();
 
         private _renderReadyObservable = new Observable<GLTFLoader>();
 
@@ -127,10 +132,27 @@ module BABYLON.GLTF2 {
             });
         }
 
-        private _onProgress(event: ProgressEvent): void {
-            if (this._progressCallback) {
-                this._progressCallback(event);
+        private _onProgress(): void {
+            if (!this._progressCallback) {
+                return;
             }
+
+            let loaded = 0;
+            let total = 0;
+            for (let request of this._requests) {
+                if (!request._loaded || !request._total) {
+                    return;
+                }
+
+                loaded += request._loaded;
+                total += request._total;
+            }
+
+            this._progressCallback(new ProgressEvent("GLTFLoaderProgress", {
+                lengthComputable: true,
+                loaded: loaded,
+                total: total
+            }));
         }
 
         public _executeWhenRenderReady(func: () => void): void {
@@ -1238,7 +1260,7 @@ module BABYLON.GLTF2 {
             this._loaderTrackers.push(tracker);
 
             this._addLoaderPendingData(tracker);
-
+            
             action();
 
             this._removeLoaderPendingData(tracker);
@@ -1504,15 +1526,21 @@ module BABYLON.GLTF2 {
                 });
             }, event => {
                 this._tryCatchOnError(() => {
-                    this._onProgress(event);
+                    if (request && !this._renderReady) {
+                        request._loaded = event.loaded;
+                        request._total = event.total;
+                        this._onProgress();
+                    }
                 });
             }, this._babylonScene.database, true, request => {
                 this._tryCatchOnError(() => {
                     throw new Error(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""));
                 });
-            });
+            }) as GLTFLoaderRequest;
 
             if (request) {
+                request._loaded = null;
+                request._total = null;
                 this._requests.push(request);
             }
         }
