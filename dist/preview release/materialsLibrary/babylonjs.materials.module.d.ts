@@ -491,6 +491,7 @@ declare module BABYLON {
          * Returns wehter or not the grid requires alpha blending.
          */
         needAlphaBlending(): boolean;
+        needAlphaBlendingForMesh(mesh: AbstractMesh): boolean;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         dispose(forceDisposeEffect?: boolean): void;

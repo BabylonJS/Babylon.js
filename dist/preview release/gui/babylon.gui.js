@@ -154,6 +154,25 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "isForeground", {
+                get: function () {
+                    if (!this.layer) {
+                        return true;
+                    }
+                    return (!this.layer.isBackground);
+                },
+                set: function (value) {
+                    if (!this.layer) {
+                        return;
+                    }
+                    if (this.layer.isBackground === !value) {
+                        return;
+                    }
+                    this.layer.isBackground = !value;
+                },
+                enumerable: true,
+                configurable: true
+            });
             AdvancedDynamicTexture.prototype.executeOnAllControls = function (func, container) {
                 if (!container) {
                     container = this._rootContainer;

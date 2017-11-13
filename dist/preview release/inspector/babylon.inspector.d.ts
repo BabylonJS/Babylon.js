@@ -398,7 +398,8 @@ declare module INSPECTOR {
     class MeshAdapter extends Adapter implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
         /** Keep track of the axis of the actual object */
         private _axesViewer;
-        constructor(obj: BABYLON.AbstractMesh);
+        private onBeforeRenderObserver;
+        constructor(mesh: BABYLON.AbstractMesh);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */
@@ -410,7 +411,7 @@ declare module INSPECTOR {
         isVisible(): boolean;
         isBoxVisible(): boolean;
         setBoxVisible(b: boolean): boolean;
-        debug(b: boolean): void;
+        debug(enable: boolean): void;
         /** Returns some information about this mesh */
         getInfo(): string;
         /** Draw X, Y and Z axis for the actual object if this adapter.

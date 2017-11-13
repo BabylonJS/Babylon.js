@@ -937,6 +937,16 @@ declare module BABYLON {
         */
         onGeometryRemovedObservable: Observable<Geometry>;
         /**
+        * An event triggered when a transform node is created
+        * @type {BABYLON.Observable}
+        */
+        onNewTransformNodeAddedObservable: Observable<TransformNode>;
+        /**
+        * An event triggered when a transform node is removed
+        * @type {BABYLON.Observable}
+        */
+        onTransformNodeRemovedObservable: Observable<TransformNode>;
+        /**
         * An event triggered when a mesh is created
         * @type {BABYLON.Observable}
         */
@@ -1092,6 +1102,12 @@ declare module BABYLON {
         activeCameras: Camera[];
         /** The current active camera */
         activeCamera: Nullable<Camera>;
+        /**
+        * All of the tranform nodes added to this scene.
+        * @see BABYLON.TransformNode
+        * @type {BABYLON.TransformNode[]}
+        */
+        transformNodes: TransformNode[];
         /**
         * All of the (abstract) meshes added to this scene.
         * @see BABYLON.AbstractMesh
@@ -1352,6 +1368,8 @@ declare module BABYLON {
         getUniqueId(): number;
         addMesh(newMesh: AbstractMesh): void;
         removeMesh(toRemove: AbstractMesh): number;
+        addTransformNode(newTransformNode: TransformNode): void;
+        removeTransformNode(toRemove: TransformNode): number;
         removeSkeleton(toRemove: Skeleton): number;
         removeMorphTargetManager(toRemove: MorphTargetManager): number;
         removeLight(toRemove: Light): number;
@@ -1465,6 +1483,13 @@ declare module BABYLON {
         getMeshByID(id: string): Nullable<AbstractMesh>;
         getMeshesByID(id: string): Array<AbstractMesh>;
         /**
+         * Get the first added transform node found of a given ID
+         * @param {string} id - the id to search for
+         * @return {BABYLON.TransformNode|null} the transform node found or null if not found at all.
+         */
+        getTransformNodeByID(id: string): Nullable<TransformNode>;
+        getTransformNodesByID(id: string): Array<TransformNode>;
+        /**
          * Get a mesh with its auto-generated unique id
          * @param {number} uniqueId - the unique id to search for
          * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
@@ -1485,6 +1510,7 @@ declare module BABYLON {
         getNodeByID(id: string): Nullable<Node>;
         getNodeByName(name: string): Nullable<Node>;
         getMeshByName(name: string): Nullable<AbstractMesh>;
+        getTransformNodeByName(name: string): Nullable<TransformNode>;
         getSoundByName(name: string): Nullable<Sound>;
         getLastSkeletonByID(id: string): Nullable<Skeleton>;
         getSkeletonById(id: string): Nullable<Skeleton>;
@@ -1590,6 +1616,7 @@ declare module BABYLON {
          * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
+        private _cachedRayForTransform;
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
          * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
@@ -1630,7 +1657,7 @@ declare module BABYLON {
         createDefaultCameraOrLight(createArcRotateCamera?: boolean, replace?: boolean, attachCameraControls?: boolean): void;
         createDefaultSkybox(environmentTexture?: BaseTexture, pbr?: boolean, scale?: number, blur?: number): Nullable<Mesh>;
         createDefaultEnvironment(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper>;
-        createDefaultVRExperience(webVROptions?: WebVROptions): void;
+        createDefaultVRExperience(webVROptions?: WebVROptions): VRExperienceHelper;
         private _getByTags(list, tagsQuery, forEach?);
         getMeshesByTags(tagsQuery: string, forEach?: (mesh: AbstractMesh) => void): Mesh[];
         getCamerasByTags(tagsQuery: string, forEach?: (camera: Camera) => void): Camera[];
@@ -2959,6 +2986,129 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class BoundingBox implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo(pickingInfoA, pickingInfoB);
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -3729,129 +3879,6 @@ declare module BABYLON {
         pickedSprite: Nullable<Sprite>;
         getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
         getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo(pickingInfoA, pickingInfoB);
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
     }
 }
 
@@ -4771,6 +4798,7 @@ declare module BABYLON {
         updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void;
         _bindTextureDirectly(target: number, texture: InternalTexture): void;
         _bindTexture(channel: number, texture: InternalTexture): void;
+        _releaseBuffer(buffer: WebGLBuffer): boolean;
     }
 }
 
@@ -4889,6 +4917,296 @@ declare module BABYLON {
     class PointerInfo extends PointerInfoBase {
         pickInfo: Nullable<PickingInfo>;
         constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
+    }
+}
+
+declare namespace BABYLON {
+    /**
+     * Represents the different options available during the creation of
+     * a Environment helper.
+     *
+     * This can control the default ground, skybox and image processing setup of your scene.
+     */
+    interface IEnvironmentHelperOptions {
+        /**
+         * Specifies wether or not to create a ground.
+         * True by default.
+         */
+        createGround: boolean;
+        /**
+         * Specifies the ground size.
+         * 15 by default.
+         */
+        groundSize: number;
+        /**
+         * The texture used on the ground for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        groundTexture: string | BaseTexture;
+        /**
+         * The color mixed in the ground texture by default.
+         * BabylonJS clearColor by default.
+         */
+        groundColor: Color3;
+        /**
+         * Specifies the ground opacity.
+         * 1 by default.
+         */
+        groundOpacity: number;
+        /**
+         * Enables the ground to receive shadows.
+         * True by default.
+         */
+        enableGroundShadow: boolean;
+        /**
+         * Helps preventing the shadow to be fully black on the ground.
+         * 0.5 by default.
+         */
+        groundShadowLevel: number;
+        /**
+         * Creates a mirror texture attach to the ground.
+         * false by default.
+         */
+        enableGroundMirror: boolean;
+        /**
+         * Specifies the ground mirror size ratio.
+         * 0.3 by default as the default kernel is 64.
+         */
+        groundMirrorSizeRatio: number;
+        /**
+         * Specifies the ground mirror blur kernel size.
+         * 64 by default.
+         */
+        groundMirrorBlurKernel: number;
+        /**
+         * Specifies the ground mirror visibility amount.
+         * 1 by default
+         */
+        groundMirrorAmount: number;
+        /**
+         * Specifies the ground mirror reflectance weight.
+         * This uses the standard weight of the background material to setup the fresnel effect
+         * of the mirror.
+         * 1 by default.
+         */
+        groundMirrorFresnelWeight: number;
+        /**
+         * Specifies the ground mirror Falloff distance.
+         * This can helps reducing the size of the reflection.
+         * 0 by Default.
+         */
+        groundMirrorFallOffDistance: number;
+        /**
+         * Specifies the ground mirror texture type.
+         * Unsigned Int by Default.
+         */
+        groundMirrorTextureType: number;
+        /**
+         * Specifies wether or not to create a skybox.
+         * True by default.
+         */
+        createSkybox: boolean;
+        /**
+         * Specifies the skybox size.
+         * 20 by default.
+         */
+        skyboxSize: number;
+        /**
+         * The texture used on the skybox for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        skyboxTexture: string | BaseTexture;
+        /**
+         * The color mixed in the ground texture by default.
+         * BabylonJS clearColor by default.
+         */
+        skyboxColor: Color3;
+        /**
+         * The background rotation around the Y axis of the scene.
+         * This helps aligning the key lights of your scene with the background.
+         * 0 by default.
+         */
+        backgroundYRotation: number;
+        /**
+         * Compute automatically the size of the elements to best fit with the scene.
+         */
+        sizeAuto: boolean;
+        /**
+         * Default position of the rootMesh if autoSize is not true.
+         */
+        rootPosition: Vector3;
+        /**
+         * Sets up the inmage processing in the scene.
+         * true by default.
+         */
+        setupImageProcessing: boolean;
+        /**
+         * The texture used as your environment texture in the scene.
+         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        environmentTexture: string | BaseTexture;
+        /**
+         * The value of the exposure to apply to the scene.
+         * 0.6 by default if setupImageProcessing is true.
+         */
+        cameraExposure: number;
+        /**
+         * The value of the contrast to apply to the scene.
+         * 1.6 by default if setupImageProcessing is true.
+         */
+        cameraContrast: number;
+        /**
+         * Specifies wether or not tonemapping should be enabled in the scene.
+         * true by default if setupImageProcessing is true.
+         */
+        toneMappingEnabled: boolean;
+    }
+    /**
+     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
+     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
+     * It also helps with the default setup of your imageProcessing configuration.
+     */
+    class EnvironmentHelper {
+        /**
+         * Default ground texture URL.
+         */
+        private static _groundTextureCDNUrl;
+        /**
+         * Default skybox texture URL.
+         */
+        private static _skyboxTextureCDNUrl;
+        /**
+         * Default environment texture URL.
+         */
+        private static _environmentTextureCDNUrl;
+        /**
+         * Creates the default options for the helper.
+         */
+        private static _getDefaultOptions();
+        private _rootMesh;
+        /**
+         * Gets the root mesh created by the helper.
+         */
+        readonly rootMesh: Mesh;
+        private _skybox;
+        /**
+         * Gets the skybox created by the helper.
+         */
+        readonly skybox: Nullable<Mesh>;
+        private _skyboxTexture;
+        /**
+         * Gets the skybox texture created by the helper.
+         */
+        readonly skyboxTexture: Nullable<BaseTexture>;
+        private _skyboxMaterial;
+        /**
+         * Gets the skybox material created by the helper.
+         */
+        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
+        private _ground;
+        /**
+         * Gets the ground mesh created by the helper.
+         */
+        readonly ground: Nullable<Mesh>;
+        private _groundTexture;
+        /**
+         * Gets the ground texture created by the helper.
+         */
+        readonly groundTexture: Nullable<BaseTexture>;
+        private _groundMirror;
+        /**
+         * Gets the ground mirror created by the helper.
+         */
+        readonly groundMirror: Nullable<MirrorTexture>;
+        /**
+         * Gets the ground mirror render list to helps pushing the meshes
+         * you wish in the ground reflection.
+         */
+        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
+        private _groundMaterial;
+        /**
+         * Gets the ground material created by the helper.
+         */
+        readonly groundMaterial: Nullable<BackgroundMaterial>;
+        /**
+         * Stores the creation options.
+         */
+        private readonly _options;
+        private readonly _scene;
+        /**
+         * constructor
+         * @param options
+         * @param scene The scene to add the material to
+         */
+        constructor(options: Partial<IEnvironmentHelperOptions>, scene: BABYLON.Scene);
+        /**
+         * Updates the background according to the new options
+         * @param options
+         */
+        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
+        /**
+         * Sets the primary color of all the available elements.
+         * @param color
+         */
+        setMainColor(color: Color3): void;
+        /**
+         * Setup the image processing according to the specified options.
+         */
+        private _setupImageProcessing();
+        /**
+         * Setup the environment texture according to the specified options.
+         */
+        private _setupEnvironmentTexture();
+        /**
+         * Setup the background according to the specified options.
+         */
+        private _setupBackground();
+        /**
+         * Get the scene sizes according to the setup.
+         */
+        private _getSceneSize();
+        /**
+         * Setup the ground according to the specified options.
+         */
+        private _setupGround(sceneSize);
+        /**
+         * Setup the ground material according to the specified options.
+         */
+        private _setupGroundMaterial();
+        /**
+         * Setup the ground diffuse texture according to the specified options.
+         */
+        private _setupGroundDiffuseTexture();
+        /**
+         * Setup the ground mirror texture according to the specified options.
+         */
+        private _setupGroundMirrorTexture(sceneSize);
+        /**
+         * Setup the ground to receive the mirror texture.
+         */
+        private _setupMirrorInGroundMaterial();
+        /**
+         * Setup the skybox according to the specified options.
+         */
+        private _setupSkybox(sceneSize);
+        /**
+         * Setup the skybox material according to the specified options.
+         */
+        private _setupSkyboxMaterial();
+        /**
+         * Setup the skybox reflection texture according to the specified options.
+         */
+        private _setupSkyboxReflectionTexture();
+        /**
+         * Dispose all the elements created by the Helper.
+         */
+        dispose(): void;
     }
 }
 
@@ -5041,288 +5359,6 @@ declare module BABYLON {
         dPadLeft: number;
         dPadRight: number;
         update(): void;
-    }
-}
-
-declare namespace BABYLON {
-    /**
-     * Represents the different options available during the creation of
-     * a Environment helper.
-     *
-     * This can control the default ground, skybox and image processing setup of your scene.
-     */
-    interface IEnvironmentHelperOptions {
-        /**
-         * Specifies wether or not to create a ground.
-         * True by default.
-         */
-        createGround: boolean;
-        /**
-         * Specifies the ground size.
-         * 15 by default.
-         */
-        groundSize: number;
-        /**
-         * The texture used on the ground for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        groundTexture: string | BaseTexture;
-        /**
-         * The color mixed in the ground texture by default.
-         * BabylonJS clearColor by default.
-         */
-        groundColor: Color3;
-        /**
-         * Specifies the ground opacity.
-         * 1 by default.
-         */
-        groundOpacity: number;
-        /**
-         * Enables the ground to receive shadows.
-         * True by default.
-         */
-        enableGroundShadow: boolean;
-        /**
-         * Helps preventing the shadow to be fully black on the ground.
-         * 0.5 by default.
-         */
-        groundShadowLevel: number;
-        /**
-         * Creates a mirror texture attach to the ground.
-         * false by default.
-         */
-        enableGroundMirror: boolean;
-        /**
-         * Specifies the ground mirror size ratio.
-         * 0.3 by default as the default kernel is 64.
-         */
-        groundMirrorSizeRatio: number;
-        /**
-         * Specifies the ground mirror blur kernel size.
-         * 64 by default.
-         */
-        groundMirrorBlurKernel: number;
-        /**
-         * Specifies the ground mirror visibility amount.
-         * 1 by default
-         */
-        groundMirrorAmount: number;
-        /**
-         * Specifies the ground mirror reflectance weight.
-         * This uses the standard weight of the background material to setup the fresnel effect
-         * of the mirror.
-         * 1 by default.
-         */
-        groundMirrorFresnelWeight: number;
-        /**
-         * Specifies the ground mirror Falloff distance.
-         * This can helps reducing the size of the reflection.
-         * 0 by Default.
-         */
-        groundMirrorFallOffDistance: number;
-        /**
-         * Specifies the ground mirror texture type.
-         * Unsigned Int by Default.
-         */
-        groundMirrorTextureType: number;
-        /**
-         * Specifies wether or not to create a skybox.
-         * True by default.
-         */
-        createSkybox: boolean;
-        /**
-         * Specifies the skybox size.
-         * 20 by default.
-         */
-        skyboxSize: number;
-        /**
-         * The texture used on the skybox for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        skyboxTexture: string | BaseTexture;
-        /**
-         * The color mixed in the ground texture by default.
-         * BabylonJS clearColor by default.
-         */
-        skyboxColor: Color3;
-        /**
-         * The background rotation around the Y axis of the scene.
-         * This helps aligning the key lights of your scene with the background.
-         * 0 by default.
-         */
-        backgroundYRotation: number;
-        /**
-         * Compute automatically the size of the elements to best fit with the scene.
-         */
-        sizeAuto: boolean;
-        /**
-         * Sets up the inmage processing in the scene.
-         * true by default.
-         */
-        setupImageProcessing: boolean;
-        /**
-         * The texture used as your environment texture in the scene.
-         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        environmentTexture: string | BaseTexture;
-        /**
-         * The value of the exposure to apply to the scene.
-         * 0.6 by default if setupImageProcessing is true.
-         */
-        cameraExposure: number;
-        /**
-         * The value of the contrast to apply to the scene.
-         * 1.6 by default if setupImageProcessing is true.
-         */
-        cameraContrast: number;
-        /**
-         * Specifies wether or not tonemapping should be enabled in the scene.
-         * true by default if setupImageProcessing is true.
-         */
-        toneMappingEnabled: boolean;
-    }
-    /**
-     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
-     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
-     * It also helps with the default setup of your imageProcessing configuration.
-     */
-    class EnvironmentHelper {
-        /**
-         * Default ground texture URL.
-         */
-        private static _groundTextureCDNUrl;
-        /**
-         * Default skybox texture URL.
-         */
-        private static _skyboxTextureCDNUrl;
-        /**
-         * Default environment texture URL.
-         */
-        private static _environmentTextureCDNUrl;
-        /**
-         * Creates the default options for the helper.
-         */
-        private static _getDefaultOptions();
-        private _rootMesh;
-        /**
-         * Gets the root mesh created by the helper.
-         */
-        readonly rootMesh: Mesh;
-        private _skybox;
-        /**
-         * Gets the skybox created by the helper.
-         */
-        readonly skybox: Nullable<Mesh>;
-        private _skyboxTexture;
-        /**
-         * Gets the skybox texture created by the helper.
-         */
-        readonly skyboxTexture: Nullable<BaseTexture>;
-        private _skyboxMaterial;
-        /**
-         * Gets the skybox material created by the helper.
-         */
-        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
-        private _ground;
-        /**
-         * Gets the ground mesh created by the helper.
-         */
-        readonly ground: Nullable<Mesh>;
-        private _groundTexture;
-        /**
-         * Gets the ground texture created by the helper.
-         */
-        readonly groundTexture: Nullable<BaseTexture>;
-        private _groundMirror;
-        /**
-         * Gets the ground mirror created by the helper.
-         */
-        readonly groundMirror: Nullable<MirrorTexture>;
-        /**
-         * Gets the ground mirror render list to helps pushing the meshes
-         * you wish in the ground reflection.
-         */
-        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
-        private _groundMaterial;
-        /**
-         * Gets the ground material created by the helper.
-         */
-        readonly groundMaterial: Nullable<BackgroundMaterial>;
-        /**
-         * Stores the creation options.
-         */
-        private readonly _options;
-        private readonly _scene;
-        /**
-         * constructor
-         * @param options
-         * @param scene The scene to add the material to
-         */
-        constructor(options: Partial<IEnvironmentHelperOptions>, scene: BABYLON.Scene);
-        /**
-         * Updates the background according to the new options
-         * @param options
-         */
-        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
-        /**
-         * Sets the primary color of all the available elements.
-         * @param color
-         */
-        setMainColor(color: Color3): void;
-        /**
-         * Setup the image processing according to the specified options.
-         */
-        private _setupImageProcessing();
-        /**
-         * Setup the environment texture according to the specified options.
-         */
-        private _setupEnvironmentTexture();
-        /**
-         * Setup the background according to the specified options.
-         */
-        private _setupBackground();
-        /**
-         * Setup the ground according to the specified options.
-         */
-        private _setupGround();
-        /**
-         * Setup the ground material according to the specified options.
-         */
-        private _setupGroundMaterial();
-        /**
-         * Setup the ground diffuse texture according to the specified options.
-         */
-        private _setupGroundDiffuseTexture();
-        /**
-         * Setup the ground mirror texture according to the specified options.
-         */
-        private _setupGroundMirrorTexture();
-        /**
-         * Setup the ground to receive the mirror texture.
-         */
-        private _setupMirrorInGroundMaterial();
-        /**
-         * Setup the skybox according to the specified options.
-         */
-        private _setupSkybox();
-        /**
-         * Setup the skybox material according to the specified options.
-         */
-        private _setupSkyboxMaterial();
-        /**
-         * Setup the skybox reflection texture according to the specified options.
-         */
-        private _setupSkyboxReflectionTexture();
-        /**
-         * Dispose all the elements created by the Helper.
-         */
-        dispose(): void;
     }
 }
 
@@ -5521,6 +5557,52 @@ declare module BABYLON {
         _endTimeQuery: Nullable<WebGLQuery>;
         _timeElapsedQuery: Nullable<WebGLQuery>;
         _timeElapsedQueryEnded: boolean;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Nullable<Texture>;
+        alphaMode: number;
+        private _system;
+        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
+        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        id: string;
+        private _scene;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
     }
 }
 
@@ -5781,52 +5863,6 @@ declare module BABYLON {
         _rebuild(): void;
         render(): void;
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Nullable<Texture>;
-        alphaMode: number;
-        private _system;
-        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
-        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
     }
 }
 
@@ -6466,6 +6502,70 @@ declare module BABYLON {
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
         static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void, pluginExtension?: string): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+    }
+}
+
+declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasPositions: boolean;
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Nullable<FloatArray>): void;
+        getPositions(): Nullable<FloatArray>;
+        setNormals(data: Nullable<FloatArray>): void;
+        getNormals(): Nullable<FloatArray>;
+        setTangents(data: Nullable<FloatArray>): void;
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        constructor(scene?: Nullable<Scene>);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        private _syncActiveTargets(needUpdate);
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -10073,12 +10173,7 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class AbstractMesh extends Node implements IDisposable, ICullable, IGetSetVerticesData {
-        private static _BILLBOARDMODE_NONE;
-        private static _BILLBOARDMODE_X;
-        private static _BILLBOARDMODE_Y;
-        private static _BILLBOARDMODE_Z;
-        private static _BILLBOARDMODE_ALL;
+    class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
         static OCCLUSION_TYPE_NONE: number;
         static OCCLUSION_TYPE_OPTIMISTIC: number;
         static OCCLUSION_TYPE_STRICT: number;
@@ -10134,8 +10229,7 @@ declare module BABYLON {
          * Read-only boolean : is the feature facetData enabled ?
          */
         readonly isFacetDataEnabled: boolean;
-        private _nonUniformScaling;
-        nonUniformScaling: boolean;
+        _updateNonUniformScalingState(value: boolean): boolean;
         /**
         * An event triggered when this mesh collides with another one
         * @type {BABYLON.Observable}
@@ -10151,17 +10245,11 @@ declare module BABYLON {
         private _onCollisionPositionChangeObserver;
         onCollisionPositionChange: () => void;
         /**
-        * An event triggered after the world matrix is updated
-        * @type {BABYLON.Observable}
-        */
-        onAfterWorldMatrixUpdateObservable: Observable<AbstractMesh>;
-        /**
         * An event triggered when material is changed
         * @type {BABYLON.Observable}
         */
         onMaterialChangedObservable: Observable<AbstractMesh>;
         definedFacingForward: boolean;
-        position: Vector3;
         /**
         * This property determines the type of occlusion query algorithm to run in WebGl, you can use:
 
@@ -10202,13 +10290,8 @@ declare module BABYLON {
         */
         readonly isOcclusionQueryInProgress: boolean;
         private _occlusionQuery;
-        private _rotation;
-        private _rotationQuaternion;
-        private _scaling;
-        billboardMode: number;
         visibility: number;
         alphaIndex: number;
-        infiniteDistance: boolean;
         isVisible: boolean;
         isPickable: boolean;
         showBoundingBox: boolean;
@@ -10236,7 +10319,6 @@ declare module BABYLON {
         numBoneInfluencers: number;
         private _applyFog;
         applyFog: boolean;
-        scalingDeterminant: number;
         useOctreeForRenderingSelection: boolean;
         useOctreeForPicking: boolean;
         useOctreeForCollisions: boolean;
@@ -10262,29 +10344,19 @@ declare module BABYLON {
         private _diffPositionForCollisions;
         collisionMask: number;
         collisionGroup: number;
-        private _meshToBoneReferal;
         edgesWidth: number;
         edgesColor: Color4;
         _edgesRenderer: Nullable<EdgesRenderer>;
-        private _localWorld;
-        _worldMatrix: Matrix;
-        private _absolutePosition;
         private _collisionsTransformMatrix;
         private _collisionsScalingMatrix;
-        private _isDirty;
         _masterMesh: Nullable<AbstractMesh>;
         _boundingInfo: Nullable<BoundingInfo>;
-        private _pivotMatrix;
-        private _pivotMatrixInverse;
-        private _postMultiplyPivotMatrix;
         _isDisposed: boolean;
         _renderId: number;
         subMeshes: SubMesh[];
         _submeshesOctree: Octree<SubMesh>;
         _intersectionsInProgress: AbstractMesh[];
-        private _isWorldMatrixFrozen;
         _unIndexed: boolean;
-        _poseMatrix: Matrix;
         _lightSources: Light[];
         readonly _positions: Nullable<Vector3[]>;
         _waitingActions: any;
@@ -10314,32 +10386,14 @@ declare module BABYLON {
         _markSubMeshesAsAttributesDirty(): void;
         _markSubMeshesAsMiscDirty(): void;
         /**
-         * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z.
-         * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
-         * Default : (0.0, 0.0, 0.0)
-         */
-        rotation: Vector3;
+        * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.
+        * Default : (1.0, 1.0, 1.0)
+        */
         /**
          * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.
          * Default : (1.0, 1.0, 1.0)
          */
         scaling: Vector3;
-        /**
-         * Rotation Quaternion property : this a Quaternion object depicting the mesh rotation by using a unit quaternion.
-         * It's null by default.
-         * If set, only the rotationQuaternion is then used to compute the mesh rotation and its property `.rotation\ is then ignored and set to (0.0, 0.0, 0.0)
-         */
-        rotationQuaternion: Nullable<Quaternion>;
-        /**
-         * Copies the paramater passed Matrix into the mesh Pose matrix.
-         * Returns the AbstractMesh.
-         */
-        updatePoseMatrix(matrix: Matrix): AbstractMesh;
-        /**
-         * Returns the mesh Pose matrix.
-         * Returned object : Matrix
-         */
-        getPoseMatrix(): Matrix;
         /**
          * Disables the mesh edger rendering mode.
          * Returns the AbstractMesh.
@@ -10464,79 +10518,6 @@ declare module BABYLON {
          */
         getWorldMatrix(): Matrix;
         /**
-         * Returns directly the latest state of the mesh World matrix.
-         * A Matrix is returned.
-         */
-        readonly worldMatrixFromCache: Matrix;
-        /**
-         * Returns the current mesh absolute position.
-         * Retuns a Vector3.
-         */
-        readonly absolutePosition: Vector3;
-        /**
-         * Prevents the World matrix to be computed any longer.
-         * Returns the AbstractMesh.
-         */
-        freezeWorldMatrix(): AbstractMesh;
-        /**
-         * Allows back the World matrix computation.
-         * Returns the AbstractMesh.
-         */
-        unfreezeWorldMatrix(): this;
-        /**
-         * True if the World matrix has been frozen.
-         * Returns a boolean.
-         */
-        readonly isWorldMatrixFrozen: boolean;
-        private static _rotationAxisCache;
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
-         * The passed axis is also normalized.
-         * Returns the AbstractMesh.
-         */
-        rotate(axis: Vector3, amount: number, space?: Space): AbstractMesh;
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
-         * The passed axis is also normalized.
-         * Returns the AbstractMesh.
-         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
-         */
-        rotateAround(point: Vector3, axis: Vector3, amount: number): AbstractMesh;
-        /**
-         * Translates the mesh along the axis vector for the passed distance in the given space.
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
-         * Returns the AbstractMesh.
-         */
-        translate(axis: Vector3, distance: number, space?: Space): AbstractMesh;
-        /**
-         * Adds a rotation step to the mesh current rotation.
-         * x, y, z are Euler angles expressed in radians.
-         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
-         * This means this rotation is made in the mesh local space only.
-         * It's useful to set a custom rotation order different from the BJS standard one YXZ.
-         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
-         * ```javascript
-         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
-         * ```
-         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
-         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
-         * Returns the AbstractMesh.
-         */
-        addRotation(x: number, y: number, z: number): AbstractMesh;
-        /**
-         * Retuns the mesh absolute position in the World.
-         * Returns a Vector3.
-         */
-        getAbsolutePosition(): Vector3;
-        /**
-         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
-         * Returns the AbstractMesh.
-         */
-        setAbsolutePosition(absolutePosition: Vector3): AbstractMesh;
-        /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
          * Supports definition of mesh facing forward or backward.
@@ -10579,20 +10560,6 @@ declare module BABYLON {
          */
         calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3;
         /**
-         * Sets a new pivot matrix to the mesh.
-         * Returns the AbstractMesh.
-         */
-        setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix?: boolean): AbstractMesh;
-        /**
-         * Returns the mesh pivot matrix.
-         * Default : Identity.
-         * A Matrix is returned.
-         */
-        getPivotMatrix(): Matrix;
-        _isSynchronized(): boolean;
-        _initCache(): void;
-        markAsDirty(property: string): AbstractMesh;
-        /**
          * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
          * @param includeDescendants Include bounding info from descendants as well (true by default).
          */
@@ -10610,14 +10577,7 @@ declare module BABYLON {
          * Returns the AbstractMesh.
          */
         _updateSubMeshesBoundingInfo(matrix: Matrix): AbstractMesh;
-        /**
-         * Computes the mesh World matrix and returns it.
-         * If the mesh world matrix is frozen, this computation does nothing more than returning the last frozen values.
-         * If the parameter `force` is let to `false` (default), the current cached World matrix is returned.
-         * If the parameter `force`is set to `true`, the actual computation is done.
-         * Returns the mesh World Matrix.
-         */
-        computeWorldMatrix(force?: boolean): Matrix;
+        protected _afterComputeWorldMatrix(): void;
         /**
         * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
         * @param func: callback function to add
@@ -10630,25 +10590,6 @@ declare module BABYLON {
          * Returns the AbstractMesh.
          */
         unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): AbstractMesh;
-        /**
-         * Sets the mesh position in its local space.
-         * Returns the AbstractMesh.
-         */
-        setPositionWithLocalVector(vector3: Vector3): AbstractMesh;
-        /**
-         * Returns the mesh position in the local space from the current World matrix values.
-         * Returns a new Vector3.
-         */
-        getPositionExpressedInLocalSpace(): Vector3;
-        /**
-         * Translates the mesh along the passed Vector3 in its local space.
-         * Returns the AbstractMesh.
-         */
-        locallyTranslate(vector3: Vector3): AbstractMesh;
-        private static _lookAtVectorCache;
-        lookAt(targetPoint: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number, space?: Space): AbstractMesh;
-        attachToBone(bone: Bone, affectedMesh: AbstractMesh): AbstractMesh;
-        detachFromBone(): AbstractMesh;
         /**
          * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
          * A mesh is in the frustum if its bounding box intersects the frustum.
@@ -10722,37 +10663,6 @@ declare module BABYLON {
          */
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
         /**
-         * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.
-         * This Vector3 is expressed in the World space.
-         */
-        getDirection(localAxis: Vector3): Vector3;
-        /**
-         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
-         * localAxis is expressed in the mesh local space.
-         * result is computed in the Wordl space from the mesh World matrix.
-         * Returns the AbstractMesh.
-         */
-        getDirectionToRef(localAxis: Vector3, result: Vector3): AbstractMesh;
-        setPivotPoint(point: Vector3, space?: Space): AbstractMesh;
-        /**
-         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
-         */
-        getPivotPoint(): Vector3;
-        /**
-         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
-         * Returns the AbstractMesh.
-         */
-        getPivotPointToRef(result: Vector3): AbstractMesh;
-        /**
-         * Returns a new Vector3 set with the mesh pivot point World coordinates.
-         */
-        getAbsolutePivotPoint(): Vector3;
-        /**
-         * Defines the passed mesh as the parent of the current mesh.
-         * Returns the AbstractMesh.
-         */
-        setParent(mesh: Nullable<AbstractMesh>): AbstractMesh;
-        /**
          * Adds the passed mesh as a child to the current mesh.
          * Returns the AbstractMesh.
          */
@@ -10762,11 +10672,6 @@ declare module BABYLON {
          * Returns the AbstractMesh.
          */
         removeChild(mesh: AbstractMesh): AbstractMesh;
-        /**
-         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
-         * Returns the AbstractMesh.
-         */
-        getAbsolutePivotPointToRef(result: Vector3): AbstractMesh;
         /**
          *  Initialize the facet data arrays : facetNormals, facetPositions and facetPartitioning.
          * Returns the AbstractMesh.
@@ -11730,6 +11635,7 @@ declare module BABYLON {
         /**
          * Sets the mesh indices.
          * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array).
+         * Type is Uint16Array by default unless the mesh has more than 65536 vertices.
          * If the mesh has no geometry, a new Geometry object is created and set to the mesh.
          * This method creates a new index buffer each call.
          * Returns the Mesh.
@@ -13485,6 +13391,234 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class TransformNode extends Node {
+        static BILLBOARDMODE_NONE: number;
+        static BILLBOARDMODE_X: number;
+        static BILLBOARDMODE_Y: number;
+        static BILLBOARDMODE_Z: number;
+        static BILLBOARDMODE_ALL: number;
+        private _rotation;
+        private _rotationQuaternion;
+        protected _scaling: Vector3;
+        protected _isDirty: boolean;
+        private _transformToBoneReferal;
+        billboardMode: number;
+        scalingDeterminant: number;
+        infiniteDistance: boolean;
+        position: Vector3;
+        _poseMatrix: Matrix;
+        private _localWorld;
+        _worldMatrix: Matrix;
+        private _absolutePosition;
+        private _pivotMatrix;
+        private _pivotMatrixInverse;
+        private _postMultiplyPivotMatrix;
+        protected _isWorldMatrixFrozen: boolean;
+        /**
+        * An event triggered after the world matrix is updated
+        * @type {BABYLON.Observable}
+        */
+        onAfterWorldMatrixUpdateObservable: Observable<TransformNode>;
+        constructor(name: string, scene?: Nullable<Scene>, isPure?: boolean);
+        /**
+          * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z.
+          * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
+          * Default : (0.0, 0.0, 0.0)
+          */
+        rotation: Vector3;
+        /**
+         * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.
+         * Default : (1.0, 1.0, 1.0)
+         */
+        /**
+         * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.
+         * Default : (1.0, 1.0, 1.0)
+        */
+        scaling: Vector3;
+        /**
+         * Rotation Quaternion property : this a Quaternion object depicting the mesh rotation by using a unit quaternion.
+         * It's null by default.
+         * If set, only the rotationQuaternion is then used to compute the mesh rotation and its property `.rotation\ is then ignored and set to (0.0, 0.0, 0.0)
+         */
+        rotationQuaternion: Nullable<Quaternion>;
+        /**
+         * Returns the latest update of the World matrix
+         * Returns a Matrix.
+         */
+        getWorldMatrix(): Matrix;
+        /**
+         * Returns directly the latest state of the mesh World matrix.
+         * A Matrix is returned.
+         */
+        readonly worldMatrixFromCache: Matrix;
+        /**
+         * Copies the paramater passed Matrix into the mesh Pose matrix.
+         * Returns the AbstractMesh.
+         */
+        updatePoseMatrix(matrix: Matrix): TransformNode;
+        /**
+         * Returns the mesh Pose matrix.
+         * Returned object : Matrix
+         */
+        getPoseMatrix(): Matrix;
+        _isSynchronized(): boolean;
+        _initCache(): void;
+        markAsDirty(property: string): TransformNode;
+        /**
+         * Returns the current mesh absolute position.
+         * Retuns a Vector3.
+         */
+        readonly absolutePosition: Vector3;
+        /**
+         * Sets a new pivot matrix to the mesh.
+         * Returns the AbstractMesh.
+        */
+        setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix?: boolean): TransformNode;
+        /**
+         * Returns the mesh pivot matrix.
+         * Default : Identity.
+         * A Matrix is returned.
+         */
+        getPivotMatrix(): Matrix;
+        /**
+         * Prevents the World matrix to be computed any longer.
+         * Returns the AbstractMesh.
+         */
+        freezeWorldMatrix(): TransformNode;
+        /**
+         * Allows back the World matrix computation.
+         * Returns the AbstractMesh.
+         */
+        unfreezeWorldMatrix(): this;
+        /**
+         * True if the World matrix has been frozen.
+         * Returns a boolean.
+         */
+        readonly isWorldMatrixFrozen: boolean;
+        /**
+            * Retuns the mesh absolute position in the World.
+            * Returns a Vector3.
+            */
+        getAbsolutePosition(): Vector3;
+        /**
+         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
+         * Returns the AbstractMesh.
+         */
+        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        /**
+           * Sets the mesh position in its local space.
+           * Returns the AbstractMesh.
+           */
+        setPositionWithLocalVector(vector3: Vector3): TransformNode;
+        /**
+         * Returns the mesh position in the local space from the current World matrix values.
+         * Returns a new Vector3.
+         */
+        getPositionExpressedInLocalSpace(): Vector3;
+        /**
+         * Translates the mesh along the passed Vector3 in its local space.
+         * Returns the AbstractMesh.
+         */
+        locallyTranslate(vector3: Vector3): TransformNode;
+        private static _lookAtVectorCache;
+        lookAt(targetPoint: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number, space?: Space): TransformNode;
+        /**
+          * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.
+          * This Vector3 is expressed in the World space.
+          */
+        getDirection(localAxis: Vector3): Vector3;
+        /**
+         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
+         * localAxis is expressed in the mesh local space.
+         * result is computed in the Wordl space from the mesh World matrix.
+         * Returns the AbstractMesh.
+         */
+        getDirectionToRef(localAxis: Vector3, result: Vector3): TransformNode;
+        setPivotPoint(point: Vector3, space?: Space): TransformNode;
+        /**
+         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
+         */
+        getPivotPoint(): Vector3;
+        /**
+         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
+         * Returns the AbstractMesh.
+         */
+        getPivotPointToRef(result: Vector3): TransformNode;
+        /**
+         * Returns a new Vector3 set with the mesh pivot point World coordinates.
+         */
+        getAbsolutePivotPoint(): Vector3;
+        /**
+         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
+         * Returns the AbstractMesh.
+         */
+        getAbsolutePivotPointToRef(result: Vector3): TransformNode;
+        /**
+         * Defines the passed mesh as the parent of the current mesh.
+         * Returns the AbstractMesh.
+         */
+        setParent(mesh: Nullable<AbstractMesh>): TransformNode;
+        private _nonUniformScaling;
+        readonly nonUniformScaling: boolean;
+        _updateNonUniformScalingState(value: boolean): boolean;
+        /**
+         * Attach the current TransformNode to another TransformNode associated with a bone
+         * @param bone Bone affecting the TransformNode
+         * @param affectedTransformNode TransformNode associated with the bone
+         */
+        attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode;
+        detachFromBone(): TransformNode;
+        private static _rotationAxisCache;
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized.
+         * Returns the AbstractMesh.
+         */
+        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized.
+         * Returns the AbstractMesh.
+         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
+         */
+        rotateAround(point: Vector3, axis: Vector3, amount: number): TransformNode;
+        /**
+         * Translates the mesh along the axis vector for the passed distance in the given space.
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Returns the AbstractMesh.
+         */
+        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
+        /**
+         * Adds a rotation step to the mesh current rotation.
+         * x, y, z are Euler angles expressed in radians.
+         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
+         * This means this rotation is made in the mesh local space only.
+         * It's useful to set a custom rotation order different from the BJS standard one YXZ.
+         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
+         * ```javascript
+         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
+         * ```
+         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
+         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
+         * Returns the AbstractMesh.
+         */
+        addRotation(x: number, y: number, z: number): TransformNode;
+        /**
+         * Computes the mesh World matrix and returns it.
+         * If the mesh world matrix is frozen, this computation does nothing more than returning the last frozen values.
+         * If the parameter `force` is let to `false` (default), the current cached World matrix is returned.
+         * If the parameter `force`is set to `true`, the actual computation is done.
+         * Returns the mesh World Matrix.
+         */
+        computeWorldMatrix(force?: boolean): Matrix;
+        protected _afterComputeWorldMatrix(): void;
+    }
+}
+
+declare module BABYLON {
     class VertexBuffer {
         private _buffer;
         private _kind;
@@ -13577,70 +13711,6 @@ declare module BABYLON {
         static readonly MatricesWeightsKind: string;
         static readonly MatricesIndicesExtraKind: string;
         static readonly MatricesWeightsExtraKind: string;
-    }
-}
-
-declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasPositions: boolean;
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Nullable<FloatArray>): void;
-        getPositions(): Nullable<FloatArray>;
-        setNormals(data: Nullable<FloatArray>): void;
-        getNormals(): Nullable<FloatArray>;
-        setTangents(data: Nullable<FloatArray>): void;
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        constructor(scene?: Nullable<Scene>);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -14322,9 +14392,9 @@ declare module BABYLON {
         getScene?(): Scene;
         getAbsolutePosition(): Vector3;
         getAbsolutePivotPoint(): Vector3;
-        rotate(axis: Vector3, amount: number, space?: Space): IPhysicsEnabledObject;
-        translate(axis: Vector3, distance: number, space?: Space): IPhysicsEnabledObject;
-        setAbsolutePosition(absolutePosition: Vector3): IPhysicsEnabledObject;
+        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
+        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
+        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
     }
     class PhysicsImpostor {
         object: IPhysicsEnabledObject;
@@ -14612,6 +14682,36 @@ declare module BABYLON {
         length: number;
         stiffness: number;
         damping: number;
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: Nullable<AbstractMesh[]>;
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
     }
 }
 
@@ -15138,36 +15238,6 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: Nullable<AbstractMesh[]>;
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
     }
 }
 
@@ -17020,6 +17090,53 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    }
+}
+
+declare module BABYLON {
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        readonly capacity: number;
+        readonly minPoint: Vector3;
+        readonly maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
+        createInnerBlocks(): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Nullable<Gamepad>;
@@ -17310,6 +17427,10 @@ declare module BABYLON {
         onEnteringVR: () => void;
         onExitingVR: () => void;
         onControllerMeshLoaded: (controller: WebVRController) => void;
+        readonly deviceOrientationCamera: DeviceOrientationCamera;
+        readonly currentVRCamera: FreeCamera;
+        readonly webVRCamera: WebVRFreeCamera;
+        readonly vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
         constructor(scene: Scene, webVROptions?: WebVROptions);
         private _onDefaultMeshLoaded(webVRController);
         private _onFullscreenChange();
@@ -17418,53 +17539,6 @@ declare module BABYLON {
         private _onGamepadConnectedObserver;
         private _onGamepadDisconnectedObserver;
         initControllers(): void;
-    }
-}
-
-declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        readonly capacity: number;
-        readonly minPoint: Vector3;
-        readonly maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
-        createInnerBlocks(): void;
     }
 }
 
@@ -17947,6 +18021,11 @@ declare namespace BABYLON {
          */
         protected _useRGBColor: boolean;
         useRGBColor: boolean;
+        /**
+         * This helps reducing the banding effect that could occur on the background.
+         */
+        protected _enableNoise: boolean;
+        enableNoise: boolean;
         /**
          * Number of Simultaneous lights allowed on the material.
          */
