@@ -26,7 +26,7 @@
                     "code": 4,
                     "message": 5
                 },
-                "watching": {
+                "background": {
                     "activeOnStart": true,
                     "beginsPattern": "Starting \\'watch\\'",
                     "endsPattern": "Finished \\'run\\'"

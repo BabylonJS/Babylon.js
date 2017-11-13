@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight } from 'babylonjs';
+import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database } from 'babylonjs';
 import { ViewerConfiguration } from '../configuration/configuration';
 import { PromiseObservable } from '../util/promiseObservable';
 
@@ -105,6 +105,9 @@ export abstract class AbstractViewer {
         let config = this.configuration.engine || {};
         // TDO enable further configuration
         this.engine = new Engine(canvasElement, !!config.antialiasing);
+
+        // Disable manifest checking
+        Database.IDBStorageEnabled = false;
 
         window.addEventListener('resize', () => {
             this.engine.resize();
