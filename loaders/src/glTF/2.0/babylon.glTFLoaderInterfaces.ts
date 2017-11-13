@@ -234,8 +234,8 @@ module BABYLON.GLTF2 {
         index: number;
         parent?: IGLTFNode;
         babylonMesh: Mesh;
-        babylonBones: { [skin: number]: Bone };
-        babylonAnimationTargets: Node[];
+        babylonBones?: { [skin: number]: Bone };
+        babylonAnimationTargets?: Node[];
     }
 
     export interface IGLTFSampler extends IGLTFChildRootProperty {
