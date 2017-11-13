@@ -11,7 +11,7 @@
                 max-width: 800px;
                 max-height: 500px;
                 width: 100%;
-                height: 100%;
+                height: 600px;
             }
         </style>
     </head>
@@ -21,6 +21,9 @@
             model.url="https://playground.babylonjs.com/scenes/Rabbit.babylon" camera.behaviors.auto-rotate="0" templates.nav-bar.params.disable-on-fullscreen="true"></babylon>
         <script src="viewer.js"></script>
         <script>
+            // The following lines are redundant. 
+            // They are only here to show how you could achive the tag initialization on your own.
+
             // a simple way of disabling auto init 
             BabylonViewer.disableInit = true;
             // Initializing the viewer on specific HTML tags.

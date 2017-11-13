@@ -156,9 +156,15 @@ var BABYLON;
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "isForeground", {
                 get: function () {
+                    if (!this.layer) {
+                        return true;
+                    }
                     return (!this.layer.isBackground);
                 },
                 set: function (value) {
+                    if (!this.layer) {
+                        return;
+                    }
                     if (this.layer.isBackground === !value) {
                         return;
                     }
