@@ -57,15 +57,12 @@ module BABYLON {
         public REFRACTION = false;
         public REFRACTIONMAP_3D = false;
         public REFLECTIONOVERALPHA = false;
-        public INVERTNORMALMAPX = false;
-        public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFLOAT = false;
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
-        public USERIGHTHANDEDSYSTEM = false;
 
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;
@@ -75,6 +72,7 @@ module BABYLON {
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
+        public COLORGRADING3D = false;
         public SAMPLER3DGREENDEPTH = false;
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
@@ -94,7 +92,7 @@ module BABYLON {
                         ];
 
             for (var mode of modes) {
-                this[mode] = (mode === modeToEnable);
+                (<any>this)[mode] = (mode === modeToEnable);
             }
         }
     }
@@ -312,13 +310,13 @@ module BABYLON {
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the Standard Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -415,13 +413,13 @@ module BABYLON {
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
-        public get cameraColorGradingTexture(): BaseTexture {
+        public get cameraColorGradingTexture(): Nullable<BaseTexture> {
             return this._imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets the Color Grading 2D Lookup Texture.
          */
-        public set cameraColorGradingTexture(value: BaseTexture) {
+        public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
             this._imageProcessingConfiguration.colorGradingTexture = value;
         }
 
@@ -443,11 +441,11 @@ module BABYLON {
                 this._renderTargets.reset();
 
                 if (StandardMaterial_OldVer.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._reflectionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
                 }
 
                 if (StandardMaterial_OldVer.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._refractionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
                 }
 
                 return this._renderTargets;
@@ -640,9 +638,6 @@ module BABYLON {
                             defines._needUVs = true;
                             defines.BUMP = true;
 
-                            defines.INVERTNORMALMAPX = this.invertNormalMapX;
-                            defines.INVERTNORMALMAPY = this.invertNormalMapY;
-
                             defines.PARALLAX = this._useParallax;
                             defines.PARALLAXOCCLUSION = this._useParallaxOcclusion;
                         }
@@ -726,13 +721,7 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
-
-            if (scene._mirroredCameraPosition && defines.BUMP) {
-                defines.INVERTNORMALMAPX = !this.invertNormalMapX;
-                defines.INVERTNORMALMAPY = !this.invertNormalMapY;
-                defines.markAsUnprocessed();
-            }
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             // Get correct effect      
             if (defines.isDirty) {
@@ -834,7 +823,7 @@ module BABYLON {
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                    "logarithmicDepthConstant"
+                    "logarithmicDepthConstant", "vTangentSpaceParams"
                 ];
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
@@ -872,7 +861,7 @@ module BABYLON {
                 this.buildUniformLayout();
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -911,6 +900,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("lightmapMatrix", 16);
             this._uniformBuffer.addUniform("specularMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
+            this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("vRefractionInfos", 4);
             this._uniformBuffer.addUniform("vSpecularColor", 4);
@@ -944,6 +934,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -1024,6 +1017,12 @@ module BABYLON {
                         if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial_OldVer.BumpTextureEnabled) {
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
+
+                            if (scene._mirroredCameraPosition) {
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
+                            } else {
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
+                            }
                         }
 
                         if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
@@ -1107,7 +1106,7 @@ module BABYLON {
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                MaterialHelper.BindEyePosition(effect, scene);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 
@@ -1982,7 +1981,7 @@ vColor=color;\n\
  
    export class StandardShaderVersions{
 
-        public static Ver3_0;
+        public static Ver3_0 = "3.0.0";
 
    } 
 
@@ -2037,15 +2036,18 @@ vColor=color;\n\
               this._isCreatedShader  = false;
             
             CustomMaterial.ShaderIndexer++;
-            var name = name+"custom_"+CustomMaterial.ShaderIndexer;
+            var name: string = "custom_" + CustomMaterial.ShaderIndexer;
 
             this.ReviewUniform("uniform",uniforms);
             this.ReviewUniform("sampler",samplers);
             
 
             var fn_afterBind = this._afterBind;
-            this._afterBind = function(m,e){ 
-                this.AttachAfterBind(m,e);
+            this._afterBind = (m,e) => { 
+                if (!e) {
+                    return;
+                }
+                this.AttachAfterBind(m, e);
                 try{fn_afterBind(m,e);}catch(e){};
             } ;
 
@@ -2094,10 +2096,10 @@ vColor=color;\n\
               }
               if(param){
               if(kind.indexOf("sampler") == -1) {
-                    this._newUniformInstances[kind+"-"+name] = param;
+                    (<any>this._newUniformInstances)[kind+"-"+name] = param;
               }
               else{
-                  this._newSamplerInstances[kind+"-"+name] = param;
+                (<any>this._newUniformInstances)[kind+"-"+name] = param;
               }
              }
 
