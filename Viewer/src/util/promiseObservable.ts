@@ -16,7 +16,10 @@ export class PromiseObservable<T> extends Observable<T> {
         state.currentTarget = currentTarget;
         state.skipNextObservers = false;
 
-        for (var obs of this._observers) {
+        this._observers.forEach(obs => {
+            if (state.skipNextObservers) {
+                return;
+            }
             if (obs.mask & mask) {
                 if (obs.scope) {
                     // TODO - I can add the variable from the last function here. Requires changing callback sig
@@ -29,10 +32,8 @@ export class PromiseObservable<T> extends Observable<T> {
                     });
                 }
             }
-            if (state.skipNextObservers) {
-                return p;
-            }
-        }
+        });
+
         return p;
     }
 }
