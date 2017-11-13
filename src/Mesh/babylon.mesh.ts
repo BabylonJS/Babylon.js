@@ -912,6 +912,7 @@
         /**
          * Sets the mesh indices.  
          * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array).
+         * Type is Uint16Array by default unless the mesh has more than 65536 vertices.
          * If the mesh has no geometry, a new Geometry object is created and set to the mesh. 
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
