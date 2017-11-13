@@ -2,8 +2,8 @@ import { ViewerConfiguration } from './../configuration';
 
 export let defaultConfiguration: ViewerConfiguration = {
     version: "0.1",
-    eventPrefix: 'babylonviewer-',
-    events: true,
+    //eventPrefix: 'babylonviewer-',
+    //events: true,
     templates: {
         main: {
             html: require("../../../assets/templates/default/defaultTemplate.html")
