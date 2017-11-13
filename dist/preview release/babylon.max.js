@@ -11759,37 +11759,39 @@ var BABYLON;
             //WebVR
             this.disableVR();
             // Events
-            window.removeEventListener("blur", this._onBlur);
-            window.removeEventListener("focus", this._onFocus);
-            window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
-            window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
-            if (this._renderingCanvas) {
-                this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-                this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-                this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
-                if (!this._doNotHandleContextLost) {
-                    this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
-                    this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+            if (BABYLON.Tools.IsWindowObjectExist()) {
+                window.removeEventListener("blur", this._onBlur);
+                window.removeEventListener("focus", this._onFocus);
+                window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
+                window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
+                if (this._renderingCanvas) {
+                    this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+                    this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+                    this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
+                    if (!this._doNotHandleContextLost) {
+                        this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+                        this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+                    }
                 }
-            }
-            document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("pointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
-            if (this._onVrDisplayConnect) {
-                window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-                if (this._onVrDisplayDisconnect) {
-                    window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("pointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+                if (this._onVrDisplayConnect) {
+                    window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+                    if (this._onVrDisplayDisconnect) {
+                        window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                    }
+                    if (this._onVrDisplayPresentChange) {
+                        window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+                    }
+                    this._onVrDisplayConnect = null;
+                    this._onVrDisplayDisconnect = null;
                 }
-                if (this._onVrDisplayPresentChange) {
-                    window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
-                }
-                this._onVrDisplayConnect = null;
-                this._onVrDisplayDisconnect = null;
             }
             // Remove from Instances
             var index = Engine.Instances.indexOf(this);
@@ -75772,6 +75774,13 @@ var BABYLON;
             }
             this._bindTextureDirectly(0, texture);
         };
+        NullEngine.prototype._releaseBuffer = function (buffer) {
+            buffer.references--;
+            if (buffer.references === 0) {
+                return true;
+            }
+            return false;
+        };
         return NullEngine;
     }(BABYLON.Engine));
     BABYLON.NullEngine = NullEngine;
@@ -77409,7 +77418,7 @@ var BABYLON;
                 groundSize: 15,
                 groundTexture: this._groundTextureCDNUrl,
                 groundColor: new BABYLON.Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
-                groundOpacity: 0.85,
+                groundOpacity: 0.9,
                 enableGroundShadow: true,
                 groundShadowLevel: 0.5,
                 enableGroundMirror: false,
@@ -77621,7 +77630,7 @@ var BABYLON;
                 this._setupGroundMaterial();
                 this._setupGroundDiffuseTexture();
                 if (this._options.enableGroundMirror) {
-                    this._setupGroundMirrorTexture();
+                    this._setupGroundMirrorTexture(sceneSize);
                     this._setupMirrorInGroundMaterial();
                 }
             }
@@ -77717,15 +77726,25 @@ var BABYLON;
         /**
          * Setup the ground mirror texture according to the specified options.
          */
-        EnvironmentHelper.prototype._setupGroundMirrorTexture = function () {
+        EnvironmentHelper.prototype._setupGroundMirrorTexture = function (sceneSize) {
             var wrapping = BABYLON.Texture.CLAMP_ADDRESSMODE;
             if (!this._groundMirror) {
                 this._groundMirror = new BABYLON.MirrorTexture("BackgroundPlaneMirrorTexture", { ratio: this._options.groundMirrorSizeRatio }, this._scene, false, this._options.groundMirrorTextureType, BABYLON.Texture.BILINEAR_SAMPLINGMODE, true);
-                this._groundMirror.mirrorPlane = new BABYLON.Plane(0, -1, 0, 0);
+                this._groundMirror.mirrorPlane = new BABYLON.Plane(0, -1, 0, sceneSize.rootPosition.y);
                 this._groundMirror.anisotropicFilteringLevel = 1;
                 this._groundMirror.wrapU = wrapping;
                 this._groundMirror.wrapV = wrapping;
                 this._groundMirror.gammaSpace = false;
+                if (this._groundMirror.renderList) {
+                    for (var i = 0; i < this._scene.meshes.length; i++) {
+                        var mesh = this._scene.meshes[i];
+                        if (mesh !== this._ground &&
+                            mesh !== this._skybox &&
+                            mesh !== this._rootMesh) {
+                            this._groundMirror.renderList.push(mesh);
+                        }
+                    }
+                }
             }
             this._groundMirror.clearColor = new BABYLON.Color4(this._options.groundColor.r, this._options.groundColor.g, this._options.groundColor.b, 1);
             this._groundMirror.adaptiveBlurKernel = this._options.groundMirrorBlurKernel;

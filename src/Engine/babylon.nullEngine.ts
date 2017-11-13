@@ -380,5 +380,15 @@
 
             this._bindTextureDirectly(0, texture);
         }
+
+        public _releaseBuffer(buffer: WebGLBuffer): boolean {
+            buffer.references--;
+
+            if (buffer.references === 0) {
+                return true;
+            }
+
+            return false;
+        }        
     }
 }
