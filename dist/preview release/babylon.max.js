@@ -12973,8 +12973,10 @@ var BABYLON;
 (function (BABYLON) {
     var TransformNode = /** @class */ (function (_super) {
         __extends(TransformNode, _super);
-        function TransformNode() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function TransformNode(name, scene, isPure) {
+            if (scene === void 0) { scene = null; }
+            if (isPure === void 0) { isPure = true; }
+            var _this = _super.call(this, name, scene) || this;
             // Properties
             _this._rotation = BABYLON.Vector3.Zero();
             _this._scaling = BABYLON.Vector3.One();
@@ -12995,6 +12997,9 @@ var BABYLON;
             */
             _this.onAfterWorldMatrixUpdateObservable = new BABYLON.Observable();
             _this._nonUniformScaling = false;
+            if (isPure) {
+                _this.getScene().addTransformNode(_this);
+            }
             return _this;
         }
         Object.defineProperty(TransformNode.prototype, "rotation", {
@@ -13070,6 +13075,62 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Copies the paramater passed Matrix into the mesh Pose matrix.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.updatePoseMatrix = function (matrix) {
+            this._poseMatrix.copyFrom(matrix);
+            return this;
+        };
+        /**
+         * Returns the mesh Pose matrix.
+         * Returned object : Matrix
+         */
+        TransformNode.prototype.getPoseMatrix = function () {
+            return this._poseMatrix;
+        };
+        TransformNode.prototype._isSynchronized = function () {
+            if (this._isDirty) {
+                return false;
+            }
+            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== BABYLON.AbstractMesh.BILLBOARDMODE_NONE)
+                return false;
+            if (this._cache.pivotMatrixUpdated) {
+                return false;
+            }
+            if (this.infiniteDistance) {
+                return false;
+            }
+            if (!this._cache.position.equals(this.position))
+                return false;
+            if (this.rotationQuaternion) {
+                if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
+                    return false;
+            }
+            if (!this._cache.rotation.equals(this.rotation))
+                return false;
+            if (!this._cache.scaling.equals(this.scaling))
+                return false;
+            return true;
+        };
+        TransformNode.prototype._initCache = function () {
+            _super.prototype._initCache.call(this);
+            this._cache.localMatrixUpdated = false;
+            this._cache.position = BABYLON.Vector3.Zero();
+            this._cache.scaling = BABYLON.Vector3.Zero();
+            this._cache.rotation = BABYLON.Vector3.Zero();
+            this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
+            this._cache.billboardMode = -1;
+        };
+        TransformNode.prototype.markAsDirty = function (property) {
+            if (property === "rotation") {
+                this.rotationQuaternion = null;
+            }
+            this._currentRenderId = Number.MAX_VALUE;
+            this._isDirty = true;
+            return this;
+        };
         Object.defineProperty(TransformNode.prototype, "absolutePosition", {
             /**
              * Returns the current mesh absolute position.
@@ -13372,6 +13433,106 @@ var BABYLON;
             return this;
         };
         /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.rotate = function (axis, amount, space) {
+            axis.normalize();
+            if (!this.rotationQuaternion) {
+                this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation = BABYLON.Vector3.Zero();
+            }
+            var rotationQuaternion;
+            if (!space || space === BABYLON.Space.LOCAL) {
+                rotationQuaternion = BABYLON.Quaternion.RotationAxisToRef(axis, amount, BABYLON.AbstractMesh._rotationAxisCache);
+                this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
+            }
+            else {
+                if (this.parent) {
+                    var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
+                    invertParentWorldMatrix.invert();
+                    axis = BABYLON.Vector3.TransformNormal(axis, invertParentWorldMatrix);
+                }
+                rotationQuaternion = BABYLON.Quaternion.RotationAxisToRef(axis, amount, BABYLON.AbstractMesh._rotationAxisCache);
+                rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
+            }
+            return this;
+        };
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized.
+         * Returns the AbstractMesh.
+         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
+         */
+        TransformNode.prototype.rotateAround = function (point, axis, amount) {
+            axis.normalize();
+            if (!this.rotationQuaternion) {
+                this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation.copyFromFloats(0, 0, 0);
+            }
+            point.subtractToRef(this.position, BABYLON.Tmp.Vector3[0]);
+            BABYLON.Matrix.TranslationToRef(BABYLON.Tmp.Vector3[0].x, BABYLON.Tmp.Vector3[0].y, BABYLON.Tmp.Vector3[0].z, BABYLON.Tmp.Matrix[0]);
+            BABYLON.Tmp.Matrix[0].invertToRef(BABYLON.Tmp.Matrix[2]);
+            BABYLON.Matrix.RotationAxisToRef(axis, amount, BABYLON.Tmp.Matrix[1]);
+            BABYLON.Tmp.Matrix[2].multiplyToRef(BABYLON.Tmp.Matrix[1], BABYLON.Tmp.Matrix[2]);
+            BABYLON.Tmp.Matrix[2].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[2]);
+            BABYLON.Tmp.Matrix[2].decompose(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[1]);
+            this.position.addInPlace(BABYLON.Tmp.Vector3[1]);
+            BABYLON.Tmp.Quaternion[0].multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
+            return this;
+        };
+        /**
+         * Translates the mesh along the axis vector for the passed distance in the given space.
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.translate = function (axis, distance, space) {
+            var displacementVector = axis.scale(distance);
+            if (!space || space === BABYLON.Space.LOCAL) {
+                var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
+                this.setPositionWithLocalVector(tempV3);
+            }
+            else {
+                this.setAbsolutePosition(this.getAbsolutePosition().add(displacementVector));
+            }
+            return this;
+        };
+        /**
+         * Adds a rotation step to the mesh current rotation.
+         * x, y, z are Euler angles expressed in radians.
+         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
+         * This means this rotation is made in the mesh local space only.
+         * It's useful to set a custom rotation order different from the BJS standard one YXZ.
+         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
+         * ```javascript
+         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
+         * ```
+         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
+         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.addRotation = function (x, y, z) {
+            var rotationQuaternion;
+            if (this.rotationQuaternion) {
+                rotationQuaternion = this.rotationQuaternion;
+            }
+            else {
+                rotationQuaternion = BABYLON.Tmp.Quaternion[1];
+                BABYLON.Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, rotationQuaternion);
+            }
+            var accumulation = BABYLON.Tmp.Quaternion[0];
+            BABYLON.Quaternion.RotationYawPitchRollToRef(y, x, z, accumulation);
+            rotationQuaternion.multiplyInPlace(accumulation);
+            if (!this.rotationQuaternion) {
+                rotationQuaternion.toEulerAnglesToRef(this.rotation);
+            }
+            return this;
+        };
+        /**
          * Computes the mesh World matrix and returns it.
          * If the mesh world matrix is frozen, this computation does nothing more than returning the last frozen values.
          * If the parameter `force` is let to `false` (default), the current cached World matrix is returned.
@@ -13525,6 +13686,7 @@ var BABYLON;
         TransformNode.BILLBOARDMODE_Z = 4;
         TransformNode.BILLBOARDMODE_ALL = 7;
         TransformNode._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
+        TransformNode._rotationAxisCache = new BABYLON.Quaternion();
         return TransformNode;
     }(BABYLON.Node));
     BABYLON.TransformNode = TransformNode;
@@ -13540,7 +13702,7 @@ var BABYLON;
         // Constructor
         function AbstractMesh(name, scene) {
             if (scene === void 0) { scene = null; }
-            var _this = _super.call(this, name, scene) || this;
+            var _this = _super.call(this, name, scene, false) || this;
             _this._facetNb = 0; // facet number
             _this._partitioningSubdivisions = 10; // number of subdivisions per axis in the partioning space  
             _this._partitioningBBoxRatio = 1.01; // the partioning array space is by default 1% bigger than the bounding box
@@ -14129,21 +14291,6 @@ var BABYLON;
         });
         // Methods
         /**
-         * Copies the paramater passed Matrix into the mesh Pose matrix.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.updatePoseMatrix = function (matrix) {
-            this._poseMatrix.copyFrom(matrix);
-            return this;
-        };
-        /**
-         * Returns the mesh Pose matrix.
-         * Returned object : Matrix
-         */
-        AbstractMesh.prototype.getPoseMatrix = function () {
-            return this._poseMatrix;
-        };
-        /**
          * Disables the mesh edger rendering mode.
          * Returns the AbstractMesh.
          */
@@ -14337,106 +14484,6 @@ var BABYLON;
             }
             return _super.prototype.getWorldMatrix.call(this);
         };
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
-         * The passed axis is also normalized.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.rotate = function (axis, amount, space) {
-            axis.normalize();
-            if (!this.rotationQuaternion) {
-                this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
-                this.rotation = BABYLON.Vector3.Zero();
-            }
-            var rotationQuaternion;
-            if (!space || space === BABYLON.Space.LOCAL) {
-                rotationQuaternion = BABYLON.Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
-                this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
-            }
-            else {
-                if (this.parent) {
-                    var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
-                    invertParentWorldMatrix.invert();
-                    axis = BABYLON.Vector3.TransformNormal(axis, invertParentWorldMatrix);
-                }
-                rotationQuaternion = BABYLON.Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
-                rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
-            }
-            return this;
-        };
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
-         * The passed axis is also normalized.
-         * Returns the AbstractMesh.
-         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
-         */
-        AbstractMesh.prototype.rotateAround = function (point, axis, amount) {
-            axis.normalize();
-            if (!this.rotationQuaternion) {
-                this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
-                this.rotation.copyFromFloats(0, 0, 0);
-            }
-            point.subtractToRef(this.position, BABYLON.Tmp.Vector3[0]);
-            BABYLON.Matrix.TranslationToRef(BABYLON.Tmp.Vector3[0].x, BABYLON.Tmp.Vector3[0].y, BABYLON.Tmp.Vector3[0].z, BABYLON.Tmp.Matrix[0]);
-            BABYLON.Tmp.Matrix[0].invertToRef(BABYLON.Tmp.Matrix[2]);
-            BABYLON.Matrix.RotationAxisToRef(axis, amount, BABYLON.Tmp.Matrix[1]);
-            BABYLON.Tmp.Matrix[2].multiplyToRef(BABYLON.Tmp.Matrix[1], BABYLON.Tmp.Matrix[2]);
-            BABYLON.Tmp.Matrix[2].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[2]);
-            BABYLON.Tmp.Matrix[2].decompose(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[1]);
-            this.position.addInPlace(BABYLON.Tmp.Vector3[1]);
-            BABYLON.Tmp.Quaternion[0].multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
-            return this;
-        };
-        /**
-         * Translates the mesh along the axis vector for the passed distance in the given space.
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.translate = function (axis, distance, space) {
-            var displacementVector = axis.scale(distance);
-            if (!space || space === BABYLON.Space.LOCAL) {
-                var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
-                this.setPositionWithLocalVector(tempV3);
-            }
-            else {
-                this.setAbsolutePosition(this.getAbsolutePosition().add(displacementVector));
-            }
-            return this;
-        };
-        /**
-         * Adds a rotation step to the mesh current rotation.
-         * x, y, z are Euler angles expressed in radians.
-         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
-         * This means this rotation is made in the mesh local space only.
-         * It's useful to set a custom rotation order different from the BJS standard one YXZ.
-         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
-         * ```javascript
-         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
-         * ```
-         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
-         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.addRotation = function (x, y, z) {
-            var rotationQuaternion;
-            if (this.rotationQuaternion) {
-                rotationQuaternion = this.rotationQuaternion;
-            }
-            else {
-                rotationQuaternion = BABYLON.Tmp.Quaternion[1];
-                BABYLON.Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, rotationQuaternion);
-            }
-            var accumulation = BABYLON.Tmp.Quaternion[0];
-            BABYLON.Quaternion.RotationYawPitchRollToRef(y, x, z, accumulation);
-            rotationQuaternion.multiplyInPlace(accumulation);
-            if (!this.rotationQuaternion) {
-                rotationQuaternion.toEulerAnglesToRef(this.rotation);
-            }
-            return this;
-        };
         // ================================== Point of View Movement =================================
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
@@ -14497,47 +14544,6 @@ var BABYLON;
         AbstractMesh.prototype.calcRotatePOV = function (flipBack, twirlClockwise, tiltRight) {
             var defForwardMult = this.definedFacingForward ? 1 : -1;
             return new BABYLON.Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
-        };
-        AbstractMesh.prototype._isSynchronized = function () {
-            if (this._isDirty) {
-                return false;
-            }
-            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
-                return false;
-            if (this._cache.pivotMatrixUpdated) {
-                return false;
-            }
-            if (this.infiniteDistance) {
-                return false;
-            }
-            if (!this._cache.position.equals(this.position))
-                return false;
-            if (this.rotationQuaternion) {
-                if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
-                    return false;
-            }
-            if (!this._cache.rotation.equals(this.rotation))
-                return false;
-            if (!this._cache.scaling.equals(this.scaling))
-                return false;
-            return true;
-        };
-        AbstractMesh.prototype._initCache = function () {
-            _super.prototype._initCache.call(this);
-            this._cache.localMatrixUpdated = false;
-            this._cache.position = BABYLON.Vector3.Zero();
-            this._cache.scaling = BABYLON.Vector3.Zero();
-            this._cache.rotation = BABYLON.Vector3.Zero();
-            this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
-            this._cache.billboardMode = -1;
-        };
-        AbstractMesh.prototype.markAsDirty = function (property) {
-            if (property === "rotation") {
-                this.rotationQuaternion = null;
-            }
-            this._currentRenderId = Number.MAX_VALUE;
-            this._isDirty = true;
-            return this;
         };
         /**
          * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
@@ -15405,7 +15411,6 @@ var BABYLON;
         AbstractMesh.OCCLUSION_TYPE_STRICT = 2;
         AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
         AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
-        AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
         return AbstractMesh;
     }(BABYLON.TransformNode));
     BABYLON.AbstractMesh = AbstractMesh;
@@ -17734,6 +17739,16 @@ var BABYLON;
             */
             this.onGeometryRemovedObservable = new BABYLON.Observable();
             /**
+            * An event triggered when a transform node is created
+            * @type {BABYLON.Observable}
+            */
+            this.onNewTransformNodeAddedObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when a transform node is removed
+            * @type {BABYLON.Observable}
+            */
+            this.onTransformNodeRemovedObservable = new BABYLON.Observable();
+            /**
             * An event triggered when a mesh is created
             * @type {BABYLON.Observable}
             */
@@ -17844,6 +17859,12 @@ var BABYLON;
             /** All of the active cameras added to this scene. */
             this.activeCameras = new Array();
             // Meshes
+            /**
+            * All of the tranform nodes added to this scene.
+            * @see BABYLON.TransformNode
+            * @type {BABYLON.TransformNode[]}
+            */
+            this.transformNodes = new Array();
             /**
             * All of the (abstract) meshes added to this scene.
             * @see BABYLON.AbstractMesh
@@ -19371,11 +19392,20 @@ var BABYLON;
                 // Remove from the scene if mesh found
                 this.meshes.splice(index, 1);
             }
-            //notify the collision coordinator
-            if (this.collisionCoordinator) {
-                this.collisionCoordinator.onMeshRemoved(toRemove);
-            }
             this.onMeshRemovedObservable.notifyObservers(toRemove);
+            return index;
+        };
+        Scene.prototype.addTransformNode = function (newTransformNode) {
+            this.transformNodes.push(newTransformNode);
+            this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
+        };
+        Scene.prototype.removeTransformNode = function (toRemove) {
+            var index = this.transformNodes.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if found
+                this.transformNodes.splice(index, 1);
+            }
+            this.onTransformNodeRemovedObservable.notifyObservers(toRemove);
             return index;
         };
         Scene.prototype.removeSkeleton = function (toRemove) {
@@ -19715,6 +19745,24 @@ var BABYLON;
             });
         };
         /**
+         * Get the first added transform node found of a given ID
+         * @param {string} id - the id to search for
+         * @return {BABYLON.TransformNode|null} the transform node found or null if not found at all.
+         */
+        Scene.prototype.getTransformNodeByID = function (id) {
+            for (var index = 0; index < this.transformNodes.length; index++) {
+                if (this.transformNodes[index].id === id) {
+                    return this.transformNodes[index];
+                }
+            }
+            return null;
+        };
+        Scene.prototype.getTransformNodesByID = function (id) {
+            return this.transformNodes.filter(function (m) {
+                return m.id === id;
+            });
+        };
+        /**
          * Get a mesh with its auto-generated unique id
          * @param {number} uniqueId - the unique id to search for
          * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
@@ -19750,6 +19798,11 @@ var BABYLON;
             for (index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
                     return this.meshes[index];
+                }
+            }
+            for (index = this.transformNodes.length - 1; index >= 0; index--) {
+                if (this.transformNodes[index].id === id) {
+                    return this.transformNodes[index];
                 }
             }
             for (index = this.cameras.length - 1; index >= 0; index--) {
@@ -19800,6 +19853,14 @@ var BABYLON;
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].name === name) {
                     return this.meshes[index];
+                }
+            }
+            return null;
+        };
+        Scene.prototype.getTransformNodeByName = function (name) {
+            for (var index = 0; index < this.transformNodes.length; index++) {
+                if (this.transformNodes[index].name === name) {
+                    return this.transformNodes[index];
                 }
             }
             return null;
@@ -20711,6 +20772,9 @@ var BABYLON;
             // Release meshes
             while (this.meshes.length) {
                 this.meshes[0].dispose(true);
+            }
+            while (this.transformNodes.length) {
+                this.removeTransformNode(this.transformNodes[0]);
             }
             // Release cameras
             while (this.cameras.length) {
