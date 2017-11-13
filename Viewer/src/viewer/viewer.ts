@@ -107,6 +107,9 @@ export abstract class AbstractViewer {
         this.scene = new Scene(this.engine);
         // make sure there is a default camera and light.
         this.scene.createDefaultCameraOrLight(true, true, true);
+        if (this.configuration.scene && this.configuration.scene.debug) {
+            this.scene.debugLayer.show();
+        }
         return Promise.resolve(this.scene);
     }
 

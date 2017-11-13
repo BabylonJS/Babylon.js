@@ -46,6 +46,7 @@ export interface ViewerConfiguration {
     };
 
     scene?: {
+        debug?: boolean;
         autoRotate?: boolean;
         rotationSpeed?: number;
         defaultCamera?: boolean;
