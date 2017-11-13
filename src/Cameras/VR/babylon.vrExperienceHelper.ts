@@ -30,23 +30,43 @@ module BABYLON {
         public onEnteringVR: () => void;
         public onExitingVR: () => void;
         public onControllerMeshLoaded: (controller: WebVRController) => void;
+
+        public get deviceOrientationCamera(): DeviceOrientationCamera {
+            return this._deviceOrientationCamera;
+        }
+
+        // Based on the current WebVR support, returns the current VR camera used
+        public get currentVRCamera(): FreeCamera {
+            if (this._webVRready) {
+                return this._webVRCamera;
+            }
+            else {
+                return this._vrDeviceOrientationCamera;
+            }
+        }
+
+        public get webVRCamera(): WebVRFreeCamera {
+            return this._webVRCamera;
+        }
+
+        public get vrDeviceOrientationCamera(): VRDeviceOrientationFreeCamera {
+            return this._vrDeviceOrientationCamera;
+        }
                 
         constructor(scene: Scene, public webVROptions: WebVROptions = {}) {
             this._scene = scene;
 
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
+                this._position = new BABYLON.Vector3(0, 2, 0);
                 this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
             }
             else {
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._scene.activeCamera.position, scene);
-                if ((<FreeCamera>scene.activeCamera).rotation) {
-                    this._deviceOrientationCamera.rotation = (<FreeCamera>scene.activeCamera).rotation.clone();
-                }
+                this._position = this._scene.activeCamera.position.clone();
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position, scene);
                 this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
                 this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
             }
             this._scene.activeCamera = this._deviceOrientationCamera;
-            this._position = this._scene.activeCamera.position;
             this._canvas = scene.getEngine().getRenderingCanvas();
             if (this._canvas) {
                 this._scene.activeCamera.attachControl(this._canvas);
@@ -136,6 +156,7 @@ module BABYLON {
             this.updateButtonVisibility();
         }
 
+        // Raised when one of the controller has loaded successfully its associated default mesh
         private _onDefaultMeshLoaded(webVRController: WebVRController) {
             if (this.onControllerMeshLoaded) {
                 this.onControllerMeshLoaded(webVRController);
@@ -207,6 +228,10 @@ module BABYLON {
          * Otherwise, will use the fullscreen API.
          */
         public enterVR() {
+            if (this._scene.activeCamera) {
+                this._position = this._scene.activeCamera.position.clone();
+            }
+
             if (this.onEnteringVR) {
                 this.onEnteringVR();
             }
@@ -243,7 +268,8 @@ module BABYLON {
                 this._scene.getEngine().disableVR();
             }
             if (this._scene.activeCamera) {
-                this._position = this._scene.activeCamera.position;
+                this._position = this._scene.activeCamera.position.clone();
+                
             }
             this._deviceOrientationCamera.position = this._position;
             this._scene.activeCamera = this._deviceOrientationCamera;
