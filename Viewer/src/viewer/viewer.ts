@@ -31,18 +31,6 @@ export abstract class AbstractViewer {
         this.onSceneInitObservable = new PromiseObservable();
         this.onEngineInitObservable = new PromiseObservable();
         this.onModelLoadedObservable = new PromiseObservable();
-        // adding preconfigured functions
-        if (this.configuration.observers) {
-            if (this.configuration.observers.onEngineInit) {
-                this.onEngineInitObservable.add(window[this.configuration.observers.onEngineInit]);
-            }
-            if (this.configuration.observers.onSceneInit) {
-                this.onEngineInitObservable.add(window[this.configuration.observers.onSceneInit]);
-            }
-            if (this.configuration.observers.onModelLoaded) {
-                this.onEngineInitObservable.add(window[this.configuration.observers.onModelLoaded]);
-            }
-        }
 
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);
@@ -55,6 +43,20 @@ export abstract class AbstractViewer {
         // extend the configuration
         configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
             this.configuration = configuration;
+
+            // adding preconfigured functions
+            if (this.configuration.observers) {
+                if (this.configuration.observers.onEngineInit) {
+                    this.onEngineInitObservable.add(window[this.configuration.observers.onEngineInit]);
+                }
+                if (this.configuration.observers.onSceneInit) {
+                    this.onSceneInitObservable.add(window[this.configuration.observers.onSceneInit]);
+                }
+                if (this.configuration.observers.onModelLoaded) {
+                    this.onModelLoadedObservable.add(window[this.configuration.observers.onModelLoaded]);
+                }
+            }
+
             // initialize the templates
             let templateConfiguration = this.configuration.templates || {};
             this.templateManager.initTemplate(templateConfiguration);
