@@ -69,7 +69,7 @@
 					BABYLONDEVTOOLS.Loader.debugShortcut(engine);
 
 					// call the scene creation from the js.
-					if (delayCreateScene) {
+					if (typeof delayCreateScene !== "undefined") {
 						var scene = delayCreateScene();
 
 						if (scene) {
