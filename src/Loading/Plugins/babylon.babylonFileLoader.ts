@@ -434,6 +434,14 @@
                     }
                 }
 
+                // Transform nodes
+                if (parsedData.transformNodes !== undefined && parsedData.transformNodes !== null) {
+                    for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
+                        var parsedTransformNode = parsedData.transformNodes[index];
+                        TransformNode.Parse(parsedTransformNode, scene, rootUrl);
+                    }
+                }                
+
                 // Meshes
                 if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                     for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
@@ -498,6 +506,13 @@
                 loadedSounds = [];
 
                 // Connect parents & children and parse actions
+                for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                    var transformNode = scene.transformNodes[index];
+                    if (transformNode._waitingParentId) {
+                        transformNode.parent = scene.getLastEntryByID(transformNode._waitingParentId);
+                        transformNode._waitingParentId = null;
+                    }
+                }                
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     var mesh = scene.meshes[index];
                     if (mesh._waitingParentId) {
