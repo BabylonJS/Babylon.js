@@ -35,6 +35,14 @@ module BABYLON {
         * @type {BABYLON.Observable}
         */
         public onAfterWorldMatrixUpdateObservable = new Observable<TransformNode>();        
+
+        constructor(name: string, scene: Nullable<Scene> = null, isPure = true) {
+            super(name, scene);
+
+            if (isPure) {
+                this.getScene().addTransformNode(this);
+            }
+        }        
                 
        /**
          * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z. 
@@ -100,6 +108,76 @@ module BABYLON {
         public get worldMatrixFromCache(): Matrix {
             return this._worldMatrix;
         }
+
+        /**
+         * Copies the paramater passed Matrix into the mesh Pose matrix.  
+         * Returns the AbstractMesh.  
+         */
+        public updatePoseMatrix(matrix: Matrix): TransformNode {
+            this._poseMatrix.copyFrom(matrix);
+            return this;
+        }
+
+        /**
+         * Returns the mesh Pose matrix.  
+         * Returned object : Matrix
+         */
+        public getPoseMatrix(): Matrix {
+            return this._poseMatrix;
+        }
+        
+        public _isSynchronized(): boolean {
+            if (this._isDirty) {
+                return false;
+            }
+
+            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
+                return false;
+
+            if (this._cache.pivotMatrixUpdated) {
+                return false;
+            }
+
+            if (this.infiniteDistance) {
+                return false;
+            }
+
+            if (!this._cache.position.equals(this.position))
+                return false;
+
+            if (this.rotationQuaternion) {
+                if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
+                    return false;
+            }
+
+            if (!this._cache.rotation.equals(this.rotation))
+                return false;
+
+            if (!this._cache.scaling.equals(this.scaling))
+                return false;
+
+            return true;
+        }
+
+        public _initCache() {
+            super._initCache();
+
+            this._cache.localMatrixUpdated = false;
+            this._cache.position = Vector3.Zero();
+            this._cache.scaling = Vector3.Zero();
+            this._cache.rotation = Vector3.Zero();
+            this._cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
+            this._cache.billboardMode = -1;
+        }
+
+        public markAsDirty(property: string): TransformNode {
+            if (property === "rotation") {
+                this.rotationQuaternion = null;
+            }
+            this._currentRenderId = Number.MAX_VALUE;
+            this._isDirty = true;
+            return this;
+        }        
 
         /**
          * Returns the current mesh absolute position.
@@ -424,6 +502,114 @@ module BABYLON {
             }
             this._transformToBoneReferal = null;
             this.parent = null;
+            return this;
+        }        
+
+        private static _rotationAxisCache = new Quaternion();
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.  
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
+         * The passed axis is also normalized.  
+         * Returns the AbstractMesh.
+         */
+        public rotate(axis: Vector3, amount: number, space?: Space): TransformNode {
+            axis.normalize();
+            if (!this.rotationQuaternion) {
+                this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation = Vector3.Zero();
+            }
+            var rotationQuaternion: Quaternion;
+            if (!space || (space as any) === Space.LOCAL) {
+                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
+                this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
+            }
+            else {
+                if (this.parent) {
+                    var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
+                    invertParentWorldMatrix.invert();
+                    axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
+                }
+                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
+                rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
+            }
+            return this;
+        }
+
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.  
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
+         * The passed axis is also normalized.  
+         * Returns the AbstractMesh.
+         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
+         */
+        public rotateAround(point: Vector3, axis: Vector3, amount: number): TransformNode {
+            axis.normalize();
+            if (!this.rotationQuaternion) {
+                this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation.copyFromFloats(0, 0, 0);
+            }
+            point.subtractToRef(this.position, Tmp.Vector3[0]);
+            Matrix.TranslationToRef(Tmp.Vector3[0].x, Tmp.Vector3[0].y, Tmp.Vector3[0].z, Tmp.Matrix[0]);
+            Tmp.Matrix[0].invertToRef(Tmp.Matrix[2]);
+            Matrix.RotationAxisToRef(axis, amount, Tmp.Matrix[1]);
+            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[2]);
+            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[2]);
+
+            Tmp.Matrix[2].decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
+
+            this.position.addInPlace(Tmp.Vector3[1]);
+            Tmp.Quaternion[0].multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
+
+            return this;
+        }
+
+        /**
+         * Translates the mesh along the axis vector for the passed distance in the given space.  
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Returns the AbstractMesh.
+         */
+        public translate(axis: Vector3, distance: number, space?: Space): TransformNode {
+            var displacementVector = axis.scale(distance);
+            if (!space || (space as any) === Space.LOCAL) {
+                var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
+                this.setPositionWithLocalVector(tempV3);
+            }
+            else {
+                this.setAbsolutePosition(this.getAbsolutePosition().add(displacementVector));
+            }
+            return this;
+        }
+
+        /**
+         * Adds a rotation step to the mesh current rotation.  
+         * x, y, z are Euler angles expressed in radians.  
+         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.  
+         * This means this rotation is made in the mesh local space only.   
+         * It's useful to set a custom rotation order different from the BJS standard one YXZ.  
+         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.  
+         * ```javascript
+         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
+         * ```
+         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.  
+         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.   
+         * Returns the AbstractMesh.  
+         */
+        public addRotation(x: number, y: number, z: number): TransformNode {
+            var rotationQuaternion;
+            if (this.rotationQuaternion) {
+                rotationQuaternion = this.rotationQuaternion;
+            }
+            else {
+                rotationQuaternion = Tmp.Quaternion[1];
+                Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, rotationQuaternion);
+            }
+            var accumulation = BABYLON.Tmp.Quaternion[0];
+            Quaternion.RotationYawPitchRollToRef(y, x, z, accumulation);
+            rotationQuaternion.multiplyInPlace(accumulation);
+            if (!this.rotationQuaternion) {
+                rotationQuaternion.toEulerAnglesToRef(this.rotation);
+            }
             return this;
         }        
         

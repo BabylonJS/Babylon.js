@@ -403,6 +403,18 @@
         public onGeometryRemovedObservable = new Observable<Geometry>();
 
         /**
+        * An event triggered when a transform node is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewTransformNodeAddedObservable = new Observable<TransformNode>();
+        
+        /**
+        * An event triggered when a transform node is removed
+        * @type {BABYLON.Observable}
+        */
+        public onTransformNodeRemovedObservable = new Observable<TransformNode>();        
+
+        /**
         * An event triggered when a mesh is created
         * @type {BABYLON.Observable}
         */
@@ -665,6 +677,13 @@
         public activeCamera: Nullable<Camera>;
 
         // Meshes
+        /**
+        * All of the tranform nodes added to this scene.
+        * @see BABYLON.TransformNode
+        * @type {BABYLON.TransformNode[]}
+        */
+        public transformNodes = new Array<TransformNode>();
+
         /**
         * All of the (abstract) meshes added to this scene.
         * @see BABYLON.AbstractMesh
@@ -2166,12 +2185,26 @@
                 // Remove from the scene if mesh found
                 this.meshes.splice(index, 1);
             }
-            //notify the collision coordinator
-            if (this.collisionCoordinator) {
-                this.collisionCoordinator.onMeshRemoved(toRemove);
-            }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
+
+            return index;
+        }        
+
+        public addTransformNode(newTransformNode: TransformNode) {
+            this.transformNodes.push(newTransformNode);
+
+            this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
+        }        
+
+        public removeTransformNode(toRemove: TransformNode): number {
+            var index = this.transformNodes.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if found
+                this.transformNodes.splice(index, 1);
+            }
+
+            this.onTransformNodeRemovedObservable.notifyObservers(toRemove);
 
             return index;
         }
@@ -2572,6 +2605,27 @@
         }
 
         /**
+         * Get the first added transform node found of a given ID
+         * @param {string} id - the id to search for
+         * @return {BABYLON.TransformNode|null} the transform node found or null if not found at all.
+         */
+        public getTransformNodeByID(id: string): Nullable<TransformNode> {
+            for (var index = 0; index < this.transformNodes.length; index++) {
+                if (this.transformNodes[index].id === id) {
+                    return this.transformNodes[index];
+                }
+            }
+
+            return null;
+        }
+
+        public getTransformNodesByID(id: string): Array<TransformNode> {
+            return this.transformNodes.filter(function (m) {
+                return m.id === id;
+            })
+        }        
+
+        /**
          * Get a mesh with its auto-generated unique id
          * @param {number} uniqueId - the unique id to search for
          * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
@@ -2613,6 +2667,12 @@
                     return this.meshes[index];
                 }
             }
+
+            for (index = this.transformNodes.length - 1; index >= 0; index--) {
+                if (this.transformNodes[index].id === id) {
+                    return this.transformNodes[index];
+                }
+            }            
 
             for (index = this.cameras.length - 1; index >= 0; index--) {
                 if (this.cameras[index].id === id) {
@@ -2686,6 +2746,16 @@
 
             return null;
         }
+
+        public getTransformNodeByName(name: string): Nullable<TransformNode> {
+            for (var index = 0; index < this.transformNodes.length; index++) {
+                if (this.transformNodes[index].name === name) {
+                    return this.transformNodes[index];
+                }
+            }
+
+            return null;
+        }        
 
         public getSoundByName(name: string): Nullable<Sound> {
             var index: number;
@@ -3777,6 +3847,9 @@
             // Release meshes
             while (this.meshes.length) {
                 this.meshes[0].dispose(true);
+            }
+            while (this.transformNodes.length) {
+                this.removeTransformNode(this.transformNodes[0]);
             }
 
             // Release cameras
