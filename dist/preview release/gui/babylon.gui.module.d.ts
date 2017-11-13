@@ -41,6 +41,7 @@ declare module BABYLON.GUI {
         readonly layer: Nullable<Layer>;
         readonly rootContainer: Container;
         focusedControl: Nullable<IFocusableControl>;
+        isForeground: boolean;
         constructor(name: string, width: number | undefined, height: number | undefined, scene: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         markAsDirty(): void;

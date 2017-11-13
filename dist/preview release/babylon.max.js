@@ -12971,6 +12971,570 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var TransformNode = /** @class */ (function (_super) {
+        __extends(TransformNode, _super);
+        function TransformNode() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            // Properties
+            _this._rotation = BABYLON.Vector3.Zero();
+            _this._scaling = BABYLON.Vector3.One();
+            _this._isDirty = false;
+            _this.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_NONE;
+            _this.scalingDeterminant = 1;
+            _this.infiniteDistance = false;
+            _this.position = BABYLON.Vector3.Zero();
+            _this._localWorld = BABYLON.Matrix.Zero();
+            _this._worldMatrix = BABYLON.Matrix.Zero();
+            _this._absolutePosition = BABYLON.Vector3.Zero();
+            _this._pivotMatrix = BABYLON.Matrix.Identity();
+            _this._postMultiplyPivotMatrix = false;
+            _this._isWorldMatrixFrozen = false;
+            /**
+            * An event triggered after the world matrix is updated
+            * @type {BABYLON.Observable}
+            */
+            _this.onAfterWorldMatrixUpdateObservable = new BABYLON.Observable();
+            _this._nonUniformScaling = false;
+            return _this;
+        }
+        Object.defineProperty(TransformNode.prototype, "rotation", {
+            /**
+              * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z.
+              * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
+              * Default : (0.0, 0.0, 0.0)
+              */
+            get: function () {
+                return this._rotation;
+            },
+            set: function (newRotation) {
+                this._rotation = newRotation;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TransformNode.prototype, "scaling", {
+            /**
+             * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.
+             * Default : (1.0, 1.0, 1.0)
+             */
+            get: function () {
+                return this._scaling;
+            },
+            /**
+             * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.
+             * Default : (1.0, 1.0, 1.0)
+            */
+            set: function (newScaling) {
+                this._scaling = newScaling;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TransformNode.prototype, "rotationQuaternion", {
+            /**
+             * Rotation Quaternion property : this a Quaternion object depicting the mesh rotation by using a unit quaternion.
+             * It's null by default.
+             * If set, only the rotationQuaternion is then used to compute the mesh rotation and its property `.rotation\ is then ignored and set to (0.0, 0.0, 0.0)
+             */
+            get: function () {
+                return this._rotationQuaternion;
+            },
+            set: function (quaternion) {
+                this._rotationQuaternion = quaternion;
+                //reset the rotation vector. 
+                if (quaternion && this.rotation.length()) {
+                    this.rotation.copyFromFloats(0.0, 0.0, 0.0);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Returns the latest update of the World matrix
+         * Returns a Matrix.
+         */
+        TransformNode.prototype.getWorldMatrix = function () {
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this.computeWorldMatrix();
+            }
+            return this._worldMatrix;
+        };
+        Object.defineProperty(TransformNode.prototype, "worldMatrixFromCache", {
+            /**
+             * Returns directly the latest state of the mesh World matrix.
+             * A Matrix is returned.
+             */
+            get: function () {
+                return this._worldMatrix;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TransformNode.prototype, "absolutePosition", {
+            /**
+             * Returns the current mesh absolute position.
+             * Retuns a Vector3.
+             */
+            get: function () {
+                return this._absolutePosition;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Sets a new pivot matrix to the mesh.
+         * Returns the AbstractMesh.
+        */
+        TransformNode.prototype.setPivotMatrix = function (matrix, postMultiplyPivotMatrix) {
+            if (postMultiplyPivotMatrix === void 0) { postMultiplyPivotMatrix = false; }
+            this._pivotMatrix = matrix.clone();
+            this._cache.pivotMatrixUpdated = true;
+            this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
+            if (this._postMultiplyPivotMatrix) {
+                this._pivotMatrixInverse = BABYLON.Matrix.Invert(matrix);
+            }
+            return this;
+        };
+        /**
+         * Returns the mesh pivot matrix.
+         * Default : Identity.
+         * A Matrix is returned.
+         */
+        TransformNode.prototype.getPivotMatrix = function () {
+            return this._pivotMatrix;
+        };
+        /**
+         * Prevents the World matrix to be computed any longer.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.freezeWorldMatrix = function () {
+            this._isWorldMatrixFrozen = false; // no guarantee world is not already frozen, switch off temporarily
+            this.computeWorldMatrix(true);
+            this._isWorldMatrixFrozen = true;
+            return this;
+        };
+        /**
+         * Allows back the World matrix computation.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.unfreezeWorldMatrix = function () {
+            this._isWorldMatrixFrozen = false;
+            this.computeWorldMatrix(true);
+            return this;
+        };
+        Object.defineProperty(TransformNode.prototype, "isWorldMatrixFrozen", {
+            /**
+             * True if the World matrix has been frozen.
+             * Returns a boolean.
+             */
+            get: function () {
+                return this._isWorldMatrixFrozen;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+            * Retuns the mesh absolute position in the World.
+            * Returns a Vector3.
+            */
+        TransformNode.prototype.getAbsolutePosition = function () {
+            this.computeWorldMatrix();
+            return this._absolutePosition;
+        };
+        /**
+         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.setAbsolutePosition = function (absolutePosition) {
+            if (!absolutePosition) {
+                return this;
+            }
+            var absolutePositionX;
+            var absolutePositionY;
+            var absolutePositionZ;
+            if (absolutePosition.x === undefined) {
+                if (arguments.length < 3) {
+                    return this;
+                }
+                absolutePositionX = arguments[0];
+                absolutePositionY = arguments[1];
+                absolutePositionZ = arguments[2];
+            }
+            else {
+                absolutePositionX = absolutePosition.x;
+                absolutePositionY = absolutePosition.y;
+                absolutePositionZ = absolutePosition.z;
+            }
+            if (this.parent) {
+                var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
+                invertParentWorldMatrix.invert();
+                var worldPosition = new BABYLON.Vector3(absolutePositionX, absolutePositionY, absolutePositionZ);
+                this.position = BABYLON.Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);
+            }
+            else {
+                this.position.x = absolutePositionX;
+                this.position.y = absolutePositionY;
+                this.position.z = absolutePositionZ;
+            }
+            return this;
+        };
+        /**
+           * Sets the mesh position in its local space.
+           * Returns the AbstractMesh.
+           */
+        TransformNode.prototype.setPositionWithLocalVector = function (vector3) {
+            this.computeWorldMatrix();
+            this.position = BABYLON.Vector3.TransformNormal(vector3, this._localWorld);
+            return this;
+        };
+        /**
+         * Returns the mesh position in the local space from the current World matrix values.
+         * Returns a new Vector3.
+         */
+        TransformNode.prototype.getPositionExpressedInLocalSpace = function () {
+            this.computeWorldMatrix();
+            var invLocalWorldMatrix = this._localWorld.clone();
+            invLocalWorldMatrix.invert();
+            return BABYLON.Vector3.TransformNormal(this.position, invLocalWorldMatrix);
+        };
+        /**
+         * Translates the mesh along the passed Vector3 in its local space.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.locallyTranslate = function (vector3) {
+            this.computeWorldMatrix(true);
+            this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
+            return this;
+        };
+        TransformNode.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor, space) {
+            /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
+            /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
+            /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
+            /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
+            /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
+            /// <returns>Mesh oriented towards targetMesh</returns>
+            if (yawCor === void 0) { yawCor = 0; }
+            if (pitchCor === void 0) { pitchCor = 0; }
+            if (rollCor === void 0) { rollCor = 0; }
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            var dv = BABYLON.AbstractMesh._lookAtVectorCache;
+            var pos = space === BABYLON.Space.LOCAL ? this.position : this.getAbsolutePosition();
+            targetPoint.subtractToRef(pos, dv);
+            var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
+            var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
+            var pitch = Math.atan2(dv.y, len);
+            this.rotationQuaternion = this.rotationQuaternion || new BABYLON.Quaternion();
+            BABYLON.Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
+            return this;
+        };
+        /**
+          * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.
+          * This Vector3 is expressed in the World space.
+          */
+        TransformNode.prototype.getDirection = function (localAxis) {
+            var result = BABYLON.Vector3.Zero();
+            this.getDirectionToRef(localAxis, result);
+            return result;
+        };
+        /**
+         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
+         * localAxis is expressed in the mesh local space.
+         * result is computed in the Wordl space from the mesh World matrix.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.getDirectionToRef = function (localAxis, result) {
+            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
+            return this;
+        };
+        TransformNode.prototype.setPivotPoint = function (point, space) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            if (this.getScene().getRenderId() == 0) {
+                this.computeWorldMatrix(true);
+            }
+            var wm = this.getWorldMatrix();
+            if (space == BABYLON.Space.WORLD) {
+                var tmat = BABYLON.Tmp.Matrix[0];
+                wm.invertToRef(tmat);
+                point = BABYLON.Vector3.TransformCoordinates(point, tmat);
+            }
+            BABYLON.Vector3.TransformCoordinatesToRef(point, wm, this.position);
+            this._pivotMatrix.m[12] = -point.x;
+            this._pivotMatrix.m[13] = -point.y;
+            this._pivotMatrix.m[14] = -point.z;
+            this._cache.pivotMatrixUpdated = true;
+            return this;
+        };
+        /**
+         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
+         */
+        TransformNode.prototype.getPivotPoint = function () {
+            var point = BABYLON.Vector3.Zero();
+            this.getPivotPointToRef(point);
+            return point;
+        };
+        /**
+         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.getPivotPointToRef = function (result) {
+            result.x = -this._pivotMatrix.m[12];
+            result.y = -this._pivotMatrix.m[13];
+            result.z = -this._pivotMatrix.m[14];
+            return this;
+        };
+        /**
+         * Returns a new Vector3 set with the mesh pivot point World coordinates.
+         */
+        TransformNode.prototype.getAbsolutePivotPoint = function () {
+            var point = BABYLON.Vector3.Zero();
+            this.getAbsolutePivotPointToRef(point);
+            return point;
+        };
+        /**
+         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.getAbsolutePivotPointToRef = function (result) {
+            result.x = this._pivotMatrix.m[12];
+            result.y = this._pivotMatrix.m[13];
+            result.z = this._pivotMatrix.m[14];
+            this.getPivotPointToRef(result);
+            BABYLON.Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
+            return this;
+        };
+        /**
+         * Defines the passed mesh as the parent of the current mesh.
+         * Returns the AbstractMesh.
+         */
+        TransformNode.prototype.setParent = function (mesh) {
+            var parent = mesh;
+            if (mesh == null) {
+                var rotation = BABYLON.Tmp.Quaternion[0];
+                var position = BABYLON.Tmp.Vector3[0];
+                var scale = BABYLON.Tmp.Vector3[1];
+                this.getWorldMatrix().decompose(scale, rotation, position);
+                if (this.rotationQuaternion) {
+                    this.rotationQuaternion.copyFrom(rotation);
+                }
+                else {
+                    rotation.toEulerAnglesToRef(this.rotation);
+                }
+                this.position.x = position.x;
+                this.position.y = position.y;
+                this.position.z = position.z;
+            }
+            else {
+                var position = BABYLON.Tmp.Vector3[0];
+                var m1 = BABYLON.Tmp.Matrix[0];
+                parent.getWorldMatrix().invertToRef(m1);
+                BABYLON.Vector3.TransformCoordinatesToRef(this.position, m1, position);
+                this.position.copyFrom(position);
+            }
+            this.parent = parent;
+            return this;
+        };
+        Object.defineProperty(TransformNode.prototype, "nonUniformScaling", {
+            get: function () {
+                return this._nonUniformScaling;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        TransformNode.prototype._updateNonUniformScalingState = function (value) {
+            if (this._nonUniformScaling === value) {
+                return false;
+            }
+            this._nonUniformScaling = true;
+            return true;
+        };
+        /**
+         * Attach the current TransformNode to another TransformNode associated with a bone
+         * @param bone Bone affecting the TransformNode
+         * @param affectedTransformNode TransformNode associated with the bone
+         */
+        TransformNode.prototype.attachToBone = function (bone, affectedTransformNode) {
+            this._transformToBoneReferal = affectedTransformNode;
+            this.parent = bone;
+            if (bone.getWorldMatrix().determinant() < 0) {
+                this.scalingDeterminant *= -1;
+            }
+            return this;
+        };
+        TransformNode.prototype.detachFromBone = function () {
+            if (!this.parent) {
+                return this;
+            }
+            if (this.parent.getWorldMatrix().determinant() < 0) {
+                this.scalingDeterminant *= -1;
+            }
+            this._transformToBoneReferal = null;
+            this.parent = null;
+            return this;
+        };
+        /**
+         * Computes the mesh World matrix and returns it.
+         * If the mesh world matrix is frozen, this computation does nothing more than returning the last frozen values.
+         * If the parameter `force` is let to `false` (default), the current cached World matrix is returned.
+         * If the parameter `force`is set to `true`, the actual computation is done.
+         * Returns the mesh World Matrix.
+         */
+        TransformNode.prototype.computeWorldMatrix = function (force) {
+            if (this._isWorldMatrixFrozen) {
+                return this._worldMatrix;
+            }
+            if (!force && this.isSynchronized(true)) {
+                return this._worldMatrix;
+            }
+            this._cache.position.copyFrom(this.position);
+            this._cache.scaling.copyFrom(this.scaling);
+            this._cache.pivotMatrixUpdated = false;
+            this._cache.billboardMode = this.billboardMode;
+            this._currentRenderId = this.getScene().getRenderId();
+            this._isDirty = false;
+            // Scaling
+            BABYLON.Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, BABYLON.Tmp.Matrix[1]);
+            // Rotation
+            //rotate, if quaternion is set and rotation was used
+            if (this.rotationQuaternion) {
+                var len = this.rotation.length();
+                if (len) {
+                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z));
+                    this.rotation.copyFromFloats(0, 0, 0);
+                }
+            }
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion.toRotationMatrix(BABYLON.Tmp.Matrix[0]);
+                this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
+            }
+            else {
+                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, BABYLON.Tmp.Matrix[0]);
+                this._cache.rotation.copyFrom(this.rotation);
+            }
+            // Translation
+            var camera = this.getScene().activeCamera;
+            if (this.infiniteDistance && !this.parent && camera) {
+                var cameraWorldMatrix = camera.getWorldMatrix();
+                var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
+                BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y, this.position.z + cameraGlobalPosition.z, BABYLON.Tmp.Matrix[2]);
+            }
+            else {
+                BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, BABYLON.Tmp.Matrix[2]);
+            }
+            // Composing transformations
+            this._pivotMatrix.multiplyToRef(BABYLON.Tmp.Matrix[1], BABYLON.Tmp.Matrix[4]);
+            BABYLON.Tmp.Matrix[4].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
+            // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
+            if (this.billboardMode !== BABYLON.AbstractMesh.BILLBOARDMODE_NONE && camera) {
+                if ((this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_ALL) !== BABYLON.AbstractMesh.BILLBOARDMODE_ALL) {
+                    // Need to decompose each rotation here
+                    var currentPosition = BABYLON.Tmp.Vector3[3];
+                    if (this.parent && this.parent.getWorldMatrix) {
+                        if (this._transformToBoneReferal) {
+                            this.parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
+                            BABYLON.Vector3.TransformCoordinatesToRef(this.position, BABYLON.Tmp.Matrix[6], currentPosition);
+                        }
+                        else {
+                            BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
+                        }
+                    }
+                    else {
+                        currentPosition.copyFrom(this.position);
+                    }
+                    currentPosition.subtractInPlace(camera.globalPosition);
+                    var finalEuler = BABYLON.Tmp.Vector3[4].copyFromFloats(0, 0, 0);
+                    if ((this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_X) === BABYLON.AbstractMesh.BILLBOARDMODE_X) {
+                        finalEuler.x = Math.atan2(-currentPosition.y, currentPosition.z);
+                    }
+                    if ((this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_Y) === BABYLON.AbstractMesh.BILLBOARDMODE_Y) {
+                        finalEuler.y = Math.atan2(currentPosition.x, currentPosition.z);
+                    }
+                    if ((this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_Z) === BABYLON.AbstractMesh.BILLBOARDMODE_Z) {
+                        finalEuler.z = Math.atan2(currentPosition.y, currentPosition.x);
+                    }
+                    BABYLON.Matrix.RotationYawPitchRollToRef(finalEuler.y, finalEuler.x, finalEuler.z, BABYLON.Tmp.Matrix[0]);
+                }
+                else {
+                    BABYLON.Tmp.Matrix[1].copyFrom(camera.getViewMatrix());
+                    BABYLON.Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
+                    BABYLON.Tmp.Matrix[1].invertToRef(BABYLON.Tmp.Matrix[0]);
+                }
+                BABYLON.Tmp.Matrix[1].copyFrom(BABYLON.Tmp.Matrix[5]);
+                BABYLON.Tmp.Matrix[1].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
+            }
+            // Local world
+            BABYLON.Tmp.Matrix[5].multiplyToRef(BABYLON.Tmp.Matrix[2], this._localWorld);
+            // Parent
+            if (this.parent && this.parent.getWorldMatrix) {
+                if (this.billboardMode !== BABYLON.AbstractMesh.BILLBOARDMODE_NONE) {
+                    if (this._transformToBoneReferal) {
+                        this.parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
+                        BABYLON.Tmp.Matrix[5].copyFrom(BABYLON.Tmp.Matrix[6]);
+                    }
+                    else {
+                        BABYLON.Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
+                    }
+                    this._localWorld.getTranslationToRef(BABYLON.Tmp.Vector3[5]);
+                    BABYLON.Vector3.TransformCoordinatesToRef(BABYLON.Tmp.Vector3[5], BABYLON.Tmp.Matrix[5], BABYLON.Tmp.Vector3[5]);
+                    this._worldMatrix.copyFrom(this._localWorld);
+                    this._worldMatrix.setTranslation(BABYLON.Tmp.Vector3[5]);
+                }
+                else {
+                    if (this._transformToBoneReferal) {
+                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
+                        BABYLON.Tmp.Matrix[6].multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), this._worldMatrix);
+                    }
+                    else {
+                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+                    }
+                }
+                this._markSyncedWithParent();
+            }
+            else {
+                this._worldMatrix.copyFrom(this._localWorld);
+            }
+            // Post multiply inverse of pivotMatrix
+            if (this._postMultiplyPivotMatrix) {
+                this._worldMatrix.multiplyToRef(this._pivotMatrixInverse, this._worldMatrix);
+            }
+            // Normal matrix
+            if (this.scaling.isNonUniform) {
+                this._updateNonUniformScalingState(true);
+            }
+            else if (this.parent && this.parent._nonUniformScaling) {
+                this._updateNonUniformScalingState(this.parent._nonUniformScaling);
+            }
+            else {
+                this._updateNonUniformScalingState(false);
+            }
+            this._afterComputeWorldMatrix();
+            // Absolute position
+            this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
+            // Callbacks
+            this.onAfterWorldMatrixUpdateObservable.notifyObservers(this);
+            if (!this._poseMatrix) {
+                this._poseMatrix = BABYLON.Matrix.Invert(this._worldMatrix);
+            }
+            return this._worldMatrix;
+        };
+        TransformNode.prototype._afterComputeWorldMatrix = function () {
+        };
+        // Statics
+        TransformNode.BILLBOARDMODE_NONE = 0;
+        TransformNode.BILLBOARDMODE_X = 1;
+        TransformNode.BILLBOARDMODE_Y = 2;
+        TransformNode.BILLBOARDMODE_Z = 4;
+        TransformNode.BILLBOARDMODE_ALL = 7;
+        TransformNode._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
+        return TransformNode;
+    }(BABYLON.Node));
+    BABYLON.TransformNode = TransformNode;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.transformNode.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
     var AbstractMesh = /** @class */ (function (_super) {
         __extends(AbstractMesh, _super);
         // Constructor
@@ -12990,8 +13554,6 @@ var BABYLON;
                 Z: 1
             };
             _this._facetDepthSort = false; // is the facet depth sort enabled
-            // Normal matrix
-            _this._nonUniformScaling = false;
             // Events
             /**
             * An event triggered when this mesh collides with another one
@@ -13004,18 +13566,12 @@ var BABYLON;
             */
             _this.onCollisionPositionChangeObservable = new BABYLON.Observable();
             /**
-            * An event triggered after the world matrix is updated
-            * @type {BABYLON.Observable}
-            */
-            _this.onAfterWorldMatrixUpdateObservable = new BABYLON.Observable();
-            /**
             * An event triggered when material is changed
             * @type {BABYLON.Observable}
             */
             _this.onMaterialChangedObservable = new BABYLON.Observable();
             // Properties
             _this.definedFacingForward = true; // orientation for POV movement & rotation
-            _this.position = BABYLON.Vector3.Zero();
             /**
             * This property determines the type of occlusion query algorithm to run in WebGl, you can use:
     
@@ -13047,12 +13603,8 @@ var BABYLON;
             _this._occlusionInternalRetryCounter = 0;
             _this._isOccluded = false;
             _this._isOcclusionQueryInProgress = false;
-            _this._rotation = BABYLON.Vector3.Zero();
-            _this._scaling = BABYLON.Vector3.One();
-            _this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
             _this.visibility = 1.0;
             _this.alphaIndex = Number.MAX_VALUE;
-            _this.infiniteDistance = false;
             _this.isVisible = true;
             _this.isPickable = true;
             _this.showBoundingBox = false;
@@ -13072,7 +13624,6 @@ var BABYLON;
             _this._computeBonesUsingShaders = true;
             _this._numBoneInfluencers = 4;
             _this._applyFog = true;
-            _this.scalingDeterminant = 1;
             _this.useOctreeForRenderingSelection = true;
             _this.useOctreeForPicking = true;
             _this.useOctreeForCollisions = true;
@@ -13093,18 +13644,11 @@ var BABYLON;
             _this.edgesWidth = 1;
             _this.edgesColor = new BABYLON.Color4(1, 0, 0, 1);
             // Cache
-            _this._localWorld = BABYLON.Matrix.Zero();
-            _this._worldMatrix = BABYLON.Matrix.Zero();
-            _this._absolutePosition = BABYLON.Vector3.Zero();
             _this._collisionsTransformMatrix = BABYLON.Matrix.Zero();
             _this._collisionsScalingMatrix = BABYLON.Matrix.Zero();
-            _this._isDirty = false;
-            _this._pivotMatrix = BABYLON.Matrix.Identity();
-            _this._postMultiplyPivotMatrix = false;
             _this._isDisposed = false;
             _this._renderId = 0;
             _this._intersectionsInProgress = new Array();
-            _this._isWorldMatrixFrozen = false;
             _this._unIndexed = false;
             _this._lightSources = new Array();
             _this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
@@ -13127,35 +13671,35 @@ var BABYLON;
         }
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_NONE", {
             get: function () {
-                return AbstractMesh._BILLBOARDMODE_NONE;
+                return BABYLON.TransformNode.BILLBOARDMODE_NONE;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_X", {
             get: function () {
-                return AbstractMesh._BILLBOARDMODE_X;
+                return BABYLON.TransformNode.BILLBOARDMODE_X;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_Y", {
             get: function () {
-                return AbstractMesh._BILLBOARDMODE_Y;
+                return BABYLON.TransformNode.BILLBOARDMODE_Y;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_Z", {
             get: function () {
-                return AbstractMesh._BILLBOARDMODE_Z;
+                return BABYLON.TransformNode.BILLBOARDMODE_Z;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_ALL", {
             get: function () {
-                return AbstractMesh._BILLBOARDMODE_ALL;
+                return BABYLON.TransformNode.BILLBOARDMODE_ALL;
             },
             enumerable: true,
             configurable: true
@@ -13236,20 +13780,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(AbstractMesh.prototype, "nonUniformScaling", {
-            get: function () {
-                return this._nonUniformScaling;
-            },
-            set: function (value) {
-                if (this._nonUniformScaling === value) {
-                    return;
-                }
-                this._nonUniformScaling = true;
-                this._markSubMeshesAsMiscDirty();
-            },
-            enumerable: true,
-            configurable: true
-        });
+        AbstractMesh.prototype._updateNonUniformScalingState = function (value) {
+            if (!_super.prototype._updateNonUniformScalingState.call(this, value)) {
+                return false;
+            }
+            this._markSubMeshesAsMiscDirty();
+            return true;
+        };
         Object.defineProperty(AbstractMesh.prototype, "onCollide", {
             set: function (callback) {
                 if (this._onCollideObserver) {
@@ -13569,52 +14106,22 @@ var BABYLON;
                 }
             }
         };
-        Object.defineProperty(AbstractMesh.prototype, "rotation", {
-            /**
-             * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z.
-             * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
-             * Default : (0.0, 0.0, 0.0)
-             */
-            get: function () {
-                return this._rotation;
-            },
-            set: function (newRotation) {
-                this._rotation = newRotation;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(AbstractMesh.prototype, "scaling", {
+            /**
+            * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.
+            * Default : (1.0, 1.0, 1.0)
+            */
+            get: function () {
+                return this._scaling;
+            },
             /**
              * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.
              * Default : (1.0, 1.0, 1.0)
              */
-            get: function () {
-                return this._scaling;
-            },
             set: function (newScaling) {
                 this._scaling = newScaling;
                 if (this.physicsImpostor) {
                     this.physicsImpostor.forceUpdate();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AbstractMesh.prototype, "rotationQuaternion", {
-            /**
-             * Rotation Quaternion property : this a Quaternion object depicting the mesh rotation by using a unit quaternion.
-             * It's null by default.
-             * If set, only the rotationQuaternion is then used to compute the mesh rotation and its property `.rotation\ is then ignored and set to (0.0, 0.0, 0.0)
-             */
-            get: function () {
-                return this._rotationQuaternion;
-            },
-            set: function (quaternion) {
-                this._rotationQuaternion = quaternion;
-                //reset the rotation vector. 
-                if (quaternion && this.rotation.length()) {
-                    this.rotation.copyFromFloats(0.0, 0.0, 0.0);
                 }
             },
             enumerable: true,
@@ -13828,63 +14335,8 @@ var BABYLON;
             if (this._masterMesh) {
                 return this._masterMesh.getWorldMatrix();
             }
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
-                this.computeWorldMatrix();
-            }
-            return this._worldMatrix;
+            return _super.prototype.getWorldMatrix.call(this);
         };
-        Object.defineProperty(AbstractMesh.prototype, "worldMatrixFromCache", {
-            /**
-             * Returns directly the latest state of the mesh World matrix.
-             * A Matrix is returned.
-             */
-            get: function () {
-                return this._worldMatrix;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AbstractMesh.prototype, "absolutePosition", {
-            /**
-             * Returns the current mesh absolute position.
-             * Retuns a Vector3.
-             */
-            get: function () {
-                return this._absolutePosition;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * Prevents the World matrix to be computed any longer.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.freezeWorldMatrix = function () {
-            this._isWorldMatrixFrozen = false; // no guarantee world is not already frozen, switch off temporarily
-            this.computeWorldMatrix(true);
-            this._isWorldMatrixFrozen = true;
-            return this;
-        };
-        /**
-         * Allows back the World matrix computation.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.unfreezeWorldMatrix = function () {
-            this._isWorldMatrixFrozen = false;
-            this.computeWorldMatrix(true);
-            return this;
-        };
-        Object.defineProperty(AbstractMesh.prototype, "isWorldMatrixFrozen", {
-            /**
-             * True if the World matrix has been frozen.
-             * Returns a boolean.
-             */
-            get: function () {
-                return this._isWorldMatrixFrozen;
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
          * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
@@ -13985,51 +14437,6 @@ var BABYLON;
             }
             return this;
         };
-        /**
-         * Retuns the mesh absolute position in the World.
-         * Returns a Vector3.
-         */
-        AbstractMesh.prototype.getAbsolutePosition = function () {
-            this.computeWorldMatrix();
-            return this._absolutePosition;
-        };
-        /**
-         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.setAbsolutePosition = function (absolutePosition) {
-            if (!absolutePosition) {
-                return this;
-            }
-            var absolutePositionX;
-            var absolutePositionY;
-            var absolutePositionZ;
-            if (absolutePosition.x === undefined) {
-                if (arguments.length < 3) {
-                    return this;
-                }
-                absolutePositionX = arguments[0];
-                absolutePositionY = arguments[1];
-                absolutePositionZ = arguments[2];
-            }
-            else {
-                absolutePositionX = absolutePosition.x;
-                absolutePositionY = absolutePosition.y;
-                absolutePositionZ = absolutePosition.z;
-            }
-            if (this.parent) {
-                var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
-                invertParentWorldMatrix.invert();
-                var worldPosition = new BABYLON.Vector3(absolutePositionX, absolutePositionY, absolutePositionZ);
-                this.position = BABYLON.Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);
-            }
-            else {
-                this.position.x = absolutePositionX;
-                this.position.y = absolutePositionY;
-                this.position.z = absolutePositionZ;
-            }
-            return this;
-        };
         // ================================== Point of View Movement =================================
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
@@ -14090,28 +14497,6 @@ var BABYLON;
         AbstractMesh.prototype.calcRotatePOV = function (flipBack, twirlClockwise, tiltRight) {
             var defForwardMult = this.definedFacingForward ? 1 : -1;
             return new BABYLON.Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
-        };
-        /**
-         * Sets a new pivot matrix to the mesh.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.setPivotMatrix = function (matrix, postMultiplyPivotMatrix) {
-            if (postMultiplyPivotMatrix === void 0) { postMultiplyPivotMatrix = false; }
-            this._pivotMatrix = matrix.clone();
-            this._cache.pivotMatrixUpdated = true;
-            this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
-            if (this._postMultiplyPivotMatrix) {
-                this._pivotMatrixInverse = BABYLON.Matrix.Invert(matrix);
-            }
-            return this;
-        };
-        /**
-         * Returns the mesh pivot matrix.
-         * Default : Identity.
-         * A Matrix is returned.
-         */
-        AbstractMesh.prototype.getPivotMatrix = function () {
-            return this._pivotMatrix;
         };
         AbstractMesh.prototype._isSynchronized = function () {
             if (this._isDirty) {
@@ -14220,151 +14605,9 @@ var BABYLON;
             }
             return this;
         };
-        /**
-         * Computes the mesh World matrix and returns it.
-         * If the mesh world matrix is frozen, this computation does nothing more than returning the last frozen values.
-         * If the parameter `force` is let to `false` (default), the current cached World matrix is returned.
-         * If the parameter `force`is set to `true`, the actual computation is done.
-         * Returns the mesh World Matrix.
-         */
-        AbstractMesh.prototype.computeWorldMatrix = function (force) {
-            if (this._isWorldMatrixFrozen) {
-                return this._worldMatrix;
-            }
-            if (!force && this.isSynchronized(true)) {
-                return this._worldMatrix;
-            }
-            this._cache.position.copyFrom(this.position);
-            this._cache.scaling.copyFrom(this.scaling);
-            this._cache.pivotMatrixUpdated = false;
-            this._cache.billboardMode = this.billboardMode;
-            this._currentRenderId = this.getScene().getRenderId();
-            this._isDirty = false;
-            // Scaling
-            BABYLON.Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, BABYLON.Tmp.Matrix[1]);
-            // Rotation
-            //rotate, if quaternion is set and rotation was used
-            if (this.rotationQuaternion) {
-                var len = this.rotation.length();
-                if (len) {
-                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z));
-                    this.rotation.copyFromFloats(0, 0, 0);
-                }
-            }
-            if (this.rotationQuaternion) {
-                this.rotationQuaternion.toRotationMatrix(BABYLON.Tmp.Matrix[0]);
-                this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
-            }
-            else {
-                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, BABYLON.Tmp.Matrix[0]);
-                this._cache.rotation.copyFrom(this.rotation);
-            }
-            // Translation
-            var camera = this.getScene().activeCamera;
-            if (this.infiniteDistance && !this.parent && camera) {
-                var cameraWorldMatrix = camera.getWorldMatrix();
-                var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
-                BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y, this.position.z + cameraGlobalPosition.z, BABYLON.Tmp.Matrix[2]);
-            }
-            else {
-                BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, BABYLON.Tmp.Matrix[2]);
-            }
-            // Composing transformations
-            this._pivotMatrix.multiplyToRef(BABYLON.Tmp.Matrix[1], BABYLON.Tmp.Matrix[4]);
-            BABYLON.Tmp.Matrix[4].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
-            // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
-            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && camera) {
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
-                    // Need to decompose each rotation here
-                    var currentPosition = BABYLON.Tmp.Vector3[3];
-                    if (this.parent && this.parent.getWorldMatrix) {
-                        if (this._meshToBoneReferal) {
-                            this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
-                            BABYLON.Vector3.TransformCoordinatesToRef(this.position, BABYLON.Tmp.Matrix[6], currentPosition);
-                        }
-                        else {
-                            BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
-                        }
-                    }
-                    else {
-                        currentPosition.copyFrom(this.position);
-                    }
-                    currentPosition.subtractInPlace(camera.globalPosition);
-                    var finalEuler = BABYLON.Tmp.Vector3[4].copyFromFloats(0, 0, 0);
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_X) === AbstractMesh.BILLBOARDMODE_X) {
-                        finalEuler.x = Math.atan2(-currentPosition.y, currentPosition.z);
-                    }
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Y) === AbstractMesh.BILLBOARDMODE_Y) {
-                        finalEuler.y = Math.atan2(currentPosition.x, currentPosition.z);
-                    }
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Z) === AbstractMesh.BILLBOARDMODE_Z) {
-                        finalEuler.z = Math.atan2(currentPosition.y, currentPosition.x);
-                    }
-                    BABYLON.Matrix.RotationYawPitchRollToRef(finalEuler.y, finalEuler.x, finalEuler.z, BABYLON.Tmp.Matrix[0]);
-                }
-                else {
-                    BABYLON.Tmp.Matrix[1].copyFrom(camera.getViewMatrix());
-                    BABYLON.Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
-                    BABYLON.Tmp.Matrix[1].invertToRef(BABYLON.Tmp.Matrix[0]);
-                }
-                BABYLON.Tmp.Matrix[1].copyFrom(BABYLON.Tmp.Matrix[5]);
-                BABYLON.Tmp.Matrix[1].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
-            }
-            // Local world
-            BABYLON.Tmp.Matrix[5].multiplyToRef(BABYLON.Tmp.Matrix[2], this._localWorld);
-            // Parent
-            if (this.parent && this.parent.getWorldMatrix) {
-                if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
-                    if (this._meshToBoneReferal) {
-                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
-                        BABYLON.Tmp.Matrix[5].copyFrom(BABYLON.Tmp.Matrix[6]);
-                    }
-                    else {
-                        BABYLON.Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
-                    }
-                    this._localWorld.getTranslationToRef(BABYLON.Tmp.Vector3[5]);
-                    BABYLON.Vector3.TransformCoordinatesToRef(BABYLON.Tmp.Vector3[5], BABYLON.Tmp.Matrix[5], BABYLON.Tmp.Vector3[5]);
-                    this._worldMatrix.copyFrom(this._localWorld);
-                    this._worldMatrix.setTranslation(BABYLON.Tmp.Vector3[5]);
-                }
-                else {
-                    if (this._meshToBoneReferal) {
-                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
-                        BABYLON.Tmp.Matrix[6].multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
-                    }
-                    else {
-                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
-                    }
-                }
-                this._markSyncedWithParent();
-            }
-            else {
-                this._worldMatrix.copyFrom(this._localWorld);
-            }
-            // Post multiply inverse of pivotMatrix
-            if (this._postMultiplyPivotMatrix) {
-                this._worldMatrix.multiplyToRef(this._pivotMatrixInverse, this._worldMatrix);
-            }
-            // Normal matrix
-            if (this.scaling.isNonUniform) {
-                this.nonUniformScaling = true;
-            }
-            else if (this.parent && this.parent._nonUniformScaling) {
-                this.nonUniformScaling = this.parent._nonUniformScaling;
-            }
-            else {
-                this.nonUniformScaling = false;
-            }
+        AbstractMesh.prototype._afterComputeWorldMatrix = function () {
             // Bounding info
             this._updateBoundingInfo();
-            // Absolute position
-            this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
-            // Callbacks
-            this.onAfterWorldMatrixUpdateObservable.notifyObservers(this);
-            if (!this._poseMatrix) {
-                this._poseMatrix = BABYLON.Matrix.Invert(this._worldMatrix);
-            }
-            return this._worldMatrix;
         };
         /**
         * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
@@ -14382,74 +14625,6 @@ var BABYLON;
          */
         AbstractMesh.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
             this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
-            return this;
-        };
-        /**
-         * Sets the mesh position in its local space.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.setPositionWithLocalVector = function (vector3) {
-            this.computeWorldMatrix();
-            this.position = BABYLON.Vector3.TransformNormal(vector3, this._localWorld);
-            return this;
-        };
-        /**
-         * Returns the mesh position in the local space from the current World matrix values.
-         * Returns a new Vector3.
-         */
-        AbstractMesh.prototype.getPositionExpressedInLocalSpace = function () {
-            this.computeWorldMatrix();
-            var invLocalWorldMatrix = this._localWorld.clone();
-            invLocalWorldMatrix.invert();
-            return BABYLON.Vector3.TransformNormal(this.position, invLocalWorldMatrix);
-        };
-        /**
-         * Translates the mesh along the passed Vector3 in its local space.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.locallyTranslate = function (vector3) {
-            this.computeWorldMatrix(true);
-            this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
-            return this;
-        };
-        AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor, space) {
-            /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
-            /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
-            /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
-            /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
-            /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
-            /// <returns>Mesh oriented towards targetMesh</returns>
-            if (yawCor === void 0) { yawCor = 0; }
-            if (pitchCor === void 0) { pitchCor = 0; }
-            if (rollCor === void 0) { rollCor = 0; }
-            if (space === void 0) { space = BABYLON.Space.LOCAL; }
-            var dv = AbstractMesh._lookAtVectorCache;
-            var pos = space === BABYLON.Space.LOCAL ? this.position : this.getAbsolutePosition();
-            targetPoint.subtractToRef(pos, dv);
-            var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
-            var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
-            var pitch = Math.atan2(dv.y, len);
-            this.rotationQuaternion = this.rotationQuaternion || new BABYLON.Quaternion();
-            BABYLON.Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
-            return this;
-        };
-        AbstractMesh.prototype.attachToBone = function (bone, affectedMesh) {
-            this._meshToBoneReferal = affectedMesh;
-            this.parent = bone;
-            if (bone.getWorldMatrix().determinant() < 0) {
-                this.scalingDeterminant *= -1;
-            }
-            return this;
-        };
-        AbstractMesh.prototype.detachFromBone = function () {
-            if (!this.parent) {
-                return this;
-            }
-            if (this.parent.getWorldMatrix().determinant() < 0) {
-                this.scalingDeterminant *= -1;
-            }
-            this._meshToBoneReferal = null;
-            this.parent = null;
             return this;
         };
         /**
@@ -14858,100 +15033,6 @@ var BABYLON;
             _super.prototype.dispose.call(this);
         };
         /**
-         * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.
-         * This Vector3 is expressed in the World space.
-         */
-        AbstractMesh.prototype.getDirection = function (localAxis) {
-            var result = BABYLON.Vector3.Zero();
-            this.getDirectionToRef(localAxis, result);
-            return result;
-        };
-        /**
-         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
-         * localAxis is expressed in the mesh local space.
-         * result is computed in the Wordl space from the mesh World matrix.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.getDirectionToRef = function (localAxis, result) {
-            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
-            return this;
-        };
-        AbstractMesh.prototype.setPivotPoint = function (point, space) {
-            if (space === void 0) { space = BABYLON.Space.LOCAL; }
-            if (this.getScene().getRenderId() == 0) {
-                this.computeWorldMatrix(true);
-            }
-            var wm = this.getWorldMatrix();
-            if (space == BABYLON.Space.WORLD) {
-                var tmat = BABYLON.Tmp.Matrix[0];
-                wm.invertToRef(tmat);
-                point = BABYLON.Vector3.TransformCoordinates(point, tmat);
-            }
-            BABYLON.Vector3.TransformCoordinatesToRef(point, wm, this.position);
-            this._pivotMatrix.m[12] = -point.x;
-            this._pivotMatrix.m[13] = -point.y;
-            this._pivotMatrix.m[14] = -point.z;
-            this._cache.pivotMatrixUpdated = true;
-            return this;
-        };
-        /**
-         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
-         */
-        AbstractMesh.prototype.getPivotPoint = function () {
-            var point = BABYLON.Vector3.Zero();
-            this.getPivotPointToRef(point);
-            return point;
-        };
-        /**
-         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.getPivotPointToRef = function (result) {
-            result.x = -this._pivotMatrix.m[12];
-            result.y = -this._pivotMatrix.m[13];
-            result.z = -this._pivotMatrix.m[14];
-            return this;
-        };
-        /**
-         * Returns a new Vector3 set with the mesh pivot point World coordinates.
-         */
-        AbstractMesh.prototype.getAbsolutePivotPoint = function () {
-            var point = BABYLON.Vector3.Zero();
-            this.getAbsolutePivotPointToRef(point);
-            return point;
-        };
-        /**
-         * Defines the passed mesh as the parent of the current mesh.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.setParent = function (mesh) {
-            var parent = mesh;
-            if (mesh == null) {
-                var rotation = BABYLON.Tmp.Quaternion[0];
-                var position = BABYLON.Tmp.Vector3[0];
-                var scale = BABYLON.Tmp.Vector3[1];
-                this.getWorldMatrix().decompose(scale, rotation, position);
-                if (this.rotationQuaternion) {
-                    this.rotationQuaternion.copyFrom(rotation);
-                }
-                else {
-                    rotation.toEulerAnglesToRef(this.rotation);
-                }
-                this.position.x = position.x;
-                this.position.y = position.y;
-                this.position.z = position.z;
-            }
-            else {
-                var position = BABYLON.Tmp.Vector3[0];
-                var m1 = BABYLON.Tmp.Matrix[0];
-                parent.getWorldMatrix().invertToRef(m1);
-                BABYLON.Vector3.TransformCoordinatesToRef(this.position, m1, position);
-                this.position.copyFrom(position);
-            }
-            this.parent = parent;
-            return this;
-        };
-        /**
          * Adds the passed mesh as a child to the current mesh.
          * Returns the AbstractMesh.
          */
@@ -14965,18 +15046,6 @@ var BABYLON;
          */
         AbstractMesh.prototype.removeChild = function (mesh) {
             mesh.setParent(null);
-            return this;
-        };
-        /**
-         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.getAbsolutePivotPointToRef = function (result) {
-            result.x = this._pivotMatrix.m[12];
-            result.y = this._pivotMatrix.m[13];
-            result.z = this._pivotMatrix.m[14];
-            this.getPivotPointToRef(result);
-            BABYLON.Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
             return this;
         };
         // Facet data
@@ -15331,21 +15400,14 @@ var BABYLON;
             engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
             this._isOcclusionQueryInProgress = true;
         };
-        // Statics
-        AbstractMesh._BILLBOARDMODE_NONE = 0;
-        AbstractMesh._BILLBOARDMODE_X = 1;
-        AbstractMesh._BILLBOARDMODE_Y = 2;
-        AbstractMesh._BILLBOARDMODE_Z = 4;
-        AbstractMesh._BILLBOARDMODE_ALL = 7;
         AbstractMesh.OCCLUSION_TYPE_NONE = 0;
         AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC = 1;
         AbstractMesh.OCCLUSION_TYPE_STRICT = 2;
         AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
         AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
         AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
-        AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
-    }(BABYLON.Node));
+    }(BABYLON.TransformNode));
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
 
@@ -23471,6 +23533,7 @@ var BABYLON;
         /**
          * Sets the mesh indices.
          * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array).
+         * Type is Uint16Array by default unless the mesh has more than 65536 vertices.
          * If the mesh has no geometry, a new Geometry object is created and set to the mesh.
          * This method creates a new index buffer each call.
          * Returns the Mesh.
