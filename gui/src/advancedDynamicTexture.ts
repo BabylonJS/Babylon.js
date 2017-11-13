@@ -115,10 +115,16 @@ module BABYLON.GUI {
         }
         
         public get isForeground(): boolean {
+            if (!this.layer) {
+                return true;
+            }
             return (!this.layer.isBackground);
         }
 
         public set isForeground(value: boolean) {
+            if (!this.layer) {
+                return;
+            }            
             if (this.layer.isBackground === !value) {
                 return;
             }
