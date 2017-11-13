@@ -8512,7 +8512,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-2";
+                return "3.1-beta-3";
             },
             enumerable: true,
             configurable: true
@@ -13679,6 +13679,105 @@ var BABYLON;
         };
         TransformNode.prototype._afterComputeWorldMatrix = function () {
         };
+        /**
+        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
+        * @param func: callback function to add
+        *
+        * Returns the TransformNode.
+        */
+        TransformNode.prototype.registerAfterWorldMatrixUpdate = function (func) {
+            this.onAfterWorldMatrixUpdateObservable.add(func);
+            return this;
+        };
+        /**
+         * Removes a registered callback function.
+         * Returns the TransformNode.
+         */
+        TransformNode.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
+            this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
+            return this;
+        };
+        TransformNode.prototype.clone = function (name, newParent) {
+            var _this = this;
+            var result = BABYLON.SerializationHelper.Clone(function () { return new TransformNode(name, _this.getScene()); }, this);
+            result.name = name;
+            result.id = name;
+            if (newParent) {
+                result.parent = newParent;
+            }
+            return result;
+        };
+        TransformNode.prototype.serialize = function (serializationObject) {
+            if (serializationObject === void 0) { serializationObject = null; }
+            if (!serializationObject) {
+                serializationObject = {};
+            }
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.type = this.getClassName();
+            if (BABYLON.Tags && BABYLON.Tags.HasTags(this)) {
+                serializationObject.tags = BABYLON.Tags.GetTags(this);
+            }
+            serializationObject.position = this.position.asArray();
+            if (this.rotationQuaternion) {
+                serializationObject.rotationQuaternion = this.rotationQuaternion.asArray();
+            }
+            else if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+            serializationObject.scaling = this.scaling.asArray();
+            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.infiniteDistance = this.infiniteDistance;
+            serializationObject.billboardMode = this.billboardMode;
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+            // Metadata
+            if (this.metadata) {
+                serializationObject.metadata = this.metadata;
+            }
+            return serializationObject;
+        };
+        // Statics
+        /**
+         * Returns a new TransformNode object parsed from the source provided.
+         * The parameter `parsedMesh` is the source.
+         * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
+         */
+        TransformNode.Parse = function (parsedTransformNode, scene, rootUrl) {
+            var transformNode = new TransformNode(parsedTransformNode.name, scene);
+            transformNode.id = parsedTransformNode.id;
+            if (BABYLON.Tags) {
+                BABYLON.Tags.AddTagsTo(transformNode, parsedTransformNode.tags);
+            }
+            transformNode.position = BABYLON.Vector3.FromArray(parsedTransformNode.position);
+            if (parsedTransformNode.metadata !== undefined) {
+                transformNode.metadata = parsedTransformNode.metadata;
+            }
+            if (parsedTransformNode.rotationQuaternion) {
+                transformNode.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedTransformNode.rotationQuaternion);
+            }
+            else if (parsedTransformNode.rotation) {
+                transformNode.rotation = BABYLON.Vector3.FromArray(parsedTransformNode.rotation);
+            }
+            transformNode.scaling = BABYLON.Vector3.FromArray(parsedTransformNode.scaling);
+            if (parsedTransformNode.localMatrix) {
+                transformNode.setPivotMatrix(BABYLON.Matrix.FromArray(parsedTransformNode.localMatrix));
+            }
+            else if (parsedTransformNode.pivotMatrix) {
+                transformNode.setPivotMatrix(BABYLON.Matrix.FromArray(parsedTransformNode.pivotMatrix));
+            }
+            transformNode.setEnabled(parsedTransformNode.isEnabled);
+            transformNode.infiniteDistance = parsedTransformNode.infiniteDistance;
+            transformNode.billboardMode = parsedTransformNode.billboardMode;
+            // Parent
+            if (parsedTransformNode.parentId) {
+                transformNode._waitingParentId = parsedTransformNode.parentId;
+            }
+            return transformNode;
+        };
         // Statics
         TransformNode.BILLBOARDMODE_NONE = 0;
         TransformNode.BILLBOARDMODE_X = 1;
@@ -14614,24 +14713,6 @@ var BABYLON;
         AbstractMesh.prototype._afterComputeWorldMatrix = function () {
             // Bounding info
             this._updateBoundingInfo();
-        };
-        /**
-        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
-        * @param func: callback function to add
-        *
-        * Returns the AbstractMesh.
-        */
-        AbstractMesh.prototype.registerAfterWorldMatrixUpdate = function (func) {
-            this.onAfterWorldMatrixUpdateObservable.add(func);
-            return this;
-        };
-        /**
-         * Removes a registered callback function.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
-            this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
-            return this;
         };
         /**
          * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
@@ -24722,8 +24803,8 @@ var BABYLON;
         };
         // Statics
         /**
-         * Returns a new Mesh object what is a deep copy of the passed mesh.
-         * The parameter `parsedMesh` is the mesh to be copied.
+         * Returns a new Mesh object parsed from the source provided.
+         * The parameter `parsedMesh` is the source.
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         Mesh.Parse = function (parsedMesh, scene, rootUrl) {
@@ -53546,6 +53627,13 @@ var BABYLON;
                             }
                         }
                     }
+                    // Transform nodes
+                    if (parsedData.transformNodes !== undefined && parsedData.transformNodes !== null) {
+                        for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
+                            var parsedTransformNode = parsedData.transformNodes[index];
+                            BABYLON.TransformNode.Parse(parsedTransformNode, scene, rootUrl);
+                        }
+                    }
                     // Meshes
                     if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                         for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
@@ -53606,6 +53694,13 @@ var BABYLON;
                     }
                     loadedSounds = [];
                     // Connect parents & children and parse actions
+                    for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                        var transformNode = scene.transformNodes[index];
+                        if (transformNode._waitingParentId) {
+                            transformNode.parent = scene.getLastEntryByID(transformNode._waitingParentId);
+                            transformNode._waitingParentId = null;
+                        }
+                    }
                     for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                         var mesh = scene.meshes[index];
                         if (mesh._waitingParentId) {
@@ -74376,6 +74471,11 @@ var BABYLON;
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {
                 serializationObject.skeletons.push(scene.skeletons[index].serialize());
+            }
+            // Transform nodes
+            serializationObject.transformNodes = [];
+            for (index = 0; index < scene.transformNodes.length; index++) {
+                serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
             }
             // Geometries
             serializationObject.geometries = {};

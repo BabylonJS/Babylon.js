@@ -944,26 +944,6 @@
         }
 
         /**
-        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.  
-        * @param func: callback function to add
-        *
-        * Returns the AbstractMesh. 
-        */
-        public registerAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): AbstractMesh {
-            this.onAfterWorldMatrixUpdateObservable.add(func);
-            return this;
-        }
-
-        /**
-         * Removes a registered callback function.  
-         * Returns the AbstractMesh.
-         */
-        public unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): AbstractMesh {
-            this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
-            return this;
-        }
-
-        /**
          * Returns `true` if the mesh is within the frustum defined by the passed array of planes.  
          * A mesh is in the frustum if its bounding box intersects the frustum.  
          * Boolean returned.  
