@@ -4094,6 +4094,8 @@
             return this._internalPickSprites(ray, predicate, fastCheck, camera);
         }
 
+        private _cachedRayForTransform: Ray;
+
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
          * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
@@ -4105,7 +4107,13 @@
                     this._pickWithRayInverseMatrix = Matrix.Identity();
                 }
                 world.invertToRef(this._pickWithRayInverseMatrix);
-                return Ray.Transform(ray, this._pickWithRayInverseMatrix);
+
+                if (!this._cachedRayForTransform) {
+                    this._cachedRayForTransform = new Ray(Vector3.Zero(), Vector3.Zero());
+                }
+                
+                Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
+                return this._cachedRayForTransform;
             }, predicate, fastCheck);
         }
 
@@ -4131,7 +4139,13 @@
                     this._pickWithRayInverseMatrix = Matrix.Identity();
                 }
                 world.invertToRef(this._pickWithRayInverseMatrix);
-                return Ray.Transform(ray, this._pickWithRayInverseMatrix);
+
+                if (!this._cachedRayForTransform) {
+                    this._cachedRayForTransform = new Ray(Vector3.Zero(), Vector3.Zero());
+                }
+                
+                Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
+                return this._cachedRayForTransform;
             }, predicate);
         }
 
