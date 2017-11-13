@@ -13,7 +13,8 @@ export interface ViewerConfiguration {
         mapper?: string; // json (default), html, yaml, xml, etc'. if not provided, file extension will be used.
     };
 
-    // native (!!!) javascript events. Mainly used in the JSON-format.
+    // Deprecated
+    /*// native (!!!) javascript events. Mainly used in the JSON-format.
     // those events will be triggered by the container element (the <babylon> tag);
     events?: {
         load: boolean | string;
@@ -23,8 +24,15 @@ export interface ViewerConfiguration {
         pointerup: boolean | string;
         pointermove: boolean | string;
         // load: 'onViewerLoaded' // will trigger the event prefix-onViewerLoaded instead of prefix-onLoad (and ONLY this event).
-    } | boolean; //events: true - fire all events
-    eventPrefix?: string;
+    } | boolean; //events: true - fire all events*/
+    //eventPrefix?: string;
+
+    // names of functions in the window context.
+    observers?: {
+        onEngineInit?: string;
+        onSceneInit?: string;
+        onModelLoaded?: string;
+    }
 
     canvasElement?: string; // if there is a need to override the standard implementation - ID of HTMLCanvasElement
 
@@ -46,6 +54,7 @@ export interface ViewerConfiguration {
     };
 
     scene?: {
+        debug?: boolean;
         autoRotate?: boolean;
         rotationSpeed?: number;
         defaultCamera?: boolean;
