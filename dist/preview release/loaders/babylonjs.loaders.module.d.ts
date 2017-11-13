@@ -892,10 +892,10 @@ declare module BABYLON.GLTF2 {
         index: number;
         parent?: IGLTFNode;
         babylonMesh: Mesh;
-        babylonBones: {
+        babylonBones?: {
             [skin: number]: Bone;
         };
-        babylonAnimationTargets: Node[];
+        babylonAnimationTargets?: Node[];
     }
     interface IGLTFSampler extends IGLTFChildRootProperty {
         magFilter?: ETextureMagFilter;

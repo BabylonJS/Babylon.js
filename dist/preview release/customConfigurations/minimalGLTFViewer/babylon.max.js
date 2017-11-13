@@ -20977,7 +20977,11 @@ var BABYLON;
                     _this._pickWithRayInverseMatrix = BABYLON.Matrix.Identity();
                 }
                 world.invertToRef(_this._pickWithRayInverseMatrix);
-                return BABYLON.Ray.Transform(ray, _this._pickWithRayInverseMatrix);
+                if (!_this._cachedRayForTransform) {
+                    _this._cachedRayForTransform = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero());
+                }
+                BABYLON.Ray.TransformToRef(ray, _this._pickWithRayInverseMatrix, _this._cachedRayForTransform);
+                return _this._cachedRayForTransform;
             }, predicate, fastCheck);
         };
         /**
@@ -21003,7 +21007,11 @@ var BABYLON;
                     _this._pickWithRayInverseMatrix = BABYLON.Matrix.Identity();
                 }
                 world.invertToRef(_this._pickWithRayInverseMatrix);
-                return BABYLON.Ray.Transform(ray, _this._pickWithRayInverseMatrix);
+                if (!_this._cachedRayForTransform) {
+                    _this._cachedRayForTransform = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero());
+                }
+                BABYLON.Ray.TransformToRef(ray, _this._pickWithRayInverseMatrix, _this._cachedRayForTransform);
+                return _this._cachedRayForTransform;
             }, predicate);
         };
         Scene.prototype.setPointerOverMesh = function (mesh) {
@@ -21211,7 +21219,7 @@ var BABYLON;
         };
         Scene.prototype.createDefaultVRExperience = function (webVROptions) {
             if (webVROptions === void 0) { webVROptions = {}; }
-            this.VRHelper = new BABYLON.VRExperienceHelper(this, webVROptions);
+            return new BABYLON.VRExperienceHelper(this, webVROptions);
         };
         // Tags
         Scene.prototype._getByTags = function (list, tagsQuery, forEach) {
@@ -70851,18 +70859,16 @@ var BABYLON;
             this._fullscreenVRpresenting = false;
             this._scene = scene;
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
+                this._position = new BABYLON.Vector3(0, 2, 0);
                 this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
             }
             else {
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._scene.activeCamera.position, scene);
-                if (scene.activeCamera.rotation) {
-                    this._deviceOrientationCamera.rotation = scene.activeCamera.rotation.clone();
-                }
+                this._position = this._scene.activeCamera.position.clone();
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position, scene);
                 this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
                 this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
             }
             this._scene.activeCamera = this._deviceOrientationCamera;
-            this._position = this._scene.activeCamera.position;
             this._canvas = scene.getEngine().getRenderingCanvas();
             if (this._canvas) {
                 this._scene.activeCamera.attachControl(this._canvas);
@@ -70938,6 +70944,41 @@ var BABYLON;
             this._webVRCamera.onControllerMeshLoadedObservable.add(function (webVRController) { return _this._onDefaultMeshLoaded(webVRController); });
             this.updateButtonVisibility();
         }
+        Object.defineProperty(VRExperienceHelper.prototype, "deviceOrientationCamera", {
+            get: function () {
+                return this._deviceOrientationCamera;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRExperienceHelper.prototype, "currentVRCamera", {
+            // Based on the current WebVR support, returns the current VR camera used
+            get: function () {
+                if (this._webVRready) {
+                    return this._webVRCamera;
+                }
+                else {
+                    return this._vrDeviceOrientationCamera;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRExperienceHelper.prototype, "webVRCamera", {
+            get: function () {
+                return this._webVRCamera;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRExperienceHelper.prototype, "vrDeviceOrientationCamera", {
+            get: function () {
+                return this._vrDeviceOrientationCamera;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        // Raised when one of the controller has loaded successfully its associated default mesh
         VRExperienceHelper.prototype._onDefaultMeshLoaded = function (webVRController) {
             if (this.onControllerMeshLoaded) {
                 this.onControllerMeshLoaded(webVRController);
@@ -71007,6 +71048,9 @@ var BABYLON;
          * Otherwise, will use the fullscreen API.
          */
         VRExperienceHelper.prototype.enterVR = function () {
+            if (this._scene.activeCamera) {
+                this._position = this._scene.activeCamera.position.clone();
+            }
             if (this.onEnteringVR) {
                 this.onEnteringVR();
             }
@@ -71040,7 +71084,7 @@ var BABYLON;
                 this._scene.getEngine().disableVR();
             }
             if (this._scene.activeCamera) {
-                this._position = this._scene.activeCamera.position;
+                this._position = this._scene.activeCamera.position.clone();
             }
             this._deviceOrientationCamera.position = this._position;
             this._scene.activeCamera = this._deviceOrientationCamera;
@@ -80294,8 +80338,6 @@ var BABYLON;
                 this._rootNode.babylonMesh.setEnabled(false);
             };
             GLTFLoader.prototype._loadNode = function (context, node) {
-                node.babylonBones = {};
-                node.babylonAnimationTargets = [];
                 if (GLTF2.GLTFLoaderExtension.LoadNode(this, context, node)) {
                     return;
                 }
@@ -80310,6 +80352,7 @@ var BABYLON;
                     this._loadMesh("#/meshes/" + node.mesh, node, mesh);
                 }
                 node.babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
+                node.babylonAnimationTargets = node.babylonAnimationTargets || [];
                 node.babylonAnimationTargets.push(node.babylonMesh);
                 if (node.skin != null) {
                     var skin = GLTFLoader._GetProperty(this._gltf.skins, node.skin);
@@ -80738,7 +80781,9 @@ var BABYLON;
             };
             GLTFLoader.prototype._createBone = function (node, skin, parent, localMatrix, baseMatrix, index) {
                 var babylonBone = new BABYLON.Bone(node.name || "bone" + node.index, skin.babylonSkeleton, parent, localMatrix, null, baseMatrix, index);
+                node.babylonBones = node.babylonBones || {};
                 node.babylonBones[skin.index] = babylonBone;
+                node.babylonAnimationTargets = node.babylonAnimationTargets || [];
                 node.babylonAnimationTargets.push(babylonBone);
                 return babylonBone;
             };
@@ -80952,10 +80997,12 @@ var BABYLON;
                         var animationName = animation.name || "anim" + animation.index;
                         var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys);
-                        for (var _i = 0, _a = targetNode.babylonAnimationTargets; _i < _a.length; _i++) {
-                            var target = _a[_i];
-                            target.animations.push(babylonAnimation.clone());
-                            animation.targets.push(target);
+                        if (targetNode.babylonAnimationTargets) {
+                            for (var _i = 0, _a = targetNode.babylonAnimationTargets; _i < _a.length; _i++) {
+                                var target = _a[_i];
+                                target.animations.push(babylonAnimation.clone());
+                                animation.targets.push(target);
+                            }
                         }
                     }
                 };
