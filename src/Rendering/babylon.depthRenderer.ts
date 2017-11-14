@@ -34,8 +34,8 @@
                     return;
                 }
 
-                // Culling
-                engine.setState(material.backFaceCulling);
+                // Culling and reverse (right handed system)
+                engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
 
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
