@@ -51,7 +51,7 @@ module INSPECTOR {
             this._obj.isVisible = b;
         }
         public isVisible(): boolean {
-            return this._obj.isEnabled() && this._obj.isVisible;
+            return this._obj.isEnabled() && (this._obj.isVisible === undefined || this._obj.isVisible);
         }
         public isBoxVisible(): boolean {
             return (this._obj as BABYLON.AbstractMesh).showBoundingBox;
