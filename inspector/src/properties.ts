@@ -90,6 +90,14 @@ module INSPECTOR {
         'Scene': {
             type: BABYLON.Scene,
         },
+        'TransformNode': {
+            type: BABYLON.TransformNode,
+            format: (m: BABYLON.TransformNode): string => { return m.name; }
+        },        
+        'AbstractMesh': {
+            type: BABYLON.AbstractMesh,
+            format: (m: BABYLON.AbstractMesh): string => { return m.name; }
+        },          
         'Mesh': {
             type: BABYLON.Mesh,
             format: (m: BABYLON.Mesh): string => { return m.name; },
