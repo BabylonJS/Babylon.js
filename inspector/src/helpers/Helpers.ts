@@ -7,7 +7,7 @@ module INSPECTOR {
          * uses getClassName. If nothing is returned, used the type of the constructor
          */
         public static GET_TYPE(obj: any): string {
-            if(typeof obj === 'boolean') {
+            if (typeof obj === 'boolean') {
                 return 'boolean';
             }
 
@@ -24,10 +24,10 @@ module INSPECTOR {
                 if (!this._CheckIfTypeExists(classname)) {
                     return this._GetTypeFor(obj);
                 }
-                
+
                 return classname;
             } else {
-                
+
                 return 'type_not_defined';
             }
         }
@@ -91,6 +91,9 @@ module INSPECTOR {
 
         /** Returns the given number with 2 decimal number max if a decimal part exists */
         public static Trunc(nb: number): number {
+            if (typeof nb !== 'number') {
+                return 0;
+            }
             if (Math.round(nb) !== nb) {
                 return (<any>nb.toFixed(2));
             }
@@ -141,7 +144,7 @@ module INSPECTOR {
             div.style.display = 'none';
             div.appendChild(clone);
             let value = (<any>Inspector.WINDOW.getComputedStyle(clone))[cssAttribute];
-            if (div.parentNode)  {
+            if (div.parentNode) {
                 div.parentNode.removeChild(div);
             }
             return value;
@@ -185,20 +188,33 @@ module INSPECTOR {
          */
         public static GetAllLinesProperties(obj: any): Array<PropertyLine> {
             let propertiesLines: Array<PropertyLine> = [];
-            
-            for (let prop in obj) {
-                /**
-                 * No private and no function
-                 */
-                if(prop.substring(0, 1) !== '_' && typeof obj[prop] !== 'function') {
-                    let infos = new Property(prop, obj);
-                    propertiesLines.push(new PropertyLine(infos));
-                }
+            let props = Helpers.GetAllLinesPropertiesAsString(obj);
+
+            for (let prop of props) {
+                let infos = new Property(prop, obj);
+                propertiesLines.push(new PropertyLine(infos));
             }
             return propertiesLines;
         }
 
-        public static Capitalize (str : string) : string {
+
+        /**
+         * Returns an array of string corresponding to tjhe list of properties of the object to be displayed
+         * @param obj 
+         */
+        public static GetAllLinesPropertiesAsString(obj: any): Array<string> {
+            let props: Array<string> = [];
+
+            for (let prop in obj) {
+                //No private and no function
+                if (prop.substring(0, 1) !== '_' && typeof obj[prop] !== 'function') {
+                    props.push(prop);
+                }
+            }
+            return props;
+        }
+
+        public static Capitalize(str: string): string {
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
     }
