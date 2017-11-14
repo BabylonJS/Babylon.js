@@ -37,15 +37,18 @@ var Test = (function () {
         var canvas = scene.getEngine().getRenderingCanvas();
 
 
-        var sceneRoot = new BABYLON.AbstractMesh("SceneRoot");
+        var sceneRoot = new BABYLON.TransformNode("abstractmesh");
+
+        var tn = new BABYLON.TransformNode("transform node");
+
         // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
         var ground = BABYLON.Mesh.CreateGround("node_damagedHelmet_-6514", 6, 6, 2, scene);
-        ground.parent = sceneRoot;
+        ground.parent = tn;
 
         let num = 5;
         let angStep = 6.283185307 / num;
         let rad = 2;
-        let p = ground;
+        let p = sceneRoot;
         for (let i = 0; i < num; i++) {
             // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
             let sphere = BABYLON.Mesh.CreateSphere(`sphere${i}`, 16, 2, scene);
@@ -57,6 +60,12 @@ var Test = (function () {
             sphere.parent = p;
             p = sphere;
         }
+
+        let t = 0;
+        scene.registerBeforeRender(() => {
+            ground.rotation.y += 0.01;
+            ground.position.y = Math.cos(t += 0.01);
+        });
 
         scene.createDefaultCameraOrLight(true);
         scene.activeCamera.attachControl(canvas);

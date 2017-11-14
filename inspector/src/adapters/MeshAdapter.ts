@@ -6,9 +6,9 @@ module INSPECTOR {
 
         /** Keep track of the axis of the actual object */
         private _axesViewer: BABYLON.Nullable<BABYLON.Debug.AxesViewer>;
-        private onBeforeRenderObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Scene>>;
+        private _onBeforeRender: () => void;
 
-        constructor(mesh: BABYLON.AbstractMesh) {
+        constructor(mesh: BABYLON.Node) {
             super(mesh);
         }
 
@@ -35,9 +35,12 @@ module INSPECTOR {
             let tools = [];
             tools.push(new Checkbox(this));
             tools.push(new DebugArea(this));
-            if ((this._obj as BABYLON.AbstractMesh).getTotalVertices() > 0) {
-                tools.push(new BoundingBox(this));
+            if (this._obj instanceof BABYLON.AbstractMesh) {
+                if ((this._obj as BABYLON.AbstractMesh).getTotalVertices() > 0) {
+                    tools.push(new BoundingBox(this));
+                }
             }
+
 
             tools.push(new Info(this));
             return tools;
@@ -60,12 +63,12 @@ module INSPECTOR {
         public debug(enable: boolean) {
             // Draw axis the first time
             if (!this._axesViewer) {
-                 this._drawAxis();
+                this._drawAxis();
             }
             // Display or hide axis
             if (!enable && this._axesViewer) {
-                let mesh = this._obj as BABYLON.AbstractMesh;
-                mesh.getScene().onBeforeRenderObservable.remove(this.onBeforeRenderObserver);
+                let mesh = this._obj as BABYLON.TransformNode;
+                mesh.getScene().unregisterBeforeRender(this._onBeforeRender);
                 this._axesViewer.dispose();
                 this._axesViewer = null;
             }
@@ -73,7 +76,10 @@ module INSPECTOR {
 
         /** Returns some information about this mesh */
         public getInfo(): string {
-            return `${(this._obj as BABYLON.AbstractMesh).getTotalVertices()} vertices`;
+            if (this._obj instanceof BABYLON.AbstractMesh) {
+                return `${(this._obj as BABYLON.AbstractMesh).getTotalVertices()} vertices`;
+            }
+            return '0 vertices';
         }
 
         /** Draw X, Y and Z axis for the actual object if this adapter.
@@ -82,8 +88,6 @@ module INSPECTOR {
         private _drawAxis() {
             this._obj.computeWorldMatrix();
 
-            let mesh = this._obj as BABYLON.Mesh;
-
             // Axis
             var x = new BABYLON.Vector3(1, 0, 0);
             var y = new BABYLON.Vector3(0, 1, 0);
@@ -91,12 +95,13 @@ module INSPECTOR {
 
             this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
 
-            this.onBeforeRenderObserver = mesh.getScene().onBeforeRenderObservable.add(() => {
-                let matrix = mesh.getWorldMatrix();
-                let extend = mesh.getBoundingInfo()!.boundingBox.extendSizeWorld;
-                this._axesViewer!.scaleLines = Math.max(extend.x, extend.y, extend.z) * 2;
-                this._axesViewer!.update(this._obj.position, BABYLON.Vector3.TransformNormal(x, matrix), BABYLON.Vector3.TransformNormal(y, matrix), BABYLON.Vector3.TransformNormal(z, matrix));
-            });
+            this._onBeforeRender = () => {
+                if (this._axesViewer) {
+                    this._axesViewer.update(this._obj.position, x, y, z);
+                }
+            }
+
+            this._obj.getScene().registerBeforeRender(this._onBeforeRender);
         }
     }
 }
