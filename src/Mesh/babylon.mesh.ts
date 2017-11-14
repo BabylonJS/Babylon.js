@@ -372,10 +372,6 @@
             } else {
                 let boundingInfo = this.getBoundingInfo();
 
-                if (!boundingInfo) {
-                    return this;
-                }
-
                 bSphere =  boundingInfo.boundingSphere;
             }
 
@@ -3177,10 +3173,6 @@
             
             meshes.forEach(function (mesh, index, array) {
                 let boundingInfo = mesh.getBoundingInfo();
-
-                if (!boundingInfo) {
-                    return;
-                }
 
                 let boundingBox = boundingInfo.boundingBox;
                 if (!minVector || !maxVector) {

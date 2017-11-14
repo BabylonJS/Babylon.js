@@ -331,7 +331,7 @@
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
-            let boundingInfo = <BoundingInfo>(object.getBoundingInfo());
+            let boundingInfo = object.getBoundingInfo();
             var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.y);
             var minY = boundingInfo.boundingBox.extendSizeWorld.z;
 
@@ -418,7 +418,7 @@
             //If it is a heightfield, if should be centered.
             if (impostor.type === PhysicsImpostor.HeightmapImpostor) {
                 var mesh = <AbstractMesh>(<any>object);
-                let boundingInfo = <BoundingInfo>mesh.getBoundingInfo();
+                let boundingInfo = mesh.getBoundingInfo();
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
                 mesh.rotationQuaternion = this._tmpUnityRotation;
