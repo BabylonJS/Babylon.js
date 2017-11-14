@@ -44,8 +44,8 @@
         };
         private _facetDepthSort: boolean = false;                           // is the facet depth sort enabled
         private _originalIndices: IndicesArray;                             // copy of the original indices array
-        private _depthSortedFacets: {ind: number, sqDistance: number}[];    // array of depth sorted facets
-        private _facetDepthSortFunction: (f1: {ind: number, sqDistance: number}, f2: {ind: number, sqDistance: number}) => number;  // facet depth sort function
+        private _depthSortedFacets: { ind: number, sqDistance: number }[];    // array of depth sorted facets
+        private _facetDepthSortFunction: (f1: { ind: number, sqDistance: number }, f2: { ind: number, sqDistance: number }) => number;  // facet depth sort function
         private _facetDepthSortFrom: Vector3;                               // location where to depth sort from
         private _facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
         private _invertedMatrix: Matrix;                                    // Mesh inverted World Matrix
@@ -487,7 +487,7 @@
             if (!this.subMeshes) {
                 return;
             }
-            
+
             for (var subMesh of this.subMeshes) {
                 subMesh._rebuild();
             }
@@ -571,10 +571,10 @@
             }
         }
 
-         /**
-         * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  
-         * Default : (1.0, 1.0, 1.0)
-         */
+        /**
+        * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  
+        * Default : (1.0, 1.0, 1.0)
+        */
         public get scaling(): Vector3 {
             return this._scaling;
         }
@@ -732,15 +732,17 @@
          * Returns the mesh BoundingInfo object or creates a new one and returns it if undefined.
          * Returns a BoundingInfo
          */
-        public getBoundingInfo(): Nullable<BoundingInfo> {
+        public getBoundingInfo(): BoundingInfo {
             if (this._masterMesh) {
                 return this._masterMesh.getBoundingInfo();
             }
 
             if (!this._boundingInfo) {
+                // this._boundingInfo is being created here
                 this._updateBoundingInfo();
             }
-            return this._boundingInfo;
+            // cannot be null.
+            return this._boundingInfo!;
         }
 
         /**
@@ -751,7 +753,7 @@
             let boundingVectors = this.getHierarchyBoundingVectors(includeDescendants);
             let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
             let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
-            
+
             if (maxDimension === 0) {
                 return this;
             }
@@ -785,7 +787,7 @@
         public _activate(renderId: number): void {
             this._renderId = renderId;
         }
-   
+
         /**
          * Returns the latest update of the World matrix
          * Returns a Matrix.  
@@ -867,13 +869,13 @@
          * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
          * @param includeDescendants Include bounding info from descendants as well (true by default).
          */
-        public getHierarchyBoundingVectors(includeDescendants = true): { min: Vector3, max: Vector3 }{
+        public getHierarchyBoundingVectors(includeDescendants = true): { min: Vector3, max: Vector3 } {
             this.computeWorldMatrix(true);
 
             let min: Vector3;
             let max: Vector3;
             let boundingInfo = this.getBoundingInfo();
-            
+
             if (!this.subMeshes || !boundingInfo) {
                 min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
                 max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -1125,7 +1127,7 @@
             if (!this._positions) {
                 return this;
             }
-            
+
             // Transformation
             if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
                 subMesh._lastColliderTransformMatrix = transformMatrix.clone();
@@ -1435,7 +1437,7 @@
             this._isDisposed = true;
 
             super.dispose();
-        } 
+        }
 
         /**
          * Adds the passed mesh as a child to the current mesh.  
@@ -1470,7 +1472,7 @@
             if (!this._facetPartitioning) {
                 this._facetPartitioning = new Array<number[]>();
             }
-            this._facetNb = ((<IndicesArray>this.getIndices()).length / 3)|0;
+            this._facetNb = ((<IndicesArray>this.getIndices()).length / 3) | 0;
             this._partitioningSubdivisions = (this._partitioningSubdivisions) ? this._partitioningSubdivisions : 10;   // default nb of partitioning subdivisions = 10
             this._partitioningBBoxRatio = (this._partitioningBBoxRatio) ? this._partitioningBBoxRatio : 1.01;          // default ratio 1.01 = the partitioning is 1% bigger than the bounding box
             for (var f = 0; f < this._facetNb; f++) {
@@ -1496,7 +1498,7 @@
             var indicesForComputeNormals = indices;
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
-            
+
             if (!bInfo) {
                 return this;
             }
@@ -1504,7 +1506,7 @@
             if (this._facetDepthSort && !this._originalIndices) {
                 // init arrays, matrix and sort function on first call
                 this._originalIndices = new Uint32Array(indices!);
-                this._facetDepthSortFunction = function(f1, f2) {
+                this._facetDepthSortFunction = function (f1, f2) {
                     return (f2.sqDistance - f1.sqDistance);
                 };
                 if (!this._facetDepthSortFrom) {
@@ -1513,7 +1515,7 @@
                 }
                 this._depthSortedFacets = [];
                 for (var f = 0; f < this._facetNb; f++) {
-                    var depthSortedFacet = {ind: f * 3, sqDistance: 0.0};
+                    var depthSortedFacet = { ind: f * 3, sqDistance: 0.0 };
                     this._depthSortedFacets.push(depthSortedFacet);
                 }
                 this._invertedMatrix = Matrix.Identity();
@@ -1544,7 +1546,7 @@
             if (this._facetDepthSort) {
                 this.computeWorldMatrix(true);
                 this._worldMatrix.invertToRef(this._invertedMatrix);
-                Vector3.TransformCoordinatesToRef(this._facetDepthSortFrom, this._invertedMatrix, this._facetDepthSortOrigin);   
+                Vector3.TransformCoordinatesToRef(this._facetDepthSortFrom, this._invertedMatrix, this._facetDepthSortOrigin);
                 this._facetParameters.distanceTo = this._facetDepthSortOrigin;
                 indicesForComputeNormals = this._originalIndices;
             }
@@ -1788,7 +1790,7 @@
             }
 
             if (this.isOcclusionQueryInProgress && this._occlusionQuery) {
-                
+
                 var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
                 if (isOcclusionQueryAvailable) {
                     var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
