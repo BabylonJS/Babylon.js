@@ -58,6 +58,11 @@
          */
         public USERGBCOLOR = false;
 
+        /**
+         * True to add noise in order to reduce the banding effect.
+         */
+        public NOISE = false;
+
         // Image Processing Configuration.
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;
@@ -317,6 +322,15 @@
         public useRGBColor: boolean = true;
 
         /**
+         * This helps reducing the banding effect that could occur on the background.
+         */
+        @serialize()
+        protected _enableNoise: boolean;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public enableNoise: boolean = false;
+
+
+        /**
          * Number of Simultaneous lights allowed on the material.
          */
         @serialize()
@@ -519,7 +533,7 @@
          * @returns false
          */
         public needAlphaTesting(): boolean {
-            return false;
+            return true;
         }
 
         /**
@@ -641,7 +655,7 @@
                             this._reflectionControls.x = this.reflectionAmount;
                             this._reflectionControls.y = this.reflectionReflectance0;
                             this._reflectionControls.z = this.reflectionReflectance90;
-                            this._reflectionControls.w = this.reflectionFalloffDistance;
+                            this._reflectionControls.w = 1 / this.reflectionFalloffDistance;
                         }
                         else {
                             defines.REFLECTIONFRESNEL = false;
@@ -670,6 +684,7 @@
 
                 defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.USERGBCOLOR = this._useRGBColor;
+                defines.NOISE = this._enableNoise;
             }
 
             if (defines._areImageProcessingDirty) {

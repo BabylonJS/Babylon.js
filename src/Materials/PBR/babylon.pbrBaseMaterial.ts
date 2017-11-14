@@ -516,35 +516,38 @@
         }
 
         /**
-         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         * Returns true if alpha blending should be disabled.
+         */
+        private get _disableAlphaBlending(): boolean {
+            return (this._linkRefractionWithTransparency ||
+                this._transparencyMode === PBRMaterial.PBRMATERIAL_OPAQUE ||
+                this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST);
+        }
+
+        /**
+         * Specifies whether or not this material should be rendered in alpha blend mode.
          */
         public needAlphaBlending(): boolean {
-            if (this._transparencyMode === PBRMaterial.PBRMATERIAL_OPAQUE ||
-                this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST) {
+            if (this._disableAlphaBlending) {
                 return false;
             }
 
-            return super.needAlphaBlending();
+            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
         }
 
         /**
-         * Specifies whether or not the meshes using this material should be rendered in alpha blend mode.
+         * Specifies whether or not this material should be rendered in alpha blend mode for the given mesh.
          */
         public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-            if (this._linkRefractionWithTransparency) {
+            if (this._disableAlphaBlending) {
                 return false;
             }
 
-            if (this._transparencyMode === PBRMaterial.PBRMATERIAL_OPAQUE ||
-                this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST) {
-                return false;
-            }
-
-            return super.needAlphaBlendingForMesh(mesh) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
+            return super.needAlphaBlendingForMesh(mesh);
         }
 
         /**
-         * Specifies whether or not the meshes using this material should be rendered in alpha test mode.
+         * Specifies whether or not this material should be rendered in alpha test mode.
          */
         public needAlphaTesting(): boolean {
             if (this._forceAlphaTest) {
@@ -1465,7 +1468,7 @@
                     this._reflectionTexture.dispose();
                 }
 
-                if (this._environmentBRDFTexture) {
+                if (this._environmentBRDFTexture && this.getScene()._environmentBRDFTexture !== this._environmentBRDFTexture) {
                     this._environmentBRDFTexture.dispose();
                 }
 

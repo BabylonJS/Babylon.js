@@ -315,9 +315,6 @@ module BABYLON.GLTF2 {
         }
 
         public _loadNode(context: string, node: IGLTFNode): void {
-            node.babylonBones = {};
-            node.babylonAnimationTargets = [];
-
             if (GLTFLoaderExtension.LoadNode(this, context, node)) {
                 return;
             }
@@ -338,6 +335,7 @@ module BABYLON.GLTF2 {
 
             node.babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
 
+            node.babylonAnimationTargets = node.babylonAnimationTargets || [];
             node.babylonAnimationTargets.push(node.babylonMesh);
 
             if (node.skin != null) {
@@ -785,8 +783,13 @@ module BABYLON.GLTF2 {
 
         private _createBone(node: IGLTFNode, skin: IGLTFSkin, parent: Nullable<Bone>, localMatrix: Matrix, baseMatrix: Matrix, index: number): Bone {
             const babylonBone = new Bone(node.name || "bone" + node.index, skin.babylonSkeleton, parent, localMatrix, null, baseMatrix, index);
+
+            node.babylonBones = node.babylonBones || {};
             node.babylonBones[skin.index] = babylonBone;
+
+            node.babylonAnimationTargets = node.babylonAnimationTargets || [];
             node.babylonAnimationTargets.push(babylonBone);
+
             return babylonBone;
         }
 
@@ -1027,9 +1030,11 @@ module BABYLON.GLTF2 {
                     const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys);
 
-                    for (const target of targetNode.babylonAnimationTargets) {
-                        target.animations.push(babylonAnimation.clone());
-                        animation.targets.push(target);
+                    if (targetNode.babylonAnimationTargets) {
+                        for (const target of targetNode.babylonAnimationTargets) {
+                            target.animations.push(babylonAnimation.clone());
+                            animation.targets.push(target);
+                        }
                     }
                 }
             };

@@ -133,9 +133,10 @@ BABYLON.SceneLoader.Load("https://playground.babylonjs.com/scenes/", "skull.baby
     console.log('scene loaded!');
     for (var index = 0; index < scene.meshes.length; index++) {
         console.log(scene.meshes[index].name);
-    }    
-    engine.runRenderLoop(function() {
-        scene.render();
-    });
+    } 
+    engine.dispose();   
+   // engine.runRenderLoop(function() {
+     //   scene.render();
+    //});
   
   }, progress => {}, (scene, err) => console.error('error:', err));
