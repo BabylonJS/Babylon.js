@@ -879,7 +879,7 @@
             let max: Vector3;
             let boundingInfo = this.getBoundingInfo();
 
-            if (!this.subMeshes || !boundingInfo) {
+            if (!this.subMeshes) {
                 min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
                 max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             } else {
@@ -896,7 +896,7 @@
                     childMesh.computeWorldMatrix(true);
                     let childBoundingInfo = childMesh.getBoundingInfo();
 
-                    if (childMesh.getTotalVertices() === 0 || !childBoundingInfo) {
+                    if (childMesh.getTotalVertices() === 0) {
                         continue;
                     }
                     let boundingBox = childBoundingInfo.boundingBox;
@@ -1115,10 +1115,8 @@
             let boundingInfo = this.getBoundingInfo();
 
             // Update octree
-            if (boundingInfo) {
-                var bbox = boundingInfo.boundingBox;
-                this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
-            }
+            var bbox = boundingInfo.boundingBox;
+            this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
 
             return this._submeshesOctree;
         }
@@ -1501,10 +1499,6 @@
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
 
-            if (!bInfo) {
-                return this;
-            }
-
             if (this._facetDepthSort && !this._facetDepthSortEnabled) {
                 // init arrays, matrix and sort function on first call
                 this._facetDepthSortEnabled = true;
@@ -1660,10 +1654,6 @@
          */
         public getFacetsAtLocalCoordinates(x: number, y: number, z: number): Nullable<number[]> {
             var bInfo = this.getBoundingInfo();
-
-            if (!bInfo) {
-                return null;
-            }
 
             var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * this._subDiv.X * this._partitioningBBoxRatio / this._bbSize.x);
             var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * this._subDiv.Y * this._partitioningBBoxRatio / this._bbSize.y);

@@ -224,7 +224,7 @@ module BABYLON {
 		public zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): void {
 			mesh.computeWorldMatrix(true);
 
-			let boundingBox = (<BoundingInfo>mesh.getBoundingInfo()).boundingBox;
+			let boundingBox = mesh.getBoundingInfo().boundingBox;
 			this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ, onAnimationEnd);
 		}
 

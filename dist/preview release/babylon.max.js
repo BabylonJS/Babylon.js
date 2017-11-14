@@ -13814,7 +13814,8 @@ var BABYLON;
                 Y: 1,
                 Z: 1
             };
-            _this._facetDepthSort = false; // is the facet depth sort enabled
+            _this._facetDepthSort = false; // is the facet depth sort to be computed
+            _this._facetDepthSortEnabled = false; // is the facet depth sort initialized
             // Events
             /**
             * An event triggered when this mesh collides with another one
@@ -14006,6 +14007,7 @@ var BABYLON;
             /**
              * Boolean : must the facet be depth sorted on next call to `updateFacetData()` ?
              * Works only for updatable meshes.
+             * Doesn't work with multi-materials.
              */
             get: function () {
                 return this._facetDepthSort;
@@ -14656,7 +14658,7 @@ var BABYLON;
             var min;
             var max;
             var boundingInfo = this.getBoundingInfo();
-            if (!this.subMeshes || !boundingInfo) {
+            if (!this.subMeshes) {
                 min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
                 max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             }
@@ -14671,7 +14673,7 @@ var BABYLON;
                     var childMesh = descendant;
                     childMesh.computeWorldMatrix(true);
                     var childBoundingInfo = childMesh.getBoundingInfo();
-                    if (childMesh.getTotalVertices() === 0 || !childBoundingInfo) {
+                    if (childMesh.getTotalVertices() === 0) {
                         continue;
                     }
                     var boundingBox = childBoundingInfo.boundingBox;
@@ -14850,10 +14852,8 @@ var BABYLON;
             this.computeWorldMatrix(true);
             var boundingInfo = this.getBoundingInfo();
             // Update octree
-            if (boundingInfo) {
-                var bbox = boundingInfo.boundingBox;
-                this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
-            }
+            var bbox = boundingInfo.boundingBox;
+            this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
             return this._submeshesOctree;
         };
         // Collisions
@@ -15174,15 +15174,32 @@ var BABYLON;
             }
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = this.getIndices();
-            var indicesForComputeNormals = indices;
             var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
-            if (!bInfo) {
-                return this;
-            }
-            if (this._facetDepthSort && !this._originalIndices) {
+            if (this._facetDepthSort && !this._facetDepthSortEnabled) {
                 // init arrays, matrix and sort function on first call
-                this._originalIndices = new Uint32Array(indices);
+                this._facetDepthSortEnabled = true;
+                if (indices instanceof Uint16Array) {
+                    this._depthSortedIndices = new Uint16Array(indices);
+                }
+                else if (indices instanceof Uint32Array) {
+                    this._depthSortedIndices = new Uint32Array(indices);
+                }
+                else {
+                    var needs32bits = false;
+                    for (var i = 0; i < indices.length; i++) {
+                        if (indices[i] > 65535) {
+                            needs32bits = true;
+                            break;
+                        }
+                    }
+                    if (needs32bits) {
+                        this._depthSortedIndices = new Uint32Array(indices);
+                    }
+                    else {
+                        this._depthSortedIndices = new Uint16Array(indices);
+                    }
+                }
                 this._facetDepthSortFunction = function (f1, f2) {
                     return (f2.sqDistance - f1.sqDistance);
                 };
@@ -15219,24 +15236,24 @@ var BABYLON;
             this._facetParameters.subDiv = this._subDiv;
             this._facetParameters.ratio = this.partitioningBBoxRatio;
             this._facetParameters.depthSort = this._facetDepthSort;
-            if (this._facetDepthSort) {
+            if (this._facetDepthSort && this._facetDepthSortEnabled) {
                 this.computeWorldMatrix(true);
                 this._worldMatrix.invertToRef(this._invertedMatrix);
                 BABYLON.Vector3.TransformCoordinatesToRef(this._facetDepthSortFrom, this._invertedMatrix, this._facetDepthSortOrigin);
                 this._facetParameters.distanceTo = this._facetDepthSortOrigin;
-                indicesForComputeNormals = this._originalIndices;
             }
             this._facetParameters.depthSortedFacets = this._depthSortedFacets;
-            BABYLON.VertexData.ComputeNormals(positions, indicesForComputeNormals, normals, this._facetParameters);
-            if (this._facetDepthSort) {
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
+            if (this._facetDepthSort && this._facetDepthSortEnabled) {
                 this._depthSortedFacets.sort(this._facetDepthSortFunction);
-                for (var sorted = 0; sorted < this._facetNb; sorted++) {
-                    var sind = this._depthSortedFacets[sorted].ind;
-                    indices[sorted * 3] = this._originalIndices[sind];
-                    indices[sorted * 3 + 1] = this._originalIndices[sind + 1];
-                    indices[sorted * 3 + 2] = this._originalIndices[sind + 2];
+                var l = (this._depthSortedIndices.length / 3) | 0;
+                for (var f = 0; f < l; f++) {
+                    var sind = this._depthSortedFacets[f].ind;
+                    this._depthSortedIndices[f * 3] = indices[sind];
+                    this._depthSortedIndices[f * 3 + 1] = indices[sind + 1];
+                    this._depthSortedIndices[f * 3 + 2] = indices[sind + 2];
                 }
-                this.updateIndices(indices);
+                this.updateIndices(this._depthSortedIndices);
             }
             return this;
         };
@@ -15311,9 +15328,6 @@ var BABYLON;
          */
         AbstractMesh.prototype.getFacetsAtLocalCoordinates = function (x, y, z) {
             var bInfo = this.getBoundingInfo();
-            if (!bInfo) {
-                return null;
-            }
             var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * this._subDiv.X * this._partitioningBBoxRatio / this._bbSize.x);
             var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * this._subDiv.Y * this._partitioningBBoxRatio / this._bbSize.y);
             var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * this._subDiv.Z * this._partitioningBBoxRatio / this._bbSize.z);
@@ -15423,7 +15437,7 @@ var BABYLON;
                 this._facetNormals = new Array();
                 this._facetPartitioning = new Array();
                 this._facetParameters = null;
-                this._originalIndices = new Uint32Array(0);
+                this._depthSortedIndices = new Uint32Array(0);
             }
             return this;
         };
@@ -15434,6 +15448,10 @@ var BABYLON;
         AbstractMesh.prototype.updateIndices = function (indices) {
             return this;
         };
+        /**
+         * The mesh Geometry. Actually used by the Mesh object.
+         * Returns a blank geometry object.
+         */
         /**
          * Creates new normals data for the mesh.
          * @param updatable.
@@ -20077,9 +20095,7 @@ var BABYLON;
                 var material = subMesh.getMaterial();
                 if (mesh.showSubMeshesBoundingBox) {
                     var boundingInfo = subMesh.getBoundingInfo();
-                    if (boundingInfo) {
-                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                    }
+                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
                 }
                 if (material) {
                     // Render targets
@@ -20203,9 +20219,7 @@ var BABYLON;
             }
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 var boundingInfo = sourceMesh.getBoundingInfo();
-                if (boundingInfo) {
-                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                }
+                this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
             }
             if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees
@@ -20946,12 +20960,10 @@ var BABYLON;
                 }
                 mesh.computeWorldMatrix(true);
                 var boundingInfo = mesh.getBoundingInfo();
-                if (boundingInfo) {
-                    var minBox = boundingInfo.boundingBox.minimumWorld;
-                    var maxBox = boundingInfo.boundingBox.maximumWorld;
-                    BABYLON.Tools.CheckExtends(minBox, min, max);
-                    BABYLON.Tools.CheckExtends(maxBox, min, max);
-                }
+                var minBox = boundingInfo.boundingBox.minimumWorld;
+                var maxBox = boundingInfo.boundingBox.maximumWorld;
+                BABYLON.Tools.CheckExtends(minBox, min, max);
+                BABYLON.Tools.CheckExtends(maxBox, min, max);
             }
             return {
                 min: min,
@@ -23191,9 +23203,6 @@ var BABYLON;
             }
             else {
                 var boundingInfo = this.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this;
-                }
                 bSphere = boundingInfo.boundingSphere;
             }
             var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
@@ -25661,9 +25670,6 @@ var BABYLON;
             var maxVector = null;
             meshes.forEach(function (mesh, index, array) {
                 var boundingInfo = mesh.getBoundingInfo();
-                if (!boundingInfo) {
-                    return;
-                }
                 var boundingBox = boundingInfo.boundingBox;
                 if (!minVector || !maxVector) {
                     minVector = boundingBox.minimumWorld;
@@ -25905,7 +25911,7 @@ var BABYLON;
             }
             var data = this._renderingMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (!data) {
-                this._boundingInfo = this._mesh._boundingInfo;
+                this._boundingInfo = this._mesh.getBoundingInfo();
                 return this;
             }
             var indices = this._renderingMesh.getIndices();
@@ -25913,9 +25919,6 @@ var BABYLON;
             //is this the only submesh?
             if (this.indexStart === 0 && this.indexCount === indices.length) {
                 var boundingInfo = this._renderingMesh.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this;
-                }
                 //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
                 extend = { minimum: boundingInfo.minimum.clone(), maximum: boundingInfo.maximum.clone() };
             }
@@ -25927,9 +25930,6 @@ var BABYLON;
         };
         SubMesh.prototype._checkCollision = function (collider) {
             var boundingInfo = this._renderingMesh.getBoundingInfo();
-            if (!boundingInfo) {
-                return false;
-            }
             return boundingInfo._checkCollision(collider);
         };
         /**
@@ -27308,6 +27308,14 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.materialHelper.js.map
 
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 
 var BABYLON;
 (function (BABYLON) {
@@ -27808,6 +27816,7 @@ var BABYLON;
          */
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
+            var localOptions = __assign({ alphaTest: null, clipPlane: false }, options);
             var subMesh = new BABYLON.BaseSubMesh();
             var scene = this.getScene();
             var engine = scene.getEngine();
@@ -27820,8 +27829,8 @@ var BABYLON;
                 }
                 var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
-                engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
-                if (options && options.clipPlane) {
+                engine.setAlphaTesting(localOptions.alphaTest || (!_this.needAlphaBlendingForMesh(mesh) && _this.needAlphaTesting()));
+                if (localOptions.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
                 if (_this.storeEffectOnSubMeshes) {
@@ -30543,7 +30552,7 @@ var BABYLON;
                 normals[index] = 0.0;
             }
             // Loop : 1 indice triplet = 1 facet
-            var nbFaces = indices.length / 3;
+            var nbFaces = (indices.length / 3) | 0;
             for (index = 0; index < nbFaces; index++) {
                 // get the indexes of the coordinates of each vertex of the facet
                 v1x = indices[index * 3] * 3;
@@ -40395,9 +40404,6 @@ var BABYLON;
                         continue;
                     }
                     var boundingInfo = mesh.getBoundingInfo();
-                    if (!boundingInfo) {
-                        continue;
-                    }
                     var boundingBox = boundingInfo.boundingBox;
                     for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
                         BABYLON.Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
@@ -46473,9 +46479,7 @@ var BABYLON;
             set: function (val) {
                 this._isVisibilityBoxLocked = val;
                 var boundingInfo = this.mesh.getBoundingInfo();
-                if (boundingInfo) {
-                    boundingInfo.isLocked = val;
-                }
+                boundingInfo.isLocked = val;
             },
             enumerable: true,
             configurable: true
@@ -47068,9 +47072,7 @@ var BABYLON;
          */
         InstancedMesh.prototype.refreshBoundingInfo = function () {
             var meshBB = this._sourceMesh.getBoundingInfo();
-            if (meshBB) {
-                this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
-            }
+            this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
             this._updateBoundingInfo();
             return this;
         };
@@ -47094,9 +47096,6 @@ var BABYLON;
                 return this;
             }
             var boundingInfo = this.getBoundingInfo();
-            if (!boundingInfo) {
-                return this;
-            }
             this._currentLOD = this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
             if (this._currentLOD === this.sourceMesh) {
                 return this;
@@ -49644,9 +49643,6 @@ var BABYLON;
         };
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
             var boundingInfo = connectedMesh.getBoundingInfo();
-            if (!boundingInfo) {
-                return;
-            }
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
@@ -51812,6 +51808,14 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.passPostProcess.js.map
 
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 var BABYLON;
 (function (BABYLON) {
     var ShadowGenerator = /** @class */ (function () {
@@ -52374,25 +52378,38 @@ var BABYLON;
          */
         ShadowGenerator.prototype.forceCompilation = function (onCompiled, options) {
             var _this = this;
+            var localOptions = __assign({ useInstances: false }, options);
             var shadowMap = this.getShadowMap();
             if (!shadowMap) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
+                return;
+            }
+            var renderList = shadowMap.renderList;
+            if (!renderList) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
                 return;
             }
             var subMeshes = new Array();
-            var currentIndex = 0;
-            var renderList = shadowMap.renderList;
-            if (!renderList) {
-                return;
-            }
             for (var _i = 0, renderList_1 = renderList; _i < renderList_1.length; _i++) {
                 var mesh = renderList_1[_i];
                 subMeshes.push.apply(subMeshes, mesh.subMeshes);
             }
+            if (subMeshes.length === 0) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
+                return;
+            }
+            var currentIndex = 0;
             var checkReady = function () {
                 if (!_this._scene || !_this._scene.getEngine()) {
                     return;
                 }
-                while (_this.isReady(subMeshes[currentIndex], options ? options.useInstances : false)) {
+                while (_this.isReady(subMeshes[currentIndex], localOptions.useInstances)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
                         if (onCompiled) {
@@ -52403,9 +52420,7 @@ var BABYLON;
                 }
                 setTimeout(checkReady, 16);
             };
-            if (subMeshes.length > 0) {
-                checkReady();
-            }
+            checkReady();
         };
         /**
          * Boolean : true when the ShadowGenerator is finally computed.
@@ -66586,13 +66601,7 @@ var BABYLON;
                 //calculate the world matrix with no rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
                 var boundingInfo = this.object.getBoundingInfo();
-                var size = void 0;
-                if (boundingInfo) {
-                    size = boundingInfo.boundingBox.extendSizeWorld.scale(2);
-                }
-                else {
-                    size = BABYLON.Vector3.Zero();
-                }
+                var size = boundingInfo.boundingBox.extendSizeWorld.scale(2);
                 //bring back the rotation
                 this.object.rotationQuaternion = q;
                 //calculate the world matrix with the new rotation
@@ -66606,9 +66615,6 @@ var BABYLON;
         PhysicsImpostor.prototype.getObjectCenter = function () {
             if (this.object.getBoundingInfo) {
                 var boundingInfo = this.object.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this.object.position;
-                }
                 return boundingInfo.boundingBox.centerWorld;
             }
             else {
@@ -67390,7 +67396,7 @@ var BABYLON;
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
-            var boundingInfo = (object.getBoundingInfo());
+            var boundingInfo = object.getBoundingInfo();
             var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.y);
             var minY = boundingInfo.boundingBox.extendSizeWorld.z;
             var elementSize = dim * 2 / arraySize;
@@ -69928,13 +69934,13 @@ var BABYLON;
         };
         Octree.CreationFuncForMeshes = function (entry, block) {
             var boundingInfo = entry.getBoundingInfo();
-            if (!entry.isBlocked && boundingInfo && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            if (!entry.isBlocked && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         };
         Octree.CreationFuncForSubMeshes = function (entry, block) {
             var boundingInfo = entry.getBoundingInfo();
-            if (boundingInfo && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            if (boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         };

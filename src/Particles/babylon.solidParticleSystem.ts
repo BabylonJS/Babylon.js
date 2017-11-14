@@ -1038,9 +1038,7 @@
 
                 let boundingInfo = this.mesh.getBoundingInfo();
 
-                if (boundingInfo) {
-                    boundingInfo.isLocked = val;
-                }
+                boundingInfo.isLocked = val;
             }
     
             public get isVisibilityBoxLocked(): boolean {
