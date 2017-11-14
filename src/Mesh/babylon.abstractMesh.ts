@@ -51,7 +51,6 @@
         };
         private _facetDepthSort: boolean = false;                           // is the facet depth sort to be computed
         private _facetDepthSortEnabled: boolean = false;                    // is the facet depth sort initialized
-        private _originalIndices: IndicesArray;                             // reference to the original indices in a typed array to avoid arrayBuffer allocation on updates
         private _depthSortedIndices: IndicesArray;                          // copy of the indices array to store them once sorted
         private _depthSortedFacets: {ind: number, sqDistance: number}[];    // array of depth sorted facets
         private _facetDepthSortFunction: (f1: {ind: number, sqDistance: number}, f2: {ind: number, sqDistance: number}) => number;  // facet depth sort function
@@ -2246,11 +2245,9 @@
                 // init arrays, matrix and sort function on first call
                 this._facetDepthSortEnabled = true;
                 if (indices instanceof Uint16Array) {
-                    this._originalIndices = indices!;
                     this._depthSortedIndices = new Uint16Array(indices!);
                 }
                 else if (indices instanceof Uint32Array) {
-                    this._originalIndices = indices!;
                     this._depthSortedIndices = new Uint32Array(indices!);
                 } 
                 else {
@@ -2262,11 +2259,9 @@
                         }
                     }
                     if (needs32bits) {
-                        this._originalIndices = new Uint32Array(indices!);
                         this._depthSortedIndices = new Uint32Array(indices!);
                     } 
                     else {
-                        this._originalIndices = new Uint16Array(indices!);
                         this._depthSortedIndices = new Uint16Array(indices!);
                     }
                 }               
@@ -2314,16 +2309,16 @@
                 this._facetParameters.distanceTo = this._facetDepthSortOrigin;
             }
             this._facetParameters.depthSortedFacets = this._depthSortedFacets;
-            VertexData.ComputeNormals(positions, this._originalIndices, normals, this._facetParameters);
+            VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
 
             if (this._facetDepthSort && this._facetDepthSortEnabled) {
                 this._depthSortedFacets.sort(this._facetDepthSortFunction);
                 var l = (this._depthSortedIndices.length / 3)|0;
                 for (var f = 0; f < l; f++) {
                     var sind = this._depthSortedFacets[f].ind;
-                    this._depthSortedIndices[f * 3] = this._originalIndices[sind];
-                    this._depthSortedIndices[f * 3 + 1] = this._originalIndices[sind + 1];
-                    this._depthSortedIndices[f * 3 + 2] = this._originalIndices[sind + 2];
+                    this._depthSortedIndices[f * 3] = indices![sind];
+                    this._depthSortedIndices[f * 3 + 1] = indices![sind + 1];
+                    this._depthSortedIndices[f * 3 + 2] = indices![sind + 2];
                 }
                 this.updateIndices(this._depthSortedIndices);
             }
