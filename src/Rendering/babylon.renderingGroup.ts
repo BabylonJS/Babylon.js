@@ -187,7 +187,7 @@
             for (; subIndex < subMeshes.length; subIndex++) {
                 subMesh = subMeshes.data[subIndex];
                 subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
-                subMesh._distanceToCamera = (<BoundingInfo>subMesh.getBoundingInfo()).boundingSphere.centerWorld.subtract(cameraPosition).length();
+                subMesh._distanceToCamera = subMesh.getBoundingInfo().boundingSphere.centerWorld.subtract(cameraPosition).length();
             }
 
             let sortedArray = subMeshes.data.slice(0, subMeshes.length);

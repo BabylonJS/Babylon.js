@@ -150,7 +150,7 @@ module INSPECTOR {
             }
         }
 
-        public validateInput(value: any, forceupdate:boolean = true): void {
+        public validateInput(value: any, forceupdate: boolean = true): void {
             this.updateObject();
             if (typeof this._property.value === 'number') {
                 this._property.value = parseFloat(value);
@@ -182,7 +182,7 @@ module INSPECTOR {
             Helpers.CleanDiv(this._valueDiv);
             if (typeof this.value !== 'boolean' && !this._isSliderType()) {
                 this._valueDiv.textContent = "-";
-            } 
+            }
             // restore elements
             for (let elem of this._elements) {
                 this._valueDiv.appendChild(elem.toHtml());
@@ -313,7 +313,7 @@ module INSPECTOR {
             // Then update its value
             // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
             if (typeof this.value === 'boolean') {
-                 this._checkboxInput();
+                this._checkboxInput();
             } else if (this._isSliderType()) { // Add slider when parent have slider property
                 this._rangeInput();
             } else {
@@ -386,7 +386,9 @@ module INSPECTOR {
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
                     let objToDetail = this.value;
-                    let propToDisplay = (<any>PROPERTIES)[Helpers.GET_TYPE(objToDetail)].properties.slice().reverse();
+                    // Display all properties that are not functions
+                    let propToDisplay = Helpers.GetAllLinesPropertiesAsString(objToDetail);
+                    propToDisplay.sort().reverse();
 
                     for (let prop of propToDisplay) {
                         let infos = new Property(prop, this._property.value);
@@ -395,7 +397,7 @@ module INSPECTOR {
                     }
                 }
                 // otherwise display it    
-                if (this._div.parentNode) {                
+                if (this._div.parentNode) {
                     for (let child of this._children) {
                         this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
                     }
@@ -437,7 +439,7 @@ module INSPECTOR {
          * Create input entry
          */
         private _checkboxInput() {
-            if(this._valueDiv.childElementCount < 1) { // Prevent display two checkbox
+            if (this._valueDiv.childElementCount < 1) { // Prevent display two checkbox
                 this._input = Helpers.CreateInput('checkbox-element', this._valueDiv);
                 this._input.type = 'checkbox'
                 this._input.checked = this.value;
@@ -445,11 +447,11 @@ module INSPECTOR {
                     Scheduler.getInstance().pause = true;
                     this.validateInput(!this.value)
                 })
-            }            
+            }
         }
 
         private _rangeInput() {
-            if(this._valueDiv.childElementCount < 1) { // Prevent display two input range
+            if (this._valueDiv.childElementCount < 1) { // Prevent display two input range
                 this._input = Helpers.CreateInput('slider-element', this._valueDiv);
                 this._input.type = 'range';
                 this._input.style.display = 'inline-block';
@@ -457,7 +459,7 @@ module INSPECTOR {
                 this._input.max = this._getSliderProperty().max;
                 this._input.step = this._getSliderProperty().step;
                 this._input.value = this.value;
-                
+
                 this._validateInputHandler = this._rangeHandler.bind(this)
                 this._input.addEventListener('input', this._validateInputHandler)
                 this._input.addEventListener('change', () => {
@@ -479,10 +481,10 @@ module INSPECTOR {
         }
 
         private _isSliderType() { //Check if property have slider definition
-            return this._property  && 
-            PROPERTIES.hasOwnProperty(this._property.obj.constructor.name) &&
-            (<any>PROPERTIES)[this._property.obj.constructor.name].hasOwnProperty('slider') && 
-            (<any>PROPERTIES)[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
+            return this._property &&
+                PROPERTIES.hasOwnProperty(this._property.obj.constructor.name) &&
+                (<any>PROPERTIES)[this._property.obj.constructor.name].hasOwnProperty('slider') &&
+                (<any>PROPERTIES)[this._property.obj.constructor.name].slider.hasOwnProperty(this.name);
         }
 
         private _getSliderProperty() {

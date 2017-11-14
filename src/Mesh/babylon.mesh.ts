@@ -372,10 +372,6 @@
             } else {
                 let boundingInfo = this.getBoundingInfo();
 
-                if (!boundingInfo) {
-                    return this;
-                }
-
                 bSphere =  boundingInfo.boundingSphere;
             }
 
@@ -2222,8 +2218,8 @@
 
         // Statics
         /**
-         * Returns a new Mesh object what is a deep copy of the passed mesh.   
-         * The parameter `parsedMesh` is the mesh to be copied.   
+         * Returns a new Mesh object parsed from the source provided.   
+         * The parameter `parsedMesh` is the source.   
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
@@ -3177,10 +3173,6 @@
             
             meshes.forEach(function (mesh, index, array) {
                 let boundingInfo = mesh.getBoundingInfo();
-
-                if (!boundingInfo) {
-                    return;
-                }
 
                 let boundingBox = boundingInfo.boundingBox;
                 if (!minVector || !maxVector) {
