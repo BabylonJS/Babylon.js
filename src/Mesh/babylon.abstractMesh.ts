@@ -42,10 +42,12 @@
             Y: 1,
             Z: 1
         };
-        private _facetDepthSort: boolean = false;                           // is the facet depth sort enabled
-        private _originalIndices: IndicesArray;                             // copy of the original indices array
-        private _depthSortedFacets: { ind: number, sqDistance: number }[];    // array of depth sorted facets
-        private _facetDepthSortFunction: (f1: { ind: number, sqDistance: number }, f2: { ind: number, sqDistance: number }) => number;  // facet depth sort function
+      
+        private _facetDepthSort: boolean = false;                           // is the facet depth sort to be computed
+        private _facetDepthSortEnabled: boolean = false;                    // is the facet depth sort initialized
+        private _depthSortedIndices: IndicesArray;                          // copy of the indices array to store them once sorted
+        private _depthSortedFacets: {ind: number, sqDistance: number}[];    // array of depth sorted facets
+        private _facetDepthSortFunction: (f1: {ind: number, sqDistance: number}, f2: {ind: number, sqDistance: number}) => number;  // facet depth sort function
         private _facetDepthSortFrom: Vector3;                               // location where to depth sort from
         private _facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
         private _invertedMatrix: Matrix;                                    // Mesh inverted World Matrix
@@ -78,6 +80,7 @@
         /**
          * Boolean : must the facet be depth sorted on next call to `updateFacetData()` ?  
          * Works only for updatable meshes.  
+         * Doesn't work with multi-materials.  
          */
         public get mustDepthSortFacets(): boolean {
             return this._facetDepthSort;
@@ -1495,7 +1498,6 @@
             }
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
-            var indicesForComputeNormals = indices;
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
 
@@ -1503,10 +1505,31 @@
                 return this;
             }
 
-            if (this._facetDepthSort && !this._originalIndices) {
+            if (this._facetDepthSort && !this._facetDepthSortEnabled) {
                 // init arrays, matrix and sort function on first call
-                this._originalIndices = new Uint32Array(indices!);
-                this._facetDepthSortFunction = function (f1, f2) {
+                this._facetDepthSortEnabled = true;
+                if (indices instanceof Uint16Array) {
+                    this._depthSortedIndices = new Uint16Array(indices!);
+                }
+                else if (indices instanceof Uint32Array) {
+                    this._depthSortedIndices = new Uint32Array(indices!);
+                } 
+                else {
+                    var needs32bits = false;
+                    for (var i = 0; i < indices!.length; i++) {
+                        if (indices![i] > 65535) {
+                            needs32bits = true;
+                            break;
+                        }
+                    }
+                    if (needs32bits) {
+                        this._depthSortedIndices = new Uint32Array(indices!);
+                    } 
+                    else {
+                        this._depthSortedIndices = new Uint16Array(indices!);
+                    }
+                }               
+                this._facetDepthSortFunction = function(f1, f2) {
                     return (f2.sqDistance - f1.sqDistance);
                 };
                 if (!this._facetDepthSortFrom) {
@@ -1543,25 +1566,25 @@
             this._facetParameters.subDiv = this._subDiv;
             this._facetParameters.ratio = this.partitioningBBoxRatio;
             this._facetParameters.depthSort = this._facetDepthSort;
-            if (this._facetDepthSort) {
+            if (this._facetDepthSort && this._facetDepthSortEnabled) {
                 this.computeWorldMatrix(true);
                 this._worldMatrix.invertToRef(this._invertedMatrix);
                 Vector3.TransformCoordinatesToRef(this._facetDepthSortFrom, this._invertedMatrix, this._facetDepthSortOrigin);
                 this._facetParameters.distanceTo = this._facetDepthSortOrigin;
-                indicesForComputeNormals = this._originalIndices;
             }
             this._facetParameters.depthSortedFacets = this._depthSortedFacets;
-            VertexData.ComputeNormals(positions, indicesForComputeNormals, normals, this._facetParameters);
+            VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
 
-            if (this._facetDepthSort) {
+            if (this._facetDepthSort && this._facetDepthSortEnabled) {
                 this._depthSortedFacets.sort(this._facetDepthSortFunction);
-                for (var sorted = 0; sorted < this._facetNb; sorted++) {
-                    var sind = this._depthSortedFacets[sorted].ind;
-                    indices![sorted * 3] = this._originalIndices[sind];
-                    indices![sorted * 3 + 1] = this._originalIndices[sind + 1];
-                    indices![sorted * 3 + 2] = this._originalIndices[sind + 2];
+                var l = (this._depthSortedIndices.length / 3)|0;
+                for (var f = 0; f < l; f++) {
+                    var sind = this._depthSortedFacets[f].ind;
+                    this._depthSortedIndices[f * 3] = indices![sind];
+                    this._depthSortedIndices[f * 3 + 1] = indices![sind + 1];
+                    this._depthSortedIndices[f * 3 + 2] = indices![sind + 2];
                 }
-                this.updateIndices(indices!);
+                this.updateIndices(this._depthSortedIndices);
             }
 
             return this;
@@ -1750,7 +1773,7 @@
                 this._facetNormals = new Array<Vector3>();
                 this._facetPartitioning = new Array<number[]>();
                 this._facetParameters = null;
-                this._originalIndices = new Uint32Array(0);
+                this._depthSortedIndices = new Uint32Array(0);
             }
             return this;
         }
@@ -1761,7 +1784,10 @@
         public updateIndices(indices: IndicesArray): AbstractMesh {
             return this;
         }
-
+        /**
+         * The mesh Geometry. Actually used by the Mesh object.
+         * Returns a blank geometry object.
+         */
         /**
          * Creates new normals data for the mesh.
          * @param updatable.
