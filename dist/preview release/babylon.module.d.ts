@@ -2495,15 +2495,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface Behavior<T extends Node> {
-        name: string;
-        init(): void;
-        attach(node: T): void;
-        detach(): void;
-    }
-}
-
-declare module BABYLON {
     class Bone extends Node {
         name: string;
         private static _tmpVecs;
@@ -2982,6 +2973,15 @@ declare module BABYLON {
         getPoseMatrix(): Nullable<Matrix>;
         sortBones(): void;
         private _sortBones(index, bones, visited);
+    }
+}
+
+declare module BABYLON {
+    interface Behavior<T extends Node> {
+        name: string;
+        init(): void;
+        attach(node: T): void;
+        detach(): void;
     }
 }
 
@@ -3516,6 +3516,129 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class BoundingBox implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo(pickingInfoA, pickingInfoB);
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
     class Collider {
         radius: Vector3;
         retry: number;
@@ -3759,129 +3882,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo(pickingInfoA, pickingInfoB);
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
 declare module BABYLON.Debug {
     class AxesViewer {
         private _xline;
@@ -4008,6 +4008,69 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength(bones, meshMat);
         update(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -4856,69 +4919,6 @@ declare var WebGLVertexArrayObject: {
     prototype: WebGLVertexArrayObject;
     new (): WebGLVertexArrayObject;
 };
-
-declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
-    }
-}
 
 declare module BABYLON {
     class StickValues {
@@ -10109,6 +10109,70 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasPositions: boolean;
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Nullable<FloatArray>): void;
+        getPositions(): Nullable<FloatArray>;
+        setNormals(data: Nullable<FloatArray>): void;
+        getNormals(): Nullable<FloatArray>;
+        setTangents(data: Nullable<FloatArray>): void;
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        constructor(scene?: Nullable<Scene>);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        private _syncActiveTargets(needUpdate);
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+    }
+}
+
+declare module BABYLON {
     class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
         static OCCLUSION_TYPE_NONE: number;
         static OCCLUSION_TYPE_OPTIMISTIC: number;
@@ -10433,7 +10497,7 @@ declare module BABYLON {
          * Returns the mesh BoundingInfo object or creates a new one and returns it if undefined.
          * Returns a BoundingInfo
          */
-        getBoundingInfo(): Nullable<BoundingInfo>;
+        getBoundingInfo(): BoundingInfo;
         /**
          * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units).
          * @param includeDescendants Take the hierarchy's bounding box instead of the mesh's bounding box.
@@ -13659,70 +13723,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasPositions: boolean;
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Nullable<FloatArray>): void;
-        getPositions(): Nullable<FloatArray>;
-        setNormals(data: Nullable<FloatArray>): void;
-        getNormals(): Nullable<FloatArray>;
-        setTangents(data: Nullable<FloatArray>): void;
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        constructor(scene?: Nullable<Scene>);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
     class GPUParticleSystem implements IDisposable, IParticleSystem {
         name: string;
         id: string;
@@ -14279,6 +14279,36 @@ declare module BABYLON {
         * @param update the boolean update value actually passed to setParticles()
         */
         afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: Nullable<AbstractMesh[]>;
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
     }
 }
 
@@ -15220,36 +15250,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: Nullable<AbstractMesh[]>;
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class BoundingBoxRenderer {
         frontColor: Color3;
         backColor: Color3;
@@ -15513,75 +15513,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        cellWidth: number;
-        cellHeight: number;
-        /**
-        * An event triggered when the manager is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        texture: Texture;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
-        render(): void;
-        dispose(): void;
-    }
-}
-
 declare module BABYLON.Internals {
     class _AlphaState {
         private _isAlphaBlendDirty;
@@ -15662,6 +15593,75 @@ declare module BABYLON.Internals {
         constructor();
         reset(): void;
         apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        cellWidth: number;
+        cellHeight: number;
+        /**
+        * An event triggered when the manager is disposed.
+        * @type {BABYLON.Observable}
+        */
+        onDisposeObservable: Observable<SpriteManager>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        texture: Texture;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -17160,6 +17160,7 @@ declare module BABYLON {
         onEnteringVR: () => void;
         onExitingVR: () => void;
         onControllerMeshLoaded: (controller: WebVRController) => void;
+        private _useCustomVRButton;
         readonly deviceOrientationCamera: DeviceOrientationCamera;
         readonly currentVRCamera: FreeCamera;
         readonly webVRCamera: WebVRFreeCamera;
@@ -17219,6 +17220,8 @@ declare module BABYLON {
         displayName?: string;
         controllerMeshes?: boolean;
         defaultLightingOnControllers?: boolean;
+        useCustomVRButton?: boolean;
+        customVRButton?: HTMLButtonElement;
     }
     class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         private webVROptions;
@@ -17897,6 +17900,304 @@ declare module BABYLON {
 }
 
 declare module BABYLON.Internals {
+}
+
+declare namespace BABYLON {
+    /**
+     * Background material used to create an efficient environement around your scene.
+     */
+    class BackgroundMaterial extends BABYLON.PushMaterial {
+        /**
+         * Standard reflectance value at parallel view angle.
+         */
+        static standardReflectance0: number;
+        /**
+         * Standard reflectance value at grazing angle.
+         */
+        static standardReflectance90: number;
+        /**
+         * Key light Color (multiply against the R channel of the environement texture)
+         */
+        protected _primaryColor: Color3;
+        primaryColor: Color3;
+        /**
+         * Key light Level (allowing HDR output of the background)
+         */
+        protected _primaryLevel: float;
+        primaryLevel: float;
+        /**
+         * Secondary light Color (multiply against the G channel of the environement texture)
+         */
+        protected _secondaryColor: Color3;
+        secondaryColor: Color3;
+        /**
+         * Secondary light Level (allowing HDR output of the background)
+         */
+        protected _secondaryLevel: float;
+        secondaryLevel: float;
+        /**
+         * Tertiary light Color (multiply against the B channel of the environement texture)
+         */
+        protected _tertiaryColor: Color3;
+        tertiaryColor: Color3;
+        /**
+         * Tertiary light Level (allowing HDR output of the background)
+         */
+        protected _tertiaryLevel: float;
+        tertiaryLevel: float;
+        /**
+         * Reflection Texture used in the material.
+         * Should be author in a specific way for the best result (refer to the documentation).
+         */
+        protected _reflectionTexture: Nullable<BaseTexture>;
+        reflectionTexture: Nullable<BaseTexture>;
+        /**
+         * Reflection Texture level of blur.
+         *
+         * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the
+         * texture twice.
+         */
+        protected _reflectionBlur: float;
+        reflectionBlur: float;
+        /**
+         * Diffuse Texture used in the material.
+         * Should be author in a specific way for the best result (refer to the documentation).
+         */
+        protected _diffuseTexture: Nullable<BaseTexture>;
+        diffuseTexture: Nullable<BaseTexture>;
+        /**
+         * Specify the list of lights casting shadow on the material.
+         * All scene shadow lights will be included if null.
+         */
+        protected _shadowLights: Nullable<IShadowLight[]>;
+        shadowLights: Nullable<IShadowLight[]>;
+        /**
+         * For the lights having a blurred shadow generator, this can add a second blur pass in order to reach
+         * soft lighting on the background.
+         */
+        protected _shadowBlurScale: int;
+        shadowBlurScale: int;
+        /**
+         * Helps adjusting the shadow to a softer level if required.
+         * 0 means black shadows and 1 means no shadows.
+         */
+        protected _shadowLevel: float;
+        shadowLevel: float;
+        /**
+         * In case of opacity Fresnel or reflection falloff, this is use as a scene center.
+         * It is usually zero but might be interesting to modify according to your setup.
+         */
+        protected _sceneCenter: Vector3;
+        sceneCenter: Vector3;
+        /**
+         * This helps specifying that the material is falling off to the sky box at grazing angle.
+         * This helps ensuring a nice transition when the camera goes under the ground.
+         */
+        protected _opacityFresnel: boolean;
+        opacityFresnel: boolean;
+        /**
+         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle.
+         * This helps adding a mirror texture on the ground.
+         */
+        protected _reflectionFresnel: boolean;
+        reflectionFresnel: boolean;
+        /**
+         * This helps specifying the falloff radius off the reflection texture from the sceneCenter.
+         * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
+         */
+        protected _reflectionFalloffDistance: number;
+        reflectionFalloffDistance: number;
+        /**
+         * This specifies the weight of the reflection against the background in case of reflection Fresnel.
+         */
+        protected _reflectionAmount: number;
+        reflectionAmount: number;
+        /**
+         * This specifies the weight of the reflection at grazing angle.
+         */
+        protected _reflectionReflectance0: number;
+        reflectionReflectance0: number;
+        /**
+         * This specifies the weight of the reflection at a perpendicular point of view.
+         */
+        protected _reflectionReflectance90: number;
+        reflectionReflectance90: number;
+        /**
+         * Sets the reflection reflectance fresnel values according to the default standard
+         * empirically know to work well :-)
+         */
+        reflectionStandardFresnelWeight: number;
+        /**
+         * Helps to directly use the maps channels instead of their level.
+         */
+        protected _useRGBColor: boolean;
+        useRGBColor: boolean;
+        /**
+         * This helps reducing the banding effect that could occur on the background.
+         */
+        protected _enableNoise: boolean;
+        enableNoise: boolean;
+        /**
+         * Number of Simultaneous lights allowed on the material.
+         */
+        private _maxSimultaneousLights;
+        maxSimultaneousLights: int;
+        /**
+         * Default configuration related to image processing available in the Background Material.
+         */
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Keep track of the image processing observer to allow dispose and replace.
+         */
+        private _imageProcessingObserver;
+        /**
+         * Attaches a new image processing configuration to the PBR Material.
+         * @param configuration (if null the scene configuration will be use)
+         */
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        /**
+         * Sets the Default image processing configuration used either in the this material.
+         *
+         * If sets to null, the scene one is in use.
+         */
+        imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
+        /**
+         * Sets wether the color curves effect is enabled.
+         */
+        cameraColorCurvesEnabled: boolean;
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        cameraColorGradingEnabled: boolean;
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        cameraToneMappingEnabled: boolean;
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        cameraExposure: float;
+        /**
+         * Gets The camera contrast used on this material.
+         */
+        /**
+         * Sets The camera contrast used on this material.
+         */
+        cameraContrast: float;
+        /**
+         * Gets the Color Grading 2D Lookup Texture.
+         */
+        /**
+         * Sets the Color Grading 2D Lookup Texture.
+         */
+        cameraColorGradingTexture: Nullable<BaseTexture>;
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        cameraColorCurves: Nullable<ColorCurves>;
+        private _renderTargets;
+        private _reflectionControls;
+        /**
+         * constructor
+         * @param name The name of the material
+         * @param scene The scene to add the material to
+         */
+        constructor(name: string, scene: BABYLON.Scene);
+        /**
+         * The entire material has been created in order to prevent overdraw.
+         * @returns false
+         */
+        needAlphaTesting(): boolean;
+        /**
+         * The entire material has been created in order to prevent overdraw.
+         * @returns true if blending is enable
+         */
+        needAlphaBlending(): boolean;
+        /**
+         * Checks wether the material is ready to be rendered for a given mesh.
+         * @param mesh The mesh to render
+         * @param subMesh The submesh to check against
+         * @param useInstances Specify wether or not the material is used with instances
+         */
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        /**
+         * Build the uniform buffer used in the material.
+         */
+        buildUniformLayout(): void;
+        /**
+         * Unbind the material.
+         */
+        unbind(): void;
+        /**
+         * Bind only the world matrix to the material.
+         * @param world The world matrix to bind.
+         */
+        bindOnlyWorldMatrix(world: Matrix): void;
+        /**
+         * Bind the material for a dedicated submeh (every used meshes will be considered opaque).
+         * @param world The world matrix to bind.
+         * @param subMesh The submesh to bind for.
+         */
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Dispose the material.
+         * @forceDisposeEffect Force disposal of the associated effect.
+         * @forceDisposeTextures Force disposal of the associated textures.
+         */
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        /**
+         * Clones the material.
+         * @name The cloned name.
+         * @returns The cloned material.
+         */
+        clone(name: string): BackgroundMaterial;
+        /**
+         * Serializes the current material to its JSON representation.
+         * @returns The JSON representation.
+         */
+        serialize(): any;
+        /**
+         * Gets the class name of the material
+         * @returns "BackgroundMaterial"
+         */
+        getClassName(): string;
+        /**
+         * Parse a JSON input to create back a background material.
+         * @param source
+         * @param scene
+         * @param rootUrl
+         * @returns the instantiated BackgroundMaterial.
+         */
+        static Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial;
+    }
 }
 
 declare module BABYLON {
@@ -19375,304 +19676,6 @@ declare module BABYLON {
             maxHeight: number;
             deviceId: string;
         }): void;
-    }
-}
-
-declare namespace BABYLON {
-    /**
-     * Background material used to create an efficient environement around your scene.
-     */
-    class BackgroundMaterial extends BABYLON.PushMaterial {
-        /**
-         * Standard reflectance value at parallel view angle.
-         */
-        static standardReflectance0: number;
-        /**
-         * Standard reflectance value at grazing angle.
-         */
-        static standardReflectance90: number;
-        /**
-         * Key light Color (multiply against the R channel of the environement texture)
-         */
-        protected _primaryColor: Color3;
-        primaryColor: Color3;
-        /**
-         * Key light Level (allowing HDR output of the background)
-         */
-        protected _primaryLevel: float;
-        primaryLevel: float;
-        /**
-         * Secondary light Color (multiply against the G channel of the environement texture)
-         */
-        protected _secondaryColor: Color3;
-        secondaryColor: Color3;
-        /**
-         * Secondary light Level (allowing HDR output of the background)
-         */
-        protected _secondaryLevel: float;
-        secondaryLevel: float;
-        /**
-         * Tertiary light Color (multiply against the B channel of the environement texture)
-         */
-        protected _tertiaryColor: Color3;
-        tertiaryColor: Color3;
-        /**
-         * Tertiary light Level (allowing HDR output of the background)
-         */
-        protected _tertiaryLevel: float;
-        tertiaryLevel: float;
-        /**
-         * Reflection Texture used in the material.
-         * Should be author in a specific way for the best result (refer to the documentation).
-         */
-        protected _reflectionTexture: Nullable<BaseTexture>;
-        reflectionTexture: Nullable<BaseTexture>;
-        /**
-         * Reflection Texture level of blur.
-         *
-         * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the
-         * texture twice.
-         */
-        protected _reflectionBlur: float;
-        reflectionBlur: float;
-        /**
-         * Diffuse Texture used in the material.
-         * Should be author in a specific way for the best result (refer to the documentation).
-         */
-        protected _diffuseTexture: Nullable<BaseTexture>;
-        diffuseTexture: Nullable<BaseTexture>;
-        /**
-         * Specify the list of lights casting shadow on the material.
-         * All scene shadow lights will be included if null.
-         */
-        protected _shadowLights: Nullable<IShadowLight[]>;
-        shadowLights: Nullable<IShadowLight[]>;
-        /**
-         * For the lights having a blurred shadow generator, this can add a second blur pass in order to reach
-         * soft lighting on the background.
-         */
-        protected _shadowBlurScale: int;
-        shadowBlurScale: int;
-        /**
-         * Helps adjusting the shadow to a softer level if required.
-         * 0 means black shadows and 1 means no shadows.
-         */
-        protected _shadowLevel: float;
-        shadowLevel: float;
-        /**
-         * In case of opacity Fresnel or reflection falloff, this is use as a scene center.
-         * It is usually zero but might be interesting to modify according to your setup.
-         */
-        protected _sceneCenter: Vector3;
-        sceneCenter: Vector3;
-        /**
-         * This helps specifying that the material is falling off to the sky box at grazing angle.
-         * This helps ensuring a nice transition when the camera goes under the ground.
-         */
-        protected _opacityFresnel: boolean;
-        opacityFresnel: boolean;
-        /**
-         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle.
-         * This helps adding a mirror texture on the ground.
-         */
-        protected _reflectionFresnel: boolean;
-        reflectionFresnel: boolean;
-        /**
-         * This helps specifying the falloff radius off the reflection texture from the sceneCenter.
-         * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
-         */
-        protected _reflectionFalloffDistance: number;
-        reflectionFalloffDistance: number;
-        /**
-         * This specifies the weight of the reflection against the background in case of reflection Fresnel.
-         */
-        protected _reflectionAmount: number;
-        reflectionAmount: number;
-        /**
-         * This specifies the weight of the reflection at grazing angle.
-         */
-        protected _reflectionReflectance0: number;
-        reflectionReflectance0: number;
-        /**
-         * This specifies the weight of the reflection at a perpendicular point of view.
-         */
-        protected _reflectionReflectance90: number;
-        reflectionReflectance90: number;
-        /**
-         * Sets the reflection reflectance fresnel values according to the default standard
-         * empirically know to work well :-)
-         */
-        reflectionStandardFresnelWeight: number;
-        /**
-         * Helps to directly use the maps channels instead of their level.
-         */
-        protected _useRGBColor: boolean;
-        useRGBColor: boolean;
-        /**
-         * This helps reducing the banding effect that could occur on the background.
-         */
-        protected _enableNoise: boolean;
-        enableNoise: boolean;
-        /**
-         * Number of Simultaneous lights allowed on the material.
-         */
-        private _maxSimultaneousLights;
-        maxSimultaneousLights: int;
-        /**
-         * Default configuration related to image processing available in the Background Material.
-         */
-        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-        /**
-         * Keep track of the image processing observer to allow dispose and replace.
-         */
-        private _imageProcessingObserver;
-        /**
-         * Attaches a new image processing configuration to the PBR Material.
-         * @param configuration (if null the scene configuration will be use)
-         */
-        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
-        /**
-         * Gets the image processing configuration used either in this material.
-         */
-        /**
-         * Sets the Default image processing configuration used either in the this material.
-         *
-         * If sets to null, the scene one is in use.
-         */
-        imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
-        /**
-         * Gets wether the color curves effect is enabled.
-         */
-        /**
-         * Sets wether the color curves effect is enabled.
-         */
-        cameraColorCurvesEnabled: boolean;
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        cameraColorGradingEnabled: boolean;
-        /**
-         * Gets wether tonemapping is enabled or not.
-         */
-        /**
-         * Sets wether tonemapping is enabled or not
-         */
-        cameraToneMappingEnabled: boolean;
-        /**
-         * The camera exposure used on this material.
-         * This property is here and not in the camera to allow controlling exposure without full screen post process.
-         * This corresponds to a photographic exposure.
-         */
-        /**
-         * The camera exposure used on this material.
-         * This property is here and not in the camera to allow controlling exposure without full screen post process.
-         * This corresponds to a photographic exposure.
-         */
-        cameraExposure: float;
-        /**
-         * Gets The camera contrast used on this material.
-         */
-        /**
-         * Sets The camera contrast used on this material.
-         */
-        cameraContrast: float;
-        /**
-         * Gets the Color Grading 2D Lookup Texture.
-         */
-        /**
-         * Sets the Color Grading 2D Lookup Texture.
-         */
-        cameraColorGradingTexture: Nullable<BaseTexture>;
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        cameraColorCurves: Nullable<ColorCurves>;
-        private _renderTargets;
-        private _reflectionControls;
-        /**
-         * constructor
-         * @param name The name of the material
-         * @param scene The scene to add the material to
-         */
-        constructor(name: string, scene: BABYLON.Scene);
-        /**
-         * The entire material has been created in order to prevent overdraw.
-         * @returns false
-         */
-        needAlphaTesting(): boolean;
-        /**
-         * The entire material has been created in order to prevent overdraw.
-         * @returns true if blending is enable
-         */
-        needAlphaBlending(): boolean;
-        /**
-         * Checks wether the material is ready to be rendered for a given mesh.
-         * @param mesh The mesh to render
-         * @param subMesh The submesh to check against
-         * @param useInstances Specify wether or not the material is used with instances
-         */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
-        /**
-         * Build the uniform buffer used in the material.
-         */
-        buildUniformLayout(): void;
-        /**
-         * Unbind the material.
-         */
-        unbind(): void;
-        /**
-         * Bind only the world matrix to the material.
-         * @param world The world matrix to bind.
-         */
-        bindOnlyWorldMatrix(world: Matrix): void;
-        /**
-         * Bind the material for a dedicated submeh (every used meshes will be considered opaque).
-         * @param world The world matrix to bind.
-         * @param subMesh The submesh to bind for.
-         */
-        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
-        /**
-         * Dispose the material.
-         * @forceDisposeEffect Force disposal of the associated effect.
-         * @forceDisposeTextures Force disposal of the associated textures.
-         */
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
-        /**
-         * Clones the material.
-         * @name The cloned name.
-         * @returns The cloned material.
-         */
-        clone(name: string): BackgroundMaterial;
-        /**
-         * Serializes the current material to its JSON representation.
-         * @returns The JSON representation.
-         */
-        serialize(): any;
-        /**
-         * Gets the class name of the material
-         * @returns "BackgroundMaterial"
-         */
-        getClassName(): string;
-        /**
-         * Parse a JSON input to create back a background material.
-         * @param source
-         * @param scene
-         * @param rootUrl
-         * @returns the instantiated BackgroundMaterial.
-         */
-        static Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial;
     }
 }
 
