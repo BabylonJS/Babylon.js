@@ -331,16 +331,26 @@
             return -1;
         }
 
-        // Statics
-        public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
-            var start = Vector3.Unproject(new Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
-            var end = Vector3.Unproject(new Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
+        public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
+            Vector3.UnprojectFloatsToRef(x, y, 0, viewportWidth, viewportHeight, world, view, projection, this.origin);
+            Vector3.UnprojectFloatsToRef(x, y, 1, viewportWidth, viewportHeight, world, view, projection, Tmp.Vector3[0]);
 
-            var direction = end.subtract(start);
-            direction.normalize();
-
-            return new Ray(start, direction);
+            Tmp.Vector3[0].subtractToRef(this.origin, this.direction);
+            this.direction.normalize();
+            return this;
         }
+
+        // Statics
+        public static Zero(): Ray {
+            return new Ray(Vector3.Zero(), Vector3.Zero());
+        }
+
+        public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
+            let result = Ray.Zero();
+
+            return result.update(x, y, viewportWidth, viewportHeight, world, view, projection);
+        }
+        
 
         /**
         * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
