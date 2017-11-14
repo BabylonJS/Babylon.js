@@ -298,6 +298,10 @@ module BABYLON.GLTF2 {
                 }
             }
 
+            if (this._parent.onMeshLoaded) {
+                this._parent.onMeshLoaded(this._rootNode.babylonMesh);
+            }
+
             let nodeIndices = scene.nodes;
 
             this._traverseNodes(context, nodeIndices, (node, parentNode) => {
@@ -385,6 +389,10 @@ module BABYLON.GLTF2 {
                     this._loadNode("#/nodes/" + index, childNode);
                 }
             }
+
+            if (this._parent.onMeshLoaded) {
+                this._parent.onMeshLoaded(node.babylonMesh);
+            }
         }
 
         private _loadMesh(context: string, node: IGLTFNode, mesh: IGLTFMesh): void {
@@ -441,17 +449,7 @@ module BABYLON.GLTF2 {
                             this._parent.onMaterialLoaded(babylonMaterial);
                         }
 
-                        if (this._parent.onBeforeMaterialReadyAsync) {
-                            this._addLoaderPendingData(material);
-                            this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[index] != null, () => {
-                                this._tryCatchOnError(() => {
-                                    subMaterials[index] = babylonMaterial;
-                                    this._removeLoaderPendingData(material);
-                                });
-                            });
-                        } else {
-                            subMaterials[index] = babylonMaterial;
-                        }
+                        subMaterials[index] = babylonMaterial;
                     });
                 }
             };
@@ -1225,8 +1223,14 @@ module BABYLON.GLTF2 {
         public _removePendingData(data: any): void {
             if (!this._renderReady) {
                 if (--this._renderPendingCount === 0) {
-                    this._renderReady = true;
-                    this._onRenderReady();
+                    this._addLoaderPendingData(this);
+                    this._compileMaterialsAsync(() => {
+                        this._compileShadowGeneratorsAsync(() => {
+                            this._removeLoaderPendingData(this);
+                            this._renderReady = true;
+                            this._onRenderReady();
+                        });
+                    });
                 }
             }
 
@@ -1643,6 +1647,98 @@ module BABYLON.GLTF2 {
             }
 
             return 0;
+        }
+
+        private _compileMaterialAsync(babylonMaterial: Material, babylonMesh: AbstractMesh, onSuccess: () => void): void {
+            if (!this._parent.compileMaterials) {
+                onSuccess();
+                return;
+            }
+
+            if (this._parent.useClipPlane) {
+                babylonMaterial.forceCompilation(babylonMesh, () => {
+                    babylonMaterial.forceCompilation(babylonMesh, () => {
+                        this._tryCatchOnError(onSuccess);
+                    }, { clipPlane: true });
+                });
+            }
+            else {
+                babylonMaterial.forceCompilation(babylonMesh, () => {
+                    this._tryCatchOnError(onSuccess);
+                });
+            }
+        }
+
+        private _compileMaterialsAsync(onSuccess: () => void): void {
+            if (!this._parent.compileMaterials || !this._gltf.materials) {
+                onSuccess();
+                return;
+            }
+
+            let meshes = this._getMeshes();
+
+            let remaining = 0;
+            for (let mesh of meshes) {
+                if (mesh.material instanceof MultiMaterial) {
+                    for (let subMaterial of mesh.material.subMaterials) {
+                        if (subMaterial) {
+                            remaining++;
+                        }
+                    }
+                }
+            }
+
+            if (remaining === 0) {
+                onSuccess();
+                return;
+            }
+
+            for (let mesh of meshes) {
+                if (mesh.material instanceof MultiMaterial) {
+                    for (let subMaterial of mesh.material.subMaterials) {
+                        if (subMaterial) {
+                            this._compileMaterialAsync(subMaterial, mesh, () => {
+                                if (--remaining === 0) {
+                                    onSuccess();
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        private _compileShadowGeneratorsAsync(onSuccess: () => void): void {
+            if (!this._parent.compileShadowGenerators) {
+                onSuccess();
+                return;
+            }
+
+            let lights = this._babylonScene.lights;
+
+            let remaining = 0;
+            for (let light of lights) {
+                let generator = light.getShadowGenerator();
+                if (generator) {
+                    remaining++;
+                }
+            }
+
+            if (remaining === 0) {
+                onSuccess();
+                return;
+            }
+
+            for (let light of lights) {
+                let generator = light.getShadowGenerator();
+                if (generator) {
+                    generator.forceCompilation(() => {
+                        if (--remaining === 0) {
+                            this._tryCatchOnError(onSuccess);
+                        }
+                    });
+                }
+            }
         }
     }
 
