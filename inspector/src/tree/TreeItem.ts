@@ -82,6 +82,14 @@ module INSPECTOR {
         protected _build() {
             this._div.className = 'line';
 
+            // special class for transform node ONLY
+            if (this.adapter instanceof MeshAdapter) {
+                let obj = this.adapter.object;
+                if (obj instanceof BABYLON.TransformNode && !(obj instanceof BABYLON.AbstractMesh)) {
+                    this._div.className += ' transformNode';
+                }
+            }
+
 
             for (let tool of this._tools) {
                 this._div.appendChild(tool.toHtml());
