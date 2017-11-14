@@ -3981,6 +3981,14 @@
 
         // Picking
         public createPickingRay(x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
+            let result = Ray.Zero();
+
+            this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
+
+            return result;
+        }
+
+        public createPickingRayToRef(x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
             var engine = this._engine;
 
             if (!camera) {
@@ -3996,13 +4004,22 @@
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), cameraViewSpace ? Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
-            //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            
+            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), cameraViewSpace ? Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
+            return this;
         }
 
-        public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Nullable<Ray> {
+        public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray {
+            let result = Ray.Zero();
+
+            this.createPickingRayInCameraSpaceToRef(x, y, result, camera);
+
+            return result;
+        }
+
+        public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
             if (!BABYLON.PickingInfo) {
-                return null;
+                return this;
             }
 
             var engine = this._engine;
@@ -4021,7 +4038,8 @@
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return Ray.CreateNew(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+            return this;
         }
 
         private _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
@@ -4133,6 +4151,8 @@
             return pickingInfo || new PickingInfo();
         }
 
+        private _tempPickingRay: Ray;
+
         /** Launch a ray to try to pick a mesh in the scene
          * @param x position on screen
          * @param y position on screen
@@ -4141,7 +4161,14 @@
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
-            return this._internalPick(world => this.createPickingRay(x, y, world, camera || null), predicate, fastCheck);
+            if (!this._tempPickingRay) {
+                this._tempPickingRay = Ray.Zero();
+            }
+
+            return this._internalPick(world => {
+                this.createPickingRayToRef(x, y, world, this._tempPickingRay, camera || null);
+                return this._tempPickingRay;
+            }, predicate, fastCheck);
         }
 
         /** Launch a ray to try to pick a sprite in the scene
@@ -4152,13 +4179,12 @@
          * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            let ray = this.createPickingRayInCameraSpace(x, y, camera);
+            if (!this._tempPickingRay) {
+                this._tempPickingRay = Ray.Zero();
+            }            
+            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay, camera);
 
-            if (!ray) {
-                return null;
-            }
-
-            return this._internalPickSprites(ray, predicate, fastCheck, camera);
+            return this._internalPickSprites(this._tempPickingRay, predicate, fastCheck, camera);
         }
 
         private _cachedRayForTransform: Ray;
@@ -4176,7 +4202,7 @@
                 world.invertToRef(this._pickWithRayInverseMatrix);
 
                 if (!this._cachedRayForTransform) {
-                    this._cachedRayForTransform = new Ray(Vector3.Zero(), Vector3.Zero());
+                    this._cachedRayForTransform = Ray.Zero();
                 }
                 
                 Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
@@ -4208,7 +4234,7 @@
                 world.invertToRef(this._pickWithRayInverseMatrix);
 
                 if (!this._cachedRayForTransform) {
-                    this._cachedRayForTransform = new Ray(Vector3.Zero(), Vector3.Zero());
+                    this._cachedRayForTransform = Ray.Zero();
                 }
                 
                 Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
