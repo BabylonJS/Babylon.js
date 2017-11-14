@@ -38,13 +38,8 @@ if (BABYLON.Engine.isSupported()) {
         if (plugin.name !== "gltf") {
             return;
         }
-        plugin.onBeforeMaterialReadyAsync = function(material, mesh, isLOD, callback) {
-            if (!isLOD) {
-                callback();
-                return;
-            }
-            material.forceCompilation(mesh, callback);
-        }
+
+        plugin.compileMaterials = true;
     });
 
     // Resize
