@@ -243,6 +243,13 @@
       "referenceImage": "DefaultRenderingPipeline.png"
     },
     {
+      "title": "GUI",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GUI/gui.js",
+      "functionToCall": "createScene",
+      "referenceImage": "GUI.png"
+    },    
+    {
       "title": "Water material (only visual check)",
       "renderCount": 10,
       "scriptToRun": "/Demos/WaterMaterial/water.js",

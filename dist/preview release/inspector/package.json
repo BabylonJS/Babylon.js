@@ -4,14 +4,14 @@
     },
     "name": "babylonjs-inspector",
     "description": "The Babylon.js inspector.",
-    "version": "3.1.0-beta1.0",
+    "version": "3.1.0-beta3",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
-    "main": "babylonjs.inspector.bundle.js",
+    "main": "babylon.inspector.bundle.js",
     "files": [
-        "babylonjs.inspector.bundle.js",
+        "babylon.inspector.bundle.js",
         "readme.md",
         "package.json"
     ],

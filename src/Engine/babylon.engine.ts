@@ -531,7 +531,7 @@
         }
 
         public static get Version(): string {
-            return "3.1-beta-2";
+            return "3.1-beta-3";
         }
 
         // Updatable statics so stick with vars here
@@ -4827,40 +4827,42 @@
             this.disableVR();
 
             // Events
-            window.removeEventListener("blur", this._onBlur);
-            window.removeEventListener("focus", this._onFocus);
-            window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
-            window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
-            if (this._renderingCanvas) {
-                this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-                this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-                this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
+            if (Tools.IsWindowObjectExist()) {
+                window.removeEventListener("blur", this._onBlur);
+                window.removeEventListener("focus", this._onFocus);
+                window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
+                window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
+                if (this._renderingCanvas) {
+                    this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+                    this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+                    this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
 
-                if (!this._doNotHandleContextLost) {
-                    this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
-                    this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+                    if (!this._doNotHandleContextLost) {
+                        this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
+                        this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+                    }
                 }
-            }
-            document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("pointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("pointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
 
-            if (this._onVrDisplayConnect) {
-                window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-                if (this._onVrDisplayDisconnect) {
-                    window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-                }
+                if (this._onVrDisplayConnect) {
+                    window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+                    if (this._onVrDisplayDisconnect) {
+                        window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                    }
 
-                if (this._onVrDisplayPresentChange) {
-                    window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+                    if (this._onVrDisplayPresentChange) {
+                        window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+                    }
+                    this._onVrDisplayConnect = null;
+                    this._onVrDisplayDisconnect = null;
                 }
-                this._onVrDisplayConnect = null;
-                this._onVrDisplayDisconnect = null;
             }
 
             // Remove from Instances

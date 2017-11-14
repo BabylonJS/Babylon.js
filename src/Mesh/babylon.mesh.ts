@@ -912,6 +912,7 @@
         /**
          * Sets the mesh indices.  
          * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array).
+         * Type is Uint16Array by default unless the mesh has more than 65536 vertices.
          * If the mesh has no geometry, a new Geometry object is created and set to the mesh. 
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
@@ -1588,7 +1589,7 @@
          * Disposes the mesh.
          * This also frees the memory allocated under the hood to all the buffers used by WebGL.
          */
-        public dispose(doNotRecurse?: boolean): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures: boolean = false): void {
             this.morphTargetManager = null;
 
             if (this._geometry) {
@@ -1623,7 +1624,7 @@
                     highlightLayer.removeExcludedMesh(this);
                 }
             }
-            super.dispose(doNotRecurse);
+            super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
         /**
@@ -2221,8 +2222,8 @@
 
         // Statics
         /**
-         * Returns a new Mesh object what is a deep copy of the passed mesh.   
-         * The parameter `parsedMesh` is the mesh to be copied.   
+         * Returns a new Mesh object parsed from the source provided.   
+         * The parameter `parsedMesh` is the source.   
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {

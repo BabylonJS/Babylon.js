@@ -3863,6 +3863,9 @@ var BABYLON;
         GridMaterial.prototype.needAlphaBlending = function () {
             return this.opacity < 1.0;
         };
+        GridMaterial.prototype.needAlphaBlendingForMesh = function (mesh) {
+            return this.needAlphaBlending();
+        };
         GridMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {

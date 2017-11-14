@@ -67,39 +67,3 @@ void main()
 	gl_FragColor.a = 1.0;
 }
 #endif
-
-#ifdef BILATERAL_BLUR
-uniform sampler2D depthSampler;
-uniform float outSize;
-uniform float samplerOffsets[SAMPLES];
-
-void main()
-{
-
-	float texelsize = 1.0 / outSize;
-	float compareDepth = texture2D(depthSampler, vUV).r;
-	float result = 0.0;
-	float weightSum = 0.0;
-
-	for (int i = 0; i < SAMPLES; ++i)
-	{
-		#ifdef BILATERAL_BLUR_H
-		vec2 sampleOffset = vec2(texelsize * samplerOffsets[i], 0.0);
-		#else
-		vec2 sampleOffset = vec2(0.0, texelsize * samplerOffsets[i]);
-		#endif
-		vec2 samplePos = vUV + sampleOffset;
-
-		float sampleDepth = texture2D(depthSampler, samplePos).r;
-		float weight = (1.0 / (0.0001 + abs(compareDepth - sampleDepth)));
-
-		result += texture2D(textureSampler, samplePos).r * weight;
-		weightSum += weight;
-	}
-
-	result /= weightSum;
-
-	gl_FragColor.rgb = vec3(result);
-	gl_FragColor.a = 1.0;
-}
-#endif

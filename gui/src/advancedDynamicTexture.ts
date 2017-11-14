@@ -113,6 +113,23 @@ module BABYLON.GUI {
 
             this._focusedControl = control;
         }
+        
+        public get isForeground(): boolean {
+            if (!this.layer) {
+                return true;
+            }
+            return (!this.layer.isBackground);
+        }
+
+        public set isForeground(value: boolean) {
+            if (!this.layer) {
+                return;
+            }            
+            if (this.layer.isBackground === !value) {
+                return;
+            }
+            this.layer.isBackground = !value;
+        }   
        
         constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);

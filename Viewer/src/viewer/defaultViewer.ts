@@ -1,3 +1,4 @@
+import { ViewerConfiguration } from './../configuration/configuration';
 import { Template } from './../templateManager';
 import { AbstractViewer } from './viewer';
 import { Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
@@ -10,6 +11,11 @@ window['BABYLON'] = BABYLON;
 export class DefaultViewer extends AbstractViewer {
 
     public camera: ArcRotateCamera;
+
+    constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
+        super(containerElement, initialConfiguration);
+        this.onModelLoadedObservable.add(this.onModelLoaded);
+    }
 
     public initScene(): Promise<Scene> {
         return super.initScene().then(() => {
@@ -132,7 +138,7 @@ export class DefaultViewer extends AbstractViewer {
         });
     }
 
-    public onModelLoaded(meshes: Array<AbstractMesh>) {
+    private onModelLoaded = (meshes: Array<AbstractMesh>) => {
 
         // here we could set the navbar's model information:
         this.setModelMetaData();

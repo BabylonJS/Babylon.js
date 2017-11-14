@@ -61,8 +61,8 @@
             private _normals: number[] = new Array<number>();
             private _colors: number[] = new Array<number>();
             private _uvs: number[] = new Array<number>();
-            private _indices32: IndicesArray;
-            private _positions32: Float32Array;
+            private _indices32: IndicesArray;           // used as depth sorted array if depth sort enabled, else used as typed indices
+            private _positions32: Float32Array;         // updated positions for the VBO
             private _normals32: Float32Array;           // updated normals for the VBO
             private _fixedNormal32: Float32Array;       // initial normal references
             private _colors32: Float32Array;
@@ -183,7 +183,7 @@
                 }
 
                 var vertexData = new VertexData();
-                vertexData.indices = this._indices32;
+                vertexData.indices = (this._depthSort) ? this._indices : this._indices32;
                 vertexData.set(this._positions32, VertexBuffer.PositionKind);
                 vertexData.set(this._normals32, VertexBuffer.NormalKind);
                 if (this._uvs32) {

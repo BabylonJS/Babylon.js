@@ -45,6 +45,13 @@ module BABYLON.GUI {
 
         protected _localDraw(context: CanvasRenderingContext2D): void {
             context.save();
+            
+            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
+            }
 
             if (this._background) {
                 context.fillStyle = this._background;
@@ -58,6 +65,13 @@ module BABYLON.GUI {
             }
 
             if (this._thickness) {
+
+                if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                }
+
                 if (this.color) {
                     context.strokeStyle = this.color;
                 }
@@ -71,7 +85,7 @@ module BABYLON.GUI {
                                        this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
                 }
             }
-        
+
             context.restore();
         }
 

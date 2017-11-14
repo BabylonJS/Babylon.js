@@ -215,6 +215,12 @@
                 serializationObject.skeletons.push(scene.skeletons[index].serialize());
             }
 
+            // Transform nodes
+            serializationObject.transformNodes = [];
+            for (index = 0; index < scene.transformNodes.length; index++) {
+                serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
+            }            
+
             // Geometries
             serializationObject.geometries = {};
 

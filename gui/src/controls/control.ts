@@ -49,6 +49,11 @@ module BABYLON.GUI {
         public isHitTestVisible = true;
         public isPointerBlocker = false;
         public isFocusInvisible = false;
+ 
+        public shadowOffsetX = 0;
+        public shadowOffsetY = 0;
+        public shadowBlur = 0;
+        public shadowColor = '#000'; 
 
         protected _linkOffsetX = new ValueAndUnit(0);
         protected _linkOffsetY = new ValueAndUnit(0);
@@ -683,7 +688,24 @@ module BABYLON.GUI {
 
         protected _clip( context: CanvasRenderingContext2D) {
             context.beginPath();
-            context.rect(this._currentMeasure.left ,this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            
+            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                var shadowOffsetX = this.shadowOffsetX;
+                var shadowOffsetY = this.shadowOffsetY;
+                var shadowBlur = this.shadowBlur;
+                
+                var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur*2, 0);
+                var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur*2, 0);
+                var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur*2, 0);
+                var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur*2, 0);
+
+                context.rect(this._currentMeasure.left + leftShadowOffset, 
+                            this._currentMeasure.top + topShadowOffset, 
+                            this._currentMeasure.width + rightShadowOffset - leftShadowOffset, 
+                            this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
+            } else {
+                context.rect(this._currentMeasure.left ,this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            }
         }
 
         public _measure(): void {  
@@ -1032,7 +1054,7 @@ module BABYLON.GUI {
             let panel = new BABYLON.GUI.StackPanel("panel");        
             let isHorizontal = options ? options.isHorizontal : true;
             let controlFirst = options ? options.controlFirst : true;
-
+            
             panel.isVertical = !isHorizontal;
 
             let header = new BABYLON.GUI.TextBlock("header");
@@ -1053,6 +1075,11 @@ module BABYLON.GUI {
                 panel.addControl(control);
                 header.paddingRight = "5px";
             }
+            
+            header.shadowBlur = control.shadowBlur;
+            header.shadowColor = control.shadowColor;
+            header.shadowOffsetX = control.shadowOffsetX;
+            header.shadowOffsetY = control.shadowOffsetY;
 
             return panel;
         }

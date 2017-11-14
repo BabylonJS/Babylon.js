@@ -1244,8 +1244,8 @@ var INSPECTOR;
 (function (INSPECTOR) {
     var MeshAdapter = /** @class */ (function (_super) {
         __extends(MeshAdapter, _super);
-        function MeshAdapter(obj) {
-            return _super.call(this, obj) || this;
+        function MeshAdapter(mesh) {
+            return _super.call(this, mesh) || this;
         }
         /** Returns the name displayed in the tree */
         MeshAdapter.prototype.id = function () {
@@ -1286,13 +1286,15 @@ var INSPECTOR;
         MeshAdapter.prototype.setBoxVisible = function (b) {
             return this._obj.showBoundingBox = b;
         };
-        MeshAdapter.prototype.debug = function (b) {
+        MeshAdapter.prototype.debug = function (enable) {
             // Draw axis the first time
             if (!this._axesViewer) {
                 this._drawAxis();
             }
             // Display or hide axis
-            if (!b && this._axesViewer) {
+            if (!enable && this._axesViewer) {
+                var mesh = this._obj;
+                mesh.getScene().onBeforeRenderObservable.remove(this.onBeforeRenderObserver);
                 this._axesViewer.dispose();
                 this._axesViewer = null;
             }
@@ -1305,14 +1307,20 @@ var INSPECTOR;
          * Should be called only one time as it will fill this._axis
          */
         MeshAdapter.prototype._drawAxis = function () {
+            var _this = this;
             this._obj.computeWorldMatrix();
             var mesh = this._obj;
             // Axis
-            var x = new BABYLON.Vector3(8 / Math.abs(mesh.scaling.x), 0, 0);
-            var y = new BABYLON.Vector3(0, 8 / Math.abs(mesh.scaling.y), 0);
-            var z = new BABYLON.Vector3(0, 0, 8 / Math.abs(mesh.scaling.z));
+            var x = new BABYLON.Vector3(1, 0, 0);
+            var y = new BABYLON.Vector3(0, 1, 0);
+            var z = new BABYLON.Vector3(0, 0, 1);
             this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
-            this._axesViewer.update(this._obj.position, x, y, z);
+            this.onBeforeRenderObserver = mesh.getScene().onBeforeRenderObservable.add(function () {
+                var matrix = mesh.getWorldMatrix();
+                var extend = mesh.getBoundingInfo().boundingBox.extendSizeWorld;
+                _this._axesViewer.scaleLines = Math.max(extend.x, extend.y, extend.z) * 2;
+                _this._axesViewer.update(_this._obj.position, BABYLON.Vector3.TransformNormal(x, matrix), BABYLON.Vector3.TransformNormal(y, matrix), BABYLON.Vector3.TransformNormal(z, matrix));
+            });
         };
         return MeshAdapter;
     }(INSPECTOR.Adapter));
@@ -3671,18 +3679,7 @@ var INSPECTOR;
             _this._scene = _this._inspector.scene;
             _this._engine = _this._scene.getEngine();
             _this._glInfo = _this._engine.getGlInfo();
-            _this._sceneInstrumentation = new BABYLON.SceneInstrumentation(_this._scene);
-            _this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
-            _this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
-            _this._sceneInstrumentation.captureFrameTime = true;
-            _this._sceneInstrumentation.captureRenderTime = true;
-            _this._sceneInstrumentation.captureInterFrameTime = true;
-            _this._sceneInstrumentation.captureParticlesRenderTime = true;
-            _this._sceneInstrumentation.captureSpritesRenderTime = true;
-            _this._sceneInstrumentation.capturePhysicsTime = true;
-            _this._sceneInstrumentation.captureAnimationsTime = true;
-            _this._engineInstrumentation = new BABYLON.EngineInstrumentation(_this._engine);
-            _this._engineInstrumentation.captureGPUFrameTime = true;
+            _this._connectToInstrumentation();
             // Build the stats panel: a div that will contains all stats
             _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
             _this._panel.classList.add("stats-panel");
@@ -3947,6 +3944,23 @@ var INSPECTOR;
             }
             return _this;
         }
+        StatsTab.prototype._connectToInstrumentation = function () {
+            if (this._sceneInstrumentation) {
+                return;
+            }
+            this._sceneInstrumentation = new BABYLON.SceneInstrumentation(this._scene);
+            this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
+            this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
+            this._sceneInstrumentation.captureFrameTime = true;
+            this._sceneInstrumentation.captureRenderTime = true;
+            this._sceneInstrumentation.captureInterFrameTime = true;
+            this._sceneInstrumentation.captureParticlesRenderTime = true;
+            this._sceneInstrumentation.captureSpritesRenderTime = true;
+            this._sceneInstrumentation.capturePhysicsTime = true;
+            this._sceneInstrumentation.captureAnimationsTime = true;
+            this._engineInstrumentation = new BABYLON.EngineInstrumentation(this._engine);
+            this._engineInstrumentation.captureGPUFrameTime = true;
+        };
         StatsTab.prototype._createStatLabel = function (content, parent) {
             var elem = INSPECTOR.Helpers.CreateDiv('stat-label', parent);
             elem.textContent = content;
@@ -3962,10 +3976,14 @@ var INSPECTOR;
         StatsTab.prototype.dispose = function () {
             this._scene.unregisterAfterRender(this._updateLoopHandler);
             this._sceneInstrumentation.dispose();
+            this._sceneInstrumentation = null;
+            this._engineInstrumentation.dispose();
+            this._engineInstrumentation = null;
         };
         StatsTab.prototype.active = function (b) {
             _super.prototype.active.call(this, b);
             if (b) {
+                this._connectToInstrumentation();
                 this._scene.registerAfterRender(this._updateLoopHandler);
             }
         };

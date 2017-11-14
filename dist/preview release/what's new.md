@@ -22,6 +22,7 @@
 - Complete rework of Unity3D exporter. [Doc here](http://doc.babylonjs.com/resources/intro) ([MackeyK24](https://github.com/MackeyK24))
 
 ## Updates
+- Introduced `TransformNode` class as a parent of `AbstractMesh`. This class was extensively asked by the community to hold only tranformation for a node ([deltakosh](https://github.com/deltakosh))
 - Added `boundingInfo.centerOn` to recreate the bounding info to be centered around a specific point given a specific extend ([deltakosh](https://github.com/deltakosh))
 - Added `mesh.normalizeToUnitCube` to uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units) ([deltakosh](https://github.com/deltakosh))
 - Added `scene.onDataLoadedObservable` which is raised when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed ([deltakosh](https://github.com/deltakosh))
@@ -45,6 +46,7 @@
 - Improved the SPS perfs for dead or invisible solid particles ([jerome](https://github.com/jbousquie))  
 - Added `enableDepthSort` parameter to the SPS in order to sort the particles from the camera position ([jerome](https://github.com/jbousquie)) 
 - Added `pivot` property to the SPS solid particles ([jerome](https://github.com/jbousquie)) 
+- Added the mesh facet depth sort to FacetData  ([jerome](https://github.com/jbousquie)) 
 
 ## Bug fixes
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))

@@ -41,6 +41,7 @@ declare module BABYLON.GUI {
         readonly layer: Nullable<Layer>;
         readonly rootContainer: Container;
         focusedControl: Nullable<IFocusableControl>;
+        isForeground: boolean;
         constructor(name: string, width: number | undefined, height: number | undefined, scene: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         markAsDirty(): void;
@@ -182,6 +183,10 @@ declare module BABYLON.GUI {
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
         isFocusInvisible: boolean;
+        shadowOffsetX: number;
+        shadowOffsetY: number;
+        shadowBlur: number;
+        shadowColor: string;
         protected _linkOffsetX: ValueAndUnit;
         protected _linkOffsetY: ValueAndUnit;
         readonly typeName: string;
