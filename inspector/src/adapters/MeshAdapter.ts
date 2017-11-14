@@ -6,7 +6,7 @@ module INSPECTOR {
 
         /** Keep track of the axis of the actual object */
         private _axesViewer: BABYLON.Nullable<BABYLON.Debug.AxesViewer>;
-        private _onBeforeRender: () => void;
+        private onBeforeRenderObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Scene>>;
 
         constructor(mesh: BABYLON.Node) {
             super(mesh);
@@ -67,8 +67,8 @@ module INSPECTOR {
             }
             // Display or hide axis
             if (!enable && this._axesViewer) {
-                let mesh = this._obj as BABYLON.TransformNode;
-                mesh.getScene().unregisterBeforeRender(this._onBeforeRender);
+                let mesh = this._obj as BABYLON.AbstractMesh;
+                mesh.getScene().onBeforeRenderObservable.remove(this.onBeforeRenderObserver);
                 this._axesViewer.dispose();
                 this._axesViewer = null;
             }
@@ -95,13 +95,16 @@ module INSPECTOR {
 
             this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
 
-            this._onBeforeRender = () => {
-                if (this._axesViewer) {
-                    this._axesViewer.update(this._obj.position, x, y, z);
+            let mesh = this._obj as BABYLON.TransformNode;
+            this.onBeforeRenderObserver = mesh.getScene().onBeforeRenderObservable.add(() => {
+                let matrix = mesh.getWorldMatrix();
+                let extend = new BABYLON.Vector3(1, 1, 1);
+                if (mesh instanceof BABYLON.AbstractMesh) {
+                    extend = mesh.getBoundingInfo()!.boundingBox.extendSizeWorld;
                 }
-            }
-
-            this._obj.getScene().registerBeforeRender(this._onBeforeRender);
+                this._axesViewer!.scaleLines = Math.max(extend.x, extend.y, extend.z) * 2;
+                this._axesViewer!.update(this._obj.position, BABYLON.Vector3.TransformNormal(x, matrix), BABYLON.Vector3.TransformNormal(y, matrix), BABYLON.Vector3.TransformNormal(z, matrix));
+            });
         }
     }
 }
