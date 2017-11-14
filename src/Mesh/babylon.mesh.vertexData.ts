@@ -2307,7 +2307,7 @@
             }
 
             // Loop : 1 indice triplet = 1 facet
-            var nbFaces = indices.length / 3;
+            var nbFaces = (indices.length / 3)|0;
             for (index = 0; index < nbFaces; index++) {
 
                 // get the indexes of the coordinates of each vertex of the facet

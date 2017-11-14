@@ -2903,9 +2903,7 @@
                 if (mesh.showSubMeshesBoundingBox) {
                     let boundingInfo = subMesh.getBoundingInfo();
 
-                    if (boundingInfo) {
-                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                    }
+                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
                 }
 
                 if (material) {
@@ -3062,9 +3060,7 @@
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 let boundingInfo = sourceMesh.getBoundingInfo();
 
-                if (boundingInfo) {
-                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);    
-                }
+                this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);    
             }
 
             if (mesh && mesh.subMeshes) {
@@ -3957,13 +3953,11 @@
                 mesh.computeWorldMatrix(true);
                 let boundingInfo = mesh.getBoundingInfo();
 
-                if (boundingInfo) {
-                    var minBox = boundingInfo.boundingBox.minimumWorld;
-                    var maxBox = boundingInfo.boundingBox.maximumWorld;
+                var minBox = boundingInfo.boundingBox.minimumWorld;
+                var maxBox = boundingInfo.boundingBox.maximumWorld;
 
-                    Tools.CheckExtends(minBox, min, max);
-                    Tools.CheckExtends(maxBox, min, max);
-                }
+                Tools.CheckExtends(minBox, min, max);
+                Tools.CheckExtends(maxBox, min, max);
             }
 
             return {

@@ -20,12 +20,12 @@ declare module BABYLON {
         static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
+        compileMaterials: boolean;
+        compileShadowGenerators: boolean;
+        useClipPlane: boolean;
+        onMeshLoaded: (mesh: AbstractMesh) => void;
         onTextureLoaded: (texture: BaseTexture) => void;
         onMaterialLoaded: (material: Material) => void;
-        /**
-         * Let the user decides if he needs to process the material (like precompilation) before affecting it to meshes
-         */
-        onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
         /**
          * Raised when the asset is completely loaded, just before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.

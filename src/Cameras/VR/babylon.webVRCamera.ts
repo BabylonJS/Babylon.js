@@ -35,6 +35,8 @@ module BABYLON {
         displayName?: string; //if there are more than one VRDisplays.
         controllerMeshes?: boolean; // should the native controller meshes be initialized
         defaultLightingOnControllers?: boolean; // creating a default HemiLight only on controllers
+        useCustomVRButton?: boolean; // if you don't want to use the default VR button of the helper
+        customVRButton?: HTMLButtonElement; //if you'd like to provide your own button to the VRHelper
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {

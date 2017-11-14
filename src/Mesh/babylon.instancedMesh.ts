@@ -178,9 +178,7 @@
         public refreshBoundingInfo(): InstancedMesh {
             var meshBB = this._sourceMesh.getBoundingInfo();
 
-            if (meshBB) {
-                this._boundingInfo = new BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
-            }
+            this._boundingInfo = new BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
 
             this._updateBoundingInfo();
             return this;
@@ -209,10 +207,6 @@
             }
 
             let boundingInfo = this.getBoundingInfo();
-
-            if (!boundingInfo) {
-                return this;
-            }
 
             this._currentLOD = <Mesh>this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
 

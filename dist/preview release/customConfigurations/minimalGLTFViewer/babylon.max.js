@@ -8512,7 +8512,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-2";
+                return "3.1-beta-3";
             },
             enumerable: true,
             configurable: true
@@ -13679,6 +13679,105 @@ var BABYLON;
         };
         TransformNode.prototype._afterComputeWorldMatrix = function () {
         };
+        /**
+        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
+        * @param func: callback function to add
+        *
+        * Returns the TransformNode.
+        */
+        TransformNode.prototype.registerAfterWorldMatrixUpdate = function (func) {
+            this.onAfterWorldMatrixUpdateObservable.add(func);
+            return this;
+        };
+        /**
+         * Removes a registered callback function.
+         * Returns the TransformNode.
+         */
+        TransformNode.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
+            this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
+            return this;
+        };
+        TransformNode.prototype.clone = function (name, newParent) {
+            var _this = this;
+            var result = BABYLON.SerializationHelper.Clone(function () { return new TransformNode(name, _this.getScene()); }, this);
+            result.name = name;
+            result.id = name;
+            if (newParent) {
+                result.parent = newParent;
+            }
+            return result;
+        };
+        TransformNode.prototype.serialize = function (serializationObject) {
+            if (serializationObject === void 0) { serializationObject = null; }
+            if (!serializationObject) {
+                serializationObject = {};
+            }
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.type = this.getClassName();
+            if (BABYLON.Tags && BABYLON.Tags.HasTags(this)) {
+                serializationObject.tags = BABYLON.Tags.GetTags(this);
+            }
+            serializationObject.position = this.position.asArray();
+            if (this.rotationQuaternion) {
+                serializationObject.rotationQuaternion = this.rotationQuaternion.asArray();
+            }
+            else if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+            serializationObject.scaling = this.scaling.asArray();
+            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.infiniteDistance = this.infiniteDistance;
+            serializationObject.billboardMode = this.billboardMode;
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+            // Metadata
+            if (this.metadata) {
+                serializationObject.metadata = this.metadata;
+            }
+            return serializationObject;
+        };
+        // Statics
+        /**
+         * Returns a new TransformNode object parsed from the source provided.
+         * The parameter `parsedMesh` is the source.
+         * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
+         */
+        TransformNode.Parse = function (parsedTransformNode, scene, rootUrl) {
+            var transformNode = new TransformNode(parsedTransformNode.name, scene);
+            transformNode.id = parsedTransformNode.id;
+            if (BABYLON.Tags) {
+                BABYLON.Tags.AddTagsTo(transformNode, parsedTransformNode.tags);
+            }
+            transformNode.position = BABYLON.Vector3.FromArray(parsedTransformNode.position);
+            if (parsedTransformNode.metadata !== undefined) {
+                transformNode.metadata = parsedTransformNode.metadata;
+            }
+            if (parsedTransformNode.rotationQuaternion) {
+                transformNode.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedTransformNode.rotationQuaternion);
+            }
+            else if (parsedTransformNode.rotation) {
+                transformNode.rotation = BABYLON.Vector3.FromArray(parsedTransformNode.rotation);
+            }
+            transformNode.scaling = BABYLON.Vector3.FromArray(parsedTransformNode.scaling);
+            if (parsedTransformNode.localMatrix) {
+                transformNode.setPivotMatrix(BABYLON.Matrix.FromArray(parsedTransformNode.localMatrix));
+            }
+            else if (parsedTransformNode.pivotMatrix) {
+                transformNode.setPivotMatrix(BABYLON.Matrix.FromArray(parsedTransformNode.pivotMatrix));
+            }
+            transformNode.setEnabled(parsedTransformNode.isEnabled);
+            transformNode.infiniteDistance = parsedTransformNode.infiniteDistance;
+            transformNode.billboardMode = parsedTransformNode.billboardMode;
+            // Parent
+            if (parsedTransformNode.parentId) {
+                transformNode._waitingParentId = parsedTransformNode.parentId;
+            }
+            return transformNode;
+        };
         // Statics
         TransformNode.BILLBOARDMODE_NONE = 0;
         TransformNode.BILLBOARDMODE_X = 1;
@@ -13715,7 +13814,8 @@ var BABYLON;
                 Y: 1,
                 Z: 1
             };
-            _this._facetDepthSort = false; // is the facet depth sort enabled
+            _this._facetDepthSort = false; // is the facet depth sort to be computed
+            _this._facetDepthSortEnabled = false; // is the facet depth sort initialized
             // Events
             /**
             * An event triggered when this mesh collides with another one
@@ -13907,6 +14007,7 @@ var BABYLON;
             /**
              * Boolean : must the facet be depth sorted on next call to `updateFacetData()` ?
              * Works only for updatable meshes.
+             * Doesn't work with multi-materials.
              */
             get: function () {
                 return this._facetDepthSort;
@@ -14432,8 +14533,10 @@ var BABYLON;
                 return this._masterMesh.getBoundingInfo();
             }
             if (!this._boundingInfo) {
+                // this._boundingInfo is being created here
                 this._updateBoundingInfo();
             }
+            // cannot be null.
             return this._boundingInfo;
         };
         /**
@@ -14555,7 +14658,7 @@ var BABYLON;
             var min;
             var max;
             var boundingInfo = this.getBoundingInfo();
-            if (!this.subMeshes || !boundingInfo) {
+            if (!this.subMeshes) {
                 min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
                 max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             }
@@ -14570,7 +14673,7 @@ var BABYLON;
                     var childMesh = descendant;
                     childMesh.computeWorldMatrix(true);
                     var childBoundingInfo = childMesh.getBoundingInfo();
-                    if (childMesh.getTotalVertices() === 0 || !childBoundingInfo) {
+                    if (childMesh.getTotalVertices() === 0) {
                         continue;
                     }
                     var boundingBox = childBoundingInfo.boundingBox;
@@ -14614,24 +14717,6 @@ var BABYLON;
         AbstractMesh.prototype._afterComputeWorldMatrix = function () {
             // Bounding info
             this._updateBoundingInfo();
-        };
-        /**
-        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
-        * @param func: callback function to add
-        *
-        * Returns the AbstractMesh.
-        */
-        AbstractMesh.prototype.registerAfterWorldMatrixUpdate = function (func) {
-            this.onAfterWorldMatrixUpdateObservable.add(func);
-            return this;
-        };
-        /**
-         * Removes a registered callback function.
-         * Returns the AbstractMesh.
-         */
-        AbstractMesh.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
-            this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
-            return this;
         };
         /**
          * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
@@ -14767,10 +14852,8 @@ var BABYLON;
             this.computeWorldMatrix(true);
             var boundingInfo = this.getBoundingInfo();
             // Update octree
-            if (boundingInfo) {
-                var bbox = boundingInfo.boundingBox;
-                this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
-            }
+            var bbox = boundingInfo.boundingBox;
+            this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
             return this._submeshesOctree;
         };
         // Collisions
@@ -15091,15 +15174,32 @@ var BABYLON;
             }
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = this.getIndices();
-            var indicesForComputeNormals = indices;
             var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
-            if (!bInfo) {
-                return this;
-            }
-            if (this._facetDepthSort && !this._originalIndices) {
+            if (this._facetDepthSort && !this._facetDepthSortEnabled) {
                 // init arrays, matrix and sort function on first call
-                this._originalIndices = new Uint32Array(indices);
+                this._facetDepthSortEnabled = true;
+                if (indices instanceof Uint16Array) {
+                    this._depthSortedIndices = new Uint16Array(indices);
+                }
+                else if (indices instanceof Uint32Array) {
+                    this._depthSortedIndices = new Uint32Array(indices);
+                }
+                else {
+                    var needs32bits = false;
+                    for (var i = 0; i < indices.length; i++) {
+                        if (indices[i] > 65535) {
+                            needs32bits = true;
+                            break;
+                        }
+                    }
+                    if (needs32bits) {
+                        this._depthSortedIndices = new Uint32Array(indices);
+                    }
+                    else {
+                        this._depthSortedIndices = new Uint16Array(indices);
+                    }
+                }
                 this._facetDepthSortFunction = function (f1, f2) {
                     return (f2.sqDistance - f1.sqDistance);
                 };
@@ -15136,24 +15236,24 @@ var BABYLON;
             this._facetParameters.subDiv = this._subDiv;
             this._facetParameters.ratio = this.partitioningBBoxRatio;
             this._facetParameters.depthSort = this._facetDepthSort;
-            if (this._facetDepthSort) {
+            if (this._facetDepthSort && this._facetDepthSortEnabled) {
                 this.computeWorldMatrix(true);
                 this._worldMatrix.invertToRef(this._invertedMatrix);
                 BABYLON.Vector3.TransformCoordinatesToRef(this._facetDepthSortFrom, this._invertedMatrix, this._facetDepthSortOrigin);
                 this._facetParameters.distanceTo = this._facetDepthSortOrigin;
-                indicesForComputeNormals = this._originalIndices;
             }
             this._facetParameters.depthSortedFacets = this._depthSortedFacets;
-            BABYLON.VertexData.ComputeNormals(positions, indicesForComputeNormals, normals, this._facetParameters);
-            if (this._facetDepthSort) {
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
+            if (this._facetDepthSort && this._facetDepthSortEnabled) {
                 this._depthSortedFacets.sort(this._facetDepthSortFunction);
-                for (var sorted = 0; sorted < this._facetNb; sorted++) {
-                    var sind = this._depthSortedFacets[sorted].ind;
-                    indices[sorted * 3] = this._originalIndices[sind];
-                    indices[sorted * 3 + 1] = this._originalIndices[sind + 1];
-                    indices[sorted * 3 + 2] = this._originalIndices[sind + 2];
+                var l = (this._depthSortedIndices.length / 3) | 0;
+                for (var f = 0; f < l; f++) {
+                    var sind = this._depthSortedFacets[f].ind;
+                    this._depthSortedIndices[f * 3] = indices[sind];
+                    this._depthSortedIndices[f * 3 + 1] = indices[sind + 1];
+                    this._depthSortedIndices[f * 3 + 2] = indices[sind + 2];
                 }
-                this.updateIndices(indices);
+                this.updateIndices(this._depthSortedIndices);
             }
             return this;
         };
@@ -15228,9 +15328,6 @@ var BABYLON;
          */
         AbstractMesh.prototype.getFacetsAtLocalCoordinates = function (x, y, z) {
             var bInfo = this.getBoundingInfo();
-            if (!bInfo) {
-                return null;
-            }
             var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * this._subDiv.X * this._partitioningBBoxRatio / this._bbSize.x);
             var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * this._subDiv.Y * this._partitioningBBoxRatio / this._bbSize.y);
             var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * this._subDiv.Z * this._partitioningBBoxRatio / this._bbSize.z);
@@ -15340,7 +15437,7 @@ var BABYLON;
                 this._facetNormals = new Array();
                 this._facetPartitioning = new Array();
                 this._facetParameters = null;
-                this._originalIndices = new Uint32Array(0);
+                this._depthSortedIndices = new Uint32Array(0);
             }
             return this;
         };
@@ -15351,6 +15448,10 @@ var BABYLON;
         AbstractMesh.prototype.updateIndices = function (indices) {
             return this;
         };
+        /**
+         * The mesh Geometry. Actually used by the Mesh object.
+         * Returns a blank geometry object.
+         */
         /**
          * Creates new normals data for the mesh.
          * @param updatable.
@@ -19994,9 +20095,7 @@ var BABYLON;
                 var material = subMesh.getMaterial();
                 if (mesh.showSubMeshesBoundingBox) {
                     var boundingInfo = subMesh.getBoundingInfo();
-                    if (boundingInfo) {
-                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                    }
+                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
                 }
                 if (material) {
                     // Render targets
@@ -20120,9 +20219,7 @@ var BABYLON;
             }
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 var boundingInfo = sourceMesh.getBoundingInfo();
-                if (boundingInfo) {
-                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                }
+                this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
             }
             if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees
@@ -20863,12 +20960,10 @@ var BABYLON;
                 }
                 mesh.computeWorldMatrix(true);
                 var boundingInfo = mesh.getBoundingInfo();
-                if (boundingInfo) {
-                    var minBox = boundingInfo.boundingBox.minimumWorld;
-                    var maxBox = boundingInfo.boundingBox.maximumWorld;
-                    BABYLON.Tools.CheckExtends(minBox, min, max);
-                    BABYLON.Tools.CheckExtends(maxBox, min, max);
-                }
+                var minBox = boundingInfo.boundingBox.minimumWorld;
+                var maxBox = boundingInfo.boundingBox.maximumWorld;
+                BABYLON.Tools.CheckExtends(minBox, min, max);
+                BABYLON.Tools.CheckExtends(maxBox, min, max);
             }
             return {
                 min: min,
@@ -23108,9 +23203,6 @@ var BABYLON;
             }
             else {
                 var boundingInfo = this.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this;
-                }
                 bSphere = boundingInfo.boundingSphere;
             }
             var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
@@ -24722,8 +24814,8 @@ var BABYLON;
         };
         // Statics
         /**
-         * Returns a new Mesh object what is a deep copy of the passed mesh.
-         * The parameter `parsedMesh` is the mesh to be copied.
+         * Returns a new Mesh object parsed from the source provided.
+         * The parameter `parsedMesh` is the source.
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         Mesh.Parse = function (parsedMesh, scene, rootUrl) {
@@ -25578,9 +25670,6 @@ var BABYLON;
             var maxVector = null;
             meshes.forEach(function (mesh, index, array) {
                 var boundingInfo = mesh.getBoundingInfo();
-                if (!boundingInfo) {
-                    return;
-                }
                 var boundingBox = boundingInfo.boundingBox;
                 if (!minVector || !maxVector) {
                     minVector = boundingBox.minimumWorld;
@@ -25822,7 +25911,7 @@ var BABYLON;
             }
             var data = this._renderingMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (!data) {
-                this._boundingInfo = this._mesh._boundingInfo;
+                this._boundingInfo = this._mesh.getBoundingInfo();
                 return this;
             }
             var indices = this._renderingMesh.getIndices();
@@ -25830,9 +25919,6 @@ var BABYLON;
             //is this the only submesh?
             if (this.indexStart === 0 && this.indexCount === indices.length) {
                 var boundingInfo = this._renderingMesh.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this;
-                }
                 //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
                 extend = { minimum: boundingInfo.minimum.clone(), maximum: boundingInfo.maximum.clone() };
             }
@@ -25844,9 +25930,6 @@ var BABYLON;
         };
         SubMesh.prototype._checkCollision = function (collider) {
             var boundingInfo = this._renderingMesh.getBoundingInfo();
-            if (!boundingInfo) {
-                return false;
-            }
             return boundingInfo._checkCollision(collider);
         };
         /**
@@ -27225,6 +27308,14 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.materialHelper.js.map
 
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 
 var BABYLON;
 (function (BABYLON) {
@@ -27725,6 +27816,7 @@ var BABYLON;
          */
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
+            var localOptions = __assign({ alphaTest: null, clipPlane: false }, options);
             var subMesh = new BABYLON.BaseSubMesh();
             var scene = this.getScene();
             var engine = scene.getEngine();
@@ -27737,8 +27829,8 @@ var BABYLON;
                 }
                 var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
-                engine.setAlphaTesting(options ? options.alphaTest : _this.needAlphaTesting());
-                if (options && options.clipPlane) {
+                engine.setAlphaTesting(localOptions.alphaTest || (!_this.needAlphaBlendingForMesh(mesh) && _this.needAlphaTesting()));
+                if (localOptions.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
                 if (_this.storeEffectOnSubMeshes) {
@@ -30460,7 +30552,7 @@ var BABYLON;
                 normals[index] = 0.0;
             }
             // Loop : 1 indice triplet = 1 facet
-            var nbFaces = indices.length / 3;
+            var nbFaces = (indices.length / 3) | 0;
             for (index = 0; index < nbFaces; index++) {
                 // get the indexes of the coordinates of each vertex of the facet
                 v1x = indices[index * 3] * 3;
@@ -40312,9 +40404,6 @@ var BABYLON;
                         continue;
                     }
                     var boundingInfo = mesh.getBoundingInfo();
-                    if (!boundingInfo) {
-                        continue;
-                    }
                     var boundingBox = boundingInfo.boundingBox;
                     for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
                         BABYLON.Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
@@ -45456,7 +45545,7 @@ var BABYLON;
                 this._unrotateFixedNormals();
             }
             var vertexData = new BABYLON.VertexData();
-            vertexData.indices = this._indices32;
+            vertexData.indices = (this._depthSort) ? this._indices : this._indices32;
             vertexData.set(this._positions32, BABYLON.VertexBuffer.PositionKind);
             vertexData.set(this._normals32, BABYLON.VertexBuffer.NormalKind);
             if (this._uvs32) {
@@ -46236,9 +46325,7 @@ var BABYLON;
             set: function (val) {
                 this._isVisibilityBoxLocked = val;
                 var boundingInfo = this.mesh.getBoundingInfo();
-                if (boundingInfo) {
-                    boundingInfo.isLocked = val;
-                }
+                boundingInfo.isLocked = val;
             },
             enumerable: true,
             configurable: true
@@ -46831,9 +46918,7 @@ var BABYLON;
          */
         InstancedMesh.prototype.refreshBoundingInfo = function () {
             var meshBB = this._sourceMesh.getBoundingInfo();
-            if (meshBB) {
-                this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
-            }
+            this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
             this._updateBoundingInfo();
             return this;
         };
@@ -46857,9 +46942,6 @@ var BABYLON;
                 return this;
             }
             var boundingInfo = this.getBoundingInfo();
-            if (!boundingInfo) {
-                return this;
-            }
             this._currentLOD = this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
             if (this._currentLOD === this.sourceMesh) {
                 return this;
@@ -49407,9 +49489,6 @@ var BABYLON;
         };
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
             var boundingInfo = connectedMesh.getBoundingInfo();
-            if (!boundingInfo) {
-                return;
-            }
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
@@ -51575,6 +51654,14 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.passPostProcess.js.map
 
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 var BABYLON;
 (function (BABYLON) {
     var ShadowGenerator = /** @class */ (function () {
@@ -52137,25 +52224,38 @@ var BABYLON;
          */
         ShadowGenerator.prototype.forceCompilation = function (onCompiled, options) {
             var _this = this;
+            var localOptions = __assign({ useInstances: false }, options);
             var shadowMap = this.getShadowMap();
             if (!shadowMap) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
+                return;
+            }
+            var renderList = shadowMap.renderList;
+            if (!renderList) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
                 return;
             }
             var subMeshes = new Array();
-            var currentIndex = 0;
-            var renderList = shadowMap.renderList;
-            if (!renderList) {
-                return;
-            }
             for (var _i = 0, renderList_1 = renderList; _i < renderList_1.length; _i++) {
                 var mesh = renderList_1[_i];
                 subMeshes.push.apply(subMeshes, mesh.subMeshes);
             }
+            if (subMeshes.length === 0) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
+                return;
+            }
+            var currentIndex = 0;
             var checkReady = function () {
                 if (!_this._scene || !_this._scene.getEngine()) {
                     return;
                 }
-                while (_this.isReady(subMeshes[currentIndex], options ? options.useInstances : false)) {
+                while (_this.isReady(subMeshes[currentIndex], localOptions.useInstances)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
                         if (onCompiled) {
@@ -52166,9 +52266,7 @@ var BABYLON;
                 }
                 setTimeout(checkReady, 16);
             };
-            if (subMeshes.length > 0) {
-                checkReady();
-            }
+            checkReady();
         };
         /**
          * Boolean : true when the ShadowGenerator is finally computed.
@@ -53392,6 +53490,13 @@ var BABYLON;
                             }
                         }
                     }
+                    // Transform nodes
+                    if (parsedData.transformNodes !== undefined && parsedData.transformNodes !== null) {
+                        for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
+                            var parsedTransformNode = parsedData.transformNodes[index];
+                            BABYLON.TransformNode.Parse(parsedTransformNode, scene, rootUrl);
+                        }
+                    }
                     // Meshes
                     if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                         for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
@@ -53452,6 +53557,13 @@ var BABYLON;
                     }
                     loadedSounds = [];
                     // Connect parents & children and parse actions
+                    for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                        var transformNode = scene.transformNodes[index];
+                        if (transformNode._waitingParentId) {
+                            transformNode.parent = scene.getLastEntryByID(transformNode._waitingParentId);
+                            transformNode._waitingParentId = null;
+                        }
+                    }
                     for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                         var mesh = scene.meshes[index];
                         if (mesh._waitingParentId) {
@@ -66335,13 +66447,7 @@ var BABYLON;
                 //calculate the world matrix with no rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
                 var boundingInfo = this.object.getBoundingInfo();
-                var size = void 0;
-                if (boundingInfo) {
-                    size = boundingInfo.boundingBox.extendSizeWorld.scale(2);
-                }
-                else {
-                    size = BABYLON.Vector3.Zero();
-                }
+                var size = boundingInfo.boundingBox.extendSizeWorld.scale(2);
                 //bring back the rotation
                 this.object.rotationQuaternion = q;
                 //calculate the world matrix with the new rotation
@@ -66355,9 +66461,6 @@ var BABYLON;
         PhysicsImpostor.prototype.getObjectCenter = function () {
             if (this.object.getBoundingInfo) {
                 var boundingInfo = this.object.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this.object.position;
-                }
                 return boundingInfo.boundingBox.centerWorld;
             }
             else {
@@ -67139,7 +67242,7 @@ var BABYLON;
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
-            var boundingInfo = (object.getBoundingInfo());
+            var boundingInfo = object.getBoundingInfo();
             var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.y);
             var minY = boundingInfo.boundingBox.extendSizeWorld.z;
             var elementSize = dim * 2 / arraySize;
@@ -69677,13 +69780,13 @@ var BABYLON;
         };
         Octree.CreationFuncForMeshes = function (entry, block) {
             var boundingInfo = entry.getBoundingInfo();
-            if (!entry.isBlocked && boundingInfo && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            if (!entry.isBlocked && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         };
         Octree.CreationFuncForSubMeshes = function (entry, block) {
             var boundingInfo = entry.getBoundingInfo();
-            if (boundingInfo && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            if (boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         };
@@ -70921,6 +71024,7 @@ var BABYLON;
             this._webVRpresenting = false;
             // Are we presenting in the fullscreen fallback?
             this._fullscreenVRpresenting = false;
+            this._useCustomVRButton = false;
             this._scene = scene;
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
                 this._position = new BABYLON.Vector3(0, 2, 0);
@@ -70937,27 +71041,41 @@ var BABYLON;
             if (this._canvas) {
                 this._scene.activeCamera.attachControl(this._canvas);
             }
-            this._btnVR = document.createElement("BUTTON");
-            this._btnVR.className = "babylonVRicon";
-            this._btnVR.id = "babylonVRiconbtn";
-            this._btnVR.title = "Click to switch to VR";
-            var css = ".babylonVRicon { position: absolute; right: 20px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-image: url(data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%222048%22%20height%3D%221152%22%20viewBox%3D%220%200%202048%201152%22%20version%3D%221.1%22%3E%3Cpath%20transform%3D%22rotate%28180%201024%2C576.0000000000001%29%22%20d%3D%22m1109%2C896q17%2C0%2030%2C-12t13%2C-30t-12.5%2C-30.5t-30.5%2C-12.5l-170%2C0q-18%2C0%20-30.5%2C12.5t-12.5%2C30.5t13%2C30t30%2C12l170%2C0zm-85%2C256q59%2C0%20132.5%2C-1.5t154.5%2C-5.5t164.5%2C-11.5t163%2C-20t150%2C-30t124.5%2C-41.5q23%2C-11%2042%2C-24t38%2C-30q27%2C-25%2041%2C-61.5t14%2C-72.5l0%2C-257q0%2C-123%20-47%2C-232t-128%2C-190t-190%2C-128t-232%2C-47l-81%2C0q-37%2C0%20-68.5%2C14t-60.5%2C34.5t-55.5%2C45t-53%2C45t-53%2C34.5t-55.5%2C14t-55.5%2C-14t-53%2C-34.5t-53%2C-45t-55.5%2C-45t-60.5%2C-34.5t-68.5%2C-14l-81%2C0q-123%2C0%20-232%2C47t-190%2C128t-128%2C190t-47%2C232l0%2C257q0%2C68%2038%2C115t97%2C73q54%2C24%20124.5%2C41.5t150%2C30t163%2C20t164.5%2C11.5t154.5%2C5.5t132.5%2C1.5zm939%2C-298q0%2C39%20-24.5%2C67t-58.5%2C42q-54%2C23%20-122%2C39.5t-143.5%2C28t-155.5%2C19t-157%2C11t-148.5%2C5t-129.5%2C1.5q-59%2C0%20-130%2C-1.5t-148%2C-5t-157%2C-11t-155.5%2C-19t-143.5%2C-28t-122%2C-39.5q-34%2C-14%20-58.5%2C-42t-24.5%2C-67l0%2C-257q0%2C-106%2040.5%2C-199t110%2C-162.5t162.5%2C-109.5t199%2C-40l81%2C0q27%2C0%2052%2C14t50%2C34.5t51%2C44.5t55.5%2C44.5t63.5%2C34.5t74%2C14t74%2C-14t63.5%2C-34.5t55.5%2C-44.5t51%2C-44.5t50%2C-34.5t52%2C-14l14%2C0q37%2C0%2070%2C0.5t64.5%2C4.5t63.5%2C12t68%2C23q71%2C30%20128.5%2C78.5t98.5%2C110t63.5%2C133.5t22.5%2C149l0%2C257z%22%20fill%3D%22white%22%20/%3E%3C/svg%3E%0A); background-size: 80%; background-repeat:no-repeat; background-position: center; border: none; outline: none; transition: transform 0.125s ease-out } .babylonVRicon:hover { transform: scale(1.05) } .babylonVRicon:active {background-color: rgba(51,51,51,1) } .babylonVRicon:focus {background-color: rgba(51,51,51,1) }";
-            css += ".babylonVRicon.vrdisplaypresenting { display: none; }";
-            // TODO: Add user feedback so that they know what state the VRDisplay is in (disconnected, connected, entering-VR)
-            // css += ".babylonVRicon.vrdisplaysupported { }";
-            // css += ".babylonVRicon.vrdisplayready { }";
-            // css += ".babylonVRicon.vrdisplayrequesting { }";
-            var style = document.createElement('style');
-            style.appendChild(document.createTextNode(css));
-            document.getElementsByTagName('head')[0].appendChild(style);
+            if (webVROptions) {
+                if (webVROptions.useCustomVRButton) {
+                    this._useCustomVRButton = true;
+                    if (webVROptions.customVRButton) {
+                        this._btnVR = webVROptions.customVRButton;
+                    }
+                }
+            }
+            if (!this._useCustomVRButton) {
+                this._btnVR = document.createElement("BUTTON");
+                this._btnVR.className = "babylonVRicon";
+                this._btnVR.id = "babylonVRiconbtn";
+                this._btnVR.title = "Click to switch to VR";
+                var css = ".babylonVRicon { position: absolute; right: 20px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-image: url(data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%222048%22%20height%3D%221152%22%20viewBox%3D%220%200%202048%201152%22%20version%3D%221.1%22%3E%3Cpath%20transform%3D%22rotate%28180%201024%2C576.0000000000001%29%22%20d%3D%22m1109%2C896q17%2C0%2030%2C-12t13%2C-30t-12.5%2C-30.5t-30.5%2C-12.5l-170%2C0q-18%2C0%20-30.5%2C12.5t-12.5%2C30.5t13%2C30t30%2C12l170%2C0zm-85%2C256q59%2C0%20132.5%2C-1.5t154.5%2C-5.5t164.5%2C-11.5t163%2C-20t150%2C-30t124.5%2C-41.5q23%2C-11%2042%2C-24t38%2C-30q27%2C-25%2041%2C-61.5t14%2C-72.5l0%2C-257q0%2C-123%20-47%2C-232t-128%2C-190t-190%2C-128t-232%2C-47l-81%2C0q-37%2C0%20-68.5%2C14t-60.5%2C34.5t-55.5%2C45t-53%2C45t-53%2C34.5t-55.5%2C14t-55.5%2C-14t-53%2C-34.5t-53%2C-45t-55.5%2C-45t-60.5%2C-34.5t-68.5%2C-14l-81%2C0q-123%2C0%20-232%2C47t-190%2C128t-128%2C190t-47%2C232l0%2C257q0%2C68%2038%2C115t97%2C73q54%2C24%20124.5%2C41.5t150%2C30t163%2C20t164.5%2C11.5t154.5%2C5.5t132.5%2C1.5zm939%2C-298q0%2C39%20-24.5%2C67t-58.5%2C42q-54%2C23%20-122%2C39.5t-143.5%2C28t-155.5%2C19t-157%2C11t-148.5%2C5t-129.5%2C1.5q-59%2C0%20-130%2C-1.5t-148%2C-5t-157%2C-11t-155.5%2C-19t-143.5%2C-28t-122%2C-39.5q-34%2C-14%20-58.5%2C-42t-24.5%2C-67l0%2C-257q0%2C-106%2040.5%2C-199t110%2C-162.5t162.5%2C-109.5t199%2C-40l81%2C0q27%2C0%2052%2C14t50%2C34.5t51%2C44.5t55.5%2C44.5t63.5%2C34.5t74%2C14t74%2C-14t63.5%2C-34.5t55.5%2C-44.5t51%2C-44.5t50%2C-34.5t52%2C-14l14%2C0q37%2C0%2070%2C0.5t64.5%2C4.5t63.5%2C12t68%2C23q71%2C30%20128.5%2C78.5t98.5%2C110t63.5%2C133.5t22.5%2C149l0%2C257z%22%20fill%3D%22white%22%20/%3E%3C/svg%3E%0A); background-size: 80%; background-repeat:no-repeat; background-position: center; border: none; outline: none; transition: transform 0.125s ease-out } .babylonVRicon:hover { transform: scale(1.05) } .babylonVRicon:active {background-color: rgba(51,51,51,1) } .babylonVRicon:focus {background-color: rgba(51,51,51,1) }";
+                css += ".babylonVRicon.vrdisplaypresenting { display: none; }";
+                // TODO: Add user feedback so that they know what state the VRDisplay is in (disconnected, connected, entering-VR)
+                // css += ".babylonVRicon.vrdisplaysupported { }";
+                // css += ".babylonVRicon.vrdisplayready { }";
+                // css += ".babylonVRicon.vrdisplayrequesting { }";
+                var style = document.createElement('style');
+                style.appendChild(document.createTextNode(css));
+                document.getElementsByTagName('head')[0].appendChild(style);
+            }
             if (this._canvas) {
-                this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-                this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
-                this._btnVR.addEventListener("click", function () {
-                    _this.enterVR();
-                });
+                if (!this._useCustomVRButton) {
+                    this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
+                    this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+                }
+                if (this._btnVR) {
+                    this._btnVR.addEventListener("click", function () {
+                        _this.enterVR();
+                    });
+                }
                 window.addEventListener("resize", function () {
-                    if (_this._canvas) {
+                    if (_this._canvas && !_this._useCustomVRButton) {
                         _this._btnVR.style.top = _this._canvas.offsetTop + _this._canvas.offsetHeight - 70 + "px";
                         _this._btnVR.style.left = _this._canvas.offsetLeft + _this._canvas.offsetWidth - 100 + "px";
                     }
@@ -70970,7 +71088,9 @@ var BABYLON;
             document.addEventListener("mozfullscreenchange", function () { _this._onFullscreenChange(); }, false);
             document.addEventListener("webkitfullscreenchange", function () { _this._onFullscreenChange(); }, false);
             document.addEventListener("msfullscreenchange", function () { _this._onFullscreenChange(); }, false);
-            document.body.appendChild(this._btnVR);
+            if (!this._useCustomVRButton) {
+                document.body.appendChild(this._btnVR);
+            }
             // Exiting VR mode using 'ESC' key on desktop
             this._onKeyDown = function (event) {
                 if (event.keyCode === 27 && _this.isInVRMode()) {
@@ -71063,8 +71183,10 @@ var BABYLON;
             }
             if (!this._fullscreenVRpresenting && this._canvas) {
                 this.exitVR();
-                this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-                this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+                if (!this._useCustomVRButton) {
+                    this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
+                    this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+                }
             }
         };
         VRExperienceHelper.prototype.isInVRMode = function () {
@@ -71181,7 +71303,9 @@ var BABYLON;
             if (this._vrDeviceOrientationCamera) {
                 this._vrDeviceOrientationCamera.dispose();
             }
-            document.body.removeChild(this._btnVR);
+            if (!this._useCustomVRButton) {
+                document.body.removeChild(this._btnVR);
+            }
             document.removeEventListener("keydown", this._onKeyDown);
             window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
         };
@@ -74222,6 +74346,11 @@ var BABYLON;
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {
                 serializationObject.skeletons.push(scene.skeletons[index].serialize());
+            }
+            // Transform nodes
+            serializationObject.transformNodes = [];
+            for (index = 0; index < scene.transformNodes.length; index++) {
+                serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
             }
             // Geometries
             serializationObject.geometries = {};
@@ -77745,6 +77874,9 @@ var BABYLON;
         function GLTFFileLoader() {
             // V2 options
             this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+            this.compileMaterials = false;
+            this.compileShadowGenerators = false;
+            this.useClipPlane = false;
             this.name = "gltf";
             this.extensions = {
                 ".gltf": { isBinary: false },
@@ -80243,10 +80375,25 @@ var BABYLON;
                     _this._removePendingData(_this);
                 });
             };
-            GLTFLoader.prototype._onProgress = function (event) {
-                if (this._progressCallback) {
-                    this._progressCallback(event);
+            GLTFLoader.prototype._onProgress = function () {
+                if (!this._progressCallback) {
+                    return;
                 }
+                var loaded = 0;
+                var total = 0;
+                for (var _i = 0, _a = this._requests; _i < _a.length; _i++) {
+                    var request = _a[_i];
+                    if (!request._loaded || !request._total) {
+                        return;
+                    }
+                    loaded += request._loaded;
+                    total += request._total;
+                }
+                this._progressCallback(new ProgressEvent("GLTFLoaderProgress", {
+                    lengthComputable: true,
+                    loaded: loaded,
+                    total: total
+                }));
             };
             GLTFLoader.prototype._executeWhenRenderReady = function (func) {
                 if (this._renderReady) {
@@ -80371,6 +80518,9 @@ var BABYLON;
                         return;
                     }
                 }
+                if (this._parent.onMeshLoaded) {
+                    this._parent.onMeshLoaded(this._rootNode.babylonMesh);
+                }
                 var nodeIndices = scene.nodes;
                 this._traverseNodes(context, nodeIndices, function (node, parentNode) {
                     node.parent = parentNode;
@@ -80438,6 +80588,9 @@ var BABYLON;
                         this._loadNode("#/nodes/" + index, childNode);
                     }
                 }
+                if (this._parent.onMeshLoaded) {
+                    this._parent.onMeshLoaded(node.babylonMesh);
+                }
             };
             GLTFLoader.prototype._loadMesh = function (context, node, mesh) {
                 var _this = this;
@@ -80478,26 +80631,15 @@ var BABYLON;
                         subMaterials[index] = this_1._getDefaultMaterial();
                     }
                     else {
-                        var material_1 = GLTFLoader._GetProperty(this_1._gltf.materials, primitive.material);
-                        if (!material_1) {
+                        var material = GLTFLoader._GetProperty(this_1._gltf.materials, primitive.material);
+                        if (!material) {
                             throw new Error(context + ": Failed to find material " + primitive.material);
                         }
-                        this_1._loadMaterial("#/materials/" + material_1.index, material_1, function (babylonMaterial, isNew) {
+                        this_1._loadMaterial("#/materials/" + material.index, material, function (babylonMaterial, isNew) {
                             if (isNew && _this._parent.onMaterialLoaded) {
                                 _this._parent.onMaterialLoaded(babylonMaterial);
                             }
-                            if (_this._parent.onBeforeMaterialReadyAsync) {
-                                _this._addLoaderPendingData(material_1);
-                                _this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[index] != null, function () {
-                                    _this._tryCatchOnError(function () {
-                                        subMaterials[index] = babylonMaterial;
-                                        _this._removeLoaderPendingData(material_1);
-                                    });
-                                });
-                            }
-                            else {
-                                subMaterials[index] = babylonMaterial;
-                            }
+                            subMaterials[index] = babylonMaterial;
                         });
                     }
                 };
@@ -81104,24 +81246,16 @@ var BABYLON;
                     if (!buffer.uri) {
                         throw new Error(context + ": Uri is missing");
                     }
-                    if (GLTF2.GLTFUtils.IsBase64(buffer.uri)) {
-                        var data = GLTF2.GLTFUtils.DecodeBase64(buffer.uri);
-                        buffer.loadedData = new Uint8Array(data);
+                    buffer.loadedObservable = new BABYLON.Observable();
+                    buffer.loadedObservable.add(function (buffer) {
                         onSuccess(buffer.loadedData);
-                        this._removePendingData(buffer);
-                    }
-                    else {
-                        buffer.loadedObservable = new BABYLON.Observable();
-                        buffer.loadedObservable.add(function (buffer) {
-                            onSuccess(buffer.loadedData);
-                            _this._removePendingData(buffer);
-                        });
-                        this._loadUri(context, buffer.uri, function (data) {
-                            buffer.loadedData = data;
-                            buffer.loadedObservable.notifyObservers(buffer);
-                            buffer.loadedObservable = undefined;
-                        });
-                    }
+                        _this._removePendingData(buffer);
+                    });
+                    this._loadUriAsync(context, buffer.uri, function (data) {
+                        buffer.loadedData = data;
+                        buffer.loadedObservable.notifyObservers(buffer);
+                        buffer.loadedObservable = undefined;
+                    });
                 }
             };
             GLTFLoader.prototype._loadBufferViewAsync = function (context, bufferView, onSuccess) {
@@ -81221,10 +81355,17 @@ var BABYLON;
                 this._addLoaderPendingData(data);
             };
             GLTFLoader.prototype._removePendingData = function (data) {
+                var _this = this;
                 if (!this._renderReady) {
                     if (--this._renderPendingCount === 0) {
-                        this._renderReady = true;
-                        this._onRenderReady();
+                        this._addLoaderPendingData(this);
+                        this._compileMaterialsAsync(function () {
+                            _this._compileShadowGeneratorsAsync(function () {
+                                _this._removeLoaderPendingData(_this);
+                                _this._renderReady = true;
+                                _this._onRenderReady();
+                            });
+                        });
                     }
                 }
                 this._removeLoaderPendingData(data);
@@ -81432,7 +81573,7 @@ var BABYLON;
                     if (!image_1) {
                         throw new Error(context + ": Failed to find source " + texture.source);
                     }
-                    this._loadImage("#/images/" + image_1.index, image_1, function (data) {
+                    this._loadImageAsync("#/images/" + image_1.index, image_1, function (data) {
                         texture.url = URL.createObjectURL(new Blob([data], { type: image_1.mimeType }));
                         texture.dataReadyObservable.notifyObservers(texture);
                         texture.dataReadyObservable = undefined;
@@ -81447,14 +81588,9 @@ var BABYLON;
                 }
                 return babylonTexture;
             };
-            GLTFLoader.prototype._loadImage = function (context, image, onSuccess) {
+            GLTFLoader.prototype._loadImageAsync = function (context, image, onSuccess) {
                 if (image.uri) {
-                    if (GLTF2.GLTFUtils.IsBase64(image.uri)) {
-                        onSuccess(new Uint8Array(GLTF2.GLTFUtils.DecodeBase64(image.uri)));
-                    }
-                    else {
-                        this._loadUri(context, image.uri, onSuccess);
-                    }
+                    this._loadUriAsync(context, image.uri, onSuccess);
                 }
                 else {
                     var bufferView = GLTFLoader._GetProperty(this._gltf.bufferViews, image.bufferView);
@@ -81464,8 +81600,12 @@ var BABYLON;
                     this._loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView, onSuccess);
                 }
             };
-            GLTFLoader.prototype._loadUri = function (context, uri, onSuccess) {
+            GLTFLoader.prototype._loadUriAsync = function (context, uri, onSuccess) {
                 var _this = this;
+                if (GLTF2.GLTFUtils.IsBase64(uri)) {
+                    onSuccess(new Uint8Array(GLTF2.GLTFUtils.DecodeBase64(uri)));
+                    return;
+                }
                 if (!GLTF2.GLTFUtils.ValidateUri(uri)) {
                     throw new Error(context + ": Uri '" + uri + "' is invalid");
                 }
@@ -81475,7 +81615,11 @@ var BABYLON;
                     });
                 }, function (event) {
                     _this._tryCatchOnError(function () {
-                        _this._onProgress(event);
+                        if (request && !_this._renderReady) {
+                            request._loaded = event.loaded;
+                            request._total = event.total;
+                            _this._onProgress();
+                        }
                     });
                 }, this._babylonScene.database, true, function (request) {
                     _this._tryCatchOnError(function () {
@@ -81483,6 +81627,8 @@ var BABYLON;
                     });
                 });
                 if (request) {
+                    request._loaded = null;
+                    request._total = null;
                     this._requests.push(request);
                 }
             };
@@ -81571,6 +81717,94 @@ var BABYLON;
                     case "MAT4": return 16;
                 }
                 return 0;
+            };
+            GLTFLoader.prototype._compileMaterialAsync = function (babylonMaterial, babylonMesh, onSuccess) {
+                var _this = this;
+                if (!this._parent.compileMaterials) {
+                    onSuccess();
+                    return;
+                }
+                if (this._parent.useClipPlane) {
+                    babylonMaterial.forceCompilation(babylonMesh, function () {
+                        babylonMaterial.forceCompilation(babylonMesh, function () {
+                            _this._tryCatchOnError(onSuccess);
+                        }, { clipPlane: true });
+                    });
+                }
+                else {
+                    babylonMaterial.forceCompilation(babylonMesh, function () {
+                        _this._tryCatchOnError(onSuccess);
+                    });
+                }
+            };
+            GLTFLoader.prototype._compileMaterialsAsync = function (onSuccess) {
+                if (!this._parent.compileMaterials || !this._gltf.materials) {
+                    onSuccess();
+                    return;
+                }
+                var meshes = this._getMeshes();
+                var remaining = 0;
+                for (var _i = 0, meshes_1 = meshes; _i < meshes_1.length; _i++) {
+                    var mesh = meshes_1[_i];
+                    if (mesh.material instanceof BABYLON.MultiMaterial) {
+                        for (var _a = 0, _b = mesh.material.subMaterials; _a < _b.length; _a++) {
+                            var subMaterial = _b[_a];
+                            if (subMaterial) {
+                                remaining++;
+                            }
+                        }
+                    }
+                }
+                if (remaining === 0) {
+                    onSuccess();
+                    return;
+                }
+                for (var _c = 0, meshes_2 = meshes; _c < meshes_2.length; _c++) {
+                    var mesh = meshes_2[_c];
+                    if (mesh.material instanceof BABYLON.MultiMaterial) {
+                        for (var _d = 0, _e = mesh.material.subMaterials; _d < _e.length; _d++) {
+                            var subMaterial = _e[_d];
+                            if (subMaterial) {
+                                this._compileMaterialAsync(subMaterial, mesh, function () {
+                                    if (--remaining === 0) {
+                                        onSuccess();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            };
+            GLTFLoader.prototype._compileShadowGeneratorsAsync = function (onSuccess) {
+                var _this = this;
+                if (!this._parent.compileShadowGenerators) {
+                    onSuccess();
+                    return;
+                }
+                var lights = this._babylonScene.lights;
+                var remaining = 0;
+                for (var _i = 0, lights_1 = lights; _i < lights_1.length; _i++) {
+                    var light = lights_1[_i];
+                    var generator = light.getShadowGenerator();
+                    if (generator) {
+                        remaining++;
+                    }
+                }
+                if (remaining === 0) {
+                    onSuccess();
+                    return;
+                }
+                for (var _a = 0, lights_2 = lights; _a < lights_2.length; _a++) {
+                    var light = lights_2[_a];
+                    var generator = light.getShadowGenerator();
+                    if (generator) {
+                        generator.forceCompilation(function () {
+                            if (--remaining === 0) {
+                                _this._tryCatchOnError(onSuccess);
+                            }
+                        });
+                    }
+                }
             };
             GLTFLoader.Extensions = {};
             return GLTFLoader;
@@ -81699,7 +81933,12 @@ var BABYLON;
             var MSFTLOD = /** @class */ (function (_super) {
                 __extends(MSFTLOD, _super);
                 function MSFTLOD() {
-                    return _super !== null && _super.apply(this, arguments) || this;
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    /**
+                     * Specify the minimal delay between LODs in ms (default = 250)
+                     */
+                    _this.Delay = 250;
+                    return _this;
                 }
                 Object.defineProperty(MSFTLOD.prototype, "name", {
                     get: function () {
@@ -81757,7 +81996,7 @@ var BABYLON;
                             loader._tryCatchOnError(function () {
                                 _this._loadNodeLOD(loader, context, nodes, index - 1, onComplete);
                             });
-                        }, MSFTLOD.MinimalLODDelay);
+                        }, _this.Delay);
                     });
                 };
                 MSFTLOD.prototype._loadMaterial = function (loader, context, material, assign) {
@@ -81782,28 +82021,30 @@ var BABYLON;
                 MSFTLOD.prototype._loadMaterialLOD = function (loader, context, materials, index, assign, onComplete) {
                     var _this = this;
                     loader._loadMaterial(context, materials[index], function (babylonMaterial, isNew) {
-                        assign(babylonMaterial, isNew);
-                        if (index === 0) {
-                            onComplete();
-                            return;
-                        }
-                        // Load the next LOD when the loader is ready to render and
-                        // all active material textures of the current LOD are loaded.
-                        loader._executeWhenRenderReady(function () {
-                            BABYLON.BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), function () {
-                                setTimeout(function () {
-                                    loader._tryCatchOnError(function () {
-                                        _this._loadMaterialLOD(loader, context, materials, index - 1, assign, onComplete);
-                                    });
-                                }, MSFTLOD.MinimalLODDelay);
+                        if (index === materials.length - 1) {
+                            assign(babylonMaterial, isNew);
+                            // Load the next LOD when the loader is ready to render.
+                            loader._executeWhenRenderReady(function () {
+                                _this._loadMaterialLOD(loader, context, materials, index - 1, assign, onComplete);
                             });
-                        });
+                        }
+                        else {
+                            BABYLON.BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), function () {
+                                assign(babylonMaterial, isNew);
+                                if (index === 0) {
+                                    onComplete();
+                                }
+                                else {
+                                    setTimeout(function () {
+                                        loader._tryCatchOnError(function () {
+                                            _this._loadMaterialLOD(loader, context, materials, index - 1, assign, onComplete);
+                                        });
+                                    }, _this.Delay);
+                                }
+                            });
+                        }
                     });
                 };
-                /**
-                 * Specify the minimal delay between LODs in ms (default = 250)
-                 */
-                MSFTLOD.MinimalLODDelay = 250;
                 return MSFTLOD;
             }(GLTF2.GLTFLoaderExtension));
             Extensions.MSFTLOD = MSFTLOD;
@@ -81841,6 +82082,7 @@ var BABYLON;
                         loader._loadMaterialBaseProperties(context, material);
                         _this._loadSpecularGlossinessProperties(loader, context, material, extension);
                         assign(material.babylonMaterial, true);
+                        onComplete();
                     });
                 };
                 KHRMaterialsPbrSpecularGlossiness.prototype._loadSpecularGlossinessProperties = function (loader, context, material, properties) {

@@ -782,7 +782,129 @@ module BABYLON {
         }   
 
         protected _afterComputeWorldMatrix(): void {
-
         }
+
+        /**
+        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.  
+        * @param func: callback function to add
+        *
+        * Returns the TransformNode. 
+        */
+        public registerAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode {
+            this.onAfterWorldMatrixUpdateObservable.add(func);
+            return this;
+        }
+
+        /**
+         * Removes a registered callback function.  
+         * Returns the TransformNode.
+         */
+        public unregisterAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode {
+            this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
+            return this;
+        }        
+
+        public clone(name: string, newParent: Node): Nullable<TransformNode> {
+            var result = SerializationHelper.Clone(() => new TransformNode(name, this.getScene()), this);
+
+            result.name = name;
+            result.id = name;
+
+            if (newParent) {
+                result.parent = newParent;
+            }
+
+            return result;
+        }        
+
+        public serialize(serializationObject: any = null): any {
+            if (!serializationObject) {
+                serializationObject = {};
+            }
+
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.type = this.getClassName();
+
+            if (Tags && Tags.HasTags(this)) {
+                serializationObject.tags = Tags.GetTags(this);
+            }
+
+            serializationObject.position = this.position.asArray();
+
+            if (this.rotationQuaternion) {
+                serializationObject.rotationQuaternion = this.rotationQuaternion.asArray();
+            } else if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+
+            serializationObject.scaling = this.scaling.asArray();
+            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+
+            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.infiniteDistance = this.infiniteDistance;
+
+            serializationObject.billboardMode = this.billboardMode;
+
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+
+            // Metadata
+            if (this.metadata) {
+                serializationObject.metadata = this.metadata;
+            }
+
+            return serializationObject;
+        }
+
+        // Statics
+        /**
+         * Returns a new TransformNode object parsed from the source provided.   
+         * The parameter `parsedMesh` is the source.   
+         * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
+         */
+        public static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode {
+            var transformNode = new TransformNode(parsedTransformNode.name, scene);
+
+            transformNode.id = parsedTransformNode.id;
+
+            if (Tags) {
+                Tags.AddTagsTo(transformNode, parsedTransformNode.tags);
+            }
+
+            transformNode.position = Vector3.FromArray(parsedTransformNode.position);
+
+            if (parsedTransformNode.metadata !== undefined) {
+                transformNode.metadata = parsedTransformNode.metadata;
+            }
+
+            if (parsedTransformNode.rotationQuaternion) {
+                transformNode.rotationQuaternion = Quaternion.FromArray(parsedTransformNode.rotationQuaternion);
+            } else if (parsedTransformNode.rotation) {
+                transformNode.rotation = Vector3.FromArray(parsedTransformNode.rotation);
+            }
+
+            transformNode.scaling = Vector3.FromArray(parsedTransformNode.scaling);
+
+            if (parsedTransformNode.localMatrix) {
+                transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));
+            } else if (parsedTransformNode.pivotMatrix) {
+                transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.pivotMatrix));
+            }
+
+            transformNode.setEnabled(parsedTransformNode.isEnabled);
+            transformNode.infiniteDistance = parsedTransformNode.infiniteDistance;
+
+            transformNode.billboardMode = parsedTransformNode.billboardMode;
+
+            // Parent
+            if (parsedTransformNode.parentId) {
+                transformNode._waitingParentId = parsedTransformNode.parentId;
+            }
+         
+            return transformNode;
+        }        
     }
 }

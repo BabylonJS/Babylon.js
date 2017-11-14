@@ -10,7 +10,7 @@ module BABYLON.GLTF2.Extensions {
         /**
          * Specify the minimal delay between LODs in ms (default = 250)
          */
-        public static MinimalLODDelay = 250;
+        public Delay = 250;
 
         public get name() {
             return "MSFT_lod";
@@ -70,7 +70,7 @@ module BABYLON.GLTF2.Extensions {
                     loader._tryCatchOnError(() => {
                         this._loadNodeLOD(loader, context, nodes, index - 1, onComplete);
                     });
-                }, MSFTLOD.MinimalLODDelay);
+                }, this.Delay);
             });
         }
 
@@ -96,24 +96,30 @@ module BABYLON.GLTF2.Extensions {
 
         private _loadMaterialLOD(loader: GLTFLoader, context: string, materials: IGLTFMaterial[], index: number, assign: (babylonMaterial: Material, isNew: boolean) => void, onComplete: () => void): void {
             loader._loadMaterial(context, materials[index], (babylonMaterial, isNew) => {
-                assign(babylonMaterial, isNew);
+                if (index === materials.length - 1) {
+                    assign(babylonMaterial, isNew);
 
-                if (index === 0) {
-                    onComplete();
-                    return;
-                }
-
-                // Load the next LOD when the loader is ready to render and
-                // all active material textures of the current LOD are loaded.
-                loader._executeWhenRenderReady(() => {
-                    BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), () => {
-                        setTimeout(() => {
-                            loader._tryCatchOnError(() => {
-                                this._loadMaterialLOD(loader, context, materials, index - 1, assign, onComplete);
-                            });
-                        }, MSFTLOD.MinimalLODDelay);
+                    // Load the next LOD when the loader is ready to render.
+                    loader._executeWhenRenderReady(() => {
+                        this._loadMaterialLOD(loader, context, materials, index - 1, assign, onComplete);
                     });
-                });
+                }
+                else {
+                    BaseTexture.WhenAllReady(babylonMaterial.getActiveTextures(), () => {
+                        assign(babylonMaterial, isNew);
+
+                        if (index === 0) {
+                            onComplete();
+                        }
+                        else {
+                            setTimeout(() => {
+                                loader._tryCatchOnError(() => {
+                                    this._loadMaterialLOD(loader, context, materials, index - 1, assign, onComplete);
+                                });
+                            }, this.Delay);
+                        }
+                    });
+                }
             });
         }
     }
