@@ -20,6 +20,7 @@ module BABYLON.GLTF2.Extensions {
                 loader._loadMaterialBaseProperties(context, material);
                 this._loadSpecularGlossinessProperties(loader, context, material, extension);
                 assign(material.babylonMaterial, true);
+                onComplete();
             });
         }
 

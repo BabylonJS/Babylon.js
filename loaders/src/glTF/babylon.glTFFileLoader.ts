@@ -31,18 +31,17 @@ module BABYLON {
         public onParsed: (data: IGLTFLoaderData) => void;
 
         // V1 options
-        public static HomogeneousCoordinates: boolean = false;
-        public static IncrementalLoading: boolean = true;
+        public static HomogeneousCoordinates = false;
+        public static IncrementalLoading = true;
 
         // V2 options
-        public coordinateSystemMode: GLTFLoaderCoordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+        public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+        public compileMaterials = false;
+        public compileShadowGenerators = false;
+        public useClipPlane = false;
+        public onMeshLoaded: (mesh: AbstractMesh) => void;
         public onTextureLoaded: (texture: BaseTexture) => void;
         public onMaterialLoaded: (material: Material) => void;
-
-        /**
-         * Let the user decides if he needs to process the material (like precompilation) before affecting it to meshes
-         */
-        public onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
 
         /**
          * Raised when the asset is completely loaded, just before the loader is disposed.
