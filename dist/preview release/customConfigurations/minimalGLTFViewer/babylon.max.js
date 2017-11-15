@@ -4453,7 +4453,7 @@ var BABYLON;
          * Returns the updated Path2.
          */
         Path2.prototype.addLineTo = function (x, y) {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
@@ -4469,7 +4469,7 @@ var BABYLON;
          */
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (numberOfSegments === void 0) { numberOfSegments = 36; }
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }

@@ -4453,7 +4453,7 @@ var BABYLON;
          * Returns the updated Path2.
          */
         Path2.prototype.addLineTo = function (x, y) {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
@@ -4469,7 +4469,7 @@ var BABYLON;
          */
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (numberOfSegments === void 0) { numberOfSegments = 36; }
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
@@ -8522,7 +8522,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-3";
+                return "3.1-beta-4";
             },
             enumerable: true,
             configurable: true
@@ -75195,6 +75195,41 @@ var BABYLON;
             mesh.computeWorldMatrix(true);
             var boundingBox = mesh.getBoundingInfo().boundingBox;
             this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ, onAnimationEnd);
+        };
+        /**
+         * Targets the given mesh with its children and updates zoom level accordingly.
+         * @param mesh  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        FramingBehavior.prototype.zoomOnMeshHierarchy = function (mesh, focusOnOriginXZ, onAnimationEnd) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
+            if (onAnimationEnd === void 0) { onAnimationEnd = null; }
+            mesh.computeWorldMatrix(true);
+            var boundingBox = mesh.getHierarchyBoundingVectors(true);
+            this.zoomOnBoundingInfo(boundingBox.min, boundingBox.max, focusOnOriginXZ, onAnimationEnd);
+        };
+        /**
+         * Targets the given meshes with their children and updates zoom level accordingly.
+         * @param meshes  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        FramingBehavior.prototype.zoomOnMeshesHierarchy = function (meshes, focusOnOriginXZ, onAnimationEnd) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
+            if (onAnimationEnd === void 0) { onAnimationEnd = null; }
+            var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            for (var i = 0; i < meshes.length; i++) {
+                var boundingInfo = meshes[i].getHierarchyBoundingVectors(true);
+                BABYLON.Tools.CheckExtends(boundingInfo.min, min, max);
+                BABYLON.Tools.CheckExtends(boundingInfo.max, min, max);
+            }
+            this.zoomOnBoundingInfo(min, max, focusOnOriginXZ, onAnimationEnd);
         };
         /**
          * Targets the given mesh and updates zoom level accordingly.
