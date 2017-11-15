@@ -297,7 +297,7 @@ export function getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promi
             return loadFile(location);
         } else {
             location = location.replace('#', '');
-            let element = document.getElementById('#' + location);
+            let element = document.getElementById(location);
             if (element) {
                 return Promise.resolve(element.innerHTML);
             } else {
