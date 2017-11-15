@@ -1767,17 +1767,27 @@ var BABYLON;
             return vector;
         };
         Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
+            var result = Vector3.Zero();
+            Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
+            return result;
+        };
+        Vector3.UnprojectToRef = function (source, viewportWidth, viewportHeight, world, view, projection, result) {
+            Vector3.UnprojectFloatsToRef(source.x, source.y, source.z, viewportWidth, viewportHeight, world, view, projection, result);
+        };
+        Vector3.UnprojectFloatsToRef = function (sourceX, sourceY, sourceZ, viewportWidth, viewportHeight, world, view, projection, result) {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix);
             matrix.multiplyToRef(projection, matrix);
             matrix.invert();
-            var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), 2 * source.z - 1.0);
-            var vector = Vector3.TransformCoordinates(screenSource, matrix);
+            var screenSource = MathTmp.Vector3[0];
+            screenSource.x = sourceX / viewportWidth * 2 - 1;
+            screenSource.y = sourceY / viewportHeight * 2 - 1;
+            screenSource.z = 2 * sourceZ - 1.0;
+            Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
             if (BABYLON.Scalar.WithinEpsilon(num, 1.0)) {
-                vector = vector.scale(1.0 / num);
+                result.scaleInPlace(1.0 / num);
             }
-            return vector;
         };
         Vector3.Minimize = function (left, right) {
             var min = left.clone();
@@ -4443,7 +4453,7 @@ var BABYLON;
          * Returns the updated Path2.
          */
         Path2.prototype.addLineTo = function (x, y) {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
@@ -4459,7 +4469,7 @@ var BABYLON;
          */
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (numberOfSegments === void 0) { numberOfSegments = 36; }
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
@@ -8512,7 +8522,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-3";
+                return "3.1-beta-4";
             },
             enumerable: true,
             configurable: true
@@ -20984,6 +20994,12 @@ var BABYLON;
         // Picking
         Scene.prototype.createPickingRay = function (x, y, world, camera, cameraViewSpace) {
             if (cameraViewSpace === void 0) { cameraViewSpace = false; }
+            var result = BABYLON.Ray.Zero();
+            this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
+            return result;
+        };
+        Scene.prototype.createPickingRayToRef = function (x, y, world, result, camera, cameraViewSpace) {
+            if (cameraViewSpace === void 0) { cameraViewSpace = false; }
             var engine = this._engine;
             if (!camera) {
                 if (!this.activeCamera)
@@ -20995,12 +21011,17 @@ var BABYLON;
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), cameraViewSpace ? BABYLON.Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
-            //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), cameraViewSpace ? BABYLON.Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
+            return this;
         };
         Scene.prototype.createPickingRayInCameraSpace = function (x, y, camera) {
+            var result = BABYLON.Ray.Zero();
+            this.createPickingRayInCameraSpaceToRef(x, y, result, camera);
+            return result;
+        };
+        Scene.prototype.createPickingRayInCameraSpaceToRef = function (x, y, result, camera) {
             if (!BABYLON.PickingInfo) {
-                return null;
+                return this;
             }
             var engine = this._engine;
             if (!camera) {
@@ -21014,7 +21035,8 @@ var BABYLON;
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+            return this;
         };
         Scene.prototype._internalPick = function (rayFunction, predicate, fastCheck) {
             if (!BABYLON.PickingInfo) {
@@ -21108,7 +21130,13 @@ var BABYLON;
          */
         Scene.prototype.pick = function (x, y, predicate, fastCheck, camera) {
             var _this = this;
-            return this._internalPick(function (world) { return _this.createPickingRay(x, y, world, camera || null); }, predicate, fastCheck);
+            if (!this._tempPickingRay) {
+                this._tempPickingRay = BABYLON.Ray.Zero();
+            }
+            return this._internalPick(function (world) {
+                _this.createPickingRayToRef(x, y, world, _this._tempPickingRay, camera || null);
+                return _this._tempPickingRay;
+            }, predicate, fastCheck);
         };
         /** Launch a ray to try to pick a sprite in the scene
          * @param x position on screen
@@ -21118,11 +21146,11 @@ var BABYLON;
          * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         Scene.prototype.pickSprite = function (x, y, predicate, fastCheck, camera) {
-            var ray = this.createPickingRayInCameraSpace(x, y, camera);
-            if (!ray) {
-                return null;
+            if (!this._tempPickingRay) {
+                this._tempPickingRay = BABYLON.Ray.Zero();
             }
-            return this._internalPickSprites(ray, predicate, fastCheck, camera);
+            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay, camera);
+            return this._internalPickSprites(this._tempPickingRay, predicate, fastCheck, camera);
         };
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
@@ -21137,7 +21165,7 @@ var BABYLON;
                 }
                 world.invertToRef(_this._pickWithRayInverseMatrix);
                 if (!_this._cachedRayForTransform) {
-                    _this._cachedRayForTransform = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero());
+                    _this._cachedRayForTransform = BABYLON.Ray.Zero();
                 }
                 BABYLON.Ray.TransformToRef(ray, _this._pickWithRayInverseMatrix, _this._cachedRayForTransform);
                 return _this._cachedRayForTransform;
@@ -21167,7 +21195,7 @@ var BABYLON;
                 }
                 world.invertToRef(_this._pickWithRayInverseMatrix);
                 if (!_this._cachedRayForTransform) {
-                    _this._cachedRayForTransform = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero());
+                    _this._cachedRayForTransform = BABYLON.Ray.Zero();
                 }
                 BABYLON.Ray.TransformToRef(ray, _this._pickWithRayInverseMatrix, _this._cachedRayForTransform);
                 return _this._cachedRayForTransform;
@@ -43984,13 +44012,20 @@ var BABYLON;
             }
             return -1;
         };
+        Ray.prototype.update = function (x, y, viewportWidth, viewportHeight, world, view, projection) {
+            BABYLON.Vector3.UnprojectFloatsToRef(x, y, 0, viewportWidth, viewportHeight, world, view, projection, this.origin);
+            BABYLON.Vector3.UnprojectFloatsToRef(x, y, 1, viewportWidth, viewportHeight, world, view, projection, BABYLON.Tmp.Vector3[0]);
+            BABYLON.Tmp.Vector3[0].subtractToRef(this.origin, this.direction);
+            this.direction.normalize();
+            return this;
+        };
         // Statics
+        Ray.Zero = function () {
+            return new Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero());
+        };
         Ray.CreateNew = function (x, y, viewportWidth, viewportHeight, world, view, projection) {
-            var start = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
-            var end = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
-            var direction = end.subtract(start);
-            direction.normalize();
-            return new Ray(start, direction);
+            var result = Ray.Zero();
+            return result.update(x, y, viewportWidth, viewportHeight, world, view, projection);
         };
         /**
         * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
@@ -57992,8 +58027,8 @@ var BABYLON;
                 if (!material) {
                     return;
                 }
-                // Culling
-                engine.setState(material.backFaceCulling);
+                // Culling and reverse (right handed system)
+                engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
                 if (batch.mustReturn) {
@@ -75006,6 +75041,41 @@ var BABYLON;
             mesh.computeWorldMatrix(true);
             var boundingBox = mesh.getBoundingInfo().boundingBox;
             this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ, onAnimationEnd);
+        };
+        /**
+         * Targets the given mesh with its children and updates zoom level accordingly.
+         * @param mesh  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        FramingBehavior.prototype.zoomOnMeshHierarchy = function (mesh, focusOnOriginXZ, onAnimationEnd) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
+            if (onAnimationEnd === void 0) { onAnimationEnd = null; }
+            mesh.computeWorldMatrix(true);
+            var boundingBox = mesh.getHierarchyBoundingVectors(true);
+            this.zoomOnBoundingInfo(boundingBox.min, boundingBox.max, focusOnOriginXZ, onAnimationEnd);
+        };
+        /**
+         * Targets the given meshes with their children and updates zoom level accordingly.
+         * @param meshes  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        FramingBehavior.prototype.zoomOnMeshesHierarchy = function (meshes, focusOnOriginXZ, onAnimationEnd) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
+            if (onAnimationEnd === void 0) { onAnimationEnd = null; }
+            var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            for (var i = 0; i < meshes.length; i++) {
+                var boundingInfo = meshes[i].getHierarchyBoundingVectors(true);
+                BABYLON.Tools.CheckExtends(boundingInfo.min, min, max);
+                BABYLON.Tools.CheckExtends(boundingInfo.max, min, max);
+            }
+            this.zoomOnBoundingInfo(min, max, focusOnOriginXZ, onAnimationEnd);
         };
         /**
          * Targets the given mesh and updates zoom level accordingly.

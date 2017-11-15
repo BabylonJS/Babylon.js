@@ -4721,7 +4721,7 @@
          * Returns the updated Path2.   
          */
         public addLineTo(x: number, y: number): Path2 {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
@@ -4737,7 +4737,7 @@
          * Returns the updated Path2.  
          */
         public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
