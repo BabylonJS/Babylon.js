@@ -36,6 +36,7 @@ declare module BABYLON.GUI {
         readonly layer: Nullable<Layer>;
         readonly rootContainer: Container;
         focusedControl: Nullable<IFocusableControl>;
+        isForeground: boolean;
         constructor(name: string, width: number | undefined, height: number | undefined, scene: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         markAsDirty(): void;
@@ -177,6 +178,10 @@ declare module BABYLON.GUI {
         isHitTestVisible: boolean;
         isPointerBlocker: boolean;
         isFocusInvisible: boolean;
+        shadowOffsetX: number;
+        shadowOffsetY: number;
+        shadowBlur: number;
+        shadowColor: string;
         protected _linkOffsetX: ValueAndUnit;
         protected _linkOffsetY: ValueAndUnit;
         readonly typeName: string;
@@ -545,6 +550,9 @@ declare module BABYLON.GUI {
         private _sourceTop;
         private _sourceWidth;
         private _sourceHeight;
+        private _cellWidth;
+        private _cellHeight;
+        private _cellId;
         sourceLeft: number;
         sourceTop: number;
         sourceWidth: number;
@@ -554,6 +562,9 @@ declare module BABYLON.GUI {
         domImage: HTMLImageElement;
         private _onImageLoaded();
         source: Nullable<string>;
+        cellWidth: number;
+        cellHeight: number;
+        cellId: number;
         constructor(name?: string | undefined, url?: Nullable<string>);
         protected _getTypeName(): string;
         synchronizeSizeWithContent(): void;

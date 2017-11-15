@@ -368,8 +368,8 @@
         }        
 
         public _bindTextureDirectly(target: number, texture: InternalTexture): void {
-            if (this._activeTexturesCache[this._activeTexture] !== texture) {
-                this._activeTexturesCache[this._activeTexture] = texture;
+            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
+                this._activeTexturesCache[this._activeTextureChannel] = texture;
             }
         }
 
@@ -380,5 +380,15 @@
 
             this._bindTextureDirectly(0, texture);
         }
+
+        public _releaseBuffer(buffer: WebGLBuffer): boolean {
+            buffer.references--;
+
+            if (buffer.references === 0) {
+                return true;
+            }
+
+            return false;
+        }        
     }
 }

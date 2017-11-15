@@ -32,7 +32,7 @@ module BABYLON {
             this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
         }
 
-        detachControl(element: HTMLElement) {
+        detachControl(element: Nullable<HTMLElement>) {
             this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);            
             this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;

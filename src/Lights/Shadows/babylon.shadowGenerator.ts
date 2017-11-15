@@ -14,7 +14,7 @@
 
         recreateShadowMap(): void;
 
-        forceCompilation(onCompiled: (generator: ShadowGenerator) => void, options?: { useInstances: boolean }): void;
+        forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void;
 
         serialize(): any;
         dispose(): void;
@@ -602,33 +602,47 @@
         /**
          * Force shader compilation including textures ready check
          */
-        public forceCompilation(onCompiled: (generator: ShadowGenerator) => void, options?: { useInstances: boolean }): void {
+        public forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void {
+            let localOptions = {
+                useInstances: false,
+                ...options
+            };
+
             let shadowMap = this.getShadowMap();
             if (!shadowMap) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
+                return;
+            }
+
+            let renderList = shadowMap.renderList;
+            if (!renderList) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
                 return;
             }
 
             var subMeshes = new Array<SubMesh>();
-            var currentIndex = 0;
-
-            let renderList = shadowMap.renderList;
-
-            if (!renderList) {
-                return;
-            }
-
             for (var mesh of renderList) {
                 subMeshes.push(...mesh.subMeshes);
             }
+            if (subMeshes.length === 0) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
+                return;
+            }
+
+            var currentIndex = 0;
 
             var checkReady = () => {
                 if (!this._scene || !this._scene.getEngine()) {
                     return;
                 }
 
-                let subMesh = subMeshes[currentIndex];
-
-                if (this.isReady(subMesh, options ? options.useInstances : false)) {
+                while (this.isReady(subMeshes[currentIndex], localOptions.useInstances)) {
                     currentIndex++;
                     if (currentIndex >= subMeshes.length) {
                         if (onCompiled) {
@@ -640,9 +654,7 @@
                 setTimeout(checkReady, 16);
             };
 
-            if (subMeshes.length > 0) {
-                checkReady();
-            }
+            checkReady();
         }
 
         /**

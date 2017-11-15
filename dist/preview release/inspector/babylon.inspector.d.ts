@@ -22,7 +22,7 @@ declare module INSPECTOR {
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: Nullable<HTMLElement>, newColors?: {
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: BABYLON.Nullable<HTMLElement>, newColors?: {
             backgroundColor?: string;
             backgroundColorLighter?: string;
             backgroundColorLighter2?: string;
@@ -73,17 +73,14 @@ declare module INSPECTOR {
         };
         'Vector2': {
             type: typeof BABYLON.Vector2;
-            properties: string[];
             format: (vec: BABYLON.Vector2) => string;
         };
         'Vector3': {
             type: typeof BABYLON.Vector3;
-            properties: string[];
             format: (vec: BABYLON.Vector3) => string;
         };
         'Color3': {
             type: typeof BABYLON.Color3;
-            properties: string[];
             format: (color: BABYLON.Color3) => string;
             slider: {
                 r: {
@@ -105,7 +102,6 @@ declare module INSPECTOR {
         };
         'Color4': {
             type: typeof BABYLON.Color4;
-            properties: string[];
             format: (color: BABYLON.Color4) => string;
             slider: {
                 r: {
@@ -127,16 +123,13 @@ declare module INSPECTOR {
         };
         'Quaternion': {
             type: typeof BABYLON.Quaternion;
-            properties: string[];
         };
         'Size': {
             type: typeof BABYLON.Size;
-            properties: string[];
             format: (size: BABYLON.Size) => string;
         };
         'Texture': {
             type: typeof BABYLON.Texture;
-            properties: string[];
             format: (tex: BABYLON.Texture) => string;
         };
         'RenderTargetTexture': {
@@ -156,11 +149,9 @@ declare module INSPECTOR {
         };
         'Sound': {
             type: typeof BABYLON.Sound;
-            properties: string[];
         };
         'ArcRotateCamera': {
             type: typeof BABYLON.ArcRotateCamera;
-            properties: string[];
             slider: {
                 alpha: {
                     min: number;
@@ -181,7 +172,6 @@ declare module INSPECTOR {
         };
         'FreeCamera': {
             type: typeof BABYLON.FreeCamera;
-            properties: string[];
             slider: {
                 fov: {
                     min: number;
@@ -192,11 +182,17 @@ declare module INSPECTOR {
         };
         'Scene': {
             type: typeof BABYLON.Scene;
-            properties: string[];
+        };
+        'TransformNode': {
+            type: typeof BABYLON.TransformNode;
+            format: (m: BABYLON.TransformNode) => string;
+        };
+        'AbstractMesh': {
+            type: typeof BABYLON.AbstractMesh;
+            format: (m: BABYLON.AbstractMesh) => string;
         };
         'Mesh': {
             type: typeof BABYLON.Mesh;
-            properties: string[];
             format: (m: BABYLON.Mesh) => string;
             slider: {
                 visibility: {
@@ -208,7 +204,6 @@ declare module INSPECTOR {
         };
         'StandardMaterial': {
             type: typeof BABYLON.StandardMaterial;
-            properties: string[];
             format: (mat: BABYLON.StandardMaterial) => string;
             slider: {
                 alpha: {
@@ -220,7 +215,6 @@ declare module INSPECTOR {
         };
         'PBRMaterial': {
             type: typeof BABYLON.PBRMaterial;
-            properties: string[];
             slider: {
                 alpha: {
                     min: number;
@@ -231,7 +225,6 @@ declare module INSPECTOR {
         };
         'PhysicsImpostor': {
             type: typeof BABYLON.PhysicsImpostor;
-            properties: string[];
         };
     };
 }
@@ -277,8 +270,6 @@ declare module INSPECTOR {
         abstract type(): string;
         /** Returns the list of properties to be displayed for this adapter */
         abstract getProperties(): Array<PropertyLine>;
-        /** Returns the actual object behind this adapter */
-        readonly actualObject: any;
         /** Returns true if the given object correspond to this  */
         correspondsTo(obj: any): boolean;
         /** Returns the adapter unique name */
@@ -398,7 +389,8 @@ declare module INSPECTOR {
     class MeshAdapter extends Adapter implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
         /** Keep track of the axis of the actual object */
         private _axesViewer;
-        constructor(obj: BABYLON.AbstractMesh);
+        private onBeforeRenderObserver;
+        constructor(mesh: BABYLON.Node);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */
@@ -410,7 +402,7 @@ declare module INSPECTOR {
         isVisible(): boolean;
         isBoxVisible(): boolean;
         setBoxVisible(b: boolean): boolean;
-        debug(b: boolean): void;
+        debug(enable: boolean): void;
         /** Returns some information about this mesh */
         getInfo(): string;
         /** Draw X, Y and Z axis for the actual object if this adapter.
@@ -519,7 +511,7 @@ declare module INSPECTOR {
         private _prevY;
         /**Save value while slider is on */
         private _preValue;
-        constructor(prop: Property, parent?: Nullable<PropertyLine>, level?: number);
+        constructor(prop: Property, parent?: BABYLON.Nullable<PropertyLine>, level?: number);
         /**
          * Init the input element and al its handler :
          * - a click in the window remove the input and restore the old property value
@@ -709,7 +701,7 @@ declare module INSPECTOR {
         private _elem;
         /** The tooltip div */
         private _infoDiv;
-        constructor(elem: HTMLElement, tip: string, attachTo?: Nullable<HTMLElement>);
+        constructor(elem: HTMLElement, tip: string, attachTo?: BABYLON.Nullable<HTMLElement>);
     }
 }
 
@@ -745,12 +737,12 @@ declare module INSPECTOR {
         /**
          * Useful function used to create a div
          */
-        static CreateDiv(className?: Nullable<string>, parent?: HTMLElement): HTMLElement;
+        static CreateDiv(className?: BABYLON.Nullable<string>, parent?: HTMLElement): HTMLElement;
         /**
          * Useful function used to create a input
          */
         static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement;
-        static CreateElement(element: string, className?: Nullable<string>, parent?: HTMLElement): HTMLElement;
+        static CreateElement(element: string, className?: BABYLON.Nullable<string>, parent?: HTMLElement): HTMLElement;
         /**
          * Removes all children of the given div.
          */
@@ -766,6 +758,11 @@ declare module INSPECTOR {
          * @param obj
          */
         static GetAllLinesProperties(obj: any): Array<PropertyLine>;
+        /**
+         * Returns an array of string corresponding to tjhe list of properties of the object to be displayed
+         * @param obj
+         */
+        static GetAllLinesPropertiesAsString(obj: any): Array<string>;
         static Capitalize(str: string): string;
     }
 }
@@ -846,7 +843,7 @@ declare module INSPECTOR {
         /** Set the given item as active in the tree */
         activateNode(item: TreeItem): void;
         /** Returns the treeitem corersponding to the given obj, null if not found */
-        getItemFor(_obj: any): Nullable<TreeItem>;
+        getItemFor(_obj: any): BABYLON.Nullable<TreeItem>;
         filter(filter: string): void;
         /** Builds the tree panel */
         protected abstract _getTree(): Array<TreeItem>;
@@ -986,6 +983,7 @@ declare module INSPECTOR {
         private _updateLoopHandler;
         private _sceneInstrumentation;
         private _engineInstrumentation;
+        private _connectToInstrumentation();
         constructor(tabbar: TabBar, insp: Inspector);
         private _createStatLabel(content, parent);
         /** Update each properties of the stats panel */
@@ -1030,7 +1028,7 @@ declare module INSPECTOR {
          */
         switchMeshTab(mesh?: BABYLON.AbstractMesh): void;
         /** Returns the active tab */
-        getActiveTab(): Nullable<Tab>;
+        getActiveTab(): BABYLON.Nullable<Tab>;
         getActiveTabIndex(): number;
         readonly inspector: Inspector;
         /**

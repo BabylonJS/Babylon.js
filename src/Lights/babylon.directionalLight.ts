@@ -118,11 +118,6 @@
                     }
 
                     var boundingInfo = mesh.getBoundingInfo();
-
-                    if (!boundingInfo) {
-                        continue;
-                    }
-
                     var boundingBox = boundingInfo.boundingBox;
 
                     for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {

@@ -222,7 +222,7 @@
         public useLightmapAsShadowmap = false;
         
         /**
-         * Specifies that the alpha is coming form the albedo channel alpha channel.
+         * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")

@@ -33,6 +33,11 @@ module BABYLON.GLTF2 {
         readonly BYTES_PER_ELEMENT: number;
     }
 
+    interface GLTFLoaderRequest extends XMLHttpRequest {
+        _loaded: Nullable<number>;
+        _total: Nullable<number>;
+    }
+
     export class GLTFLoader implements IGLTFLoader {
         public _gltf: IGLTF;
         public _babylonScene: Scene;
@@ -46,7 +51,7 @@ module BABYLON.GLTF2 {
         private _progressCallback: (event: ProgressEvent) => void;
         private _errorCallback: (message: string) => void;
         private _renderReady = false;
-        private _requests = new Array<XMLHttpRequest>();
+        private _requests = new Array<GLTFLoaderRequest>();
 
         private _renderReadyObservable = new Observable<GLTFLoader>();
 
@@ -127,10 +132,27 @@ module BABYLON.GLTF2 {
             });
         }
 
-        private _onProgress(event: ProgressEvent): void {
-            if (this._progressCallback) {
-                this._progressCallback(event);
+        private _onProgress(): void {
+            if (!this._progressCallback) {
+                return;
             }
+
+            let loaded = 0;
+            let total = 0;
+            for (let request of this._requests) {
+                if (!request._loaded || !request._total) {
+                    return;
+                }
+
+                loaded += request._loaded;
+                total += request._total;
+            }
+
+            this._progressCallback(new ProgressEvent("GLTFLoaderProgress", {
+                lengthComputable: true,
+                loaded: loaded,
+                total: total
+            }));
         }
 
         public _executeWhenRenderReady(func: () => void): void {
@@ -276,6 +298,10 @@ module BABYLON.GLTF2 {
                 }
             }
 
+            if (this._parent.onMeshLoaded) {
+                this._parent.onMeshLoaded(this._rootNode.babylonMesh);
+            }
+
             let nodeIndices = scene.nodes;
 
             this._traverseNodes(context, nodeIndices, (node, parentNode) => {
@@ -315,14 +341,12 @@ module BABYLON.GLTF2 {
         }
 
         public _loadNode(context: string, node: IGLTFNode): void {
-            node.babylonBones = {};
-            node.babylonAnimationTargets = [];
-
             if (GLTFLoaderExtension.LoadNode(this, context, node)) {
                 return;
             }
 
             node.babylonMesh = new Mesh(node.name || "mesh" + node.index, this._babylonScene);
+            node.babylonMesh.hasVertexAlpha = true;
 
             this._loadTransform(node);
 
@@ -337,6 +361,7 @@ module BABYLON.GLTF2 {
 
             node.babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
 
+            node.babylonAnimationTargets = node.babylonAnimationTargets || [];
             node.babylonAnimationTargets.push(node.babylonMesh);
 
             if (node.skin != null) {
@@ -361,6 +386,10 @@ module BABYLON.GLTF2 {
 
                     this._loadNode("#/nodes/" + index, childNode);
                 }
+            }
+
+            if (this._parent.onMeshLoaded) {
+                this._parent.onMeshLoaded(node.babylonMesh);
             }
         }
 
@@ -418,17 +447,7 @@ module BABYLON.GLTF2 {
                             this._parent.onMaterialLoaded(babylonMaterial);
                         }
 
-                        if (this._parent.onBeforeMaterialReadyAsync) {
-                            this._addLoaderPendingData(material);
-                            this._parent.onBeforeMaterialReadyAsync(babylonMaterial, node.babylonMesh, subMaterials[index] != null, () => {
-                                this._tryCatchOnError(() => {
-                                    subMaterials[index] = babylonMaterial;
-                                    this._removeLoaderPendingData(material);
-                                });
-                            });
-                        } else {
-                            subMaterials[index] = babylonMaterial;
-                        }
+                        subMaterials[index] = babylonMaterial;
                     });
                 }
             };
@@ -784,8 +803,13 @@ module BABYLON.GLTF2 {
 
         private _createBone(node: IGLTFNode, skin: IGLTFSkin, parent: Nullable<Bone>, localMatrix: Matrix, baseMatrix: Matrix, index: number): Bone {
             const babylonBone = new Bone(node.name || "bone" + node.index, skin.babylonSkeleton, parent, localMatrix, null, baseMatrix, index);
+
+            node.babylonBones = node.babylonBones || {};
             node.babylonBones[skin.index] = babylonBone;
+
+            node.babylonAnimationTargets = node.babylonAnimationTargets || [];
             node.babylonAnimationTargets.push(babylonBone);
+
             return babylonBone;
         }
 
@@ -1026,9 +1050,11 @@ module BABYLON.GLTF2 {
                     const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys);
 
-                    for (const target of targetNode.babylonAnimationTargets) {
-                        target.animations.push(babylonAnimation.clone());
-                        animation.targets.push(target);
+                    if (targetNode.babylonAnimationTargets) {
+                        for (const target of targetNode.babylonAnimationTargets) {
+                            target.animations.push(babylonAnimation.clone());
+                            animation.targets.push(target);
+                        }
                     }
                 }
             };
@@ -1072,26 +1098,17 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Uri is missing");
                 }
 
-                if (GLTFUtils.IsBase64(buffer.uri)) {
-                    const data = GLTFUtils.DecodeBase64(buffer.uri);
-                    buffer.loadedData = new Uint8Array(data);
-                    onSuccess(buffer.loadedData);
+                buffer.loadedObservable = new Observable<IGLTFBuffer>();
+                buffer.loadedObservable.add(buffer => {
+                    onSuccess(buffer.loadedData!);
                     this._removePendingData(buffer);
-                }
-                else {
+                });
 
-                    buffer.loadedObservable = new Observable<IGLTFBuffer>();
-                    buffer.loadedObservable.add(buffer => {
-                        onSuccess(buffer.loadedData!);
-                        this._removePendingData(buffer);
-                    });
-
-                    this._loadUri(context, buffer.uri, data => {
-                        buffer.loadedData = data;
-                        buffer.loadedObservable!.notifyObservers(buffer);
-                        buffer.loadedObservable = undefined;
-                    });
-                }
+                this._loadUriAsync(context, buffer.uri, data => {
+                    buffer.loadedData = data;
+                    buffer.loadedObservable!.notifyObservers(buffer);
+                    buffer.loadedObservable = undefined;
+                });
             }
         }
 
@@ -1211,8 +1228,14 @@ module BABYLON.GLTF2 {
         public _removePendingData(data: any): void {
             if (!this._renderReady) {
                 if (--this._renderPendingCount === 0) {
-                    this._renderReady = true;
-                    this._onRenderReady();
+                    this._addLoaderPendingData(this);
+                    this._compileMaterialsAsync(() => {
+                        this._compileShadowGeneratorsAsync(() => {
+                            this._removeLoaderPendingData(this);
+                            this._renderReady = true;
+                            this._onRenderReady();
+                        });
+                    });
                 }
             }
 
@@ -1246,7 +1269,7 @@ module BABYLON.GLTF2 {
             this._loaderTrackers.push(tracker);
 
             this._addLoaderPendingData(tracker);
-
+            
             action();
 
             this._removeLoaderPendingData(tracker);
@@ -1383,10 +1406,12 @@ module BABYLON.GLTF2 {
             const alphaMode = material.alphaMode || "OPAQUE";
             switch (alphaMode) {
                 case "OPAQUE": {
-                    // default is opaque
+                    babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
                     break;
                 }
                 case "MASK": {
+                    babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHATEST;
+
                     babylonMaterial.alphaCutOff = (material.alphaCutoff == null ? 0.5 : material.alphaCutoff);
 
                     if (colorFactor) {
@@ -1404,6 +1429,8 @@ module BABYLON.GLTF2 {
                     break;
                 }
                 case "BLEND": {
+                    babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
+
                     if (colorFactor) {
                         babylonMaterial.alpha = colorFactor[3];
                     }
@@ -1459,7 +1486,7 @@ module BABYLON.GLTF2 {
                     throw new Error(context + ": Failed to find source " + texture.source);
                 }
 
-                this._loadImage("#/images/" + image.index, image, data => {
+                this._loadImageAsync("#/images/" + image.index, image, data => {
                     texture.url = URL.createObjectURL(new Blob([data], { type: image.mimeType }));
                     texture.dataReadyObservable!.notifyObservers(texture);
                     texture.dataReadyObservable = undefined;
@@ -1478,14 +1505,9 @@ module BABYLON.GLTF2 {
             return babylonTexture;
         }
 
-        private _loadImage(context: string, image: IGLTFImage, onSuccess: (data: ArrayBufferView) => void): void {
+        private _loadImageAsync(context: string, image: IGLTFImage, onSuccess: (data: ArrayBufferView) => void): void {
             if (image.uri) {
-                if (GLTFUtils.IsBase64(image.uri)) {
-                    onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(image.uri)));
-                }
-                else {
-                    this._loadUri(context, image.uri, onSuccess);
-                }
+                this._loadUriAsync(context, image.uri, onSuccess);
             }
             else {
                 const bufferView = GLTFLoader._GetProperty(this._gltf.bufferViews, image.bufferView);
@@ -1497,7 +1519,12 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public _loadUri(context: string, uri: string, onSuccess: (data: ArrayBufferView) => void): void {
+        public _loadUriAsync(context: string, uri: string, onSuccess: (data: ArrayBufferView) => void): void {
+            if (GLTFUtils.IsBase64(uri)) {
+                onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(uri)));
+                return;
+            }
+
             if (!GLTFUtils.ValidateUri(uri)) {
                 throw new Error(context + ": Uri '" + uri + "' is invalid");
             }
@@ -1508,15 +1535,21 @@ module BABYLON.GLTF2 {
                 });
             }, event => {
                 this._tryCatchOnError(() => {
-                    this._onProgress(event);
+                    if (request && !this._renderReady) {
+                        request._loaded = event.loaded;
+                        request._total = event.total;
+                        this._onProgress();
+                    }
                 });
             }, this._babylonScene.database, true, request => {
                 this._tryCatchOnError(() => {
                     throw new Error(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""));
                 });
-            });
+            }) as GLTFLoaderRequest;
 
             if (request) {
+                request._loaded = null;
+                request._total = null;
                 this._requests.push(request);
             }
         }
@@ -1619,6 +1652,98 @@ module BABYLON.GLTF2 {
             }
 
             return 0;
+        }
+
+        private _compileMaterialAsync(babylonMaterial: Material, babylonMesh: AbstractMesh, onSuccess: () => void): void {
+            if (!this._parent.compileMaterials) {
+                onSuccess();
+                return;
+            }
+
+            if (this._parent.useClipPlane) {
+                babylonMaterial.forceCompilation(babylonMesh, () => {
+                    babylonMaterial.forceCompilation(babylonMesh, () => {
+                        this._tryCatchOnError(onSuccess);
+                    }, { clipPlane: true });
+                });
+            }
+            else {
+                babylonMaterial.forceCompilation(babylonMesh, () => {
+                    this._tryCatchOnError(onSuccess);
+                });
+            }
+        }
+
+        private _compileMaterialsAsync(onSuccess: () => void): void {
+            if (!this._parent.compileMaterials || !this._gltf.materials) {
+                onSuccess();
+                return;
+            }
+
+            let meshes = this._getMeshes();
+
+            let remaining = 0;
+            for (let mesh of meshes) {
+                if (mesh.material instanceof MultiMaterial) {
+                    for (let subMaterial of mesh.material.subMaterials) {
+                        if (subMaterial) {
+                            remaining++;
+                        }
+                    }
+                }
+            }
+
+            if (remaining === 0) {
+                onSuccess();
+                return;
+            }
+
+            for (let mesh of meshes) {
+                if (mesh.material instanceof MultiMaterial) {
+                    for (let subMaterial of mesh.material.subMaterials) {
+                        if (subMaterial) {
+                            this._compileMaterialAsync(subMaterial, mesh, () => {
+                                if (--remaining === 0) {
+                                    onSuccess();
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        private _compileShadowGeneratorsAsync(onSuccess: () => void): void {
+            if (!this._parent.compileShadowGenerators) {
+                onSuccess();
+                return;
+            }
+
+            let lights = this._babylonScene.lights;
+
+            let remaining = 0;
+            for (let light of lights) {
+                let generator = light.getShadowGenerator();
+                if (generator) {
+                    remaining++;
+                }
+            }
+
+            if (remaining === 0) {
+                onSuccess();
+                return;
+            }
+
+            for (let light of lights) {
+                let generator = light.getShadowGenerator();
+                if (generator) {
+                    generator.forceCompilation(() => {
+                        if (--remaining === 0) {
+                            this._tryCatchOnError(onSuccess);
+                        }
+                    });
+                }
+            }
         }
     }
 

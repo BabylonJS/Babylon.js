@@ -13,19 +13,19 @@ declare module BABYLON {
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
     }
-    class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync {
+    class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
         onParsed: (data: IGLTFLoaderData) => void;
         static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
+        compileMaterials: boolean;
+        compileShadowGenerators: boolean;
+        useClipPlane: boolean;
+        onMeshLoaded: (mesh: AbstractMesh) => void;
         onTextureLoaded: (texture: BaseTexture) => void;
         onMaterialLoaded: (material: Material) => void;
-        /**
-         * Let the user decides if he needs to process the material (like precompilation) before affecting it to meshes
-         */
-        onBeforeMaterialReadyAsync: (material: Material, targetMesh: AbstractMesh, isLOD: boolean, callback: () => void) => void;
         /**
          * Raised when the asset is completely loaded, just before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
@@ -39,6 +39,8 @@ declare module BABYLON {
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
         canDirectLoad(data: string): boolean;
+        rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
         private static _parse(data);
         private _getLoader(loaderData);
         private static _parseBinary(data);

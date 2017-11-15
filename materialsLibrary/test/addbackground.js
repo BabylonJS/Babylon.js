@@ -1,6 +1,5 @@
 window.prepareBackgroundMaterial = function() {
 	var backSky = new BABYLON.BackgroundMaterial("backSky", scene);
-	//var hdrTexture = new BABYLON.HDRCubeTexture("../assets/textures/hdr/environment.hdr", scene, 512);
 	var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("/playground/textures/environment.dds", scene);
 	hdrTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE
 	backSky.reflectionTexture = hdrTexture;
@@ -14,8 +13,21 @@ window.prepareBackgroundMaterial = function() {
     backgroundSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
 	backgroundSkybox.material = backSky;
 	backgroundSkybox.setEnabled(false);
+
+	var mirrorMesh = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
+	mirrorMesh.setEnabled(false);
+	mirrorMesh.position = new BABYLON.Vector3(0, 3, 0);
+	mirrorMesh.material = new BABYLON.StandardMaterial("", scene);
+	mirrorMesh.material.emissiveColor = BABYLON.Color3.Red();
+
+	var mirror = new BABYLON.MirrorTexture("mirror", {ratio: 0.3}, scene, true);
+	mirror.renderList = [mirrorMesh];
+	mirror.clearColor = new BABYLON.Color4(1, 1, 1, 0.0);
+	mirror.mirrorPlane = new BABYLON.Plane(0, -1.0, 0, 0.0);
+	mirror.adaptiveBlurKernel = 64;
 	
 	registerRangeUI("background", "primaryColorR", 0, 1, function(value) {
+		mirror.clearColor.r = value;
 		back.primaryColor.r = value;
 		backSky.primaryColor.r = value;
 	}, function() {
@@ -23,6 +35,7 @@ window.prepareBackgroundMaterial = function() {
 	});
 
 	registerRangeUI("background", "primaryColorG", 0, 1, function(value) {
+		mirror.clearColor.g = value;
 		back.primaryColor.g = value;
 		backSky.primaryColor.g = value;
 	}, function() {
@@ -30,6 +43,7 @@ window.prepareBackgroundMaterial = function() {
 	});
 
 	registerRangeUI("background", "primaryColorB", 0, 1, function(value) {
+		mirror.clearColor.b = value;
 		back.primaryColor.b = value;
 		backSky.primaryColor.b = value;
 	}, function() {
@@ -71,39 +85,38 @@ window.prepareBackgroundMaterial = function() {
 		return back.secondaryLevel;
 	});
 
-	registerRangeUI("background", "thirdColorR", 0, 1, function(value) {
-		back.thirdColor.r = value;
-		backSky.thirdColor.r = value;
+	registerRangeUI("background", "tertiaryColorR", 0, 1, function(value) {
+		back.tertiaryColor.r = value;
+		backSky.tertiaryColor.r = value;
 	}, function() {
-		return back.thirdColor.r;
+		return back.tertiaryColor.r;
 	});
 
-	registerRangeUI("background", "thirdColorG", 0, 1, function(value) {
-		back.thirdColor.g = value;
-		backSky.thirdColor.g = value;
+	registerRangeUI("background", "tertiaryColorG", 0, 1, function(value) {
+		back.tertiaryColor.g = value;
+		backSky.tertiaryColor.g = value;
 	}, function() {
-		return back.thirdColor.g;
+		return back.tertiaryColor.g;
 	});
 
-	registerRangeUI("background", "thirdColorB", 0, 1, function(value) {
-		back.thirdColor.b = value;
-		backSky.thirdColor.b = value;
+	registerRangeUI("background", "tertiaryColorB", 0, 1, function(value) {
+		back.tertiaryColor.b = value;
+		backSky.tertiaryColor.b = value;
 	}, function() {
-		return back.thirdColor.b;
+		return back.tertiaryColor.b;
 	});
 
-	registerRangeUI("background", "thirdLevel", 0, 30, function(value) {
-		back.thirdLevel = value;		
-		backSky.thirdLevel = value;
+	registerRangeUI("background", "tertiaryLevel", 0, 30, function(value) {
+		back.tertiaryLevel = value;		
+		backSky.tertiaryLevel = value;
 	}, function() {
-		return back.thirdLevel;
+		return back.tertiaryLevel;
 	});
 
 	registerRangeUI("background", "reflectionBlur", 0, 1, function(value) {
-		back.reflectionBlur = value;
 		backSky.reflectionBlur = value;
 	}, function() {
-		return back.reflectionBlur;
+		return backSky.reflectionBlur;
 	});
 
 	registerRangeUI("background", "shadowLevel", 0, 1, function(value) {
@@ -119,12 +132,37 @@ window.prepareBackgroundMaterial = function() {
 		return back.alpha;
 	});
 
+	registerRangeUI("background", "mirrorAmount", 0, 10, function(value) {
+		back.reflectionAmount = value;
+	}, function() {
+		return back.reflectionAmount;
+	});
+
+	registerRangeUI("background", "mirrorFalloff", 0, 5, function(value) {
+		back.reflectionFalloffDistance = value;
+	}, function() {
+		return back.reflectionFalloffDistance;
+	});
+
 	registerButtonUI("background", "ToggleBackRGB", function() {
 		back.useRGBColor = !back.useRGBColor;
 	});
 
 	registerButtonUI("background", "ToggleSkyRGB", function() {
 		backSky.useRGBColor = !backSky.useRGBColor;
+	});
+
+	registerButtonUI("background", "ToggleMirror", function() {
+		if (back.reflectionFresnel) {
+			back.reflectionFresnel = false;
+			back.reflectionTexture = null;
+			mirrorMesh.setEnabled(false);
+		}
+		else {
+			back.reflectionFresnel = true;
+			back.reflectionTexture = mirror;
+			mirrorMesh.setEnabled(true);
+		}
 	});
 
 

@@ -113,6 +113,23 @@ module BABYLON.GUI {
 
             this._focusedControl = control;
         }
+        
+        public get isForeground(): boolean {
+            if (!this.layer) {
+                return true;
+            }
+            return (!this.layer.isBackground);
+        }
+
+        public set isForeground(value: boolean) {
+            if (!this.layer) {
+                return;
+            }            
+            if (this.layer.isBackground === !value) {
+                return;
+            }
+            this.layer.isBackground = !value;
+        }   
        
         constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
@@ -283,7 +300,7 @@ module BABYLON.GUI {
                         continue;
                     }
                     
-                    var position = (<BoundingInfo>mesh.getBoundingInfo()).boundingSphere.center;
+                    var position = mesh.getBoundingInfo().boundingSphere.center;
                     var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
 
                     if (projectedPosition.z < 0 || projectedPosition.z > 1) {
@@ -492,7 +509,7 @@ module BABYLON.GUI {
         }
 
         public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null): AdvancedDynamicTexture {
-            var result = new AdvancedDynamicTexture(name, 0, 0, scene);
+            var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, Texture.BILINEAR_SAMPLINGMODE);
 
             // Display
             var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);

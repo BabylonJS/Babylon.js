@@ -6,7 +6,7 @@
     <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
 	<script src="https://preview.babylonjs.com/cannon.js"></script>
 	<script src="https://preview.babylonjs.com/Oimo.js"></script>
-	<script src="../assets/refs/dat.gui.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
 	<script src="../tools/DevLoader/BabylonLoader.js"></script>
 	<script src="src/webgl-debug.js"></script>
 
@@ -69,14 +69,31 @@
 					BABYLONDEVTOOLS.Loader.debugShortcut(engine);
 
 					// call the scene creation from the js.
-					var scene = createScene();
+					if (typeof delayCreateScene !== "undefined") {
+						var scene = delayCreateScene();
 
-					if (scene) {
-						// Register a render loop to repeatedly render the scene
-						engine.runRenderLoop(function () {
-							scene.render();
-							divFps.innerHTML = engine.getFps().toFixed() + " fps";
-						});
+						if (scene) {
+							// Register a render loop to repeatedly render the scene
+
+							engine.runRenderLoop(function () {
+								if (scene.activeCamera) {
+									scene.render();
+								}
+								divFps.innerHTML = engine.getFps().toFixed() + " fps";
+							});
+						}
+					}
+					else {
+						var scene = createScene();
+
+						if (scene) {
+							// Register a render loop to repeatedly render the scene
+
+							engine.runRenderLoop(function () {
+								scene.render();
+								divFps.innerHTML = engine.getFps().toFixed() + " fps";
+							});
+						}
 					}
 
 					// Resize

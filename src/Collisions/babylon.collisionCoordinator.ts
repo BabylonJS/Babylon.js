@@ -139,7 +139,7 @@ module BABYLON {
             var submeshes: Array<SerializedSubMesh> = [];
             if (mesh.subMeshes) {
                 submeshes = mesh.subMeshes.map(function (sm, idx) {
-                    let boundingInfo = <BoundingInfo>sm.getBoundingInfo();
+                    let boundingInfo = sm.getBoundingInfo();
 
                     return {
                         position: idx,
@@ -165,7 +165,7 @@ module BABYLON {
                 geometryId = geometry ? geometry.id : null;
             }
 
-            let boundingInfo = <BoundingInfo>mesh.getBoundingInfo();
+            let boundingInfo = mesh.getBoundingInfo();
 
             return {
                 uniqueId: mesh.uniqueId,

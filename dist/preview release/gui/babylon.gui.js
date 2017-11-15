@@ -1,4 +1,5 @@
-var babylonDependency; try { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("../babylon.max")); } catch (e) { babylonDependency = BABYLON || (typeof require !== 'undefined' && require("babylonjs")); } 
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
 var BABYLON = babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -149,6 +150,25 @@ var BABYLON;
                         control.onFocus();
                     }
                     this._focusedControl = control;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "isForeground", {
+                get: function () {
+                    if (!this.layer) {
+                        return true;
+                    }
+                    return (!this.layer.isBackground);
+                },
+                set: function (value) {
+                    if (!this.layer) {
+                        return;
+                    }
+                    if (this.layer.isBackground === !value) {
+                        return;
+                    }
+                    this.layer.isBackground = !value;
                 },
                 enumerable: true,
                 configurable: true
@@ -799,6 +819,10 @@ var BABYLON;
                 this.isHitTestVisible = true;
                 this.isPointerBlocker = false;
                 this.isFocusInvisible = false;
+                this.shadowOffsetX = 0;
+                this.shadowOffsetY = 0;
+                this.shadowBlur = 0;
+                this.shadowColor = '#000';
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
                 this._linkOffsetY = new GUI.ValueAndUnit(0);
                 /**
@@ -1448,7 +1472,19 @@ var BABYLON;
             };
             Control.prototype._clip = function (context) {
                 context.beginPath();
-                context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    var shadowOffsetX = this.shadowOffsetX;
+                    var shadowOffsetY = this.shadowOffsetY;
+                    var shadowBlur = this.shadowBlur;
+                    var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+                    var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+                    var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+                    var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+                    context.rect(this._currentMeasure.left + leftShadowOffset, this._currentMeasure.top + topShadowOffset, this._currentMeasure.width + rightShadowOffset - leftShadowOffset, this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
+                }
+                else {
+                    context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                }
             };
             Control.prototype._measure = function () {
                 // Width / Height
@@ -1770,6 +1806,10 @@ var BABYLON;
                     panel.addControl(control);
                     header.paddingRight = "5px";
                 }
+                header.shadowBlur = control.shadowBlur;
+                header.shadowColor = control.shadowColor;
+                header.shadowOffsetX = control.shadowOffsetX;
+                header.shadowOffsetY = control.shadowOffsetY;
                 return panel;
             };
             Control.drawEllipse = function (x, y, width, height, context) {
@@ -1903,8 +1943,19 @@ var BABYLON;
             };
             Container.prototype._localDraw = function (context) {
                 if (this._background) {
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     context.fillStyle = this._background;
                     context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                 }
             };
             Container.prototype._link = function (root, host) {
@@ -2169,6 +2220,12 @@ var BABYLON;
             };
             Rectangle.prototype._localDraw = function (context) {
                 context.save();
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
                 if (this._background) {
                     context.fillStyle = this._background;
                     if (this._cornerRadius) {
@@ -2180,6 +2237,11 @@ var BABYLON;
                     }
                 }
                 if (this._thickness) {
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     if (this.color) {
                         context.strokeStyle = this.color;
                     }
@@ -2267,10 +2329,21 @@ var BABYLON;
             };
             Ellipse.prototype._localDraw = function (context) {
                 context.save();
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
                 GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                 if (this._background) {
                     context.fillStyle = this._background;
                     context.fill();
+                }
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
                 }
                 if (this._thickness) {
                     if (this.color) {
@@ -2465,6 +2538,12 @@ var BABYLON;
             };
             Line.prototype._draw = function (parentMeasure, context) {
                 context.save();
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     context.strokeStyle = this.color;
@@ -2667,6 +2746,12 @@ var BABYLON;
                     // Main bar
                     var effectiveThumbWidth;
                     var effectiveBarOffset;
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     if (this._thumbWidth.isPixel) {
                         effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.height);
                     }
@@ -2685,18 +2770,39 @@ var BABYLON;
                     // Bar
                     context.fillStyle = this._background;
                     context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     context.fillStyle = this.color;
                     context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     // Thumb
                     if (this._isThumbCircle) {
                         context.beginPath();
                         context.arc(left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
                         context.fill();
+                        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                            context.shadowBlur = 0;
+                            context.shadowOffsetX = 0;
+                            context.shadowOffsetY = 0;
+                        }
                         context.strokeStyle = this._borderColor;
                         context.stroke();
                     }
                     else {
                         context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                            context.shadowBlur = 0;
+                            context.shadowOffsetX = 0;
+                            context.shadowOffsetY = 0;
+                        }
                         context.strokeStyle = this._borderColor;
                         context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                     }
@@ -2820,8 +2926,19 @@ var BABYLON;
                 if (this._processMeasures(parentMeasure, context)) {
                     var actualWidth = this._currentMeasure.width - this._thickness;
                     var actualHeight = this._currentMeasure.height - this._thickness;
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     context.fillStyle = this._background;
                     context.fillRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, actualWidth, actualHeight);
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     if (this._isChecked) {
                         context.fillStyle = this.color;
                         var offsetWidth = actualWidth * this._checkSizeRatio;
@@ -2953,10 +3070,21 @@ var BABYLON;
                 if (this._processMeasures(parentMeasure, context)) {
                     var actualWidth = this._currentMeasure.width - this._thickness;
                     var actualHeight = this._currentMeasure.height - this._thickness;
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     // Outer
                     GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                     context.fillStyle = this._background;
                     context.fill();
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     context.strokeStyle = this.color;
                     context.lineWidth = this._thickness;
                     context.stroke();
@@ -3100,6 +3228,12 @@ var BABYLON;
                         x = (width - textWidth) / 2;
                         break;
                 }
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
                 context.fillText(text, this._currentMeasure.left + x, y);
             };
             TextBlock.prototype._draw = function (parentMeasure, context) {
@@ -3215,6 +3349,9 @@ var BABYLON;
                 _this._sourceTop = 0;
                 _this._sourceWidth = 0;
                 _this._sourceHeight = 0;
+                _this._cellWidth = 0;
+                _this._cellHeight = 0;
+                _this._cellId = -1;
                 _this.source = url;
                 return _this;
             }
@@ -3353,6 +3490,36 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Image.prototype, "cellWidth", {
+                get: function () {
+                    return this._cellWidth;
+                },
+                set: function (value) {
+                    this._cellWidth = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "cellHeight", {
+                get: function () {
+                    return this._cellHeight;
+                },
+                set: function (value) {
+                    this._cellHeight = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "cellId", {
+                get: function () {
+                    return this._cellId;
+                },
+                set: function (value) {
+                    this._cellId = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Image.prototype._getTypeName = function () {
                 return "Image";
             };
@@ -3365,10 +3532,28 @@ var BABYLON;
             };
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
-                var x = this._sourceLeft;
-                var y = this._sourceTop;
-                var width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
-                var height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
+                var x, y, width, height;
+                if (this.cellId == -1) {
+                    x = this._sourceLeft;
+                    y = this._sourceTop;
+                    width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
+                    height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+                }
+                else {
+                    var rowCount = this._domImage.naturalWidth / this.cellWidth;
+                    var column = (this.cellId / rowCount) >> 0;
+                    var row = this.cellId % rowCount;
+                    x = this.cellWidth * row;
+                    y = this.cellHeight * column;
+                    width = this.cellWidth;
+                    height = this.cellHeight;
+                }
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     if (this._loaded) {
@@ -3392,7 +3577,7 @@ var BABYLON;
                                 if (this._autoScale) {
                                     this.synchronizeSizeWithContent();
                                 }
-                                if (this._root) {
+                                if (this._root && this._root.parent) {
                                     this._root.width = this.width;
                                     this._root.height = this.height;
                                 }
@@ -3825,8 +4010,20 @@ var BABYLON;
                     if (!this._colorWheelCanvas || this._colorWheelCanvas.width != radius * 2) {
                         this._colorWheelCanvas = this._createColorWheelCanvas(radius, wheelThickness);
                     }
-                    context.drawImage(this._colorWheelCanvas, left, top);
                     this._updateSquareProps();
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                        context.fillRect(this._squareLeft, this._squareTop, this._squareSize, this._squareSize);
+                    }
+                    context.drawImage(this._colorWheelCanvas, left, top);
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     this._drawGradientSquare(this._h, this._squareLeft, this._squareTop, this._squareSize, this._squareSize, context);
                     var cx = this._squareLeft + this._squareSize * this._s;
                     var cy = this._squareTop + this._squareSize * (1 - this._v);
@@ -4197,6 +4394,12 @@ var BABYLON;
                 context.save();
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     // Background
                     if (this._isFocused) {
                         if (this._focusedBackground) {
@@ -4207,6 +4410,11 @@ var BABYLON;
                     else if (this._background) {
                         context.fillStyle = this._background;
                         context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
                     }
                     if (!this._fontOffset) {
                         this._fontOffset = GUI.Control._GetFontOffset(context.font);
@@ -4374,6 +4582,10 @@ var BABYLON;
                 button.paddingBottom = propertySet && propertySet.paddingBottom ? propertySet.paddingBottom : this.defaultButtonPaddingBottom;
                 button.thickness = 0;
                 button.isFocusInvisible = true;
+                button.shadowColor = this.shadowColor;
+                button.shadowBlur = this.shadowBlur;
+                button.shadowOffsetX = this.shadowOffsetX;
+                button.shadowOffsetY = this.shadowOffsetY;
                 button.onPointerUpObservable.add(function () {
                     _this.onKeyPressObservable.notifyObservers(key);
                 });
@@ -4452,17 +4664,19 @@ var BABYLON;
 
 
 (function universalModuleDefinition(root, factory) {
+                var f = factory();
                 if (root && root["BABYLON"]) {
                     return;
                 }
+                
     if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
+        module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define([], factory);
+        define(["GUI"], factory);
     else if(typeof exports === 'object')
-        exports["GUI"] = factory();
+        exports["GUI"] = f;
     else {
-        root["BABYLON"]["GUI"] = factory();
+        root["BABYLON"]["GUI"] = f;
     }
 })(this, function() {
     return BABYLON.GUI;

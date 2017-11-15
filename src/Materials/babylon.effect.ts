@@ -759,11 +759,12 @@
         }
 
         public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
-            if (Effect._baseCache[this._uniformBuffersNames[name]] === buffer) {
+            let bufferName = this._uniformBuffersNames[name];
+            if (Effect._baseCache[bufferName] === buffer) {
                 return;
             }
-            Effect._baseCache[this._uniformBuffersNames[name]] = buffer;
-            this._engine.bindUniformBufferBase(buffer, this._uniformBuffersNames[name]);
+            Effect._baseCache[bufferName] = buffer;
+            this._engine.bindUniformBufferBase(buffer, bufferName);
         }
 
         public bindUniformBlock(blockName: string, index: number): void {

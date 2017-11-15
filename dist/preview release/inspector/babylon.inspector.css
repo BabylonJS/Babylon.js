@@ -273,6 +273,10 @@
         display: inline-block;
         font-family: 'FontAwesome', sans-serif;
         content: "\f054"; }
+      .insp-wrapper .insp-tree .line.unfolded.transformNode > span:first-of-type {
+        color: #f29766; }
+      .insp-wrapper .insp-tree .line.folded.transformNode > span:first-of-type {
+        color: #f29766; }
       .insp-wrapper .insp-tree .line .line-content {
         padding-left: 15px; }
         .insp-wrapper .insp-tree .line .line-content:hover {

@@ -19,8 +19,14 @@
 - More robust TypeScript code with *strictNullChecks*, *noImplicitAny*, *noImplicitThis* and *noImplicitReturns* compiler options ([deltakosh](https://github.com/deltakosh))
 - Introduced `NullEngine` which can be used to use Babylon.js in headless mode. [Doc here](http://doc.babylonjs.com/generals/nullengine) ([deltakosh](https://github.com/deltakosh))
 - New instrumentations tools. [Doc here](http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation) ([deltakosh](https://github.com/deltakosh))
+- Complete rework of Unity3D exporter. [Doc here](http://doc.babylonjs.com/resources/intro) ([MackeyK24](https://github.com/MackeyK24))
 
 ## Updates
+- Introduced `TransformNode` class as a parent of `AbstractMesh`. This class was extensively asked by the community to hold only tranformation for a node ([deltakosh](https://github.com/deltakosh))
+- Added `boundingInfo.centerOn` to recreate the bounding info to be centered around a specific point given a specific extend ([deltakosh](https://github.com/deltakosh))
+- Added `mesh.normalizeToUnitCube` to uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units) ([deltakosh](https://github.com/deltakosh))
+- Added `scene.onDataLoadedObservable` which is raised when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed ([deltakosh](https://github.com/deltakosh))
+- Support for adaptiveKernelBlur on MirrorTexture ([deltakosh](https://github.com/deltakosh))
 - Support for non uniform scaling. Normals are now correctly computed ([deltakosh](https://github.com/deltakosh))
 - Added `MultiObserver`. [Doc here](http://doc.babylonjs.com/overviews/observables#multiobserver) ([deltakosh](https://github.com/deltakosh))
 - Added `shadowGenerator.addShadowCaster` and `shadowGenerator.removeShadowCaster` helper functions ([deltakosh](https://github.com/deltakosh))
@@ -40,6 +46,7 @@
 - Improved the SPS perfs for dead or invisible solid particles ([jerome](https://github.com/jbousquie))  
 - Added `enableDepthSort` parameter to the SPS in order to sort the particles from the camera position ([jerome](https://github.com/jbousquie)) 
 - Added `pivot` property to the SPS solid particles ([jerome](https://github.com/jbousquie)) 
+- Added the mesh facet depth sort to FacetData  ([jerome](https://github.com/jbousquie)) 
 
 ## Bug fixes
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))

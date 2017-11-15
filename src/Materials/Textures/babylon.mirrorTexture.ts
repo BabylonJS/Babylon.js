@@ -6,8 +6,9 @@
         private _mirrorMatrix = Matrix.Zero();
         private _savedViewMatrix: Matrix;
 
-        private _blurX: BlurPostProcess;
-        private _blurY: BlurPostProcess;
+        private _blurX: Nullable<BlurPostProcess>;
+        private _blurY: Nullable<BlurPostProcess>;
+        private _adaptiveBlurKernel = 0;
         private _blurKernelX = 0;
         private _blurKernelY = 0;
         private _blurRatio = 1.0;
@@ -24,6 +25,11 @@
         public get blurRatio(): number {
             return this._blurRatio;
         }
+
+        public set adaptiveBlurKernel(value: number) {
+            this._adaptiveBlurKernel = value;
+            this._autoComputeBlurKernel();
+        }        
 
         public set blurKernel(value: number) {
             this.blurKernelX = value;
@@ -56,7 +62,29 @@
             return this._blurKernelY;
         }
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
+        private _autoComputeBlurKernel(): void {
+            let engine = this.getScene()!.getEngine();
+
+            let dw = this.getRenderWidth() / engine.getRenderWidth();
+            let dh = this.getRenderHeight() / engine.getRenderHeight();
+            this.blurKernelX = this._adaptiveBlurKernel * dw;
+            this.blurKernelY = this._adaptiveBlurKernel * dh;
+        }
+
+        protected _onRatioRescale(): void {
+            if (this._sizeRatio) {
+                this.resize(this._initialSizeParameter);
+                if (!this._adaptiveBlurKernel) {
+                    this._preparePostProcesses();
+                }
+            }
+
+            if (this._adaptiveBlurKernel) {
+                this._autoComputeBlurKernel();
+            }
+        }
+
+        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
             this.ignoreCameraViewport = true;
@@ -108,6 +136,18 @@
 
                 this.addPostProcess(this._blurX);
                 this.addPostProcess(this._blurY);
+            }
+            else { 
+                if (this._blurY) {
+                    this.removePostProcess(this._blurY);
+                    this._blurY.dispose();
+                    this._blurY = null;
+                }
+                if (this._blurX) {
+                    this.removePostProcess(this._blurX);
+                    this._blurX.dispose();
+                    this._blurX = null;
+                }
             }
         }
 

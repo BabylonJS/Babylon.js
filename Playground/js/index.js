@@ -356,6 +356,7 @@
                 document.getElementById("errorZone").style.display = 'none';
                 document.getElementById("errorZone").innerHTML = "";
                 document.getElementById("statusBar").innerHTML = "Loading assets...Please wait";
+                var checkCamera = true;
 
                 engine.runRenderLoop(function () {
                     if (engine.scenes.length === 0) {
@@ -378,7 +379,17 @@
 
                 var code = jsEditor.getValue();
                 var scene;
-                if (code.indexOf("createScene") !== -1) { // createScene
+                if (code.indexOf("delayCreateScene") !== -1) { // createScene
+                    eval(code);
+                    scene = delayCreateScene();
+                    checkCamera = false;
+                    if (!scene) {
+                        showError("delayCreateScene function must return a scene.", null);
+                        return;
+                    }
+
+                    zipCode = code + "\r\n\r\nvar scene = createScene();";
+                } else if (code.indexOf("createScene") !== -1) { // createScene
                     eval(code);
                     scene = createScene();
                     if (!scene) {
@@ -418,7 +429,7 @@
                     return;
                 }
 
-                if (engine.scenes[0].activeCamera == null) {
+                if (checkCamera && engine.scenes[0].activeCamera == null) {
                     showError("You must at least create a camera.", null);
                     return;
                 }
