@@ -188,6 +188,48 @@
       "referenceImage": "gltfnormals.png"
     },
     {
+      "title": "GLTF Material",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialScene",
+      "referenceImage": "gltfMaterial.png"
+    },
+    {
+      "title": "GLTF Material Alpha",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialAlphaScene",
+      "referenceImage": "gltfMaterialAlpha.png"
+    },
+    {
+      "title": "GLTF Primitive Attribute",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createPrimitiveAttributeScene",
+      "referenceImage": "gltfPrimitiveAttribute.png"
+    },
+    {
+      "title": "GLTF Metallic Roughness",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialMetallicRoughnessScene",
+      "referenceImage": "gltfMaterialMetallicRoughness.png"
+    },
+    {
+      "title": "GLTF Specular Glossiness",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialSpecularGlossinessScene",
+      "referenceImage": "gltfMaterialSpecularGlossiness.png"
+    },
+    {
+      "title": "GLTF Texture Sampler",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createTextureSamplerScene",
+      "referenceImage": "gltfTextureSampler.png"
+    },
+    {
       "title": "PBR glossy",
       "renderCount": 20,
       "replace": "engine.setHardwareScalingLevel, //engine.setHardwareScalingLevel",
