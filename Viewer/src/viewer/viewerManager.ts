@@ -32,6 +32,10 @@ class ViewerManager {
 
     public getViewerPromiseById(id: string): Promise<AbstractViewer> {
         return new Promise((resolve, reject) => {
+            let localViewer = this.getViewerById(id)
+            if (localViewer) {
+                return resolve(localViewer);
+            }
             let viewerFunction = (viewer: AbstractViewer) => {
                 if (viewer.getBaseId() === id) {
                     resolve(viewer);

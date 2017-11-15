@@ -44,14 +44,12 @@ export interface ViewerConfiguration {
         scaling?: { x: number, y: number, z: number };
         parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
 
-        [propName: string]: any; // further configuration, like title and creator
-    } | string,
-
-    description?: string | {
         title: string;
         subtitle?: string;
         thumbnail?: string; // URL or data-url
-    };
+
+        [propName: string]: any; // further configuration, like title and creator
+    } | string;
 
     scene?: {
         debug?: boolean;
