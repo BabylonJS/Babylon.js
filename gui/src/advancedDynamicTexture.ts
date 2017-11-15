@@ -509,7 +509,7 @@ module BABYLON.GUI {
         }
 
         public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null): AdvancedDynamicTexture {
-            var result = new AdvancedDynamicTexture(name, 0, 0, scene);
+            var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, Texture.BILINEAR_SAMPLINGMODE);
 
             // Display
             var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
