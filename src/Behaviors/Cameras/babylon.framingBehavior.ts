@@ -229,6 +229,42 @@ module BABYLON {
 		}
 
 		/**
+		 * Targets the given mesh with its children and updates zoom level accordingly.
+		 * @param mesh  The mesh to target.
+		 * @param radius Optional. If a cached radius position already exists, overrides default.
+		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+		 * @param onAnimationEnd Callback triggered at the end of the framing animation
+		 */
+		public zoomOnMeshHierarchy(mesh: AbstractMesh, focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): void {
+			mesh.computeWorldMatrix(true);
+
+			let boundingBox = mesh.getHierarchyBoundingVectors(true);
+			this.zoomOnBoundingInfo(boundingBox.min, boundingBox.max, focusOnOriginXZ, onAnimationEnd);
+		}
+
+		/**
+		 * Targets the given meshes with their children and updates zoom level accordingly.
+		 * @param meshes  The mesh to target.
+		 * @param radius Optional. If a cached radius position already exists, overrides default.
+		 * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+		 * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+		 * @param onAnimationEnd Callback triggered at the end of the framing animation
+		 */
+		public zoomOnMeshesHierarchy(meshes: AbstractMesh[], focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): void {
+			let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            
+			for (let i = 0; i < meshes.length; i++) {
+				let boundingInfo = meshes[i].getHierarchyBoundingVectors(true);
+				BABYLON.Tools.CheckExtends(boundingInfo.min, min, max);
+                BABYLON.Tools.CheckExtends(boundingInfo.max, min, max);
+			}
+	
+			this.zoomOnBoundingInfo(min, max, focusOnOriginXZ, onAnimationEnd);
+		}
+
+		/**
 		 * Targets the given mesh and updates zoom level accordingly.
 		 * @param mesh  The mesh to target.
 		 * @param radius Optional. If a cached radius position already exists, overrides default.
