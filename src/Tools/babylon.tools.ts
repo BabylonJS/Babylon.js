@@ -152,6 +152,14 @@
             return path.substring(index + 1);
         }
 
+        public static GetFolderPath(uri: string): string {
+            var index = uri.lastIndexOf("/");
+            if (index < 0)
+                return "";
+
+            return uri.substring(0, index + 1);
+        }
+
         public static GetDOMTextContent(element: HTMLElement): string {
             var result = "";
             var child = element.firstChild;
@@ -481,7 +489,7 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): Nullable<XMLHttpRequest> {
+        public static LoadFile(url: string, callback: (data: any, responseURL?: string) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): Nullable<XMLHttpRequest> {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
@@ -508,7 +516,7 @@
                         req.onreadystatechange = () => { };//some browsers have issues where onreadystatechange can be called multiple times with the same value
 
                         if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
-                            callback(!useArrayBuffer ? req.responseText : req.response);
+                            callback(!useArrayBuffer ? req.responseText : req.response, req.responseURL);
                         } else { // Failed
                             let e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
                             if (onError) {

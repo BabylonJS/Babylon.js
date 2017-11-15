@@ -128,7 +128,7 @@ module BABYLON {
 
         }
 
-        detachControl(element: HTMLElement) {
+        detachControl(element: Nullable<HTMLElement>) {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
 

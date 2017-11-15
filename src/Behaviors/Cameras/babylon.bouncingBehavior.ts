@@ -64,7 +64,7 @@ module BABYLON {
 					}
 
 					mesh.computeWorldMatrix(true);
-					let diagonal = (<BoundingInfo>mesh.getBoundingInfo()).diagonalLength;
+					let diagonal = mesh.getBoundingInfo().diagonalLength;
 
 					this.lowerRadiusTransitionRange = diagonal * 0.05;
 					this.upperRadiusTransitionRange = diagonal * 0.05;
@@ -78,6 +78,11 @@ module BABYLON {
         private _attachedCamera: Nullable<ArcRotateCamera>;
 		private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;	
 		private _onMeshTargetChangedObserver: Nullable<Observer<AbstractMesh>>;
+
+		public init(): void {
+			// Do notihng
+		}
+		
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {

@@ -114,7 +114,16 @@
                 return this;
             }
 
-            behavior.attach(this);
+            behavior.init();
+            if (this._scene.isLoading) {
+                // We defer the attach when the scene will be loaded
+                var observer = this._scene.onDataLoadedObservable.add(() => {
+                    behavior.attach(this);
+                    this._scene.onDataLoadedObservable.remove(observer);
+                });
+            } else {
+                behavior.attach(this);
+            }
             this._behaviors.push(behavior);
 
             return this;

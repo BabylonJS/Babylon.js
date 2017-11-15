@@ -11,7 +11,7 @@ module INSPECTOR {
         /** The tooltip div */
         private _infoDiv : HTMLDivElement;
         
-        constructor(elem: HTMLElement, tip:string, attachTo: Nullable<HTMLElement> = null) {
+        constructor(elem: HTMLElement, tip:string, attachTo: BABYLON.Nullable<HTMLElement> = null) {
             
             this._elem = elem;
             if (!attachTo) {

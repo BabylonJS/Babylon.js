@@ -187,7 +187,7 @@
             for (; subIndex < subMeshes.length; subIndex++) {
                 subMesh = subMeshes.data[subIndex];
                 subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
-                subMesh._distanceToCamera = (<BoundingInfo>subMesh.getBoundingInfo()).boundingSphere.centerWorld.subtract(cameraPosition).length();
+                subMesh._distanceToCamera = subMesh.getBoundingInfo().boundingSphere.centerWorld.subtract(cameraPosition).length();
             }
 
             let sortedArray = subMeshes.data.slice(0, subMeshes.length);
@@ -324,7 +324,7 @@
                 return;
             }
 
-            if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) { // Transparent
+            if (material.needAlphaBlendingForMesh(mesh)) { // Transparent
                 this._transparentSubMeshes.push(subMesh);
             } else if (material.needAlphaTesting()) { // Alpha test
                 if (material.needDepthPrePass) {

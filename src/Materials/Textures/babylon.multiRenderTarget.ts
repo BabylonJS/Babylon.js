@@ -13,7 +13,6 @@ module BABYLON {
         private _internalTextures: InternalTexture[];
         private _textures: Texture[];
         private _count: number;
-        private _engine: Engine;
 
         public get isSupported(): boolean {
             return this._engine.webGLVersion > 1 || this._engine.getCaps().drawBuffersExtension;

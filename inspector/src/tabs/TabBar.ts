@@ -141,7 +141,7 @@ module INSPECTOR {
         }
 
         /** Returns the active tab */
-        public getActiveTab(): Nullable<Tab> {
+        public getActiveTab(): BABYLON.Nullable<Tab> {
             for (let tab of this._tabs) {
                 if (tab.isActive()) {
                     return tab;

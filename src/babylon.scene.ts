@@ -360,7 +360,11 @@
         */
         public onAfterSpritesRenderingObservable = new Observable<Scene>();          
 
-         
+        /**
+        * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
+        * @type {BABYLON.Observable}
+        */
+        public onDataLoadedObservable = new Observable<Scene>();            
 
         /**
         * An event triggered when a camera is created
@@ -397,6 +401,18 @@
         * @type {BABYLON.Observable}
         */
         public onGeometryRemovedObservable = new Observable<Geometry>();
+
+        /**
+        * An event triggered when a transform node is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewTransformNodeAddedObservable = new Observable<TransformNode>();
+        
+        /**
+        * An event triggered when a transform node is removed
+        * @type {BABYLON.Observable}
+        */
+        public onTransformNodeRemovedObservable = new Observable<TransformNode>();        
 
         /**
         * An event triggered when a mesh is created
@@ -662,6 +678,13 @@
 
         // Meshes
         /**
+        * All of the tranform nodes added to this scene.
+        * @see BABYLON.TransformNode
+        * @type {BABYLON.TransformNode[]}
+        */
+        public transformNodes = new Array<TransformNode>();
+
+        /**
         * All of the (abstract) meshes added to this scene.
         * @see BABYLON.AbstractMesh
         * @type {BABYLON.AbstractMesh[]}
@@ -785,7 +808,7 @@
         public actionManager: ActionManager;
 
         public _actionManagers = new Array<ActionManager>();
-        private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
+        private _meshesForIntersections = new SmartArrayNoDuplicate<AbstractMesh>(256);
 
         // Procedural textures
         public proceduralTexturesEnabled = true;
@@ -845,10 +868,10 @@
 
         private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
-        private _renderTargets = new SmartArray<RenderTargetTexture>(256);
+        private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
         public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
-        private _activeSkeletons = new SmartArray<Skeleton>(32);
-        private _softwareSkinnedMeshes = new SmartArray<Mesh>(32);
+        private _activeSkeletons = new SmartArrayNoDuplicate<Skeleton>(32);
+        private _softwareSkinnedMeshes = new SmartArrayNoDuplicate<Mesh>(32);
 
         private _renderingManager: RenderingManager;
         private _physicsEngine: Nullable<PhysicsEngine>;
@@ -1893,15 +1916,24 @@
         }
 
         public _removePendingData(data: any): void {
+            var wasLoading = this.isLoading;
             var index = this._pendingData.indexOf(data);
 
             if (index !== -1) {
                 this._pendingData.splice(index, 1);
             }
+
+            if (wasLoading && !this.isLoading) {
+                this.onDataLoadedObservable.notifyObservers(this);
+            }
         }
 
         public getWaitingItemsCount(): number {
             return this._pendingData.length;
+        }
+
+        public get isLoading(): boolean {
+            return this._pendingData.length > 0;
         }
 
         /**
@@ -2012,6 +2044,18 @@
 
             if (animatable) {
                 animatable.stop(animationName);
+            }
+        }
+
+        /**
+         * Stops and removes all animations that have been applied to the scene
+         */
+        public stopAllAnimations(): void {
+            if (this._activeAnimatables) {
+                for (let i = 0; i < this._activeAnimatables.length; i++) {
+                    this._activeAnimatables[i].stop();
+                }
+                this._activeAnimatables = [];
             }
         }
 
@@ -2141,12 +2185,26 @@
                 // Remove from the scene if mesh found
                 this.meshes.splice(index, 1);
             }
-            //notify the collision coordinator
-            if (this.collisionCoordinator) {
-                this.collisionCoordinator.onMeshRemoved(toRemove);
-            }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
+
+            return index;
+        }        
+
+        public addTransformNode(newTransformNode: TransformNode) {
+            this.transformNodes.push(newTransformNode);
+
+            this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
+        }        
+
+        public removeTransformNode(toRemove: TransformNode): number {
+            var index = this.transformNodes.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if found
+                this.transformNodes.splice(index, 1);
+            }
+
+            this.onTransformNodeRemovedObservable.notifyObservers(toRemove);
 
             return index;
         }
@@ -2547,6 +2605,27 @@
         }
 
         /**
+         * Get the first added transform node found of a given ID
+         * @param {string} id - the id to search for
+         * @return {BABYLON.TransformNode|null} the transform node found or null if not found at all.
+         */
+        public getTransformNodeByID(id: string): Nullable<TransformNode> {
+            for (var index = 0; index < this.transformNodes.length; index++) {
+                if (this.transformNodes[index].id === id) {
+                    return this.transformNodes[index];
+                }
+            }
+
+            return null;
+        }
+
+        public getTransformNodesByID(id: string): Array<TransformNode> {
+            return this.transformNodes.filter(function (m) {
+                return m.id === id;
+            })
+        }        
+
+        /**
          * Get a mesh with its auto-generated unique id
          * @param {number} uniqueId - the unique id to search for
          * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
@@ -2588,6 +2667,12 @@
                     return this.meshes[index];
                 }
             }
+
+            for (index = this.transformNodes.length - 1; index >= 0; index--) {
+                if (this.transformNodes[index].id === id) {
+                    return this.transformNodes[index];
+                }
+            }            
 
             for (index = this.cameras.length - 1; index >= 0; index--) {
                 if (this.cameras[index].id === id) {
@@ -2661,6 +2746,16 @@
 
             return null;
         }
+
+        public getTransformNodeByName(name: string): Nullable<TransformNode> {
+            for (var index = 0; index < this.transformNodes.length; index++) {
+                if (this.transformNodes[index].name === name) {
+                    return this.transformNodes[index];
+                }
+            }
+
+            return null;
+        }        
 
         public getSoundByName(name: string): Nullable<Sound> {
             var index: number;
@@ -2808,9 +2903,7 @@
                 if (mesh.showSubMeshesBoundingBox) {
                     let boundingInfo = subMesh.getBoundingInfo();
 
-                    if (boundingInfo) {
-                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                    }
+                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
                 }
 
                 if (material) {
@@ -2967,9 +3060,7 @@
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 let boundingInfo = sourceMesh.getBoundingInfo();
 
-                if (boundingInfo) {
-                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);    
-                }
+                this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);    
             }
 
             if (mesh && mesh.subMeshes) {
@@ -3661,6 +3752,8 @@
 
             this.importedMeshesFiles = new Array<string>();
 
+            this.stopAllAnimations();
+
             this.resetCachedMaterial();
 
             if (this._depthRenderer) {
@@ -3718,6 +3811,7 @@
             this.onAfterPhysicsObservable.clear();
             this.onBeforeAnimationsObservable.clear();
             this.onAfterAnimationsObservable.clear();
+            this.onDataLoadedObservable.clear();
 
             this.detachControl();
 
@@ -3749,6 +3843,9 @@
             // Release meshes
             while (this.meshes.length) {
                 this.meshes[0].dispose(true);
+            }
+            while (this.transformNodes.length) {
+                this.removeTransformNode(this.transformNodes[0]);
             }
 
             // Release cameras
@@ -3856,13 +3953,11 @@
                 mesh.computeWorldMatrix(true);
                 let boundingInfo = mesh.getBoundingInfo();
 
-                if (boundingInfo) {
-                    var minBox = boundingInfo.boundingBox.minimumWorld;
-                    var maxBox = boundingInfo.boundingBox.maximumWorld;
+                var minBox = boundingInfo.boundingBox.minimumWorld;
+                var maxBox = boundingInfo.boundingBox.maximumWorld;
 
-                    Tools.CheckExtends(minBox, min, max);
-                    Tools.CheckExtends(maxBox, min, max);
-                }
+                Tools.CheckExtends(minBox, min, max);
+                Tools.CheckExtends(maxBox, min, max);
             }
 
             return {
@@ -3886,6 +3981,14 @@
 
         // Picking
         public createPickingRay(x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
+            let result = Ray.Zero();
+
+            this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
+
+            return result;
+        }
+
+        public createPickingRayToRef(x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
             var engine = this._engine;
 
             if (!camera) {
@@ -3901,13 +4004,22 @@
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), cameraViewSpace ? Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
-            //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            
+            result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), cameraViewSpace ? Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
+            return this;
         }
 
-        public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Nullable<Ray> {
+        public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray {
+            let result = Ray.Zero();
+
+            this.createPickingRayInCameraSpaceToRef(x, y, result, camera);
+
+            return result;
+        }
+
+        public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
             if (!BABYLON.PickingInfo) {
-                return null;
+                return this;
             }
 
             var engine = this._engine;
@@ -3926,7 +4038,8 @@
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return Ray.CreateNew(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+            return this;
         }
 
         private _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
@@ -4038,6 +4151,8 @@
             return pickingInfo || new PickingInfo();
         }
 
+        private _tempPickingRay: Ray;
+
         /** Launch a ray to try to pick a mesh in the scene
          * @param x position on screen
          * @param y position on screen
@@ -4046,7 +4161,14 @@
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
-            return this._internalPick(world => this.createPickingRay(x, y, world, camera || null), predicate, fastCheck);
+            if (!this._tempPickingRay) {
+                this._tempPickingRay = Ray.Zero();
+            }
+
+            return this._internalPick(world => {
+                this.createPickingRayToRef(x, y, world, this._tempPickingRay, camera || null);
+                return this._tempPickingRay;
+            }, predicate, fastCheck);
         }
 
         /** Launch a ray to try to pick a sprite in the scene
@@ -4057,14 +4179,15 @@
          * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            let ray = this.createPickingRayInCameraSpace(x, y, camera);
+            if (!this._tempPickingRay) {
+                this._tempPickingRay = Ray.Zero();
+            }            
+            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay, camera);
 
-            if (!ray) {
-                return null;
-            }
-
-            return this._internalPickSprites(ray, predicate, fastCheck, camera);
+            return this._internalPickSprites(this._tempPickingRay, predicate, fastCheck, camera);
         }
+
+        private _cachedRayForTransform: Ray;
 
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
@@ -4077,7 +4200,13 @@
                     this._pickWithRayInverseMatrix = Matrix.Identity();
                 }
                 world.invertToRef(this._pickWithRayInverseMatrix);
-                return Ray.Transform(ray, this._pickWithRayInverseMatrix);
+
+                if (!this._cachedRayForTransform) {
+                    this._cachedRayForTransform = Ray.Zero();
+                }
+                
+                Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
+                return this._cachedRayForTransform;
             }, predicate, fastCheck);
         }
 
@@ -4103,7 +4232,13 @@
                     this._pickWithRayInverseMatrix = Matrix.Identity();
                 }
                 world.invertToRef(this._pickWithRayInverseMatrix);
-                return Ray.Transform(ray, this._pickWithRayInverseMatrix);
+
+                if (!this._cachedRayForTransform) {
+                    this._cachedRayForTransform = Ray.Zero();
+                }
+                
+                Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
+                return this._cachedRayForTransform;
             }, predicate);
         }
 
@@ -4327,8 +4462,15 @@
             return hdrSkybox;
         }
 
-        public createDefaultVRExperience(webVROptions: WebVROptions = {}) {
-            this.VRHelper = new BABYLON.VRExperienceHelper(this, webVROptions);
+        public createDefaultEnvironment(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
+            if (BABYLON.EnvironmentHelper) {
+                return new EnvironmentHelper(options, this);
+            }
+            return null;
+        }
+
+        public createDefaultVRExperience(webVROptions: WebVROptions = {}): VRExperienceHelper {
+            return new BABYLON.VRExperienceHelper(this, webVROptions);
         }
 
         // Tags

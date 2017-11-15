@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>Shaders Library</title>
-	<script src="../assets/refs/dat.gui.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
 	<script src="../Tools/DevLoader/BabylonLoader.js"></script>
 
 	<style>
@@ -93,14 +93,14 @@
 			var knot = BABYLON.Mesh.CreateTorusKnot("knot", 10, 3, 128, 64, 2, 3, scene);
 			knot.setEnabled(false);
 			
-			var heightMap = BABYLON.Mesh.CreateGroundFromHeightMap("heightMap", "../assets/textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
+			var heightMap = BABYLON.Mesh.CreateGroundFromHeightMap("heightMap", "/playground/textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
 			heightMap.setEnabled(false);
 			
 			// Skybox
 			var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
 			var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
 			skyboxMaterial.backFaceCulling = false;
-			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("../assets/textures/skybox/TropicalSunnyDay", scene);
+			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/playground/textures/TropicalSunnyDay", scene);
 			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
 			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
 			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -112,7 +112,7 @@
 
 			// Rabbit
 			var rabbit;
-			BABYLON.SceneLoader.ImportMesh("Rabbit", "../assets/meshes/", "Rabbit.babylon", scene, function (newMeshes, particleSystems, skeletons) {
+			BABYLON.SceneLoader.ImportMesh("Rabbit", "/playground/scenes/", "Rabbit.babylon", scene, function (newMeshes, particleSystems, skeletons) {
 				rabbit = newMeshes[1];
 				rabbit.setEnabled(false);
 				rabbit.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
@@ -171,14 +171,14 @@
 				
 				// Create shaders
 				var std = new BABYLON.StandardMaterial("std", scene);
-				std.diffuseTexture = new BABYLON.Texture("../assets/textures/amiga.jpg", scene);
+				std.diffuseTexture = new BABYLON.Texture("/playground/textures/amiga.jpg", scene);
 				std.diffuseTexture.uScale = 5;
 				std.diffuseTexture.vScale = 5;
 
                 var lava = prepareLava();
 
 				var simple = new BABYLON.SimpleMaterial("simple", scene);
-				simple.diffuseTexture = new BABYLON.Texture("../assets/textures/amiga.jpg", scene);
+				simple.diffuseTexture = new BABYLON.Texture("/playground/textures/amiga.jpg", scene);
 				simple.diffuseTexture.uScale = 5;
 				simple.diffuseTexture.vScale = 5;
 
