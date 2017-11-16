@@ -415,7 +415,8 @@ var buildExternalLibrary = function (library, settings, watch) {
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", ["typescript-all"], function () {
+gulp.task("default", function (cb) {
+    runSequence("typescript-all", "intellisense", cb);
 });
 
 gulp.task("mainBuild", function (cb) {
@@ -498,6 +499,18 @@ gulp.task("watch", [], function () {
     });
 
     return tasks;
+});
+
+gulp.task("intellisense", function() {
+    gulp.src(config.build.intellisenseSources)
+    .pipe(concat(config.build.intellisenseFile))
+    .pipe(replace(/^\s*_.*?$/gm, ""))
+    .pipe(replace(/^\s*private .*?$/gm, ""))
+    .pipe(replace(/^\s*public _.*?$/gm, ""))
+    .pipe(replace(/^\s*protected .*?$/gm, ""))
+    .pipe(replace(/^\s*public static _.*?$/gm, ""))
+    .pipe(replace(/^\s*static _.*?$/gm, ""))
+    .pipe(gulp.dest(config.build.playgroundDirectory));
 });
 
 /**

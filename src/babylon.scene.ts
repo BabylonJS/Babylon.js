@@ -522,7 +522,6 @@
         private _meshPickProceed = false;
 
         private _previousButtonPressed: number;
-        private _previousHasSwiped = false;
         private _currentPickResult: Nullable<PickingInfo> = null;
         private _previousPickResult: Nullable<PickingInfo> = null;
         private _totalPointersPressed = 0;
@@ -1506,7 +1505,6 @@
                                     this._previousStartingPointerPosition.x = this._startingPointerPosition.x;
                                     this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
                                     this._previousButtonPressed = btn;
-                                    this._previousHasSwiped = clickInfo.hasSwiped;
                                     if (Scene.ExclusiveDoubleClickMode) {
                                         if (this._previousDelayedSimpleClickTimeout) {
                                             clearTimeout(this._previousDelayedSimpleClickTimeout);
@@ -1527,7 +1525,6 @@
                                 this._previousStartingPointerPosition.x = this._startingPointerPosition.x;
                                 this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
                                 this._previousButtonPressed = btn;
-                                this._previousHasSwiped = clickInfo.hasSwiped;
                             }
                         }
                     }

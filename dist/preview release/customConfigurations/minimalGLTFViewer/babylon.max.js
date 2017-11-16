@@ -1781,7 +1781,7 @@ var BABYLON;
             matrix.invert();
             var screenSource = MathTmp.Vector3[0];
             screenSource.x = sourceX / viewportWidth * 2 - 1;
-            screenSource.y = sourceY / viewportHeight * 2 - 1;
+            screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
             Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
@@ -17909,7 +17909,6 @@ var BABYLON;
              */
             this.onPointerObservable = new BABYLON.Observable();
             this._meshPickProceed = false;
-            this._previousHasSwiped = false;
             this._currentPickResult = null;
             this._previousPickResult = null;
             this._totalPointersPressed = 0;
@@ -18933,7 +18932,6 @@ var BABYLON;
                                     _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
                                     _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
                                     _this._previousButtonPressed = btn;
-                                    _this._previousHasSwiped = clickInfo.hasSwiped;
                                     if (Scene.ExclusiveDoubleClickMode) {
                                         if (_this._previousDelayedSimpleClickTimeout) {
                                             clearTimeout(_this._previousDelayedSimpleClickTimeout);
@@ -18952,7 +18950,6 @@ var BABYLON;
                                 _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
                                 _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
                                 _this._previousButtonPressed = btn;
-                                _this._previousHasSwiped = clickInfo.hasSwiped;
                             }
                         }
                     }
