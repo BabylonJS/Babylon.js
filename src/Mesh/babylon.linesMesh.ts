@@ -43,15 +43,20 @@
 
             this._intersectionThreshold = 0.1;
 
+            var defines: String[] = []; 
             var options = {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
-                needAlphaBlending: false,
+                needAlphaBlending: true,
+                defines: defines
             };
-
+            
             if (!useVertexColor) {
                 options.uniforms.push("color");
-                options.needAlphaBlending = true;
+            }
+            else {
+                options.defines.push("#define VERTEXCOLOR");
+                options.attributes.push(VertexBuffer.ColorKind);
             }
 
             this._colorShader = new ShaderMaterial("colorShader", this.getScene(), "color", options);
