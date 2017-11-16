@@ -371,13 +371,15 @@ export class DefaultViewer extends AbstractViewer {
 
     private setupCamera(focusMeshes: Array<AbstractMesh> = []) {
 
+        let cameraConfig = this.configuration.camera || {};
         let sceneConfig = this.configuration.scene || { autoRotate: false, defaultCamera: true };
 
-        if (sceneConfig.defaultCamera) {
+        if (!this.configuration.camera && sceneConfig.defaultCamera) {
+            if (sceneConfig.autoRotate) {
+                this.camera.useAutoRotationBehavior = true;
+            }
             return;
         }
-
-        let cameraConfig = this.configuration.camera || {};
 
         if (cameraConfig.position) {
             this.camera.position.copyFromFloats(cameraConfig.position.x || 0, cameraConfig.position.y || 0, cameraConfig.position.z || 0);
