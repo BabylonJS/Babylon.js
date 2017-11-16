@@ -49,6 +49,7 @@
 - Added `enableDepthSort` parameter to the SPS in order to sort the particles from the camera position ([jerome](https://github.com/jbousquie)) 
 - Added `pivot` property to the SPS solid particles ([jerome](https://github.com/jbousquie)) 
 - Added the mesh facet depth sort to FacetData  ([jerome](https://github.com/jbousquie)) 
+- Added `LineSystem` and `LineMesh` per point colors ([jerome](https://github.com/jbousquie))  
 
 ## Bug fixes
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))
