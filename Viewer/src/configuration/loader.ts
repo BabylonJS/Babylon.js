@@ -2,7 +2,7 @@ import { mapperManager } from './mappers';
 import { ViewerConfiguration } from './configuration';
 import { getConfigurationType } from './types';
 
-import * as merge from 'lodash.merge';
+import deepmerge from 'deepmerge';
 
 export class ConfigurationLoader {
 
@@ -10,11 +10,11 @@ export class ConfigurationLoader {
 
     public loadConfiguration(initConfig: ViewerConfiguration = {}): Promise<ViewerConfiguration> {
 
-        let loadedConfig = merge({}, initConfig);
+        let loadedConfig = deepmerge({}, initConfig);
 
         let extendedConfiguration = getConfigurationType(loadedConfig && loadedConfig.extends);
 
-        loadedConfig = merge(extendedConfiguration, loadedConfig);
+        loadedConfig = deepmerge(extendedConfiguration, loadedConfig);
 
         if (loadedConfig.configuration) {
 
@@ -34,7 +34,7 @@ export class ConfigurationLoader {
             let mapper = mapperManager.getMapper(mapperType);
             return this.loadFile(url).then((data: any) => {
                 let parsed = mapper.map(data);
-                return merge(loadedConfig, parsed);
+                return deepmerge(loadedConfig, parsed);
             });
         } else {
             return Promise.resolve(loadedConfig);
