@@ -16,7 +16,6 @@
     "main": "dist/preview release/babylon.max.js",
     "files": [
         "dist/preview release/babylon.d.ts",
-        "dist/preview release/babylon.module.d.ts",
         "dist/preview release/babylon.js",
         "dist/preview release/babylon.max.js",
         "dist/preview release/babylon.worker.js",
@@ -50,7 +49,7 @@
         "dist/preview release/Oimo.js",
         "package.json"
     ],
-    "typings": "dist/preview release/babylon.module.d.ts",
+    "typings": "dist/preview release/babylon.d.ts",
     "keywords": [
         "3D",
         "javascript",
