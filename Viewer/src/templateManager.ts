@@ -150,7 +150,7 @@ Handlebars.registerHelper('eachInMap', function (map, block) {
     Object.keys(map).map(function (prop) {
         let data = map[prop];
         if (typeof data === 'object') {
-            data.id = prop;
+            data.id = data.id || prop;
             out += block.fn(data);
         } else {
             out += block.fn({ id: prop, value: data });
