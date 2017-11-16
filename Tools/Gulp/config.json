@@ -6,6 +6,8 @@
         "declarationFilename": "babylon.d.ts",
         "declarationModuleFilename": "babylon.module.d.ts",
         "outputDirectory": "../../dist/preview release",
+        "playgroundDirectory": "../../Playground/",
+        "intellisenseFile": "babylon.d.txt",
         "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
         "srcOutputDirectory": "../../src/",
         "currentConfig": "all"

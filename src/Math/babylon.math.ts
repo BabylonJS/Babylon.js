@@ -1749,7 +1749,7 @@
             matrix.invert();
             var screenSource = MathTmp.Vector3[0];
             screenSource.x = sourceX / viewportWidth * 2 - 1;
-            screenSource.y = sourceY/ viewportHeight * 2 - 1;
+            screenSource.y = -(sourceY/ viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
             Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
