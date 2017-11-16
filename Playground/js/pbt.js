@@ -1,358 +1,434 @@
 // jsEditor Manipulation
-var PBT = new Object();
-
-PBT.decorationStyles = new Array();
-PBT.decorations = new Array();
-PBT.ranges = new Array();
-
-PBT.prototype.clearDecorLines = function(lineRanges) {
-    this.decorationStyles = [];
-    this.decorations = [];
+var PBT = function() {
+    this.decorationStyles = new Array();
+    this.decorations = new Array();
+    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     
-    for(var i = 0; i < lineRanges.length; i +=2) {          
-        this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, linesDecorationsClassName: 'myLinethis.decorationOff' }});
-        this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, className: 'code-back-transparent' }});
-        this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, inlineClassName: 'code-transparent' }});
+    this.clearDecorLines = function() {
+        this.decorations = jsEditor.deltaDecorations(this.decorations, []);
     }
 
-    this.decorations = jsEditor.deltaDecorations.decorations(this.decorations, this.decorationStyles);
-}
+    this.setDecorLines = function (lineRanges) {    
+        this.decorationStyles = [];
 
-PBT.prototype.fadeLines = function(lineRanges) {
-    this.decorationStyles = [];
-    this.decorations = [];
+    var endLineNm = jsEditor.getModel()._lines.length;
+        this.decorationStyles.push({ range: new monaco.Range(1,1,endLineNm,1), options: { isWholeLine: true, inlineClassName: 'pbt-fade' }});
+        
+        for(var i = 0; i < lineRanges.length; i +=2) {          
+            this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, linesDecorationsClassName: 'pbt-margin-decor-on' }});
+            this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, className: 'pbt-back-highlight' }});
+            this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, inlineClassName: 'pbt-darken' }});
+        }
+
+    this.decorations = jsEditor.deltaDecorations([this.decorations], this.decorationStyles);  
+    }
+
+    this.replaceLines = function(lineRange, text) {   
+        jsEditor.executeEdits("", [
+            { range: new monaco.Range(parseInt(lineRange[0]), 1, parseInt(lineRange[1]), 100000), text: text}
+       ]);
+    }
+
+    this.replaceText = function(line, start, end, text) {   
+        jsEditor.executeEdits("", [
+            { range: new monaco.Range(line, start, line, end), text: text}
+       ]);
+    }
+
+    this.getLineText = function(lineNm) {
+        return jsEditor.getModel().getLineContent(lineNm);
+    }
+
+    this.hideLines = function(lineRanges) {
+        var ranges = [];
+        for(var i = 0; i < lineRanges.length; i +=2) {
+            ranges.push(new monaco.Range(parseInt(lineRanges[i]), 1, parseInt(lineRanges[i + 1]), 100000));                
+        }
+        jsEditor.setHiddenAreas(ranges);
+    }
+
+    this.editOn = function() {
+        jsEditor.updateOptions({readOnly: false});
+    }
+
+    this.editOff = function() {
+        jsEditor.updateOptions({readOnly: true});
+    }
+
+    //hide menu items
+    this.hideMenu = function() {
+        var headings = document.getElementsByClassName('category');
+        
+        for (var i = 0; i < headings.length; i ++) {
+            headings[i].style.visibility = 'hidden';
+        }
     
-    for(var i = 0; i < lineRanges.length; i +=2) {          
-        this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, inlineClassName: 'code-transparent' }});
+        headings = document.getElementsByClassName('category right');
+        
+        for (var i = 0; i < headings.length; i ++) {
+            headings[i].style.visibility = 'visible';
+        }
     }
 
-    this.decorations = jsEditor.deltaDecorations.decorations(this.decorations, this.decorationStyles);
-}
+    //Standard GUI Dialogues
+    this.StandardDialog = function(options) {   
+        options = options||{};
+        var width = options.width||0.5;
+        var height = options.height||0.25;
+        var top = options.top||0;
+        var left = options.left||0;
+        var verticalAlignment = options.verticalAlignment||BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        var horizontalAlignment = options.horizontalAlignment||BABYLON.GUI.Control.HORIZONTAL_LEFT;
+        var text = options.text||"Playground Based Tutorial";   
+        if(options.useImage === undefined) {
+            var useImage = true;
+        }
+        else {
+            var useImage = false;
+        }
+        var imageURL = options.imageURL||"LogoPBT.png";
+        var textBlockWidth = 0.95;
+        var textBlockLeft = "2%";
+        this.container = new BABYLON.GUI.Rectangle();
+        this.container.verticalAlignment = verticalAlignment;
+        this.container.horizontalAlignment = horizontalAlignment;
+        this.container.width = width;
+        this.container.height = height;
+        this.container.cornerRadius = 10;
+        this.container.color = "#364249";
+        this.container.thickness = 4;
+        this.container.background = "#CDC8F9";
+        this.container.top = top;
+        this.container.left = left;   
+        advancedTexture.addControl(this.container); 
+        if(useImage) {
+            this.logoPBT = BABYLON.GUI.Button.CreateImageOnlyButton("but", imageURL);
+            this.logoPBT.width = "100px";
+            this.logoPBT.height = "100px";
+            this.logoPBT.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            this.logoPBT.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+            this.logoPBT.top = 2;
+            this.logoPBT.left=2;
+            this.logoPBT.color = "#CDC8F9";
+            this.container.addControl(this.logoPBT);
+            textBlockWidth = 0.6;
+            textBlockLeft = "35%";
+        }
+        this.textBlock = new BABYLON.GUI.TextBlock("text", text);
+        this.textBlock.width = textBlockWidth;
+        this.textBlock.height = 0.7
+        this.textBlock.textWrapping = true;
+        this.textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        this.textBlock.color = "#364249";
+        this.textBlock.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.textBlock.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        this.textBlock.left = textBlockLeft;
+        this.textBlock.top = 2;
+        this.container.addControl(this.textBlock);
 
-PBT.prototype.darkenLines = function(lineRanges) {
-    this.decorationStyles = [];
-    this.decorations = [];
-    
-    for(var i = 0; i < lineRanges.length; i +=2) {          
-        this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, inlineClassName: 'code-highlight' }});
-    }
+        this.nextButton = BABYLON.GUI.Button.CreateSimpleButton("nextbut", "Next >");
+        this.nextButton.width = 0.2
+        this.nextButton.height = 0.15;
+        this.nextButton.color = "white";
+        this.nextButton.cornerRadius = 5;
+        this.nextButton.background = "#364249";
+        this.nextButton.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.nextButton.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        this.nextButton.left = "78%";
+        this.nextButton.top = "80%";
+        this.container.addControl(this.nextButton);
 
-    this.decorations = jsEditor.deltaDecorations.decorations(this.decorations, this.decorationStyles);
-}
+        this.prevButton = BABYLON.GUI.Button.CreateSimpleButton("prevbut", "< Prev");
+        this.prevButton.width = 0.2
+        this.prevButton.height = 0.15;
+        this.prevButton.color = "white";
+        this.prevButton.cornerRadius = 5;
+        this.prevButton.background = "#364249";
+        this.prevButton.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.prevButton.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        this.prevButton.left = "2%";
+        this.prevButton.top = "80%";
+        this.container.addControl(this.prevButton); 
 
-PBT.prototype.setDecorLines = function (lineRanges) {
-    this.decorationStyles = [];
-    this.decorations = [];
-    
-    for(var i = 0; i < lineRanges.length; i +=2) {          
-        this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, linesDecorationsClassName: 'myLinethis.decoration' }});
-        this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, className: 'code-back-highlight' }});
-        this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, inlineClassName: 'code-highlight' }});
-    }
+        this.showNext = function() {
+            this.nextButton.isVisible = true;
+        }
 
-    this.decorations = jsEditor.deltaDecorations.decorations(this.decorations, this.decorationStyles);
-}
+        this.hideNext = function() {
+            this.nextButton.isVisible = false;
+        }
 
-PBT.prototype.replaceLines = function(lineRange, text) {   
-    jsEditor.executeEdits("", [
-        { range: new monaco.Range(parseInt(lineRange[0]), 1, parseInt(lineRange[1]), 100000), text: text}
-   ]);
-}
+        this.getNextButton = function() {
+            return this.nextButton;
+        }
 
-PBT.prototype.hideLines = function(lineRanges) {
-    PBT.ranges = [];
-    for(var i = 0; i < lineRanges.length; i +=2) {
-        PBT.ranges.push(new monaco.Range(parseInt(lineRanges[i]), 1, parseInt(lineRanges[i + 1]), 100000));          
-    }
-    jsEditor.setHiddenAreas(ranges);
-}
-
-PBT.prototype.editOn = function() {
-    jsEditor.updateOptions({readOnly: false});
-}
-
-PBT.prototype.editOff = function() {
-    jsEditor.updateOptions({readOnly: true});
-}
-
-//Standard GUI Dialogues
-PBT.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-PBT.protoype.addStandardDialog = function(options) {
-    var width = options.width||0.5;
-    var height = options.height||0.25;
-    var top = options.top||0;
-    var left = options.left||0;
-    var verticalAlignment = options.verticalAlignment||BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-    var horizontalALignment = options.horizontalALignment||BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-    var text = options.text||"Playground Based Tutorial";
-    var container = new BABYLON.GUI.Rectangle();
-    container.verticalAlignment = verticalAlignment;
-    container.horizontalAlignment = horizontalAlignment;
-    container.width = width;
-    container.height = height;
-    container.cornerRadius = 10;
-    container.color = "#364249";
-    container.thickness = 4;
-    container.background = "#CDC98F9";
-    container.top = top;
-    container.left = left;
-    PBT.advancedTexture.addControl(container); 
-
-    var logoPBT = BABYLON.GUI.Button.CreateImageOnlyButton("but", "LogoPBT.png");
-    logoPBT.width = 0.4;
-    logoPBT.height = 0.8;
-    logoPBT.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    logoPBT.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-    logoPBT.top = 2;
-    logoPBT.left=2;
-    container.addControl(logoPBT);
-
-    var textBlock = new BABYLON.GUI.TextBlock("text", text);
-    textBlock.width = 0.55;
-    textBlock.height = 0.7
-    textBlock.textWrapping = true;
-    textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    textBlock.paddingLeft = 2;
-    textBlock.color = "white";
-    textBlock.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-    textBlock.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    textBlock.left = 0.45;
-    textBlock.top = 2;
-    container.addControl(textBlock);
-
-    var nextButton = BABYLON.GUI.Button.CreateSimpleButton("nextbut", "Next >");
-    nextButton.width = 0.2
-    nextButton.height = 0.15;
-    nextButton.color = "white";
-    nextButton.cornerRadius = 5;
-    nextButton.background = "#364249";
-    nextButton.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-    nextButton.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    nextButton.left = 0.7;
-    nextButton.top = 0.8;
-    container.addControl(nextButton);
-
-    var prevButton = BABYLON.GUI.Button.CreateSimpleButton("prevbut", "< Prev");
-    prevButton.width = 0.2
-    prevButton.height = 0.15;
-    prevButton.color = "white";
-    prevButton.cornerRadius = 5;
-    prevButton.background = "#364249";
-    prevButton.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-    prevButton.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    prevButton.left = 0.7;
-    prevButton.top = 0.8;
-    container.addControl(prevButton);
-}
-
-
-/*
-var justStarted = true;
-
-    //radio Controls
-        var addRadio = function(text, parent, group, func, checked) {
-
-        checked = checked || false;
-        var button = new BABYLON.GUI.RadioButton();
-        button.width = "20px";
-        button.height = "20px";
-        button.color = "white";
-        button.background = "green"; 
-        button.group = group;
-        button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-
-        button.onIsCheckedChangedObservable.add(function(state) {		
-            if (state && !justStarted) {
+        this.prevClick = function(func) {
+            this.prevButton.onPointerUpObservable.add(function() {
                 func();
-            }
-        }); 
+            });
+        }
 
-        var header = BABYLON.GUI.Control.AddHeader(button, text, "80px", { isHorizontal: true, controlFirst: true });
-        header.height = "30px";
+        this.showPrev = function() {
+            this.prevButton.isVisible = true;
+        }
+
+        this.hidePrev = function() {
+            this.prevButton.isVisible = false;
+        }
+
+        this.setWidth = function(width) {
+            this.container.width = width;
+        }
+
+        this.setHeight = function(height) {
+            this.container.height = height;
+        }
+
+        this.setTop = function(top) {
+            this.container.top = top;
+        }
+
+        this.setLeft = function(left) {
+            this.container.left = left;
+        }
+
+        this.getWidth = function() {
+            return this.container.width;
+        }
+
+        this.getHeight = function() {
+            return this.container.height;
+        }
+
+        this.getTop = function() {
+            return this.container.top;
+        }
+
+        this.getLeft = function() {
+            return this.container.left;
+        }
+
+        this.setHorizontalAlignment = function(hrzAlgn) {
+            this.container.horizontalAlignment = hrzAlgn;
+        }
+
+        this.setVerticalAlignment = function(vrtAlign) {
+            this.container.VerticalAlignmenv = vrtAlign;
+        }
+
+        this.setText = function(text) {
+            this.textBlock.text = text;
+        }
+
+        this.show = function() {
+            this.container.isVisible = true;
+        }
+
+        this.hide = function() {
+            this.container.isVisible = false;
+        }
+
+        return this;
+    }
+
+//Radio and Checkbox Button GUI
+    this.ButtonGroup = function(name, type) {
+        this.name = name;
+        var type = type||"C"; 
+        type = type.substr(0,1).toUpperCase();
+        if(type !="R") {
+            if(type != "C") {
+                type = "C";
+            }
+        }
+        this.type = type;   
+        this.buttons = new Array();
+        
+        this.addButton = function(text, func, checked) {
+            this.buttons.push({
+                text: text||"", 
+                func: func||null, 
+                checked: checked||false
+        });
+        }
+        return this;
+    }
+
+    this.SelectionDialog = function(options) {
+        options = options||{};
+        var justStarted = true;
+        var width = options.width||0.15;
+        var top = options.top||0;
+        var left = options.left||0;  
+        var verticalAlignment = options.verticalAlignment||BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        var horizontalAlignment = options.horizontalAlignment||BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;    
+        var groups = options.groups; 
+        this.container = new BABYLON.GUI.Rectangle();
+        this.container.verticalAlignment = verticalAlignment;
+        this.container.horizontalAlignment = horizontalAlignment;   
+        this.container.width = 0.25;
+        var height = 36 * groups.length;
+        for(var i = 0; i < groups.length; i++) {
+            height += 32 * groups[i].buttons.length;
+        }
+        this.container.height = height + "px";
+        this.container.cornerRadius = 10;
+        this.container.color = "#364249";
+        this.container.thickness = 4;
+        this.container.background = "#CDC8F9";
+        this.container.top = top;
+        this.container.left = left;
+        advancedTexture.addControl(this.container);
+        
+        var panel = new BABYLON.GUI.StackPanel(); 
+        panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        panel.top = 5;
+        panel.left = 5;
+        this.container.addControl(panel);
+
+    var addRadio = function(text, parent, group, func, checked) {
+            checked = checked || false;
+            var button = new BABYLON.GUI.RadioButton();
+            button.width = "20px";
+            button.height = "20px";
+            button.color = "#364249";
+            button.background = "white"; 
+            button.group = group;
+            button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            button.justStarted = true;
+            button.func = func;
+
+        button.onIsCheckedChangedObservable.add(function(state) {                       		
+                if (state && !justStarted) {                  
+                    func();
+                }
+            }); 
+
+        var header = BABYLON.GUI.Control.AddHeader(button, text, "200px", { isHorizontal: true, controlFirst: true });
+            header.height = "30px";
 
         parent.addControl(header);    
-        button.isChecked = checked; 
-    }
+            button.isChecked = checked; 
+        }
 
-
-
-
-
-  
-
-
-
-var selectContainer = new BABYLON.GUI.Rectangle();
-selectContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-selectContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-selectContainer.width = 0.15;
-selectContainer.height = 0.45;
-selectContainer.cornerRadius = 10;
-selectContainer.color = "Orange";
-selectContainer.thickness = 4;
-selectContainer.background = "green";
-selectContainer.top = -5;
-selectContainer.left = -5;
-advancedTexture.addControl(selectContainer);
-
-var panel = new BABYLON.GUI.StackPanel(); 
-panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-panel.top = 5;
-panel.left = 5;
-selectContainer.addControl(panel);
-
-var orderHeading = new BABYLON.GUI.TextBlock("orderHead", "Order");
-orderHeading.width = 0.9;
-orderHeading.height = 0.1
-orderHeading.textWrapping = true;
-orderHeading.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-orderHeading.paddingLeft = 2;
-panel.addControl(orderHeading); 
-
-addRadio("XYZ", panel, "order", XYZ, true);
-addRadio("YXZ", panel, "order", YXZ);
-addRadio("YZX", panel, "order", YZX);
-addRadio("ZYX", panel, "order", ZYX);
-addRadio("ZXY", panel, "order", ZXY);
-addRadio("XZY", panel, "order", XZY);
-
-var separator = new BABYLON.GUI.Rectangle();
-separator.width = 0.9;
-separator.height = 0.02;
-separator.background = "orange";
-separator.color = "orange";
-panel.addControl(separator);
-
-var spaceHeading = new BABYLON.GUI.TextBlock("spaceHead", "Space");
-spaceHeading.width = 0.9;
-spaceHeading.height = 0.1
-spaceHeading.textWrapping = true;
-spaceHeading.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-spaceHeading.paddingLeft = 2;
-panel.addControl(spaceHeading);
-
-addRadio("WORLD", panel, "space", worldSpace, true);
-addRadio("LOCAL", panel, "space", localSpace);
-
-// check box
-    //Selection Controls
-    var addCheckBox = function(text, parent, func, checked) {
-        
-              checked = checked || false;
-              var button = new BABYLON.GUI.Checkbox();
-              button.width = "20px";
-              button.height = "20px";
-              button.color = "white";
-              button.background = "green"; 
-              button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        
-              button.onIsCheckedChangedObservable.add(function(state) {		
-                  func();
-              }); 
-        
-              var header = BABYLON.GUI.Control.AddHeader(button, text, "150px", { isHorizontal: true, controlFirst: true });
-              header.height = "30px";
-        
-              parent.addControl(header);    
-              button.isChecked = checked; 
-          } 
-      
-          var hideBoxCode = function() {
-              var ranges = [];
-              if(boxHideCode) {
-                   ranges.push(new monaco.Range(13, 1, 33, 100000)); // box code
-                   if(!animHideCode) {
-                      ranges.push(new monaco.Range(37, 1, 48, 100000)); // animation code
-                   }
-              }
-              else {
-                   if(!animHideCode) {
-                      ranges.push(new monaco.Range(37, 1, 48, 100000)); // animation code
-                   }
-              }
-              //ranges.push(new monaco.Range(50, 1, 242, 100000)); // tutor code 2
-              //ranges.push(new monaco.Range(246, 1, 250, 100000)); // tutor code 2
-              jsEditor.setHiddenAreas(ranges);
-              boxHideCode = !boxHideCode;
-          }
-      
-          var hideAnimCode = function() {
-              var ranges = [];
-              if(animHideCode) {
-                  ranges = [];
-                  if(!boxHideCode) {
-                      ranges.push(new monaco.Range(13, 1, 33, 100000)); // animation code
-                   }
-                  ranges.push(new monaco.Range(37, 1, 48, 100000)); // animation code
-              }
-              else {
-                  ranges = [];
-                  if(!boxHideCode) {
-                      ranges.push(new monaco.Range(13, 1, 33, 100000)); // animation code
-                   }
-              }
-              //ranges.push(new monaco.Range(50, 1, 242, 100000)); // tutor code 2
-              //ranges.push(new monaco.Range(246, 1, 250, 100000)); // tutor code 2
-              jsEditor.setHiddenAreas(ranges);
-              animHideCode = !animHideCode;
-          } 
-      
-          var selectContainer = new BABYLON.GUI.Rectangle();
-          selectContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-          selectContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-          selectContainer.width = 0.22;
-          selectContainer.height = 0.2;
-          selectContainer.cornerRadius = 10;
-          selectContainer.color = "Orange";
-          selectContainer.thickness = 4;
-          selectContainer.background = "green";
-          selectContainer.top = -5;
-          selectContainer.left = -5;
-          advancedTexture.addControl(selectContainer);
+        var addCheckbox = function(text, parent, func, checked) {
+            checked = checked || false;
+            var button = new BABYLON.GUI.Checkbox();
+            button.width = "20px";
+            button.height = "20px";
+            button.color = "#364249";
+            button.background = "white"; 
+            button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
             
-          var panel = new BABYLON.GUI.StackPanel(); 
-          panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-          panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-          panel.top = 2;
-          panel.left = 4;
-          selectContainer.addControl(panel);
-      
-          var orderHeading = new BABYLON.GUI.TextBlock("orderHead", "Box Mesh");
-          orderHeading.width = 0.9;
-          orderHeading.height = 0.14
-          orderHeading.textWrapping = true;
-          orderHeading.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-          orderHeading.paddingLeft = 2;
-          panel.addControl(orderHeading); 
-      
-          var boxHideCode = true;
-          var animHideCode = false;  
-          addCheckBox("Hide Box Code", panel, hideBoxCode, true);
-      
-          var separator = new BABYLON.GUI.Rectangle();
-          separator.width = 0.9;
-          separator.height = 0.02;
-          separator.background = "orange";
-          separator.color = "orange";
-          panel.addControl(separator);
-      
-          var gap = new BABYLON.GUI.Rectangle();
-          gap.width = 0.9;
-          gap.height = 0.1;
-          gap.background = "green";
-          gap.color = "green";
-          panel.addControl(gap);
-      
-          var spaceHeading = new BABYLON.GUI.TextBlock("spaceHead", "Animation");
-          spaceHeading.width = 0.9;
-          spaceHeading.height = 0.1
-          spaceHeading.textWrapping = true;
-          spaceHeading.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-          spaceHeading.paddingLeft = 2;
-          panel.addControl(spaceHeading);
-      
-          animHideCode = true;  
-          addCheckBox("Hide Code", panel, hideAnimCode, true);
+            button.onIsCheckedChangedObservable.add(function(state) {	
+                func();	
+            }); 
+            
+            var header = BABYLON.GUI.Control.AddHeader(button, text, "200px", { isHorizontal: true, controlFirst: true });
+            header.height = "30px";
+            
+            parent.addControl(header);    
+            button.isChecked = checked;
+        }
 
-          */
+        var groupHeader = function(name) {
+            var groupHeading = new BABYLON.GUI.TextBlock("groupHead", name);
+            groupHeading.width = 0.9;
+            groupHeading.height = "30px";
+            groupHeading.textWrapping = true;
+            groupHeading.color = "black";
+            groupHeading.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            groupHeading.left = "-2px";
+            panel.addControl(groupHeading);
+        }
+
+        var addSpacer = function(name) {
+            var separator = new BABYLON.GUI.Rectangle();
+            separator.width = 1;
+            separator.height = "2px";
+            separator.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            separator.background = "#364249";
+            separator.color = "#364249";
+            panel.addControl(separator);
+            
+            groupHeader(name);
+        }
+
+        this.addGroup = function(group) {
+            if(group.type == "R") {
+                for(var i = 0; i < group.buttons.length; i++) {
+                    addRadio(group.buttons[i].text, panel, group.name, group.buttons[i].func, group.buttons[i].checked);
+                }
+            }
+            else {
+                for(var i = 0; i < group.buttons.length; i++) {
+                    addCheckbox(group.buttons[i].text, panel, group.buttons[i].func, group.buttons[i].checked);
+                }
+            }
+            
+            
+        }
+        
+        groupHeader(groups[0].name);
+        this.addGroup(groups[0]);
+        for(var i = 1; i < groups.length; i++) {
+            addSpacer(groups[i].name);
+            this.addGroup(groups[i]);
+        }
+
+        justStarted = false;
+
+        this.setWidth = function(width) {
+            this.container.width = width;
+        }
+
+        this.setTop = function(top) {
+            this.container.top = top;
+        }
+
+        this.setLeft = function(left) {
+            this.container.left = left;
+        }
+
+        this.getWidth = function() {
+            return this.container.width;
+        }
+
+        this.getTop = function() {
+            return this.container.top;
+        }
+
+        this.getLeft = function() {
+            return this.container.left;
+        }
+
+        this.setHorizontalAlignment = function(hrzAlgn) {
+            this.container.horizontalAlignment = hrzAlgn;
+        }
+
+        this.setVerticalAlignment = function(vrtAlign) {
+            this.container.VerticalAlignmenv = vrtAlign;
+        }
+
+        this.show = function() {
+            this.container.isVisible = true;
+        }
+
+        this.hide = function() {
+            this.container.isVisible = false;
+        }
+
+    return this;
+
+    }
+}
+
+showBJSPGMenu = function() {
+    var headings = document.getElementsByClassName('category');
+    
+    for (var i = 0; i < headings.length; i ++) {
+        headings[i].style.visibility = 'visible';
+    }
+}
+    
