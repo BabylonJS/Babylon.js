@@ -500,6 +500,12 @@ gulp.task("watch", [], function () {
     return tasks;
 });
 
+gulp.task("intellisense", function() {
+    gulp.src([config.build.declarationModuleFilename, config.gui.build.distOutputDirectory + "babylon.gui.d.ts"])
+    .pipe(concat(config.build.intellisenseFile))
+    .pipe(gulp.dest(config.build.playgroundDirectory));
+});
+
 /**
  * Embedded local dev env management.
  */
