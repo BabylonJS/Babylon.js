@@ -162,10 +162,8 @@ var PBT = function() {
             return this.nextButton;
         }
 
-        this.prevClick = function(func) {
-            this.prevButton.onPointerUpObservable.add(function() {
-                func();
-            });
+        this.getPrevButton = function() {
+            return this.prevButton;
         }
 
         this.showPrev = function() {
