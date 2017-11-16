@@ -326,6 +326,7 @@
                 var showDebugLayer = false;
                 var initialTabIndex = 0;
                 showBJSPGMenu();
+                jsEditor.updateOptions({readOnly: false});
 
                 if (document.getElementsByClassName('insp-wrapper').length > 0) {
                     for (var i = 0; i < engine.scenes.length; i++) {
