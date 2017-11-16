@@ -39,10 +39,8 @@
         "babylonjs-materials": "^3.1.0-beta3",
         "babylonjs-post-process": "^3.1.0-beta3",
         "babylonjs-procedural-textures": "^3.1.0-beta3",
+        "deepmerge": "^2.0.1",
         "es6-promise": "^4.1.1",
-        "handlebars": "^4.0.11",
-        "lodash": "^4.17.4",
-        "lodash.merge": "^4.6.0",
-        "promise-polyfill": "^6.0.2"
+        "handlebars": "^4.0.11"
     }
 }
