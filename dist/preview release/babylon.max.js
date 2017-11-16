@@ -52988,12 +52988,12 @@ var BABYLON;
             if (sceneFilename.name) {
                 sceneFilename = sceneFilename.name;
             }
-            var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
-            if (queryStringPosition === -1) {
-                queryStringPosition = sceneFilename.length;
+            if (queryStringPosition !== -1) {
+                sceneFilename = sceneFilename.substring(0, queryStringPosition);
             }
-            var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
+            var dotPosition = sceneFilename.lastIndexOf(".");
+            var extension = sceneFilename.substring(dotPosition, sceneFilename.length).toLowerCase();
             return SceneLoader._getPluginForExtension(extension);
         };
         // use babylon file loader directly if sceneFilename is prefixed with "data:"
