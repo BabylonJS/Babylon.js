@@ -78,7 +78,7 @@ var PBT = function() {
         var top = options.top||0;
         var left = options.left||0;
         var verticalAlignment = options.verticalAlignment||BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        var horizontalAlignment = options.horizontalAlignment||BABYLON.GUI.Control.HORIZONTAL_LEFT;
+        var horizontalAlignment = options.horizontalAlignment||BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         var text = options.text||"Playground Based Tutorial";   
         if(options.useImage === undefined) {
             var useImage = true;
