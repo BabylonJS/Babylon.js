@@ -501,7 +501,9 @@ gulp.task("watch", [], function () {
 });
 
 gulp.task("intellisense", function() {
-    gulp.src([config.build.declarationModuleFilename, config.gui.build.distOutputDirectory + "babylon.gui.d.ts"])
+    console.log(config.build.outputDirectory + "/" + config.build.declarationFilename);
+    console.log(config.build.outputDirectory + "/gui/babylon.gui.d.ts");
+    gulp.src([config.build.outputDirectory + "/" + config.build.declarationFilename, config.build.outputDirectory + "/gui/babylon.gui.d.ts"])
     .pipe(concat(config.build.intellisenseFile))
     .pipe(gulp.dest(config.build.playgroundDirectory));
 });
