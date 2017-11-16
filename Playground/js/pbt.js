@@ -15,9 +15,9 @@ var PBT = function() {
         this.decorationStyles.push({ range: new monaco.Range(1,1,endLineNm,1), options: { isWholeLine: true, inlineClassName: 'pbt-fade' }});
         
         for(var i = 0; i < lineRanges.length; i +=2) {          
-            this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, linesDecorationsClassName: 'pbt-margin-decor-on' }});
-            this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, className: 'pbt-back-highlight' }});
-            this.decorationStyles.push({ range: new monaco.Range(parseInt(lineRanges[i]),1,parseInt(lineRanges[i + 1]),1), options: { isWholeLine: true, inlineClassName: 'pbt-darken' }});
+            this.decorationStyles.push({ range: new monaco.Range(lineRanges[i],1,lineRanges[i + 1],1), options: { isWholeLine: true, linesDecorationsClassName: 'pbt-margin-decor-on' }});
+            this.decorationStyles.push({ range: new monaco.Range(lineRanges[i],1,lineRanges[i + 1],1), options: { isWholeLine: true, className: 'pbt-back-highlight' }});
+            this.decorationStyles.push({ range: new monaco.Range(lineRanges[i],1,lineRanges[i + 1],1), options: { isWholeLine: true, inlineClassName: 'pbt-darken' }});
         }
 
     this.decorations = jsEditor.deltaDecorations([this.decorations], this.decorationStyles);  
@@ -25,7 +25,7 @@ var PBT = function() {
 
     this.replaceLines = function(lineRange, text) {   
         jsEditor.executeEdits("", [
-            { range: new monaco.Range(parseInt(lineRange[0]), 1, parseInt(lineRange[1]), 100000), text: text}
+            { range: new monaco.Range(lineRange[0], 1, lineRange[1], 100000), text: text}
        ]);
     }
 
@@ -42,7 +42,7 @@ var PBT = function() {
     this.hideLines = function(lineRanges) {
         var ranges = [];
         for(var i = 0; i < lineRanges.length; i +=2) {
-            ranges.push(new monaco.Range(parseInt(lineRanges[i]), 1, parseInt(lineRanges[i + 1]), 100000));                
+            ranges.push(new monaco.Range(lineRanges[i], 1, lineRanges[i + 1], 100000));                
         }
         jsEditor.setHiddenAreas(ranges);
     }
