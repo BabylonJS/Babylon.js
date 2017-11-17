@@ -15,7 +15,7 @@ module BABYLON {
         scaling: Vector3;
         rotation?: Vector3;
         parent?: any;
-        getBoundingInfo(): Nullable<BoundingInfo>;
+        getBoundingInfo(): BoundingInfo;
         computeWorldMatrix(force: boolean): Matrix;
         getWorldMatrix?(): Matrix;
         getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
@@ -234,12 +234,7 @@ module BABYLON {
                 //calculate the world matrix with no rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
                 let boundingInfo = this.object.getBoundingInfo();
-                let size: Vector3;
-                if (boundingInfo) {
-                    size = boundingInfo.boundingBox.extendSizeWorld.scale(2)
-                } else {
-                    size = Vector3.Zero();
-                }
+                let size = boundingInfo.boundingBox.extendSizeWorld.scale(2)
 
                 //bring back the rotation
                 this.object.rotationQuaternion = q;
@@ -255,9 +250,6 @@ module BABYLON {
         public getObjectCenter(): Vector3 {
             if (this.object.getBoundingInfo) {
                 let boundingInfo = this.object.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this.object.position;
-                }
                 return boundingInfo.boundingBox.centerWorld;
             } else {
                 return this.object.position;

@@ -5,7 +5,7 @@ const webpack = require('webpack');
 module.exports = {
     entry: {
         'viewer': './src/index.ts',
-        //'viewer.min': './src/index.ts',
+        'viewer.min': './src/index.ts',
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -23,19 +23,10 @@ module.exports = {
         new webpack.WatchIgnorePlugin([
             /\.d\.ts$/
         ]),
-        /*new UglifyJSPlugin({
-
-            uglifyOptions: {
-                compress: {
-                    warnings: false,
-                },
-                output: {
-                    comments: false
-                }
-            },
-            sourceMap: true,
-            include: /\.min/,
-        })*/
+        new UglifyJSPlugin({
+            parallel: true,
+            test: /\.min\.js$/i,
+        })
     ],
     module: {
         loaders: [{
@@ -46,7 +37,10 @@ module.exports = {
         {
             test: /\.(html)$/,
             use: {
-                loader: 'html-loader'
+                loader: 'html-loader',
+                options: {
+                    minimize: true
+                }
             }
         },
         {

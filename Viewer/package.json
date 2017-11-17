@@ -23,7 +23,7 @@
     },
     "homepage": "https://github.com/BabylonJS/Babylon.js#readme",
     "devDependencies": {
-        "@types/node": "^8.0.51",
+        "@types/node": "^8.0.52",
         "base64-image-loader": "^1.2.0",
         "html-loader": "^0.5.1",
         "json-loader": "^0.5.7",
@@ -34,15 +34,13 @@
         "webpack-dev-server": "^2.9.4"
     },
     "dependencies": {
-        "babylonjs": "^3.1.0-beta1.1.1",
-        "babylonjs-loaders": "^3.1.0-beta1.1",
-        "babylonjs-materials": "^3.1.0-beta1.1",
-        "babylonjs-post-process": "^3.1.0-beta1.1",
-        "babylonjs-procedural-textures": "^3.1.0-beta1.1",
+        "babylonjs": "^3.1.0-beta3",
+        "babylonjs-loaders": "^3.1.0-beta3",
+        "babylonjs-materials": "^3.1.0-beta3",
+        "babylonjs-post-process": "^3.1.0-beta3",
+        "babylonjs-procedural-textures": "^3.1.0-beta3",
+        "deepmerge": "^2.0.1",
         "es6-promise": "^4.1.1",
-        "handlebars": "^4.0.11",
-        "lodash": "^4.17.4",
-        "lodash.merge": "^4.6.0",
-        "promise-polyfill": "^6.0.2"
+        "handlebars": "^4.0.11"
     }
 }

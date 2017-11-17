@@ -1767,17 +1767,27 @@ var BABYLON;
             return vector;
         };
         Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
+            var result = Vector3.Zero();
+            Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
+            return result;
+        };
+        Vector3.UnprojectToRef = function (source, viewportWidth, viewportHeight, world, view, projection, result) {
+            Vector3.UnprojectFloatsToRef(source.x, source.y, source.z, viewportWidth, viewportHeight, world, view, projection, result);
+        };
+        Vector3.UnprojectFloatsToRef = function (sourceX, sourceY, sourceZ, viewportWidth, viewportHeight, world, view, projection, result) {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix);
             matrix.multiplyToRef(projection, matrix);
             matrix.invert();
-            var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), 2 * source.z - 1.0);
-            var vector = Vector3.TransformCoordinates(screenSource, matrix);
+            var screenSource = MathTmp.Vector3[0];
+            screenSource.x = sourceX / viewportWidth * 2 - 1;
+            screenSource.y = -(sourceY / viewportHeight * 2 - 1);
+            screenSource.z = 2 * sourceZ - 1.0;
+            Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
             if (BABYLON.Scalar.WithinEpsilon(num, 1.0)) {
-                vector = vector.scale(1.0 / num);
+                result.scaleInPlace(1.0 / num);
             }
-            return vector;
         };
         Vector3.Minimize = function (left, right) {
             var min = left.clone();
@@ -4443,7 +4453,7 @@ var BABYLON;
          * Returns the updated Path2.
          */
         Path2.prototype.addLineTo = function (x, y) {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
@@ -4459,7 +4469,7 @@ var BABYLON;
          */
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (numberOfSegments === void 0) { numberOfSegments = 36; }
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
@@ -5771,7 +5781,6 @@ var BABYLON;
     var Tools = /** @class */ (function () {
         function Tools() {
         }
-        ;
         /**
          * Interpolates between a and b via alpha
          * @param a The lower value (returned when alpha = 0)
@@ -6154,7 +6163,6 @@ var BABYLON;
             }
             return img;
         };
-        //ANY
         Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError) {
             url = Tools.CleanUrl(url);
             url = Tools.PreprocessUrl(url);
@@ -6195,30 +6203,20 @@ var BABYLON;
                     database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
                 }
             };
+            // If file and file input are set
             if (url.indexOf("file:") !== -1) {
                 var fileName = decodeURIComponent(url.substring(5).toLowerCase());
                 if (BABYLON.FilesInput.FilesToLoad[fileName]) {
                     Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
-                }
-                else {
-                    var errorMessage = "File: " + fileName + " not found. Did you forget to provide it?";
-                    if (onError) {
-                        var e = new Error(errorMessage);
-                        onError(undefined, e);
-                    }
-                    else {
-                        Tools.Error(errorMessage);
-                    }
+                    return request;
                 }
             }
+            // Caching all files
+            if (database && database.enableSceneOffline) {
+                database.openAsync(loadFromIndexedDB, noIndexedDB);
+            }
             else {
-                // Caching all files
-                if (database && database.enableSceneOffline) {
-                    database.openAsync(loadFromIndexedDB, noIndexedDB);
-                }
-                else {
-                    noIndexedDB();
-                }
+                noIndexedDB();
             }
             return request;
         };
@@ -6374,7 +6372,7 @@ var BABYLON;
                 }
             }
         };
-        Tools.DumpFramebuffer = function (width, height, engine, successCallback, mimeType) {
+        Tools.DumpFramebuffer = function (width, height, engine, successCallback, mimeType, fileName) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
@@ -6405,38 +6403,63 @@ var BABYLON;
                 var castData = (imageData.data);
                 castData.set(data);
                 context.putImageData(imageData, 0, 0);
-                Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName);
             }
         };
-        Tools.EncodeScreenshotCanvasData = function (successCallback, mimeType) {
+        Tools.EncodeScreenshotCanvasData = function (successCallback, mimeType, fileName) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             var base64Image = screenshotCanvas.toDataURL(mimeType);
             if (successCallback) {
                 successCallback(base64Image);
             }
             else {
-                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-                if (("download" in document.createElement("a"))) {
-                    var a = window.document.createElement("a");
-                    a.href = base64Image;
-                    var date = new Date();
-                    var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
-                    a.setAttribute("download", "screenshot_" + stringDate + ".png");
-                    window.document.body.appendChild(a);
-                    a.addEventListener("click", function () {
-                        if (a.parentElement) {
-                            a.parentElement.removeChild(a);
+                // We need HTMLCanvasElement.toBlob for HD screenshots
+                if (!screenshotCanvas.toBlob) {
+                    //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
+                    screenshotCanvas.toBlob = function (callback, type, quality) {
+                        var canvas = this;
+                        setTimeout(function () {
+                            var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]), len = binStr.length, arr = new Uint8Array(len);
+                            for (var i = 0; i < len; i++) {
+                                arr[i] = binStr.charCodeAt(i);
+                            }
+                            callback(new Blob([arr], { type: type || 'image/png' }));
+                        });
+                    };
+                }
+                screenshotCanvas.toBlob(function (blob) {
+                    var url = URL.createObjectURL(blob);
+                    //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                    if (("download" in document.createElement("a"))) {
+                        var a = window.document.createElement("a");
+                        a.href = url;
+                        if (fileName) {
+                            a.setAttribute("download", fileName);
                         }
-                    });
-                    a.click();
-                    //Or opening a new tab with the image if it is not possible to automatically start download.
-                }
-                else {
-                    var newWindow = window.open("");
-                    var img = newWindow.document.createElement("img");
-                    img.src = base64Image;
-                    newWindow.document.body.appendChild(img);
-                }
+                        else {
+                            var date = new Date();
+                            var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                            a.setAttribute("download", "screenshot_" + stringDate + ".png");
+                        }
+                        window.document.body.appendChild(a);
+                        a.addEventListener("click", function () {
+                            if (a.parentElement) {
+                                a.parentElement.removeChild(a);
+                            }
+                        });
+                        a.click();
+                    }
+                    else {
+                        var newWindow = window.open("");
+                        var img = newWindow.document.createElement("img");
+                        img.onload = function () {
+                            // no longer need to read the blob so it's revoked
+                            URL.revokeObjectURL(url);
+                        };
+                        img.src = url;
+                        newWindow.document.body.appendChild(img);
+                    }
+                });
             }
         };
         Tools.CreateScreenshot = function (engine, camera, size, successCallback, mimeType) {
@@ -6489,9 +6512,10 @@ var BABYLON;
             }
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         };
-        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples) {
+        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples, antialiasing, fileName) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             if (samples === void 0) { samples = 1; }
+            if (antialiasing === void 0) { antialiasing = false; }
             var width;
             var height;
             //If a precision value is specified
@@ -6532,8 +6556,11 @@ var BABYLON;
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = null;
             texture.samples = samples;
+            if (antialiasing) {
+                texture.addPostProcess(new BABYLON.FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
+            }
             texture.onAfterRenderObservable.add(function () {
-                Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
+                Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);
             });
             scene.incrementRenderId();
             scene.resetCachedMaterial();
@@ -8512,7 +8539,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-3";
+                return "3.1-beta-5";
             },
             enumerable: true,
             configurable: true
@@ -14658,7 +14685,7 @@ var BABYLON;
             var min;
             var max;
             var boundingInfo = this.getBoundingInfo();
-            if (!this.subMeshes || !boundingInfo) {
+            if (!this.subMeshes) {
                 min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
                 max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             }
@@ -14673,7 +14700,7 @@ var BABYLON;
                     var childMesh = descendant;
                     childMesh.computeWorldMatrix(true);
                     var childBoundingInfo = childMesh.getBoundingInfo();
-                    if (childMesh.getTotalVertices() === 0 || !childBoundingInfo) {
+                    if (childMesh.getTotalVertices() === 0) {
                         continue;
                     }
                     var boundingBox = childBoundingInfo.boundingBox;
@@ -14852,10 +14879,8 @@ var BABYLON;
             this.computeWorldMatrix(true);
             var boundingInfo = this.getBoundingInfo();
             // Update octree
-            if (boundingInfo) {
-                var bbox = boundingInfo.boundingBox;
-                this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
-            }
+            var bbox = boundingInfo.boundingBox;
+            this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
             return this._submeshesOctree;
         };
         // Collisions
@@ -15178,9 +15203,12 @@ var BABYLON;
             var indices = this.getIndices();
             var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
+<<<<<<< HEAD
             if (!bInfo) {
                 return this;
             }
+=======
+>>>>>>> 67c83069a447868ab6def9019c048533b0046690
             if (this._facetDepthSort && !this._facetDepthSortEnabled) {
                 // init arrays, matrix and sort function on first call
                 this._facetDepthSortEnabled = true;
@@ -15333,9 +15361,6 @@ var BABYLON;
          */
         AbstractMesh.prototype.getFacetsAtLocalCoordinates = function (x, y, z) {
             var bInfo = this.getBoundingInfo();
-            if (!bInfo) {
-                return null;
-            }
             var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * this._subDiv.X * this._partitioningBBoxRatio / this._bbSize.x);
             var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * this._subDiv.Y * this._partitioningBBoxRatio / this._bbSize.y);
             var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * this._subDiv.Z * this._partitioningBBoxRatio / this._bbSize.z);
@@ -17907,7 +17932,6 @@ var BABYLON;
              */
             this.onPointerObservable = new BABYLON.Observable();
             this._meshPickProceed = false;
-            this._previousHasSwiped = false;
             this._currentPickResult = null;
             this._previousPickResult = null;
             this._totalPointersPressed = 0;
@@ -18931,7 +18955,6 @@ var BABYLON;
                                     _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
                                     _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
                                     _this._previousButtonPressed = btn;
-                                    _this._previousHasSwiped = clickInfo.hasSwiped;
                                     if (Scene.ExclusiveDoubleClickMode) {
                                         if (_this._previousDelayedSimpleClickTimeout) {
                                             clearTimeout(_this._previousDelayedSimpleClickTimeout);
@@ -18950,7 +18973,6 @@ var BABYLON;
                                 _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
                                 _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
                                 _this._previousButtonPressed = btn;
-                                _this._previousHasSwiped = clickInfo.hasSwiped;
                             }
                         }
                     }
@@ -20103,9 +20125,7 @@ var BABYLON;
                 var material = subMesh.getMaterial();
                 if (mesh.showSubMeshesBoundingBox) {
                     var boundingInfo = subMesh.getBoundingInfo();
-                    if (boundingInfo) {
-                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                    }
+                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
                 }
                 if (material) {
                     // Render targets
@@ -20229,9 +20249,7 @@ var BABYLON;
             }
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 var boundingInfo = sourceMesh.getBoundingInfo();
-                if (boundingInfo) {
-                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                }
+                this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
             }
             if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees
@@ -20482,35 +20500,37 @@ var BABYLON;
                 this.simplificationQueue.executeNext();
             }
             if (this._engine.isDeterministicLockStep()) {
-                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) / 1000;
-                var defaultTimeStep = (60.0 / 1000.0);
+                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
+                var defaultFPS = (60.0 / 1000.0);
+                var defaultFrameTime = 1000 / 60; // frame time in MS
                 if (this._physicsEngine) {
-                    defaultTimeStep = this._physicsEngine.getTimeStep();
+                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000; //timestep in physics engine is in seconds
                 }
+                var stepsTaken = 0;
                 var maxSubSteps = this._engine.getLockstepMaxSteps();
-                this._timeAccumulator += deltaTime;
-                // compute the amount of fixed steps we should have taken since the last step
-                var internalSteps = Math.floor(this._timeAccumulator / defaultTimeStep);
+                var internalSteps = Math.floor(deltaTime / (1000 * defaultFPS));
                 internalSteps = Math.min(internalSteps, maxSubSteps);
-                for (this._currentInternalStep = 0; this._currentInternalStep < internalSteps; this._currentInternalStep++) {
+                do {
                     this.onBeforeStepObservable.notifyObservers(this);
                     // Animations
-                    this._animationRatio = defaultTimeStep * (60.0 / 1000.0);
+                    this._animationRatio = defaultFrameTime * defaultFPS;
                     this._animate();
                     this.onAfterAnimationsObservable.notifyObservers(this);
                     // Physics
                     if (this._physicsEngine) {
                         this.onBeforePhysicsObservable.notifyObservers(this);
-                        this._physicsEngine._step(defaultTimeStep);
+                        this._physicsEngine._step(defaultFPS);
                         this.onAfterPhysicsObservable.notifyObservers(this);
                     }
-                    this._timeAccumulator -= defaultTimeStep;
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
-                    if ((internalSteps > 1) && (this._currentInternalStep != internalSteps - 1)) {
+                    if ((internalSteps > 1) && (stepsTaken != internalSteps - 1)) {
                         this._evaluateActiveMeshes();
                     }
-                }
+                    stepsTaken++;
+                    deltaTime -= defaultFrameTime;
+                } while (deltaTime > 0 && stepsTaken > maxSubSteps);
+                this._timeAccumulator = deltaTime;
             }
             else {
                 // Animations
@@ -20972,12 +20992,10 @@ var BABYLON;
                 }
                 mesh.computeWorldMatrix(true);
                 var boundingInfo = mesh.getBoundingInfo();
-                if (boundingInfo) {
-                    var minBox = boundingInfo.boundingBox.minimumWorld;
-                    var maxBox = boundingInfo.boundingBox.maximumWorld;
-                    BABYLON.Tools.CheckExtends(minBox, min, max);
-                    BABYLON.Tools.CheckExtends(maxBox, min, max);
-                }
+                var minBox = boundingInfo.boundingBox.minimumWorld;
+                var maxBox = boundingInfo.boundingBox.maximumWorld;
+                BABYLON.Tools.CheckExtends(minBox, min, max);
+                BABYLON.Tools.CheckExtends(maxBox, min, max);
             }
             return {
                 min: min,
@@ -20998,6 +21016,12 @@ var BABYLON;
         // Picking
         Scene.prototype.createPickingRay = function (x, y, world, camera, cameraViewSpace) {
             if (cameraViewSpace === void 0) { cameraViewSpace = false; }
+            var result = BABYLON.Ray.Zero();
+            this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
+            return result;
+        };
+        Scene.prototype.createPickingRayToRef = function (x, y, world, result, camera, cameraViewSpace) {
+            if (cameraViewSpace === void 0) { cameraViewSpace = false; }
             var engine = this._engine;
             if (!camera) {
                 if (!this.activeCamera)
@@ -21009,12 +21033,17 @@ var BABYLON;
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), cameraViewSpace ? BABYLON.Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
-            //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), cameraViewSpace ? BABYLON.Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
+            return this;
         };
         Scene.prototype.createPickingRayInCameraSpace = function (x, y, camera) {
+            var result = BABYLON.Ray.Zero();
+            this.createPickingRayInCameraSpaceToRef(x, y, result, camera);
+            return result;
+        };
+        Scene.prototype.createPickingRayInCameraSpaceToRef = function (x, y, result, camera) {
             if (!BABYLON.PickingInfo) {
-                return null;
+                return this;
             }
             var engine = this._engine;
             if (!camera) {
@@ -21028,7 +21057,8 @@ var BABYLON;
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+            result.update(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+            return this;
         };
         Scene.prototype._internalPick = function (rayFunction, predicate, fastCheck) {
             if (!BABYLON.PickingInfo) {
@@ -21122,7 +21152,13 @@ var BABYLON;
          */
         Scene.prototype.pick = function (x, y, predicate, fastCheck, camera) {
             var _this = this;
-            return this._internalPick(function (world) { return _this.createPickingRay(x, y, world, camera || null); }, predicate, fastCheck);
+            if (!this._tempPickingRay) {
+                this._tempPickingRay = BABYLON.Ray.Zero();
+            }
+            return this._internalPick(function (world) {
+                _this.createPickingRayToRef(x, y, world, _this._tempPickingRay, camera || null);
+                return _this._tempPickingRay;
+            }, predicate, fastCheck);
         };
         /** Launch a ray to try to pick a sprite in the scene
          * @param x position on screen
@@ -21132,11 +21168,11 @@ var BABYLON;
          * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         Scene.prototype.pickSprite = function (x, y, predicate, fastCheck, camera) {
-            var ray = this.createPickingRayInCameraSpace(x, y, camera);
-            if (!ray) {
-                return null;
+            if (!this._tempPickingRay) {
+                this._tempPickingRay = BABYLON.Ray.Zero();
             }
-            return this._internalPickSprites(ray, predicate, fastCheck, camera);
+            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay, camera);
+            return this._internalPickSprites(this._tempPickingRay, predicate, fastCheck, camera);
         };
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
@@ -21151,7 +21187,7 @@ var BABYLON;
                 }
                 world.invertToRef(_this._pickWithRayInverseMatrix);
                 if (!_this._cachedRayForTransform) {
-                    _this._cachedRayForTransform = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero());
+                    _this._cachedRayForTransform = BABYLON.Ray.Zero();
                 }
                 BABYLON.Ray.TransformToRef(ray, _this._pickWithRayInverseMatrix, _this._cachedRayForTransform);
                 return _this._cachedRayForTransform;
@@ -21181,7 +21217,7 @@ var BABYLON;
                 }
                 world.invertToRef(_this._pickWithRayInverseMatrix);
                 if (!_this._cachedRayForTransform) {
-                    _this._cachedRayForTransform = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero());
+                    _this._cachedRayForTransform = BABYLON.Ray.Zero();
                 }
                 BABYLON.Ray.TransformToRef(ray, _this._pickWithRayInverseMatrix, _this._cachedRayForTransform);
                 return _this._cachedRayForTransform;
@@ -23217,9 +23253,6 @@ var BABYLON;
             }
             else {
                 var boundingInfo = this.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this;
-                }
                 bSphere = boundingInfo.boundingSphere;
             }
             var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
@@ -25687,9 +25720,6 @@ var BABYLON;
             var maxVector = null;
             meshes.forEach(function (mesh, index, array) {
                 var boundingInfo = mesh.getBoundingInfo();
-                if (!boundingInfo) {
-                    return;
-                }
                 var boundingBox = boundingInfo.boundingBox;
                 if (!minVector || !maxVector) {
                     minVector = boundingBox.minimumWorld;
@@ -25931,7 +25961,7 @@ var BABYLON;
             }
             var data = this._renderingMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (!data) {
-                this._boundingInfo = this._mesh._boundingInfo;
+                this._boundingInfo = this._mesh.getBoundingInfo();
                 return this;
             }
             var indices = this._renderingMesh.getIndices();
@@ -25939,9 +25969,6 @@ var BABYLON;
             //is this the only submesh?
             if (this.indexStart === 0 && this.indexCount === indices.length) {
                 var boundingInfo = this._renderingMesh.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this;
-                }
                 //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
                 extend = { minimum: boundingInfo.minimum.clone(), maximum: boundingInfo.maximum.clone() };
             }
@@ -25953,9 +25980,6 @@ var BABYLON;
         };
         SubMesh.prototype._checkCollision = function (collider) {
             var boundingInfo = this._renderingMesh.getBoundingInfo();
-            if (!boundingInfo) {
-                return false;
-            }
             return boundingInfo._checkCollision(collider);
         };
         /**
@@ -29678,11 +29702,17 @@ var BABYLON;
             var indices = [];
             var positions = [];
             var lines = options.lines;
+            var colors = options.colors;
+            var vertexColors = [];
             var idx = 0;
             for (var l = 0; l < lines.length; l++) {
                 var points = lines[l];
                 for (var index = 0; index < points.length; index++) {
                     positions.push(points[index].x, points[index].y, points[index].z);
+                    if (colors) {
+                        var color = colors[l];
+                        vertexColors.push(color[index].r, color[index].g, color[index].b, color[index].a);
+                    }
                     if (index > 0) {
                         indices.push(idx - 1);
                         indices.push(idx);
@@ -29693,6 +29723,9 @@ var BABYLON;
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
+            if (colors) {
+                vertexData.colors = vertexColors;
+            }
             return vertexData;
         };
         /**
@@ -40430,9 +40463,6 @@ var BABYLON;
                         continue;
                     }
                     var boundingInfo = mesh.getBoundingInfo();
-                    if (!boundingInfo) {
-                        continue;
-                    }
                     var boundingBox = boundingInfo.boundingBox;
                     for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
                         BABYLON.Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
@@ -44013,13 +44043,20 @@ var BABYLON;
             }
             return -1;
         };
+        Ray.prototype.update = function (x, y, viewportWidth, viewportHeight, world, view, projection) {
+            BABYLON.Vector3.UnprojectFloatsToRef(x, y, 0, viewportWidth, viewportHeight, world, view, projection, this.origin);
+            BABYLON.Vector3.UnprojectFloatsToRef(x, y, 1, viewportWidth, viewportHeight, world, view, projection, BABYLON.Tmp.Vector3[0]);
+            BABYLON.Tmp.Vector3[0].subtractToRef(this.origin, this.direction);
+            this.direction.normalize();
+            return this;
+        };
         // Statics
+        Ray.Zero = function () {
+            return new Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero());
+        };
         Ray.CreateNew = function (x, y, viewportWidth, viewportHeight, world, view, projection) {
-            var start = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
-            var end = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
-            var direction = end.subtract(start);
-            direction.normalize();
-            return new Ray(start, direction);
+            var result = Ray.Zero();
+            return result.update(x, y, viewportWidth, viewportHeight, world, view, projection);
         };
         /**
         * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
@@ -46508,9 +46545,7 @@ var BABYLON;
             set: function (val) {
                 this._isVisibilityBoxLocked = val;
                 var boundingInfo = this.mesh.getBoundingInfo();
-                if (boundingInfo) {
-                    boundingInfo.isLocked = val;
-                }
+                boundingInfo.isLocked = val;
             },
             enumerable: true,
             configurable: true
@@ -47103,9 +47138,7 @@ var BABYLON;
          */
         InstancedMesh.prototype.refreshBoundingInfo = function () {
             var meshBB = this._sourceMesh.getBoundingInfo();
-            if (meshBB) {
-                this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
-            }
+            this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
             this._updateBoundingInfo();
             return this;
         };
@@ -47129,9 +47162,6 @@ var BABYLON;
                 return this;
             }
             var boundingInfo = this.getBoundingInfo();
-            if (!boundingInfo) {
-                return this;
-            }
             this._currentLOD = this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
             if (this._currentLOD === this.sourceMesh) {
                 return this;
@@ -47202,27 +47232,35 @@ var BABYLON;
 (function (BABYLON) {
     var LinesMesh = /** @class */ (function (_super) {
         __extends(LinesMesh, _super);
-        function LinesMesh(name, scene, parent, source, doNotCloneChildren, useVertexColor) {
+        function LinesMesh(name, scene, parent, source, doNotCloneChildren, useVertexColor, useVertexAlpha) {
             if (scene === void 0) { scene = null; }
             if (parent === void 0) { parent = null; }
             var _this = _super.call(this, name, scene, parent, source, doNotCloneChildren) || this;
             _this.useVertexColor = useVertexColor;
+            _this.useVertexAlpha = useVertexAlpha;
             _this.color = new BABYLON.Color3(1, 1, 1);
             _this.alpha = 1;
             if (source) {
                 _this.color = source.color.clone();
                 _this.alpha = source.alpha;
                 _this.useVertexColor = source.useVertexColor;
+                _this.useVertexAlpha = source.useVertexAlpha;
             }
             _this._intersectionThreshold = 0.1;
+            var defines = [];
             var options = {
                 attributes: [BABYLON.VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
                 needAlphaBlending: false,
+                defines: defines
             };
             if (!useVertexColor) {
                 options.uniforms.push("color");
-                options.needAlphaBlending = true;
+            }
+            else {
+                options.needAlphaBlending = (useVertexAlpha) ? true : false;
+                options.defines.push("#define VERTEXCOLOR");
+                options.attributes.push(BABYLON.VertexBuffer.ColorKind);
             }
             _this._colorShader = new BABYLON.ShaderMaterial("colorShader", _this.getScene(), "color", options);
             return _this;
@@ -48156,6 +48194,8 @@ var BABYLON;
          * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function.
          * The parameter `lines` is an array of lines, each line being an array of successive Vector3.
          * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter. The way to update it is the same than for
+         * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point.
+         * The optional parameter `useVertexAlpha' is to be set to `true` (default `false`) when the alpha value from the former `Color4` array must be used.
          * updating a simple Line mesh, you just need to update every line in the `lines` array : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
          * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -48163,24 +48203,42 @@ var BABYLON;
         MeshBuilder.CreateLineSystem = function (name, options, scene) {
             var instance = options.instance;
             var lines = options.lines;
+            var colors = options.colors;
             if (instance) {
-                var positionFunction = function (positions) {
-                    var i = 0;
-                    for (var l = 0; l < lines.length; l++) {
-                        var points = lines[l];
-                        for (var p = 0; p < points.length; p++) {
-                            positions[i] = points[p].x;
-                            positions[i + 1] = points[p].y;
-                            positions[i + 2] = points[p].z;
-                            i += 3;
+                var positions = instance.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var vertexColor;
+                var lineColors;
+                if (colors) {
+                    vertexColor = instance.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                }
+                var i = 0;
+                var c = 0;
+                for (var l = 0; l < lines.length; l++) {
+                    var points = lines[l];
+                    for (var p = 0; p < points.length; p++) {
+                        positions[i] = points[p].x;
+                        positions[i + 1] = points[p].y;
+                        positions[i + 2] = points[p].z;
+                        if (colors && vertexColor) {
+                            lineColors = colors[l];
+                            vertexColor[c] = lineColors[p].r;
+                            vertexColor[c + 1] = lineColors[p].g;
+                            vertexColor[c + 2] = lineColors[p].b;
+                            vertexColor[c + 3] = lineColors[p].a;
+                            c += 4;
                         }
+                        i += 3;
                     }
-                };
-                instance.updateMeshPositions(positionFunction, false);
+                }
+                instance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+                if (colors && vertexColor) {
+                    instance.updateVerticesData(BABYLON.VertexBuffer.ColorKind, vertexColor, false, false);
+                }
                 return instance;
             }
             // line system creation
-            var lineSystem = new BABYLON.LinesMesh(name, scene);
+            var useVertexColor = (colors) ? true : false;
+            var lineSystem = new BABYLON.LinesMesh(name, scene, null, undefined, undefined, useVertexColor, options.useVertexAlpha);
             var vertexData = BABYLON.VertexData.CreateLineSystem(options);
             vertexData.applyToMesh(lineSystem, options.updatable);
             return lineSystem;
@@ -48192,12 +48250,15 @@ var BABYLON;
          * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
          * The parameter `points` is an array successive Vector3.
          * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * The optional parameter `colors` is an array of successive Color4, one per line point.
+         * The optional parameter `useVertexAlpha' is to be set to `true` (default `false`) when the alpha value from the former `Color4` array must be used.
          * When updating an instance, remember that only point positions can change, not the number of points.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateLines = function (name, options, scene) {
             if (scene === void 0) { scene = null; }
-            var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance }, scene);
+            var colors = (options.colors) ? [options.colors] : null;
+            var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance, colors: colors, useVertexAlpha: options.useVertexAlpha }, scene);
             return lines;
         };
         /**
@@ -49679,9 +49740,6 @@ var BABYLON;
         };
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
             var boundingInfo = connectedMesh.getBoundingInfo();
-            if (!boundingInfo) {
-                return;
-            }
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
@@ -52995,12 +53053,12 @@ var BABYLON;
             if (sceneFilename.name) {
                 sceneFilename = sceneFilename.name;
             }
-            var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
-            if (queryStringPosition === -1) {
-                queryStringPosition = sceneFilename.length;
+            if (queryStringPosition !== -1) {
+                sceneFilename = sceneFilename.substring(0, queryStringPosition);
             }
-            var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
+            var dotPosition = sceneFilename.lastIndexOf(".");
+            var extension = sceneFilename.substring(dotPosition, sceneFilename.length).toLowerCase();
             return SceneLoader._getPluginForExtension(extension);
         };
         // use babylon file loader directly if sceneFilename is prefixed with "data:"
@@ -58185,8 +58243,8 @@ var BABYLON;
                 if (!material) {
                     return;
                 }
-                // Culling
-                engine.setState(material.backFaceCulling);
+                // Culling and reverse (right handed system)
+                engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
                 if (batch.mustReturn) {
@@ -66640,13 +66698,7 @@ var BABYLON;
                 //calculate the world matrix with no rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
                 var boundingInfo = this.object.getBoundingInfo();
-                var size = void 0;
-                if (boundingInfo) {
-                    size = boundingInfo.boundingBox.extendSizeWorld.scale(2);
-                }
-                else {
-                    size = BABYLON.Vector3.Zero();
-                }
+                var size = boundingInfo.boundingBox.extendSizeWorld.scale(2);
                 //bring back the rotation
                 this.object.rotationQuaternion = q;
                 //calculate the world matrix with the new rotation
@@ -66660,9 +66712,6 @@ var BABYLON;
         PhysicsImpostor.prototype.getObjectCenter = function () {
             if (this.object.getBoundingInfo) {
                 var boundingInfo = this.object.getBoundingInfo();
-                if (!boundingInfo) {
-                    return this.object.position;
-                }
                 return boundingInfo.boundingBox.centerWorld;
             }
             else {
@@ -67444,7 +67493,7 @@ var BABYLON;
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
-            var boundingInfo = (object.getBoundingInfo());
+            var boundingInfo = object.getBoundingInfo();
             var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.y);
             var minY = boundingInfo.boundingBox.extendSizeWorld.z;
             var elementSize = dim * 2 / arraySize;
@@ -69982,13 +70031,13 @@ var BABYLON;
         };
         Octree.CreationFuncForMeshes = function (entry, block) {
             var boundingInfo = entry.getBoundingInfo();
-            if (!entry.isBlocked && boundingInfo && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            if (!entry.isBlocked && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         };
         Octree.CreationFuncForSubMeshes = function (entry, block) {
             var boundingInfo = entry.getBoundingInfo();
-            if (boundingInfo && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            if (boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         };
@@ -75578,6 +75627,41 @@ var BABYLON;
             mesh.computeWorldMatrix(true);
             var boundingBox = mesh.getBoundingInfo().boundingBox;
             this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ, onAnimationEnd);
+        };
+        /**
+         * Targets the given mesh with its children and updates zoom level accordingly.
+         * @param mesh  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        FramingBehavior.prototype.zoomOnMeshHierarchy = function (mesh, focusOnOriginXZ, onAnimationEnd) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
+            if (onAnimationEnd === void 0) { onAnimationEnd = null; }
+            mesh.computeWorldMatrix(true);
+            var boundingBox = mesh.getHierarchyBoundingVectors(true);
+            this.zoomOnBoundingInfo(boundingBox.min, boundingBox.max, focusOnOriginXZ, onAnimationEnd);
+        };
+        /**
+         * Targets the given meshes with their children and updates zoom level accordingly.
+         * @param meshes  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        FramingBehavior.prototype.zoomOnMeshesHierarchy = function (meshes, focusOnOriginXZ, onAnimationEnd) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
+            if (onAnimationEnd === void 0) { onAnimationEnd = null; }
+            var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            for (var i = 0; i < meshes.length; i++) {
+                var boundingInfo = meshes[i].getHierarchyBoundingVectors(true);
+                BABYLON.Tools.CheckExtends(boundingInfo.min, min, max);
+                BABYLON.Tools.CheckExtends(boundingInfo.max, min, max);
+            }
+            this.zoomOnBoundingInfo(min, max, focusOnOriginXZ, onAnimationEnd);
         };
         /**
          * Targets the given mesh and updates zoom level accordingly.

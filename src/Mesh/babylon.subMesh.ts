@@ -24,7 +24,7 @@
 
         private _mesh: AbstractMesh;
         private _renderingMesh: Mesh;
-        private _boundingInfo: Nullable<BoundingInfo>;
+        private _boundingInfo: BoundingInfo;
         private _linesIndexBuffer: Nullable<WebGLBuffer>;
         public _lastColliderWorldVertices: Nullable<Vector3[]>;
         public _trianglePlanes: Plane[];
@@ -64,7 +64,7 @@
         /**
          * Returns the submesh BoudingInfo object.  
          */
-        public getBoundingInfo(): Nullable<BoundingInfo> {
+        public getBoundingInfo(): BoundingInfo {
             if (this.IsGlobal) {
                 return this._mesh.getBoundingInfo();
             }
@@ -134,7 +134,7 @@
             var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
-                this._boundingInfo = this._mesh._boundingInfo;
+                this._boundingInfo = this._mesh.getBoundingInfo();
                 return this;
             }
 
@@ -144,10 +144,6 @@
             //is this the only submesh?
             if (this.indexStart === 0 && this.indexCount === indices.length) {
                 let boundingInfo = this._renderingMesh.getBoundingInfo();
-
-                if (!boundingInfo) {
-                    return this;
-                }
 
                 //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
                 extend = { minimum: boundingInfo.minimum.clone(), maximum: boundingInfo.maximum.clone() };
@@ -160,10 +156,6 @@
 
         public _checkCollision(collider: Collider): boolean {
             let boundingInfo = this._renderingMesh.getBoundingInfo();
-
-            if (!boundingInfo) {
-                return false;
-            }
 
             return boundingInfo._checkCollision(collider);
         }

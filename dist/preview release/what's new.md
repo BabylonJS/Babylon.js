@@ -1,6 +1,8 @@
 # 3.1.0:
 
 ## Major updates
+- Viewer (TODO)
+- EnvironmentHelper + BackgroundMaterial (TODO)
 - Added support for webgl context lost and restored events. [Doc here](http://doc.babylonjs.com/tutorials/optimizing_your_scene#handling-webgl-context-lost) ([deltakosh](https://github.com/deltakosh))
 - Added support for non-pow2 textures when in WebGL2 mode ([deltakosh](https://github.com/deltakosh))
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
@@ -47,6 +49,7 @@
 - Added `enableDepthSort` parameter to the SPS in order to sort the particles from the camera position ([jerome](https://github.com/jbousquie)) 
 - Added `pivot` property to the SPS solid particles ([jerome](https://github.com/jbousquie)) 
 - Added the mesh facet depth sort to FacetData  ([jerome](https://github.com/jbousquie)) 
+- Added `LineSystem` and `LineMesh` per point colors ([jerome](https://github.com/jbousquie))  
 
 ## Bug fixes
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))

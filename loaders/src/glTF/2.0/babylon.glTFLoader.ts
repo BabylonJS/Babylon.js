@@ -38,6 +38,12 @@ module BABYLON.GLTF2 {
         _total: Nullable<number>;
     }
 
+    interface IProgressEventData {
+        lengthComputable: boolean;
+        loaded: number;
+        total: number;
+    }
+
     export class GLTFLoader implements IGLTFLoader {
         public _gltf: IGLTF;
         public _babylonScene: Scene;
@@ -77,8 +83,29 @@ module BABYLON.GLTF2 {
             GLTFLoaderExtension._Extensions.push(extension);
         }
 
+        // IE 11 Compatibility.
+        private static _progressEventFactory: (name: string, data: IProgressEventData) => ProgressEvent;
+        
+        private static _createProgressEventByConstructor(name: string, data: IProgressEventData): ProgressEvent {
+            return new ProgressEvent(name, data);
+        }
+
+        private static _createProgressEventByDocument(name: string, data: IProgressEventData): ProgressEvent {
+            const event = document.createEvent("ProgressEvent");
+            event.initProgressEvent(name, false, false, data.lengthComputable, data.loaded, data.total);
+            return event;
+        }
+
         public constructor(parent: GLTFFileLoader) {
             this._parent = parent;
+            if (!GLTFLoader._progressEventFactory) {
+                if (typeof (<any>window)["ProgressEvent"] === "function") {
+                    GLTFLoader._progressEventFactory = GLTFLoader._createProgressEventByConstructor;
+                }
+                else {
+                    GLTFLoader._progressEventFactory = GLTFLoader._createProgressEventByDocument;
+                }
+            }
         }
 
         public dispose(): void {
@@ -148,7 +175,7 @@ module BABYLON.GLTF2 {
                 total += request._total;
             }
 
-            this._progressCallback(new ProgressEvent("GLTFLoaderProgress", {
+            this._progressCallback(GLTFLoader._progressEventFactory("GLTFLoaderProgress", {
                 lengthComputable: true,
                 loaded: loaded,
                 total: total

@@ -440,6 +440,17 @@ var INSPECTOR;
         },
         'Scene': {
             type: BABYLON.Scene,
+<<<<<<< HEAD
+=======
+        },
+        'TransformNode': {
+            type: BABYLON.TransformNode,
+            format: function (m) { return m.name; }
+        },
+        'AbstractMesh': {
+            type: BABYLON.AbstractMesh,
+            format: function (m) { return m.name; }
+>>>>>>> 67c83069a447868ab6def9019c048533b0046690
         },
         'Mesh': {
             type: BABYLON.Mesh,
@@ -1065,7 +1076,7 @@ var INSPECTOR;
             this._obj.isVisible = b;
         };
         MeshAdapter.prototype.isVisible = function () {
-            return this._obj.isEnabled() && this._obj.isVisible;
+            return this._obj.isEnabled() && (this._obj.isVisible === undefined || this._obj.isVisible);
         };
         MeshAdapter.prototype.isBoxVisible = function () {
             return this._obj.showBoundingBox;

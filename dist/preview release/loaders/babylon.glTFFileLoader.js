@@ -2478,6 +2478,14 @@ var BABYLON;
                 this._loaderPendingCount = 0;
                 this._loaderTrackers = new Array();
                 this._parent = parent;
+                if (!GLTFLoader._progressEventFactory) {
+                    if (typeof window["ProgressEvent"] === "function") {
+                        GLTFLoader._progressEventFactory = GLTFLoader._createProgressEventByConstructor;
+                    }
+                    else {
+                        GLTFLoader._progressEventFactory = GLTFLoader._createProgressEventByDocument;
+                    }
+                }
             }
             GLTFLoader.RegisterExtension = function (extension) {
                 if (GLTFLoader.Extensions[extension.name]) {
@@ -2487,6 +2495,14 @@ var BABYLON;
                 GLTFLoader.Extensions[extension.name] = extension;
                 // Keep the order of registration so that extensions registered first are called first.
                 GLTF2.GLTFLoaderExtension._Extensions.push(extension);
+            };
+            GLTFLoader._createProgressEventByConstructor = function (name, data) {
+                return new ProgressEvent(name, data);
+            };
+            GLTFLoader._createProgressEventByDocument = function (name, data) {
+                var event = document.createEvent("ProgressEvent");
+                event.initProgressEvent(name, false, false, data.lengthComputable, data.loaded, data.total);
+                return event;
             };
             GLTFLoader.prototype.dispose = function () {
                 if (this._disposed) {
@@ -2537,6 +2553,7 @@ var BABYLON;
             GLTFLoader.prototype._onProgress = function () {
                 if (!this._progressCallback) {
                     return;
+<<<<<<< HEAD
                 }
                 var loaded = 0;
                 var total = 0;
@@ -2549,6 +2566,20 @@ var BABYLON;
                     total += request._total;
                 }
                 this._progressCallback(new ProgressEvent("GLTFLoaderProgress", {
+=======
+                }
+                var loaded = 0;
+                var total = 0;
+                for (var _i = 0, _a = this._requests; _i < _a.length; _i++) {
+                    var request = _a[_i];
+                    if (!request._loaded || !request._total) {
+                        return;
+                    }
+                    loaded += request._loaded;
+                    total += request._total;
+                }
+                this._progressCallback(GLTFLoader._progressEventFactory("GLTFLoaderProgress", {
+>>>>>>> 67c83069a447868ab6def9019c048533b0046690
                     lengthComputable: true,
                     loaded: loaded,
                     total: total

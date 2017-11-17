@@ -212,6 +212,9 @@ var BABYLON;
                 if (this._pointerObserver) {
                     scene.onPointerObservable.remove(this._pointerObserver);
                 }
+                if (this._preKeyboardObserver) {
+                    scene.onPreKeyboardObservable.remove(this._preKeyboardObserver);
+                }
                 if (this._canvasPointerOutObserver) {
                     scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
                 }
@@ -459,7 +462,7 @@ var BABYLON;
             AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene) {
                 if (foreground === void 0) { foreground = true; }
                 if (scene === void 0) { scene = null; }
-                var result = new AdvancedDynamicTexture(name, 0, 0, scene);
+                var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
                 // Display
                 var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
                 layer.texture = result;
@@ -1990,7 +1993,7 @@ var BABYLON;
                 }
             };
             Container.prototype._processPicking = function (x, y, type, buttonIndex) {
-                if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
+                if (!this.isVisible || this.notRenderable) {
                     return false;
                 }
                 if (!_super.prototype.contains.call(this, x, y)) {
@@ -2002,6 +2005,9 @@ var BABYLON;
                     if (child._processPicking(x, y, type, buttonIndex)) {
                         return true;
                     }
+                }
+                if (!this.isHitTestVisible) {
+                    return false;
                 }
                 return this._processObservables(type, x, y, buttonIndex);
             };
