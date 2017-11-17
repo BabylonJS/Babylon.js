@@ -3410,7 +3410,7 @@
                     stepsTaken++;
                     deltaTime -= defaultFrameTime;
 
-                } while (deltaTime > 0 && stepsTaken > maxSubSteps);
+                } while (deltaTime > 0 && stepsTaken < maxSubSteps);
 
                 this._timeAccumulator = deltaTime;
 
