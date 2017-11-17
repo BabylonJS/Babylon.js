@@ -457,10 +457,7 @@
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
-                if (url.indexOf("file:") !== 0) {
-                    noIndexedDB();
-                }
-                else {
+                if (url.indexOf("file:") !== -1) {
                     var textureName = decodeURIComponent(url.substring(5).toLowerCase());
                     if (FilesInput.FilesToLoad[textureName]) {
                         try {
@@ -477,12 +474,11 @@
                         catch (e) {
                             img.src = "";
                         }
-                    }
-                    else {
-                        Tools.Error("Image: " + textureName + " not found. Did you forget to provide it?");
-                        img.src = Tools.fallbackTexture;
+                        return img;
                     }
                 }
+
+                noIndexedDB();
             }
 
             return img;
