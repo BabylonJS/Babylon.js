@@ -6163,7 +6163,6 @@ var BABYLON;
             }
             return img;
         };
-        //ANY
         Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError) {
             url = Tools.CleanUrl(url);
             url = Tools.PreprocessUrl(url);
@@ -6204,30 +6203,20 @@ var BABYLON;
                     database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
                 }
             };
+            // If file and file input are set
             if (url.indexOf("file:") !== -1) {
                 var fileName = decodeURIComponent(url.substring(5).toLowerCase());
                 if (BABYLON.FilesInput.FilesToLoad[fileName]) {
                     Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
-                }
-                else {
-                    var errorMessage = "File: " + fileName + " not found. Did you forget to provide it?";
-                    if (onError) {
-                        var e = new Error(errorMessage);
-                        onError(undefined, e);
-                    }
-                    else {
-                        Tools.Error(errorMessage);
-                    }
+                    return request;
                 }
             }
+            // Caching all files
+            if (database && database.enableSceneOffline) {
+                database.openAsync(loadFromIndexedDB, noIndexedDB);
+            }
             else {
-                // Caching all files
-                if (database && database.enableSceneOffline) {
-                    database.openAsync(loadFromIndexedDB, noIndexedDB);
-                }
-                else {
-                    noIndexedDB();
-                }
+                noIndexedDB();
             }
             return request;
         };
