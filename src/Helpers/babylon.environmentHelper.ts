@@ -100,7 +100,7 @@ namespace BABYLON {
          */
         skyboxTexture: string | BaseTexture;
         /**
-         * The color mixed in the ground texture by default.
+         * The color mixed in the skybox texture by default.
          * BabylonJS clearColor by default.
          */
         skyboxColor: Color3;
@@ -123,7 +123,7 @@ namespace BABYLON {
         rootPosition: Vector3;
 
         /**
-         * Sets up the inmage processing in the scene.
+         * Sets up the image processing in the scene.
          * true by default.
          */
         setupImageProcessing: boolean;
