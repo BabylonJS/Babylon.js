@@ -8539,7 +8539,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-4";
+                return "3.1-beta-5";
             },
             enumerable: true,
             configurable: true
