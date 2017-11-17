@@ -5781,7 +5781,6 @@ var BABYLON;
     var Tools = /** @class */ (function () {
         function Tools() {
         }
-        ;
         /**
          * Interpolates between a and b via alpha
          * @param a The lower value (returned when alpha = 0)
@@ -6164,7 +6163,6 @@ var BABYLON;
             }
             return img;
         };
-        //ANY
         Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError) {
             url = Tools.CleanUrl(url);
             url = Tools.PreprocessUrl(url);
@@ -6205,30 +6203,20 @@ var BABYLON;
                     database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
                 }
             };
+            // If file and file input are set
             if (url.indexOf("file:") !== -1) {
                 var fileName = decodeURIComponent(url.substring(5).toLowerCase());
                 if (BABYLON.FilesInput.FilesToLoad[fileName]) {
                     Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
-                }
-                else {
-                    var errorMessage = "File: " + fileName + " not found. Did you forget to provide it?";
-                    if (onError) {
-                        var e = new Error(errorMessage);
-                        onError(undefined, e);
-                    }
-                    else {
-                        Tools.Error(errorMessage);
-                    }
+                    return request;
                 }
             }
+            // Caching all files
+            if (database && database.enableSceneOffline) {
+                database.openAsync(loadFromIndexedDB, noIndexedDB);
+            }
             else {
-                // Caching all files
-                if (database && database.enableSceneOffline) {
-                    database.openAsync(loadFromIndexedDB, noIndexedDB);
-                }
-                else {
-                    noIndexedDB();
-                }
+                noIndexedDB();
             }
             return request;
         };
@@ -6384,7 +6372,7 @@ var BABYLON;
                 }
             }
         };
-        Tools.DumpFramebuffer = function (width, height, engine, successCallback, mimeType) {
+        Tools.DumpFramebuffer = function (width, height, engine, successCallback, mimeType, fileName) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
@@ -6415,38 +6403,63 @@ var BABYLON;
                 var castData = (imageData.data);
                 castData.set(data);
                 context.putImageData(imageData, 0, 0);
-                Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName);
             }
         };
-        Tools.EncodeScreenshotCanvasData = function (successCallback, mimeType) {
+        Tools.EncodeScreenshotCanvasData = function (successCallback, mimeType, fileName) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             var base64Image = screenshotCanvas.toDataURL(mimeType);
             if (successCallback) {
                 successCallback(base64Image);
             }
             else {
-                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-                if (("download" in document.createElement("a"))) {
-                    var a = window.document.createElement("a");
-                    a.href = base64Image;
-                    var date = new Date();
-                    var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
-                    a.setAttribute("download", "screenshot_" + stringDate + ".png");
-                    window.document.body.appendChild(a);
-                    a.addEventListener("click", function () {
-                        if (a.parentElement) {
-                            a.parentElement.removeChild(a);
+                // We need HTMLCanvasElement.toBlob for HD screenshots
+                if (!screenshotCanvas.toBlob) {
+                    //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
+                    screenshotCanvas.toBlob = function (callback, type, quality) {
+                        var canvas = this;
+                        setTimeout(function () {
+                            var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]), len = binStr.length, arr = new Uint8Array(len);
+                            for (var i = 0; i < len; i++) {
+                                arr[i] = binStr.charCodeAt(i);
+                            }
+                            callback(new Blob([arr], { type: type || 'image/png' }));
+                        });
+                    };
+                }
+                screenshotCanvas.toBlob(function (blob) {
+                    var url = URL.createObjectURL(blob);
+                    //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                    if (("download" in document.createElement("a"))) {
+                        var a = window.document.createElement("a");
+                        a.href = url;
+                        if (fileName) {
+                            a.setAttribute("download", fileName);
                         }
-                    });
-                    a.click();
-                    //Or opening a new tab with the image if it is not possible to automatically start download.
-                }
-                else {
-                    var newWindow = window.open("");
-                    var img = newWindow.document.createElement("img");
-                    img.src = base64Image;
-                    newWindow.document.body.appendChild(img);
-                }
+                        else {
+                            var date = new Date();
+                            var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                            a.setAttribute("download", "screenshot_" + stringDate + ".png");
+                        }
+                        window.document.body.appendChild(a);
+                        a.addEventListener("click", function () {
+                            if (a.parentElement) {
+                                a.parentElement.removeChild(a);
+                            }
+                        });
+                        a.click();
+                    }
+                    else {
+                        var newWindow = window.open("");
+                        var img = newWindow.document.createElement("img");
+                        img.onload = function () {
+                            // no longer need to read the blob so it's revoked
+                            URL.revokeObjectURL(url);
+                        };
+                        img.src = url;
+                        newWindow.document.body.appendChild(img);
+                    }
+                });
             }
         };
         Tools.CreateScreenshot = function (engine, camera, size, successCallback, mimeType) {
@@ -6499,9 +6512,10 @@ var BABYLON;
             }
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         };
-        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples) {
+        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples, antialiasing, fileName) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             if (samples === void 0) { samples = 1; }
+            if (antialiasing === void 0) { antialiasing = false; }
             var width;
             var height;
             //If a precision value is specified
@@ -6542,8 +6556,11 @@ var BABYLON;
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = null;
             texture.samples = samples;
+            if (antialiasing) {
+                texture.addPostProcess(new BABYLON.FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
+            }
             texture.onAfterRenderObservable.add(function () {
-                Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
+                Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);
             });
             scene.incrementRenderId();
             scene.resetCachedMaterial();
@@ -8522,7 +8539,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-4";
+                return "3.1-beta-5";
             },
             enumerable: true,
             configurable: true
@@ -20477,35 +20494,37 @@ var BABYLON;
                 this.simplificationQueue.executeNext();
             }
             if (this._engine.isDeterministicLockStep()) {
-                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) / 1000;
-                var defaultTimeStep = (60.0 / 1000.0);
+                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
+                var defaultFPS = (60.0 / 1000.0);
+                var defaultFrameTime = 1000 / 60; // frame time in MS
                 if (this._physicsEngine) {
-                    defaultTimeStep = this._physicsEngine.getTimeStep();
+                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000; //timestep in physics engine is in seconds
                 }
+                var stepsTaken = 0;
                 var maxSubSteps = this._engine.getLockstepMaxSteps();
-                this._timeAccumulator += deltaTime;
-                // compute the amount of fixed steps we should have taken since the last step
-                var internalSteps = Math.floor(this._timeAccumulator / defaultTimeStep);
+                var internalSteps = Math.floor(deltaTime / (1000 * defaultFPS));
                 internalSteps = Math.min(internalSteps, maxSubSteps);
-                for (this._currentInternalStep = 0; this._currentInternalStep < internalSteps; this._currentInternalStep++) {
+                do {
                     this.onBeforeStepObservable.notifyObservers(this);
                     // Animations
-                    this._animationRatio = defaultTimeStep * (60.0 / 1000.0);
+                    this._animationRatio = defaultFrameTime * defaultFPS;
                     this._animate();
                     this.onAfterAnimationsObservable.notifyObservers(this);
                     // Physics
                     if (this._physicsEngine) {
                         this.onBeforePhysicsObservable.notifyObservers(this);
-                        this._physicsEngine._step(defaultTimeStep);
+                        this._physicsEngine._step(defaultFPS);
                         this.onAfterPhysicsObservable.notifyObservers(this);
                     }
-                    this._timeAccumulator -= defaultTimeStep;
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
-                    if ((internalSteps > 1) && (this._currentInternalStep != internalSteps - 1)) {
+                    if ((internalSteps > 1) && (stepsTaken != internalSteps - 1)) {
                         this._evaluateActiveMeshes();
                     }
-                }
+                    stepsTaken++;
+                    deltaTime -= defaultFrameTime;
+                } while (deltaTime > 0 && stepsTaken > maxSubSteps);
+                this._timeAccumulator = deltaTime;
             }
             else {
                 // Animations
@@ -29677,11 +29696,17 @@ var BABYLON;
             var indices = [];
             var positions = [];
             var lines = options.lines;
+            var colors = options.colors;
+            var vertexColors = [];
             var idx = 0;
             for (var l = 0; l < lines.length; l++) {
                 var points = lines[l];
                 for (var index = 0; index < points.length; index++) {
                     positions.push(points[index].x, points[index].y, points[index].z);
+                    if (colors) {
+                        var color = colors[l];
+                        vertexColors.push(color[index].r, color[index].g, color[index].b, color[index].a);
+                    }
                     if (index > 0) {
                         indices.push(idx - 1);
                         indices.push(idx);
@@ -29692,6 +29717,9 @@ var BABYLON;
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
+            if (colors) {
+                vertexData.colors = vertexColors;
+            }
             return vertexData;
         };
         /**
@@ -47044,27 +47072,35 @@ var BABYLON;
 (function (BABYLON) {
     var LinesMesh = /** @class */ (function (_super) {
         __extends(LinesMesh, _super);
-        function LinesMesh(name, scene, parent, source, doNotCloneChildren, useVertexColor) {
+        function LinesMesh(name, scene, parent, source, doNotCloneChildren, useVertexColor, useVertexAlpha) {
             if (scene === void 0) { scene = null; }
             if (parent === void 0) { parent = null; }
             var _this = _super.call(this, name, scene, parent, source, doNotCloneChildren) || this;
             _this.useVertexColor = useVertexColor;
+            _this.useVertexAlpha = useVertexAlpha;
             _this.color = new BABYLON.Color3(1, 1, 1);
             _this.alpha = 1;
             if (source) {
                 _this.color = source.color.clone();
                 _this.alpha = source.alpha;
                 _this.useVertexColor = source.useVertexColor;
+                _this.useVertexAlpha = source.useVertexAlpha;
             }
             _this._intersectionThreshold = 0.1;
+            var defines = [];
             var options = {
                 attributes: [BABYLON.VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
                 needAlphaBlending: false,
+                defines: defines
             };
             if (!useVertexColor) {
                 options.uniforms.push("color");
-                options.needAlphaBlending = true;
+            }
+            else {
+                options.needAlphaBlending = (useVertexAlpha) ? true : false;
+                options.defines.push("#define VERTEXCOLOR");
+                options.attributes.push(BABYLON.VertexBuffer.ColorKind);
             }
             _this._colorShader = new BABYLON.ShaderMaterial("colorShader", _this.getScene(), "color", options);
             return _this;
@@ -47998,6 +48034,8 @@ var BABYLON;
          * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function.
          * The parameter `lines` is an array of lines, each line being an array of successive Vector3.
          * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter. The way to update it is the same than for
+         * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point.
+         * The optional parameter `useVertexAlpha' is to be set to `true` (default `false`) when the alpha value from the former `Color4` array must be used.
          * updating a simple Line mesh, you just need to update every line in the `lines` array : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
          * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -48005,24 +48043,42 @@ var BABYLON;
         MeshBuilder.CreateLineSystem = function (name, options, scene) {
             var instance = options.instance;
             var lines = options.lines;
+            var colors = options.colors;
             if (instance) {
-                var positionFunction = function (positions) {
-                    var i = 0;
-                    for (var l = 0; l < lines.length; l++) {
-                        var points = lines[l];
-                        for (var p = 0; p < points.length; p++) {
-                            positions[i] = points[p].x;
-                            positions[i + 1] = points[p].y;
-                            positions[i + 2] = points[p].z;
-                            i += 3;
+                var positions = instance.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var vertexColor;
+                var lineColors;
+                if (colors) {
+                    vertexColor = instance.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                }
+                var i = 0;
+                var c = 0;
+                for (var l = 0; l < lines.length; l++) {
+                    var points = lines[l];
+                    for (var p = 0; p < points.length; p++) {
+                        positions[i] = points[p].x;
+                        positions[i + 1] = points[p].y;
+                        positions[i + 2] = points[p].z;
+                        if (colors && vertexColor) {
+                            lineColors = colors[l];
+                            vertexColor[c] = lineColors[p].r;
+                            vertexColor[c + 1] = lineColors[p].g;
+                            vertexColor[c + 2] = lineColors[p].b;
+                            vertexColor[c + 3] = lineColors[p].a;
+                            c += 4;
                         }
+                        i += 3;
                     }
-                };
-                instance.updateMeshPositions(positionFunction, false);
+                }
+                instance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+                if (colors && vertexColor) {
+                    instance.updateVerticesData(BABYLON.VertexBuffer.ColorKind, vertexColor, false, false);
+                }
                 return instance;
             }
             // line system creation
-            var lineSystem = new BABYLON.LinesMesh(name, scene);
+            var useVertexColor = (colors) ? true : false;
+            var lineSystem = new BABYLON.LinesMesh(name, scene, null, undefined, undefined, useVertexColor, options.useVertexAlpha);
             var vertexData = BABYLON.VertexData.CreateLineSystem(options);
             vertexData.applyToMesh(lineSystem, options.updatable);
             return lineSystem;
@@ -48034,12 +48090,15 @@ var BABYLON;
          * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
          * The parameter `points` is an array successive Vector3.
          * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * The optional parameter `colors` is an array of successive Color4, one per line point.
+         * The optional parameter `useVertexAlpha' is to be set to `true` (default `false`) when the alpha value from the former `Color4` array must be used.
          * When updating an instance, remember that only point positions can change, not the number of points.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateLines = function (name, options, scene) {
             if (scene === void 0) { scene = null; }
-            var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance }, scene);
+            var colors = (options.colors) ? [options.colors] : null;
+            var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance, colors: colors, useVertexAlpha: options.useVertexAlpha }, scene);
             return lines;
         };
         /**
