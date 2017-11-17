@@ -244,9 +244,6 @@ gulp.task("typescript-compile", function () {
     return merge2([
         tsResult.dts
             .pipe(concat(config.build.declarationFilename))
-            .pipe(gulp.dest(config.build.outputDirectory)),
-        tsResult.dts
-            .pipe(concat(config.build.declarationModuleFilename))
             .pipe(addDtsExport("BABYLON", "babylonjs"))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
@@ -501,16 +498,16 @@ gulp.task("watch", [], function () {
     return tasks;
 });
 
-gulp.task("intellisense", function() {
+gulp.task("intellisense", function () {
     gulp.src(config.build.intellisenseSources)
-    .pipe(concat(config.build.intellisenseFile))
-    .pipe(replace(/^\s*_.*?$/gm, ""))
-    .pipe(replace(/^\s*private .*?$/gm, ""))
-    .pipe(replace(/^\s*public _.*?$/gm, ""))
-    .pipe(replace(/^\s*protected .*?$/gm, ""))
-    .pipe(replace(/^\s*public static _.*?$/gm, ""))
-    .pipe(replace(/^\s*static _.*?$/gm, ""))
-    .pipe(gulp.dest(config.build.playgroundDirectory));
+        .pipe(concat(config.build.intellisenseFile))
+        .pipe(replace(/^\s*_.*?$/gm, ""))
+        .pipe(replace(/^\s*private .*?$/gm, ""))
+        .pipe(replace(/^\s*public _.*?$/gm, ""))
+        .pipe(replace(/^\s*protected .*?$/gm, ""))
+        .pipe(replace(/^\s*public static _.*?$/gm, ""))
+        .pipe(replace(/^\s*static _.*?$/gm, ""))
+        .pipe(gulp.dest(config.build.playgroundDirectory));
 });
 
 /**
