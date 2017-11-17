@@ -15203,12 +15203,6 @@ var BABYLON;
             var indices = this.getIndices();
             var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
-<<<<<<< HEAD
-            if (!bInfo) {
-                return this;
-            }
-=======
->>>>>>> 67c83069a447868ab6def9019c048533b0046690
             if (this._facetDepthSort && !this._facetDepthSortEnabled) {
                 // init arrays, matrix and sort function on first call
                 this._facetDepthSortEnabled = true;
@@ -71371,6 +71365,7 @@ var BABYLON;
                 if (!this._webVRpresenting) {
                     this._webVRCamera.position = this._position;
                     this._scene.activeCamera = this._webVRCamera;
+                    this._scene.imageProcessingConfiguration.applyByPostProcess = true;
                 }
             }
             else {
@@ -71402,6 +71397,7 @@ var BABYLON;
                 this._scene.activeCamera.attachControl(this._canvas);
             }
             this.updateButtonVisibility();
+            this._scene.imageProcessingConfiguration.applyByPostProcess = false;
         };
         Object.defineProperty(VRExperienceHelper.prototype, "position", {
             get: function () {
@@ -71437,6 +71433,8 @@ var BABYLON;
             this._postProcessMove.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
             this._postProcessMove.vignetteEnabled = false;
             new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
+            this._postProcessMove.imageProcessingConfiguration = new BABYLON.ImageProcessingConfiguration();
+            this._scene.imageProcessingConfiguration.applyByPostProcess = false;
             this._createTeleportationCircles();
             this.meshSelectionPredicate = function (mesh) {
                 if (mesh.name.indexOf(_this._floorMeshName) !== -1) {
@@ -80907,11 +80905,7 @@ var BABYLON;
                     loaded += request._loaded;
                     total += request._total;
                 }
-<<<<<<< HEAD
-                this._progressCallback(new ProgressEvent("GLTFLoaderProgress", {
-=======
                 this._progressCallback(GLTFLoader._progressEventFactory("GLTFLoaderProgress", {
->>>>>>> 67c83069a447868ab6def9019c048533b0046690
                     lengthComputable: true,
                     loaded: loaded,
                     total: total

@@ -408,20 +408,6 @@ var BABYLON;
             GLTFLoader.prototype._onProgress = function () {
                 if (!this._progressCallback) {
                     return;
-<<<<<<< HEAD
-                }
-                var loaded = 0;
-                var total = 0;
-                for (var _i = 0, _a = this._requests; _i < _a.length; _i++) {
-                    var request = _a[_i];
-                    if (!request._loaded || !request._total) {
-                        return;
-                    }
-                    loaded += request._loaded;
-                    total += request._total;
-                }
-                this._progressCallback(new ProgressEvent("GLTFLoaderProgress", {
-=======
                 }
                 var loaded = 0;
                 var total = 0;
@@ -434,7 +420,6 @@ var BABYLON;
                     total += request._total;
                 }
                 this._progressCallback(GLTFLoader._progressEventFactory("GLTFLoaderProgress", {
->>>>>>> 67c83069a447868ab6def9019c048533b0046690
                     lengthComputable: true,
                     loaded: loaded,
                     total: total
