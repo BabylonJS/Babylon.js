@@ -15203,12 +15203,6 @@ var BABYLON;
             var indices = this.getIndices();
             var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
-<<<<<<< HEAD
-            if (!bInfo) {
-                return this;
-            }
-=======
->>>>>>> 67c83069a447868ab6def9019c048533b0046690
             if (this._facetDepthSort && !this._facetDepthSortEnabled) {
                 // init arrays, matrix and sort function on first call
                 this._facetDepthSortEnabled = true;
@@ -80907,11 +80901,7 @@ var BABYLON;
                     loaded += request._loaded;
                     total += request._total;
                 }
-<<<<<<< HEAD
-                this._progressCallback(new ProgressEvent("GLTFLoaderProgress", {
-=======
                 this._progressCallback(GLTFLoader._progressEventFactory("GLTFLoaderProgress", {
->>>>>>> 67c83069a447868ab6def9019c048533b0046690
                     lengthComputable: true,
                     loaded: loaded,
                     total: total
