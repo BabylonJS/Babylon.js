@@ -301,6 +301,7 @@ module BABYLON {
                 if (!this._webVRpresenting) {
                     this._webVRCamera.position = this._position;
                     this._scene.activeCamera = this._webVRCamera;
+                    this._scene.imageProcessingConfiguration.applyByPostProcess = true; 
                 }
             }
             else {
@@ -337,6 +338,7 @@ module BABYLON {
             }
 
             this.updateButtonVisibility();
+            this._scene.imageProcessingConfiguration.applyByPostProcess = false; 
         }
 
         public get position(): Vector3 {
@@ -373,6 +375,8 @@ module BABYLON {
             this._postProcessMove.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
             this._postProcessMove.vignetteEnabled = false;
             new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
+            this._postProcessMove.imageProcessingConfiguration = new ImageProcessingConfiguration(); 
+            this._scene.imageProcessingConfiguration.applyByPostProcess = false; 
 
             this._createTeleportationCircles();
 
