@@ -144,6 +144,20 @@ export class TemplateManager {
 
 
 import * as Handlebars from 'handlebars/dist/handlebars.min.js';
+// register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
+Handlebars.registerHelper('eachInMap', function (map, block) {
+    var out = '';
+    Object.keys(map).map(function (prop) {
+        let data = map[prop];
+        if (typeof data === 'object') {
+            data.id = data.id || prop;
+            out += block.fn(data);
+        } else {
+            out += block.fn({ id: prop, value: data });
+        }
+    });
+    return out;
+});
 
 export class Template {
 
@@ -297,7 +311,7 @@ export function getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promi
             return loadFile(location);
         } else {
             location = location.replace('#', '');
-            let element = document.getElementById('#' + location);
+            let element = document.getElementById(location);
             if (element) {
                 return Promise.resolve(element.innerHTML);
             } else {

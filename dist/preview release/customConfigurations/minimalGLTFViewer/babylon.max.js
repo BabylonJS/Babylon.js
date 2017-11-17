@@ -1781,7 +1781,7 @@ var BABYLON;
             matrix.invert();
             var screenSource = MathTmp.Vector3[0];
             screenSource.x = sourceX / viewportWidth * 2 - 1;
-            screenSource.y = sourceY / viewportHeight * 2 - 1;
+            screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
             Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
@@ -4453,7 +4453,7 @@ var BABYLON;
          * Returns the updated Path2.
          */
         Path2.prototype.addLineTo = function (x, y) {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
@@ -4469,7 +4469,7 @@ var BABYLON;
          */
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (numberOfSegments === void 0) { numberOfSegments = 36; }
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
@@ -17909,7 +17909,6 @@ var BABYLON;
              */
             this.onPointerObservable = new BABYLON.Observable();
             this._meshPickProceed = false;
-            this._previousHasSwiped = false;
             this._currentPickResult = null;
             this._previousPickResult = null;
             this._totalPointersPressed = 0;
@@ -18933,7 +18932,6 @@ var BABYLON;
                                     _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
                                     _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
                                     _this._previousButtonPressed = btn;
-                                    _this._previousHasSwiped = clickInfo.hasSwiped;
                                     if (Scene.ExclusiveDoubleClickMode) {
                                         if (_this._previousDelayedSimpleClickTimeout) {
                                             clearTimeout(_this._previousDelayedSimpleClickTimeout);
@@ -18952,7 +18950,6 @@ var BABYLON;
                                 _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
                                 _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
                                 _this._previousButtonPressed = btn;
-                                _this._previousHasSwiped = clickInfo.hasSwiped;
                             }
                         }
                     }
@@ -52837,12 +52834,12 @@ var BABYLON;
             if (sceneFilename.name) {
                 sceneFilename = sceneFilename.name;
             }
-            var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
-            if (queryStringPosition === -1) {
-                queryStringPosition = sceneFilename.length;
+            if (queryStringPosition !== -1) {
+                sceneFilename = sceneFilename.substring(0, queryStringPosition);
             }
-            var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
+            var dotPosition = sceneFilename.lastIndexOf(".");
+            var extension = sceneFilename.substring(dotPosition, sceneFilename.length).toLowerCase();
             return SceneLoader._getPluginForExtension(extension);
         };
         // use babylon file loader directly if sceneFilename is prefixed with "data:"
@@ -80389,6 +80386,14 @@ var BABYLON;
                 this._loaderPendingCount = 0;
                 this._loaderTrackers = new Array();
                 this._parent = parent;
+                if (!GLTFLoader._progressEventFactory) {
+                    if (typeof window["ProgressEvent"] === "function") {
+                        GLTFLoader._progressEventFactory = GLTFLoader._createProgressEventByConstructor;
+                    }
+                    else {
+                        GLTFLoader._progressEventFactory = GLTFLoader._createProgressEventByDocument;
+                    }
+                }
             }
             GLTFLoader.RegisterExtension = function (extension) {
                 if (GLTFLoader.Extensions[extension.name]) {
@@ -80398,6 +80403,14 @@ var BABYLON;
                 GLTFLoader.Extensions[extension.name] = extension;
                 // Keep the order of registration so that extensions registered first are called first.
                 GLTF2.GLTFLoaderExtension._Extensions.push(extension);
+            };
+            GLTFLoader._createProgressEventByConstructor = function (name, data) {
+                return new ProgressEvent(name, data);
+            };
+            GLTFLoader._createProgressEventByDocument = function (name, data) {
+                var event = document.createEvent("ProgressEvent");
+                event.initProgressEvent(name, false, false, data.lengthComputable, data.loaded, data.total);
+                return event;
             };
             GLTFLoader.prototype.dispose = function () {
                 if (this._disposed) {
@@ -80459,7 +80472,7 @@ var BABYLON;
                     loaded += request._loaded;
                     total += request._total;
                 }
-                this._progressCallback(new ProgressEvent("GLTFLoaderProgress", {
+                this._progressCallback(GLTFLoader._progressEventFactory("GLTFLoaderProgress", {
                     lengthComputable: true,
                     loaded: loaded,
                     total: total

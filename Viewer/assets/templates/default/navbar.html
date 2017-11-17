@@ -102,11 +102,11 @@
 </div>
 <div class="button-container flex-container">
     <!-- holding the buttons -->
-    {{#each buttons}}
+    {{#eachInMap buttons}}
     <div id="{{id}}" class="button">
         {{#if text}}
         <span>{{text}}</span>> {{/if}} {{#if image}}
         <img src="{{image}}" alt="{{altText}}"> {{/if}}
     </div>
-    {{/each}}
+    {{/eachInMap}}
 </div>

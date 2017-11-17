@@ -1781,7 +1781,7 @@ var BABYLON;
             matrix.invert();
             var screenSource = MathTmp.Vector3[0];
             screenSource.x = sourceX / viewportWidth * 2 - 1;
-            screenSource.y = sourceY / viewportHeight * 2 - 1;
+            screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
             Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
@@ -4453,7 +4453,7 @@ var BABYLON;
          * Returns the updated Path2.
          */
         Path2.prototype.addLineTo = function (x, y) {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
@@ -4469,7 +4469,7 @@ var BABYLON;
          */
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (numberOfSegments === void 0) { numberOfSegments = 36; }
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
@@ -8522,7 +8522,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-3";
+                return "3.1-beta-4";
             },
             enumerable: true,
             configurable: true
@@ -17909,7 +17909,6 @@ var BABYLON;
              */
             this.onPointerObservable = new BABYLON.Observable();
             this._meshPickProceed = false;
-            this._previousHasSwiped = false;
             this._currentPickResult = null;
             this._previousPickResult = null;
             this._totalPointersPressed = 0;
@@ -18933,7 +18932,6 @@ var BABYLON;
                                     _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
                                     _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
                                     _this._previousButtonPressed = btn;
-                                    _this._previousHasSwiped = clickInfo.hasSwiped;
                                     if (Scene.ExclusiveDoubleClickMode) {
                                         if (_this._previousDelayedSimpleClickTimeout) {
                                             clearTimeout(_this._previousDelayedSimpleClickTimeout);
@@ -18952,7 +18950,6 @@ var BABYLON;
                                 _this._previousStartingPointerPosition.x = _this._startingPointerPosition.x;
                                 _this._previousStartingPointerPosition.y = _this._startingPointerPosition.y;
                                 _this._previousButtonPressed = btn;
-                                _this._previousHasSwiped = clickInfo.hasSwiped;
                             }
                         }
                     }
@@ -52991,12 +52988,12 @@ var BABYLON;
             if (sceneFilename.name) {
                 sceneFilename = sceneFilename.name;
             }
-            var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
-            if (queryStringPosition === -1) {
-                queryStringPosition = sceneFilename.length;
+            if (queryStringPosition !== -1) {
+                sceneFilename = sceneFilename.substring(0, queryStringPosition);
             }
-            var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
+            var dotPosition = sceneFilename.lastIndexOf(".");
+            var extension = sceneFilename.substring(dotPosition, sceneFilename.length).toLowerCase();
             return SceneLoader._getPluginForExtension(extension);
         };
         // use babylon file loader directly if sceneFilename is prefixed with "data:"
@@ -75195,6 +75192,41 @@ var BABYLON;
             mesh.computeWorldMatrix(true);
             var boundingBox = mesh.getBoundingInfo().boundingBox;
             this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ, onAnimationEnd);
+        };
+        /**
+         * Targets the given mesh with its children and updates zoom level accordingly.
+         * @param mesh  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        FramingBehavior.prototype.zoomOnMeshHierarchy = function (mesh, focusOnOriginXZ, onAnimationEnd) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
+            if (onAnimationEnd === void 0) { onAnimationEnd = null; }
+            mesh.computeWorldMatrix(true);
+            var boundingBox = mesh.getHierarchyBoundingVectors(true);
+            this.zoomOnBoundingInfo(boundingBox.min, boundingBox.max, focusOnOriginXZ, onAnimationEnd);
+        };
+        /**
+         * Targets the given meshes with their children and updates zoom level accordingly.
+         * @param meshes  The mesh to target.
+         * @param radius Optional. If a cached radius position already exists, overrides default.
+         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
+         * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
+         * @param onAnimationEnd Callback triggered at the end of the framing animation
+         */
+        FramingBehavior.prototype.zoomOnMeshesHierarchy = function (meshes, focusOnOriginXZ, onAnimationEnd) {
+            if (focusOnOriginXZ === void 0) { focusOnOriginXZ = false; }
+            if (onAnimationEnd === void 0) { onAnimationEnd = null; }
+            var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            for (var i = 0; i < meshes.length; i++) {
+                var boundingInfo = meshes[i].getHierarchyBoundingVectors(true);
+                BABYLON.Tools.CheckExtends(boundingInfo.min, min, max);
+                BABYLON.Tools.CheckExtends(boundingInfo.max, min, max);
+            }
+            this.zoomOnBoundingInfo(min, max, focusOnOriginXZ, onAnimationEnd);
         };
         /**
          * Targets the given mesh and updates zoom level accordingly.

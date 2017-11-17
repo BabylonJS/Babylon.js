@@ -215,6 +215,10 @@ module BABYLON.GUI {
                 scene.onPointerObservable.remove(this._pointerObserver);
             }
 
+            if (this._preKeyboardObserver) {
+                scene.onPreKeyboardObservable.remove(this._preKeyboardObserver);
+            }
+
             if (this._canvasPointerOutObserver) {
                 scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
             }
