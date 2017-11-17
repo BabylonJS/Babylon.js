@@ -15203,12 +15203,6 @@ var BABYLON;
             var indices = this.getIndices();
             var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
-<<<<<<< HEAD
-            if (!bInfo) {
-                return this;
-            }
-=======
->>>>>>> 67c83069a447868ab6def9019c048533b0046690
             if (this._facetDepthSort && !this._facetDepthSortEnabled) {
                 // init arrays, matrix and sort function on first call
                 this._facetDepthSortEnabled = true;

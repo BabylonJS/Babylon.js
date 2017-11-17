@@ -182,8 +182,6 @@ declare module INSPECTOR {
         };
         'Scene': {
             type: typeof BABYLON.Scene;
-<<<<<<< HEAD
-=======
         };
         'TransformNode': {
             type: typeof BABYLON.TransformNode;
@@ -192,7 +190,6 @@ declare module INSPECTOR {
         'AbstractMesh': {
             type: typeof BABYLON.AbstractMesh;
             format: (m: BABYLON.AbstractMesh) => string;
->>>>>>> 67c83069a447868ab6def9019c048533b0046690
         };
         'Mesh': {
             type: typeof BABYLON.Mesh;
