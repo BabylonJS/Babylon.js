@@ -107,7 +107,7 @@ export class DefaultViewer extends AbstractViewer {
                                     let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
                                     requestFullScreen.call(viewerElement);
                                 } else {
-                                    let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen
+                                    let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || document.mozCancelFullScreen
                                     exitFullscreen.call(document);
                                 }
 
