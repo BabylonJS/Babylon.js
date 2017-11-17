@@ -215,6 +215,10 @@ module BABYLON.GUI {
                 scene.onPointerObservable.remove(this._pointerObserver);
             }
 
+            if (this._preKeyboardObserver) {
+                scene.onPreKeyboardObservable.remove(this._preKeyboardObserver);
+            }
+
             if (this._canvasPointerOutObserver) {
                 scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
             }
@@ -300,7 +304,7 @@ module BABYLON.GUI {
                         continue;
                     }
                     
-                    var position = (<BoundingInfo>mesh.getBoundingInfo()).boundingSphere.center;
+                    var position = mesh.getBoundingInfo().boundingSphere.center;
                     var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
 
                     if (projectedPosition.z < 0 || projectedPosition.z > 1) {
@@ -509,7 +513,7 @@ module BABYLON.GUI {
         }
 
         public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null): AdvancedDynamicTexture {
-            var result = new AdvancedDynamicTexture(name, 0, 0, scene);
+            var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, Texture.BILINEAR_SAMPLINGMODE);
 
             // Display
             var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);

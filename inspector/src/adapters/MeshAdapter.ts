@@ -51,7 +51,7 @@ module INSPECTOR {
             this._obj.isVisible = b;
         }
         public isVisible(): boolean {
-            return this._obj.isEnabled() && this._obj.isVisible;
+            return this._obj.isEnabled() && (this._obj.isVisible === undefined || this._obj.isVisible);
         }
         public isBoxVisible(): boolean {
             return (this._obj as BABYLON.AbstractMesh).showBoundingBox;
@@ -100,7 +100,7 @@ module INSPECTOR {
                 let matrix = mesh.getWorldMatrix();
                 let extend = new BABYLON.Vector3(1, 1, 1);
                 if (mesh instanceof BABYLON.AbstractMesh) {
-                    extend = mesh.getBoundingInfo()!.boundingBox.extendSizeWorld;
+                    extend = mesh.getBoundingInfo().boundingBox.extendSizeWorld;
                 }
                 this._axesViewer!.scaleLines = Math.max(extend.x, extend.y, extend.z) * 2;
                 this._axesViewer!.update(this._obj.position, BABYLON.Vector3.TransformNormal(x, matrix), BABYLON.Vector3.TransformNormal(y, matrix), BABYLON.Vector3.TransformNormal(z, matrix));

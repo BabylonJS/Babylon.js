@@ -3,8 +3,6 @@ import { ViewerConfiguration } from './configuration';
 
 import { kebabToCamel } from '../helper';
 
-import * as merge from 'lodash.merge';
-
 export interface IMapper {
     map(rawSource: any): ViewerConfiguration;
 }
