@@ -73,17 +73,14 @@ declare module INSPECTOR {
         };
         'Vector2': {
             type: typeof BABYLON.Vector2;
-            properties: string[];
             format: (vec: BABYLON.Vector2) => string;
         };
         'Vector3': {
             type: typeof BABYLON.Vector3;
-            properties: string[];
             format: (vec: BABYLON.Vector3) => string;
         };
         'Color3': {
             type: typeof BABYLON.Color3;
-            properties: string[];
             format: (color: BABYLON.Color3) => string;
             slider: {
                 r: {
@@ -105,7 +102,6 @@ declare module INSPECTOR {
         };
         'Color4': {
             type: typeof BABYLON.Color4;
-            properties: string[];
             format: (color: BABYLON.Color4) => string;
             slider: {
                 r: {
@@ -127,16 +123,13 @@ declare module INSPECTOR {
         };
         'Quaternion': {
             type: typeof BABYLON.Quaternion;
-            properties: string[];
         };
         'Size': {
             type: typeof BABYLON.Size;
-            properties: string[];
             format: (size: BABYLON.Size) => string;
         };
         'Texture': {
             type: typeof BABYLON.Texture;
-            properties: string[];
             format: (tex: BABYLON.Texture) => string;
         };
         'RenderTargetTexture': {
@@ -156,11 +149,9 @@ declare module INSPECTOR {
         };
         'Sound': {
             type: typeof BABYLON.Sound;
-            properties: string[];
         };
         'ArcRotateCamera': {
             type: typeof BABYLON.ArcRotateCamera;
-            properties: string[];
             slider: {
                 alpha: {
                     min: number;
@@ -181,7 +172,6 @@ declare module INSPECTOR {
         };
         'FreeCamera': {
             type: typeof BABYLON.FreeCamera;
-            properties: string[];
             slider: {
                 fov: {
                     min: number;
@@ -192,11 +182,9 @@ declare module INSPECTOR {
         };
         'Scene': {
             type: typeof BABYLON.Scene;
-            properties: string[];
         };
         'Mesh': {
             type: typeof BABYLON.Mesh;
-            properties: string[];
             format: (m: BABYLON.Mesh) => string;
             slider: {
                 visibility: {
@@ -208,7 +196,6 @@ declare module INSPECTOR {
         };
         'StandardMaterial': {
             type: typeof BABYLON.StandardMaterial;
-            properties: string[];
             format: (mat: BABYLON.StandardMaterial) => string;
             slider: {
                 alpha: {
@@ -220,7 +207,6 @@ declare module INSPECTOR {
         };
         'PBRMaterial': {
             type: typeof BABYLON.PBRMaterial;
-            properties: string[];
             slider: {
                 alpha: {
                     min: number;
@@ -231,7 +217,6 @@ declare module INSPECTOR {
         };
         'PhysicsImpostor': {
             type: typeof BABYLON.PhysicsImpostor;
-            properties: string[];
         };
     };
 }
@@ -277,8 +262,6 @@ declare module INSPECTOR {
         abstract type(): string;
         /** Returns the list of properties to be displayed for this adapter */
         abstract getProperties(): Array<PropertyLine>;
-        /** Returns the actual object behind this adapter */
-        readonly actualObject: any;
         /** Returns true if the given object correspond to this  */
         correspondsTo(obj: any): boolean;
         /** Returns the adapter unique name */
@@ -399,7 +382,7 @@ declare module INSPECTOR {
         /** Keep track of the axis of the actual object */
         private _axesViewer;
         private onBeforeRenderObserver;
-        constructor(mesh: BABYLON.AbstractMesh);
+        constructor(mesh: BABYLON.Node);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */
@@ -767,6 +750,11 @@ declare module INSPECTOR {
          * @param obj
          */
         static GetAllLinesProperties(obj: any): Array<PropertyLine>;
+        /**
+         * Returns an array of string corresponding to tjhe list of properties of the object to be displayed
+         * @param obj
+         */
+        static GetAllLinesPropertiesAsString(obj: any): Array<string>;
         static Capitalize(str: string): string;
     }
 }

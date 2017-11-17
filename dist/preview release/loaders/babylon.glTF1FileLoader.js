@@ -15,6 +15,9 @@ var BABYLON;
         function GLTFFileLoader() {
             // V2 options
             this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+            this.compileMaterials = false;
+            this.compileShadowGenerators = false;
+            this.useClipPlane = false;
             this.name = "gltf";
             this.extensions = {
                 ".gltf": { isBinary: false },
