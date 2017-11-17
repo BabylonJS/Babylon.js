@@ -1265,17 +1265,22 @@
         /**
          * Creates the VertexData of the LineSystem.  
          */
-        public static CreateLineSystem(options: { lines: Vector3[][] }): VertexData {
+        public static CreateLineSystem(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
             var indices = [];
             var positions = [];
             var lines = options.lines;
+            var colors = options.colors;
+            var vertexColors = [];
             var idx = 0;
 
             for (var l = 0; l < lines.length; l++) {
                 var points = lines[l];
                 for (var index = 0; index < points.length; index++) {
                     positions.push(points[index].x, points[index].y, points[index].z);
-
+                    if (colors) {
+                        var color = colors[l];
+                        vertexColors.push(color[index].r, color[index].g, color[index].b, color[index].a);
+                    }
                     if (index > 0) {
                         indices.push(idx - 1);
                         indices.push(idx);
@@ -1286,6 +1291,9 @@
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
+            if (colors) {
+                vertexData.colors = vertexColors;
+            }
             return vertexData;
         }
 
