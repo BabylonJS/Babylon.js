@@ -616,19 +616,23 @@ void main(void) {
 
 	vec3 specularEnvironmentReflectance = specularEnvironmentR0 * environmentBrdf.x + environmentBrdf.y;
 
-	#ifdef AMBIENTINGRAYSCALE
-		float ambientMonochrome = ambientOcclusionColor.r;
-	#else
-		float ambientMonochrome = getLuminance(ambientOcclusionColor);
+	#ifdef RADIANCEOCCLUSION
+		#ifdef AMBIENTINGRAYSCALE
+			float ambientMonochrome = ambientOcclusionColor.r;
+		#else
+			float ambientMonochrome = getLuminance(ambientOcclusionColor);
+		#endif
+
+		float seo = environmentRadianceOcclusion(ambientMonochrome, NdotVUnclamped);
+		specularEnvironmentReflectance *= seo;
 	#endif
 
-	float seo = environmentRadianceOcclusion(ambientMonochrome, NdotVUnclamped);
-	specularEnvironmentReflectance *= seo;
-
-	#ifdef BUMP
-		#ifdef REFLECTIONMAP_3D
-			float eho = environmentHorizonOcclusion(reflectionCoords, normalW);
-			specularEnvironmentReflectance *= eho;
+	#ifdef HORIZONOCCLUSION
+		#ifdef BUMP
+			#ifdef REFLECTIONMAP_3D
+				float eho = environmentHorizonOcclusion(reflectionCoords, normalW);
+				specularEnvironmentReflectance *= eho;
+			#endif
 		#endif
 	#endif
 #else
