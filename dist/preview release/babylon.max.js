@@ -71514,6 +71514,7 @@ var BABYLON;
                 if (!this._webVRpresenting) {
                     this._webVRCamera.position = this._position;
                     this._scene.activeCamera = this._webVRCamera;
+                    this._scene.imageProcessingConfiguration.applyByPostProcess = true;
                 }
             }
             else {
@@ -71545,6 +71546,7 @@ var BABYLON;
                 this._scene.activeCamera.attachControl(this._canvas);
             }
             this.updateButtonVisibility();
+            this._scene.imageProcessingConfiguration.applyByPostProcess = false;
         };
         Object.defineProperty(VRExperienceHelper.prototype, "position", {
             get: function () {
@@ -71580,6 +71582,8 @@ var BABYLON;
             this._postProcessMove.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
             this._postProcessMove.vignetteEnabled = false;
             new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
+            this._postProcessMove.imageProcessingConfiguration = new BABYLON.ImageProcessingConfiguration();
+            this._scene.imageProcessingConfiguration.applyByPostProcess = false;
             this._createTeleportationCircles();
             this.meshSelectionPredicate = function (mesh) {
                 if (mesh.name.indexOf(_this._floorMeshName) !== -1) {
