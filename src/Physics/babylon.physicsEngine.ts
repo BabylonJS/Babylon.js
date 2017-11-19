@@ -256,7 +256,7 @@
             return { force: force, contactPoint: contactPoint };
         }
 
-        private _radialSphere: Mesh;
+        private _radialSphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
         private _prepareRadialSphere(scene: Scene) {
             if (!this._radialSphere) {
                 this._radialSphere = BABYLON.Mesh.CreateSphere(
@@ -279,31 +279,14 @@
             this._radialSphere._updateBoundingInfo();
             this._radialSphere.computeWorldMatrix(true);
   
-            if (this._radialSphere.intersectsMesh(
+            return this._radialSphere.intersectsMesh(
                 impostorObject,
                 true
-            )) {
-                return true;
-            }
-
-            return false;
+            );
         }
-
-        public showRadialSphere(scene: Scene) {
-            this._prepareRadialSphere(scene);
-
-            this._radialSphere.isVisible = true;
-            if (!this._radialSphere.material) {
-                var radialSphereMaterial = new StandardMaterial("radialSphereMaterial", scene);
-                radialSphereMaterial.alpha = 0.5;
-                this._radialSphere.material = radialSphereMaterial;
-            }
-        }
-
-        public hideRadialSphere() {
-            if (this._radialSphere) {
-                this._radialSphere.isVisible = false;
-            }
+        
+        public getRadialSphere() {
+            return this._radialSphere;
         }
     }
 
