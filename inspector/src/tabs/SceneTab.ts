@@ -27,8 +27,12 @@ module INSPECTOR {
 
             // build propertiesline
             let details = [];
-            let props = Helpers.GetAllLinesProperties(this._inspector.scene);
-            for (let prop of props) {
+            // Remove deprecated properties generating warning in console
+            let dontTakeThis = ['interFramePerfCounter', 'lastFramePerfCounter', 'evaluateActiveMeshesDurationPerfCounter', 'renderDurationPerfCounter', 'particlesDurationPerfCounter', 'spriteDuractionPerfCounter'];
+            let props = Helpers.GetAllLinesPropertiesAsString(this._inspector.scene, dontTakeThis);
+
+            for (let propString of props) {
+                let prop = new PropertyLine(new Property(propString, this._inspector.scene));
                 details.push(prop);
             }
             this._detailsPanel.details = details;
