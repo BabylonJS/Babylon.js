@@ -640,7 +640,7 @@
         // Fonts
         setFontSize = function (size) {
             fontSize = size;
-            document.querySelector(".view-lines").style.fontSize = size + "px";
+            jsEditor.updateOptions({fontSize: size});
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
