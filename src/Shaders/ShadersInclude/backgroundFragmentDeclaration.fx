@@ -21,7 +21,3 @@
 #ifdef REFLECTIONFRESNEL
     uniform vec4 vReflectionControl;
 #endif
-
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
-uniform mat4 view;
-#endif

@@ -1993,7 +1993,7 @@ var BABYLON;
                 }
             };
             Container.prototype._processPicking = function (x, y, type, buttonIndex) {
-                if (!this.isVisible || this.notRenderable) {
+                if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                     return false;
                 }
                 if (!_super.prototype.contains.call(this, x, y)) {
@@ -2005,9 +2005,6 @@ var BABYLON;
                     if (child._processPicking(x, y, type, buttonIndex)) {
                         return true;
                     }
-                }
-                if (!this.isHitTestVisible) {
-                    return false;
                 }
                 return this._processObservables(type, x, y, buttonIndex);
             };

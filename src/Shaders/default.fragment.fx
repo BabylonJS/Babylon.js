@@ -33,6 +33,8 @@ varying vec4 vColor;
 	varying vec2 vMainUV2;
 #endif
 
+uniform sampler2D lightprojectionSampler;
+
 // Helper functions
 #include<helperFunctions>
 
@@ -416,6 +418,7 @@ void main(void) {
 	// Convert to associative (premultiplied) format if needed.
 	color.rgb *= color.a;
 #endif
-
+	vec2 coor = vec2(0.5,0.5); 
+	vec4 aa = texture2D(lightprojectionSampler,coor);
 	gl_FragColor = color;
 }

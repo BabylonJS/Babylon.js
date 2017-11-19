@@ -1296,6 +1296,7 @@
 
         /**
          * Disposes the AbstractMesh.  
+         * Some internal references are kept for further use.  
          * By default, all the mesh children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
          * Returns nothing.  
          */

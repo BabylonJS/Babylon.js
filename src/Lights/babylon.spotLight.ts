@@ -26,6 +26,20 @@
             this.forceProjectionMatrixCompute();
         }
 
+        private _projectionTexture: Material;
+        @serialize()
+        /**
+        * Allows reading the projecton texture
+        */
+        public get projectionTexture(): Material{
+            return this._projectionTexture;
+        }
+        /**
+        * Allows setting the value of projection texture
+        */
+        public set projectionTexture(value: Material) {
+            this._projectionTexture = value;
+        }
         @serialize()
         public exponent: number;
         
@@ -46,6 +60,12 @@
             this.direction = direction;
             this.angle = angle;
             this.exponent = exponent;
+//Remember to remove this after testing
+//            this.projectionTexture = new BABYLON.StandardMaterial("ground", scene); 
+            //Material test
+            var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+            groundMaterial.projectedLightTexture = new BABYLON.Texture("textures/red.jpg", scene);
+            this.projectionTexture = groundMaterial;
         }
 
         /**

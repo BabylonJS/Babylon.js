@@ -14,7 +14,6 @@ import { AbstractViewer } from './viewer/viewer';
 import 'babylonjs';
 import 'babylonjs-loaders';
 import 'babylonjs-materials';
-import '../assets/pep.min';
 
 import { InitTags } from './initializer';
 

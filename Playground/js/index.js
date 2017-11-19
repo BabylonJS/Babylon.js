@@ -325,8 +325,6 @@
                 var showInspector = false;
                 var showDebugLayer = false;
                 var initialTabIndex = 0;
-                showBJSPGMenu();
-                jsEditor.updateOptions({readOnly: false});
 
                 if (document.getElementsByClassName('insp-wrapper').length > 0) {
                     for (var i = 0; i < engine.scenes.length; i++) {
@@ -640,7 +638,7 @@
         // Fonts
         setFontSize = function (size) {
             fontSize = size;
-            jsEditor.updateOptions({fontSize: size});
+            document.querySelector(".view-lines").style.fontSize = size + "px";
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 

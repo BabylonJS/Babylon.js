@@ -85,7 +85,8 @@ module BABYLON {
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
         public EXPOSURE = false;
-
+//================
+        public PROJECTEDLIGHTTEXTURE = true;
         constructor() {
             super();
             this.rebuild();
@@ -150,6 +151,12 @@ module BABYLON {
         private _refractionTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public refractionTexture: Nullable<BaseTexture>;;   
+
+//=================================================
+        @serializeAsTexture("projectedLightTexture")
+        private _projectedLightTexture: Nullable<BaseTexture>;;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public projectedLightTexture: Nullable<BaseTexture>;;   
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
@@ -573,7 +580,17 @@ module BABYLON {
                     } else {
                         defines.OPACITY = false;
                     }
-
+//=================
+                    if (this._projectedLightTexture && StandardMaterial.ProjectedLightTextureEnabled){
+                        if (!this._projectedLightTexture.isReadyOrNotBlocking()){
+                            return false;
+                        } else {
+                            MaterialHelper.PrepareDefinesForMergedUV(this._projectedLightTexture, defines, "PROJECTEDLIGHTTEXTURE");
+                            defines.PROJECTEDLIGHTTEXTURE = true;
+                        }
+                    }else {
+                        defines.PROJECTEDLIGHTTEXTURE = false;
+                    }
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                         if (!this._reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
@@ -849,8 +866,8 @@ module BABYLON {
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "logarithmicDepthConstant", "vTangentSpaceParams"
                 ];
-
-                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
+//===============================
+                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler","lightprojectionSampler"]
 
                 var uniformBuffers = ["Material", "Scene"];
 
@@ -1084,7 +1101,6 @@ module BABYLON {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         effect.setTexture("diffuseSampler", this._diffuseTexture);
                     }
-
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                         effect.setTexture("ambientSampler", this._ambientTexture);
                     }
@@ -1112,7 +1128,10 @@ module BABYLON {
                     if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
                         effect.setTexture("specularSampler", this._specularTexture);
                     }
-
+                    //=========================================
+                    if (this._projectedLightTexture && StandardMaterial.ProjectedLightTextureEnabled){
+                        effect.setTexture("lightprojectionSampler",this._projectedLightTexture);
+                    }
                     if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
                         effect.setTexture("bumpSampler", this._bumpTexture);
                     }
@@ -1247,7 +1266,10 @@ module BABYLON {
             if (this._refractionTexture) {
                 activeTextures.push(this._refractionTexture);
             }
-
+//=========================================
+            if (this._projectedLightTexture){
+                activeTextures.push(this._projectedLightTexture);
+            }
             return activeTextures;
         }
 
@@ -1292,6 +1314,10 @@ module BABYLON {
                 return true;
             }                  
 
+            //=======================
+            if (this._projectedLightTexture === texture){
+                return true;
+            }
             return false;    
         }        
 
@@ -1331,6 +1357,10 @@ module BABYLON {
 
                 if (this._refractionTexture) {
                     this._refractionTexture.dispose();
+                }
+//===================
+                if (this._projectedLightTexture){
+                    this._projectedLightTexture.dispose();
                 }
             }
 
@@ -1502,6 +1532,17 @@ module BABYLON {
 
             StandardMaterial._FresnelEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag);
-        }          
+        }
+//==================================
+        static _projectedLightTextureEnabled = true;
+        public static get ProjectedLightTextureEnabled(): boolean{
+            return StandardMaterial._projectedLightTextureEnabled;
+        }
+        public static set ProjectedLightTextureEnabled(value: boolean){
+            if (StandardMaterial._projectedLightTextureEnabled === value){
+                return;
+            }
+            StandardMaterial._projectedLightTextureEnabled = value;
+        }        
     }
 } 
