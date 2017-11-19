@@ -347,7 +347,7 @@
     
     export enum PhysicsRadialImpulseFallof {
         Constant, // impulse is constant in strength across it's whole radius
-        Linear // impulse getgets weaker if it's further from the origin
+        Linear // impulse gets weaker if it's further from the origin
     }
     
 }
