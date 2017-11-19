@@ -175,7 +175,7 @@ module BABYLON.GUI {
         }
 
         public _processPicking(x: number, y: number, type: number, buttonIndex: number): boolean {
-            if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
+            if (!this.isVisible || this.notRenderable) {
                 return false;
             }
 
@@ -189,6 +189,10 @@ module BABYLON.GUI {
                 if (child._processPicking(x, y, type, buttonIndex)) {
                     return true;
                 }
+            }
+
+            if (!this.isHitTestVisible) {
+                return false;
             }
 
             return this._processObservables(type, x, y, buttonIndex);

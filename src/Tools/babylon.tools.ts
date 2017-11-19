@@ -457,10 +457,7 @@
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
-                if (url.indexOf("file:") !== 0) {
-                    noIndexedDB();
-                }
-                else {
+                if (url.indexOf("file:") !== -1) {
                     var textureName = decodeURIComponent(url.substring(5).toLowerCase());
                     if (FilesInput.FilesToLoad[textureName]) {
                         try {
@@ -477,18 +474,16 @@
                         catch (e) {
                             img.src = "";
                         }
-                    }
-                    else {
-                        Tools.Error("Image: " + textureName + " not found. Did you forget to provide it?");
-                        img.src = Tools.fallbackTexture;
+                        return img;
                     }
                 }
+
+                noIndexedDB();
             }
 
             return img;
         }
 
-        //ANY
         public static LoadFile(url: string, callback: (data: any, responseURL?: string) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): Nullable<XMLHttpRequest> {
             url = Tools.CleanUrl(url);
 
@@ -537,29 +532,21 @@
                 }
             };
 
+            // If file and file input are set
             if (url.indexOf("file:") !== -1) {
                 var fileName = decodeURIComponent(url.substring(5).toLowerCase());
                 if (FilesInput.FilesToLoad[fileName]) {
                     Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
-                }
-                else {
-                    let errorMessage = "File: " + fileName + " not found. Did you forget to provide it?";
-                    if (onError) {
-                        let e = new Error(errorMessage);
-                        onError(undefined, e);
-                    } else {
-                        Tools.Error(errorMessage);
-                    }
+                    return request;
                 }
             }
+
+            // Caching all files
+            if (database && database.enableSceneOffline) {
+                database.openAsync(loadFromIndexedDB, noIndexedDB);
+            }
             else {
-                // Caching all files
-                if (database && database.enableSceneOffline) {
-                    database.openAsync(loadFromIndexedDB, noIndexedDB);
-                }
-                else {
-                    noIndexedDB();
-                }
+                noIndexedDB();
             }
 
             return request;
