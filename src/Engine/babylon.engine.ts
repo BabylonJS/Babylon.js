@@ -116,20 +116,20 @@
         }
     }
 
-    var partialLoad = (url: string, index: number, loadedImages: any, scene: Nullable<Scene>,
+    var partialLoadImg = (url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
         onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) => {
 
         var img: HTMLImageElement;
 
         var onload = () => {
             loadedImages[index] = img;
-            loadedImages._internalCount++;
+            (<any>loadedImages)._internalCount++;
 
             if (scene) {
                 scene._removePendingData(img);
             }
 
-            if (loadedImages._internalCount === 6) {
+            if ((<any>loadedImages)._internalCount === 6) {
                 onfinish(loadedImages);
             }
         };
@@ -150,14 +150,46 @@
         }
     }
 
-    var cascadeLoad = (rootUrl: string, scene: Nullable<Scene>,
+    var cascadeLoadImgs = (rootUrl: string, scene: Nullable<Scene>,
         onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) => {
 
-        var loadedImages: any = [];
-        loadedImages._internalCount = 0;
+        var loadedImages: HTMLImageElement[] = [];
+        (<any>loadedImages)._internalCount = 0;
 
-        for (var index = 0; index < 6; index++) {
-            partialLoad(files[index], index, loadedImages, scene, onfinish, onError);
+        for (let index = 0; index < 6; index++) {
+            partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
+        }
+    };
+
+    var partialLoadFile = (url: string, index: number, loadedFiles: (string | ArrayBuffer)[], scene: Nullable<Scene>,
+        onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) => {
+
+        var onload = (data: string | ArrayBuffer) => {
+            loadedFiles[index] = data;
+            (<any>loadedFiles)._internalCount++;
+
+            if ((<any>loadedFiles)._internalCount === 6) {
+                onfinish(loadedFiles);
+            }
+        };
+
+        const onerror = (request: XMLHttpRequest, exception: any) => {
+            if (onErrorCallBack) {
+                onErrorCallBack(request.status + " " + request.statusText, exception);
+            }
+        };
+
+        Tools.LoadFile(url, onload, undefined, undefined, true, onerror);
+    }
+
+    var cascadeLoadFiles = (rootUrl: string, scene: Nullable<Scene>,
+        onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) => {
+
+        var loadedFiles: (string | ArrayBuffer)[] = [];
+        (<any>loadedFiles)._internalCount = 0;
+
+        for (let index = 0; index < 6; index++) {
+            partialLoadFile(files[index], index, loadedFiles, scene, onfinish, onError);
         }
     };
 
@@ -3901,7 +3933,7 @@
 
             let onerror = (request: XMLHttpRequest, exception: any) => {
                 if (onError) {
-                    onError(request.status + " " + request.statusText, exception)
+                    onError(request.status + " " + request.statusText, exception);
                 }
             }
 
@@ -3923,37 +3955,82 @@
                     texture.isReady = true;
                 }, undefined, undefined, true, onerror);
             } else if (isDDS) {
-                Tools.LoadFile(rootUrl, data => {
-                    var info = Internals.DDSTools.GetDDSInfo(data);
+                if (files) {
+                    cascadeLoadFiles(rootUrl,
+                        scene,
+                        imgs => {
+                            var info: Internals.DDSInfo | undefined;
+                            var loadMipmap: boolean = false;
+                            var width: number = 0;
+                            for (let index = 0; index < imgs.length; index++) {
+                                let data = imgs[index];
+                                info = Internals.DDSTools.GetDDSInfo(data);
 
-                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
+                                loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
+                                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
-                    Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
+                                Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
 
-                    if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
-                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                    }
+                                if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
+                                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                                }
 
-                    this.setCubeMapTextureParams(gl, loadMipmap);
+                                texture.width = info.width;
+                                texture.height = info.height;
+                                texture.type = info.textureType;
+                                width = info.width;
+                            }
 
-                    texture.width = info.width;
-                    texture.height = info.height;
-                    texture.isReady = true;
-                    texture.type = info.textureType;
+                            this.setCubeMapTextureParams(gl, loadMipmap);
+                            texture.isReady = true;
 
-                    if (onLoad) {
-                        onLoad({ isDDS: true, width: info.width, info, data, texture });
-                    }
-                }, undefined, undefined, true, onerror);
+                            if (onLoad) {
+                                onLoad({ isDDS: true, width: width, info, imgs, texture });
+                            }
+                        },
+                        files,
+                        onError);
+
+                } else {
+                    Tools.LoadFile(rootUrl,
+                        data => {
+                            var info = Internals.DDSTools.GetDDSInfo(data);
+
+                            var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
+
+                            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
+
+                            Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
+
+                            if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
+                                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                            }
+
+                            this.setCubeMapTextureParams(gl, loadMipmap);
+
+                            texture.width = info.width;
+                            texture.height = info.height;
+                            texture.isReady = true;
+                            texture.type = info.textureType;
+
+                            if (onLoad) {
+                                onLoad({ isDDS: true, width: info.width, info, data, texture });
+                            }
+                        },
+                        undefined,
+                        undefined,
+                        true,
+                        onerror);
+                }
             } else {
                 if (!files) {
                     throw new Error("Cannot load cubemap because files were not defined");
                 }
 
-                cascadeLoad(rootUrl, scene, imgs => {
+                cascadeLoadImgs(rootUrl, scene, imgs => {
                     var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
 
