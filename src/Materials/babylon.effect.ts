@@ -1,12 +1,11 @@
 ﻿module BABYLON {
     export class EffectFallbacks {
-        private _defines: {[key: string]: Array<String>} = {};
+        private _defines: { [key: string]: Array<String> } = {};
 
         private _currentRank = 32;
         private _maxRank = -1;
 
         private _mesh: Nullable<AbstractMesh>;
-        private _meshRank: number;
 
         public unBindMesh() {
             this._mesh = null;
@@ -29,7 +28,6 @@
         }
 
         public addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh) {
-            this._meshRank = rank;
             this._mesh = mesh;
 
             if (rank < this._currentRank) {
@@ -123,8 +121,8 @@
         private _valueCache: { [key: string]: any };
         private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null, 
-                    fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null,
+            fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
             this.name = baseName;
 
             if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
@@ -138,14 +136,14 @@
                 this.onError = options.onError;
                 this.onCompiled = options.onCompiled;
                 this._fallbacks = options.fallbacks;
-                this._indexParameters = options.indexParameters;  
+                this._indexParameters = options.indexParameters;
                 this._transformFeedbackVaryings = options.transformFeedbackVaryings;
 
                 if (options.uniformBuffersNames) {
                     for (var i = 0; i < options.uniformBuffersNames.length; i++) {
                         this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
-                    }          
-                }    
+                    }
+                }
             } else {
                 this._engine = <Engine>engine;
                 this.defines = <string>defines;
@@ -159,7 +157,7 @@
                 this._indexParameters = indexParameters;
                 this._fallbacks = fallbacks;
             }
-        
+
             this.uniqueId = Effect._uniqueIdSeed++;
 
             var vertexSource: any;
@@ -194,7 +192,7 @@
                                     if (baseName) {
                                         var vertex = baseName.vertexElement || baseName.vertex || baseName;
                                         var fragment = baseName.fragmentElement || baseName.fragment || baseName;
-                            
+
                                         this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
                                         this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
                                     } else {
@@ -267,7 +265,7 @@
                 func(this);
                 return;
             }
-            
+
             this.onCompileObservable.add((effect) => {
                 func(effect);
             });
@@ -285,9 +283,9 @@
 
             // Base64 encoded ?
             if (vertex.substr(0, 7) === "base64:") {
-            	var vertexBinary = window.atob(vertex.substr(7));
-            	callback(vertexBinary);
-            	return;
+                var vertexBinary = window.atob(vertex.substr(7));
+                callback(vertexBinary);
+                return;
             }
 
             // Is in local store ?
@@ -320,9 +318,9 @@
 
             // Base64 encoded ?
             if (fragment.substr(0, 7) === "base64:") {
-            	var fragmentBinary = window.atob(fragment.substr(7));
-            	callback(fragmentBinary);
-            	return;
+                var fragmentBinary = window.atob(fragment.substr(7));
+                callback(fragmentBinary);
+                return;
             }
 
             // Is in local store ?
@@ -358,9 +356,9 @@
             // Number lines of shaders source code
             var i = 2;
             var regex = /\n/gm;
-            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function () { return "\n" + (i++) + "\t"; });
             i = 2;
-            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function () { return "\n" + (i++) + "\t"; });
 
             // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
@@ -393,7 +391,7 @@
             }
 
             var hasDrawBuffersExtension = preparedSourceCode.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
-            
+
             // Remove extensions 
             // #extension GL_OES_standard_derivatives : enable
             // #extension GL_EXT_shader_texture_lod : enable
@@ -406,7 +404,7 @@
             result = result.replace(/varying(?![\n\r])\s/g, isFragment ? "in " : "out ");
             result = result.replace(/attribute[ \t]/g, "in ");
             result = result.replace(/[ \t]attribute/g, " in");
-            
+
             if (isFragment) {
                 result = result.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
                 result = result.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
@@ -417,7 +415,7 @@
                 result = result.replace(/gl_FragData/g, "glFragData");
                 result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
             }
-            
+
             callback(result);
         }
 
@@ -607,10 +605,10 @@
 
                 // Let's go through fallbacks then
                 Tools.Error("Unable to compile effect:");
-                BABYLON.Tools.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
+                BABYLON.Tools.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
                     return " " + uniform;
                 }));
-                BABYLON.Tools.Error("Attributes: " + attributesNames.map(function(attribute) {
+                BABYLON.Tools.Error("Attributes: " + attributesNames.map(function (attribute) {
                     return " " + attribute;
                 }));
                 this._dumpShadersSource(this._vertexSourceCode, this._fragmentSourceCode, defines);
@@ -641,7 +639,7 @@
                         this._fallbacks.unBindMesh();
                     }
                 }
-            }            
+            }
         }
 
         public get isSupported(): boolean {
