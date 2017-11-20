@@ -264,13 +264,16 @@
                     "lightMatrix" + lightIndex,
                     "shadowsInfo" + lightIndex,
                     "depthValues" + lightIndex,
+                    //================================
+                    "textureMatrix" + lightIndex,
+                    //"tester" + lightIndex,
                 );
 
                 if (uniformBuffersList) {
                     uniformBuffersList.push("Light" + lightIndex);
                 }
-
-                samplersList.push("shadowSampler" + lightIndex);
+                //====================
+                samplersList.push("shadowSampler" + lightIndex, "projectionLightSampler" + lightIndex,);
             }
 
             if (defines["NUM_MORPH_INFLUENCERS"]) {
