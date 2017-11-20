@@ -65,6 +65,8 @@ module BABYLON {
                 );
             }
 
+            event.cleanup(false);
+
             return event;
         }
 
@@ -111,6 +113,8 @@ module BABYLON {
                 );
             }
 
+            event.cleanup(false);
+
             return event;
         }
 
@@ -124,10 +128,19 @@ module BABYLON {
         private _scene: Scene;
         private _radialSphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
         private _rays: Array<Ray> = [];
-        private _rayHelpers: Array<RayHelper> = [];
+        private _dataFetched: boolean = false; // check if the has fetched the data. If not, do cleanup
 
         constructor(scene: Scene) {
             this._scene = scene;
+        }
+
+        public getData(): PhysicsRadialExplosionEventData {
+            this._dataFetched = true;
+
+            return {
+                radialSphere: this._radialSphere,
+                rays: this._rays,
+            };
         }
 
         public getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof) {
@@ -166,41 +179,22 @@ module BABYLON {
             return { force: force, contactPoint: contactPoint };
         }
 
-        /***** Debug *****/
-
         /**
-         * Will show the radial sphere & rays.
-         * @param rayColor
+         * Cleanup
          */
-        public showDebug(rayColor: Color3 = new BABYLON.Color3(1, 1, 0)) {
-            if (this._radialSphere) {
-                this._radialSphere.isVisible = true;
+        public cleanup(force: boolean = true) {
+            if (force) {
+                this._radialSphere.dispose();
+            } else {
+                var self = this;
+                setTimeout(function () {
+                    if (!self._dataFetched) {
+                        self._radialSphere.dispose();
+                    } else {
+                        Tools.Warn('Could not dispose unused objects. Please call "myRadialExplosionEvent.cleanup()" manually after you do not need the data anymore.');
+                    }
+                }, 0);
             }
-
-            if (this._rays.length) {
-                this._rayHelpers = [];
-                for (var i = 0; i < this._rays.length; i++) {
-                    var rayHelper = new RayHelper(this._rays[i]);
-                    rayHelper.show(this._scene, rayColor);
-                    this._rayHelpers.push(rayHelper);
-                }
-            }
-
-            return true;
-        }
-
-        public hideDebug() {
-            if (this._radialSphere) {
-                this._radialSphere.isVisible = false;
-            }
-
-            if (this._rayHelpers.length) {
-                for (var i = 0; i < this._rayHelpers.length; i++) {
-                    this._rayHelpers[i].hide();
-                }
-            }
-
-            return true;
         }
 
         /***** Helpers *****/
@@ -239,6 +233,11 @@ module BABYLON {
             );
         }
 
+    }
+
+    export interface PhysicsRadialExplosionEventData {
+        radialSphere: Mesh;
+        rays: Array<Ray>;
     }
     
 }
