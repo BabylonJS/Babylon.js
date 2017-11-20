@@ -4,7 +4,7 @@ module BABYLON {
 
         private _offsetX: Nullable<number> = null;
         private _offsetY: Nullable<number> = null;
-        private _pointerCount: number = 0;
+
         private _pointerPressed = new Array<number>();
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
         private _observer: Nullable<Observer<PointerInfo>>;
@@ -17,7 +17,7 @@ module BABYLON {
         public touchMoveSensibility: number = 250.0;
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
-            var previousPosition: Nullable<{x: number, y: number}> = null;
+            var previousPosition: Nullable<{ x: number, y: number }> = null;
 
             if (this._pointerInput === undefined) {
                 this._onLostFocus = (evt) => {
@@ -112,7 +112,6 @@ module BABYLON {
                 this._pointerPressed = [];
                 this._offsetX = null;
                 this._offsetY = null;
-                this._pointerCount = 0;
             }
         }
 
