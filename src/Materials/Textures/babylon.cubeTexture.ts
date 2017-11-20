@@ -40,8 +40,11 @@
 
             this._texture = this._getFromCache(rootUrl, noMipmap);
 
-            if (!files) {
+            const lastDot = rootUrl.lastIndexOf(".");
+            const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
+            const isDDS = (extension === ".dds");
 
+            if (!isDDS && !files) {
                 if (!extensions) {
                     extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
                 }
@@ -55,7 +58,7 @@
                 this._extensions = extensions;
             }
 
-            this._files = files;
+            this._files = files ? files : [];
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
