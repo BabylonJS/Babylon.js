@@ -202,7 +202,7 @@ module INSPECTOR {
          * Returns an array of string corresponding to tjhe list of properties of the object to be displayed
          * @param obj 
          */
-        public static GetAllLinesPropertiesAsString(obj: any, dontTakeThis: Array<string>): Array<string> {
+        public static GetAllLinesPropertiesAsString(obj: any, dontTakeThis: Array<string> = []): Array<string> {
             let props: Array<string> = [];
 
             for (let prop in obj) {
