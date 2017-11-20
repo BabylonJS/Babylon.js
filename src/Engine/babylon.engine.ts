@@ -3021,9 +3021,11 @@
                 texture._buffer = buffer;
             }
 
-            if (onLoad) {
-                texture.onLoadedObservable.add(onLoad);
+            let onLoadObserver: Nullable<Observer<InternalTexture>> = null;
+            if (onLoad && !fallBack) {
+                onLoadObserver = texture.onLoadedObservable.add(onLoad);
             }
+
             if (!fallBack) this._internalTexturesCache.push(texture);
 
             var onerror = () => {
@@ -3031,12 +3033,18 @@
                     scene._removePendingData(texture);
                 }
 
+                if (onLoadObserver) {
+                    texture.onLoadedObservable.remove(onLoadObserver);
+                }
+
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
                     this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if ((isTGA || isDDS) && BABYLON.Tools.UseFallbackTexture) {
+                } else if (BABYLON.Tools.UseFallbackTexture) {
                     this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if (onError) {
+                }
+
+                if (onError) {
                     onError();
                 }
             };

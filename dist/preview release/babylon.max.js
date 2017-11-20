@@ -6113,11 +6113,7 @@ var BABYLON;
             };
             img.onerror = function (err) {
                 Tools.Error("Error while trying to load image: " + url);
-                if (Tools.UseFallbackTexture) {
-                    img.src = Tools.fallbackTexture;
-                    onLoad(img);
-                }
-                else {
+                if (onError) {
                     onError("Error while trying to load image: " + url, err);
                 }
             };
@@ -10306,8 +10302,9 @@ var BABYLON;
                 // Keep a link to the buffer only if we plan to handle context lost
                 texture._buffer = buffer;
             }
-            if (onLoad) {
-                texture.onLoadedObservable.add(onLoad);
+            var onLoadObserver = null;
+            if (onLoad && !fallBack) {
+                onLoadObserver = texture.onLoadedObservable.add(onLoad);
             }
             if (!fallBack)
                 this._internalTexturesCache.push(texture);
@@ -10315,14 +10312,17 @@ var BABYLON;
                 if (scene) {
                     scene._removePendingData(texture);
                 }
+                if (onLoadObserver) {
+                    texture.onLoadedObservable.remove(onLoadObserver);
+                }
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
                     _this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 }
-                else if ((isTGA || isDDS) && BABYLON.Tools.UseFallbackTexture) {
+                else if (BABYLON.Tools.UseFallbackTexture) {
                     _this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 }
-                else if (onError) {
+                if (onError) {
                     onError();
                 }
             };
