@@ -9,7 +9,8 @@
         public clearColor: Color4;
         public autoClear = true;
         public alphaMode = Engine.ALPHA_DISABLE;
-        public alphaConstants: Color4;       
+        public alphaConstants: Color4;  
+        public animations = new Array<Animation>();  
 
         /*
             Enable Pixel Perfect mode where texture is not scaled to be power of 2.

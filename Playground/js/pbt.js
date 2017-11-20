@@ -2,6 +2,7 @@
 var PBT = function() {
     this.decorationStyles = new Array();
     this.decorations = new Array();
+    this.lineRanges = new Array();
     var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     
     this.clearDecorLines = function() {
@@ -41,9 +42,48 @@ var PBT = function() {
 
     this.hideLines = function(lineRanges) {
         var ranges = [];
+        this.lineRanges = lineRanges;
         for(var i = 0; i < lineRanges.length; i +=2) {
             ranges.push(new monaco.Range(lineRanges[i], 1, lineRanges[i + 1], 100000));                
         }
+        jsEditor.setHiddenAreas(ranges);
+    }
+
+    this.hideRange = function(lineRanges) {       
+        var ranges = [];
+        lineRanges = this.lineRanges.concat(lineRanges);
+        this.lineRanges = lineRanges;
+        for(var i = 0; i < lineRanges.length; i +=2) {
+            ranges.push(new monaco.Range(lineRanges[i], 1, lineRanges[i + 1], 100000));                
+        }
+        jsEditor.setHiddenAreas(ranges);
+    }
+
+    this.showRange = function(lineRanges) {
+        var rangePairs = [];
+        var linePairs = [];       
+        for(var i = 0; i < this.lineRanges.length; i +=2) {
+            rangePairs.push(this.lineRanges[i] + "=" + this.lineRanges[i + 1]);                
+        }        
+        for(var i = 0; i < lineRanges.length; i +=2) {
+            linePairs.push(lineRanges[i] + "=" + lineRanges[i + 1]);                
+        }       
+        var rangeString = rangePairs.join("-");         
+        for(var i = 0; i < linePairs.length; i++) {           
+            rangeString = rangeString.replace(linePairs[i]+"-", "");
+            rangeString = rangeString.replace("-" + linePairs[i], ""); //when last element
+        }        
+        rangeString = rangeString.replace(/-/g, ",");       
+        rangeString = rangeString.replace(/=/g, ",");       
+        lineRanges = rangeString.split(",");      
+        lineRanges = lineRanges.map(function(n){
+            return parseInt(n);
+        });       
+        var ranges = [];
+        for(var i = 0; i < lineRanges.length; i +=2) {
+            ranges.push(new monaco.Range(lineRanges[i], 1, lineRanges[i + 1], 100000));                
+        }
+        this.lineRanges = lineRanges;        
         jsEditor.setHiddenAreas(ranges);
     }
 

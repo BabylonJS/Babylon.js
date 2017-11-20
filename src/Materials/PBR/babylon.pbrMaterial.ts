@@ -405,6 +405,22 @@
         public forceNormalForward = false;
 
         /**
+         * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
+         * makes the reflect vector face the model (under horizon).
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useHorizonOcclusion = false;
+        
+        /**
+         * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
+         * too much the area relying on ambient texture to define their ambient occlusion.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useRadianceOcclusion = false;
+
+        /**
          * Gets the image processing configuration used either in this material.
          */
         public get imageProcessingConfiguration(): ImageProcessingConfiguration {

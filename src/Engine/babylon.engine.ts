@@ -116,20 +116,20 @@
         }
     }
 
-    var partialLoad = (url: string, index: number, loadedImages: any, scene: Nullable<Scene>,
+    var partialLoadImg = (url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
         onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) => {
 
         var img: HTMLImageElement;
 
         var onload = () => {
             loadedImages[index] = img;
-            loadedImages._internalCount++;
+            (<any>loadedImages)._internalCount++;
 
             if (scene) {
                 scene._removePendingData(img);
             }
 
-            if (loadedImages._internalCount === 6) {
+            if ((<any>loadedImages)._internalCount === 6) {
                 onfinish(loadedImages);
             }
         };
@@ -150,14 +150,46 @@
         }
     }
 
-    var cascadeLoad = (rootUrl: string, scene: Nullable<Scene>,
+    var cascadeLoadImgs = (rootUrl: string, scene: Nullable<Scene>,
         onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) => {
 
-        var loadedImages: any = [];
-        loadedImages._internalCount = 0;
+        var loadedImages: HTMLImageElement[] = [];
+        (<any>loadedImages)._internalCount = 0;
 
-        for (var index = 0; index < 6; index++) {
-            partialLoad(files[index], index, loadedImages, scene, onfinish, onError);
+        for (let index = 0; index < 6; index++) {
+            partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
+        }
+    };
+
+    var partialLoadFile = (url: string, index: number, loadedFiles: (string | ArrayBuffer)[], scene: Nullable<Scene>,
+        onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) => {
+
+        var onload = (data: string | ArrayBuffer) => {
+            loadedFiles[index] = data;
+            (<any>loadedFiles)._internalCount++;
+
+            if ((<any>loadedFiles)._internalCount === 6) {
+                onfinish(loadedFiles);
+            }
+        };
+
+        const onerror = (request: XMLHttpRequest, exception: any) => {
+            if (onErrorCallBack) {
+                onErrorCallBack(request.status + " " + request.statusText, exception);
+            }
+        };
+
+        Tools.LoadFile(url, onload, undefined, undefined, true, onerror);
+    }
+
+    var cascadeLoadFiles = (rootUrl: string, scene: Nullable<Scene>,
+        onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) => {
+
+        var loadedFiles: (string | ArrayBuffer)[] = [];
+        (<any>loadedFiles)._internalCount = 0;
+
+        for (let index = 0; index < 6; index++) {
+            partialLoadFile(files[index], index, loadedFiles, scene, onfinish, onError);
         }
     };
 
@@ -1453,7 +1485,7 @@
             } else {
                 this._gl.enable(this._gl.RASTERIZER_DISCARD);
             }
-        }        
+        }
 
         /**
          * stop executing a render loop function and remove it from the execution array
@@ -2457,7 +2489,6 @@
                 }
                 return compiledEffect;
             }
-
             var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
             effect._key = name;
             this._compiledEffects[name] = effect;
@@ -3003,7 +3034,7 @@
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
                     this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if ((isTGA || isDDS )&& BABYLON.Tools.UseFallbackTexture) {
+                } else if ((isTGA || isDDS) && BABYLON.Tools.UseFallbackTexture) {
                     this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 } else if (onError) {
                     onError();
@@ -3379,7 +3410,7 @@
             }
         }
 
-        public createRenderTargetTexture(size: number | {width: number, height: number}, options: boolean | RenderTargetCreationOptions): InternalTexture {
+        public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
             let fullOptions = new RenderTargetCreationOptions();
 
             if (options !== undefined && typeof options === "object") {
@@ -3409,8 +3440,8 @@
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
 
-            var width =  (<{width: number, height: number}>size).width || <number>size;
-            var height = (<{width: number, height: number}>size).height || <number>size;
+            var width = (<{ width: number, height: number }>size).width || <number>size;
+            var height = (<{ width: number, height: number }>size).height || <number>size;
 
             var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
 
@@ -3901,7 +3932,7 @@
 
             let onerror = (request: XMLHttpRequest, exception: any) => {
                 if (onError) {
-                    onError(request.status + " " + request.statusText, exception)
+                    onError(request.status + " " + request.statusText, exception);
                 }
             }
 
@@ -3916,58 +3947,89 @@
 
                     ktx.uploadLevels(this._gl, !noMipmap);
 
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-
-                    this.resetTextureCache();
+                    this.setCubeMapTextureParams(gl, loadMipmap);
 
                     texture.width = ktx.pixelWidth;
                     texture.height = ktx.pixelHeight;
                     texture.isReady = true;
                 }, undefined, undefined, true, onerror);
             } else if (isDDS) {
-                Tools.LoadFile(rootUrl, data => {
-                    var info = Internals.DDSTools.GetDDSInfo(data);
+                if (files && files.length === 6) {
+                    cascadeLoadFiles(rootUrl,
+                        scene,
+                        imgs => {
+                            var info: Internals.DDSInfo | undefined;
+                            var loadMipmap: boolean = false;
+                            var width: number = 0;
+                            for (let index = 0; index < imgs.length; index++) {
+                                let data = imgs[index];
+                                info = Internals.DDSTools.GetDDSInfo(data);
 
-                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
+                                loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
+                                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
-                    Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
+                                Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
 
-                    if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
-                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                    }
+                                if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
+                                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                                }
 
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                                texture.width = info.width;
+                                texture.height = info.height;
+                                texture.type = info.textureType;
+                                width = info.width;
+                            }
 
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+                            this.setCubeMapTextureParams(gl, loadMipmap);
+                            texture.isReady = true;
 
-                    this.resetTextureCache();
+                            if (onLoad) {
+                                onLoad({ isDDS: true, width: width, info, imgs, texture });
+                            }
+                        },
+                        files,
+                        onError);
 
-                    texture.width = info.width;
-                    texture.height = info.height;
-                    texture.isReady = true;
-                    texture.type = info.textureType;
+                } else {
+                    Tools.LoadFile(rootUrl,
+                        data => {
+                            var info = Internals.DDSTools.GetDDSInfo(data);
 
-                    if (onLoad) {
-                        onLoad({ isDDS: true, width: info.width, info, data, texture });
-                    }
-                }, undefined, undefined, true, onerror);
+                            var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
+
+                            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
+
+                            Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
+
+                            if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
+                                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                            }
+
+                            this.setCubeMapTextureParams(gl, loadMipmap);
+
+                            texture.width = info.width;
+                            texture.height = info.height;
+                            texture.isReady = true;
+                            texture.type = info.textureType;
+
+                            if (onLoad) {
+                                onLoad({ isDDS: true, width: info.width, info, data, texture });
+                            }
+                        },
+                        undefined,
+                        undefined,
+                        true,
+                        onerror);
+                }
             } else {
                 if (!files) {
                     throw new Error("Cannot load cubemap because files were not defined");
                 }
 
-                cascadeLoad(rootUrl, scene, imgs => {
+                cascadeLoadImgs(rootUrl, scene, imgs => {
                     var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
 
@@ -3995,15 +4057,8 @@
                     if (!noMipmap) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
-
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-
-                    this.resetTextureCache();
+                    
+                    this.setCubeMapTextureParams(gl, !noMipmap);
 
                     texture.width = width;
                     texture.height = height;
@@ -4024,6 +4079,17 @@
             this._internalTexturesCache.push(texture);
 
             return texture;
+        }
+
+        private setCubeMapTextureParams(gl: WebGLRenderingContext, loadMipmap: boolean) {
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+            this.resetTextureCache();
         }
 
         public updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level = 0): void {
@@ -4089,10 +4155,8 @@
             var textureType = this._getWebGLTextureType(type);
             var internalFormat = this._getInternalFormat(format);
 
-            var needConversion = false;
             if (internalFormat === gl.RGB) {
                 internalFormat = gl.RGBA;
-                needConversion = true;
             }
 
             var width = size;

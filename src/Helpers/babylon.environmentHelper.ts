@@ -299,8 +299,8 @@ namespace BABYLON {
         /**
          * Stores the creation options.
          */
-        private readonly _options: IEnvironmentHelperOptions;
         private readonly _scene: Scene;
+        private _options: IEnvironmentHelperOptions;
 
         /**
          * constructor
@@ -363,12 +363,13 @@ namespace BABYLON {
                 this._groundMirror = null;
             }
 
-            this._setupBackground();
-
             if (this._options.environmentTexture && !newOptions.environmentTexture && this._scene.environmentTexture) {
                 this._scene.environmentTexture.dispose();
             }
 
+            this._options = newOptions;
+
+            this._setupBackground();
             this._setupImageProcessing();
         }
 
@@ -436,8 +437,8 @@ namespace BABYLON {
 
                 if (this._options.enableGroundMirror) {
                     this._setupGroundMirrorTexture(sceneSize);
-                    this._setupMirrorInGroundMaterial();
                 }
+                this._setupMirrorInGroundMaterial();
             }
 
             if (this._options.createSkybox) {

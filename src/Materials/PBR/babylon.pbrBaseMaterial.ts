@@ -78,6 +78,8 @@
         public REFLECTIONMAP_OPPOSITEZ = false;
         public LODINREFLECTIONALPHA = false;
         public GAMMAREFLECTION = false;
+        public RADIANCEOCCLUSION = false;
+        public HORIZONOCCLUSION = false;
 
         public REFRACTION = false;
         public REFRACTIONMAP_3D = false;
@@ -267,6 +269,18 @@
         protected _linkRefractionWithTransparency = false;
 
         protected _useLightmapAsShadowmap = false;
+
+        /**
+         * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
+         * makes the reflect vector face the model (under horizon).
+         */
+        protected _useHorizonOcclusion = false; // USEHORIZONOCCLUSION
+
+        /**
+         * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
+         * too much the area relying on ambient texture to define their ambient occlusion.
+         */
+        protected _useRadianceOcclusion = false;
         
         /**
          * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
@@ -869,6 +883,10 @@
             }
 
             defines.FORCENORMALFORWARD = this._forceNormalForward;
+            
+            defines.RADIANCEOCCLUSION = this._useRadianceOcclusion;
+            
+            defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
 
             // Misc.
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
