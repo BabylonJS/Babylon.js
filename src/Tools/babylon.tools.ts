@@ -721,7 +721,7 @@
             }
         }
 
-        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName? : string): void {
+        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -761,7 +761,7 @@
             }
         }
 
-        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName? : string) {
+        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
             var base64Image = screenshotCanvas.toDataURL(mimeType);
             if (successCallback) {
                 successCallback(base64Image);
@@ -771,26 +771,25 @@
                 if (!screenshotCanvas.toBlob) {
                     //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
                     screenshotCanvas.toBlob = function (callback, type, quality) {
-                        var canvas = this;
-                        setTimeout(function() {
-                            var binStr = atob( canvas.toDataURL(type, quality).split(',')[1] ),
+                        setTimeout(() => {
+                            var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
                                 len = binStr.length,
                                 arr = new Uint8Array(len);
 
-                            for (var i = 0; i < len; i++ ) {
+                            for (var i = 0; i < len; i++) {
                                 arr[i] = binStr.charCodeAt(i);
                             }
-                            callback( new Blob( [arr], {type: type || 'image/png'} ) );
+                            callback(new Blob([arr], { type: type || 'image/png' }));
                         });
                     }
                 }
-                screenshotCanvas.toBlob(function(blob) {
+                screenshotCanvas.toBlob(function (blob) {
                     var url = URL.createObjectURL(blob);
                     //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                     if (("download" in document.createElement("a"))) {
                         var a = window.document.createElement("a");
                         a.href = url;
-                        if(fileName) {
+                        if (fileName) {
                             a.setAttribute("download", fileName);
                         }
                         else {
@@ -808,8 +807,9 @@
                     }
                     else {
                         var newWindow = window.open("");
+                        if (!newWindow) return;
                         var img = newWindow.document.createElement("img");
-                        img.onload = function() {
+                        img.onload = function () {
                             // no longer need to read the blob so it's revoked
                             URL.revokeObjectURL(url);
                         };
@@ -882,7 +882,7 @@
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
 
-        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing : boolean = false, fileName? : string): void {
+        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
             var width: number;
             var height: number;
 
@@ -930,7 +930,7 @@
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = null;
             texture.samples = samples;
-            if(antialiasing) {
+            if (antialiasing) {
                 texture.addPostProcess(new BABYLON.FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
             }
             texture.onAfterRenderObservable.add(() => {

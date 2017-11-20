@@ -48,7 +48,8 @@ var tsConfig = {
     noImplicitReturns: true,
     noImplicitThis: true,
     noUnusedLocals: true,
-    strictNullChecks: true
+    strictNullChecks: true,
+    strictFunctionTypes: false
 };
 var tsProject = typescript.createProject(tsConfig);
 

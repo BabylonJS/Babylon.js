@@ -12,7 +12,6 @@ module BABYLON {
 
         private _internalTextures: InternalTexture[];
         private _textures: Texture[];
-        private _count: number;
 
         public get isSupported(): boolean {
             return this._engine.webGLVersion > 1 || this._engine.getCaps().drawBuffersExtension;
@@ -28,7 +27,7 @@ module BABYLON {
             return this._textures[this._textures.length - 1];
         }
 
-        public set wrapU (wrap: number) {
+        public set wrapU(wrap: number) {
             if (this._textures) {
                 for (var i = 0; i < this._textures.length; i++) {
                     this._textures[i].wrapU = wrap;
@@ -36,7 +35,7 @@ module BABYLON {
             }
         }
 
-        public set wrapV (wrap: number) {
+        public set wrapV(wrap: number) {
             if (this._textures) {
                 for (var i = 0; i < this._textures.length; i++) {
                     this._textures[i].wrapV = wrap;
@@ -53,7 +52,7 @@ module BABYLON {
 
             super(name, size, scene, generateMipMaps, doNotChangeAspectRatio);
 
-            this._engine = scene.getEngine();            
+            this._engine = scene.getEngine();
 
             if (!this.isSupported) {
                 this.dispose();
@@ -80,7 +79,6 @@ module BABYLON {
             var generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
             var generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
 
-            this._count = count;
             this._size = size;
             this._multiRenderTargetOptions = {
                 samplingModes: samplingModes,
@@ -90,8 +88,8 @@ module BABYLON {
                 generateDepthTexture: generateDepthTexture,
                 types: types,
                 textureCount: count
-            };            
-            
+            };
+
             this._createInternalTextures();
             this._createTextures();
         }
@@ -110,7 +108,7 @@ module BABYLON {
         }
 
         private _createInternalTextures(): void {
-            this._internalTextures = this._engine.createMultipleRenderTarget(this._size , this._multiRenderTargetOptions);
+            this._internalTextures = this._engine.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions);
         }
 
         private _createTextures(): void {
@@ -133,8 +131,8 @@ module BABYLON {
             if (this._samples === value) {
                 return;
             }
-            
-            for (var i = 0 ; i < this._internalTextures.length; i++) {
+
+            for (var i = 0; i < this._internalTextures.length; i++) {
                 this._samples = this._engine.updateRenderTargetTextureSampleCount(this._internalTextures[i], value);
             }
         }

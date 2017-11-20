@@ -1453,7 +1453,7 @@
             } else {
                 this._gl.enable(this._gl.RASTERIZER_DISCARD);
             }
-        }        
+        }
 
         /**
          * stop executing a render loop function and remove it from the execution array
@@ -3003,7 +3003,7 @@
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
                     this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if ((isTGA || isDDS )&& BABYLON.Tools.UseFallbackTexture) {
+                } else if ((isTGA || isDDS) && BABYLON.Tools.UseFallbackTexture) {
                     this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 } else if (onError) {
                     onError();
@@ -3379,7 +3379,7 @@
             }
         }
 
-        public createRenderTargetTexture(size: number | {width: number, height: number}, options: boolean | RenderTargetCreationOptions): InternalTexture {
+        public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
             let fullOptions = new RenderTargetCreationOptions();
 
             if (options !== undefined && typeof options === "object") {
@@ -3409,8 +3409,8 @@
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_2D, texture);
 
-            var width =  (<{width: number, height: number}>size).width || <number>size;
-            var height = (<{width: number, height: number}>size).height || <number>size;
+            var width = (<{ width: number, height: number }>size).width || <number>size;
+            var height = (<{ width: number, height: number }>size).height || <number>size;
 
             var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
 
@@ -4089,10 +4089,8 @@
             var textureType = this._getWebGLTextureType(type);
             var internalFormat = this._getInternalFormat(format);
 
-            var needConversion = false;
             if (internalFormat === gl.RGB) {
                 internalFormat = gl.RGBA;
-                needConversion = true;
             }
 
             var width = size;
