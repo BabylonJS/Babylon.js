@@ -173,6 +173,7 @@ module BABYLON {
             var multiplier = falloff === PhysicsRadialImpulseFallof.Constant
                 ? strength
                 : strength * (1 - (distanceFromOrigin / radius));
+            multiplier /= impostor.mass;
 
             var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
 
