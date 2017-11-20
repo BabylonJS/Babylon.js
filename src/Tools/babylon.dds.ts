@@ -361,17 +361,17 @@
             return byteArray;
         }
 
-        public static UploadDDSLevels(engine: Engine, gl:WebGLRenderingContext, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1): void {
+        public static UploadDDSLevels(engine: Engine, gl:WebGLRenderingContext, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number): void {
             var ext = engine.getCaps().s3tc;
 
-            var header = new Int32Array(arrayBuffer, 0, headerLengthInt),
-                fourCC, width, height, dataLength, dataOffset,
-                byteArray, mipmapCount, mip;
+            var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
+            var fourCC: number, width: number, height: number, dataLength: number, dataOffset: number;
+            var byteArray: Uint8Array, mipmapCount: number, mip: number;
             let internalFormat = 0;
             let format = 0;
             let blockBytes = 1;
 
-            if (header[off_magic] != DDS_MAGIC) {
+            if (header[off_magic] !== DDS_MAGIC) {
                 Tools.Error("Invalid magic number in DDS header");
                 return;
             }
@@ -411,7 +411,7 @@
                     break;
                 case FOURCC_D3DFMT_R32G32B32A32F:
                     computeFormats = true;
-                    break;                    
+                    break;
                 case FOURCC_DX10:
                     // There is an additionnal header so dataOffset need to be changed
                     dataOffset += 5 * 4; // 5 uints
@@ -427,7 +427,7 @@
                             info.isFourCC = false;
                             bpp = 32;
                             supported = true;
-                            break;                        
+                            break;
                     }
 
                     if (supported) {
@@ -450,7 +450,7 @@
             }
             
             for (var face = 0; face < faces; face++) {
-                var sampler = faces === 1 ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
+                var sampler = faces === 1 ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face + (currentFace ? currentFace : 0));
 
                 width = header[off_width];
                 height = header[off_height];
@@ -462,14 +462,14 @@
 
                         if (!info.isCompressed && info.isFourCC) {
                             dataLength = width * height * 4;
-                            var FloatArray: Nullable<ArrayBufferView> = null;
+                            var floatArray: Nullable<ArrayBufferView> = null;
 
                             if (engine.badOS || engine.badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
                                 if (bpp === 128) {
-                                    FloatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);                                    
+                                    floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);                                    
                                 }
                                 else if (bpp === 64) {
-                                    FloatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 }
 
                                 info.textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -478,20 +478,20 @@
                             }
                             else {
                                 if (bpp === 128) {
-                                    FloatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
-                                    FloatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
 
                                     info.textureType = Engine.TEXTURETYPE_FLOAT;
                                     format = engine._getWebGLTextureType(info.textureType);    
                                     internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);                            
                                 } else { // 64
-                                    FloatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 }
                             }
 
-                            if (FloatArray) {
-                                engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, FloatArray);
+                            if (floatArray) {
+                                engine._uploadDataToTexture(sampler, i, internalFormat, width, height, gl.RGBA, format, floatArray);
                             }
                         } else if (info.isRGB) {
                             if (bpp === 24) {
@@ -523,6 +523,11 @@
 
                     width = Math.max(1.0, width);
                     height = Math.max(1.0, height);
+
+                    if (currentFace) {
+                        // Loading a single face
+                        break;
+                    }
                 }
             }
         }
