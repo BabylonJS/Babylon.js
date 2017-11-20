@@ -1160,7 +1160,9 @@ module BABYLON {
                 MaterialHelper.BindLogDepth(defines, effect, scene);
 
                 // image processing
-                this._imageProcessingConfiguration.bind(this._activeEffect);
+                if (!this._imageProcessingConfiguration.applyByPostProcess) {
+                    this._imageProcessingConfiguration.bind(this._activeEffect);
+                }
             }
 
             this._uniformBuffer.update();

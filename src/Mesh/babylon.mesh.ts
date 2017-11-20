@@ -1582,8 +1582,9 @@
         }
 
         /**
-         * Disposes the mesh.
-         * This also frees the memory allocated under the hood to all the buffers used by WebGL.
+         * Disposes the Mesh.  
+         * By default, all the mesh children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
+         * Returns nothing.  
          */
         public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures: boolean = false): void {
             this.morphTargetManager = null;
