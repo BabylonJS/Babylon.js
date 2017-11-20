@@ -61,7 +61,7 @@
 
         private _impostors: Array<PhysicsImpostor> = [];
         private _joints: Array<PhysicsImpostorJoint> = [];
-
+        
         /**
          * Adding a new impostor for the impostor tracking.
          * This will be done by the impostor itself.
@@ -146,6 +146,10 @@
         public getPhysicsPlugin(): IPhysicsEnginePlugin {
             return this._physicsPlugin;
         }
+        
+        public getImpostors(): Array<PhysicsImpostor> {
+            return this._impostors;
+        }
 
         public getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor> {
             for (var i = 0; i < this._impostors.length; ++i) {
@@ -167,127 +171,6 @@
             return null;
         }
 
-        public applyRadialImpulse(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant) {
-            if (this._impostors.length === 0) {
-                return null;
-            }
-
-            for (var i = 0; i < this._impostors.length; ++i) {
-                var impostor = this._impostors[i];
-                var impostorForceAndContactPoint = this.getImpostorForceAndContactPoint(
-                    impostor,
-                    origin,
-                    radius,
-                    strength,
-                    falloff
-                );
-                if (impostorForceAndContactPoint === false) {
-                    continue;
-                }
-
-                impostor.applyImpulse(
-                    impostorForceAndContactPoint.force,
-                    impostorForceAndContactPoint.contactPoint
-                );
-            }
-
-            return null;
-        }
-
-        public applyRadialForce(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant) {
-            if (this._impostors.length === 0) {
-                return null;
-            }
-
-            for (var i = 0; i < this._impostors.length; ++i) {
-                var impostor = this._impostors[i];
-                var impostorForceAndContactPoint = this.getImpostorForceAndContactPoint(
-                    impostor,
-                    origin,
-                    radius,
-                    strength,
-                    falloff
-                );
-                if (impostorForceAndContactPoint === false) {
-                    continue;
-                }
-
-                impostor.applyForce(
-                    impostorForceAndContactPoint.force,
-                    impostorForceAndContactPoint.contactPoint
-                );
-            }
-
-            return null;
-        }
-
-        private getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof) {
-            if (impostor.mass === 0) {
-                return false;
-            }
-
-            if (!this.intersectsWithRadialSphere(impostor, origin, radius)) {
-                return false;
-            }
-
-            var impostorObject = (<Mesh>impostor.object);
-            var impostorObjectCenter = impostor.getObjectCenter();
-            var direction = impostorObjectCenter.subtract(origin);
-
-            var ray = new Ray(origin, direction, radius);
-            var hit = ray.intersectsMesh(impostorObject);
-
-            var contactPoint = hit.pickedPoint;
-            if (!contactPoint) {
-                return false;
-            }
-
-            var distanceFromOrigin = BABYLON.Vector3.Distance(origin, contactPoint);
-            if (distanceFromOrigin > radius) {
-                return false;
-            }
-            
-            var multiplier = falloff === PhysicsRadialImpulseFallof.Constant
-                ? strength
-                : strength * (1 - (distanceFromOrigin / radius));
-
-            var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
-
-            return { force: force, contactPoint: contactPoint };
-        }
-
-        private _radialSphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
-        private _prepareRadialSphere(scene: Scene) {
-            if (!this._radialSphere) {
-                this._radialSphere = BABYLON.Mesh.CreateSphere(
-                    "radialSphere",
-                    32,
-                    1,
-                    scene
-                );
-                this._radialSphere.isVisible = false;
-            }
-        }
-
-        private intersectsWithRadialSphere(impostor: PhysicsImpostor, origin: Vector3, radius: number): boolean {
-            var impostorObject = <Mesh>impostor.object;
-
-            this._prepareRadialSphere(impostorObject.getScene());
-
-            this._radialSphere.position = origin;
-            this._radialSphere.scaling = new Vector3(radius * 2, radius * 2, radius * 2);
-            this._radialSphere._updateBoundingInfo();
-            this._radialSphere.computeWorldMatrix(true);
-  
-            return this._radialSphere.intersectsMesh(
-                impostorObject,
-                true
-            );
-        }
-        
-        public getRadialSphere() {
-            return this._radialSphere;
-        }
     }
 
     export interface IPhysicsEnginePlugin {
@@ -326,11 +209,6 @@
         getBoxSizeToRef(impostor: PhysicsImpostor, result:Vector3): void;
         syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor): void;
         dispose(): void;
-    }
-    
-    export enum PhysicsRadialImpulseFallof {
-        Constant, // impulse is constant in strength across it's whole radius
-        Linear // impulse gets weaker if it's further from the origin
     }
     
 }
