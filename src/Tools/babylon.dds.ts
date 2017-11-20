@@ -365,7 +365,7 @@
             var ext = engine.getCaps().s3tc;
 
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
-            var fourCC: number, width: number, height: number, dataLength: number, dataOffset: number;
+            var fourCC: number, width: number, height: number, dataLength: number = 0, dataOffset: number;
             var byteArray: Uint8Array, mipmapCount: number, mip: number;
             let internalFormat = 0;
             let format = 0;
@@ -517,7 +517,7 @@
                             engine._uploadCompressedDataToTexture(sampler, i, internalFormat, width, height, byteArray);
                         }
                     }
-                    dataOffset += width * height * (bpp / 8);
+                    dataOffset += dataLength;
                     width *= 0.5;
                     height *= 0.5;
 
