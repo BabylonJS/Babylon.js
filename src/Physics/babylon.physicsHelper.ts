@@ -118,6 +118,37 @@ module BABYLON {
             return event;
         }
 
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        public gravitationalField(
+            origin: Vector3,
+            radius: number,
+            strength: number,
+            falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant
+        ) {
+            if (!this._physicsEngine) {
+                Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                return null;
+            }
+
+            var impostors = this._physicsEngine.getImpostors();
+            if (impostors.length === 0) {
+                return null;
+            }
+
+            return new PhysicsGravitationalFieldEvent(
+                this,
+                this._scene,
+                origin,
+                radius,
+                strength,
+                falloff
+            );
+        }
     }
 
     /**
@@ -209,12 +240,6 @@ module BABYLON {
                 );
                 this._radialSphere.isVisible = false;
             }
-
-            if (!this._radialSphere.material) {
-                var radialSphereMaterial = new BABYLON.StandardMaterial("radialSphereMaterial", this._scene);
-                radialSphereMaterial.alpha = 0.5;
-                this._radialSphere.material = radialSphereMaterial;
-            }
         }
 
         private _intersectsWithRadialSphere(impostor: PhysicsImpostor, origin: Vector3, radius: number): boolean {
@@ -239,5 +264,79 @@ module BABYLON {
         radialSphere: Mesh;
         rays: Array<Ray>;
     }
-    
+
+    export class PhysicsGravitationalFieldEvent {
+
+        private _physicsHelper: PhysicsHelper;
+        private _scene: Scene;
+        private _origin: Vector3;
+        private _radius: number;
+        private _strength: number;
+        private _falloff: PhysicsRadialImpulseFallof;
+        private _tickCallback: any;
+        private _radialExplosionEvent: PhysicsRadialExplosionEvent;
+
+        constructor(
+            physicsHelper: PhysicsHelper,
+            scene: Scene,
+            origin: Vector3,
+            radius: number,
+            strength: number,
+            falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant
+        ) {
+            this._physicsHelper = physicsHelper;
+            this._scene = scene;
+            this._origin = origin;
+            this._radius = radius;
+            this._strength = strength;
+            this._falloff = falloff;
+            this._tickCallback = this._tick.bind(this);
+        }
+
+        public getData(callback: (data: PhysicsGravitationalFieldEventData) => void) {
+            var self = this;
+            // wait until the first tick has ran, so we can the the radialExplosionEvent (& it's data)
+            var interval = setInterval(function() {
+                if (self._radialExplosionEvent) {
+                    clearInterval(interval);
+                    callback({
+                        radialSphere: <Mesh>self._radialExplosionEvent.getData().radialSphere,
+                    });
+                }
+            }, 16.66);
+        }
+
+        public enable() {
+            this._scene.registerBeforeRender(this._tickCallback);
+        }
+
+        public disable() {
+            this._scene.unregisterBeforeRender(this._tickCallback);
+        }
+
+        private _tick() {
+            // Since the params won't change, we fetch the event only once
+            if (this._radialExplosionEvent) {
+                this._physicsHelper.applyRadialExplosionForce(
+                    this._origin,
+                    this._radius,
+                    this._strength * -1,
+                    this._falloff
+                );
+            } else {
+                this._radialExplosionEvent = <PhysicsRadialExplosionEvent>this._physicsHelper.applyRadialExplosionForce(
+                    this._origin,
+                    this._radius,
+                    this._strength * -1,
+                    this._falloff
+                );
+            }
+        }
+
+    }
+
+    export interface PhysicsGravitationalFieldEventData {
+        radialSphere: Mesh;
+    }
+
 }
