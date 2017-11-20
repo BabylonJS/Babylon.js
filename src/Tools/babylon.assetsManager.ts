@@ -130,7 +130,7 @@ module BABYLON {
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             Tools.LoadFile(this.url, (data) => {
-                this.text = data;
+                this.text = data as string;
                 onSuccess();
             }, undefined, scene.database, false, (request, exception) => {
                 if (request) {
@@ -150,7 +150,7 @@ module BABYLON {
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             Tools.LoadFile(this.url, (data) => {
 
-                this.data = data;
+                this.data = data as ArrayBuffer;
                 onSuccess();
             }, undefined, scene.database, true, (request, exception) => {
                 if (request) {

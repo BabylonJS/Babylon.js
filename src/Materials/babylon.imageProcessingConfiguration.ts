@@ -275,6 +275,26 @@ module BABYLON {
             this._updateParameters();
         }
 
+        @serialize()
+        private _isEnabled = true;
+        /**
+         * Gets wether the image processing is enabled or not.
+         */
+        public get isEnabled(): boolean {
+            return this._isEnabled;
+        }
+        /**
+         * Sets wether the image processing is enabled or not.
+         */
+        public set isEnabled(value: boolean) {
+            if (this._isEnabled === value) {
+                return;
+            }
+
+            this._isEnabled = value;
+            this._updateParameters();
+        }        
+
         /**
         * An event triggered when the configuration changes and requires Shader to Update some parameters.
         * @type {BABYLON.Observable}
@@ -333,7 +353,7 @@ module BABYLON {
          * @param defines the list of defines to complete
          */
         public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess: boolean = false): void {
-            if (forPostProcess !== this.applyByPostProcess) {
+            if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
                 defines.VIGNETTE = false;
                 defines.TONEMAPPING = false;
                 defines.CONTRAST = false;
@@ -342,7 +362,7 @@ module BABYLON {
                 defines.COLORGRADING = false;
                 defines.COLORGRADING3D = false;
                 defines.IMAGEPROCESSING = false;
-                defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
+                defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
                 return;
             }
 
