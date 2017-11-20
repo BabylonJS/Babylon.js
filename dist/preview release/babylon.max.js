@@ -12565,10 +12565,20 @@ var BABYLON;
         /**
          * Get all child-meshes of this node.
          */
-        Node.prototype.getChildMeshes = function (directDecendantsOnly, predicate) {
+        Node.prototype.getChildMeshes = function (directDescendantsOnly, predicate) {
             var results = [];
-            this._getDescendants(results, directDecendantsOnly, function (node) {
+            this._getDescendants(results, directDescendantsOnly, function (node) {
                 return ((!predicate || predicate(node)) && (node instanceof BABYLON.AbstractMesh));
+            });
+            return results;
+        };
+        /**
+         * Get all child-transformNodes of this node.
+         */
+        Node.prototype.getChildTransformNodes = function (directDescendantsOnly, predicate) {
+            var results = [];
+            this._getDescendants(results, directDescendantsOnly, function (node) {
+                return ((!predicate || predicate(node)) && (node instanceof BABYLON.TransformNode));
             });
             return results;
         };
@@ -13846,6 +13856,35 @@ var BABYLON;
             }
             return transformNode;
         };
+        /**
+             * Disposes the TransformNode.
+             * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.
+             * Returns nothing.
+             */
+        TransformNode.prototype.dispose = function (doNotRecurse) {
+            // Animations
+            this.getScene().stopAnimation(this);
+            // Remove from scene
+            this.getScene().removeTransformNode(this);
+            this._cache = null;
+            if (!doNotRecurse) {
+                // Children
+                var objects = this.getDescendants(true);
+                for (var index = 0; index < objects.length; index++) {
+                    objects[index].dispose();
+                }
+            }
+            else {
+                var childMeshes = this.getChildMeshes(true);
+                for (index = 0; index < childMeshes.length; index++) {
+                    var child = childMeshes[index];
+                    child.parent = null;
+                    child.computeWorldMatrix(true);
+                }
+            }
+            this.onAfterWorldMatrixUpdateObservable.clear();
+            _super.prototype.dispose.call(this);
+        };
         // Statics
         TransformNode.BILLBOARDMODE_NONE = 0;
         TransformNode.BILLBOARDMODE_X = 1;
@@ -15086,8 +15125,6 @@ var BABYLON;
             }
             // Skeleton
             this.skeleton = null;
-            // Animations
-            this.getScene().stopAnimation(this);
             // Physics
             if (this.physicsImpostor) {
                 this.physicsImpostor.dispose();
@@ -15150,7 +15187,6 @@ var BABYLON;
             engine.wipeCaches();
             // Remove from scene
             this.getScene().removeMesh(this);
-            this._cache = null;
             if (disposeMaterialAndTextures) {
                 if (this.material) {
                     this.material.dispose(false, true);
@@ -15164,19 +15200,6 @@ var BABYLON;
                         index--;
                     }
                 }
-                // Children
-                var objects = this.getDescendants(true);
-                for (index = 0; index < objects.length; index++) {
-                    objects[index].dispose();
-                }
-            }
-            else {
-                var childMeshes = this.getChildMeshes(true);
-                for (index = 0; index < childMeshes.length; index++) {
-                    var child = childMeshes[index];
-                    child.parent = null;
-                    child.computeWorldMatrix(true);
-                }
             }
             // facet data
             if (this._facetDataEnabled) {
@@ -15186,7 +15209,7 @@ var BABYLON;
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
             this._isDisposed = true;
-            _super.prototype.dispose.call(this);
+            _super.prototype.dispose.call(this, doNotRecurse);
         };
         /**
          * Adds the passed mesh as a child to the current mesh.

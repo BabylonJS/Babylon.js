@@ -906,5 +906,40 @@ module BABYLON {
          
             return transformNode;
         }        
+
+    /**
+         * Disposes the TransformNode.  
+         * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
+         * Returns nothing.  
+         */
+        public dispose(doNotRecurse?: boolean): void {
+            // Animations
+            this.getScene().stopAnimation(this);
+
+            // Remove from scene
+            this.getScene().removeTransformNode(this);
+
+            this._cache = null;
+
+            if (!doNotRecurse) {
+                // Children
+                var objects = this.getDescendants(true);
+                for (var index = 0; index < objects.length; index++) {
+                    objects[index].dispose();
+                }
+            } else {
+                var childMeshes = this.getChildMeshes(true);
+                for (index = 0; index < childMeshes.length; index++) {
+                    var child = childMeshes[index];
+                    child.parent = null;
+                    child.computeWorldMatrix(true);
+                }
+            }
+
+            this.onAfterWorldMatrixUpdateObservable.clear();
+
+            super.dispose();
+        }
+        
     }
 }

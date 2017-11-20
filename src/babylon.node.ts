@@ -321,10 +321,21 @@
         /**
          * Get all child-meshes of this node.
          */
-        public getChildMeshes(directDecendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[] {
+        public getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[] {
             var results: Array<AbstractMesh> = [];
-            this._getDescendants(results, directDecendantsOnly, (node: Node) => {
+            this._getDescendants(results, directDescendantsOnly, (node: Node) => {
                 return ((!predicate || predicate(node)) && (node instanceof AbstractMesh));
+            });
+            return results;
+        }
+
+        /**
+         * Get all child-transformNodes of this node.
+         */
+        public getChildTransformNodes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): TransformNode[] {
+            var results: Array<TransformNode> = [];
+            this._getDescendants(results, directDescendantsOnly, (node: Node) => {
+                return ((!predicate || predicate(node)) && (node instanceof TransformNode));
             });
             return results;
         }
