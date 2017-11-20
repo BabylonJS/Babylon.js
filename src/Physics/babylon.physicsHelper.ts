@@ -18,7 +18,7 @@ module BABYLON {
             this._physicsEngine = this._scene.getPhysicsEngine();
             
             if (!this._physicsEngine) {
-                Tools.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
+                Tools.Warn('Physics engine not enabled. Please enable the physics before you can use the methods.');
             }
         }
         
@@ -140,7 +140,7 @@ module BABYLON {
                 return null;
             }
 
-            return new PhysicsGravitationalFieldEvent(
+            var event = new PhysicsGravitationalFieldEvent(
                 this,
                 this._scene,
                 origin,
@@ -148,12 +148,15 @@ module BABYLON {
                 strength,
                 falloff
             );
+
+            event.cleanup(false);
+
+            return event;
         }
     }
 
-    /**
-     * All the stuff related to the radial explosion.
-     */
+    /***** Radial explosion *****/
+
     export class PhysicsRadialExplosionEvent {
         
         private _scene: Scene;
@@ -210,9 +213,6 @@ module BABYLON {
             return { force: force, contactPoint: contactPoint };
         }
 
-        /**
-         * Cleanup
-         */
         public cleanup(force: boolean = true) {
             if (force) {
                 this._radialSphere.dispose();
@@ -221,14 +221,12 @@ module BABYLON {
                 setTimeout(function () {
                     if (!self._dataFetched) {
                         self._radialSphere.dispose();
-                    } else {
-                        Tools.Warn('Could not dispose unused objects. Please call "myRadialExplosionEvent.cleanup()" manually after you do not need the data anymore.');
                     }
                 }, 0);
             }
         }
 
-        /***** Helpers *****/
+        /*** Helpers ***/
 
         private _prepareRadialSphere() {
             if (!this._radialSphere) {
@@ -264,6 +262,9 @@ module BABYLON {
         radialSphere: Mesh;
         rays: Array<Ray>;
     }
+
+
+    /***** Gravitational Field *****/
 
     export class PhysicsGravitationalFieldEvent {
 
@@ -312,6 +313,12 @@ module BABYLON {
 
         public disable() {
             this._scene.unregisterBeforeRender(this._tickCallback);
+        }
+
+        public cleanup(force: boolean = true) {
+            if (this._radialExplosionEvent) {
+                this._radialExplosionEvent.cleanup();
+            }
         }
 
         private _tick() {
