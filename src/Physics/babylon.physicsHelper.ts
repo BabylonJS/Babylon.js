@@ -162,7 +162,7 @@ module BABYLON {
         private _scene: Scene;
         private _radialSphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
         private _rays: Array<Ray> = [];
-        private _dataFetched: boolean = false; // check if the has fetched the data. If not, do cleanup
+        private _dataFetched: boolean = false; // check if the data has been fetched. If not, do cleanup
 
         constructor(scene: Scene) {
             this._scene = scene;
@@ -275,7 +275,8 @@ module BABYLON {
         private _strength: number;
         private _falloff: PhysicsRadialImpulseFallof;
         private _tickCallback: any;
-        private _radialExplosionEvent: PhysicsRadialExplosionEvent;
+        private _radialSphere: Mesh;
+        private _dataRequested: boolean = false; // check if the has been requested the data. If not, do cleanup
 
         constructor(
             physicsHelper: PhysicsHelper,
@@ -295,13 +296,15 @@ module BABYLON {
         }
 
         public getData(callback: (data: PhysicsGravitationalFieldEventData) => void) {
+            this._dataRequested = true;
+
             var self = this;
             // wait until the first tick has ran, so we can the the radialExplosionEvent (& it's data)
             var interval = setInterval(function() {
-                if (self._radialExplosionEvent) {
+                if (self._radialSphere) {
                     clearInterval(interval);
                     callback({
-                        radialSphere: <Mesh>self._radialExplosionEvent.getData().radialSphere,
+                        radialSphere: self._radialSphere,
                     });
                 }
             }, 16.66);
@@ -316,14 +319,21 @@ module BABYLON {
         }
 
         public cleanup(force: boolean = true) {
-            if (this._radialExplosionEvent) {
-                this._radialExplosionEvent.cleanup();
+            if (force) {
+                this._radialSphere.dispose();
+            } else {
+                var self = this;
+                setTimeout(function () {
+                    if (!self._dataRequested) {
+                        self._radialSphere.dispose();
+                    }
+                }, 0);
             }
         }
 
         private _tick() {
             // Since the params won't change, we fetch the event only once
-            if (this._radialExplosionEvent) {
+            if (this._radialSphere) {
                 this._physicsHelper.applyRadialExplosionForce(
                     this._origin,
                     this._radius,
@@ -331,12 +341,13 @@ module BABYLON {
                     this._falloff
                 );
             } else {
-                this._radialExplosionEvent = <PhysicsRadialExplosionEvent>this._physicsHelper.applyRadialExplosionForce(
+                var radialExplosionEvent = <PhysicsRadialExplosionEvent>this._physicsHelper.applyRadialExplosionForce(
                     this._origin,
                     this._radius,
                     this._strength * -1,
                     this._falloff
                 );
+                this._radialSphere = <Mesh>radialExplosionEvent.getData().radialSphere.clone('radialSphereClone');
             }
         }
 
