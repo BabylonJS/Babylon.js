@@ -431,23 +431,27 @@
             }
 
             var texture = SerializationHelper.Parse(() => {
+                var generateMipMaps: boolean = true;
+                if (parsedTexture.noMipmap) {
+                    generateMipMaps = false;
+                }
                 if (parsedTexture.mirrorPlane) {
-                    var mirrorTexture = new MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                    var mirrorTexture = new MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
                     mirrorTexture._waitingRenderList = parsedTexture.renderList;
                     mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
 
                     return mirrorTexture;
                 } else if (parsedTexture.isRenderTarget) {
-                    var renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                    var renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
                     renderTargetTexture._waitingRenderList = parsedTexture.renderList;
 
                     return renderTargetTexture;
                 } else {
                     var texture: Texture;
                     if (parsedTexture.base64String) {
-                        texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                        texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps);
                     } else {
-                        texture = new Texture(rootUrl + parsedTexture.name, scene);
+                        texture = new Texture(rootUrl + parsedTexture.name, scene, !generateMipMaps);
                     }
 
                     return texture;

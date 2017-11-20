@@ -1282,7 +1282,7 @@ module BABYLON.GLTF1 {
                 setTimeout(() => onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(buffer.uri))));
             }
             else {
-                Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data)), onProgress, undefined, true, request => {
+                Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data as ArrayBuffer)), onProgress, undefined, true, request => {
                     if (request) {
                         onError(request.status + " " + request.statusText);
                     }
@@ -1309,7 +1309,7 @@ module BABYLON.GLTF1 {
                 setTimeout(() => onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(source.uri))));
             }
             else {
-                Tools.LoadFile(gltfRuntime.rootUrl + source.uri, data => onSuccess(new Uint8Array(data)), undefined, undefined, true, request => {
+                Tools.LoadFile(gltfRuntime.rootUrl + source.uri, data => onSuccess(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, request => {
                     if (request) {
                         onError(request.status + " " + request.statusText);
                     }

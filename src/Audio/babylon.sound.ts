@@ -19,7 +19,6 @@ module BABYLON {
         private _position: Vector3 = Vector3.Zero();
         private _localDirection: Vector3 = new Vector3(1, 0, 0);
         private _volume: number = 1;
-        private _isLoaded: boolean = false;
         private _isReadyToPlay: boolean = false;
         public isPlaying: boolean = false;
         public isPaused: boolean = false;
@@ -98,9 +97,9 @@ module BABYLON {
                     if (Array.isArray(urlOrArrayBuffer)) this._urlType = "Array";
                     if (urlOrArrayBuffer instanceof ArrayBuffer) this._urlType = "ArrayBuffer";
 
-                    var urls:string[] = [];
+                    var urls: string[] = [];
                     var codecSupportedFound = false;
- 
+
                     switch (this._urlType) {
                         case "ArrayBuffer":
                             if ((<ArrayBuffer>urlOrArrayBuffer).byteLength > 0) {
@@ -130,7 +129,7 @@ module BABYLON {
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
-                                        Tools.LoadFile(url, (data) => { this._soundLoaded(data); }, undefined, this._scene.database, true);
+                                        Tools.LoadFile(url, (data) => { this._soundLoaded(data as ArrayBuffer); }, undefined, this._scene.database, true);
                                     }
                                     // Streaming sound using HTML5 Audio tag
                                     else {
@@ -239,7 +238,6 @@ module BABYLON {
         }
 
         private _soundLoaded(audioData: ArrayBuffer) {
-            this._isLoaded = true;
             if (!Engine.audioEngine.audioContext) {
                 return;
             }
@@ -482,7 +480,7 @@ module BABYLON {
                 else if (Engine.audioEngine.audioContext && this._soundSource) {
                     var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     this._soundSource.stop(stopTime);
-                    this._soundSource.onended = () => {};
+                    this._soundSource.onended = () => { };
                     if (!this.isPaused) {
                         this._startOffset = 0;
                     }
