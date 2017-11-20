@@ -523,11 +523,11 @@
 
                     width = Math.max(1.0, width);
                     height = Math.max(1.0, height);
+                }
 
-                    if (currentFace) {
-                        // Loading a single face
-                        break;
-                    }
+                if (currentFace !== undefined) {
+                    // Loading a single face
+                    break;
                 }
             }
         }
