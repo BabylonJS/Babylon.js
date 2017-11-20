@@ -1,6 +1,60 @@
 ﻿module BABYLON {
     export class SpotLight extends ShadowLight {
         private _angle: number;
+//======================================
+        public computeTextureMatrix(): void{
+            
+            var T = Matrix.Zero();
+            Matrix.TranslationToRef(-this.position.x, -this.position.y, -this.position.z, T);
+
+            var F = this.direction.normalize();
+            var U = new Vector3(-F.z, 0.0, F.x);
+            var R = Vector3.Cross(F, U);
+
+            var O = Matrix.Zero();
+            Matrix.FromValuesToRef(R.x, U.x, F.x, 0.0,
+                R.y, U.y, F.y, 0.0,
+                R.z, U.z, F.z, 0.0,
+                0.0, 0.0, 0.0, 1.0, O);
+
+            //console.log(O);
+            //console.log(T);
+                
+            //var viewLightMatrix = O;
+            //viewLightMatrix.multiplyToRef(T,viewLightMatrix);
+            var viewLightMatrix = T;
+            viewLightMatrix.multiplyToRef(O,viewLightMatrix);
+            var light_far = 100.0;
+            var light_near = 0.1;
+
+
+            var P = light_far / (light_far - light_near);
+            var Q = - P * light_near;
+            var S = 1.0 / Math.tan(this._angle / 2.0);
+            var A = 1.0;
+
+            var projectionLightMatrix = Matrix.Zero();
+            Matrix.FromValuesToRef(S/A, 0.0, 0.0, 0.0,
+                0.0, S, 0.0, 0.0,
+                0.0, 0.0, P, 1.0,
+                0.0, 0.0, Q, 0.0, projectionLightMatrix);
+
+            var scaleMatrix = Matrix.Zero();
+            Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0,
+                0.0, 0.5, 0.0, 0.0,
+                0.0, 0.0, 0.5, 0.0,
+                0.5, 0.5, 0.5, 1.0, scaleMatrix);
+                
+            //this._textureMatrix = scaleMatrix;
+            //this._textureMatrix.multiplyToRef(projectionLightMatrix, this._textureMatrix);
+            //this._textureMatrix.multiplyToRef(viewLightMatrix, this._textureMatrix);
+            this._textureMatrix = viewLightMatrix;
+            this._textureMatrix.multiplyToRef(projectionLightMatrix, this._textureMatrix);
+            this._textureMatrix.multiplyToRef(scaleMatrix, this._textureMatrix);
+            
+            console.log( this._textureMatrix);
+        }
+//=====================||===============
         @serialize()
         public get angle(): number {
             return this._angle
@@ -26,22 +80,41 @@
             this.forceProjectionMatrixCompute();
         }
 
-        private _projectionTexture: Material;
+        private _projectionMaterial: StandardMaterial;
         @serialize()
         /**
         * Allows reading the projecton texture
         */
-        public get projectionTexture(): Material{
-            return this._projectionTexture;
+        public get projectionMaterial(): StandardMaterial{
+            return this._projectionMaterial;
         }
         /**
         * Allows setting the value of projection texture
         */
-        public set projectionTexture(value: Material) {
-            this._projectionTexture = value;
+        public set projectionMaterial(value: StandardMaterial) {
+            this._projectionMaterial = value;
         }
         @serialize()
         public exponent: number;
+
+        //========================================================
+        private _textureMatrix = Matrix.Zero();
+        @serialize()
+        /**
+        * Allows reading the projecton texture
+        */
+        public get textureMatrix(): Matrix{
+            return this._textureMatrix;
+        }
+        /**
+        * Allows setting the value of projection texture
+        */
+        public set textureMatrix(value: Matrix) {
+            this._textureMatrix = value;
+            this.computeTextureMatrix();
+        }
+
+        //=================||=====================================
         
         /**
          * Creates a SpotLight object in the scene with the passed parameters :   
@@ -63,9 +136,10 @@
 //Remember to remove this after testing
 //            this.projectionTexture = new BABYLON.StandardMaterial("ground", scene); 
             //Material test
-            var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+            var groundMaterial = new BABYLON.StandardMaterial("red", scene);
             groundMaterial.projectedLightTexture = new BABYLON.Texture("textures/red.jpg", scene);
-            this.projectionTexture = groundMaterial;
+            this._projectionMaterial = groundMaterial;
+            this.computeTextureMatrix();
         }
 
         /**
@@ -107,6 +181,11 @@
             this._uniformBuffer.addUniform("vLightDirection", 3);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
             this._uniformBuffer.addUniform("depthValues", 2);
+
+            //=======================================
+            //this._uniformBuffer.addUniform("textureMatrix", 16);
+            //this._uniformBuffer.addUniform("tester", 2);
+
             this._uniformBuffer.create();
         }
 
@@ -143,6 +222,15 @@
                 normalizeDirection.z,
                 Math.cos(this.angle * 0.5),
                 lightIndex);
+
+            //=======================================
+            //debugger;
+            //console.log("textureMatrix" + lightIndex);
+            //.this._uniformBuffer.updateMatrix("textureMatrix" + lightIndex, this._textureMatrix);
+            effect.setMatrix("textureMatrix" + lightIndex, this._textureMatrix);
+            
+            effect.setTexture("projectionLightSampler" + lightIndex, this._projectionMaterial.projectedLightTexture);
+            //this._uniformBuffer.updateFloat2("tester", 0.0, 0.0, lightIndex);
             return this;
         }
     }
