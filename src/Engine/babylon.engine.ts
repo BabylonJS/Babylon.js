@@ -3916,14 +3916,7 @@
 
                     ktx.uploadLevels(this._gl, !noMipmap);
 
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-
-                    this.resetTextureCache();
+                    this.setCubeMapTextureParams(gl, loadMipmap);
 
                     texture.width = ktx.pixelWidth;
                     texture.height = ktx.pixelHeight;
@@ -3944,14 +3937,7 @@
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
 
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-
-                    this.resetTextureCache();
+                    this.setCubeMapTextureParams(gl, loadMipmap);
 
                     texture.width = info.width;
                     texture.height = info.height;
@@ -3995,15 +3981,8 @@
                     if (!noMipmap) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
-
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-
-                    this.resetTextureCache();
+                    
+                    this.setCubeMapTextureParams(gl, !noMipmap);
 
                     texture.width = width;
                     texture.height = height;
@@ -4024,6 +4003,17 @@
             this._internalTexturesCache.push(texture);
 
             return texture;
+        }
+
+        private setCubeMapTextureParams(gl: WebGLRenderingContext, loadMipmap: boolean) {
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+            this.resetTextureCache();
         }
 
         public updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level = 0): void {
