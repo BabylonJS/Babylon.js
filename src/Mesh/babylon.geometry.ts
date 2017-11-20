@@ -562,7 +562,7 @@
                     return;
                 }
 
-                this._delayLoadingFunction(JSON.parse(data), this);
+                this._delayLoadingFunction(JSON.parse(data as string), this);
 
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];

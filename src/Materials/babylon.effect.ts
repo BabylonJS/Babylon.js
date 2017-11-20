@@ -492,7 +492,7 @@
                     var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
                     Tools.LoadFile(includeShaderUrl, (fileContent) => {
-                        Effect.IncludesShadersStore[includeFile] = fileContent;
+                        Effect.IncludesShadersStore[includeFile] = fileContent as string;
                         this._processIncludes(<string>returnValue, callback);
                     });
                     return;
