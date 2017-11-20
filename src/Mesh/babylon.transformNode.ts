@@ -436,7 +436,10 @@ module BABYLON {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
-
+                
+                if(this.parent && (<TransformNode>this.parent).computeWorldMatrix){
+                    (<TransformNode>this.parent).computeWorldMatrix(true);
+                }
                 this.getWorldMatrix().decompose(scale, rotation, position);
 
                 if (this.rotationQuaternion) {
@@ -451,14 +454,43 @@ module BABYLON {
 
             } else {
 
+                var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
+                var scale = Tmp.Vector3[1];
                 var m1 = Tmp.Matrix[0];
-
-                parent.getWorldMatrix().invertToRef(m1);
-                Vector3.TransformCoordinatesToRef(this.position, m1, position);
-
-                this.position.copyFrom(position);
+                var m2 = Tmp.Matrix[1];
+                
+                parent.computeWorldMatrix(true);
+                parent.getWorldMatrix().decompose(scale, rotation, position);
+                
+                rotation.toRotationMatrix(m1);
+                m2.setTranslation(position);
+                
+                m2.multiplyToRef(m1, m1);
+                
+                var invParentMatrix = Matrix.Invert(m1);
+                
+                var m = this.getWorldMatrix().multiply(invParentMatrix);
+                
+                m.decompose(scale, rotation, position);
+                
+                if (this.rotationQuaternion) {
+                    this.rotationQuaternion.copyFrom(rotation);
+                } else {
+                    rotation.toEulerAnglesToRef(this.rotation);
+                }
+                
+                invParentMatrix = Matrix.Invert(parent.getWorldMatrix());
+                  
+                var m = this.getWorldMatrix().multiply(invParentMatrix);
+                
+                m.decompose(scale, rotation, position);
+                 
+                this.position.x = position.x;
+                this.position.y = position.y;
+                this.position.z = position.z;
             }
+            
             this.parent = parent;
             return this;
         }       
