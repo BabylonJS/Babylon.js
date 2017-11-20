@@ -3955,7 +3955,7 @@
                     texture.isReady = true;
                 }, undefined, undefined, true, onerror);
             } else if (isDDS) {
-                if (files) {
+                if (files && files.length === 6) {
                     cascadeLoadFiles(rootUrl,
                         scene,
                         imgs => {
