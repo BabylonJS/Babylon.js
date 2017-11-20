@@ -276,7 +276,7 @@ module BABYLON {
         private _falloff: PhysicsRadialImpulseFallof;
         private _tickCallback: any;
         private _radialSphere: Mesh;
-        private _dataRequested: boolean = false; // check if the has been requested the data. If not, do cleanup
+        private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
 
         constructor(
             physicsHelper: PhysicsHelper,
@@ -295,22 +295,16 @@ module BABYLON {
             this._tickCallback = this._tick.bind(this);
         }
 
-        public getData(callback: (data: PhysicsGravitationalFieldEventData) => void) {
-            this._dataRequested = true;
+        public getData() {
+            this._dataFetched = true;
 
-            var self = this;
-            // wait until the first tick has ran, so we can the the radialExplosionEvent (& it's data)
-            var interval = setInterval(function() {
-                if (self._radialSphere) {
-                    clearInterval(interval);
-                    callback({
-                        radialSphere: self._radialSphere,
-                    });
-                }
-            }, 16.66);
+            return {
+                radialSphere: this._radialSphere,
+            };
         }
 
         public enable() {
+            this._tickCallback.call(this);
             this._scene.registerBeforeRender(this._tickCallback);
         }
 
@@ -324,7 +318,7 @@ module BABYLON {
             } else {
                 var self = this;
                 setTimeout(function () {
-                    if (!self._dataRequested) {
+                    if (!self._dataFetched) {
                         self._radialSphere.dispose();
                     }
                 }, 0);
