@@ -129,7 +129,7 @@ module BABYLON {
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
-                                        Tools.LoadFile(url, (data) => { this._soundLoaded(data); }, undefined, this._scene.database, true);
+                                        Tools.LoadFile(url, (data) => { this._soundLoaded(data as ArrayBuffer); }, undefined, this._scene.database, true);
                                     }
                                     // Streaming sound using HTML5 Audio tag
                                     else {

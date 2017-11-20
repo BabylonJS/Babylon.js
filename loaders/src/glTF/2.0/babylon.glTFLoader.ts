@@ -1558,7 +1558,7 @@ module BABYLON.GLTF2 {
 
             let request = Tools.LoadFile(this._rootUrl + uri, data => {
                 this._tryCatchOnError(() => {
-                    onSuccess(new Uint8Array(data));
+                    onSuccess(new Uint8Array(data as ArrayBuffer));
                 });
             }, event => {
                 this._tryCatchOnError(() => {
