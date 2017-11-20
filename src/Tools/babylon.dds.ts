@@ -517,7 +517,7 @@
                             engine._uploadCompressedDataToTexture(sampler, i, internalFormat, width, height, byteArray);
                         }
                     }
-                    dataOffset += dataLength;
+                    dataOffset += bpp ? (width * height * (bpp / 8)) : dataLength;
                     width *= 0.5;
                     height *= 0.5;
 
