@@ -15,6 +15,7 @@
         private _matrices: { [name: string]: Matrix } = {};
         private _matrices3x3: { [name: string]: Float32Array } = {};
         private _matrices2x2: { [name: string]: Float32Array } = {};
+	private _vectors2Arrays: { [name: string]: number[] } = {};
         private _vectors3Arrays: { [name: string]: number[] } = {};
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
@@ -150,7 +151,14 @@
 
             return this;
         }
+	
+	public setArray2(name: string, value: number[]): ShaderMaterial {
+            this._checkUniform(name);
+            this._vectors2Arrays[name] = value;
 
+            return this;
+        }
+	    
         public setArray3(name: string, value: number[]): ShaderMaterial {
             this._checkUniform(name);
             this._vectors3Arrays[name] = value;
@@ -368,7 +376,12 @@
                 for (name in this._matrices2x2) {
                     this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
-                
+		    
+                // Vector2Array   
+                for (name in this._vectors2Arrays) {
+                    this._effect.setArray2(name, this._vectors2Arrays[name]);
+                }
+		
                 // Vector3Array   
                 for (name in this._vectors3Arrays) {
                     this._effect.setArray3(name, this._vectors3Arrays[name]);
@@ -535,6 +548,12 @@
             for (name in this._matrices2x2) {
                 serializationObject.matrices2x2[name] = this._matrices2x2[name];
             }
+		
+	    // Vector2Array
+            serializationObject.vectors2Arrays = {};
+            for (name in this._vectors2Arrays) {
+                serializationObject.vectors2Arrays[name] = this._vectors2Arrays[name];
+            }
 
             // Vector3Array
             serializationObject.vectors3Arrays = {};
@@ -628,6 +647,11 @@
             for (name in source.matrices2x2) {
                 material.setMatrix2x2(name, source.matrices2x2[name]);
             }
+		
+	    // Vector2Array
+            for (name in source.vectors2Arrays) {
+                material.setArray2(name, source.vectors2Arrays[name]);
+            }
 
             // Vector3Array
             for (name in source.vectors3Arrays) {
@@ -637,4 +661,4 @@
             return material;
         }
     }
-} 
+}
