@@ -285,12 +285,24 @@
       "referenceImage": "DefaultRenderingPipeline.png"
     },
     {
+      "title": "Billboard",
+      "renderCount": 20,
+      "playgroundId": "#UJEIL#13",
+      "referenceImage": "Billboard.png"
+    },
+    {
+      "title": "setParent",
+      "renderCount": 20,
+      "playgroundId": "#JD49CT#2",
+      "referenceImage": "setParent.png"
+    },
+    {
       "title": "GUI",
       "renderCount": 20,
       "scriptToRun": "/Demos/GUI/gui.js",
       "functionToCall": "createScene",
       "referenceImage": "GUI.png"
-    },    
+    },
     {
       "title": "Water material (only visual check)",
       "renderCount": 10,
