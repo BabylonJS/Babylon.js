@@ -2,7 +2,8 @@
 
 ## Major updates
 - Viewer (TODO)
-- EnvironmentHelper + BackgroundMaterial (TODO)
+- Added BackgroundMaterial [Doc here](https://doc.babylonjs.com/how_to/backgroundmaterial)
+- Added EnvironmentHelper [Doc here](https://doc.babylonjs.com/babylon101/environment#skybox-and-ground)
 - Added support for webgl context lost and restored events. [Doc here](http://doc.babylonjs.com/tutorials/optimizing_your_scene#handling-webgl-context-lost) ([deltakosh](https://github.com/deltakosh))
 - Added support for non-pow2 textures when in WebGL2 mode ([deltakosh](https://github.com/deltakosh))
 - Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
