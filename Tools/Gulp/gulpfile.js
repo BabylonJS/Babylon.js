@@ -49,7 +49,7 @@ var tsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
-    strictFunctionTypes: false
+    strictFunctionTypes: true
 };
 var tsProject = typescript.createProject(tsConfig);
 

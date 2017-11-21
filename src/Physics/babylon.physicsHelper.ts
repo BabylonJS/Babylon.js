@@ -1,5 +1,5 @@
 module BABYLON {
-    
+
     /**
      * The strenght of the force in correspondence to the distance of the affected object
      */
@@ -7,33 +7,33 @@ module BABYLON {
         Constant, // impulse is constant in strength across it's whole radius
         Linear // impulse gets weaker if it's further from the origin
     }
-    
+
     export class PhysicsHelper {
-        
+
         private _scene: Scene;
         private _physicsEngine: Nullable<PhysicsEngine>;
 
         constructor(scene: Scene) {
             this._scene = scene;
             this._physicsEngine = this._scene.getPhysicsEngine();
-            
+
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you can use the methods.');
             }
         }
-        
+
         /**
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
          */
-        public applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant) {
+        public applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant): Nullable<PhysicsRadialExplosionEvent> {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
                 return null;
             }
-            
+
             var impostors = this._physicsEngine.getImpostors();
             if (impostors.length === 0) {
                 return null;
@@ -41,24 +41,15 @@ module BABYLON {
 
             var event = new PhysicsRadialExplosionEvent(this._scene);
 
-            for (var i = 0; i < impostors.length; ++i) {
-                var impostor = impostors[i];
-                var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(
-                    impostor,
-                    origin,
-                    radius,
-                    strength,
-                    falloff
-                );
-                if (impostorForceAndContactPoint === null) {
-                    continue;
+            impostors.forEach(impostor => {
+
+                var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
+                if (!impostorForceAndContactPoint) {
+                    return;
                 }
 
-                impostor.applyImpulse(
-                    impostorForceAndContactPoint.force,
-                    impostorForceAndContactPoint.contactPoint
-                );
-            }
+                impostor.applyImpulse(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            });
 
             event.cleanup(false);
 
@@ -71,12 +62,12 @@ module BABYLON {
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
          */
-        public applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant) {
+        public applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant): Nullable<PhysicsRadialExplosionEvent> {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
             }
-            
+
             var impostors = this._physicsEngine.getImpostors();
             if (impostors.length === 0) {
                 return null;
@@ -84,24 +75,15 @@ module BABYLON {
 
             var event = new PhysicsRadialExplosionEvent(this._scene);
 
-            for (var i = 0; i < impostors.length; ++i) {
-                var impostor = impostors[i];
-                var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(
-                    impostor,
-                    origin,
-                    radius,
-                    strength,
-                    falloff
-                );
-                if (impostorForceAndContactPoint === null) {
-                    continue;
+            impostors.forEach(impostor => {
+                var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
+
+                if (!impostorForceAndContactPoint) {
+                    return;
                 }
 
-                impostor.applyForce(
-                    impostorForceAndContactPoint.force,
-                    impostorForceAndContactPoint.contactPoint
-                );
-            }
+                impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            })
 
             event.cleanup(false);
 
@@ -114,7 +96,7 @@ module BABYLON {
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
          */
-        public gravitationalField(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant) {
+        public gravitationalField(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant): Nullable<PhysicsGravitationalFieldEvent> {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -125,14 +107,7 @@ module BABYLON {
                 return null;
             }
 
-            var event = new PhysicsGravitationalFieldEvent(
-                this,
-                this._scene,
-                origin,
-                radius,
-                strength,
-                falloff
-            );
+            var event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radius, strength, falloff);
 
             event.cleanup(false);
 
@@ -143,7 +118,7 @@ module BABYLON {
     /***** Radial explosion *****/
 
     export class PhysicsRadialExplosionEvent {
-        
+
         private _scene: Scene;
         private _radialSphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
         private _rays: Array<Ray> = [];
@@ -197,7 +172,7 @@ module BABYLON {
                 return null;
             }
 
-            var distanceFromOrigin = BABYLON.Vector3.Distance(origin, contactPoint);
+            var distanceFromOrigin = Vector3.Distance(origin, contactPoint);
             if (distanceFromOrigin > radius) {
                 return null;
             }
@@ -229,14 +204,9 @@ module BABYLON {
 
         /*** Helpers ***/
 
-        private _prepareRadialSphere() {
+        private _prepareRadialSphere(): void {
             if (!this._radialSphere) {
-                this._radialSphere = BABYLON.Mesh.CreateSphere(
-                    "radialSphere",
-                    32,
-                    1,
-                    this._scene
-                );
+                this._radialSphere = MeshBuilder.CreateSphere("radialSphere", { segments: 32, diameter: 1 }, this._scene);
                 this._radialSphere.isVisible = false;
             }
         }
@@ -251,10 +221,7 @@ module BABYLON {
             this._radialSphere._updateBoundingInfo();
             this._radialSphere.computeWorldMatrix(true);
 
-            return this._radialSphere.intersectsMesh(
-                impostorObject,
-                true
-            );
+            return this._radialSphere.intersectsMesh(impostorObject, true);
         }
 
     }
@@ -347,20 +314,12 @@ module BABYLON {
         private _tick() {
             // Since the params won't change, we fetch the event only once
             if (this._radialSphere) {
-                this._physicsHelper.applyRadialExplosionForce(
-                    this._origin,
-                    this._radius,
-                    this._strength * -1,
-                    this._falloff
-                );
+                this._physicsHelper.applyRadialExplosionForce(this._origin, this._radius, this._strength * -1, this._falloff);
             } else {
-                var radialExplosionEvent = <PhysicsRadialExplosionEvent>this._physicsHelper.applyRadialExplosionForce(
-                    this._origin,
-                    this._radius,
-                    this._strength * -1,
-                    this._falloff
-                );
-                this._radialSphere = <Mesh>radialExplosionEvent.getData().radialSphere.clone('radialSphereClone');
+                var radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._radius, this._strength * -1, this._falloff);
+                if (radialExplosionEvent) {
+                    this._radialSphere = <Mesh>radialExplosionEvent.getData().radialSphere.clone('radialSphereClone');
+                }
             }
         }
 
