@@ -45,7 +45,7 @@ module BABYLON {
         private _teleportationAllowed: boolean = false;
         private _rotationAllowed: boolean = true;
         private _teleportationRequestInitiated = false;
-        private _xboxGamepadTeleportationRequestInitiated = false;
+        //private _classicGamepadTeleportationRequestInitiated = false;
         private _rotationRightAsked = false;
         private _rotationLeftAsked = false;
         private _teleportationCircle: Mesh;
@@ -371,6 +371,8 @@ module BABYLON {
                 this._enableTeleportationOnController(this._webVRCamera.rightController)
             }
 
+            this._scene.gamepadManager.onGamepadConnectedObservable.add((pad) => this._onNewGamepadConnected(pad));
+
             this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove", 1.0, this._webVRCamera);
             this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
             this._scene.imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
@@ -392,6 +394,57 @@ module BABYLON {
             this._scene.registerBeforeRender(() => {
                 this._castRayAndSelectObject();
             });
+        }
+
+        private _onNewGamepadConnected(gamepad: Gamepad) {
+            if (gamepad.leftStick) {
+                gamepad.onleftstickchanged((stickValues) => {
+                    if (!this._teleportationRequestInitiated) {
+                        if (stickValues.y < -0.6) {
+                            this._teleportationRequestInitiated = true;
+                        }
+                    }
+                    else {
+                        if (stickValues.y > -0.4) {
+                            if (this._teleportationAllowed) {
+                                this._teleportCamera();
+                            }
+                            this._teleportationRequestInitiated = false;
+                        }
+                    }
+                });
+            }
+            if (gamepad.rightStick) {
+                gamepad.onrightstickchanged((stickValues) => {
+                    if (!this._rotationLeftAsked) {
+                        if (stickValues.x < -0.6) {
+                            this._rotationLeftAsked = true;
+                            if (this._rotationAllowed) {
+                                this._rotateCamera(false);
+                            }
+                        }
+                    }
+                    else {
+                        if (stickValues.x > -0.4) {
+                            this._rotationLeftAsked = false;
+                        }
+                    }
+        
+                    if (!this._rotationRightAsked) {
+                        if (stickValues.x > 0.6) {
+                            this._rotationRightAsked = true;
+                            if (this._rotationAllowed) {
+                                this._rotateCamera(true);
+                            }
+                        }
+                    }
+                    else {
+                        if (stickValues.x < 0.4) {
+                            this._rotationRightAsked = false;
+                        }
+                    }
+                });
+            }
         }
 
         private _enableTeleportationOnController(webVRController: WebVRController) {
@@ -469,10 +522,9 @@ module BABYLON {
             }
         }
 
-        // Little white circle attached to the camera
-        // That will act as the target to look on the floor where to teleport
+        // Gaze support used to point to teleport or to interact with an object
         private _createGazeTracker() {
-            this._gazeTracker = BABYLON.Mesh.CreateTorus("gazeTracker", 0.0050, 0.0020, 25, this._scene, false);
+            this._gazeTracker = BABYLON.Mesh.CreateTorus("gazeTracker", 0.0035, 0.0025, 20, this._scene, false);
             this._gazeTracker.bakeCurrentTransformIntoVertices();
             this._gazeTracker.isPickable = false;
 
@@ -641,7 +693,7 @@ module BABYLON {
 
         private _moveTeleportationSelectorTo(coordinates: Vector3) {
             this._teleportationAllowed = true;
-            if (this._teleportationRequestInitiated || this._xboxGamepadTeleportationRequestInitiated) {
+            if (this._teleportationRequestInitiated) {
                 this._displayTeleportationCircle();
             }
             else {
