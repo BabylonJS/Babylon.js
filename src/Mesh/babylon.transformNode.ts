@@ -459,16 +459,15 @@ module BABYLON {
                 var scale = Tmp.Vector3[1];
                 var m1 = Tmp.Matrix[0];
                 var m2 = Tmp.Matrix[1];
+                var invParentMatrix = Tmp.Matrix[2];
                 
                 parent.computeWorldMatrix(true);
                 parent.getWorldMatrix().decompose(scale, rotation, position);
                 
                 rotation.toRotationMatrix(m1);
-                m2.setTranslation(position);
-                
-                m2.multiplyToRef(m1, m1);
-                
-                var invParentMatrix = Matrix.Invert(m1);
+                m2.setTranslation(position);   
+                m2.multiplyToRef(m1, m1);     
+                m1.invertToRef(invParentMatrix);
                 
                 var m = this.getWorldMatrix().multiply(invParentMatrix);
                 
@@ -480,7 +479,7 @@ module BABYLON {
                     rotation.toEulerAnglesToRef(this.rotation);
                 }
                 
-                invParentMatrix = Matrix.Invert(parent.getWorldMatrix());
+                parent.getWorldMatrix().invertToRef(invParentMatrix);
                   
                 var m = this.getWorldMatrix().multiply(invParentMatrix);
                 
