@@ -1338,11 +1338,10 @@
             return this;
         }
 
-        private _onBeforeDraw(isInstance: boolean, world: Matrix, effectiveMaterial: Material): Mesh {
-            if (isInstance) {
+        private _onBeforeDraw(isInstance: boolean, world: Matrix, effectiveMaterial?: Material): void {
+            if (isInstance && effectiveMaterial) {
                 effectiveMaterial.bindOnlyWorldMatrix(world);
             }
-            return this;
         }
 
         /**
@@ -1595,7 +1594,8 @@
 
             // Sources
             var meshes = this.getScene().meshes;
-            meshes.forEach((mesh: Mesh) => {
+            meshes.forEach((abstractMesh: AbstractMesh) => {
+                let mesh = abstractMesh as Mesh;
                 if (mesh._source && mesh._source === this) {
                     mesh._source = null;
                 }

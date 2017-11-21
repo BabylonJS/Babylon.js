@@ -448,7 +448,7 @@
             var dashSize = options.dashSize || 3;
 
             if (instance) {  //  dashed lines update
-                var positionFunction = (positions: number[]): void => {
+                var positionFunction = (positions: FloatArray): void => {
                     var curvect = Vector3.Zero();
                     var nbSeg = positions.length / 6;
                     var lg = 0;

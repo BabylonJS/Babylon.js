@@ -48,16 +48,16 @@ module BABYLON {
         private _xboxGamepadTeleportationRequestInitiated = false;
         private _rotationRightAsked = false;
         private _rotationLeftAsked = false;
-        private _teleportationCircle: BABYLON.Mesh;
+        private _teleportationCircle: Mesh;
         private _postProcessMove: ImageProcessingPostProcess;
         private _passProcessMove: PassPostProcess;
         private _teleportationFillColor: string = "#444444";
         private _teleportationBorderColor: string = "#FFFFFF";
         private _rotationAngle: number = 0;
-        private _haloCenter = new BABYLON.Vector3(0, 0, 0);
+        private _haloCenter = new Vector3(0, 0, 0);
         private _rayHelper: RayHelper;
 
-        public meshSelectionPredicate: (mesh: BABYLON.Mesh) => boolean;
+        public meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
 
         public get deviceOrientationCamera(): DeviceOrientationCamera {
             return this._deviceOrientationCamera;
