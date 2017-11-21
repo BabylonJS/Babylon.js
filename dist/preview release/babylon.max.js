@@ -13442,15 +13442,18 @@ var BABYLON;
             return this;
         };
         /**
-         * Defines the passed mesh as the parent of the current mesh.
-         * Returns the AbstractMesh.
+         * Defines the passed node as the parent of the current node.
+         * Returns the TransformNode.
          */
-        TransformNode.prototype.setParent = function (mesh) {
-            var parent = mesh;
-            if (mesh == null) {
+        TransformNode.prototype.setParent = function (node) {
+            if (node == null) {
                 var rotation = BABYLON.Tmp.Quaternion[0];
                 var position = BABYLON.Tmp.Vector3[0];
                 var scale = BABYLON.Tmp.Vector3[1];
+                if (this.parent && this.parent.computeWorldMatrix) {
+                    this.parent.computeWorldMatrix(true);
+                }
+                this.computeWorldMatrix(true);
                 this.getWorldMatrix().decompose(scale, rotation, position);
                 if (this.rotationQuaternion) {
                     this.rotationQuaternion.copyFrom(rotation);
@@ -13463,13 +13466,34 @@ var BABYLON;
                 this.position.z = position.z;
             }
             else {
+                var rotation = BABYLON.Tmp.Quaternion[0];
                 var position = BABYLON.Tmp.Vector3[0];
-                var m1 = BABYLON.Tmp.Matrix[0];
-                parent.getWorldMatrix().invertToRef(m1);
-                BABYLON.Vector3.TransformCoordinatesToRef(this.position, m1, position);
-                this.position.copyFrom(position);
+                var scale = BABYLON.Tmp.Vector3[1];
+                var m0 = BABYLON.Tmp.Matrix[0];
+                var m1 = BABYLON.Tmp.Matrix[1];
+                var invParentMatrix = BABYLON.Tmp.Matrix[2];
+                node.computeWorldMatrix(true);
+                node.getWorldMatrix().decompose(scale, rotation, position);
+                rotation.toRotationMatrix(m0);
+                m1.setTranslation(position);
+                m1.multiplyToRef(m0, m0);
+                m0.invertToRef(invParentMatrix);
+                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);
+                m0.decompose(scale, rotation, position);
+                if (this.rotationQuaternion) {
+                    this.rotationQuaternion.copyFrom(rotation);
+                }
+                else {
+                    rotation.toEulerAnglesToRef(this.rotation);
+                }
+                node.getWorldMatrix().invertToRef(invParentMatrix);
+                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);
+                m0.decompose(scale, rotation, position);
+                this.position.x = position.x;
+                this.position.y = position.y;
+                this.position.z = position.z;
             }
-            this.parent = parent;
+            this.parent = node;
             return this;
         };
         Object.defineProperty(TransformNode.prototype, "nonUniformScaling", {
@@ -67269,6 +67293,9 @@ var BABYLON;
         PhysicsEngine.prototype.getPhysicsPlugin = function () {
             return this._physicsPlugin;
         };
+        PhysicsEngine.prototype.getImpostors = function () {
+            return this._impostors;
+        };
         PhysicsEngine.prototype.getImpostorForPhysicsObject = function (object) {
             for (var i = 0; i < this._impostors.length; ++i) {
                 if (this._impostors[i].object === object) {
@@ -67293,6 +67320,265 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.physicsEngine.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    var PhysicsRadialImpulseFallof;
+    (function (PhysicsRadialImpulseFallof) {
+        PhysicsRadialImpulseFallof[PhysicsRadialImpulseFallof["Constant"] = 0] = "Constant";
+        PhysicsRadialImpulseFallof[PhysicsRadialImpulseFallof["Linear"] = 1] = "Linear"; // impulse gets weaker if it's further from the origin
+    })(PhysicsRadialImpulseFallof = BABYLON.PhysicsRadialImpulseFallof || (BABYLON.PhysicsRadialImpulseFallof = {}));
+    var PhysicsHelper = /** @class */ (function () {
+        function PhysicsHelper(scene) {
+            this._scene = scene;
+            this._physicsEngine = this._scene.getPhysicsEngine();
+            if (!this._physicsEngine) {
+                BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you can use the methods.');
+            }
+        }
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        PhysicsHelper.prototype.applyRadialExplosionImpulse = function (origin, radius, strength, falloff) {
+            if (falloff === void 0) { falloff = PhysicsRadialImpulseFallof.Constant; }
+            if (!this._physicsEngine) {
+                BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
+                return null;
+            }
+            var impostors = this._physicsEngine.getImpostors();
+            if (impostors.length === 0) {
+                return null;
+            }
+            var event = new PhysicsRadialExplosionEvent(this._scene);
+            for (var i = 0; i < impostors.length; ++i) {
+                var impostor = impostors[i];
+                var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
+                if (impostorForceAndContactPoint === null) {
+                    continue;
+                }
+                impostor.applyImpulse(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            }
+            event.cleanup(false);
+            return event;
+        };
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        PhysicsHelper.prototype.applyRadialExplosionForce = function (origin, radius, strength, falloff) {
+            if (falloff === void 0) { falloff = PhysicsRadialImpulseFallof.Constant; }
+            if (!this._physicsEngine) {
+                BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                return null;
+            }
+            var impostors = this._physicsEngine.getImpostors();
+            if (impostors.length === 0) {
+                return null;
+            }
+            var event = new PhysicsRadialExplosionEvent(this._scene);
+            for (var i = 0; i < impostors.length; ++i) {
+                var impostor = impostors[i];
+                var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
+                if (impostorForceAndContactPoint === null) {
+                    continue;
+                }
+                impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            }
+            event.cleanup(false);
+            return event;
+        };
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        PhysicsHelper.prototype.gravitationalField = function (origin, radius, strength, falloff) {
+            if (falloff === void 0) { falloff = PhysicsRadialImpulseFallof.Constant; }
+            if (!this._physicsEngine) {
+                BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                return null;
+            }
+            var impostors = this._physicsEngine.getImpostors();
+            if (impostors.length === 0) {
+                return null;
+            }
+            var event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radius, strength, falloff);
+            event.cleanup(false);
+            return event;
+        };
+        return PhysicsHelper;
+    }());
+    BABYLON.PhysicsHelper = PhysicsHelper;
+    /***** Radial explosion *****/
+    var PhysicsRadialExplosionEvent = /** @class */ (function () {
+        function PhysicsRadialExplosionEvent(scene) {
+            this._rays = [];
+            this._dataFetched = false; // check if the data has been fetched. If not, do cleanup
+            this._scene = scene;
+        }
+        /**
+         * Returns the data related to the radial explosion event (radialSphere & rays).
+         * @returns {PhysicsRadialExplosionEventData}
+         */
+        PhysicsRadialExplosionEvent.prototype.getData = function () {
+            this._dataFetched = true;
+            return {
+                radialSphere: this._radialSphere,
+                rays: this._rays,
+            };
+        };
+        /**
+         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
+         * @param impostor
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear
+         * @returns {Nullable<PhysicsForceAndContactPoint>}
+         */
+        PhysicsRadialExplosionEvent.prototype.getImpostorForceAndContactPoint = function (impostor, origin, radius, strength, falloff) {
+            if (impostor.mass === 0) {
+                return null;
+            }
+            if (!this._intersectsWithRadialSphere(impostor, origin, radius)) {
+                return null;
+            }
+            var impostorObject = impostor.object;
+            var impostorObjectCenter = impostor.getObjectCenter();
+            var direction = impostorObjectCenter.subtract(origin);
+            var ray = new BABYLON.Ray(origin, direction, radius);
+            this._rays.push(ray);
+            var hit = ray.intersectsMesh(impostorObject);
+            var contactPoint = hit.pickedPoint;
+            if (!contactPoint) {
+                return null;
+            }
+            var distanceFromOrigin = BABYLON.Vector3.Distance(origin, contactPoint);
+            if (distanceFromOrigin > radius) {
+                return null;
+            }
+            var multiplier = falloff === PhysicsRadialImpulseFallof.Constant
+                ? strength
+                : strength * (1 - (distanceFromOrigin / radius));
+            var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
+            return { force: force, contactPoint: contactPoint };
+        };
+        /**
+         * Disposes the radialSphere.
+         * @param {bolean} force
+         */
+        PhysicsRadialExplosionEvent.prototype.cleanup = function (force) {
+            var _this = this;
+            if (force === void 0) { force = true; }
+            if (force) {
+                this._radialSphere.dispose();
+            }
+            else {
+                setTimeout(function () {
+                    if (!_this._dataFetched) {
+                        _this._radialSphere.dispose();
+                    }
+                }, 0);
+            }
+        };
+        /*** Helpers ***/
+        PhysicsRadialExplosionEvent.prototype._prepareRadialSphere = function () {
+            if (!this._radialSphere) {
+                this._radialSphere = BABYLON.Mesh.CreateSphere("radialSphere", 32, 1, this._scene);
+                this._radialSphere.isVisible = false;
+            }
+        };
+        PhysicsRadialExplosionEvent.prototype._intersectsWithRadialSphere = function (impostor, origin, radius) {
+            var impostorObject = impostor.object;
+            this._prepareRadialSphere();
+            this._radialSphere.position = origin;
+            this._radialSphere.scaling = new BABYLON.Vector3(radius * 2, radius * 2, radius * 2);
+            this._radialSphere._updateBoundingInfo();
+            this._radialSphere.computeWorldMatrix(true);
+            return this._radialSphere.intersectsMesh(impostorObject, true);
+        };
+        return PhysicsRadialExplosionEvent;
+    }());
+    BABYLON.PhysicsRadialExplosionEvent = PhysicsRadialExplosionEvent;
+    /***** Gravitational Field *****/
+    var PhysicsGravitationalFieldEvent = /** @class */ (function () {
+        function PhysicsGravitationalFieldEvent(physicsHelper, scene, origin, radius, strength, falloff) {
+            if (falloff === void 0) { falloff = PhysicsRadialImpulseFallof.Constant; }
+            this._dataFetched = false; // check if the has been fetched the data. If not, do cleanup
+            this._physicsHelper = physicsHelper;
+            this._scene = scene;
+            this._origin = origin;
+            this._radius = radius;
+            this._strength = strength;
+            this._falloff = falloff;
+            this._tickCallback = this._tick.bind(this);
+        }
+        /**
+         * Returns the data related to the gravitational field event (radialSphere).
+         * @returns {PhysicsGravitationalFieldEventData}
+         */
+        PhysicsGravitationalFieldEvent.prototype.getData = function () {
+            this._dataFetched = true;
+            return {
+                radialSphere: this._radialSphere,
+            };
+        };
+        /**
+         * Enables the gravitational field.
+         */
+        PhysicsGravitationalFieldEvent.prototype.enable = function () {
+            this._tickCallback.call(this);
+            this._scene.registerBeforeRender(this._tickCallback);
+        };
+        /**
+         * Disables the gravitational field.
+         */
+        PhysicsGravitationalFieldEvent.prototype.disable = function () {
+            this._scene.unregisterBeforeRender(this._tickCallback);
+        };
+        /**
+         * Disposes the radialSphere.
+         * @param {bolean} force
+         */
+        PhysicsGravitationalFieldEvent.prototype.cleanup = function (force) {
+            var _this = this;
+            if (force === void 0) { force = true; }
+            if (force) {
+                this._radialSphere.dispose();
+            }
+            else {
+                setTimeout(function () {
+                    if (!_this._dataFetched) {
+                        _this._radialSphere.dispose();
+                    }
+                }, 0);
+            }
+        };
+        PhysicsGravitationalFieldEvent.prototype._tick = function () {
+            // Since the params won't change, we fetch the event only once
+            if (this._radialSphere) {
+                this._physicsHelper.applyRadialExplosionForce(this._origin, this._radius, this._strength * -1, this._falloff);
+            }
+            else {
+                var radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._radius, this._strength * -1, this._falloff);
+                this._radialSphere = radialExplosionEvent.getData().radialSphere.clone('radialSphereClone');
+            }
+        };
+        return PhysicsGravitationalFieldEvent;
+    }());
+    BABYLON.PhysicsGravitationalFieldEvent = PhysicsGravitationalFieldEvent;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.physicsHelper.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -71692,9 +71978,12 @@ var BABYLON;
             this._scene.imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
             this._scene.imageProcessingConfiguration.vignetteEnabled = true;
             this._scene.imageProcessingConfiguration.isEnabled = false;
+            this._createGazeTracker();
             this._createTeleportationCircles();
             this.meshSelectionPredicate = function (mesh) {
-                if (mesh.name.indexOf(_this._floorMeshName) !== -1) {
+                if (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
+                    && mesh.name.indexOf("teleportationCircle") === -1
+                    && mesh.name.indexOf("torusTeleportation") === -1) {
                     return true;
                 }
                 return false;
@@ -71776,6 +72065,18 @@ var BABYLON;
                 });
             }
         };
+        // Little white circle attached to the camera
+        // That will act as the target to look on the floor where to teleport
+        VRExperienceHelper.prototype._createGazeTracker = function () {
+            this._gazeTracker = BABYLON.Mesh.CreateTorus("gazeTracker", 0.0050, 0.0020, 25, this._scene, false);
+            this._gazeTracker.bakeCurrentTransformIntoVertices();
+            this._gazeTracker.isPickable = false;
+            var targetMat = new BABYLON.StandardMaterial("targetMat", this._scene);
+            targetMat.specularColor = BABYLON.Color3.Black();
+            targetMat.emissiveColor = BABYLON.Color3.White();
+            targetMat.backFaceCulling = false;
+            this._gazeTracker.material = targetMat;
+        };
         VRExperienceHelper.prototype._createTeleportationCircles = function () {
             this._teleportationCircle = BABYLON.Mesh.CreateGround("teleportationCircle", 2, 2, 2, this._scene);
             var length = 512;
@@ -71797,7 +72098,7 @@ var BABYLON;
             var teleportationCircleMaterial = new BABYLON.StandardMaterial("TextPlaneMaterial", this._scene);
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
             this._teleportationCircle.material = teleportationCircleMaterial;
-            var torus = BABYLON.Mesh.CreateTorus("torus", 0.75, 0.1, 25, this._scene, false);
+            var torus = BABYLON.Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
             torus.parent = this._teleportationCircle;
             var animationInnerCircle = new BABYLON.Animation("animationInnerCircle", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
             var keys = [];
@@ -71991,11 +72292,40 @@ var BABYLON;
                 ray = this.currentVRCamera.rightController.getForwardRay();
             }
             var hit = this._scene.pickWithRay(ray, this.meshSelectionPredicate);
+            if (hit && hit.pickedPoint) {
+                this._gazeTracker.scaling.x = hit.distance;
+                this._gazeTracker.scaling.y = hit.distance;
+                this._gazeTracker.scaling.z = hit.distance;
+                var pickNormal = hit.getNormal();
+                if (pickNormal) {
+                    var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
+                    var axis2 = BABYLON.Vector3.Cross(pickNormal, axis1);
+                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._gazeTracker.rotation);
+                }
+                this._gazeTracker.position.copyFrom(hit.pickedPoint);
+                if (this._gazeTracker.position.x < 0) {
+                    this._gazeTracker.position.x += 0.002;
+                }
+                else {
+                    this._gazeTracker.position.x -= 0.002;
+                }
+                if (this._gazeTracker.position.y < 0) {
+                    this._gazeTracker.position.y += 0.002;
+                }
+                else {
+                    this._gazeTracker.position.y -= 0.002;
+                }
+                if (this._gazeTracker.position.z < 0) {
+                    this._gazeTracker.position.z += 0.002;
+                }
+                else {
+                    this._gazeTracker.position.z -= 0.002;
+                }
+            }
             if (this._rayHelper) {
                 this._rayHelper.dispose();
             }
             if (this.currentVRCamera.rightController) {
-                //if (target) target.isVisible = false;
                 this._rayHelper = BABYLON.RayHelper.CreateAndShow(ray, this._scene, new BABYLON.Color3(0.7, 0.7, 0.7));
             }
             if (hit && hit.pickedMesh) {
