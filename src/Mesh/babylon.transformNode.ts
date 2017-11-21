@@ -454,21 +454,20 @@ module BABYLON {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
-                var m1 = Tmp.Matrix[0];
-                var m2 = Tmp.Matrix[1];
+                var m0 = Tmp.Matrix[0];
+                var m1 = Tmp.Matrix[1];
                 var invParentMatrix = Tmp.Matrix[2];
                 
                 node.computeWorldMatrix(true);
                 node.getWorldMatrix().decompose(scale, rotation, position);
                 
-                rotation.toRotationMatrix(m1);
-                m2.setTranslation(position);   
-                m2.multiplyToRef(m1, m1);     
-                m1.invertToRef(invParentMatrix);
+                rotation.toRotationMatrix(m0);
+                m1.setTranslation(position);   
+                m1.multiplyToRef(m0, m0);     
+                m0.invertToRef(invParentMatrix);
                 
-                var m = this.getWorldMatrix().multiply(invParentMatrix);
-                
-                m.decompose(scale, rotation, position);
+                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);        
+                m0.decompose(scale, rotation, position);
                 
                 if (this.rotationQuaternion) {
                     this.rotationQuaternion.copyFrom(rotation);
@@ -477,11 +476,9 @@ module BABYLON {
                 }
                 
                 node.getWorldMatrix().invertToRef(invParentMatrix);
-                  
-                var m = this.getWorldMatrix().multiply(invParentMatrix);
+                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);
+                m0.decompose(scale, rotation, position);
                 
-                m.decompose(scale, rotation, position);
-                 
                 this.position.x = position.x;
                 this.position.y = position.y;
                 this.position.z = position.z;
