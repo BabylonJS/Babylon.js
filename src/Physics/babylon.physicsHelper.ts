@@ -13,7 +13,7 @@ module BABYLON {
         private _scene: Scene;
         private _physicsEngine: Nullable<PhysicsEngine>;
 
-        public constructor(scene: Scene) {
+        constructor(scene: Scene) {
             this._scene = scene;
             this._physicsEngine = this._scene.getPhysicsEngine();
             
@@ -28,12 +28,7 @@ module BABYLON {
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
          */
-        public applyRadialExplosionImpulse(
-            origin: Vector3,
-            radius: number,
-            strength: number,
-            falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant
-        ) {
+        public applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant) {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
                 return null;
@@ -55,7 +50,7 @@ module BABYLON {
                     strength,
                     falloff
                 );
-                if (impostorForceAndContactPoint === false) {
+                if (impostorForceAndContactPoint === null) {
                     continue;
                 }
 
@@ -76,12 +71,7 @@ module BABYLON {
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
          */
-        public applyRadialExplosionForce(
-            origin: Vector3,
-            radius: number,
-            strength: number,
-            falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant
-        ) {
+        public applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant) {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -103,7 +93,7 @@ module BABYLON {
                     strength,
                     falloff
                 );
-                if (impostorForceAndContactPoint === false) {
+                if (impostorForceAndContactPoint === null) {
                     continue;
                 }
 
@@ -124,12 +114,7 @@ module BABYLON {
          * @param {number} strength the explosion strength
          * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
          */
-        public gravitationalField(
-            origin: Vector3,
-            radius: number,
-            strength: number,
-            falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant
-        ) {
+        public gravitationalField(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant) {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -168,6 +153,10 @@ module BABYLON {
             this._scene = scene;
         }
 
+        /**
+         * Returns the data related to the radial explosion event (radialSphere & rays).
+         * @returns {PhysicsRadialExplosionEventData}
+         */
         public getData(): PhysicsRadialExplosionEventData {
             this._dataFetched = true;
 
@@ -177,13 +166,22 @@ module BABYLON {
             };
         }
 
-        public getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof) {
+        /**
+         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
+         * @param impostor 
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear
+         * @returns {Nullable<PhysicsForceAndContactPoint>}
+         */
+        public getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof): Nullable<PhysicsForceAndContactPoint> {
             if (impostor.mass === 0) {
-                return false;
+                return null;
             }
 
             if (!this._intersectsWithRadialSphere(impostor, origin, radius)) {
-                return false;
+                return null;
             }
 
             var impostorObject = (<Mesh>impostor.object);
@@ -196,12 +194,12 @@ module BABYLON {
 
             var contactPoint = hit.pickedPoint;
             if (!contactPoint) {
-                return false;
+                return null;
             }
 
             var distanceFromOrigin = BABYLON.Vector3.Distance(origin, contactPoint);
             if (distanceFromOrigin > radius) {
-                return false;
+                return null;
             }
 
             var multiplier = falloff === PhysicsRadialImpulseFallof.Constant
@@ -213,14 +211,17 @@ module BABYLON {
             return { force: force, contactPoint: contactPoint };
         }
 
+        /**
+         * Disposes the radialSphere.
+         * @param {bolean} force
+         */
         public cleanup(force: boolean = true) {
             if (force) {
                 this._radialSphere.dispose();
             } else {
-                var self = this;
-                setTimeout(function () {
-                    if (!self._dataFetched) {
-                        self._radialSphere.dispose();
+                setTimeout(() => {
+                    if (!this._dataFetched) {
+                        this._radialSphere.dispose();
                     }
                 }, 0);
             }
@@ -263,6 +264,11 @@ module BABYLON {
         rays: Array<Ray>;
     }
 
+    export interface PhysicsForceAndContactPoint {
+        force: Vector3;
+        contactPoint: Vector3;
+    }
+
 
     /***** Gravitational Field *****/
 
@@ -295,7 +301,11 @@ module BABYLON {
             this._tickCallback = this._tick.bind(this);
         }
 
-        public getData() {
+        /**
+         * Returns the data related to the gravitational field event (radialSphere).
+         * @returns {PhysicsGravitationalFieldEventData}
+         */
+        public getData(): PhysicsGravitationalFieldEventData {
             this._dataFetched = true;
 
             return {
@@ -303,23 +313,32 @@ module BABYLON {
             };
         }
 
+        /**
+         * Enables the gravitational field.
+         */
         public enable() {
             this._tickCallback.call(this);
             this._scene.registerBeforeRender(this._tickCallback);
         }
 
+        /**
+         * Disables the gravitational field.
+         */
         public disable() {
             this._scene.unregisterBeforeRender(this._tickCallback);
         }
 
+        /**
+         * Disposes the radialSphere.
+         * @param {bolean} force
+         */
         public cleanup(force: boolean = true) {
             if (force) {
                 this._radialSphere.dispose();
             } else {
-                var self = this;
-                setTimeout(function () {
-                    if (!self._dataFetched) {
-                        self._radialSphere.dispose();
+                setTimeout(() => {
+                    if (!this._dataFetched) {
+                        this._radialSphere.dispose();
                     }
                 }, 0);
             }

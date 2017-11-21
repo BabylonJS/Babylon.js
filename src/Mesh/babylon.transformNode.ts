@@ -425,18 +425,20 @@ module BABYLON {
         }        
 
         /**
-         * Defines the passed mesh as the parent of the current mesh.  
-         * Returns the AbstractMesh.  
+         * Defines the passed node as the parent of the current node.  
+         * Returns the TransformNode.
          */
-        public setParent(mesh: Nullable<AbstractMesh>): TransformNode {
-            var parent = (<AbstractMesh>mesh);
-
-            if (mesh == null) {
-
+        public setParent(node: Nullable<TransformNode>): TransformNode {
+            
+            if (node == null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
-
+                
+                if(this.parent && (<TransformNode>this.parent).computeWorldMatrix){
+                    (<TransformNode>this.parent).computeWorldMatrix(true);
+                }
+                this.computeWorldMatrix(true);              
                 this.getWorldMatrix().decompose(scale, rotation, position);
 
                 if (this.rotationQuaternion) {
@@ -448,18 +450,41 @@ module BABYLON {
                 this.position.x = position.x;
                 this.position.y = position.y;
                 this.position.z = position.z;
-
             } else {
-
+                var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
-                var m1 = Tmp.Matrix[0];
-
-                parent.getWorldMatrix().invertToRef(m1);
-                Vector3.TransformCoordinatesToRef(this.position, m1, position);
-
-                this.position.copyFrom(position);
+                var scale = Tmp.Vector3[1];
+                var m0 = Tmp.Matrix[0];
+                var m1 = Tmp.Matrix[1];
+                var invParentMatrix = Tmp.Matrix[2];
+                
+                node.computeWorldMatrix(true);
+                node.getWorldMatrix().decompose(scale, rotation, position);
+                
+                rotation.toRotationMatrix(m0);
+                m1.setTranslation(position);   
+                m1.multiplyToRef(m0, m0);     
+                m0.invertToRef(invParentMatrix);
+                
+                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);        
+                m0.decompose(scale, rotation, position);
+                
+                if (this.rotationQuaternion) {
+                    this.rotationQuaternion.copyFrom(rotation);
+                } else {
+                    rotation.toEulerAnglesToRef(this.rotation);
+                }
+                
+                node.getWorldMatrix().invertToRef(invParentMatrix);
+                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);
+                m0.decompose(scale, rotation, position);
+                
+                this.position.x = position.x;
+                this.position.y = position.y;
+                this.position.z = position.z;
             }
-            this.parent = parent;
+            
+            this.parent = node;
             return this;
         }       
         
@@ -906,5 +931,40 @@ module BABYLON {
          
             return transformNode;
         }        
+
+    /**
+         * Disposes the TransformNode.  
+         * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
+         * Returns nothing.  
+         */
+        public dispose(doNotRecurse?: boolean): void {
+            // Animations
+            this.getScene().stopAnimation(this);
+
+            // Remove from scene
+            this.getScene().removeTransformNode(this);
+
+            this._cache = null;
+
+            if (!doNotRecurse) {
+                // Children
+                var objects = this.getDescendants(true);
+                for (var index = 0; index < objects.length; index++) {
+                    objects[index].dispose();
+                }
+            } else {
+                var childMeshes = this.getChildMeshes(true);
+                for (index = 0; index < childMeshes.length; index++) {
+                    var child = childMeshes[index];
+                    child.parent = null;
+                    child.computeWorldMatrix(true);
+                }
+            }
+
+            this.onAfterWorldMatrixUpdateObservable.clear();
+
+            super.dispose();
+        }
+        
     }
 }

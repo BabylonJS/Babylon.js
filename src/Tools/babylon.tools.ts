@@ -433,10 +433,7 @@
             img.onerror = err => {
                 Tools.Error("Error while trying to load image: " + url);
 
-                if (Tools.UseFallbackTexture) {
-                    img.src = Tools.fallbackTexture;
-                    onLoad(img);
-                } else {
+                if (onError) {
                     onError("Error while trying to load image: " + url, err);
                 }
             };
