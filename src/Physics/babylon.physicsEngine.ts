@@ -61,7 +61,7 @@
 
         private _impostors: Array<PhysicsImpostor> = [];
         private _joints: Array<PhysicsImpostorJoint> = [];
-
+        
         /**
          * Adding a new impostor for the impostor tracking.
          * This will be done by the impostor itself.
@@ -146,6 +146,10 @@
         public getPhysicsPlugin(): IPhysicsEnginePlugin {
             return this._physicsPlugin;
         }
+        
+        public getImpostors(): Array<PhysicsImpostor> {
+            return this._impostors;
+        }
 
         public getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor> {
             for (var i = 0; i < this._impostors.length; ++i) {
@@ -166,6 +170,7 @@
 
             return null;
         }
+
     }
 
     export interface IPhysicsEnginePlugin {
@@ -205,4 +210,5 @@
         syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor): void;
         dispose(): void;
     }
+    
 }
