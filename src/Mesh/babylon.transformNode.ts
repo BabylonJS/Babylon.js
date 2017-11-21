@@ -425,14 +425,12 @@ module BABYLON {
         }        
 
         /**
-         * Defines the passed mesh as the parent of the current mesh.  
-         * Returns the AbstractMesh.  
+         * Defines the passed node as the parent of the current node.  
+         * Returns the TransformNode.
          */
-        public setParent(mesh: Nullable<AbstractMesh>): TransformNode {
-            var parent = (<AbstractMesh>mesh);
-
-            if (mesh == null) {
-
+        public setParent(node: Nullable<TransformNode>): TransformNode {
+            
+            if (node == null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
@@ -440,6 +438,7 @@ module BABYLON {
                 if(this.parent && (<TransformNode>this.parent).computeWorldMatrix){
                     (<TransformNode>this.parent).computeWorldMatrix(true);
                 }
+                this.computeWorldMatrix(true);              
                 this.getWorldMatrix().decompose(scale, rotation, position);
 
                 if (this.rotationQuaternion) {
@@ -451,9 +450,7 @@ module BABYLON {
                 this.position.x = position.x;
                 this.position.y = position.y;
                 this.position.z = position.z;
-
             } else {
-
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
@@ -461,8 +458,8 @@ module BABYLON {
                 var m2 = Tmp.Matrix[1];
                 var invParentMatrix = Tmp.Matrix[2];
                 
-                parent.computeWorldMatrix(true);
-                parent.getWorldMatrix().decompose(scale, rotation, position);
+                node.computeWorldMatrix(true);
+                node.getWorldMatrix().decompose(scale, rotation, position);
                 
                 rotation.toRotationMatrix(m1);
                 m2.setTranslation(position);   
@@ -479,7 +476,7 @@ module BABYLON {
                     rotation.toEulerAnglesToRef(this.rotation);
                 }
                 
-                parent.getWorldMatrix().invertToRef(invParentMatrix);
+                node.getWorldMatrix().invertToRef(invParentMatrix);
                   
                 var m = this.getWorldMatrix().multiply(invParentMatrix);
                 
@@ -490,7 +487,7 @@ module BABYLON {
                 this.position.z = position.z;
             }
             
-            this.parent = parent;
+            this.parent = node;
             return this;
         }       
         
