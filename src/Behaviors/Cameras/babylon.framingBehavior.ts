@@ -142,7 +142,7 @@ module BABYLON {
         // Default behavior functions
         private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
 		private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
-		private _onMeshTargetChangedObserver: Nullable<Observer<AbstractMesh>>;
+		private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<AbstractMesh>>>;
         private _attachedCamera: Nullable<ArcRotateCamera>;
         private _isPointerDown = false;
 		private _lastInteractionTime = -Infinity;

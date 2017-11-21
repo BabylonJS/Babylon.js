@@ -668,7 +668,11 @@ declare module BABYLON {
         /**
          * Get all child-meshes of this node.
          */
-        getChildMeshes(directDecendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[];
+        getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[];
+        /**
+         * Get all child-transformNodes of this node.
+         */
+        getChildTransformNodes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): TransformNode[];
         /**
          * Get all direct children of this node.
         */
@@ -2465,7 +2469,7 @@ declare module BABYLON {
         getVolume(): number;
         attachToMesh(meshToConnectTo: AbstractMesh): void;
         detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
+        private _onRegisterAfterWorldMatrixUpdate(node);
         clone(): Nullable<Sound>;
         getAudioBuffer(): AudioBuffer | null;
         serialize(): any;
@@ -3040,7 +3044,7 @@ declare module BABYLON {
         private _autoRotationBehavior;
         readonly autoRotationBehavior: Nullable<AutoRotationBehavior>;
         useAutoRotationBehavior: boolean;
-        onMeshTargetChangedObservable: Observable<AbstractMesh>;
+        onMeshTargetChangedObservable: Observable<Nullable<AbstractMesh>>;
         onCollide: (collidedMesh: AbstractMesh) => void;
         checkCollisions: boolean;
         collisionRadius: Vector3;
@@ -3664,7 +3668,7 @@ declare module BABYLON {
         init(scene: Scene): void;
         destroy(): void;
         onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (mesh: AbstractMesh) => void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
         onMeshRemoved(mesh: AbstractMesh): void;
         onGeometryAdded(geometry: Geometry): void;
         onGeometryUpdated: (geometry: Geometry) => void;
@@ -4617,7 +4621,7 @@ declare module BABYLON {
          *
          * @returns {WebGLTexture} for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: Nullable<InternalTexture>, format?: Nullable<number>): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: Nullable<InternalTexture>, format?: Nullable<number>): InternalTexture;
         private _rescaleTexture(source, destination, scene, internalFormat, onComplete);
         private _getInternalFormat(format);
         updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>): void;
@@ -4791,7 +4795,7 @@ declare module BABYLON {
         wipeCaches(bruteForce?: boolean): void;
         draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void;
         _createTexture(): WebGLTexture;
-        createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: InternalTexture, format?: number): InternalTexture;
+        createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: InternalTexture, format?: number): InternalTexture;
         createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture;
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
@@ -5843,7 +5847,7 @@ declare module BABYLON {
         lensFlares: LensFlare[];
         borderLimit: number;
         viewportBorder: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
         layerMask: number;
         id: string;
         private _scene;
@@ -7331,6 +7335,7 @@ declare module BABYLON {
         private _matrices;
         private _matrices3x3;
         private _matrices2x2;
+        private _vectors2Arrays;
         private _vectors3Arrays;
         private _cachedWorldViewMatrix;
         private _renderId;
@@ -7352,6 +7357,7 @@ declare module BABYLON {
         setMatrix(name: string, value: Matrix): ShaderMaterial;
         setMatrix3x3(name: string, value: Float32Array): ShaderMaterial;
         setMatrix2x2(name: string, value: Float32Array): ShaderMaterial;
+        setArray2(name: string, value: number[]): ShaderMaterial;
         setArray3(name: string, value: number[]): ShaderMaterial;
         private _checkCache(scene, mesh?, useInstances?);
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
@@ -11629,7 +11635,7 @@ declare module BABYLON {
          * Returns the Mesh.
          */
         render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh;
-        private _onBeforeDraw(isInstance, world, effectiveMaterial);
+        private _onBeforeDraw(isInstance, world, effectiveMaterial?);
         /**
          * Returns an array populated with ParticleSystem objects whose the mesh is the emitter.
          */
@@ -13505,10 +13511,11 @@ declare module BABYLON {
          */
         getAbsolutePivotPointToRef(result: Vector3): TransformNode;
         /**
-         * Defines the passed mesh as the parent of the current mesh.
-         * Returns the AbstractMesh.
+         * Defines the passed node as the parent of the current node.
+         * The node will remain exactly where it is and its position / rotation will be updated accordingly
+         * Returns the TransformNode.
          */
-        setParent(mesh: Nullable<AbstractMesh>): TransformNode;
+        setParent(node: Nullable<TransformNode>): TransformNode;
         private _nonUniformScaling;
         readonly nonUniformScaling: boolean;
         _updateNonUniformScalingState(value: boolean): boolean;
@@ -13578,14 +13585,27 @@ declare module BABYLON {
          * Returns the TransformNode.
          */
         unregisterAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode;
-        clone(name: string, newParent: Node): Nullable<TransformNode>;
-        serialize(serializationObject?: any): any;
+        /**
+         * Clone the current transform node
+         * Returns the new transform node
+         * @param name Name of the new clone
+         * @param newParent New parent for the clone
+         * @param doNotCloneChildren Do not clone children hierarchy
+         */
+        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode>;
+        serialize(currentSerializationObject?: any): any;
         /**
          * Returns a new TransformNode object parsed from the source provided.
          * The parameter `parsedMesh` is the source.
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode;
+        /**
+         * Disposes the TransformNode.
+         * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.
+         * Returns nothing.
+         */
+        dispose(doNotRecurse?: boolean): void;
     }
 }
 
@@ -13682,6 +13702,70 @@ declare module BABYLON {
         static readonly MatricesWeightsKind: string;
         static readonly MatricesIndicesExtraKind: string;
         static readonly MatricesWeightsExtraKind: string;
+    }
+}
+
+declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasPositions: boolean;
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Nullable<FloatArray>): void;
+        getPositions(): Nullable<FloatArray>;
+        setNormals(data: Nullable<FloatArray>): void;
+        getNormals(): Nullable<FloatArray>;
+        setTangents(data: Nullable<FloatArray>): void;
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        constructor(scene?: Nullable<Scene>);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        private _syncActiveTargets(needUpdate);
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -14298,6 +14382,7 @@ declare module BABYLON {
          */
         _step(delta: number): void;
         getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostors(): Array<PhysicsImpostor>;
         getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
         getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
     }
@@ -14336,6 +14421,116 @@ declare module BABYLON {
         getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
         syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    enum PhysicsRadialImpulseFallof {
+        Constant = 0,
+        Linear = 1,
+    }
+    class PhysicsHelper {
+        private _scene;
+        private _physicsEngine;
+        constructor(scene: Scene);
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFallof): Nullable<PhysicsRadialExplosionEvent>;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFallof): Nullable<PhysicsRadialExplosionEvent>;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFallof): Nullable<PhysicsGravitationalFieldEvent>;
+    }
+    /***** Radial explosion *****/
+    class PhysicsRadialExplosionEvent {
+        private _scene;
+        private _radialSphere;
+        private _rays;
+        private _dataFetched;
+        constructor(scene: Scene);
+        /**
+         * Returns the data related to the radial explosion event (radialSphere & rays).
+         * @returns {PhysicsRadialExplosionEventData}
+         */
+        getData(): PhysicsRadialExplosionEventData;
+        /**
+         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
+         * @param impostor
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear
+         * @returns {Nullable<PhysicsForceAndContactPoint>}
+         */
+        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof): Nullable<PhysicsForceAndContactPoint>;
+        /**
+         * Disposes the radialSphere.
+         * @param {bolean} force
+         */
+        cleanup(force?: boolean): void;
+        /*** Helpers ***/
+        private _prepareRadialSphere();
+        private _intersectsWithRadialSphere(impostor, origin, radius);
+    }
+    interface PhysicsRadialExplosionEventData {
+        radialSphere: Mesh;
+        rays: Array<Ray>;
+    }
+    interface PhysicsForceAndContactPoint {
+        force: Vector3;
+        contactPoint: Vector3;
+    }
+    /***** Gravitational Field *****/
+    class PhysicsGravitationalFieldEvent {
+        private _physicsHelper;
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _falloff;
+        private _tickCallback;
+        private _radialSphere;
+        private _dataFetched;
+        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFallof);
+        /**
+         * Returns the data related to the gravitational field event (radialSphere).
+         * @returns {PhysicsGravitationalFieldEventData}
+         */
+        getData(): PhysicsGravitationalFieldEventData;
+        /**
+         * Enables the gravitational field.
+         */
+        enable(): void;
+        /**
+         * Disables the gravitational field.
+         */
+        disable(): void;
+        /**
+         * Disposes the radialSphere.
+         * @param {bolean} force
+         */
+        cleanup(force?: boolean): void;
+        private _tick();
+    }
+    interface PhysicsGravitationalFieldEventData {
+        radialSphere: Mesh;
     }
 }
 
@@ -14653,70 +14848,6 @@ declare module BABYLON {
         length: number;
         stiffness: number;
         damping: number;
-    }
-}
-
-declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasPositions: boolean;
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Nullable<FloatArray>): void;
-        getPositions(): Nullable<FloatArray>;
-        setNormals(data: Nullable<FloatArray>): void;
-        getNormals(): Nullable<FloatArray>;
-        setTangents(data: Nullable<FloatArray>): void;
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        constructor(scene?: Nullable<Scene>);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -15707,23 +15838,11 @@ declare module BABYLON {
         DONE = 2,
         ERROR = 3,
     }
-    interface IAssetTask<T extends AbstractAssetTask> {
-        onSuccess: (task: T) => void;
-        onError: (task: T, message?: string, exception?: any) => void;
-        isCompleted: boolean;
+    abstract class AbstractAssetTask {
         name: string;
-        taskState: AssetTaskState;
-        errorObject: {
-            message?: string;
-            exception?: any;
-        };
-        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
-    }
-    abstract class AbstractAssetTask implements IAssetTask<AbstractAssetTask> {
-        name: string;
+        onSuccess: (task: any) => void;
+        onError: (task: any, message?: string, exception?: any) => void;
         constructor(name: string);
-        onSuccess: (task: this) => void;
-        onError: (task: this, message?: string, exception?: any) => void;
         isCompleted: boolean;
         taskState: AssetTaskState;
         errorObject: {
@@ -15746,7 +15865,7 @@ declare module BABYLON {
         task: AbstractAssetTask;
         constructor(remainingCount: number, totalCount: number, task: AbstractAssetTask);
     }
-    class MeshAssetTask extends AbstractAssetTask implements IAssetTask<MeshAssetTask> {
+    class MeshAssetTask extends AbstractAssetTask {
         name: string;
         meshesNames: any;
         rootUrl: string;
@@ -15754,54 +15873,66 @@ declare module BABYLON {
         loadedMeshes: Array<AbstractMesh>;
         loadedParticleSystems: Array<ParticleSystem>;
         loadedSkeletons: Array<Skeleton>;
+        onSuccess: (task: MeshAssetTask) => void;
+        onError: (task: MeshAssetTask, message?: string, exception?: any) => void;
         constructor(name: string, meshesNames: any, rootUrl: string, sceneFilename: string);
         runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
-    class TextFileAssetTask extends AbstractAssetTask implements IAssetTask<TextFileAssetTask> {
+    class TextFileAssetTask extends AbstractAssetTask {
         name: string;
         url: string;
         text: string;
+        onSuccess: (task: TextFileAssetTask) => void;
+        onError: (task: TextFileAssetTask, message?: string, exception?: any) => void;
         constructor(name: string, url: string);
         runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
-    class BinaryFileAssetTask extends AbstractAssetTask implements IAssetTask<BinaryFileAssetTask> {
+    class BinaryFileAssetTask extends AbstractAssetTask {
         name: string;
         url: string;
         data: ArrayBuffer;
+        onSuccess: (task: BinaryFileAssetTask) => void;
+        onError: (task: BinaryFileAssetTask, message?: string, exception?: any) => void;
         constructor(name: string, url: string);
         runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
-    class ImageAssetTask extends AbstractAssetTask implements IAssetTask<ImageAssetTask> {
+    class ImageAssetTask extends AbstractAssetTask {
         name: string;
         url: string;
         image: HTMLImageElement;
+        onSuccess: (task: ImageAssetTask) => void;
+        onError: (task: ImageAssetTask, message?: string, exception?: any) => void;
         constructor(name: string, url: string);
         runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
-    interface ITextureAssetTask<TEX extends BaseTexture, T extends AbstractAssetTask> extends IAssetTask<T> {
+    interface ITextureAssetTask<TEX extends BaseTexture> {
         texture: TEX;
     }
-    class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<Texture, TextureAssetTask> {
+    class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<Texture> {
         name: string;
         url: string;
         noMipmap: boolean | undefined;
         invertY: boolean | undefined;
         samplingMode: number;
         texture: Texture;
+        onSuccess: (task: TextureAssetTask) => void;
+        onError: (task: TextureAssetTask, message?: string, exception?: any) => void;
         constructor(name: string, url: string, noMipmap?: boolean | undefined, invertY?: boolean | undefined, samplingMode?: number);
         runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
-    class CubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<CubeTexture, CubeTextureAssetTask> {
+    class CubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<CubeTexture> {
         name: string;
         url: string;
         extensions: string[] | undefined;
         noMipmap: boolean | undefined;
         files: string[] | undefined;
         texture: CubeTexture;
+        onSuccess: (task: CubeTextureAssetTask) => void;
+        onError: (task: CubeTextureAssetTask, message?: string, exception?: any) => void;
         constructor(name: string, url: string, extensions?: string[] | undefined, noMipmap?: boolean | undefined, files?: string[] | undefined);
         runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
-    class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<HDRCubeTexture, HDRCubeTextureAssetTask> {
+    class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<HDRCubeTexture> {
         name: string;
         url: string;
         size: number | undefined;
@@ -15810,6 +15941,8 @@ declare module BABYLON {
         useInGammaSpace: boolean;
         usePMREMGenerator: boolean;
         texture: HDRCubeTexture;
+        onSuccess: (task: HDRCubeTextureAssetTask) => void;
+        onError: (task: HDRCubeTextureAssetTask, message?: string, exception?: any) => void;
         constructor(name: string, url: string, size?: number | undefined, noMipmap?: boolean, generateHarmonics?: boolean, useInGammaSpace?: boolean, usePMREMGenerator?: boolean);
         run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
@@ -15817,13 +15950,13 @@ declare module BABYLON {
         private _scene;
         protected tasks: AbstractAssetTask[];
         protected waitingTasksCount: number;
-        onFinish: (tasks: IAssetTask<AbstractAssetTask>[]) => void;
-        onTaskSuccess: (task: IAssetTask<AbstractAssetTask>) => void;
-        onTaskError: (task: IAssetTask<AbstractAssetTask>) => void;
-        onProgress: (remainingCount: number, totalCount: number, task: IAssetTask<AbstractAssetTask>) => void;
-        onTaskSuccessObservable: Observable<IAssetTask<AbstractAssetTask>>;
-        onTaskErrorObservable: Observable<IAssetTask<AbstractAssetTask>>;
-        onTasksDoneObservable: Observable<IAssetTask<AbstractAssetTask>[]>;
+        onFinish: (tasks: AbstractAssetTask[]) => void;
+        onTaskSuccess: (task: AbstractAssetTask) => void;
+        onTaskError: (task: AbstractAssetTask) => void;
+        onProgress: (remainingCount: number, totalCount: number, task: AbstractAssetTask) => void;
+        onTaskSuccessObservable: Observable<AbstractAssetTask>;
+        onTaskErrorObservable: Observable<AbstractAssetTask>;
+        onTasksDoneObservable: Observable<AbstractAssetTask[]>;
         onProgressObservable: Observable<IAssetsProgressEvent>;
         useDefaultLoadingScreen: boolean;
         constructor(scene: Scene);
@@ -15918,6 +16051,7 @@ declare module BABYLON {
     function serializeAsColorCurves(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     function serializeAsColor4(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     function serializeAsImageProcessingConfiguration(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    function serializeAsQuaternion(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     class SerializationHelper {
         static Serialize<T>(entity: T, serializationObject?: any): any;
         static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl?: Nullable<string>): T;
@@ -16055,10 +16189,10 @@ declare module BABYLON {
      * Represent an Observer registered to a given Observable object.
      */
     class Observer<T> {
-        callback: (eventData: Nullable<T>, eventState: EventState) => void;
+        callback: (eventData: T, eventState: EventState) => void;
         mask: number;
         scope: any;
-        constructor(callback: (eventData: Nullable<T>, eventState: EventState) => void, mask: number, scope?: any);
+        constructor(callback: (eventData: T, eventState: EventState) => void, mask: number, scope?: any);
     }
     /**
      * Represent a list of observers registered to multiple Observables object.
@@ -16105,7 +16239,7 @@ declare module BABYLON {
          * @param eventData
          * @param mask
          */
-        notifyObservers(eventData: Nullable<T>, mask?: number, target?: any, currentTarget?: any): boolean;
+        notifyObservers(eventData: T, mask?: number, target?: any, currentTarget?: any): boolean;
         /**
          * Notify a specific observer
          * @param eventData
@@ -16572,11 +16706,11 @@ declare module BABYLON {
         static IsEmpty(obj: any): boolean;
         static RegisterTopRootEvents(events: {
             name: string;
-            handler: EventListener;
+            handler: Nullable<(e: FocusEvent) => any>;
         }[]): void;
         static UnregisterTopRootEvents(events: {
             name: string;
-            handler: EventListener;
+            handler: Nullable<(e: FocusEvent) => any>;
         }[]): void;
         static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType?: string, fileName?: string): void;
         static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType?: string, fileName?: string): void;
@@ -17136,220 +17270,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class VRCameraMetrics {
-        hResolution: number;
-        vResolution: number;
-        hScreenSize: number;
-        vScreenSize: number;
-        vScreenCenter: number;
-        eyeToScreenDistance: number;
-        lensSeparationDistance: number;
-        interpupillaryDistance: number;
-        distortionK: number[];
-        chromaAbCorrection: number[];
-        postProcessScaleFactor: number;
-        lensCenterOffset: number;
-        compensateDistortion: boolean;
-        readonly aspectRatio: number;
-        readonly aspectRatioFov: number;
-        readonly leftHMatrix: Matrix;
-        readonly rightHMatrix: Matrix;
-        readonly leftPreViewMatrix: Matrix;
-        readonly rightPreViewMatrix: Matrix;
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-
-declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    interface VRTeleportationOptions {
-        floorMeshName?: string;
-    }
-    class VRExperienceHelper {
-        webVROptions: WebVROptions;
-        private _scene;
-        private _position;
-        private _btnVR;
-        private _webVRsupported;
-        private _webVRready;
-        private _webVRrequesting;
-        private _webVRpresenting;
-        private _fullscreenVRpresenting;
-        private _canvas;
-        private _webVRCamera;
-        private _vrDeviceOrientationCamera;
-        private _deviceOrientationCamera;
-        private _onKeyDown;
-        private _onVrDisplayPresentChange;
-        private _onVRDisplayChanged;
-        private _onVRRequestPresentStart;
-        private _onVRRequestPresentComplete;
-        onEnteringVR: () => void;
-        onExitingVR: () => void;
-        onControllerMeshLoaded: (controller: WebVRController) => void;
-        private _useCustomVRButton;
-        private _teleportationRequested;
-        private _teleportationEnabledOnLeftController;
-        private _teleportationEnabledOnRightController;
-        private _leftControllerReady;
-        private _rightControllerReady;
-        private _floorMeshName;
-        private _teleportationAllowed;
-        private _rotationAllowed;
-        private _teleportationRequestInitiated;
-        private _xboxGamepadTeleportationRequestInitiated;
-        private _rotationRightAsked;
-        private _rotationLeftAsked;
-        private _teleportationCircle;
-        private _postProcessMove;
-        private _passProcessMove;
-        private _teleportationFillColor;
-        private _teleportationBorderColor;
-        private _rotationAngle;
-        private _haloCenter;
-        private _rayHelper;
-        meshSelectionPredicate: (mesh: BABYLON.Mesh) => boolean;
-        readonly deviceOrientationCamera: DeviceOrientationCamera;
-        readonly currentVRCamera: FreeCamera;
-        readonly webVRCamera: WebVRFreeCamera;
-        readonly vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
-        constructor(scene: Scene, webVROptions?: WebVROptions);
-        private _onDefaultMeshLoaded(webVRController);
-        private _onFullscreenChange();
-        private isInVRMode();
-        private onVrDisplayPresentChange();
-        private onVRDisplayChanged(eventArgs);
-        private updateButtonVisibility();
-        /**
-         * Attempt to enter VR. If a headset is connected and ready, will request present on that.
-         * Otherwise, will use the fullscreen API.
-         */
-        enterVR(): void;
-        /**
-         * Attempt to exit VR, or fullscreen.
-         */
-        exitVR(): void;
-        position: Vector3;
-        enableTeleportation(vrTeleportationOptions?: VRTeleportationOptions): void;
-        private _enableTeleportationOnController(webVRController);
-        private _createTeleportationCircles();
-        private _displayTeleportationCircle();
-        private _hideTeleportationCircle();
-        private _rotateCamera(right);
-        private _moveTeleportationSelectorTo(coordinates);
-        private _teleportCamera();
-        private _castRayAndSelectObject();
-        dispose(): void;
-        getClassName(): string;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var VRDisplay: any;
-declare var VRFrameData: any;
-declare module BABYLON {
-    /**
-     * This is a copy of VRPose.
-     * IMPORTANT!! The data is right-hand data.
-     * @export
-     * @interface DevicePose
-     */
-    interface DevicePose {
-        readonly position?: Float32Array;
-        readonly linearVelocity?: Float32Array;
-        readonly linearAcceleration?: Float32Array;
-        readonly orientation?: Float32Array;
-        readonly angularVelocity?: Float32Array;
-        readonly angularAcceleration?: Float32Array;
-    }
-    interface PoseControlled {
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        devicePosition?: Vector3;
-        deviceRotationQuaternion: Quaternion;
-        rawPose: Nullable<DevicePose>;
-        deviceScaleFactor: number;
-        updateFromDevice(poseData: DevicePose): void;
-    }
-    interface WebVROptions {
-        trackPosition?: boolean;
-        positionScale?: number;
-        displayName?: string;
-        controllerMeshes?: boolean;
-        defaultLightingOnControllers?: boolean;
-        useCustomVRButton?: boolean;
-        customVRButton?: HTMLButtonElement;
-    }
-    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-        private webVROptions;
-        _vrDevice: any;
-        rawPose: Nullable<DevicePose>;
-        private _onVREnabled;
-        private _specsVersion;
-        private _attached;
-        private _frameData;
-        protected _descendants: Array<Node>;
-        devicePosition: Vector3;
-        deviceRotationQuaternion: Quaternion;
-        deviceScaleFactor: number;
-        controllers: Array<WebVRController>;
-        onControllersAttachedObservable: Observable<WebVRController[]>;
-        onControllerMeshLoadedObservable: Observable<WebVRController>;
-        rigParenting: boolean;
-        private _lightOnControllers;
-        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
-        dispose(): void;
-        getControllerByName(name: string): Nullable<WebVRController>;
-        private _leftController;
-        readonly leftController: Nullable<WebVRController>;
-        private _rightController;
-        readonly rightController: Nullable<WebVRController>;
-        getForwardRay(length?: number): Ray;
-        _checkInputs(): void;
-        updateFromDevice(poseData: DevicePose): void;
-        /**
-         * WebVR's attach control will start broadcasting frames to the device.
-         * Note that in certain browsers (chrome for example) this function must be called
-         * within a user-interaction callback. Example:
-         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
-         *
-         * @param {HTMLElement} element
-         * @param {boolean} [noPreventDefault]
-         *
-         * @memberOf WebVRFreeCamera
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        getClassName(): string;
-        resetToCurrentRotation(): void;
-        _updateRigCameras(): void;
-        /**
-         * This function is called by the two RIG cameras.
-         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
-         */
-        protected _getWebVRViewMatrix(): Matrix;
-        protected _getWebVRProjectionMatrix(): Matrix;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        initControllers(): void;
-    }
-}
-
-declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Nullable<Gamepad>;
@@ -17572,6 +17492,222 @@ declare module BABYLON {
         detachControl(element: Nullable<HTMLElement>): void;
         getClassName(): string;
         getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistortion: boolean;
+        readonly aspectRatio: number;
+        readonly aspectRatioFov: number;
+        readonly leftHMatrix: Matrix;
+        readonly rightHMatrix: Matrix;
+        readonly leftPreViewMatrix: Matrix;
+        readonly rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+
+declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    interface VRTeleportationOptions {
+        floorMeshName?: string;
+    }
+    class VRExperienceHelper {
+        webVROptions: WebVROptions;
+        private _scene;
+        private _position;
+        private _btnVR;
+        private _webVRsupported;
+        private _webVRready;
+        private _webVRrequesting;
+        private _webVRpresenting;
+        private _fullscreenVRpresenting;
+        private _canvas;
+        private _webVRCamera;
+        private _vrDeviceOrientationCamera;
+        private _deviceOrientationCamera;
+        private _onKeyDown;
+        private _onVrDisplayPresentChange;
+        private _onVRDisplayChanged;
+        private _onVRRequestPresentStart;
+        private _onVRRequestPresentComplete;
+        onEnteringVR: () => void;
+        onExitingVR: () => void;
+        onControllerMeshLoaded: (controller: WebVRController) => void;
+        private _useCustomVRButton;
+        private _teleportationRequested;
+        private _teleportationEnabledOnLeftController;
+        private _teleportationEnabledOnRightController;
+        private _leftControllerReady;
+        private _rightControllerReady;
+        private _floorMeshName;
+        private _teleportationAllowed;
+        private _rotationAllowed;
+        private _teleportationRequestInitiated;
+        private _rotationRightAsked;
+        private _rotationLeftAsked;
+        private _teleportationCircle;
+        private _postProcessMove;
+        private _passProcessMove;
+        private _teleportationFillColor;
+        private _teleportationBorderColor;
+        private _rotationAngle;
+        private _haloCenter;
+        private _rayHelper;
+        private _gazeTracker;
+        meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
+        readonly deviceOrientationCamera: DeviceOrientationCamera;
+        readonly currentVRCamera: FreeCamera;
+        readonly webVRCamera: WebVRFreeCamera;
+        readonly vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
+        constructor(scene: Scene, webVROptions?: WebVROptions);
+        private _onDefaultMeshLoaded(webVRController);
+        private _onFullscreenChange();
+        private isInVRMode();
+        private onVrDisplayPresentChange();
+        private onVRDisplayChanged(eventArgs);
+        private updateButtonVisibility();
+        /**
+         * Attempt to enter VR. If a headset is connected and ready, will request present on that.
+         * Otherwise, will use the fullscreen API.
+         */
+        enterVR(): void;
+        /**
+         * Attempt to exit VR, or fullscreen.
+         */
+        exitVR(): void;
+        position: Vector3;
+        enableTeleportation(vrTeleportationOptions?: VRTeleportationOptions): void;
+        private _onNewGamepadConnected(gamepad);
+        private _enableTeleportationOnController(webVRController);
+        private _createGazeTracker();
+        private _createTeleportationCircles();
+        private _displayTeleportationCircle();
+        private _hideTeleportationCircle();
+        private _rotateCamera(right);
+        private _moveTeleportationSelectorTo(coordinates);
+        private _teleportCamera();
+        private _castRayAndSelectObject();
+        dispose(): void;
+        getClassName(): string;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var VRDisplay: any;
+declare var VRFrameData: any;
+declare module BABYLON {
+    /**
+     * This is a copy of VRPose.
+     * IMPORTANT!! The data is right-hand data.
+     * @export
+     * @interface DevicePose
+     */
+    interface DevicePose {
+        readonly position?: Float32Array;
+        readonly linearVelocity?: Float32Array;
+        readonly linearAcceleration?: Float32Array;
+        readonly orientation?: Float32Array;
+        readonly angularVelocity?: Float32Array;
+        readonly angularAcceleration?: Float32Array;
+    }
+    interface PoseControlled {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        devicePosition?: Vector3;
+        deviceRotationQuaternion: Quaternion;
+        rawPose: Nullable<DevicePose>;
+        deviceScaleFactor: number;
+        updateFromDevice(poseData: DevicePose): void;
+    }
+    interface WebVROptions {
+        trackPosition?: boolean;
+        positionScale?: number;
+        displayName?: string;
+        controllerMeshes?: boolean;
+        defaultLightingOnControllers?: boolean;
+        useCustomVRButton?: boolean;
+        customVRButton?: HTMLButtonElement;
+    }
+    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
+        private webVROptions;
+        _vrDevice: any;
+        rawPose: Nullable<DevicePose>;
+        private _onVREnabled;
+        private _specsVersion;
+        private _attached;
+        private _frameData;
+        protected _descendants: Array<Node>;
+        devicePosition: Vector3;
+        deviceRotationQuaternion: Quaternion;
+        deviceScaleFactor: number;
+        controllers: Array<WebVRController>;
+        onControllersAttachedObservable: Observable<WebVRController[]>;
+        onControllerMeshLoadedObservable: Observable<WebVRController>;
+        rigParenting: boolean;
+        private _lightOnControllers;
+        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
+        dispose(): void;
+        getControllerByName(name: string): Nullable<WebVRController>;
+        private _leftController;
+        readonly leftController: Nullable<WebVRController>;
+        private _rightController;
+        readonly rightController: Nullable<WebVRController>;
+        getForwardRay(length?: number): Ray;
+        _checkInputs(): void;
+        updateFromDevice(poseData: DevicePose): void;
+        /**
+         * WebVR's attach control will start broadcasting frames to the device.
+         * Note that in certain browsers (chrome for example) this function must be called
+         * within a user-interaction callback. Example:
+         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
+         *
+         * @param {HTMLElement} element
+         * @param {boolean} [noPreventDefault]
+         *
+         * @memberOf WebVRFreeCamera
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        getClassName(): string;
+        resetToCurrentRotation(): void;
+        _updateRigCameras(): void;
+        /**
+         * This function is called by the two RIG cameras.
+         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
+         */
+        protected _getWebVRViewMatrix(): Matrix;
+        protected _getWebVRProjectionMatrix(): Matrix;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        initControllers(): void;
     }
 }
 
@@ -19716,7 +19852,7 @@ declare module BABYLON {
         protected _isBlocking: boolean;
         isBlocking: boolean;
         readonly samplingMode: number;
-        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, esception?: any) => void>, buffer?: any, deleteBuffer?: boolean, format?: number);
+        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: any, deleteBuffer?: boolean, format?: number);
         updateURL(url: string): void;
         delayLoad(): void;
         updateSamplingMode(samplingMode: number): void;

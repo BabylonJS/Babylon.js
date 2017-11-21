@@ -6,19 +6,31 @@ module BABYLON {
         public static BILLBOARDMODE_Y = 2;
         public static BILLBOARDMODE_Z = 4;
         public static BILLBOARDMODE_ALL = 7;
-        
+
         // Properties
+        @serializeAsVector3()
         private _rotation = Vector3.Zero();
+
+        @serializeAsQuaternion()
         private _rotationQuaternion: Nullable<Quaternion>;
+
+        @serializeAsVector3()
         protected _scaling = Vector3.One();
         protected _isDirty = false;
         private _transformToBoneReferal: Nullable<TransformNode>;
-        
+
+        @serialize()
         public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
+
+        @serialize()
         public scalingDeterminant = 1;
+
+        @serialize()
         public infiniteDistance = false;
+
+        @serializeAsVector3()
         public position = Vector3.Zero();
-                        
+
         // Cache        
         public _poseMatrix: Matrix;
         private _localWorld = Matrix.Zero();
@@ -26,15 +38,15 @@ module BABYLON {
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
-        private _postMultiplyPivotMatrix = false;        
-        
+        private _postMultiplyPivotMatrix = false;
+
         protected _isWorldMatrixFrozen = false;
 
         /**
         * An event triggered after the world matrix is updated
         * @type {BABYLON.Observable}
         */
-        public onAfterWorldMatrixUpdateObservable = new Observable<TransformNode>();        
+        public onAfterWorldMatrixUpdateObservable = new Observable<TransformNode>();
 
         constructor(name: string, scene: Nullable<Scene> = null, isPure = true) {
             super(name, scene);
@@ -42,13 +54,13 @@ module BABYLON {
             if (isPure) {
                 this.getScene().addTransformNode(this);
             }
-        }        
-                
-       /**
-         * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z. 
-         * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
-         * Default : (0.0, 0.0, 0.0)
-         */
+        }
+
+        /**
+          * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z. 
+          * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
+          * Default : (0.0, 0.0, 0.0)
+          */
         public get rotation(): Vector3 {
             return this._rotation;
         }
@@ -125,7 +137,7 @@ module BABYLON {
         public getPoseMatrix(): Matrix {
             return this._poseMatrix;
         }
-        
+
         public _isSynchronized(): boolean {
             if (this._isDirty) {
                 return false;
@@ -177,7 +189,7 @@ module BABYLON {
             this._currentRenderId = Number.MAX_VALUE;
             this._isDirty = true;
             return this;
-        }        
+        }
 
         /**
          * Returns the current mesh absolute position.
@@ -240,10 +252,10 @@ module BABYLON {
             return this._isWorldMatrixFrozen;
         }
 
-     /**
-         * Retuns the mesh absolute position in the World.  
-         * Returns a Vector3.
-         */
+        /**
+            * Retuns the mesh absolute position in the World.  
+            * Returns a Vector3.
+            */
         public getAbsolutePosition(): Vector3 {
             this.computeWorldMatrix();
             return this._absolutePosition;
@@ -284,12 +296,12 @@ module BABYLON {
                 this.position.z = absolutePositionZ;
             }
             return this;
-        }   
+        }
 
-      /**
-         * Sets the mesh position in its local space.  
-         * Returns the AbstractMesh.  
-         */
+        /**
+           * Sets the mesh position in its local space.  
+           * Returns the AbstractMesh.  
+           */
         public setPositionWithLocalVector(vector3: Vector3): TransformNode {
             this.computeWorldMatrix();
             this.position = Vector3.TransformNormal(vector3, this._localWorld);
@@ -336,12 +348,12 @@ module BABYLON {
             this.rotationQuaternion = this.rotationQuaternion || new Quaternion();
             Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
             return this;
-        }        
+        }
 
-       /**
-         * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.  
-         * This Vector3 is expressed in the World space.  
-         */
+        /**
+          * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.  
+          * This Vector3 is expressed in the World space.  
+          */
         public getDirection(localAxis: Vector3): Vector3 {
             var result = Vector3.Zero();
 
@@ -422,22 +434,52 @@ module BABYLON {
             this.getPivotPointToRef(result);
             Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
             return this;
-        }        
+        }
 
         /**
-         * Defines the passed mesh as the parent of the current mesh.  
-         * Returns the AbstractMesh.  
+         * Defines the passed node as the parent of the current node.  
+         * The node will remain exactly where it is and its position / rotation will be updated accordingly
+         * Returns the TransformNode.
          */
-        public setParent(mesh: Nullable<AbstractMesh>): TransformNode {
-            var parent = (<AbstractMesh>mesh);
+        public setParent(node: Nullable<TransformNode>): TransformNode {
 
-            if (mesh == null) {
-
+            if (node == null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
 
+                if (this.parent && (<TransformNode>this.parent).computeWorldMatrix) {
+                    (<TransformNode>this.parent).computeWorldMatrix(true);
+                }
+                this.computeWorldMatrix(true);
                 this.getWorldMatrix().decompose(scale, rotation, position);
+
+                if (this.rotationQuaternion) {
+                    this.rotationQuaternion.copyFrom(rotation);
+                } else {
+                    rotation.toEulerAnglesToRef(this.rotation);
+                }
+
+                this.scaling.x = scale.x;
+                this.scaling.y = scale.y;
+                this.scaling.z = scale.z;
+
+                this.position.x = position.x;
+                this.position.y = position.y;
+                this.position.z = position.z;
+            } else {
+                var rotation = Tmp.Quaternion[0];
+                var position = Tmp.Vector3[0];
+                var scale = Tmp.Vector3[1];
+                var diffMatrix = Tmp.Matrix[0];
+                var invParentMatrix = Tmp.Matrix[1];
+
+                this.computeWorldMatrix(true);
+                node.computeWorldMatrix(true);
+
+                node.getWorldMatrix().invertToRef(invParentMatrix);
+                this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
+                diffMatrix.decompose(scale, rotation, position);
 
                 if (this.rotationQuaternion) {
                     this.rotationQuaternion.copyFrom(rotation);
@@ -449,20 +491,15 @@ module BABYLON {
                 this.position.y = position.y;
                 this.position.z = position.z;
 
-            } else {
-
-                var position = Tmp.Vector3[0];
-                var m1 = Tmp.Matrix[0];
-
-                parent.getWorldMatrix().invertToRef(m1);
-                Vector3.TransformCoordinatesToRef(this.position, m1, position);
-
-                this.position.copyFrom(position);
+                this.scaling.x = scale.x;
+                this.scaling.y = scale.y;
+                this.scaling.z = scale.z;
             }
-            this.parent = parent;
+
+            this.parent = node;
             return this;
-        }       
-        
+        }
+
         private _nonUniformScaling = false;
         public get nonUniformScaling(): boolean {
             return this._nonUniformScaling;
@@ -475,7 +512,7 @@ module BABYLON {
 
             this._nonUniformScaling = true;
             return true;
-        }        
+        }
 
         /**
          * Attach the current TransformNode to another TransformNode associated with a bone
@@ -503,7 +540,7 @@ module BABYLON {
             this._transformToBoneReferal = null;
             this.parent = null;
             return this;
-        }        
+        }
 
         private static _rotationAxisCache = new Quaternion();
         /**
@@ -611,8 +648,8 @@ module BABYLON {
                 rotationQuaternion.toEulerAnglesToRef(this.rotation);
             }
             return this;
-        }        
-        
+        }
+
         /**
          * Computes the mesh World matrix and returns it.  
          * If the mesh world matrix is frozen, this computation does nothing more than returning the last frozen values.  
@@ -660,7 +697,7 @@ module BABYLON {
 
             // Translation
             let camera = (<Camera>this.getScene().activeCamera);
-            
+
             if (this.infiniteDistance && !this.parent && camera) {
 
                 var cameraWorldMatrix = camera.getWorldMatrix();
@@ -779,7 +816,7 @@ module BABYLON {
             }
 
             return this._worldMatrix;
-        }   
+        }
 
         protected _afterComputeWorldMatrix(): void {
         }
@@ -802,9 +839,16 @@ module BABYLON {
         public unregisterAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode {
             this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
             return this;
-        }        
+        }
 
-        public clone(name: string, newParent: Node): Nullable<TransformNode> {
+        /**
+         * Clone the current transform node
+         * Returns the new transform node
+         * @param name Name of the new clone
+         * @param newParent New parent for the clone
+         * @param doNotCloneChildren Do not clone children hierarchy
+         */
+        public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode> {
             var result = SerializationHelper.Clone(() => new TransformNode(name, this.getScene()), this);
 
             result.name = name;
@@ -814,46 +858,41 @@ module BABYLON {
                 result.parent = newParent;
             }
 
+            if (!doNotCloneChildren) {
+                // Children
+                let directDescendants = this.getDescendants(true);
+                for (let index = 0; index < directDescendants.length; index++) {
+                    var child = directDescendants[index];
+
+                    if ((<any>child).clone) {
+                        (<any>child).clone(name + "." + child.name, result);
+                    }
+                }
+            }
+
             return result;
-        }        
+        }
 
-        public serialize(serializationObject: any = null): any {
-            if (!serializationObject) {
-                serializationObject = {};
-            }
-
-            serializationObject.name = this.name;
-            serializationObject.id = this.id;
+        public serialize(currentSerializationObject?: any): any {
+            let serializationObject = SerializationHelper.Serialize(this, currentSerializationObject);
             serializationObject.type = this.getClassName();
-
-            if (Tags && Tags.HasTags(this)) {
-                serializationObject.tags = Tags.GetTags(this);
-            }
-
-            serializationObject.position = this.position.asArray();
-
-            if (this.rotationQuaternion) {
-                serializationObject.rotationQuaternion = this.rotationQuaternion.asArray();
-            } else if (this.rotation) {
-                serializationObject.rotation = this.rotation.asArray();
-            }
-
-            serializationObject.scaling = this.scaling.asArray();
-            serializationObject.localMatrix = this.getPivotMatrix().asArray();
-
-            serializationObject.isEnabled = this.isEnabled();
-            serializationObject.infiniteDistance = this.infiniteDistance;
-
-            serializationObject.billboardMode = this.billboardMode;
 
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
 
-            // Metadata
-            if (this.metadata) {
-                serializationObject.metadata = this.metadata;
+            if (Tags && Tags.HasTags(this)) {
+                serializationObject.tags = Tags.GetTags(this);
+            }
+
+            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+
+            serializationObject.isEnabled = this.isEnabled();
+
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
             }
 
             return serializationObject;
@@ -866,27 +905,11 @@ module BABYLON {
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode {
-            var transformNode = new TransformNode(parsedTransformNode.name, scene);
-
-            transformNode.id = parsedTransformNode.id;
+            var transformNode = SerializationHelper.Parse(() => new TransformNode(parsedTransformNode.name, scene), parsedTransformNode, scene, rootUrl);
 
             if (Tags) {
                 Tags.AddTagsTo(transformNode, parsedTransformNode.tags);
             }
-
-            transformNode.position = Vector3.FromArray(parsedTransformNode.position);
-
-            if (parsedTransformNode.metadata !== undefined) {
-                transformNode.metadata = parsedTransformNode.metadata;
-            }
-
-            if (parsedTransformNode.rotationQuaternion) {
-                transformNode.rotationQuaternion = Quaternion.FromArray(parsedTransformNode.rotationQuaternion);
-            } else if (parsedTransformNode.rotation) {
-                transformNode.rotation = Vector3.FromArray(parsedTransformNode.rotation);
-            }
-
-            transformNode.scaling = Vector3.FromArray(parsedTransformNode.scaling);
 
             if (parsedTransformNode.localMatrix) {
                 transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));
@@ -895,16 +918,48 @@ module BABYLON {
             }
 
             transformNode.setEnabled(parsedTransformNode.isEnabled);
-            transformNode.infiniteDistance = parsedTransformNode.infiniteDistance;
-
-            transformNode.billboardMode = parsedTransformNode.billboardMode;
 
             // Parent
             if (parsedTransformNode.parentId) {
                 transformNode._waitingParentId = parsedTransformNode.parentId;
             }
-         
+
             return transformNode;
-        }        
+        }
+
+        /**
+         * Disposes the TransformNode.  
+         * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
+         * Returns nothing.  
+         */
+        public dispose(doNotRecurse?: boolean): void {
+            // Animations
+            this.getScene().stopAnimation(this);
+
+            // Remove from scene
+            this.getScene().removeTransformNode(this);
+
+            this._cache = null;
+
+            if (!doNotRecurse) {
+                // Children
+                var objects = this.getDescendants(true);
+                for (var index = 0; index < objects.length; index++) {
+                    objects[index].dispose();
+                }
+            } else {
+                var childMeshes = this.getChildMeshes(true);
+                for (index = 0; index < childMeshes.length; index++) {
+                    var child = childMeshes[index];
+                    child.parent = null;
+                    child.computeWorldMatrix(true);
+                }
+            }
+
+            this.onAfterWorldMatrixUpdateObservable.clear();
+
+            super.dispose();
+        }
+
     }
 }

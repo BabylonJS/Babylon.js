@@ -1311,9 +1311,6 @@
             // Skeleton
             this.skeleton = null;
 
-            // Animations
-            this.getScene().stopAnimation(this);
-
             // Physics
             if (this.physicsImpostor) {
                 this.physicsImpostor.dispose(/*!doNotRecurse*/);
@@ -1395,7 +1392,6 @@
             // Remove from scene
             this.getScene().removeMesh(this);
 
-            this._cache = null;
             if (disposeMaterialAndTextures) {
                 if (this.material) {
                     this.material.dispose(false, true);
@@ -1410,19 +1406,6 @@
                         index--;
                     }
                 }
-
-                // Children
-                var objects = this.getDescendants(true);
-                for (index = 0; index < objects.length; index++) {
-                    objects[index].dispose();
-                }
-            } else {
-                var childMeshes = this.getChildMeshes(true);
-                for (index = 0; index < childMeshes.length; index++) {
-                    var child = childMeshes[index];
-                    child.parent = null;
-                    child.computeWorldMatrix(true);
-                }
             }
 
             // facet data
@@ -1436,7 +1419,7 @@
 
             this._isDisposed = true;
 
-            super.dispose();
+            super.dispose(doNotRecurse);
         }
 
         /**
