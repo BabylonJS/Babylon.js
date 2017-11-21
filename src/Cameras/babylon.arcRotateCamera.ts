@@ -634,7 +634,7 @@
                 this._targetHost = null;
                 this._target = newTarget;
                 this._targetBoundingCenter = null;
-                this.onMeshTargetChangedObservable.notifyObservers(null);
+                this.onMeshTargetChangedObservable.notifyObservers(<any>null);
             }
 
             this.rebuildAnglesAndRadius();

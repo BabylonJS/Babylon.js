@@ -28,8 +28,8 @@ module BABYLON {
             this.taskState = AssetTaskState.INIT;
         }
 
-        onSuccess: (task: this) => void;
-        onError: (task: this, message?: string, exception?: any) => void;
+        onSuccess: (task: AbstractAssetTask) => void;
+        onError: (task: AbstractAssetTask, message?: string, exception?: any) => void;
 
         isCompleted: boolean = false;
         taskState: AssetTaskState;
@@ -202,8 +202,8 @@ module BABYLON {
                 onSuccess();
             };
 
-            var onerror = (msg: string, exception: any) => {
-                onError(msg, exception);
+            var onerror = (message?: string, exception?: any) => {
+                onError(message, exception);
             };
 
             this.texture = new Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onerror);
@@ -223,8 +223,8 @@ module BABYLON {
                 onSuccess();
             };
 
-            var onerror = (msg: string, exception: any) => {
-                onError(msg, exception);
+            var onerror = (message?: string, exception?: any) => {
+                onError(message, exception);
             };
 
             this.texture = new CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);

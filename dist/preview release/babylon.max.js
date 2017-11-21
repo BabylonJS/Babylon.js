@@ -7863,7 +7863,7 @@ var BABYLON;
             }
         };
         var onerror = function (request, exception) {
-            if (onErrorCallBack) {
+            if (onErrorCallBack && request) {
                 onErrorCallBack(request.status + " " + request.statusText, exception);
             }
         };
@@ -11042,7 +11042,7 @@ var BABYLON;
                 isDDS = (extension === ".dds");
             }
             var onerror = function (request, exception) {
-                if (onError) {
+                if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             };
@@ -11268,7 +11268,7 @@ var BABYLON;
             this._internalTexturesCache.push(texture);
             var onerror = function (request, exception) {
                 scene._removePendingData(texture);
-                if (onError) {
+                if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             };
@@ -24169,10 +24169,9 @@ var BABYLON;
             return this;
         };
         Mesh.prototype._onBeforeDraw = function (isInstance, world, effectiveMaterial) {
-            if (isInstance) {
+            if (isInstance && effectiveMaterial) {
                 effectiveMaterial.bindOnlyWorldMatrix(world);
             }
-            return this;
         };
         /**
          * Returns an array populated with ParticleSystem objects whose the mesh is the emitter.
@@ -24393,7 +24392,8 @@ var BABYLON;
             }
             // Sources
             var meshes = this.getScene().meshes;
-            meshes.forEach(function (mesh) {
+            meshes.forEach(function (abstractMesh) {
+                var mesh = abstractMesh;
                 if (mesh._source && mesh._source === _this) {
                     mesh._source = null;
                 }
@@ -49850,8 +49850,12 @@ var BABYLON;
                 this._connectedMesh = null;
             }
         };
-        Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
-            var boundingInfo = connectedMesh.getBoundingInfo();
+        Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (node) {
+            if (!node.getBoundingInfo) {
+                return;
+            }
+            var mesh = node;
+            var boundingInfo = mesh.getBoundingInfo();
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
@@ -74680,8 +74684,8 @@ var BABYLON;
             var onload = function () {
                 onSuccess();
             };
-            var onerror = function (msg, exception) {
-                onError(msg, exception);
+            var onerror = function (message, exception) {
+                onError(message, exception);
             };
             this.texture = new BABYLON.Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onerror);
         };
@@ -74703,8 +74707,8 @@ var BABYLON;
             var onload = function () {
                 onSuccess();
             };
-            var onerror = function (msg, exception) {
-                onError(msg, exception);
+            var onerror = function (message, exception) {
+                onError(message, exception);
             };
             this.texture = new BABYLON.CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
         };
