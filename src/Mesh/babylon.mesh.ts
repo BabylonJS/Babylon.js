@@ -197,12 +197,12 @@
                 var index: number;
                 if (!doNotCloneChildren) {
                     // Children
-                    for (index = 0; index < scene.meshes.length; index++) {
-                        var mesh = scene.meshes[index];
+                    let directDescendants = source.getDescendants(true);
+                    for (let index = 0; index < directDescendants.length; index++) {
+                        var child = directDescendants[index];
 
-                        if (mesh.parent === source) {
-                            // doNotCloneChildren is always going to be False
-                            mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
+                        if ((<any>child).clone) {
+                            (<any>child).clone(name + "." + child.name, this);
                         }
                     }
                 }
@@ -372,7 +372,7 @@
             } else {
                 let boundingInfo = this.getBoundingInfo();
 
-                bSphere =  boundingInfo.boundingSphere;
+                bSphere = boundingInfo.boundingSphere;
             }
 
             var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
@@ -523,7 +523,7 @@
                 return false;
             }
             return this._geometry.isVertexBufferUpdatable(kind);
-        }        
+        }
         /**
          * Returns a string : the list of existing `kinds` of Vertex Data for this mesh.  
          * Possible `kind` values :
@@ -1195,7 +1195,7 @@
 
                 let visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
 
-                if (visibleInstancesForSubMesh) {                
+                if (visibleInstancesForSubMesh) {
                     for (var instanceIndex = 0; instanceIndex < visibleInstancesForSubMesh.length; instanceIndex++) {
                         var instance = visibleInstancesForSubMesh[instanceIndex];
 
@@ -2101,7 +2101,7 @@
 
             // Physics
             //TODO implement correct serialization for physics impostors.
-            
+
             let impostor = this.getPhysicsImpostor();
             if (impostor) {
                 serializationObject.physicsMass = impostor.getParam("mass");
@@ -2181,7 +2181,7 @@
                 for (var index = 0; index < morphTargetManager.numInfluencers; index++) {
                     var morphTarget = morphTargetManager.getActiveTarget(index);
 
-                    const positions = morphTarget.getPositions(); 
+                    const positions = morphTarget.getPositions();
                     if (!positions) {
                         Tools.Error("Invalid morph target. Target must have positions.");
                         return;
@@ -3106,7 +3106,7 @@
 
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
-            
+
             if (!matricesWeightsData || !matricesIndicesData) {
                 return this;
             }
@@ -3117,7 +3117,7 @@
 
             if (!matricesWeightsExtraData || !matricesIndicesExtraData) {
                 return this;
-            }            
+            }
 
             var skeletonMatrices = skeleton.getTransformMatrices(this);
 
@@ -3171,7 +3171,7 @@
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
             var minVector: Nullable<Vector3> = null;
             var maxVector: Nullable<Vector3> = null;
-            
+
             meshes.forEach(function (mesh, index, array) {
                 let boundingInfo = mesh.getBoundingInfo();
 
