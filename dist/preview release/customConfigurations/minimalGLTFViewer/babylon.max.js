@@ -8561,7 +8561,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-5";
+                return "3.1-beta-6";
             },
             enumerable: true,
             configurable: true
@@ -10313,7 +10313,7 @@ var BABYLON;
             }
             if (!fallBack)
                 this._internalTexturesCache.push(texture);
-            var onerror = function () {
+            var onerror = function (message, exception) {
                 if (scene) {
                     scene._removePendingData(texture);
                 }
@@ -10328,7 +10328,7 @@ var BABYLON;
                     _this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 }
                 if (onError) {
-                    onError();
+                    onError(message || "Unknown error", exception);
                 }
             };
             var callback = null;
@@ -10368,7 +10368,9 @@ var BABYLON;
                         if (callback) {
                             callback(data);
                         }
-                    }, undefined, scene ? scene.database : undefined, true, onerror);
+                    }, undefined, scene ? scene.database : undefined, true, function (request, exception) {
+                        onerror("Unable to load " + (request ? request.responseURL : url, exception));
+                    });
                 }
                 else {
                     if (callback) {
@@ -13449,6 +13451,7 @@ var BABYLON;
         };
         /**
          * Defines the passed node as the parent of the current node.
+         * The node will remain exactly where it is and its position / rotation will be updated accordingly
          * Returns the TransformNode.
          */
         TransformNode.prototype.setParent = function (node) {
@@ -13467,6 +13470,9 @@ var BABYLON;
                 else {
                     rotation.toEulerAnglesToRef(this.rotation);
                 }
+                this.scaling.x = scale.x;
+                this.scaling.y = scale.y;
+                this.scaling.z = scale.z;
                 this.position.x = position.x;
                 this.position.y = position.y;
                 this.position.z = position.z;
@@ -13475,29 +13481,25 @@ var BABYLON;
                 var rotation = BABYLON.Tmp.Quaternion[0];
                 var position = BABYLON.Tmp.Vector3[0];
                 var scale = BABYLON.Tmp.Vector3[1];
-                var m0 = BABYLON.Tmp.Matrix[0];
-                var m1 = BABYLON.Tmp.Matrix[1];
-                var invParentMatrix = BABYLON.Tmp.Matrix[2];
+                var diffMatrix = BABYLON.Tmp.Matrix[0];
+                var invParentMatrix = BABYLON.Tmp.Matrix[1];
+                this.computeWorldMatrix(true);
                 node.computeWorldMatrix(true);
-                node.getWorldMatrix().decompose(scale, rotation, position);
-                rotation.toRotationMatrix(m0);
-                m1.setTranslation(position);
-                m1.multiplyToRef(m0, m0);
-                m0.invertToRef(invParentMatrix);
-                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);
-                m0.decompose(scale, rotation, position);
+                node.getWorldMatrix().invertToRef(invParentMatrix);
+                this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
+                diffMatrix.decompose(scale, rotation, position);
                 if (this.rotationQuaternion) {
                     this.rotationQuaternion.copyFrom(rotation);
                 }
                 else {
                     rotation.toEulerAnglesToRef(this.rotation);
                 }
-                node.getWorldMatrix().invertToRef(invParentMatrix);
-                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);
-                m0.decompose(scale, rotation, position);
                 this.position.x = position.x;
                 this.position.y = position.y;
                 this.position.z = position.z;
+                this.scaling.x = scale.x;
+                this.scaling.y = scale.y;
+                this.scaling.z = scale.z;
             }
             this.parent = node;
             return this;
@@ -13805,7 +13807,14 @@ var BABYLON;
             this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
             return this;
         };
-        TransformNode.prototype.clone = function (name, newParent) {
+        /**
+         * Clone the current transform node
+         * Returns the new transform node
+         * @param name Name of the new clone
+         * @param newParent New parent for the clone
+         * @param doNotCloneChildren Do not clone children hierarchy
+         */
+        TransformNode.prototype.clone = function (name, newParent, doNotCloneChildren) {
             var _this = this;
             var result = BABYLON.SerializationHelper.Clone(function () { return new TransformNode(name, _this.getScene()); }, this);
             result.name = name;
@@ -13813,38 +13822,33 @@ var BABYLON;
             if (newParent) {
                 result.parent = newParent;
             }
+            if (!doNotCloneChildren) {
+                // Children
+                var directDescendants = this.getDescendants(true);
+                for (var index = 0; index < directDescendants.length; index++) {
+                    var child = directDescendants[index];
+                    if (child.clone) {
+                        child.clone(name + "." + child.name, result);
+                    }
+                }
+            }
             return result;
         };
-        TransformNode.prototype.serialize = function (serializationObject) {
-            if (serializationObject === void 0) { serializationObject = null; }
-            if (!serializationObject) {
-                serializationObject = {};
-            }
-            serializationObject.name = this.name;
-            serializationObject.id = this.id;
+        TransformNode.prototype.serialize = function (currentSerializationObject) {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, currentSerializationObject);
             serializationObject.type = this.getClassName();
-            if (BABYLON.Tags && BABYLON.Tags.HasTags(this)) {
-                serializationObject.tags = BABYLON.Tags.GetTags(this);
-            }
-            serializationObject.position = this.position.asArray();
-            if (this.rotationQuaternion) {
-                serializationObject.rotationQuaternion = this.rotationQuaternion.asArray();
-            }
-            else if (this.rotation) {
-                serializationObject.rotation = this.rotation.asArray();
-            }
-            serializationObject.scaling = this.scaling.asArray();
-            serializationObject.localMatrix = this.getPivotMatrix().asArray();
-            serializationObject.isEnabled = this.isEnabled();
-            serializationObject.infiniteDistance = this.infiniteDistance;
-            serializationObject.billboardMode = this.billboardMode;
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
-            // Metadata
-            if (this.metadata) {
-                serializationObject.metadata = this.metadata;
+            if (BABYLON.Tags && BABYLON.Tags.HasTags(this)) {
+                serializationObject.tags = BABYLON.Tags.GetTags(this);
+            }
+            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+            serializationObject.isEnabled = this.isEnabled();
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
             }
             return serializationObject;
         };
@@ -13855,22 +13859,10 @@ var BABYLON;
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         TransformNode.Parse = function (parsedTransformNode, scene, rootUrl) {
-            var transformNode = new TransformNode(parsedTransformNode.name, scene);
-            transformNode.id = parsedTransformNode.id;
+            var transformNode = BABYLON.SerializationHelper.Parse(function () { return new TransformNode(parsedTransformNode.name, scene); }, parsedTransformNode, scene, rootUrl);
             if (BABYLON.Tags) {
                 BABYLON.Tags.AddTagsTo(transformNode, parsedTransformNode.tags);
             }
-            transformNode.position = BABYLON.Vector3.FromArray(parsedTransformNode.position);
-            if (parsedTransformNode.metadata !== undefined) {
-                transformNode.metadata = parsedTransformNode.metadata;
-            }
-            if (parsedTransformNode.rotationQuaternion) {
-                transformNode.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedTransformNode.rotationQuaternion);
-            }
-            else if (parsedTransformNode.rotation) {
-                transformNode.rotation = BABYLON.Vector3.FromArray(parsedTransformNode.rotation);
-            }
-            transformNode.scaling = BABYLON.Vector3.FromArray(parsedTransformNode.scaling);
             if (parsedTransformNode.localMatrix) {
                 transformNode.setPivotMatrix(BABYLON.Matrix.FromArray(parsedTransformNode.localMatrix));
             }
@@ -13878,8 +13870,6 @@ var BABYLON;
                 transformNode.setPivotMatrix(BABYLON.Matrix.FromArray(parsedTransformNode.pivotMatrix));
             }
             transformNode.setEnabled(parsedTransformNode.isEnabled);
-            transformNode.infiniteDistance = parsedTransformNode.infiniteDistance;
-            transformNode.billboardMode = parsedTransformNode.billboardMode;
             // Parent
             if (parsedTransformNode.parentId) {
                 transformNode._waitingParentId = parsedTransformNode.parentId;
@@ -13887,10 +13877,10 @@ var BABYLON;
             return transformNode;
         };
         /**
-             * Disposes the TransformNode.
-             * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.
-             * Returns nothing.
-             */
+         * Disposes the TransformNode.
+         * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.
+         * Returns nothing.
+         */
         TransformNode.prototype.dispose = function (doNotRecurse) {
             // Animations
             this.getScene().stopAnimation(this);
@@ -23103,11 +23093,11 @@ var BABYLON;
                 var index;
                 if (!doNotCloneChildren) {
                     // Children
-                    for (index = 0; index < scene.meshes.length; index++) {
-                        var mesh = scene.meshes[index];
-                        if (mesh.parent === source) {
-                            // doNotCloneChildren is always going to be False
-                            mesh.clone(name + "." + mesh.name, _this, doNotCloneChildren);
+                    var directDescendants = source.getDescendants(true);
+                    for (var index_1 = 0; index_1 < directDescendants.length; index_1++) {
+                        var child = directDescendants[index_1];
+                        if (child.clone) {
+                            child.clone(name + "." + child.name, _this);
                         }
                     }
                 }
@@ -47394,6 +47384,7 @@ var BABYLON;
             _this._matrices = {};
             _this._matrices3x3 = {};
             _this._matrices2x2 = {};
+            _this._vectors2Arrays = {};
             _this._vectors3Arrays = {};
             _this._cachedWorldViewMatrix = new BABYLON.Matrix();
             _this._shaderPath = shaderPath;
@@ -47492,6 +47483,11 @@ var BABYLON;
         ShaderMaterial.prototype.setMatrix2x2 = function (name, value) {
             this._checkUniform(name);
             this._matrices2x2[name] = value;
+            return this;
+        };
+        ShaderMaterial.prototype.setArray2 = function (name, value) {
+            this._checkUniform(name);
+            this._vectors2Arrays[name] = value;
             return this;
         };
         ShaderMaterial.prototype.setArray3 = function (name, value) {
@@ -47668,6 +47664,10 @@ var BABYLON;
                 for (name in this._matrices2x2) {
                     this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
+                // Vector2Array   
+                for (name in this._vectors2Arrays) {
+                    this._effect.setArray2(name, this._vectors2Arrays[name]);
+                }
                 // Vector3Array   
                 for (name in this._vectors3Arrays) {
                     this._effect.setArray3(name, this._vectors3Arrays[name]);
@@ -47802,6 +47802,11 @@ var BABYLON;
             for (name in this._matrices2x2) {
                 serializationObject.matrices2x2[name] = this._matrices2x2[name];
             }
+            // Vector2Array
+            serializationObject.vectors2Arrays = {};
+            for (name in this._vectors2Arrays) {
+                serializationObject.vectors2Arrays[name] = this._vectors2Arrays[name];
+            }
             // Vector3Array
             serializationObject.vectors3Arrays = {};
             for (name in this._vectors3Arrays) {
@@ -47877,6 +47882,10 @@ var BABYLON;
             // Matrix 2x2
             for (name in source.matrices2x2) {
                 material.setMatrix2x2(name, source.matrices2x2[name]);
+            }
+            // Vector2Array
+            for (name in source.vectors2Arrays) {
+                material.setArray2(name, source.vectors2Arrays[name]);
             }
             // Vector3Array
             for (name in source.vectors3Arrays) {
@@ -72000,10 +72009,9 @@ var BABYLON;
                 });
             }
         };
-        // Little white circle attached to the camera
-        // That will act as the target to look on the floor where to teleport
+        // Gaze support used to point to teleport or to interact with an object
         VRExperienceHelper.prototype._createGazeTracker = function () {
-            this._gazeTracker = BABYLON.Mesh.CreateTorus("gazeTracker", 0.0050, 0.0020, 25, this._scene, false);
+            this._gazeTracker = BABYLON.Mesh.CreateTorus("gazeTracker", 0.0035, 0.0025, 20, this._scene, false);
             this._gazeTracker.bakeCurrentTransformIntoVertices();
             this._gazeTracker.isPickable = false;
             var targetMat = new BABYLON.StandardMaterial("targetMat", this._scene);

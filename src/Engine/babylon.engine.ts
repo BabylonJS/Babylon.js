@@ -563,7 +563,7 @@
         }
 
         public static get Version(): string {
-            return "3.1-beta-5";
+            return "3.1-beta-6";
         }
 
         // Updatable statics so stick with vars here
@@ -2986,7 +2986,7 @@
          * @returns {WebGLTexture} for assignment back into BABYLON.Texture
          */
         public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null,
+            onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
             buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
@@ -3028,7 +3028,7 @@
 
             if (!fallBack) this._internalTexturesCache.push(texture);
 
-            var onerror = () => {
+            var onerror = (message?: string, exception?: any) => {
                 if (scene) {
                     scene._removePendingData(texture);
                 }
@@ -3045,7 +3045,7 @@
                 }
 
                 if (onError) {
-                    onError();
+                    onError(message || "Unknown error", exception);
                 }
             };
 
@@ -3091,7 +3091,9 @@
                         if (callback) {
                             callback(data);
                         }
-                    }, undefined, scene ? scene.database : undefined, true, onerror);
+                    }, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
+                        onerror("Unable to load " + (request ? request.responseURL : url, exception));
+                    });
                 } else {
                     if (callback) {
                         callback(buffer);
@@ -4065,7 +4067,7 @@
                     if (!noMipmap) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
-                    
+
                     this.setCubeMapTextureParams(gl, !noMipmap);
 
                     texture.width = width;

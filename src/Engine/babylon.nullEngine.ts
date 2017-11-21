@@ -6,12 +6,12 @@
 
         public textureSize = 512;
     }
-   
+
     /**
      * The null engine class provides support for headless version of babylon.js.
      * This can be used in server side scenario or for testing purposes
      */
-    export class NullEngine extends Engine {  
+    export class NullEngine extends Engine {
         private _options: NullEngineOptions;
 
         public constructor(options: NullEngineOptions = new NullEngineOptions()) {
@@ -69,14 +69,14 @@
             // Wrappers
             if (typeof URL === "undefined") {
                 (<any>URL) = {
-                    createObjectURL: function() {},
-                    revokeObjectURL: function() {}
+                    createObjectURL: function () { },
+                    revokeObjectURL: function () { }
                 }
             }
 
             if (typeof Blob === "undefined") {
-                (<any>Blob) = function() {};         
-            }   
+                (<any>Blob) = function () { };
+            }
         }
 
         public createVertexBuffer(vertices: FloatArray): WebGLBuffer {
@@ -144,11 +144,11 @@
                 effect.onBind(effect);
             }
             effect.onBindObservable.notifyObservers(effect);
-        }   
-        
+        }
+
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-        }        
-        
+        }
+
         public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
         }
 
@@ -229,7 +229,7 @@
                 this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
             }
             this._alphaMode = mode;
-        }        
+        }
 
         public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
         }
@@ -262,9 +262,9 @@
             return {};
         }
 
-        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
-            var url = String(urlArg); 
+            var url = String(urlArg);
 
             texture.url = url;
             texture.generateMipMaps = !noMipmap;
@@ -273,12 +273,12 @@
             texture.baseWidth = this._options.textureSize;
             texture.baseHeight = this._options.textureSize;
             texture.width = this._options.textureSize;
-            texture.height = this._options.textureSize;  
-            if (format) {          
-                texture.format = format;    
+            texture.height = this._options.textureSize;
+            if (format) {
+                texture.format = format;
             }
 
-            texture.isReady = true;            
+            texture.isReady = true;
 
             if (onLoad) {
                 onLoad();
@@ -322,12 +322,12 @@
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
             return texture;
-        }     
-        
+        }
+
         public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
             texture.samplingMode = samplingMode;
-        }      
-        
+        }
+
         public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
             if (this._currentRenderTarget) {
                 this.unBindFramebuffer(this._currentRenderTarget);
@@ -336,7 +336,7 @@
             this._currentFramebuffer = texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer;
             if (this._cachedViewport && !forceFullscreenViewport) {
                 this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
-            } 
+            }
         }
 
         public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
@@ -354,7 +354,7 @@
         public createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer {
             var vbo = {
                 capacity: 1,
-                references: 1,                
+                references: 1,
                 is32Bits: false
             }
 
@@ -365,7 +365,7 @@
         }
 
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void {
-        }        
+        }
 
         public _bindTextureDirectly(target: number, texture: InternalTexture): void {
             if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
@@ -389,6 +389,6 @@
             }
 
             return false;
-        }        
+        }
     }
 }

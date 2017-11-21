@@ -443,7 +443,6 @@ module BABYLON {
          */
         public setParent(node: Nullable<TransformNode>): TransformNode {
 
-            this.computeWorldMatrix(true);
             if (node == null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
@@ -452,6 +451,7 @@ module BABYLON {
                 if (this.parent && (<TransformNode>this.parent).computeWorldMatrix) {
                     (<TransformNode>this.parent).computeWorldMatrix(true);
                 }
+                this.computeWorldMatrix(true);
                 this.getWorldMatrix().decompose(scale, rotation, position);
 
                 if (this.rotationQuaternion) {
@@ -459,6 +459,10 @@ module BABYLON {
                 } else {
                     rotation.toEulerAnglesToRef(this.rotation);
                 }
+
+                this.scaling.x = scale.x;
+                this.scaling.y = scale.y;
+                this.scaling.z = scale.z;
 
                 this.position.x = position.x;
                 this.position.y = position.y;
@@ -470,7 +474,9 @@ module BABYLON {
                 var diffMatrix = Tmp.Matrix[0];
                 var invParentMatrix = Tmp.Matrix[1];
 
+                this.computeWorldMatrix(true);
                 node.computeWorldMatrix(true);
+
                 node.getWorldMatrix().invertToRef(invParentMatrix);
                 this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
                 diffMatrix.decompose(scale, rotation, position);
@@ -835,7 +841,14 @@ module BABYLON {
             return this;
         }
 
-        public clone(name: string, newParent: Node): Nullable<TransformNode> {
+        /**
+         * Clone the current transform node
+         * Returns the new transform node
+         * @param name Name of the new clone
+         * @param newParent New parent for the clone
+         * @param doNotCloneChildren Do not clone children hierarchy
+         */
+        public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode> {
             var result = SerializationHelper.Clone(() => new TransformNode(name, this.getScene()), this);
 
             result.name = name;
@@ -845,46 +858,41 @@ module BABYLON {
                 result.parent = newParent;
             }
 
+            if (!doNotCloneChildren) {
+                // Children
+                let directDescendants = this.getDescendants(true);
+                for (let index = 0; index < directDescendants.length; index++) {
+                    var child = directDescendants[index];
+
+                    if ((<any>child).clone) {
+                        (<any>child).clone(name + "." + child.name, result);
+                    }
+                }
+            }
+
             return result;
         }
 
-        public serialize(serializationObject: any = null): any {
-            if (!serializationObject) {
-                serializationObject = {};
-            }
-
-            serializationObject.name = this.name;
-            serializationObject.id = this.id;
+        public serialize(currentSerializationObject?: any): any {
+            let serializationObject = SerializationHelper.Serialize(this, currentSerializationObject);
             serializationObject.type = this.getClassName();
-
-            if (Tags && Tags.HasTags(this)) {
-                serializationObject.tags = Tags.GetTags(this);
-            }
-
-            serializationObject.position = this.position.asArray();
-
-            if (this.rotationQuaternion) {
-                serializationObject.rotationQuaternion = this.rotationQuaternion.asArray();
-            } else if (this.rotation) {
-                serializationObject.rotation = this.rotation.asArray();
-            }
-
-            serializationObject.scaling = this.scaling.asArray();
-            serializationObject.localMatrix = this.getPivotMatrix().asArray();
-
-            serializationObject.isEnabled = this.isEnabled();
-            serializationObject.infiniteDistance = this.infiniteDistance;
-
-            serializationObject.billboardMode = this.billboardMode;
 
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
 
-            // Metadata
-            if (this.metadata) {
-                serializationObject.metadata = this.metadata;
+            if (Tags && Tags.HasTags(this)) {
+                serializationObject.tags = Tags.GetTags(this);
+            }
+
+            serializationObject.localMatrix = this.getPivotMatrix().asArray();
+
+            serializationObject.isEnabled = this.isEnabled();
+
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
             }
 
             return serializationObject;
@@ -897,27 +905,11 @@ module BABYLON {
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode {
-            var transformNode = new TransformNode(parsedTransformNode.name, scene);
-
-            transformNode.id = parsedTransformNode.id;
+            var transformNode = SerializationHelper.Parse(() => new TransformNode(parsedTransformNode.name, scene), parsedTransformNode, scene, rootUrl);
 
             if (Tags) {
                 Tags.AddTagsTo(transformNode, parsedTransformNode.tags);
             }
-
-            transformNode.position = Vector3.FromArray(parsedTransformNode.position);
-
-            if (parsedTransformNode.metadata !== undefined) {
-                transformNode.metadata = parsedTransformNode.metadata;
-            }
-
-            if (parsedTransformNode.rotationQuaternion) {
-                transformNode.rotationQuaternion = Quaternion.FromArray(parsedTransformNode.rotationQuaternion);
-            } else if (parsedTransformNode.rotation) {
-                transformNode.rotation = Vector3.FromArray(parsedTransformNode.rotation);
-            }
-
-            transformNode.scaling = Vector3.FromArray(parsedTransformNode.scaling);
 
             if (parsedTransformNode.localMatrix) {
                 transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));
@@ -926,9 +918,6 @@ module BABYLON {
             }
 
             transformNode.setEnabled(parsedTransformNode.isEnabled);
-            transformNode.infiniteDistance = parsedTransformNode.infiniteDistance;
-
-            transformNode.billboardMode = parsedTransformNode.billboardMode;
 
             // Parent
             if (parsedTransformNode.parentId) {
@@ -939,10 +928,10 @@ module BABYLON {
         }
 
         /**
-             * Disposes the TransformNode.  
-             * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
-             * Returns nothing.  
-             */
+         * Disposes the TransformNode.  
+         * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
+         * Returns nothing.  
+         */
         public dispose(doNotRecurse?: boolean): void {
             // Animations
             this.getScene().stopAnimation(this);
