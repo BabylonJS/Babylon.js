@@ -1,6 +1,6 @@
 var INSPECTOR;
 (function (INSPECTOR) {
-    var Inspector = /** @class */ (function () {
+    var Inspector = (function () {
         /** The inspector is created with the given engine.
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
@@ -606,7 +606,7 @@ var INSPECTOR;
      * Represents a html div element.
      * The div is built when an instance of BasicElement is created.
      */
-    var BasicElement = /** @class */ (function () {
+    var BasicElement = (function () {
         function BasicElement() {
             this._div = INSPECTOR.Helpers.CreateDiv();
         }
@@ -633,7 +633,7 @@ var INSPECTOR;
 
 var INSPECTOR;
 (function (INSPECTOR) {
-    var Adapter = /** @class */ (function () {
+    var Adapter = (function () {
         function Adapter(obj) {
             this._obj = obj;
         }
@@ -680,7 +680,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var CameraAdapter = /** @class */ (function (_super) {
+    var CameraAdapter = (function (_super) {
         __extends(CameraAdapter, _super);
         function CameraAdapter(obj) {
             return _super.call(this, obj) || this;
@@ -729,7 +729,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var PhysicsImpostorAdapter = /** @class */ (function (_super) {
+    var PhysicsImpostorAdapter = (function (_super) {
         __extends(PhysicsImpostorAdapter, _super);
         function PhysicsImpostorAdapter(obj, viewer) {
             var _this = _super.call(this, obj) || this;
@@ -790,7 +790,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var GUIAdapter = /** @class */ (function (_super) {
+    var GUIAdapter = (function (_super) {
         __extends(GUIAdapter, _super);
         function GUIAdapter(obj) {
             return _super.call(this, obj) || this;
@@ -841,7 +841,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var SoundAdapter = /** @class */ (function (_super) {
+    var SoundAdapter = (function (_super) {
         __extends(SoundAdapter, _super);
         function SoundAdapter(obj) {
             return _super.call(this, obj) || this;
@@ -897,7 +897,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var TextureAdapter = /** @class */ (function (_super) {
+    var TextureAdapter = (function (_super) {
         __extends(TextureAdapter, _super);
         function TextureAdapter(obj) {
             return _super.call(this, obj) || this;
@@ -943,7 +943,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var LightAdapter = /** @class */ (function (_super) {
+    var LightAdapter = (function (_super) {
         __extends(LightAdapter, _super);
         function LightAdapter(obj) {
             return _super.call(this, obj) || this;
@@ -994,7 +994,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var MaterialAdapter = /** @class */ (function (_super) {
+    var MaterialAdapter = (function (_super) {
         __extends(MaterialAdapter, _super);
         function MaterialAdapter(obj) {
             return _super.call(this, obj) || this;
@@ -1038,7 +1038,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var MeshAdapter = /** @class */ (function (_super) {
+    var MeshAdapter = (function (_super) {
         __extends(MeshAdapter, _super);
         function MeshAdapter(mesh) {
             return _super.call(this, mesh) || this;
@@ -1145,7 +1145,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var DetailPanel = /** @class */ (function (_super) {
+    var DetailPanel = (function (_super) {
         __extends(DetailPanel, _super);
         function DetailPanel(dr) {
             var _this = _super.call(this) || this;
@@ -1296,7 +1296,7 @@ var INSPECTOR;
     /**
      * A property is a link between a data (string) and an object.
      */
-    var Property = /** @class */ (function () {
+    var Property = (function () {
         function Property(prop, obj) {
             this._property = prop;
             this._obj = obj;
@@ -1344,7 +1344,7 @@ var INSPECTOR;
 
 var INSPECTOR;
 (function (INSPECTOR) {
-    var PropertyFormatter = /** @class */ (function () {
+    var PropertyFormatter = (function () {
         function PropertyFormatter() {
         }
         /**
@@ -1371,7 +1371,7 @@ var INSPECTOR;
      * If this instance has no link to other instances, its type is ALWAYS a simple one (see above).
      *
      */
-    var PropertyLine = /** @class */ (function () {
+    var PropertyLine = (function () {
         function PropertyLine(prop, parent, level) {
             if (parent === void 0) { parent = null; }
             if (level === void 0) { level = 0; }
@@ -1819,7 +1819,7 @@ var INSPECTOR;
     /**
     * Display a very small div corresponding to the given color
     */
-    var ColorElement = /** @class */ (function (_super) {
+    var ColorElement = (function (_super) {
         __extends(ColorElement, _super);
         // The color as hexadecimal string
         function ColorElement(color) {
@@ -1869,7 +1869,7 @@ var INSPECTOR;
      * Represents a html div element.
      * The div is built when an instance of BasicElement is created.
      */
-    var ColorPickerElement = /** @class */ (function (_super) {
+    var ColorPickerElement = (function (_super) {
         __extends(ColorPickerElement, _super);
         function ColorPickerElement(color, propertyLine) {
             var _this = _super.call(this) || this;
@@ -1939,7 +1939,7 @@ var INSPECTOR;
     * Display a very small div. A new canvas is created, with a new Babylon.js scene, containing only the
     * cube texture in a cube
     */
-    var CubeTextureElement = /** @class */ (function (_super) {
+    var CubeTextureElement = (function (_super) {
         __extends(CubeTextureElement, _super);
         /** The texture given as a parameter should be cube. */
         function CubeTextureElement(tex) {
@@ -2056,7 +2056,7 @@ var INSPECTOR;
     * Display a very small div. A new canvas is created, with a new Babylon.js scene, containing only the
     * cube texture in a cube
     */
-    var HDRCubeTextureElement = /** @class */ (function (_super) {
+    var HDRCubeTextureElement = (function (_super) {
         __extends(HDRCubeTextureElement, _super);
         /** The texture given as a parameter should be cube. */
         function HDRCubeTextureElement(tex) {
@@ -2100,7 +2100,7 @@ var INSPECTOR;
      * A search bar can be used to filter elements in the tree panel.
      * At each keypress on the input, the treepanel will be filtered.
      */
-    var SearchBar = /** @class */ (function (_super) {
+    var SearchBar = (function (_super) {
         __extends(SearchBar, _super);
         function SearchBar(tab) {
             var _this = _super.call(this) || this;
@@ -2146,7 +2146,7 @@ var INSPECTOR;
     /**
     * Display a very small div corresponding to the given texture. On mouse over, display the full image
     */
-    var TextureElement = /** @class */ (function (_super) {
+    var TextureElement = (function (_super) {
         __extends(TextureElement, _super);
         function TextureElement(tex) {
             var _this = _super.call(this) || this;
@@ -2182,7 +2182,7 @@ var INSPECTOR;
     /**
      * Creates a tooltip for the parent of the given html element
      */
-    var Tooltip = /** @class */ (function () {
+    var Tooltip = (function () {
         function Tooltip(elem, tip, attachTo) {
             if (attachTo === void 0) { attachTo = null; }
             var _this = this;
@@ -2204,7 +2204,7 @@ var INSPECTOR;
 
 var INSPECTOR;
 (function (INSPECTOR) {
-    var Helpers = /** @class */ (function () {
+    var Helpers = (function () {
         function Helpers() {
         }
         /**
@@ -2410,7 +2410,7 @@ var INSPECTOR;
 
 var INSPECTOR;
 (function (INSPECTOR) {
-    var Scheduler = /** @class */ (function () {
+    var Scheduler = (function () {
         function Scheduler() {
             /** Is this scheduler in pause ? */
             this.pause = false;
@@ -2463,7 +2463,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var Tab = /** @class */ (function (_super) {
+    var Tab = (function (_super) {
         __extends(Tab, _super);
         function Tab(tabbar, name) {
             var _this = _super.call(this) || this;
@@ -2545,7 +2545,7 @@ var INSPECTOR;
      * in which properties will be displayed.
      * Both panels are separated by a resize bar
      */
-    var PropertyTab = /** @class */ (function (_super) {
+    var PropertyTab = (function (_super) {
         __extends(PropertyTab, _super);
         function PropertyTab(tabbar, name, insp) {
             var _this = _super.call(this, tabbar, name) || this;
@@ -2689,7 +2689,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var CameraTab = /** @class */ (function (_super) {
+    var CameraTab = (function (_super) {
         __extends(CameraTab, _super);
         function CameraTab(tabbar, inspector) {
             return _super.call(this, tabbar, 'Camera', inspector) || this;
@@ -2722,7 +2722,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var GUITab = /** @class */ (function (_super) {
+    var GUITab = (function (_super) {
         __extends(GUITab, _super);
         function GUITab(tabbar, inspector) {
             return _super.call(this, tabbar, 'GUI', inspector) || this;
@@ -2777,7 +2777,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var PhysicsTab = /** @class */ (function (_super) {
+    var PhysicsTab = (function (_super) {
         __extends(PhysicsTab, _super);
         function PhysicsTab(tabbar, inspector) {
             return _super.call(this, tabbar, 'Physics', inspector) || this;
@@ -2817,7 +2817,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var SoundTab = /** @class */ (function (_super) {
+    var SoundTab = (function (_super) {
         __extends(SoundTab, _super);
         function SoundTab(tabbar, inspector) {
             return _super.call(this, tabbar, 'Audio', inspector) || this;
@@ -2854,7 +2854,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var TextureTab = /** @class */ (function (_super) {
+    var TextureTab = (function (_super) {
         __extends(TextureTab, _super);
         function TextureTab(tabbar, inspector) {
             var _this = _super.call(this, tabbar, 'Textures') || this;
@@ -3027,7 +3027,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var LightTab = /** @class */ (function (_super) {
+    var LightTab = (function (_super) {
         __extends(LightTab, _super);
         function LightTab(tabbar, inspector) {
             return _super.call(this, tabbar, 'Light', inspector) || this;
@@ -3060,7 +3060,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var MaterialTab = /** @class */ (function (_super) {
+    var MaterialTab = (function (_super) {
         __extends(MaterialTab, _super);
         function MaterialTab(tabbar, inspector) {
             return _super.call(this, tabbar, 'Material', inspector) || this;
@@ -3094,7 +3094,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var MeshTab = /** @class */ (function (_super) {
+    var MeshTab = (function (_super) {
         __extends(MeshTab, _super);
         function MeshTab(tabbar, inspector) {
             return _super.call(this, tabbar, 'Mesh', inspector) || this;
@@ -3183,7 +3183,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var SceneTab = /** @class */ (function (_super) {
+    var SceneTab = (function (_super) {
         __extends(SceneTab, _super);
         function SceneTab(tabbar, insp) {
             var _this = _super.call(this, tabbar, 'Scene') || this;
@@ -3374,7 +3374,7 @@ var INSPECTOR;
      * - hook all console.log call and display them in this panel (and in the browser console as well)
      * - display all Babylon logs (called with Tools.Log...)
      */
-    var ConsoleTab = /** @class */ (function (_super) {
+    var ConsoleTab = (function (_super) {
         __extends(ConsoleTab, _super);
         function ConsoleTab(tabbar, insp) {
             var _this = _super.call(this, tabbar, 'Console') || this;
@@ -3508,7 +3508,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var StatsTab = /** @class */ (function (_super) {
+    var StatsTab = (function (_super) {
         __extends(StatsTab, _super);
         function StatsTab(tabbar, insp) {
             var _this = _super.call(this, tabbar, 'Stats') || this;
@@ -3850,7 +3850,7 @@ var INSPECTOR;
      * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...
      * The default active tab is the first one of the list.
      */
-    var TabBar = /** @class */ (function (_super) {
+    var TabBar = (function (_super) {
         __extends(TabBar, _super);
         function TabBar(inspector, initialTab) {
             var _this = _super.call(this) || this;
@@ -4057,7 +4057,7 @@ var INSPECTOR;
 
 var INSPECTOR;
 (function (INSPECTOR) {
-    var AbstractTool = /** @class */ (function () {
+    var AbstractTool = (function () {
         function AbstractTool(icon, parent, inspector, tooltip) {
             var _this = this;
             this._inspector = inspector;
@@ -4107,7 +4107,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var PauseScheduleTool = /** @class */ (function (_super) {
+    var PauseScheduleTool = (function (_super) {
         __extends(PauseScheduleTool, _super);
         function PauseScheduleTool(parent, inspector) {
             var _this = _super.call(this, 'fa-pause', parent, inspector, 'Pause the automatic update of properties') || this;
@@ -4143,7 +4143,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var PickTool = /** @class */ (function (_super) {
+    var PickTool = (function (_super) {
         __extends(PickTool, _super);
         function PickTool(parent, inspector) {
             var _this = _super.call(this, 'fa-mouse-pointer', parent, inspector, 'Select a mesh in the scene') || this;
@@ -4206,7 +4206,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var PopupTool = /** @class */ (function (_super) {
+    var PopupTool = (function (_super) {
         __extends(PopupTool, _super);
         function PopupTool(parent, inspector) {
             return _super.call(this, 'fa-external-link', parent, inspector, 'Open the inspector in a popup') || this;
@@ -4232,7 +4232,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var RefreshTool = /** @class */ (function (_super) {
+    var RefreshTool = (function (_super) {
         __extends(RefreshTool, _super);
         function RefreshTool(parent, inspector) {
             return _super.call(this, 'fa-refresh', parent, inspector, 'Refresh the current tab') || this;
@@ -4258,7 +4258,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var LabelTool = /** @class */ (function (_super) {
+    var LabelTool = (function (_super) {
         __extends(LabelTool, _super);
         function LabelTool(parent, inspector) {
             var _this = _super.call(this, 'fa-tags', parent, inspector, 'Display mesh names on the canvas') || this;
@@ -4378,7 +4378,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var Toolbar = /** @class */ (function (_super) {
+    var Toolbar = (function (_super) {
         __extends(Toolbar, _super);
         function Toolbar(inspector) {
             var _this = _super.call(this) || this;
@@ -4444,7 +4444,7 @@ var INSPECTOR;
     /**
      * Removes the inspector panel
      */
-    var DisposeTool = /** @class */ (function (_super) {
+    var DisposeTool = (function (_super) {
         __extends(DisposeTool, _super);
         function DisposeTool(parent, inspector) {
             return _super.call(this, 'fa-times', parent, inspector, 'Close the inspector panel') || this;
@@ -4470,7 +4470,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var TreeItem = /** @class */ (function (_super) {
+    var TreeItem = (function (_super) {
         __extends(TreeItem, _super);
         function TreeItem(tab, obj) {
             var _this = _super.call(this) || this;
@@ -4634,7 +4634,7 @@ var INSPECTOR;
 
 var INSPECTOR;
 (function (INSPECTOR) {
-    var AbstractTreeTool = /** @class */ (function () {
+    var AbstractTreeTool = (function () {
         function AbstractTreeTool() {
             /** Is the tool enabled ? */
             this._on = false;
@@ -4679,7 +4679,7 @@ var INSPECTOR;
     /**
      * Checkbox to display/hide the primitive
      */
-    var BoundingBox = /** @class */ (function (_super) {
+    var BoundingBox = (function (_super) {
         __extends(BoundingBox, _super);
         function BoundingBox(obj) {
             var _this = _super.call(this) || this;
@@ -4726,7 +4726,7 @@ var INSPECTOR;
     /**
      *
      */
-    var CameraPOV = /** @class */ (function (_super) {
+    var CameraPOV = (function (_super) {
         __extends(CameraPOV, _super);
         function CameraPOV(camera) {
             var _this = _super.call(this) || this;
@@ -4770,7 +4770,7 @@ var INSPECTOR;
     /**
      *
      */
-    var SoundInteractions = /** @class */ (function (_super) {
+    var SoundInteractions = (function (_super) {
         __extends(SoundInteractions, _super);
         function SoundInteractions(playSound) {
             var _this = _super.call(this) || this;
@@ -4817,7 +4817,7 @@ var INSPECTOR;
     /**
      * Checkbox to display/hide the primitive
      */
-    var Checkbox = /** @class */ (function (_super) {
+    var Checkbox = (function (_super) {
         __extends(Checkbox, _super);
         function Checkbox(obj) {
             var _this = _super.call(this) || this;
@@ -4867,7 +4867,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    var DebugArea = /** @class */ (function (_super) {
+    var DebugArea = (function (_super) {
         __extends(DebugArea, _super);
         function DebugArea(obj) {
             var _this = _super.call(this) || this;
@@ -4907,7 +4907,7 @@ var INSPECTOR;
     /**
      * Checkbox to display/hide the primitive
      */
-    var Info = /** @class */ (function (_super) {
+    var Info = (function (_super) {
         __extends(Info, _super);
         function Info(obj) {
             var _this = _super.call(this) || this;
