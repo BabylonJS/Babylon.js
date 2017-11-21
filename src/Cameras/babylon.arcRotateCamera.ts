@@ -320,7 +320,7 @@
             }
         }
 
-        public onMeshTargetChangedObservable = new Observable<AbstractMesh>();
+        public onMeshTargetChangedObservable = new Observable<Nullable<AbstractMesh>>();
 
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
@@ -634,7 +634,7 @@
                 this._targetHost = null;
                 this._target = newTarget;
                 this._targetBoundingCenter = null;
-                this.onMeshTargetChangedObservable.notifyObservers(<any>null);
+                this.onMeshTargetChangedObservable.notifyObservers(null);
             }
 
             this.rebuildAnglesAndRadius();
