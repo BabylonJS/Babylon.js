@@ -688,14 +688,14 @@
             return true;
         }
 
-        public static RegisterTopRootEvents(events: { name: string; handler: EventListener }[]): void {
+        public static RegisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
-                window.addEventListener(event.name, event.handler, false);
+                window.addEventListener(event.name, <any>event.handler, false);
 
                 try {
                     if (window.parent) {
-                        window.parent.addEventListener(event.name, event.handler, false);
+                        window.parent.addEventListener(event.name, <any>event.handler, false);
                     }
                 } catch (e) {
                     // Silently fails...
@@ -703,14 +703,14 @@
             }
         }
 
-        public static UnregisterTopRootEvents(events: { name: string; handler: EventListener }[]): void {
+        public static UnregisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
-                window.removeEventListener(event.name, event.handler);
+                window.removeEventListener(event.name, <any>event.handler);
 
                 try {
                     if (window.parent) {
-                        window.parent.removeEventListener(event.name, event.handler);
+                        window.parent.removeEventListener(event.name, <any>event.handler);
                     }
                 } catch (e) {
                     // Silently fails...

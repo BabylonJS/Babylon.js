@@ -5178,7 +5178,8 @@ var BABYLON;
                     case 3: // FresnelParameters
                     case 4: // Vector2
                     case 5: // Vector3
-                    case 7:// Color Curves
+                    case 7: // Color Curves
+                    case 10:// Quaternion
                         destination[property] = instanciate ? sourceProperty : sourceProperty.clone();
                         break;
                 }
@@ -5305,6 +5306,10 @@ var BABYLON;
         return generateSerializableMember(9, sourceName); // image processing
     }
     BABYLON.serializeAsImageProcessingConfiguration = serializeAsImageProcessingConfiguration;
+    function serializeAsQuaternion(sourceName) {
+        return generateSerializableMember(10, sourceName); // quaternion member
+    }
+    BABYLON.serializeAsQuaternion = serializeAsQuaternion;
     var SerializationHelper = /** @class */ (function () {
         function SerializationHelper() {
         }
@@ -7863,7 +7868,7 @@ var BABYLON;
             }
         };
         var onerror = function (request, exception) {
-            if (onErrorCallBack) {
+            if (onErrorCallBack && request) {
                 onErrorCallBack(request.status + " " + request.statusText, exception);
             }
         };
@@ -11042,7 +11047,7 @@ var BABYLON;
                 isDDS = (extension === ".dds");
             }
             var onerror = function (request, exception) {
-                if (onError) {
+                if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             };
@@ -11268,7 +11273,7 @@ var BABYLON;
             this._internalTexturesCache.push(texture);
             var onerror = function (request, exception) {
                 scene._removePendingData(texture);
-                if (onError) {
+                if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             };
@@ -13047,6 +13052,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.boundingInfo.js.map
 
 
+
 var BABYLON;
 (function (BABYLON) {
     var TransformNode = /** @class */ (function (_super) {
@@ -13917,6 +13923,27 @@ var BABYLON;
         TransformNode.BILLBOARDMODE_ALL = 7;
         TransformNode._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         TransformNode._rotationAxisCache = new BABYLON.Quaternion();
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], TransformNode.prototype, "_rotation", void 0);
+        __decorate([
+            BABYLON.serializeAsQuaternion()
+        ], TransformNode.prototype, "_rotationQuaternion", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], TransformNode.prototype, "_scaling", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], TransformNode.prototype, "billboardMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], TransformNode.prototype, "scalingDeterminant", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], TransformNode.prototype, "infiniteDistance", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], TransformNode.prototype, "position", void 0);
         return TransformNode;
     }(BABYLON.Node));
     BABYLON.TransformNode = TransformNode;
@@ -15632,6 +15659,10 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.abstractMesh.js.map
+
+
+
+
 
 
 
@@ -24193,10 +24224,9 @@ var BABYLON;
             return this;
         };
         Mesh.prototype._onBeforeDraw = function (isInstance, world, effectiveMaterial) {
-            if (isInstance) {
+            if (isInstance && effectiveMaterial) {
                 effectiveMaterial.bindOnlyWorldMatrix(world);
             }
-            return this;
         };
         /**
          * Returns an array populated with ParticleSystem objects whose the mesh is the emitter.
@@ -24417,7 +24447,8 @@ var BABYLON;
             }
             // Sources
             var meshes = this.getScene().meshes;
-            meshes.forEach(function (mesh) {
+            meshes.forEach(function (abstractMesh) {
+                var mesh = abstractMesh;
                 if (mesh._source && mesh._source === _this) {
                     mesh._source = null;
                 }
@@ -33285,6 +33316,9 @@ var BABYLON;
             }
             this._texture = texture;
             var callback = function (text) {
+                if (typeof text !== "string") {
+                    return;
+                }
                 var data = null;
                 var tempData = null;
                 var line;
@@ -44550,8 +44584,8 @@ var BABYLON;
             var _this = this;
             this._scaledPosition = BABYLON.Vector3.Zero();
             this._scaledVelocity = BABYLON.Vector3.Zero();
-            this.onMeshUpdated = function (mesh) {
-                _this._addUpdateMeshesList[mesh.uniqueId] = CollisionCoordinatorWorker.SerializeMesh(mesh);
+            this.onMeshUpdated = function (transformNode) {
+                _this._addUpdateMeshesList[transformNode.uniqueId] = CollisionCoordinatorWorker.SerializeMesh(transformNode);
             };
             this.onGeometryUpdated = function (geometry) {
                 _this._addUpdateGeometriesList[geometry.id] = CollisionCoordinatorWorker.SerializeGeometry(geometry);
@@ -49874,8 +49908,12 @@ var BABYLON;
                 this._connectedMesh = null;
             }
         };
-        Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
-            var boundingInfo = connectedMesh.getBoundingInfo();
+        Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (node) {
+            if (!node.getBoundingInfo) {
+                return;
+            }
+            var mesh = node;
+            var boundingInfo = mesh.getBoundingInfo();
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
@@ -67356,14 +67394,13 @@ var BABYLON;
                 return null;
             }
             var event = new PhysicsRadialExplosionEvent(this._scene);
-            for (var i = 0; i < impostors.length; ++i) {
-                var impostor = impostors[i];
+            impostors.forEach(function (impostor) {
                 var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
-                if (impostorForceAndContactPoint === null) {
-                    continue;
+                if (!impostorForceAndContactPoint) {
+                    return;
                 }
                 impostor.applyImpulse(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
-            }
+            });
             event.cleanup(false);
             return event;
         };
@@ -67384,14 +67421,13 @@ var BABYLON;
                 return null;
             }
             var event = new PhysicsRadialExplosionEvent(this._scene);
-            for (var i = 0; i < impostors.length; ++i) {
-                var impostor = impostors[i];
+            impostors.forEach(function (impostor) {
                 var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
-                if (impostorForceAndContactPoint === null) {
-                    continue;
+                if (!impostorForceAndContactPoint) {
+                    return;
                 }
                 impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
-            }
+            });
             event.cleanup(false);
             return event;
         };
@@ -67493,7 +67529,7 @@ var BABYLON;
         /*** Helpers ***/
         PhysicsRadialExplosionEvent.prototype._prepareRadialSphere = function () {
             if (!this._radialSphere) {
-                this._radialSphere = BABYLON.Mesh.CreateSphere("radialSphere", 32, 1, this._scene);
+                this._radialSphere = BABYLON.MeshBuilder.CreateSphere("radialSphere", { segments: 32, diameter: 1 }, this._scene);
                 this._radialSphere.isVisible = false;
             }
         };
@@ -67570,7 +67606,9 @@ var BABYLON;
             }
             else {
                 var radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._radius, this._strength * -1, this._falloff);
-                this._radialSphere = radialExplosionEvent.getData().radialSphere.clone('radialSphereClone');
+                if (radialExplosionEvent) {
+                    this._radialSphere = radialExplosionEvent.getData().radialSphere.clone('radialSphereClone');
+                }
             }
         };
         return PhysicsGravitationalFieldEvent;
@@ -71978,12 +72016,9 @@ var BABYLON;
             this._scene.imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
             this._scene.imageProcessingConfiguration.vignetteEnabled = true;
             this._scene.imageProcessingConfiguration.isEnabled = false;
-            this._createGazeTracker();
             this._createTeleportationCircles();
             this.meshSelectionPredicate = function (mesh) {
-                if (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
-                    && mesh.name.indexOf("teleportationCircle") === -1
-                    && mesh.name.indexOf("torusTeleportation") === -1) {
+                if (mesh.name.indexOf(_this._floorMeshName) !== -1) {
                     return true;
                 }
                 return false;
@@ -72065,18 +72100,6 @@ var BABYLON;
                 });
             }
         };
-        // Little white circle attached to the camera
-        // That will act as the target to look on the floor where to teleport
-        VRExperienceHelper.prototype._createGazeTracker = function () {
-            this._gazeTracker = BABYLON.Mesh.CreateTorus("gazeTracker", 0.0050, 0.0020, 25, this._scene, false);
-            this._gazeTracker.bakeCurrentTransformIntoVertices();
-            this._gazeTracker.isPickable = false;
-            var targetMat = new BABYLON.StandardMaterial("targetMat", this._scene);
-            targetMat.specularColor = BABYLON.Color3.Black();
-            targetMat.emissiveColor = BABYLON.Color3.White();
-            targetMat.backFaceCulling = false;
-            this._gazeTracker.material = targetMat;
-        };
         VRExperienceHelper.prototype._createTeleportationCircles = function () {
             this._teleportationCircle = BABYLON.Mesh.CreateGround("teleportationCircle", 2, 2, 2, this._scene);
             var length = 512;
@@ -72098,7 +72121,7 @@ var BABYLON;
             var teleportationCircleMaterial = new BABYLON.StandardMaterial("TextPlaneMaterial", this._scene);
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
             this._teleportationCircle.material = teleportationCircleMaterial;
-            var torus = BABYLON.Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
+            var torus = BABYLON.Mesh.CreateTorus("torus", 0.75, 0.1, 25, this._scene, false);
             torus.parent = this._teleportationCircle;
             var animationInnerCircle = new BABYLON.Animation("animationInnerCircle", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
             var keys = [];
@@ -72292,40 +72315,11 @@ var BABYLON;
                 ray = this.currentVRCamera.rightController.getForwardRay();
             }
             var hit = this._scene.pickWithRay(ray, this.meshSelectionPredicate);
-            if (hit && hit.pickedPoint) {
-                this._gazeTracker.scaling.x = hit.distance;
-                this._gazeTracker.scaling.y = hit.distance;
-                this._gazeTracker.scaling.z = hit.distance;
-                var pickNormal = hit.getNormal();
-                if (pickNormal) {
-                    var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
-                    var axis2 = BABYLON.Vector3.Cross(pickNormal, axis1);
-                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._gazeTracker.rotation);
-                }
-                this._gazeTracker.position.copyFrom(hit.pickedPoint);
-                if (this._gazeTracker.position.x < 0) {
-                    this._gazeTracker.position.x += 0.002;
-                }
-                else {
-                    this._gazeTracker.position.x -= 0.002;
-                }
-                if (this._gazeTracker.position.y < 0) {
-                    this._gazeTracker.position.y += 0.002;
-                }
-                else {
-                    this._gazeTracker.position.y -= 0.002;
-                }
-                if (this._gazeTracker.position.z < 0) {
-                    this._gazeTracker.position.z += 0.002;
-                }
-                else {
-                    this._gazeTracker.position.z -= 0.002;
-                }
-            }
             if (this._rayHelper) {
                 this._rayHelper.dispose();
             }
             if (this.currentVRCamera.rightController) {
+                //if (target) target.isVisible = false;
                 this._rayHelper = BABYLON.RayHelper.CreateAndShow(ray, this._scene, new BABYLON.Color3(0.7, 0.7, 0.7));
             }
             if (hit && hit.pickedMesh) {
@@ -75010,8 +75004,8 @@ var BABYLON;
             var onload = function () {
                 onSuccess();
             };
-            var onerror = function (msg, exception) {
-                onError(msg, exception);
+            var onerror = function (message, exception) {
+                onError(message, exception);
             };
             this.texture = new BABYLON.Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onerror);
         };
@@ -75033,8 +75027,8 @@ var BABYLON;
             var onload = function () {
                 onSuccess();
             };
-            var onerror = function (msg, exception) {
-                onError(msg, exception);
+            var onerror = function (message, exception) {
+                onError(message, exception);
             };
             this.texture = new BABYLON.CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
         };
