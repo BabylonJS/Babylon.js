@@ -39,7 +39,7 @@ module BABYLON {
         private _scene: Scene;
         private _connectedMesh: Nullable<AbstractMesh>;
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
-        private _registerFunc: Nullable<(connectedMesh: AbstractMesh) => any>;
+        private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
         private _isOutputConnected = false;
         private _htmlAudioElement: HTMLAudioElement;
         private _urlType: string = "Unknown";
@@ -547,7 +547,7 @@ module BABYLON {
                 }
             }
             this._onRegisterAfterWorldMatrixUpdate(this._connectedMesh);
-            this._registerFunc = (connectedMesh: AbstractMesh) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
+            this._registerFunc = (connectedMesh: TransformNode) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         }
 
@@ -559,8 +559,12 @@ module BABYLON {
             }
         }
 
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh): void {
-            let boundingInfo = connectedMesh.getBoundingInfo();
+        private _onRegisterAfterWorldMatrixUpdate(node: TransformNode): void {
+            if (!(<any>node).getBoundingInfo) {
+                return;
+            }
+            let mesh = node as AbstractMesh;
+            let boundingInfo = mesh.getBoundingInfo();
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
             if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();

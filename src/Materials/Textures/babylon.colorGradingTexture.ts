@@ -86,7 +86,12 @@ module BABYLON {
 
             this._texture = texture;
 
-            var callback = (text: string) => {
+            var callback = (text: string | ArrayBuffer) => {
+
+                if (typeof text !== "string") {
+                    return;
+                }
+
                 var data: Nullable<Uint8Array> = null;
                 var tempData: Nullable<Float32Array> = null;
 
