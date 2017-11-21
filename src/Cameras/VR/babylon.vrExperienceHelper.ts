@@ -56,6 +56,7 @@ module BABYLON {
         private _rotationAngle: number = 0;
         private _haloCenter = new BABYLON.Vector3(0, 0, 0);
         private _rayHelper: RayHelper;
+        private _gazeTracker: BABYLON.Mesh;
 
         public meshSelectionPredicate: (mesh: BABYLON.Mesh) => boolean;
 
@@ -376,10 +377,13 @@ module BABYLON {
             this._scene.imageProcessingConfiguration.vignetteEnabled = true;      
             this._scene.imageProcessingConfiguration.isEnabled = false;      
 
+            this._createGazeTracker();
             this._createTeleportationCircles();
 
             this.meshSelectionPredicate = (mesh) => {
-                if (mesh.name.indexOf(this._floorMeshName) !== -1) {
+                if (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1 
+                        && mesh.name.indexOf("teleportationCircle") === -1
+                        && mesh.name.indexOf("torusTeleportation") === -1) {
                     return true;
                 }
                 return false;
@@ -465,6 +469,20 @@ module BABYLON {
             }
         }
 
+        // Little white circle attached to the camera
+        // That will act as the target to look on the floor where to teleport
+        private _createGazeTracker() {
+            this._gazeTracker = BABYLON.Mesh.CreateTorus("gazeTracker", 0.0050, 0.0020, 25, this._scene, false);
+            this._gazeTracker.bakeCurrentTransformIntoVertices();
+            this._gazeTracker.isPickable = false;
+
+            var targetMat = new BABYLON.StandardMaterial("targetMat", this._scene);
+            targetMat.specularColor = BABYLON.Color3.Black();
+            targetMat.emissiveColor = BABYLON.Color3.White();
+            targetMat.backFaceCulling = false;
+            this._gazeTracker.material = targetMat;
+        }
+
         private _createTeleportationCircles() {
             this._teleportationCircle = BABYLON.Mesh.CreateGround("teleportationCircle", 2, 2, 2, this._scene);
             
@@ -491,7 +509,7 @@ module BABYLON {
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
             this._teleportationCircle.material = teleportationCircleMaterial;
             
-            var torus = BABYLON.Mesh.CreateTorus("torus", 0.75, 0.1, 25, this._scene, false);
+            var torus = BABYLON.Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
             torus.parent = this._teleportationCircle;
             
             var animationInnerCircle = new BABYLON.Animation("animationInnerCircle", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
@@ -738,13 +756,47 @@ module BABYLON {
             }
         
             var hit = this._scene.pickWithRay(ray, this.meshSelectionPredicate);
+
+            if (hit && hit.pickedPoint) {
+                this._gazeTracker.scaling.x = hit.distance;
+                this._gazeTracker.scaling.y = hit.distance;
+                this._gazeTracker.scaling.z = hit.distance;
+        
+                var pickNormal = hit.getNormal();
+                var deltaFighting = 0.002;
+                
+                if (pickNormal) {
+                    var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
+                    var axis2 = BABYLON.Vector3.Cross( pickNormal, axis1);
+                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._gazeTracker.rotation);
+                }
+                this._gazeTracker.position.copyFrom(hit.pickedPoint);
+        
+                if (this._gazeTracker.position.x < 0) {
+                    this._gazeTracker.position.x += deltaFighting;
+                }
+                else {
+                    this._gazeTracker.position.x -= deltaFighting;
+                }
+                if (this._gazeTracker.position.y < 0) {
+                    this._gazeTracker.position.y += deltaFighting;
+                }
+                else {
+                    this._gazeTracker.position.y -= deltaFighting;
+                }
+                if (this._gazeTracker.position.z < 0) {
+                    this._gazeTracker.position.z += deltaFighting;
+                }
+                else {
+                    this._gazeTracker.position.z -= deltaFighting;
+                }
+            }
         
             if (this._rayHelper) {
                 this._rayHelper.dispose();
             }
         
             if ((<WebVRFreeCamera>this.currentVRCamera).rightController) {
-                //if (target) target.isVisible = false;
                 this._rayHelper = BABYLON.RayHelper.CreateAndShow(ray, this._scene, new BABYLON.Color3(0.7, 0.7, 0.7));
             }
         

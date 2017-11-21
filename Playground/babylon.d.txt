@@ -2027,6 +2027,185 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Analyser {
+        SMOOTHING: number;
+        FFT_SIZE: number;
+        BARGRAPHAMPLITUDE: number;
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+
+
+
+
+
+
+
+
+
+        constructor(scene: Scene);
+        getFrequencyBinCount(): number;
+        getByteFrequencyData(): Uint8Array;
+        getByteTimeDomainData(): Uint8Array;
+        getFloatFrequencyData(): Uint8Array;
+        drawDebugCanvas(): void;
+        stopDebugCanvas(): void;
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+
+
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        isMP3supported: boolean;
+        isOGGsupported: boolean;
+        readonly audioContext: Nullable<AudioContext>;
+        constructor();
+
+
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+
+        onended: () => any;
+
+
+
+
+
+
+
+
+        isPlaying: boolean;
+        isPaused: boolean;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+
+
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+
+        clone(): Nullable<Sound>;
+        getAudioBuffer(): AudioBuffer | null;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+
+
+        id: number;
+        soundCollection: Array<Sound>;
+
+
+
+
+        constructor(scene: Scene, options?: any);
+
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
     class Animatable {
         target: any;
         fromFrame: number;
@@ -2298,185 +2477,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Analyser {
-        SMOOTHING: number;
-        FFT_SIZE: number;
-        BARGRAPHAMPLITUDE: number;
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-
-
-
-
-
-
-
-
-
-        constructor(scene: Scene);
-        getFrequencyBinCount(): number;
-        getByteFrequencyData(): Uint8Array;
-        getByteTimeDomainData(): Uint8Array;
-        getFloatFrequencyData(): Uint8Array;
-        drawDebugCanvas(): void;
-        stopDebugCanvas(): void;
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-
-
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        isMP3supported: boolean;
-        isOGGsupported: boolean;
-        readonly audioContext: Nullable<AudioContext>;
-        constructor();
-
-
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-
-        onended: () => any;
-
-
-
-
-
-
-
-
-        isPlaying: boolean;
-        isPaused: boolean;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-
-
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-
-        clone(): Nullable<Sound>;
-        getAudioBuffer(): AudioBuffer | null;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-
-
-        id: number;
-        soundCollection: Array<Sound>;
-
-
-
-
-        constructor(scene: Scene, options?: any);
-
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
     interface Behavior<T extends Node> {
         name: string;
         init(): void;
@@ -2486,272 +2486,22 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Bone extends Node {
-        name: string;
-
-
-
-        children: Bone[];
-        animations: Animation[];
-        length: number;
-
-
-
-
-
-
-
-
-
-
-
-
-
-        constructor(name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
-        getSkeleton(): Skeleton;
-        getParent(): Nullable<Bone>;
-        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
-        getLocalMatrix(): Matrix;
-        getBaseMatrix(): Matrix;
-        getRestPose(): Matrix;
-        returnToRest(): void;
-        getWorldMatrix(): Matrix;
-        getInvertedAbsoluteTransform(): Matrix;
-        getAbsoluteTransform(): Matrix;
-        position: Vector3;
-        rotation: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean): void;
-
-        markAsDirty(): void;
-        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean, skelDimensionsRatio?: Nullable<Vector3>): boolean;
-        /**
-         * Translate the bone in local or world space.
-         * @param vec The amount to translate the bone.
-         * @param space The space that the translation is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the postion of the bone in local or world space.
-         * @param position The position to set the bone.
-         * @param space The space that the position is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the absolute postion of the bone (world space).
-         * @param position The position to set the bone.
-         * @param mesh The mesh that this bone is attached to.
-         */
-        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
-        /**
-         * Set the scale of the bone on the x, y and z axes.
-         * @param x The scale of the bone on the x axis.
-         * @param x The scale of the bone on the y axis.
-         * @param z The scale of the bone on the z axis.
-         * @param scaleChildren Set this to true if children of the bone should be scaled.
-         */
-        setScale(x: number, y: number, z: number, scaleChildren?: boolean): void;
-        /**
-         * Scale the bone on the x, y and z axes.
-         * @param x The amount to scale the bone on the x axis.
-         * @param x The amount to scale the bone on the y axis.
-         * @param z The amount to scale the bone on the z axis.
-         * @param scaleChildren Set this to true if children of the bone should be scaled.
-         */
-        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
-        /**
-         * Set the yaw, pitch, and roll of the bone in local or world space.
-         * @param yaw The rotation of the bone on the y axis.
-         * @param pitch The rotation of the bone on the x axis.
-         * @param roll The rotation of the bone on the z axis.
-         * @param space The space that the axes of rotation are in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Rotate the bone on an axis in local or world space.
-         * @param axis The axis to rotate the bone on.
-         * @param amount The amount to rotate the bone.
-         * @param space The space that the axis is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation of the bone to a particular axis angle in local or world space.
-         * @param axis The axis to rotate the bone on.
-         * @param angle The angle that the bone should be rotated to.
-         * @param space The space that the axis is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the euler rotation of the bone in local of world space.
-         * @param rotation The euler rotation that the bone should be set to.
-         * @param space The space that the rotation is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the quaternion rotation of the bone in local of world space.
-         * @param quat The quaternion rotation that the bone should be set to.
-         * @param space The space that the rotation is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation matrix of the bone in local of world space.
-         * @param rotMat The rotation matrix that the bone should be set to.
-         * @param space The space that the rotation is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
-
-
-        /**
-         * Get the scale of the bone
-         * @returns the scale of the bone
-         */
-        getScale(): Vector3;
-        /**
-         * Copy the scale of the bone to a vector3.
-         * @param result The vector3 to copy the scale to
-         */
-        getScaleToRef(result: Vector3): void;
-        /**
-         * Get the position of the bone in local or world space.
-         * @param space The space that the returned position is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @returns The position of the bone
-         */
-        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the position of the bone to a vector3 in local or world space.
-         * @param space The space that the returned position is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @param result The vector3 to copy the position to.
-         */
-        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
-        /**
-         * Get the absolute position of the bone (world space).
-         * @param mesh The mesh that this bone is attached to.
-         * @returns The absolute position of the bone
-         */
-        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the absolute position of the bone (world space) to the result param.
-         * @param mesh The mesh that this bone is attached to.
-         * @param result The vector3 to copy the absolute position to.
-         */
-        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
-        /**
-         * Compute the absolute transforms of this bone and its children.
-         */
-        computeAbsoluteTransforms(): void;
-
-        /**
-         * Get the world direction from an axis that is in the local space of the bone.
-         * @param localAxis The local direction that is used to compute the world direction.
-         * @param mesh The mesh that this bone is attached to.
-         * @returns The world direction
-         */
-        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the world direction to a vector3 from an axis that is in the local space of the bone.
-         * @param localAxis The local direction that is used to compute the world direction.
-         * @param mesh The mesh that this bone is attached to.
-         * @param result The vector3 that the world direction will be copied to.
-         */
-        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the euler rotation of the bone in local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @returns The euler rotation
-         */
-        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @param result The vector3 that the rotation should be copied to.
-         */
-        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the quaternion rotation of the bone in either local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @returns The quaternion rotation
-         */
-        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
-        /**
-         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @param result The quaternion that the rotation should be copied to.
-         */
-        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
-        /**
-         * Get the rotation matrix of the bone in local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @returns The rotation matrix
-         */
-        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
-        /**
-         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @param result The quaternion that the rotation should be copied to.
-         */
-        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
-        /**
-         * Get the world position of a point that is in the local space of the bone.
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to.
-         * @returns The world position
-         */
-        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the world position of a point that is in the local space of the bone and copy it to the result param.
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to.
-         * @param result The vector3 that the world position should be copied to.
-         */
-        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the local position of a point that is in world space.
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to.
-         * @returns The local position
-         */
-        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the local position of a point that is in world space and copy it to the result param.
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to.
-         * @param result The vector3 that the local position should be copied to.
-         */
-        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    class BoneIKController {
-
-
-
-        targetMesh: AbstractMesh;
-        poleTargetMesh: AbstractMesh;
-        poleTargetBone: Nullable<Bone>;
-        targetPosition: Vector3;
-        poleTargetPosition: Vector3;
-        poleTargetLocalOffset: Vector3;
-        poleAngle: number;
-        mesh: AbstractMesh;
-        slerpAmount: number;
+    class Collider {
+        radius: Vector3;
+        retry: number;
+        velocity: Vector3;
+        basePoint: Vector3;
+        epsilon: number;
+        collisionFound: boolean;
+        velocityWorldLength: number;
+        basePointWorld: Vector3;
+        velocityWorld: Vector3;
+        normalizedVelocity: Vector3;
+        initialVelocity: Vector3;
+        initialPosition: Vector3;
+        nearestDistance: number;
+        intersectionPoint: Vector3;
+        collidedMesh: Nullable<AbstractMesh>;
 
 
 
@@ -2764,135 +2514,10 @@ declare module BABYLON {
 
 
 
-
-        maxAngle: number;
-        constructor(mesh: AbstractMesh, bone: Bone, options?: {
-            targetMesh?: AbstractMesh;
-            poleTargetMesh?: AbstractMesh;
-            poleTargetBone?: Bone;
-            poleTargetLocalOffset?: Vector3;
-            poleAngle?: number;
-            bendAxis?: Vector3;
-            maxAngle?: number;
-            slerpAmount?: number;
-        });
-
-        update(): void;
-    }
-}
-
-declare module BABYLON {
-    class BoneLookController {
+        collisionMask: number;
 
 
 
-        /**
-         * The target Vector3 that the bone will look at.
-         */
-        target: Vector3;
-        /**
-         * The mesh that the bone is attached to.
-         */
-        mesh: AbstractMesh;
-        /**
-         * The bone that will be looking to the target.
-         */
-        bone: Bone;
-        /**
-         * The up axis of the coordinate system that is used when the bone is rotated.
-         */
-        upAxis: Vector3;
-        /**
-         * The space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
-         */
-        upAxisSpace: Space;
-        /**
-         * Used to make an adjustment to the yaw of the bone.
-         */
-        adjustYaw: number;
-        /**
-         * Used to make an adjustment to the pitch of the bone.
-         */
-        adjustPitch: number;
-        /**
-         * Used to make an adjustment to the roll of the bone.
-         */
-        adjustRoll: number;
-        /**
-         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp).
-         */
-        slerpAmount: number;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /**
-         * Get/set the minimum yaw angle that the bone can look to.
-         */
-        minYaw: number;
-        /**
-         * Get/set the maximum yaw angle that the bone can look to.
-         */
-        maxYaw: number;
-        /**
-         * Get/set the minimum pitch angle that the bone can look to.
-         */
-        minPitch: number;
-        /**
-         * Get/set the maximum pitch angle that the bone can look to.
-         */
-        maxPitch: number;
-        /**
-         * Create a BoneLookController
-         * @param mesh the mesh that the bone belongs to
-         * @param bone the bone that will be looking to the target
-         * @param target the target Vector3 to look at
-         * @param settings optional settings:
-         * - maxYaw: the maximum angle the bone will yaw to
-         * - minYaw: the minimum angle the bone will yaw to
-         * - maxPitch: the maximum angle the bone will pitch to
-         * - minPitch: the minimum angle the bone will yaw to
-         * - slerpAmount: set the between 0 and 1 to make the bone slerp to the target.
-         * - upAxis: the up axis of the coordinate system
-         * - upAxisSpace: the space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
-         * - yawAxis: set yawAxis if the bone does not yaw on the y axis
-         * - pitchAxis: set pitchAxis if the bone does not pitch on the x axis
-         * - adjustYaw: used to make an adjustment to the yaw of the bone
-         * - adjustPitch: used to make an adjustment to the pitch of the bone
-         * - adjustRoll: used to make an adjustment to the roll of the bone
-         **/
-        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, options?: {
-            maxYaw?: number;
-            minYaw?: number;
-            maxPitch?: number;
-            minPitch?: number;
-            slerpAmount?: number;
-            upAxis?: Vector3;
-            upAxisSpace?: Space;
-            yawAxis?: Vector3;
-            pitchAxis?: Vector3;
-            adjustYaw?: number;
-            adjustPitch?: number;
-            adjustRoll?: number;
-        });
-        /**
-         * Update the bone to look at the target.  This should be called before the scene is rendered (use scene.registerBeforeRender()).
-         */
-        update(): void;
 
 
 
@@ -2900,13 +2525,96 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Skeleton implements IAnimatable {
-        name: string;
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+    }
+    interface SerializedMesh {
         id: string;
-        bones: Bone[];
-        dimensionsAtRest: Vector3;
-        needInitialSkinMatrix: boolean;
-        animations: Array<Animation>;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    interface SerializedGeometry {
+        id: string;
+        positions: Float32Array;
+        indices: Uint32Array;
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
 
 
 
@@ -2916,53 +2624,107 @@ declare module BABYLON {
 
 
 
-        /**
-         * An event triggered before computing the skeleton's matrices
-         * @type {BABYLON.Observable}
-         */
-        onBeforeComputeObservable: Observable<Skeleton>;
-        constructor(name: string, id: string, scene: Scene);
-        getTransformMatrices(mesh: AbstractMesh): Float32Array;
-        getScene(): Scene;
-        /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-        * Get bone's index searching by name
-        * @param {string} name is bone's name to search for
-        * @return {number} Indice of the bone. Returns -1 if not found
-        */
-        getBoneIndexByName(name: string): number;
-        createAnimationRange(name: string, from: number, to: number): void;
-        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
-        getAnimationRange(name: string): Nullable<AnimationRange>;
-        /**
-         *  Returns as an Array, all AnimationRanges defined on this skeleton
-         */
-        getAnimationRanges(): Nullable<AnimationRange>[];
-        /**
-         *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
-         */
-        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
-        returnToRest(): void;
 
-        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
+
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (mesh: AbstractMesh) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+
+
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
 
 
 
 
-        prepare(): void;
-        getAnimatables(): IAnimatable[];
-        clone(name: string, id: string): Skeleton;
-        enableBlending(blendingSpeed?: number): void;
-        dispose(): void;
-        serialize(): any;
-        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
-        computeAbsoluteTransforms(forceUpdate?: boolean): void;
-        getPoseMatrix(): Nullable<Matrix>;
-        sortBones(): void;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
 
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+
+
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+
+
+
+
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+
+
+
+
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Nullable<Vector3>;
+        pickedMesh: Nullable<AbstractMesh>;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Nullable<Sprite>;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        getTextureCoordinates(): Nullable<Vector2>;
     }
 }
 
@@ -3475,249 +3237,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Collider {
-        radius: Vector3;
-        retry: number;
-        velocity: Vector3;
-        basePoint: Vector3;
-        epsilon: number;
-        collisionFound: boolean;
-        velocityWorldLength: number;
-        basePointWorld: Vector3;
-        velocityWorld: Vector3;
-        normalizedVelocity: Vector3;
-        initialVelocity: Vector3;
-        initialPosition: Vector3;
-        nearestDistance: number;
-        intersectionPoint: Vector3;
-        collidedMesh: Nullable<AbstractMesh>;
-
-
-
-
-
-
-
-
-
-
-
-
-        collisionMask: number;
-
-
-
-
-
-
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    interface SerializedGeometry {
-        id: string;
-        positions: Float32Array;
-        indices: Uint32Array;
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-
-
-
-
-
-
-
-
-
-
-
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (mesh: AbstractMesh) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-
-
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-
-
-
-
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-
-
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-
-
-
-
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-
-
-
-
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Nullable<Vector3>;
-        pickedMesh: Nullable<AbstractMesh>;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Nullable<Sprite>;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-declare module BABYLON {
     class BoundingBox implements ICullable {
         minimum: Vector3;
         maximum: Vector3;
@@ -3839,6 +3358,487 @@ declare module BABYLON {
         static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
         static Transform(ray: Ray, matrix: Matrix): Ray;
         static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
+    class Bone extends Node {
+        name: string;
+
+
+
+        children: Bone[];
+        animations: Animation[];
+        length: number;
+
+
+
+
+
+
+
+
+
+
+
+
+
+        constructor(name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
+        getSkeleton(): Skeleton;
+        getParent(): Nullable<Bone>;
+        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
+        getLocalMatrix(): Matrix;
+        getBaseMatrix(): Matrix;
+        getRestPose(): Matrix;
+        returnToRest(): void;
+        getWorldMatrix(): Matrix;
+        getInvertedAbsoluteTransform(): Matrix;
+        getAbsoluteTransform(): Matrix;
+        position: Vector3;
+        rotation: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean): void;
+
+        markAsDirty(): void;
+        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean, skelDimensionsRatio?: Nullable<Vector3>): boolean;
+        /**
+         * Translate the bone in local or world space.
+         * @param vec The amount to translate the bone.
+         * @param space The space that the translation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the postion of the bone in local or world space.
+         * @param position The position to set the bone.
+         * @param space The space that the position is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the absolute postion of the bone (world space).
+         * @param position The position to set the bone.
+         * @param mesh The mesh that this bone is attached to.
+         */
+        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
+        /**
+         * Set the scale of the bone on the x, y and z axes.
+         * @param x The scale of the bone on the x axis.
+         * @param x The scale of the bone on the y axis.
+         * @param z The scale of the bone on the z axis.
+         * @param scaleChildren Set this to true if children of the bone should be scaled.
+         */
+        setScale(x: number, y: number, z: number, scaleChildren?: boolean): void;
+        /**
+         * Scale the bone on the x, y and z axes.
+         * @param x The amount to scale the bone on the x axis.
+         * @param x The amount to scale the bone on the y axis.
+         * @param z The amount to scale the bone on the z axis.
+         * @param scaleChildren Set this to true if children of the bone should be scaled.
+         */
+        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
+        /**
+         * Set the yaw, pitch, and roll of the bone in local or world space.
+         * @param yaw The rotation of the bone on the y axis.
+         * @param pitch The rotation of the bone on the x axis.
+         * @param roll The rotation of the bone on the z axis.
+         * @param space The space that the axes of rotation are in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Rotate the bone on an axis in local or world space.
+         * @param axis The axis to rotate the bone on.
+         * @param amount The amount to rotate the bone.
+         * @param space The space that the axis is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the rotation of the bone to a particular axis angle in local or world space.
+         * @param axis The axis to rotate the bone on.
+         * @param angle The angle that the bone should be rotated to.
+         * @param space The space that the axis is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the euler rotation of the bone in local of world space.
+         * @param rotation The euler rotation that the bone should be set to.
+         * @param space The space that the rotation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the quaternion rotation of the bone in local of world space.
+         * @param quat The quaternion rotation that the bone should be set to.
+         * @param space The space that the rotation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the rotation matrix of the bone in local of world space.
+         * @param rotMat The rotation matrix that the bone should be set to.
+         * @param space The space that the rotation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
+
+
+        /**
+         * Get the scale of the bone
+         * @returns the scale of the bone
+         */
+        getScale(): Vector3;
+        /**
+         * Copy the scale of the bone to a vector3.
+         * @param result The vector3 to copy the scale to
+         */
+        getScaleToRef(result: Vector3): void;
+        /**
+         * Get the position of the bone in local or world space.
+         * @param space The space that the returned position is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The position of the bone
+         */
+        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the position of the bone to a vector3 in local or world space.
+         * @param space The space that the returned position is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The vector3 to copy the position to.
+         */
+        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
+        /**
+         * Get the absolute position of the bone (world space).
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The absolute position of the bone
+         */
+        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the absolute position of the bone (world space) to the result param.
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 to copy the absolute position to.
+         */
+        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
+        /**
+         * Compute the absolute transforms of this bone and its children.
+         */
+        computeAbsoluteTransforms(): void;
+
+        /**
+         * Get the world direction from an axis that is in the local space of the bone.
+         * @param localAxis The local direction that is used to compute the world direction.
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The world direction
+         */
+        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the world direction to a vector3 from an axis that is in the local space of the bone.
+         * @param localAxis The local direction that is used to compute the world direction.
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 that the world direction will be copied to.
+         */
+        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the euler rotation of the bone in local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The euler rotation
+         */
+        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The vector3 that the rotation should be copied to.
+         */
+        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the quaternion rotation of the bone in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The quaternion rotation
+         */
+        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
+        /**
+         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The quaternion that the rotation should be copied to.
+         */
+        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
+        /**
+         * Get the rotation matrix of the bone in local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The rotation matrix
+         */
+        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
+        /**
+         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The quaternion that the rotation should be copied to.
+         */
+        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
+        /**
+         * Get the world position of a point that is in the local space of the bone.
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The world position
+         */
+        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the world position of a point that is in the local space of the bone and copy it to the result param.
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 that the world position should be copied to.
+         */
+        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the local position of a point that is in world space.
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The local position
+         */
+        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the local position of a point that is in world space and copy it to the result param.
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 that the local position should be copied to.
+         */
+        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    class BoneIKController {
+
+
+
+        targetMesh: AbstractMesh;
+        poleTargetMesh: AbstractMesh;
+        poleTargetBone: Nullable<Bone>;
+        targetPosition: Vector3;
+        poleTargetPosition: Vector3;
+        poleTargetLocalOffset: Vector3;
+        poleAngle: number;
+        mesh: AbstractMesh;
+        slerpAmount: number;
+
+
+
+
+
+
+
+
+
+
+
+
+
+        maxAngle: number;
+        constructor(mesh: AbstractMesh, bone: Bone, options?: {
+            targetMesh?: AbstractMesh;
+            poleTargetMesh?: AbstractMesh;
+            poleTargetBone?: Bone;
+            poleTargetLocalOffset?: Vector3;
+            poleAngle?: number;
+            bendAxis?: Vector3;
+            maxAngle?: number;
+            slerpAmount?: number;
+        });
+
+        update(): void;
+    }
+}
+
+declare module BABYLON {
+    class BoneLookController {
+
+
+
+        /**
+         * The target Vector3 that the bone will look at.
+         */
+        target: Vector3;
+        /**
+         * The mesh that the bone is attached to.
+         */
+        mesh: AbstractMesh;
+        /**
+         * The bone that will be looking to the target.
+         */
+        bone: Bone;
+        /**
+         * The up axis of the coordinate system that is used when the bone is rotated.
+         */
+        upAxis: Vector3;
+        /**
+         * The space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
+         */
+        upAxisSpace: Space;
+        /**
+         * Used to make an adjustment to the yaw of the bone.
+         */
+        adjustYaw: number;
+        /**
+         * Used to make an adjustment to the pitch of the bone.
+         */
+        adjustPitch: number;
+        /**
+         * Used to make an adjustment to the roll of the bone.
+         */
+        adjustRoll: number;
+        /**
+         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp).
+         */
+        slerpAmount: number;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /**
+         * Get/set the minimum yaw angle that the bone can look to.
+         */
+        minYaw: number;
+        /**
+         * Get/set the maximum yaw angle that the bone can look to.
+         */
+        maxYaw: number;
+        /**
+         * Get/set the minimum pitch angle that the bone can look to.
+         */
+        minPitch: number;
+        /**
+         * Get/set the maximum pitch angle that the bone can look to.
+         */
+        maxPitch: number;
+        /**
+         * Create a BoneLookController
+         * @param mesh the mesh that the bone belongs to
+         * @param bone the bone that will be looking to the target
+         * @param target the target Vector3 to look at
+         * @param settings optional settings:
+         * - maxYaw: the maximum angle the bone will yaw to
+         * - minYaw: the minimum angle the bone will yaw to
+         * - maxPitch: the maximum angle the bone will pitch to
+         * - minPitch: the minimum angle the bone will yaw to
+         * - slerpAmount: set the between 0 and 1 to make the bone slerp to the target.
+         * - upAxis: the up axis of the coordinate system
+         * - upAxisSpace: the space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
+         * - yawAxis: set yawAxis if the bone does not yaw on the y axis
+         * - pitchAxis: set pitchAxis if the bone does not pitch on the x axis
+         * - adjustYaw: used to make an adjustment to the yaw of the bone
+         * - adjustPitch: used to make an adjustment to the pitch of the bone
+         * - adjustRoll: used to make an adjustment to the roll of the bone
+         **/
+        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, options?: {
+            maxYaw?: number;
+            minYaw?: number;
+            maxPitch?: number;
+            minPitch?: number;
+            slerpAmount?: number;
+            upAxis?: Vector3;
+            upAxisSpace?: Space;
+            yawAxis?: Vector3;
+            pitchAxis?: Vector3;
+            adjustYaw?: number;
+            adjustPitch?: number;
+            adjustRoll?: number;
+        });
+        /**
+         * Update the bone to look at the target.  This should be called before the scene is rendered (use scene.registerBeforeRender()).
+         */
+        update(): void;
+
+
+
+    }
+}
+
+declare module BABYLON {
+    class Skeleton implements IAnimatable {
+        name: string;
+        id: string;
+        bones: Bone[];
+        dimensionsAtRest: Vector3;
+        needInitialSkinMatrix: boolean;
+        animations: Array<Animation>;
+
+
+
+
+
+
+
+
+
+        /**
+         * An event triggered before computing the skeleton's matrices
+         * @type {BABYLON.Observable}
+         */
+        onBeforeComputeObservable: Observable<Skeleton>;
+        constructor(name: string, id: string, scene: Scene);
+        getTransformMatrices(mesh: AbstractMesh): Float32Array;
+        getScene(): Scene;
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+        * Get bone's index searching by name
+        * @param {string} name is bone's name to search for
+        * @return {number} Indice of the bone. Returns -1 if not found
+        */
+        getBoneIndexByName(name: string): number;
+        createAnimationRange(name: string, from: number, to: number): void;
+        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
+        getAnimationRange(name: string): Nullable<AnimationRange>;
+        /**
+         *  Returns as an Array, all AnimationRanges defined on this skeleton
+         */
+        getAnimationRanges(): Nullable<AnimationRange>[];
+        /**
+         *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
+         */
+        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
+        returnToRest(): void;
+
+        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
+
+
+
+
+        prepare(): void;
+        getAnimatables(): IAnimatable[];
+        clone(name: string, id: string): Skeleton;
+        enableBlending(blendingSpeed?: number): void;
+        dispose(): void;
+        serialize(): any;
+        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
+        computeAbsoluteTransforms(forceUpdate?: boolean): void;
+        getPoseMatrix(): Nullable<Matrix>;
+        sortBones(): void;
+
     }
 }
 
@@ -3968,6 +3968,359 @@ declare module BABYLON.Debug {
 
         update(): void;
         dispose(): void;
+    }
+}
+
+declare namespace BABYLON {
+    /**
+     * Represents the different options available during the creation of
+     * a Environment helper.
+     *
+     * This can control the default ground, skybox and image processing setup of your scene.
+     */
+    interface IEnvironmentHelperOptions {
+        /**
+         * Specifies wether or not to create a ground.
+         * True by default.
+         */
+        createGround: boolean;
+        /**
+         * Specifies the ground size.
+         * 15 by default.
+         */
+        groundSize: number;
+        /**
+         * The texture used on the ground for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        groundTexture: string | BaseTexture;
+        /**
+         * The color mixed in the ground texture by default.
+         * BabylonJS clearColor by default.
+         */
+        groundColor: Color3;
+        /**
+         * Specifies the ground opacity.
+         * 1 by default.
+         */
+        groundOpacity: number;
+        /**
+         * Enables the ground to receive shadows.
+         * True by default.
+         */
+        enableGroundShadow: boolean;
+        /**
+         * Helps preventing the shadow to be fully black on the ground.
+         * 0.5 by default.
+         */
+        groundShadowLevel: number;
+        /**
+         * Creates a mirror texture attach to the ground.
+         * false by default.
+         */
+        enableGroundMirror: boolean;
+        /**
+         * Specifies the ground mirror size ratio.
+         * 0.3 by default as the default kernel is 64.
+         */
+        groundMirrorSizeRatio: number;
+        /**
+         * Specifies the ground mirror blur kernel size.
+         * 64 by default.
+         */
+        groundMirrorBlurKernel: number;
+        /**
+         * Specifies the ground mirror visibility amount.
+         * 1 by default
+         */
+        groundMirrorAmount: number;
+        /**
+         * Specifies the ground mirror reflectance weight.
+         * This uses the standard weight of the background material to setup the fresnel effect
+         * of the mirror.
+         * 1 by default.
+         */
+        groundMirrorFresnelWeight: number;
+        /**
+         * Specifies the ground mirror Falloff distance.
+         * This can helps reducing the size of the reflection.
+         * 0 by Default.
+         */
+        groundMirrorFallOffDistance: number;
+        /**
+         * Specifies the ground mirror texture type.
+         * Unsigned Int by Default.
+         */
+        groundMirrorTextureType: number;
+        /**
+         * Specifies wether or not to create a skybox.
+         * True by default.
+         */
+        createSkybox: boolean;
+        /**
+         * Specifies the skybox size.
+         * 20 by default.
+         */
+        skyboxSize: number;
+        /**
+         * The texture used on the skybox for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        skyboxTexture: string | BaseTexture;
+        /**
+         * The color mixed in the skybox texture by default.
+         * BabylonJS clearColor by default.
+         */
+        skyboxColor: Color3;
+        /**
+         * The background rotation around the Y axis of the scene.
+         * This helps aligning the key lights of your scene with the background.
+         * 0 by default.
+         */
+        backgroundYRotation: number;
+        /**
+         * Compute automatically the size of the elements to best fit with the scene.
+         */
+        sizeAuto: boolean;
+        /**
+         * Default position of the rootMesh if autoSize is not true.
+         */
+        rootPosition: Vector3;
+        /**
+         * Sets up the image processing in the scene.
+         * true by default.
+         */
+        setupImageProcessing: boolean;
+        /**
+         * The texture used as your environment texture in the scene.
+         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        environmentTexture: string | BaseTexture;
+        /**
+         * The value of the exposure to apply to the scene.
+         * 0.6 by default if setupImageProcessing is true.
+         */
+        cameraExposure: number;
+        /**
+         * The value of the contrast to apply to the scene.
+         * 1.6 by default if setupImageProcessing is true.
+         */
+        cameraContrast: number;
+        /**
+         * Specifies wether or not tonemapping should be enabled in the scene.
+         * true by default if setupImageProcessing is true.
+         */
+        toneMappingEnabled: boolean;
+    }
+    /**
+     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
+     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
+     * It also helps with the default setup of your imageProcessing configuration.
+     */
+    class EnvironmentHelper {
+        /**
+         * Default ground texture URL.
+         */
+
+        /**
+         * Default skybox texture URL.
+         */
+
+        /**
+         * Default environment texture URL.
+         */
+
+        /**
+         * Creates the default options for the helper.
+         */
+
+
+        /**
+         * Gets the root mesh created by the helper.
+         */
+        readonly rootMesh: Mesh;
+
+        /**
+         * Gets the skybox created by the helper.
+         */
+        readonly skybox: Nullable<Mesh>;
+
+        /**
+         * Gets the skybox texture created by the helper.
+         */
+        readonly skyboxTexture: Nullable<BaseTexture>;
+
+        /**
+         * Gets the skybox material created by the helper.
+         */
+        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
+
+        /**
+         * Gets the ground mesh created by the helper.
+         */
+        readonly ground: Nullable<Mesh>;
+
+        /**
+         * Gets the ground texture created by the helper.
+         */
+        readonly groundTexture: Nullable<BaseTexture>;
+
+        /**
+         * Gets the ground mirror created by the helper.
+         */
+        readonly groundMirror: Nullable<MirrorTexture>;
+        /**
+         * Gets the ground mirror render list to helps pushing the meshes
+         * you wish in the ground reflection.
+         */
+        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
+
+        /**
+         * Gets the ground material created by the helper.
+         */
+        readonly groundMaterial: Nullable<BackgroundMaterial>;
+        /**
+         * Stores the creation options.
+         */
+
+
+        /**
+         * constructor
+         * @param options
+         * @param scene The scene to add the material to
+         */
+        constructor(options: Partial<IEnvironmentHelperOptions>, scene: BABYLON.Scene);
+        /**
+         * Updates the background according to the new options
+         * @param options
+         */
+        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
+        /**
+         * Sets the primary color of all the available elements.
+         * @param color
+         */
+        setMainColor(color: Color3): void;
+        /**
+         * Setup the image processing according to the specified options.
+         */
+
+        /**
+         * Setup the environment texture according to the specified options.
+         */
+
+        /**
+         * Setup the background according to the specified options.
+         */
+
+        /**
+         * Get the scene sizes according to the setup.
+         */
+
+        /**
+         * Setup the ground according to the specified options.
+         */
+
+        /**
+         * Setup the ground material according to the specified options.
+         */
+
+        /**
+         * Setup the ground diffuse texture according to the specified options.
+         */
+
+        /**
+         * Setup the ground mirror texture according to the specified options.
+         */
+
+        /**
+         * Setup the ground to receive the mirror texture.
+         */
+
+        /**
+         * Setup the skybox according to the specified options.
+         */
+
+        /**
+         * Setup the skybox material according to the specified options.
+         */
+
+        /**
+         * Setup the skybox reflection texture according to the specified options.
+         */
+
+        /**
+         * Dispose all the elements created by the Helper.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class KeyboardEventTypes {
+
+
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+
+
+
+
+
+
+
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -4808,69 +5161,6 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
-    class KeyboardEventTypes {
-
-
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-
-
-
-
-
-
-
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
-    }
-}
-
-declare module BABYLON {
     class StickValues {
         x: number;
         y: number;
@@ -5018,494 +5308,6 @@ declare module BABYLON {
         dPadLeft: number;
         dPadRight: number;
         update(): void;
-    }
-}
-
-declare namespace BABYLON {
-    /**
-     * Represents the different options available during the creation of
-     * a Environment helper.
-     *
-     * This can control the default ground, skybox and image processing setup of your scene.
-     */
-    interface IEnvironmentHelperOptions {
-        /**
-         * Specifies wether or not to create a ground.
-         * True by default.
-         */
-        createGround: boolean;
-        /**
-         * Specifies the ground size.
-         * 15 by default.
-         */
-        groundSize: number;
-        /**
-         * The texture used on the ground for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        groundTexture: string | BaseTexture;
-        /**
-         * The color mixed in the ground texture by default.
-         * BabylonJS clearColor by default.
-         */
-        groundColor: Color3;
-        /**
-         * Specifies the ground opacity.
-         * 1 by default.
-         */
-        groundOpacity: number;
-        /**
-         * Enables the ground to receive shadows.
-         * True by default.
-         */
-        enableGroundShadow: boolean;
-        /**
-         * Helps preventing the shadow to be fully black on the ground.
-         * 0.5 by default.
-         */
-        groundShadowLevel: number;
-        /**
-         * Creates a mirror texture attach to the ground.
-         * false by default.
-         */
-        enableGroundMirror: boolean;
-        /**
-         * Specifies the ground mirror size ratio.
-         * 0.3 by default as the default kernel is 64.
-         */
-        groundMirrorSizeRatio: number;
-        /**
-         * Specifies the ground mirror blur kernel size.
-         * 64 by default.
-         */
-        groundMirrorBlurKernel: number;
-        /**
-         * Specifies the ground mirror visibility amount.
-         * 1 by default
-         */
-        groundMirrorAmount: number;
-        /**
-         * Specifies the ground mirror reflectance weight.
-         * This uses the standard weight of the background material to setup the fresnel effect
-         * of the mirror.
-         * 1 by default.
-         */
-        groundMirrorFresnelWeight: number;
-        /**
-         * Specifies the ground mirror Falloff distance.
-         * This can helps reducing the size of the reflection.
-         * 0 by Default.
-         */
-        groundMirrorFallOffDistance: number;
-        /**
-         * Specifies the ground mirror texture type.
-         * Unsigned Int by Default.
-         */
-        groundMirrorTextureType: number;
-        /**
-         * Specifies wether or not to create a skybox.
-         * True by default.
-         */
-        createSkybox: boolean;
-        /**
-         * Specifies the skybox size.
-         * 20 by default.
-         */
-        skyboxSize: number;
-        /**
-         * The texture used on the skybox for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        skyboxTexture: string | BaseTexture;
-        /**
-         * The color mixed in the skybox texture by default.
-         * BabylonJS clearColor by default.
-         */
-        skyboxColor: Color3;
-        /**
-         * The background rotation around the Y axis of the scene.
-         * This helps aligning the key lights of your scene with the background.
-         * 0 by default.
-         */
-        backgroundYRotation: number;
-        /**
-         * Compute automatically the size of the elements to best fit with the scene.
-         */
-        sizeAuto: boolean;
-        /**
-         * Default position of the rootMesh if autoSize is not true.
-         */
-        rootPosition: Vector3;
-        /**
-         * Sets up the image processing in the scene.
-         * true by default.
-         */
-        setupImageProcessing: boolean;
-        /**
-         * The texture used as your environment texture in the scene.
-         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        environmentTexture: string | BaseTexture;
-        /**
-         * The value of the exposure to apply to the scene.
-         * 0.6 by default if setupImageProcessing is true.
-         */
-        cameraExposure: number;
-        /**
-         * The value of the contrast to apply to the scene.
-         * 1.6 by default if setupImageProcessing is true.
-         */
-        cameraContrast: number;
-        /**
-         * Specifies wether or not tonemapping should be enabled in the scene.
-         * true by default if setupImageProcessing is true.
-         */
-        toneMappingEnabled: boolean;
-    }
-    /**
-     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
-     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
-     * It also helps with the default setup of your imageProcessing configuration.
-     */
-    class EnvironmentHelper {
-        /**
-         * Default ground texture URL.
-         */
-
-        /**
-         * Default skybox texture URL.
-         */
-
-        /**
-         * Default environment texture URL.
-         */
-
-        /**
-         * Creates the default options for the helper.
-         */
-
-
-        /**
-         * Gets the root mesh created by the helper.
-         */
-        readonly rootMesh: Mesh;
-
-        /**
-         * Gets the skybox created by the helper.
-         */
-        readonly skybox: Nullable<Mesh>;
-
-        /**
-         * Gets the skybox texture created by the helper.
-         */
-        readonly skyboxTexture: Nullable<BaseTexture>;
-
-        /**
-         * Gets the skybox material created by the helper.
-         */
-        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
-
-        /**
-         * Gets the ground mesh created by the helper.
-         */
-        readonly ground: Nullable<Mesh>;
-
-        /**
-         * Gets the ground texture created by the helper.
-         */
-        readonly groundTexture: Nullable<BaseTexture>;
-
-        /**
-         * Gets the ground mirror created by the helper.
-         */
-        readonly groundMirror: Nullable<MirrorTexture>;
-        /**
-         * Gets the ground mirror render list to helps pushing the meshes
-         * you wish in the ground reflection.
-         */
-        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
-
-        /**
-         * Gets the ground material created by the helper.
-         */
-        readonly groundMaterial: Nullable<BackgroundMaterial>;
-        /**
-         * Stores the creation options.
-         */
-
-
-        /**
-         * constructor
-         * @param options
-         * @param scene The scene to add the material to
-         */
-        constructor(options: Partial<IEnvironmentHelperOptions>, scene: BABYLON.Scene);
-        /**
-         * Updates the background according to the new options
-         * @param options
-         */
-        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
-        /**
-         * Sets the primary color of all the available elements.
-         * @param color
-         */
-        setMainColor(color: Color3): void;
-        /**
-         * Setup the image processing according to the specified options.
-         */
-
-        /**
-         * Setup the environment texture according to the specified options.
-         */
-
-        /**
-         * Setup the background according to the specified options.
-         */
-
-        /**
-         * Get the scene sizes according to the setup.
-         */
-
-        /**
-         * Setup the ground according to the specified options.
-         */
-
-        /**
-         * Setup the ground material according to the specified options.
-         */
-
-        /**
-         * Setup the ground diffuse texture according to the specified options.
-         */
-
-        /**
-         * Setup the ground mirror texture according to the specified options.
-         */
-
-        /**
-         * Setup the ground to receive the mirror texture.
-         */
-
-        /**
-         * Setup the skybox according to the specified options.
-         */
-
-        /**
-         * Setup the skybox material according to the specified options.
-         */
-
-        /**
-         * Setup the skybox reflection texture according to the specified options.
-         */
-
-        /**
-         * Dispose all the elements created by the Helper.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class can be used to get instrumentation data from a Babylon engine
-     */
-    class EngineInstrumentation implements IDisposable {
-        engine: Engine;
-
-
-
-
-
-
-
-
-
-        /**
-         * Gets the perf counter used for GPU frame time
-         */
-        readonly gpuFrameTimeCounter: PerfCounter;
-        /**
-         * Gets the GPU frame time capture status
-         */
-        /**
-         * Enable or disable the GPU frame time capture
-         */
-        captureGPUFrameTime: boolean;
-        /**
-         * Gets the perf counter used for shader compilation time
-         */
-        readonly shaderCompilationTimeCounter: PerfCounter;
-        /**
-         * Gets the shader compilation time capture status
-         */
-        /**
-         * Enable or disable the shader compilation time capture
-         */
-        captureShaderCompilationTime: boolean;
-        constructor(engine: Engine);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class can be used to get instrumentation data from a Babylon engine
-     */
-    class SceneInstrumentation implements IDisposable {
-        scene: Scene;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /**
-         * Gets the perf counter used for active meshes evaluation time
-         */
-        readonly activeMeshesEvaluationTimeCounter: PerfCounter;
-        /**
-         * Gets the active meshes evaluation time capture status
-         */
-        /**
-         * Enable or disable the active meshes evaluation time capture
-         */
-        captureActiveMeshesEvaluationTime: boolean;
-        /**
-         * Gets the perf counter used for render targets render time
-         */
-        readonly renderTargetsRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the render targets render time capture status
-         */
-        /**
-         * Enable or disable the render targets render time capture
-         */
-        captureRenderTargetsRenderTime: boolean;
-        /**
-         * Gets the perf counter used for particles render time
-         */
-        readonly particlesRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the particles render time capture status
-         */
-        /**
-         * Enable or disable the particles render time capture
-         */
-        captureParticlesRenderTime: boolean;
-        /**
-         * Gets the perf counter used for sprites render time
-         */
-        readonly spritesRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the sprites render time capture status
-         */
-        /**
-         * Enable or disable the sprites render time capture
-         */
-        captureSpritesRenderTime: boolean;
-        /**
-         * Gets the perf counter used for physics time
-         */
-        readonly physicsTimeCounter: PerfCounter;
-        /**
-         * Gets the physics time capture status
-         */
-        /**
-         * Enable or disable the physics time capture
-         */
-        capturePhysicsTime: boolean;
-        /**
-         * Gets the perf counter used for animations time
-         */
-        readonly animationsTimeCounter: PerfCounter;
-        /**
-         * Gets the animations time capture status
-         */
-        /**
-         * Enable or disable the animations time capture
-         */
-        captureAnimationsTime: boolean;
-        /**
-         * Gets the perf counter used for frame time capture
-         */
-        readonly frameTimeCounter: PerfCounter;
-        /**
-         * Gets the frame time capture status
-         */
-        /**
-         * Enable or disable the frame time capture
-         */
-        captureFrameTime: boolean;
-        /**
-         * Gets the perf counter used for inter-frames time capture
-         */
-        readonly interFrameTimeCounter: PerfCounter;
-        /**
-         * Gets the inter-frames time capture status
-         */
-        /**
-         * Enable or disable the inter-frames time capture
-         */
-        captureInterFrameTime: boolean;
-        /**
-         * Gets the perf counter used for render time capture
-         */
-        readonly renderTimeCounter: PerfCounter;
-        /**
-         * Gets the render time capture status
-         */
-        /**
-         * Enable or disable the render time capture
-         */
-        captureRenderTime: boolean;
-        /**
-         * Gets the perf counter used for frame time capture
-         */
-        readonly drawCallsCounter: PerfCounter;
-        constructor(scene: Scene);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class _TimeToken {
-
-
-
-
     }
 }
 
@@ -6349,68 +6151,53 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
+    /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     */
+    class EngineInstrumentation implements IDisposable {
+        engine: Engine;
 
 
 
 
 
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
 
+
+
+
+        /**
+         * Gets the perf counter used for GPU frame time
+         */
+        readonly gpuFrameTimeCounter: PerfCounter;
+        /**
+         * Gets the GPU frame time capture status
+         */
+        /**
+         * Enable or disable the GPU frame time capture
+         */
+        captureGPUFrameTime: boolean;
+        /**
+         * Gets the perf counter used for shader compilation time
+         */
+        readonly shaderCompilationTimeCounter: PerfCounter;
+        /**
+         * Gets the shader compilation time capture status
+         */
+        /**
+         * Enable or disable the shader compilation time capture
+         */
+        captureShaderCompilationTime: boolean;
+        constructor(engine: Engine);
+        dispose(): void;
     }
 }
 
 declare module BABYLON {
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPluginFactory {
-        name: string;
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPlugin {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
-        canDirectLoad?: (data: string) => boolean;
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-    }
-    interface ISceneLoaderPluginAsync {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string, exception?: any) => void) => void;
-        canDirectLoad?: (data: string) => boolean;
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-    }
-    class SceneLoader {
-
-
-
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        static CleanBoneMatrixWeights: boolean;
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+    /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     */
+    class SceneInstrumentation implements IDisposable {
+        scene: Scene;
 
 
 
@@ -6418,39 +6205,146 @@ declare module BABYLON {
 
 
 
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void>, onProgress?: Nullable<(event: ProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: string): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+         * Gets the perf counter used for active meshes evaluation time
+         */
+        readonly activeMeshesEvaluationTimeCounter: PerfCounter;
         /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void, pluginExtension?: string): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+         * Gets the active meshes evaluation time capture status
+         */
         /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void, pluginExtension?: string): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+         * Enable or disable the active meshes evaluation time capture
+         */
+        captureActiveMeshesEvaluationTime: boolean;
+        /**
+         * Gets the perf counter used for render targets render time
+         */
+        readonly renderTargetsRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the render targets render time capture status
+         */
+        /**
+         * Enable or disable the render targets render time capture
+         */
+        captureRenderTargetsRenderTime: boolean;
+        /**
+         * Gets the perf counter used for particles render time
+         */
+        readonly particlesRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the particles render time capture status
+         */
+        /**
+         * Enable or disable the particles render time capture
+         */
+        captureParticlesRenderTime: boolean;
+        /**
+         * Gets the perf counter used for sprites render time
+         */
+        readonly spritesRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the sprites render time capture status
+         */
+        /**
+         * Enable or disable the sprites render time capture
+         */
+        captureSpritesRenderTime: boolean;
+        /**
+         * Gets the perf counter used for physics time
+         */
+        readonly physicsTimeCounter: PerfCounter;
+        /**
+         * Gets the physics time capture status
+         */
+        /**
+         * Enable or disable the physics time capture
+         */
+        capturePhysicsTime: boolean;
+        /**
+         * Gets the perf counter used for animations time
+         */
+        readonly animationsTimeCounter: PerfCounter;
+        /**
+         * Gets the animations time capture status
+         */
+        /**
+         * Enable or disable the animations time capture
+         */
+        captureAnimationsTime: boolean;
+        /**
+         * Gets the perf counter used for frame time capture
+         */
+        readonly frameTimeCounter: PerfCounter;
+        /**
+         * Gets the frame time capture status
+         */
+        /**
+         * Enable or disable the frame time capture
+         */
+        captureFrameTime: boolean;
+        /**
+         * Gets the perf counter used for inter-frames time capture
+         */
+        readonly interFrameTimeCounter: PerfCounter;
+        /**
+         * Gets the inter-frames time capture status
+         */
+        /**
+         * Enable or disable the inter-frames time capture
+         */
+        captureInterFrameTime: boolean;
+        /**
+         * Gets the perf counter used for render time capture
+         */
+        readonly renderTimeCounter: PerfCounter;
+        /**
+         * Gets the render time capture status
+         */
+        /**
+         * Enable or disable the render time capture
+         */
+        captureRenderTime: boolean;
+        /**
+         * Gets the perf counter used for frame time capture
+         */
+        readonly drawCallsCounter: PerfCounter;
+        constructor(scene: Scene);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class _TimeToken {
+
+
+
+
     }
 }
 
@@ -7856,6 +7750,112 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+
+
+
+
+
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+
+    }
+}
+
+declare module BABYLON {
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPluginFactory {
+        name: string;
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPlugin {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
+        canDirectLoad?: (data: string) => boolean;
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+    }
+    interface ISceneLoaderPluginAsync {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string, exception?: any) => void) => void;
+        canDirectLoad?: (data: string) => boolean;
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+    }
+    class SceneLoader {
+
+
+
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        static CleanBoneMatrixWeights: boolean;
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+
+
+
+
+
+
+
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void>, onProgress?: Nullable<(event: ProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: string): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void, pluginExtension?: string): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: (scene: Scene) => void, onProgress?: (event: ProgressEvent) => void, onError?: (scene: Scene, message: string, exception?: any) => void, pluginExtension?: string): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
     }
 }
 
@@ -10053,6 +10053,70 @@ declare module BABYLON {
         convertIncidentRadianceToIrradiance(): void;
         convertIrradianceToLambertianRadiance(): void;
         static getsphericalHarmonicsFromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
+    }
+}
+
+declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+
+
+
+
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasPositions: boolean;
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Nullable<FloatArray>): void;
+        getPositions(): Nullable<FloatArray>;
+        setNormals(data: Nullable<FloatArray>): void;
+        getNormals(): Nullable<FloatArray>;
+        setTangents(data: Nullable<FloatArray>): void;
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+
+
+
+
+
+
+
+
+
+
+        constructor(scene?: Nullable<Scene>);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -13405,10 +13469,10 @@ declare module BABYLON {
          */
         getAbsolutePivotPointToRef(result: Vector3): TransformNode;
         /**
-         * Defines the passed mesh as the parent of the current mesh.
-         * Returns the AbstractMesh.
+         * Defines the passed node as the parent of the current node.
+         * Returns the TransformNode.
          */
-        setParent(mesh: Nullable<AbstractMesh>): TransformNode;
+        setParent(node: Nullable<TransformNode>): TransformNode;
 
         readonly nonUniformScaling: boolean;
 
@@ -13588,70 +13652,6 @@ declare module BABYLON {
         static readonly MatricesWeightsKind: string;
         static readonly MatricesIndicesExtraKind: string;
         static readonly MatricesWeightsExtraKind: string;
-    }
-}
-
-declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-
-
-
-
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasPositions: boolean;
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Nullable<FloatArray>): void;
-        getPositions(): Nullable<FloatArray>;
-        setNormals(data: Nullable<FloatArray>): void;
-        getNormals(): Nullable<FloatArray>;
-        setTangents(data: Nullable<FloatArray>): void;
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-
-
-
-
-
-
-
-
-
-
-        constructor(scene?: Nullable<Scene>);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -14266,6 +14266,7 @@ declare module BABYLON {
          */
 
         getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostors(): Array<PhysicsImpostor>;
         getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
         getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
     }
@@ -14304,6 +14305,116 @@ declare module BABYLON {
         getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
         syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    enum PhysicsRadialImpulseFallof {
+        Constant = 0,
+        Linear = 1,
+    }
+    class PhysicsHelper {
+
+
+        constructor(scene: Scene);
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFallof): PhysicsRadialExplosionEvent | null;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFallof): PhysicsRadialExplosionEvent | null;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFallof): PhysicsGravitationalFieldEvent | null;
+    }
+    /***** Radial explosion *****/
+    class PhysicsRadialExplosionEvent {
+
+
+
+
+        constructor(scene: Scene);
+        /**
+         * Returns the data related to the radial explosion event (radialSphere & rays).
+         * @returns {PhysicsRadialExplosionEventData}
+         */
+        getData(): PhysicsRadialExplosionEventData;
+        /**
+         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
+         * @param impostor
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear
+         * @returns {Nullable<PhysicsForceAndContactPoint>}
+         */
+        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof): Nullable<PhysicsForceAndContactPoint>;
+        /**
+         * Disposes the radialSphere.
+         * @param {bolean} force
+         */
+        cleanup(force?: boolean): void;
+        /*** Helpers ***/
+
+
+    }
+    interface PhysicsRadialExplosionEventData {
+        radialSphere: Mesh;
+        rays: Array<Ray>;
+    }
+    interface PhysicsForceAndContactPoint {
+        force: Vector3;
+        contactPoint: Vector3;
+    }
+    /***** Gravitational Field *****/
+    class PhysicsGravitationalFieldEvent {
+
+
+
+
+
+
+
+
+
+        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFallof);
+        /**
+         * Returns the data related to the gravitational field event (radialSphere).
+         * @returns {PhysicsGravitationalFieldEventData}
+         */
+        getData(): PhysicsGravitationalFieldEventData;
+        /**
+         * Enables the gravitational field.
+         */
+        enable(): void;
+        /**
+         * Disables the gravitational field.
+         */
+        disable(): void;
+        /**
+         * Disposes the radialSphere.
+         * @param {bolean} force
+         */
+        cleanup(force?: boolean): void;
+
+    }
+    interface PhysicsGravitationalFieldEventData {
+        radialSphere: Mesh;
     }
 }
 
@@ -15498,89 +15609,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON.Internals {
-    class _AlphaState {
-
-
-
-
-
-
-
-
-        /**
-         * Initializes the state.
-         */
-        constructor();
-        readonly isDirty: boolean;
-        alphaBlend: boolean;
-        setAlphaBlendConstants(r: number, g: number, b: number, a: number): void;
-        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
-        setAlphaEquationParameters(rgb: number, alpha: number): void;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
-declare module BABYLON.Internals {
-    class _DepthCullingState {
-
-
-
-
-
-
-
-
-
-
-
-
-        /**
-         * Initializes the state.
-         */
-        constructor();
-        readonly isDirty: boolean;
-        zOffset: number;
-        cullFace: Nullable<number>;
-        cull: Nullable<boolean>;
-        depthFunc: Nullable<number>;
-        depthMask: boolean;
-        depthTest: boolean;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
-declare module BABYLON.Internals {
-    class _StencilState {
-
-
-
-
-
-
-
-
-
-
-
-
-        readonly isDirty: boolean;
-        stencilFunc: number;
-        stencilFuncRef: number;
-        stencilFuncMask: number;
-        stencilOpStencilFail: number;
-        stencilOpDepthFail: number;
-        stencilOpStencilDepthPass: number;
-        stencilMask: number;
-        stencilTest: boolean;
-        constructor();
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
-declare module BABYLON.Internals {
     class AndOrNotEvaluator {
         static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean;
 
@@ -16716,6 +16744,89 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON.Internals {
+    class _AlphaState {
+
+
+
+
+
+
+
+
+        /**
+         * Initializes the state.
+         */
+        constructor();
+        readonly isDirty: boolean;
+        alphaBlend: boolean;
+        setAlphaBlendConstants(r: number, g: number, b: number, a: number): void;
+        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
+        setAlphaEquationParameters(rgb: number, alpha: number): void;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON.Internals {
+    class _DepthCullingState {
+
+
+
+
+
+
+
+
+
+
+
+
+        /**
+         * Initializes the state.
+         */
+        constructor();
+        readonly isDirty: boolean;
+        zOffset: number;
+        cullFace: Nullable<number>;
+        cull: Nullable<boolean>;
+        depthFunc: Nullable<number>;
+        depthMask: boolean;
+        depthTest: boolean;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON.Internals {
+    class _StencilState {
+
+
+
+
+
+
+
+
+
+
+
+
+        readonly isDirty: boolean;
+        stencilFunc: number;
+        stencilFuncRef: number;
+        stencilFuncMask: number;
+        stencilOpStencilFail: number;
+        stencilOpDepthFail: number;
+        stencilOpStencilDepthPass: number;
+        stencilMask: number;
+        stencilTest: boolean;
+        constructor();
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
 declare module BABYLON {
     class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
         readonly name: string;
@@ -17022,6 +17133,218 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistortion: boolean;
+        readonly aspectRatio: number;
+        readonly aspectRatioFov: number;
+        readonly leftHMatrix: Matrix;
+        readonly rightHMatrix: Matrix;
+        readonly leftPreViewMatrix: Matrix;
+        readonly rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+
+declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    interface VRTeleportationOptions {
+        floorMeshName?: string;
+    }
+    class VRExperienceHelper {
+        webVROptions: WebVROptions;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        onEnteringVR: () => void;
+        onExitingVR: () => void;
+        onControllerMeshLoaded: (controller: WebVRController) => void;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        meshSelectionPredicate: (mesh: BABYLON.Mesh) => boolean;
+        readonly deviceOrientationCamera: DeviceOrientationCamera;
+        readonly currentVRCamera: FreeCamera;
+        readonly webVRCamera: WebVRFreeCamera;
+        readonly vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
+        constructor(scene: Scene, webVROptions?: WebVROptions);
+
+
+
+
+
+
+        /**
+         * Attempt to enter VR. If a headset is connected and ready, will request present on that.
+         * Otherwise, will use the fullscreen API.
+         */
+        enterVR(): void;
+        /**
+         * Attempt to exit VR, or fullscreen.
+         */
+        exitVR(): void;
+        position: Vector3;
+        enableTeleportation(vrTeleportationOptions?: VRTeleportationOptions): void;
+
+
+
+
+
+
+
+
+
+        dispose(): void;
+        getClassName(): string;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var VRDisplay: any;
+declare var VRFrameData: any;
+declare module BABYLON {
+    /**
+     * This is a copy of VRPose.
+     * IMPORTANT!! The data is right-hand data.
+     * @export
+     * @interface DevicePose
+     */
+    interface DevicePose {
+        readonly position?: Float32Array;
+        readonly linearVelocity?: Float32Array;
+        readonly linearAcceleration?: Float32Array;
+        readonly orientation?: Float32Array;
+        readonly angularVelocity?: Float32Array;
+        readonly angularAcceleration?: Float32Array;
+    }
+    interface PoseControlled {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        devicePosition?: Vector3;
+        deviceRotationQuaternion: Quaternion;
+        rawPose: Nullable<DevicePose>;
+        deviceScaleFactor: number;
+        updateFromDevice(poseData: DevicePose): void;
+    }
+    interface WebVROptions {
+        trackPosition?: boolean;
+        positionScale?: number;
+        displayName?: string;
+        controllerMeshes?: boolean;
+        defaultLightingOnControllers?: boolean;
+        useCustomVRButton?: boolean;
+        customVRButton?: HTMLButtonElement;
+    }
+    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
+
+
+        rawPose: Nullable<DevicePose>;
+
+        devicePosition: Vector3;
+        deviceRotationQuaternion: Quaternion;
+        deviceScaleFactor: number;
+        controllers: Array<WebVRController>;
+        onControllersAttachedObservable: Observable<WebVRController[]>;
+        onControllerMeshLoadedObservable: Observable<WebVRController>;
+        rigParenting: boolean;
+
+        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
+        dispose(): void;
+        getControllerByName(name: string): Nullable<WebVRController>;
+
+        readonly leftController: Nullable<WebVRController>;
+
+        readonly rightController: Nullable<WebVRController>;
+        getForwardRay(length?: number): Ray;
+
+        updateFromDevice(poseData: DevicePose): void;
+        /**
+         * WebVR's attach control will start broadcasting frames to the device.
+         * Note that in certain browsers (chrome for example) this function must be called
+         * within a user-interaction callback. Example:
+         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
+         *
+         * @param {HTMLElement} element
+         * @param {boolean} [noPreventDefault]
+         *
+         * @memberOf WebVRFreeCamera
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        getClassName(): string;
+        resetToCurrentRotation(): void;
+
+        /**
+         * This function is called by the two RIG cameras.
+         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
+         */
+
+
+
+
+        initControllers(): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Nullable<Gamepad>;
@@ -17244,216 +17567,6 @@ declare module BABYLON {
         detachControl(element: Nullable<HTMLElement>): void;
         getClassName(): string;
         getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class VRCameraMetrics {
-        hResolution: number;
-        vResolution: number;
-        hScreenSize: number;
-        vScreenSize: number;
-        vScreenCenter: number;
-        eyeToScreenDistance: number;
-        lensSeparationDistance: number;
-        interpupillaryDistance: number;
-        distortionK: number[];
-        chromaAbCorrection: number[];
-        postProcessScaleFactor: number;
-        lensCenterOffset: number;
-        compensateDistortion: boolean;
-        readonly aspectRatio: number;
-        readonly aspectRatioFov: number;
-        readonly leftHMatrix: Matrix;
-        readonly rightHMatrix: Matrix;
-        readonly leftPreViewMatrix: Matrix;
-        readonly rightPreViewMatrix: Matrix;
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-
-declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    interface VRTeleportationOptions {
-        floorMeshName?: string;
-    }
-    class VRExperienceHelper {
-        webVROptions: WebVROptions;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        onEnteringVR: () => void;
-        onExitingVR: () => void;
-        onControllerMeshLoaded: (controller: WebVRController) => void;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        meshSelectionPredicate: (mesh: BABYLON.Mesh) => boolean;
-        readonly deviceOrientationCamera: DeviceOrientationCamera;
-        readonly currentVRCamera: FreeCamera;
-        readonly webVRCamera: WebVRFreeCamera;
-        readonly vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
-        constructor(scene: Scene, webVROptions?: WebVROptions);
-
-
-
-
-
-
-        /**
-         * Attempt to enter VR. If a headset is connected and ready, will request present on that.
-         * Otherwise, will use the fullscreen API.
-         */
-        enterVR(): void;
-        /**
-         * Attempt to exit VR, or fullscreen.
-         */
-        exitVR(): void;
-        position: Vector3;
-        enableTeleportation(vrTeleportationOptions?: VRTeleportationOptions): void;
-
-
-
-
-
-
-
-
-        dispose(): void;
-        getClassName(): string;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var VRDisplay: any;
-declare var VRFrameData: any;
-declare module BABYLON {
-    /**
-     * This is a copy of VRPose.
-     * IMPORTANT!! The data is right-hand data.
-     * @export
-     * @interface DevicePose
-     */
-    interface DevicePose {
-        readonly position?: Float32Array;
-        readonly linearVelocity?: Float32Array;
-        readonly linearAcceleration?: Float32Array;
-        readonly orientation?: Float32Array;
-        readonly angularVelocity?: Float32Array;
-        readonly angularAcceleration?: Float32Array;
-    }
-    interface PoseControlled {
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        devicePosition?: Vector3;
-        deviceRotationQuaternion: Quaternion;
-        rawPose: Nullable<DevicePose>;
-        deviceScaleFactor: number;
-        updateFromDevice(poseData: DevicePose): void;
-    }
-    interface WebVROptions {
-        trackPosition?: boolean;
-        positionScale?: number;
-        displayName?: string;
-        controllerMeshes?: boolean;
-        defaultLightingOnControllers?: boolean;
-        useCustomVRButton?: boolean;
-        customVRButton?: HTMLButtonElement;
-    }
-    class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-
-
-        rawPose: Nullable<DevicePose>;
-
-        devicePosition: Vector3;
-        deviceRotationQuaternion: Quaternion;
-        deviceScaleFactor: number;
-        controllers: Array<WebVRController>;
-        onControllersAttachedObservable: Observable<WebVRController[]>;
-        onControllerMeshLoadedObservable: Observable<WebVRController>;
-        rigParenting: boolean;
-
-        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
-        dispose(): void;
-        getControllerByName(name: string): Nullable<WebVRController>;
-
-        readonly leftController: Nullable<WebVRController>;
-
-        readonly rightController: Nullable<WebVRController>;
-        getForwardRay(length?: number): Ray;
-
-        updateFromDevice(poseData: DevicePose): void;
-        /**
-         * WebVR's attach control will start broadcasting frames to the device.
-         * Note that in certain browsers (chrome for example) this function must be called
-         * within a user-interaction callback. Example:
-         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
-         *
-         * @param {HTMLElement} element
-         * @param {boolean} [noPreventDefault]
-         *
-         * @memberOf WebVRFreeCamera
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        getClassName(): string;
-        resetToCurrentRotation(): void;
-
-        /**
-         * This function is called by the two RIG cameras.
-         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
-         */
-
-
-
-
-        initControllers(): void;
     }
 }
 
@@ -17849,7 +17962,302 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON.Internals {
+declare namespace BABYLON {
+    /**
+     * Background material used to create an efficient environement around your scene.
+     */
+    class BackgroundMaterial extends BABYLON.PushMaterial {
+        /**
+         * Standard reflectance value at parallel view angle.
+         */
+        static standardReflectance0: number;
+        /**
+         * Standard reflectance value at grazing angle.
+         */
+        static standardReflectance90: number;
+        /**
+         * Key light Color (multiply against the R channel of the environement texture)
+         */
+
+        primaryColor: Color3;
+        /**
+         * Key light Level (allowing HDR output of the background)
+         */
+
+        primaryLevel: float;
+        /**
+         * Secondary light Color (multiply against the G channel of the environement texture)
+         */
+
+        secondaryColor: Color3;
+        /**
+         * Secondary light Level (allowing HDR output of the background)
+         */
+
+        secondaryLevel: float;
+        /**
+         * Tertiary light Color (multiply against the B channel of the environement texture)
+         */
+
+        tertiaryColor: Color3;
+        /**
+         * Tertiary light Level (allowing HDR output of the background)
+         */
+
+        tertiaryLevel: float;
+        /**
+         * Reflection Texture used in the material.
+         * Should be author in a specific way for the best result (refer to the documentation).
+         */
+
+        reflectionTexture: Nullable<BaseTexture>;
+        /**
+         * Reflection Texture level of blur.
+         *
+         * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the
+         * texture twice.
+         */
+
+        reflectionBlur: float;
+        /**
+         * Diffuse Texture used in the material.
+         * Should be author in a specific way for the best result (refer to the documentation).
+         */
+
+        diffuseTexture: Nullable<BaseTexture>;
+        /**
+         * Specify the list of lights casting shadow on the material.
+         * All scene shadow lights will be included if null.
+         */
+
+        shadowLights: Nullable<IShadowLight[]>;
+        /**
+         * For the lights having a blurred shadow generator, this can add a second blur pass in order to reach
+         * soft lighting on the background.
+         */
+
+        shadowBlurScale: int;
+        /**
+         * Helps adjusting the shadow to a softer level if required.
+         * 0 means black shadows and 1 means no shadows.
+         */
+
+        shadowLevel: float;
+        /**
+         * In case of opacity Fresnel or reflection falloff, this is use as a scene center.
+         * It is usually zero but might be interesting to modify according to your setup.
+         */
+
+        sceneCenter: Vector3;
+        /**
+         * This helps specifying that the material is falling off to the sky box at grazing angle.
+         * This helps ensuring a nice transition when the camera goes under the ground.
+         */
+
+        opacityFresnel: boolean;
+        /**
+         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle.
+         * This helps adding a mirror texture on the ground.
+         */
+
+        reflectionFresnel: boolean;
+        /**
+         * This helps specifying the falloff radius off the reflection texture from the sceneCenter.
+         * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
+         */
+
+        reflectionFalloffDistance: number;
+        /**
+         * This specifies the weight of the reflection against the background in case of reflection Fresnel.
+         */
+
+        reflectionAmount: number;
+        /**
+         * This specifies the weight of the reflection at grazing angle.
+         */
+
+        reflectionReflectance0: number;
+        /**
+         * This specifies the weight of the reflection at a perpendicular point of view.
+         */
+
+        reflectionReflectance90: number;
+        /**
+         * Sets the reflection reflectance fresnel values according to the default standard
+         * empirically know to work well :-)
+         */
+        reflectionStandardFresnelWeight: number;
+        /**
+         * Helps to directly use the maps channels instead of their level.
+         */
+
+        useRGBColor: boolean;
+        /**
+         * This helps reducing the banding effect that could occur on the background.
+         */
+
+        enableNoise: boolean;
+        /**
+         * Number of Simultaneous lights allowed on the material.
+         */
+
+        maxSimultaneousLights: int;
+        /**
+         * Default configuration related to image processing available in the Background Material.
+         */
+
+        /**
+         * Keep track of the image processing observer to allow dispose and replace.
+         */
+
+        /**
+         * Attaches a new image processing configuration to the PBR Material.
+         * @param configuration (if null the scene configuration will be use)
+         */
+
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        /**
+         * Sets the Default image processing configuration used either in the this material.
+         *
+         * If sets to null, the scene one is in use.
+         */
+        imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
+        /**
+         * Sets wether the color curves effect is enabled.
+         */
+        cameraColorCurvesEnabled: boolean;
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        cameraColorGradingEnabled: boolean;
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        cameraToneMappingEnabled: boolean;
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        cameraExposure: float;
+        /**
+         * Gets The camera contrast used on this material.
+         */
+        /**
+         * Sets The camera contrast used on this material.
+         */
+        cameraContrast: float;
+        /**
+         * Gets the Color Grading 2D Lookup Texture.
+         */
+        /**
+         * Sets the Color Grading 2D Lookup Texture.
+         */
+        cameraColorGradingTexture: Nullable<BaseTexture>;
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        cameraColorCurves: Nullable<ColorCurves>;
+
+
+        /**
+         * constructor
+         * @param name The name of the material
+         * @param scene The scene to add the material to
+         */
+        constructor(name: string, scene: BABYLON.Scene);
+        /**
+         * The entire material has been created in order to prevent overdraw.
+         * @returns false
+         */
+        needAlphaTesting(): boolean;
+        /**
+         * The entire material has been created in order to prevent overdraw.
+         * @returns true if blending is enable
+         */
+        needAlphaBlending(): boolean;
+        /**
+         * Checks wether the material is ready to be rendered for a given mesh.
+         * @param mesh The mesh to render
+         * @param subMesh The submesh to check against
+         * @param useInstances Specify wether or not the material is used with instances
+         */
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        /**
+         * Build the uniform buffer used in the material.
+         */
+        buildUniformLayout(): void;
+        /**
+         * Unbind the material.
+         */
+        unbind(): void;
+        /**
+         * Bind only the world matrix to the material.
+         * @param world The world matrix to bind.
+         */
+        bindOnlyWorldMatrix(world: Matrix): void;
+        /**
+         * Bind the material for a dedicated submeh (every used meshes will be considered opaque).
+         * @param world The world matrix to bind.
+         * @param subMesh The submesh to bind for.
+         */
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Dispose the material.
+         * @forceDisposeEffect Force disposal of the associated effect.
+         * @forceDisposeTextures Force disposal of the associated textures.
+         */
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        /**
+         * Clones the material.
+         * @name The cloned name.
+         * @returns The cloned material.
+         */
+        clone(name: string): BackgroundMaterial;
+        /**
+         * Serializes the current material to its JSON representation.
+         * @returns The JSON representation.
+         */
+        serialize(): any;
+        /**
+         * Gets the class name of the material
+         * @returns "BackgroundMaterial"
+         */
+        getClassName(): string;
+        /**
+         * Parse a JSON input to create back a background material.
+         * @param source
+         * @param scene
+         * @param rootUrl
+         * @returns the instantiated BackgroundMaterial.
+         */
+        static Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial;
+    }
 }
 
 declare module BABYLON {
@@ -18665,304 +19073,6 @@ declare module BABYLON {
     }
 }
 
-declare namespace BABYLON {
-    /**
-     * Background material used to create an efficient environement around your scene.
-     */
-    class BackgroundMaterial extends BABYLON.PushMaterial {
-        /**
-         * Standard reflectance value at parallel view angle.
-         */
-        static standardReflectance0: number;
-        /**
-         * Standard reflectance value at grazing angle.
-         */
-        static standardReflectance90: number;
-        /**
-         * Key light Color (multiply against the R channel of the environement texture)
-         */
-
-        primaryColor: Color3;
-        /**
-         * Key light Level (allowing HDR output of the background)
-         */
-
-        primaryLevel: float;
-        /**
-         * Secondary light Color (multiply against the G channel of the environement texture)
-         */
-
-        secondaryColor: Color3;
-        /**
-         * Secondary light Level (allowing HDR output of the background)
-         */
-
-        secondaryLevel: float;
-        /**
-         * Tertiary light Color (multiply against the B channel of the environement texture)
-         */
-
-        tertiaryColor: Color3;
-        /**
-         * Tertiary light Level (allowing HDR output of the background)
-         */
-
-        tertiaryLevel: float;
-        /**
-         * Reflection Texture used in the material.
-         * Should be author in a specific way for the best result (refer to the documentation).
-         */
-
-        reflectionTexture: Nullable<BaseTexture>;
-        /**
-         * Reflection Texture level of blur.
-         *
-         * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the
-         * texture twice.
-         */
-
-        reflectionBlur: float;
-        /**
-         * Diffuse Texture used in the material.
-         * Should be author in a specific way for the best result (refer to the documentation).
-         */
-
-        diffuseTexture: Nullable<BaseTexture>;
-        /**
-         * Specify the list of lights casting shadow on the material.
-         * All scene shadow lights will be included if null.
-         */
-
-        shadowLights: Nullable<IShadowLight[]>;
-        /**
-         * For the lights having a blurred shadow generator, this can add a second blur pass in order to reach
-         * soft lighting on the background.
-         */
-
-        shadowBlurScale: int;
-        /**
-         * Helps adjusting the shadow to a softer level if required.
-         * 0 means black shadows and 1 means no shadows.
-         */
-
-        shadowLevel: float;
-        /**
-         * In case of opacity Fresnel or reflection falloff, this is use as a scene center.
-         * It is usually zero but might be interesting to modify according to your setup.
-         */
-
-        sceneCenter: Vector3;
-        /**
-         * This helps specifying that the material is falling off to the sky box at grazing angle.
-         * This helps ensuring a nice transition when the camera goes under the ground.
-         */
-
-        opacityFresnel: boolean;
-        /**
-         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle.
-         * This helps adding a mirror texture on the ground.
-         */
-
-        reflectionFresnel: boolean;
-        /**
-         * This helps specifying the falloff radius off the reflection texture from the sceneCenter.
-         * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
-         */
-
-        reflectionFalloffDistance: number;
-        /**
-         * This specifies the weight of the reflection against the background in case of reflection Fresnel.
-         */
-
-        reflectionAmount: number;
-        /**
-         * This specifies the weight of the reflection at grazing angle.
-         */
-
-        reflectionReflectance0: number;
-        /**
-         * This specifies the weight of the reflection at a perpendicular point of view.
-         */
-
-        reflectionReflectance90: number;
-        /**
-         * Sets the reflection reflectance fresnel values according to the default standard
-         * empirically know to work well :-)
-         */
-        reflectionStandardFresnelWeight: number;
-        /**
-         * Helps to directly use the maps channels instead of their level.
-         */
-
-        useRGBColor: boolean;
-        /**
-         * This helps reducing the banding effect that could occur on the background.
-         */
-
-        enableNoise: boolean;
-        /**
-         * Number of Simultaneous lights allowed on the material.
-         */
-
-        maxSimultaneousLights: int;
-        /**
-         * Default configuration related to image processing available in the Background Material.
-         */
-
-        /**
-         * Keep track of the image processing observer to allow dispose and replace.
-         */
-
-        /**
-         * Attaches a new image processing configuration to the PBR Material.
-         * @param configuration (if null the scene configuration will be use)
-         */
-
-        /**
-         * Gets the image processing configuration used either in this material.
-         */
-        /**
-         * Sets the Default image processing configuration used either in the this material.
-         *
-         * If sets to null, the scene one is in use.
-         */
-        imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
-        /**
-         * Gets wether the color curves effect is enabled.
-         */
-        /**
-         * Sets wether the color curves effect is enabled.
-         */
-        cameraColorCurvesEnabled: boolean;
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        cameraColorGradingEnabled: boolean;
-        /**
-         * Gets wether tonemapping is enabled or not.
-         */
-        /**
-         * Sets wether tonemapping is enabled or not
-         */
-        cameraToneMappingEnabled: boolean;
-        /**
-         * The camera exposure used on this material.
-         * This property is here and not in the camera to allow controlling exposure without full screen post process.
-         * This corresponds to a photographic exposure.
-         */
-        /**
-         * The camera exposure used on this material.
-         * This property is here and not in the camera to allow controlling exposure without full screen post process.
-         * This corresponds to a photographic exposure.
-         */
-        cameraExposure: float;
-        /**
-         * Gets The camera contrast used on this material.
-         */
-        /**
-         * Sets The camera contrast used on this material.
-         */
-        cameraContrast: float;
-        /**
-         * Gets the Color Grading 2D Lookup Texture.
-         */
-        /**
-         * Sets the Color Grading 2D Lookup Texture.
-         */
-        cameraColorGradingTexture: Nullable<BaseTexture>;
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        cameraColorCurves: Nullable<ColorCurves>;
-
-
-        /**
-         * constructor
-         * @param name The name of the material
-         * @param scene The scene to add the material to
-         */
-        constructor(name: string, scene: BABYLON.Scene);
-        /**
-         * The entire material has been created in order to prevent overdraw.
-         * @returns false
-         */
-        needAlphaTesting(): boolean;
-        /**
-         * The entire material has been created in order to prevent overdraw.
-         * @returns true if blending is enable
-         */
-        needAlphaBlending(): boolean;
-        /**
-         * Checks wether the material is ready to be rendered for a given mesh.
-         * @param mesh The mesh to render
-         * @param subMesh The submesh to check against
-         * @param useInstances Specify wether or not the material is used with instances
-         */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
-        /**
-         * Build the uniform buffer used in the material.
-         */
-        buildUniformLayout(): void;
-        /**
-         * Unbind the material.
-         */
-        unbind(): void;
-        /**
-         * Bind only the world matrix to the material.
-         * @param world The world matrix to bind.
-         */
-        bindOnlyWorldMatrix(world: Matrix): void;
-        /**
-         * Bind the material for a dedicated submeh (every used meshes will be considered opaque).
-         * @param world The world matrix to bind.
-         * @param subMesh The submesh to bind for.
-         */
-        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
-        /**
-         * Dispose the material.
-         * @forceDisposeEffect Force disposal of the associated effect.
-         * @forceDisposeTextures Force disposal of the associated textures.
-         */
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
-        /**
-         * Clones the material.
-         * @name The cloned name.
-         * @returns The cloned material.
-         */
-        clone(name: string): BackgroundMaterial;
-        /**
-         * Serializes the current material to its JSON representation.
-         * @returns The JSON representation.
-         */
-        serialize(): any;
-        /**
-         * Gets the class name of the material
-         * @returns "BackgroundMaterial"
-         */
-        getClassName(): string;
-        /**
-         * Parse a JSON input to create back a background material.
-         * @param source
-         * @param scene
-         * @param rootUrl
-         * @returns the instantiated BackgroundMaterial.
-         */
-        static Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial;
-    }
-}
-
 declare module BABYLON {
     class BaseTexture {
         static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
@@ -19587,6 +19697,9 @@ declare module BABYLON {
             deviceId: string;
         }): void;
     }
+}
+
+declare module BABYLON.Internals {
 }
 
 declare module BABYLON {
