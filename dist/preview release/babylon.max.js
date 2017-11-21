@@ -5178,7 +5178,8 @@ var BABYLON;
                     case 3: // FresnelParameters
                     case 4: // Vector2
                     case 5: // Vector3
-                    case 7:// Color Curves
+                    case 7: // Color Curves
+                    case 10:// Quaternion
                         destination[property] = instanciate ? sourceProperty : sourceProperty.clone();
                         break;
                 }
@@ -5305,6 +5306,10 @@ var BABYLON;
         return generateSerializableMember(9, sourceName); // image processing
     }
     BABYLON.serializeAsImageProcessingConfiguration = serializeAsImageProcessingConfiguration;
+    function serializeAsQuaternion(sourceName) {
+        return generateSerializableMember(10, sourceName); // quaternion member
+    }
+    BABYLON.serializeAsQuaternion = serializeAsQuaternion;
     var SerializationHelper = /** @class */ (function () {
         function SerializationHelper() {
         }
@@ -13047,6 +13052,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.boundingInfo.js.map
 
 
+
 var BABYLON;
 (function (BABYLON) {
     var TransformNode = /** @class */ (function (_super) {
@@ -13917,6 +13923,27 @@ var BABYLON;
         TransformNode.BILLBOARDMODE_ALL = 7;
         TransformNode._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         TransformNode._rotationAxisCache = new BABYLON.Quaternion();
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], TransformNode.prototype, "_rotation", void 0);
+        __decorate([
+            BABYLON.serializeAsQuaternion()
+        ], TransformNode.prototype, "_rotationQuaternion", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], TransformNode.prototype, "_scaling", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], TransformNode.prototype, "billboardMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], TransformNode.prototype, "scalingDeterminant", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], TransformNode.prototype, "infiniteDistance", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], TransformNode.prototype, "position", void 0);
         return TransformNode;
     }(BABYLON.Node));
     BABYLON.TransformNode = TransformNode;
@@ -15632,6 +15659,10 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.abstractMesh.js.map
+
+
+
+
 
 
 
@@ -67363,14 +67394,13 @@ var BABYLON;
                 return null;
             }
             var event = new PhysicsRadialExplosionEvent(this._scene);
-            for (var i = 0; i < impostors.length; ++i) {
-                var impostor = impostors[i];
+            impostors.forEach(function (impostor) {
                 var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
-                if (impostorForceAndContactPoint === null) {
-                    continue;
+                if (!impostorForceAndContactPoint) {
+                    return;
                 }
                 impostor.applyImpulse(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
-            }
+            });
             event.cleanup(false);
             return event;
         };
@@ -67391,14 +67421,13 @@ var BABYLON;
                 return null;
             }
             var event = new PhysicsRadialExplosionEvent(this._scene);
-            for (var i = 0; i < impostors.length; ++i) {
-                var impostor = impostors[i];
+            impostors.forEach(function (impostor) {
                 var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin, radius, strength, falloff);
-                if (impostorForceAndContactPoint === null) {
-                    continue;
+                if (!impostorForceAndContactPoint) {
+                    return;
                 }
                 impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
-            }
+            });
             event.cleanup(false);
             return event;
         };
@@ -67500,7 +67529,7 @@ var BABYLON;
         /*** Helpers ***/
         PhysicsRadialExplosionEvent.prototype._prepareRadialSphere = function () {
             if (!this._radialSphere) {
-                this._radialSphere = BABYLON.Mesh.CreateSphere("radialSphere", 32, 1, this._scene);
+                this._radialSphere = BABYLON.MeshBuilder.CreateSphere("radialSphere", { segments: 32, diameter: 1 }, this._scene);
                 this._radialSphere.isVisible = false;
             }
         };
@@ -67577,7 +67606,9 @@ var BABYLON;
             }
             else {
                 var radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._radius, this._strength * -1, this._falloff);
-                this._radialSphere = radialExplosionEvent.getData().radialSphere.clone('radialSphereClone');
+                if (radialExplosionEvent) {
+                    this._radialSphere = radialExplosionEvent.getData().radialSphere.clone('radialSphereClone');
+                }
             }
         };
         return PhysicsGravitationalFieldEvent;
