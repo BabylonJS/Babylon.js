@@ -240,8 +240,8 @@ module BABYLON {
             this.onMeshUpdated(mesh);
         }
 
-        public onMeshUpdated = (mesh: TransformNode) => {
-            this._addUpdateMeshesList[mesh.uniqueId] = CollisionCoordinatorWorker.SerializeMesh(mesh as AbstractMesh);
+        public onMeshUpdated = (transformNode: TransformNode) => {
+            this._addUpdateMeshesList[transformNode.uniqueId] = CollisionCoordinatorWorker.SerializeMesh(transformNode as AbstractMesh);
         }
 
         public onMeshRemoved(mesh: AbstractMesh) {
