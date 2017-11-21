@@ -33285,6 +33285,9 @@ var BABYLON;
             }
             this._texture = texture;
             var callback = function (text) {
+                if (typeof text !== "string") {
+                    return;
+                }
                 var data = null;
                 var tempData = null;
                 var line;

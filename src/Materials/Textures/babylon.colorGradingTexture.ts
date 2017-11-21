@@ -96,7 +96,7 @@ module BABYLON {
                 var tempData: Nullable<Float32Array> = null;
 
                 var line: string;
-                var lines = (<string>text).split('\n');
+                var lines = text.split('\n');
                 var size = 0, pixelIndexW = 0, pixelIndexH = 0, pixelIndexSlice = 0;
                 var maxColor = 0;
 

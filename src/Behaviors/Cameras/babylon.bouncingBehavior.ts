@@ -77,7 +77,7 @@ module BABYLON {
         // Connection
         private _attachedCamera: Nullable<ArcRotateCamera>;
 		private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;	
-		private _onMeshTargetChangedObserver: Nullable<Observer<AbstractMesh>>;
+		private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<AbstractMesh>>>;
 
 		public init(): void {
 			// Do notihng
