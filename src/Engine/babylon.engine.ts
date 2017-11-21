@@ -173,8 +173,8 @@
             }
         };
 
-        const onerror = (request: XMLHttpRequest, exception: any) => {
-            if (onErrorCallBack) {
+        const onerror = (request?: XMLHttpRequest, exception?: any) => {
+            if (onErrorCallBack && request) {
                 onErrorCallBack(request.status + " " + request.statusText, exception);
             }
         };
@@ -563,7 +563,7 @@
         }
 
         public static get Version(): string {
-            return "3.1-beta-5";
+            return "3.1-beta-6";
         }
 
         // Updatable statics so stick with vars here
@@ -2986,7 +2986,7 @@
          * @returns {WebGLTexture} for assignment back into BABYLON.Texture
          */
         public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null,
+            onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
             buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
@@ -3021,23 +3021,31 @@
                 texture._buffer = buffer;
             }
 
-            if (onLoad) {
-                texture.onLoadedObservable.add(onLoad);
+            let onLoadObserver: Nullable<Observer<InternalTexture>> = null;
+            if (onLoad && !fallBack) {
+                onLoadObserver = texture.onLoadedObservable.add(onLoad);
             }
+
             if (!fallBack) this._internalTexturesCache.push(texture);
 
-            var onerror = () => {
+            var onerror = (message?: string, exception?: any) => {
                 if (scene) {
                     scene._removePendingData(texture);
+                }
+
+                if (onLoadObserver) {
+                    texture.onLoadedObservable.remove(onLoadObserver);
                 }
 
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
                     this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if ((isTGA || isDDS) && BABYLON.Tools.UseFallbackTexture) {
+                } else if (BABYLON.Tools.UseFallbackTexture) {
                     this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if (onError) {
-                    onError();
+                }
+
+                if (onError) {
+                    onError(message || "Unknown error", exception);
                 }
             };
 
@@ -3083,7 +3091,9 @@
                         if (callback) {
                             callback(data);
                         }
-                    }, undefined, scene ? scene.database : undefined, true, onerror);
+                    }, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
+                        onerror("Unable to load " + (request ? request.responseURL : url, exception));
+                    });
                 } else {
                     if (callback) {
                         callback(buffer);
@@ -3930,8 +3940,8 @@
                 isDDS = (extension === ".dds");
             }
 
-            let onerror = (request: XMLHttpRequest, exception: any) => {
-                if (onError) {
+            let onerror = (request?: XMLHttpRequest, exception?: any) => {
+                if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             }
@@ -4057,7 +4067,7 @@
                     if (!noMipmap) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
-                    
+
                     this.setCubeMapTextureParams(gl, !noMipmap);
 
                     texture.width = width;
@@ -4218,9 +4228,9 @@
             texture.url = url;
             this._internalTexturesCache.push(texture);
 
-            var onerror = (request: XMLHttpRequest, exception: any) => {
+            var onerror = (request?: XMLHttpRequest, exception?: any) => {
                 scene._removePendingData(texture);
-                if (onError) {
+                if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             };
@@ -4993,13 +5003,13 @@
 
         public attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void {
             if (this._renderingCanvas) {
-                this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+                this._renderingCanvas.addEventListener("webglcontextlost", <any>callback, false);
             }
         }
 
         public attachContextRestoredEvent(callback: ((event: WebGLContextEvent) => void)): void {
             if (this._renderingCanvas) {
-                this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+                this._renderingCanvas.addEventListener("webglcontextrestored", <any>callback, false);
             }
         }
 

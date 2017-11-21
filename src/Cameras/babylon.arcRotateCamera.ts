@@ -320,7 +320,7 @@
             }
         }
 
-        public onMeshTargetChangedObservable = new Observable<AbstractMesh>();
+        public onMeshTargetChangedObservable = new Observable<Nullable<AbstractMesh>>();
 
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
