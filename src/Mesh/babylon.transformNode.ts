@@ -438,10 +438,12 @@ module BABYLON {
 
         /**
          * Defines the passed node as the parent of the current node.  
+         * The node will remain exactly where it is and its position / rotation will be updated accordingly
          * Returns the TransformNode.
          */
         public setParent(node: Nullable<TransformNode>): TransformNode {
 
+            this.computeWorldMatrix(true);
             if (node == null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
@@ -450,7 +452,6 @@ module BABYLON {
                 if (this.parent && (<TransformNode>this.parent).computeWorldMatrix) {
                     (<TransformNode>this.parent).computeWorldMatrix(true);
                 }
-                this.computeWorldMatrix(true);
                 this.getWorldMatrix().decompose(scale, rotation, position);
 
                 if (this.rotationQuaternion) {
@@ -466,20 +467,13 @@ module BABYLON {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
-                var m0 = Tmp.Matrix[0];
-                var m1 = Tmp.Matrix[1];
-                var invParentMatrix = Tmp.Matrix[2];
+                var diffMatrix = Tmp.Matrix[0];
+                var invParentMatrix = Tmp.Matrix[1];
 
                 node.computeWorldMatrix(true);
-                node.getWorldMatrix().decompose(scale, rotation, position);
-
-                rotation.toRotationMatrix(m0);
-                m1.setTranslation(position);
-                m1.multiplyToRef(m0, m0);
-                m0.invertToRef(invParentMatrix);
-
-                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);
-                m0.decompose(scale, rotation, position);
+                node.getWorldMatrix().invertToRef(invParentMatrix);
+                this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
+                diffMatrix.decompose(scale, rotation, position);
 
                 if (this.rotationQuaternion) {
                     this.rotationQuaternion.copyFrom(rotation);
@@ -487,13 +481,13 @@ module BABYLON {
                     rotation.toEulerAnglesToRef(this.rotation);
                 }
 
-                node.getWorldMatrix().invertToRef(invParentMatrix);
-                this.getWorldMatrix().multiplyToRef(invParentMatrix, m0);
-                m0.decompose(scale, rotation, position);
-
                 this.position.x = position.x;
                 this.position.y = position.y;
                 this.position.z = position.z;
+
+                this.scaling.x = scale.x;
+                this.scaling.y = scale.y;
+                this.scaling.z = scale.z;
             }
 
             this.parent = node;
