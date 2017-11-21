@@ -86,12 +86,12 @@ module BABYLON {
 
             this._texture = texture;
 
-            var callback = (text: string) => {
+            var callback = (text: string | ArrayBuffer) => {
                 var data: Nullable<Uint8Array> = null;
                 var tempData: Nullable<Float32Array> = null;
 
                 var line: string;
-                var lines = text.split('\n');
+                var lines = (<string>text).split('\n');
                 var size = 0, pixelIndexW = 0, pixelIndexH = 0, pixelIndexSlice = 0;
                 var maxColor = 0;
 

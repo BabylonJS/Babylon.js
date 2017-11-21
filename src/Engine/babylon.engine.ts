@@ -173,8 +173,8 @@
             }
         };
 
-        const onerror = (request: XMLHttpRequest, exception: any) => {
-            if (onErrorCallBack) {
+        const onerror = (request?: XMLHttpRequest, exception?: any) => {
+            if (onErrorCallBack && request) {
                 onErrorCallBack(request.status + " " + request.statusText, exception);
             }
         };
@@ -3938,8 +3938,8 @@
                 isDDS = (extension === ".dds");
             }
 
-            let onerror = (request: XMLHttpRequest, exception: any) => {
-                if (onError) {
+            let onerror = (request?: XMLHttpRequest, exception?: any) => {
+                if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             }
@@ -4226,9 +4226,9 @@
             texture.url = url;
             this._internalTexturesCache.push(texture);
 
-            var onerror = (request: XMLHttpRequest, exception: any) => {
+            var onerror = (request?: XMLHttpRequest, exception?: any) => {
                 scene._removePendingData(texture);
-                if (onError) {
+                if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             };
@@ -5001,13 +5001,13 @@
 
         public attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void {
             if (this._renderingCanvas) {
-                this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+                this._renderingCanvas.addEventListener("webglcontextlost", <any>callback, false);
             }
         }
 
         public attachContextRestoredEvent(callback: ((event: WebGLContextEvent) => void)): void {
             if (this._renderingCanvas) {
-                this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+                this._renderingCanvas.addEventListener("webglcontextrestored", <any>callback, false);
             }
         }
 

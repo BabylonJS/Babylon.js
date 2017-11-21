@@ -3,7 +3,7 @@
         public lensFlares = new Array<LensFlare>();
         public borderLimit = 300;
         public viewportBorder = 0;
-        public meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        public meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
         public layerMask: number = 0x0FFFFFFF;
         public id: string;
 
