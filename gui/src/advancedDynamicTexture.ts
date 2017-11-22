@@ -31,6 +31,21 @@ module BABYLON.GUI {
         private _renderAtIdealSize = false;
         private _focusedControl: Nullable<IFocusableControl>;
         private _blockNextFocusCheck = false;
+        private _renderScale = 1;
+
+        public get renderScale(): number {
+            return this._renderScale;
+        }
+
+        public set renderScale(value: number) {
+            if (value === this._renderScale) {
+                return;
+            }
+
+            this._renderScale = value;
+
+            this._onResize();
+        }
 
         public get background(): string {
             return this._background;
@@ -71,7 +86,7 @@ module BABYLON.GUI {
             this._idealHeight = value;
             this.markAsDirty();
             this._rootContainer._markAllAsDirty();
-        }     
+        }
 
         public get renderAtIdealSize(): boolean {
             return this._renderAtIdealSize;
@@ -84,11 +99,11 @@ module BABYLON.GUI {
 
             this._renderAtIdealSize = value;
             this._onResize();
-        }    
+        }
 
         public get layer(): Nullable<Layer> {
             return this._layerToDispose;
-        }   
+        }
 
         public get rootContainer(): Container {
             return this._rootContainer;
@@ -113,7 +128,7 @@ module BABYLON.GUI {
 
             this._focusedControl = control;
         }
-        
+
         public get isForeground(): boolean {
             if (!this.layer) {
                 return true;
@@ -124,15 +139,15 @@ module BABYLON.GUI {
         public set isForeground(value: boolean) {
             if (!this.layer) {
                 return;
-            }            
+            }
             if (this.layer.isBackground === !value) {
                 return;
             }
             this.layer.isBackground = !value;
-        }   
-       
+        }
+
         constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
-            super(name, {width: width, height: height}, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
+            super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
 
             scene = this.getScene();
 
@@ -170,7 +185,7 @@ module BABYLON.GUI {
                 container = this._rootContainer;
             }
 
-            for (var child of container.children) {               
+            for (var child of container.children) {
                 if ((<any>child).children) {
                     this.executeOnAllControls(func, (<Container>child));
                     continue;
@@ -236,16 +251,16 @@ module BABYLON.GUI {
 
         private _onResize(): void {
             let scene = this.getScene();
-            
+
             if (!scene) {
                 return;
-            }            
+            }
 
             // Check size
             var engine = scene.getEngine();
             var textureSize = this.getSize();
-            var renderWidth = engine.getRenderWidth();
-            var renderHeight = engine.getRenderHeight();
+            var renderWidth = engine.getRenderWidth() * this._renderScale;
+            var renderHeight = engine.getRenderHeight() * this._renderScale;
 
             if (this._renderAtIdealSize) {
                 if (this._idealWidth) {
@@ -253,7 +268,7 @@ module BABYLON.GUI {
                     renderWidth = this._idealWidth;
                 } else if (this._idealHeight) {
                     renderWidth = (renderWidth * this._idealHeight) / renderHeight;
-                    renderHeight = this._idealHeight;                    
+                    renderHeight = this._idealHeight;
                 }
             }
 
@@ -264,7 +279,7 @@ module BABYLON.GUI {
 
                 if (this._idealWidth || this._idealHeight) {
                     this._rootContainer._markAllAsDirty();
-                }                
+                }
             }
         }
 
@@ -297,13 +312,13 @@ module BABYLON.GUI {
                     var mesh = control._linkedMesh;
 
                     if (!mesh || mesh.isDisposed()) {
-                        Tools.SetImmediate(()=>{
+                        Tools.SetImmediate(() => {
                             control.linkWithMesh(null);
                         });
-                        
+
                         continue;
                     }
-                    
+
                     var position = mesh.getBoundingInfo().boundingSphere.center;
                     var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
 
@@ -358,10 +373,10 @@ module BABYLON.GUI {
             var textureSize = this.getSize();
 
             if (this._isFullscreen) {
-                x = x * (textureSize.width / engine.getRenderWidth());
-                y = y * (textureSize.height / engine.getRenderHeight());
+                x = x * ((textureSize.width / this._renderScale) / engine.getRenderWidth());
+                y = y * ((textureSize.height / this._renderScale) / engine.getRenderHeight());
             }
-            
+
             if (this._capturingControl) {
                 this._capturingControl._processObservables(type, x, y, buttonIndex);
                 return;
@@ -373,7 +388,7 @@ module BABYLON.GUI {
                     if (this._lastControlOver) {
                         this._lastControlOver._onPointerOut(this._lastControlOver);
                     }
-                    
+
                     this._lastControlOver = null;
                 }
             }
@@ -388,7 +403,7 @@ module BABYLON.GUI {
             }
 
             this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
-                if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE 
+                if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
                     && pi.type !== BABYLON.PointerEventTypes.POINTERUP
                     && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                     return;
@@ -421,9 +436,9 @@ module BABYLON.GUI {
             var scene = this.getScene();
             if (!scene) {
                 return;
-            }            
+            }
             this._pointerObserver = scene.onPointerObservable.add((pi, state) => {
-                if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE 
+                if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
                     && pi.type !== BABYLON.PointerEventTypes.POINTERUP
                     && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                     return;
@@ -440,13 +455,13 @@ module BABYLON.GUI {
                     if (this._lastControlDown) {
                         this._lastControlDown.forcePointerUp();
                     }
-                    this._lastControlDown = null;  
+                    this._lastControlDown = null;
 
                     this.focusedControl = null;
                 } else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                     if (this._lastControlOver) {
                         this._lastControlOver._onPointerOut(this._lastControlOver);
-                    }              
+                    }
                     this._lastControlOver = null;
                 }
             });
@@ -454,13 +469,13 @@ module BABYLON.GUI {
             mesh.enablePointerMoveEvents = supportPointerMove;
             this._attachToOnPointerOut(scene);
         }
-        
+
         public moveFocusToControl(control: IFocusableControl): void {
             this.focusedControl = control;
             this._lastPickedControl = <any>control;
             this._blockNextFocusCheck = true;
         }
-        
+
         private _manageFocus(): void {
             if (this._blockNextFocusCheck) {
                 this._blockNextFocusCheck = false;
@@ -484,13 +499,13 @@ module BABYLON.GUI {
             this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(() => {
                 if (this._lastControlOver) {
                     this._lastControlOver._onPointerOut(this._lastControlOver);
-                }            
+                }
                 this._lastControlOver = null;
 
                 if (this._lastControlDown) {
                     this._lastControlDown.forcePointerUp();
                 }
-                this._lastControlDown = null;                
+                this._lastControlDown = null;
             });
         }
 
@@ -512,8 +527,8 @@ module BABYLON.GUI {
             return result;
         }
 
-        public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null): AdvancedDynamicTexture {
-            var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, Texture.BILINEAR_SAMPLINGMODE);
+        public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE): AdvancedDynamicTexture {
+            var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
 
             // Display
             var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
@@ -527,5 +542,5 @@ module BABYLON.GUI {
 
             return result;
         }
-    }    
+    }
 }

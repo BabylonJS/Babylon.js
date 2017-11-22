@@ -8014,7 +8014,7 @@ var BABYLON;
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._internalTexturesCache = new Array();
-            this._activeTexturesCache = {};
+            this._boundTexturesCache = {};
             this._compiledEffects = {};
             this._vertexAttribArraysEnabled = [];
             this._uintIndicesCurrentlySet = false;
@@ -8872,8 +8872,8 @@ var BABYLON;
             }
         };
         Engine.prototype.resetTextureCache = function () {
-            for (var key in this._activeTexturesCache) {
-                this._activeTexturesCache[key] = null;
+            for (var key in this._boundTexturesCache) {
+                this._boundTexturesCache[key] = null;
             }
         };
         Engine.prototype.isDeterministicLockStep = function () {
@@ -10447,7 +10447,7 @@ var BABYLON;
                 if (!hostingScene) {
                     hostingScene = _this.scenes[_this.scenes.length - 1];
                 }
-                hostingScene.postProcessManager.directRender([_this._rescalePostProcess], rtt);
+                hostingScene.postProcessManager.directRender([_this._rescalePostProcess], rtt, true);
                 _this._bindTextureDirectly(_this._gl.TEXTURE_2D, destination);
                 _this._gl.copyTexImage2D(_this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
                 _this.unBindFramebuffer(rtt);
@@ -11518,9 +11518,9 @@ var BABYLON;
             }
         };
         Engine.prototype._bindTextureDirectly = function (target, texture) {
-            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
+            if (this._boundTexturesCache[this._activeTextureChannel] !== texture) {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                this._activeTexturesCache[this._activeTextureChannel] = texture;
+                this._boundTexturesCache[this._activeTextureChannel] = texture;
             }
         };
         Engine.prototype._bindTexture = function (channel, texture) {
@@ -11554,7 +11554,7 @@ var BABYLON;
         Engine.prototype._setTexture = function (channel, texture) {
             // Not ready?
             if (!texture) {
-                if (this._activeTexturesCache[channel] != null) {
+                if (this._boundTexturesCache[channel] != null) {
                     this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
@@ -11591,7 +11591,7 @@ var BABYLON;
             if (!alreadyActivated) {
                 this.activateTextureChannel(this._gl.TEXTURE0 + channel);
             }
-            if (this._activeTexturesCache[this._activeTextureChannel] === internalTexture) {
+            if (this._boundTexturesCache[this._activeTextureChannel] === internalTexture) {
                 return false;
             }
             if (internalTexture && internalTexture.is3D) {
@@ -47279,14 +47279,16 @@ var BABYLON;
             var options = {
                 attributes: [BABYLON.VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
-                needAlphaBlending: false,
+                needAlphaBlending: true,
                 defines: defines
             };
+            if (useVertexAlpha === false) {
+                options.needAlphaBlending = false;
+            }
             if (!useVertexColor) {
                 options.uniforms.push("color");
             }
             else {
-                options.needAlphaBlending = (useVertexAlpha) ? true : false;
                 options.defines.push("#define VERTEXCOLOR");
                 options.attributes.push(BABYLON.VertexBuffer.ColorKind);
             }
@@ -48242,7 +48244,7 @@ var BABYLON;
          * The parameter `lines` is an array of lines, each line being an array of successive Vector3.
          * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter. The way to update it is the same than for
          * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point.
-         * The optional parameter `useVertexAlpha' is to be set to `true` (default `false`) when the alpha value from the former `Color4` array must be used.
+         * The optional parameter `useVertexAlpha' is to be set to `false` (default `true`) when you don't need the alpha blending (faster).
          * updating a simple Line mesh, you just need to update every line in the `lines` array : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
          * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -48298,7 +48300,7 @@ var BABYLON;
          * The parameter `points` is an array successive Vector3.
          * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
          * The optional parameter `colors` is an array of successive Color4, one per line point.
-         * The optional parameter `useVertexAlpha' is to be set to `true` (default `false`) when the alpha value from the former `Color4` array must be used.
+         * The optional parameter `useVertexAlpha' is to be set to `false` (default `true`) when you don't need alpha blending (faster).
          * When updating an instance, remember that only point positions can change, not the number of points.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -67287,7 +67289,7 @@ var BABYLON;
                 }
                 impostor.applyImpulse(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
             });
-            event.cleanup(false);
+            event.dispose(false);
             return event;
         };
         /**
@@ -67314,7 +67316,7 @@ var BABYLON;
                 }
                 impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
             });
-            event.cleanup(false);
+            event.dispose(false);
             return event;
         };
         /**
@@ -67334,7 +67336,7 @@ var BABYLON;
                 return null;
             }
             var event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radius, strength, falloff);
-            event.cleanup(false);
+            event.dispose(false);
             return event;
         };
         return PhysicsHelper;
@@ -67398,7 +67400,7 @@ var BABYLON;
          * Disposes the radialSphere.
          * @param {bolean} force
          */
-        PhysicsRadialExplosionEvent.prototype.cleanup = function (force) {
+        PhysicsRadialExplosionEvent.prototype.dispose = function (force) {
             var _this = this;
             if (force === void 0) { force = true; }
             if (force) {
@@ -67471,7 +67473,7 @@ var BABYLON;
          * Disposes the radialSphere.
          * @param {bolean} force
          */
-        PhysicsGravitationalFieldEvent.prototype.cleanup = function (force) {
+        PhysicsGravitationalFieldEvent.prototype.dispose = function (force) {
             var _this = this;
             if (force === void 0) { force = true; }
             if (force) {
@@ -71594,13 +71596,14 @@ var BABYLON;
             this._teleportationAllowed = false;
             this._rotationAllowed = true;
             this._teleportationRequestInitiated = false;
-            //private _classicGamepadTeleportationRequestInitiated = false;
             this._rotationRightAsked = false;
             this._rotationLeftAsked = false;
             this._teleportationFillColor = "#444444";
             this._teleportationBorderColor = "#FFFFFF";
             this._rotationAngle = 0;
             this._haloCenter = new BABYLON.Vector3(0, 0, 0);
+            this._padSensibilityUp = 0.7;
+            this._padSensibilityDown = 0.3;
             this._scene = scene;
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
                 this._position = new BABYLON.Vector3(0, 2, 0);
@@ -71913,7 +71916,8 @@ var BABYLON;
             this.meshSelectionPredicate = function (mesh) {
                 if (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
                     && mesh.name.indexOf("teleportationCircle") === -1
-                    && mesh.name.indexOf("torusTeleportation") === -1) {
+                    && mesh.name.indexOf("torusTeleportation") === -1
+                    && mesh.name.indexOf("ray") === -1) {
                     return true;
                 }
                 return false;
@@ -71927,12 +71931,12 @@ var BABYLON;
             if (gamepad.leftStick) {
                 gamepad.onleftstickchanged(function (stickValues) {
                     if (!_this._teleportationRequestInitiated) {
-                        if (stickValues.y < -0.6) {
+                        if (stickValues.y < -_this._padSensibilityUp) {
                             _this._teleportationRequestInitiated = true;
                         }
                     }
                     else {
-                        if (stickValues.y > -0.4) {
+                        if (stickValues.y > -_this._padSensibilityDown) {
                             if (_this._teleportationAllowed) {
                                 _this._teleportCamera();
                             }
@@ -71944,7 +71948,7 @@ var BABYLON;
             if (gamepad.rightStick) {
                 gamepad.onrightstickchanged(function (stickValues) {
                     if (!_this._rotationLeftAsked) {
-                        if (stickValues.x < -0.6) {
+                        if (stickValues.x < -_this._padSensibilityUp) {
                             _this._rotationLeftAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(false);
@@ -71952,12 +71956,12 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stickValues.x > -0.4) {
+                        if (stickValues.x > -_this._padSensibilityDown) {
                             _this._rotationLeftAsked = false;
                         }
                     }
                     if (!_this._rotationRightAsked) {
-                        if (stickValues.x > 0.6) {
+                        if (stickValues.x > _this._padSensibilityUp) {
                             _this._rotationRightAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(true);
@@ -71965,7 +71969,7 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stickValues.x < 0.4) {
+                        if (stickValues.x < _this._padSensibilityDown) {
                             _this._rotationRightAsked = false;
                         }
                     }
@@ -72002,14 +72006,15 @@ var BABYLON;
                 webVRController.onPadValuesChangedObservable.add(function (stateObject) {
                     // on pressed
                     if (!_this._teleportationRequestInitiated) {
-                        if (stateObject.y < -0.6) {
+                        if (stateObject.y < -_this._padSensibilityUp) {
                             laserPointer.isVisible = true;
                             _this._teleportationRequestInitiated = true;
                         }
                     }
                     else {
-                        if (stateObject.y > -0.4) {
+                        if (stateObject.y > -_this._padSensibilityDown) {
                             if (_this._teleportationAllowed) {
+                                _this._teleportationAllowed = false;
                                 _this._teleportCamera();
                             }
                             _this._teleportationRequestInitiated = false;
@@ -72017,7 +72022,7 @@ var BABYLON;
                         }
                     }
                     if (!_this._rotationLeftAsked) {
-                        if (stateObject.x < -0.6) {
+                        if (stateObject.x < -_this._padSensibilityUp) {
                             _this._rotationLeftAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(false);
@@ -72025,12 +72030,12 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stateObject.x > -0.4) {
+                        if (stateObject.x > -_this._padSensibilityDown) {
                             _this._rotationLeftAsked = false;
                         }
                     }
                     if (!_this._rotationRightAsked) {
-                        if (stateObject.x > 0.6) {
+                        if (stateObject.x > _this._padSensibilityUp) {
                             _this._rotationRightAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(true);
@@ -72038,7 +72043,7 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stateObject.x < 0.4) {
+                        if (stateObject.x < _this._padSensibilityDown) {
                             _this._rotationRightAsked = false;
                         }
                     }
@@ -72058,6 +72063,7 @@ var BABYLON;
         };
         VRExperienceHelper.prototype._createTeleportationCircles = function () {
             this._teleportationCircle = BABYLON.Mesh.CreateGround("teleportationCircle", 2, 2, 2, this._scene);
+            this._teleportationCircle.isPickable = false;
             var length = 512;
             var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", length, this._scene, true);
             dynamicTexture.hasAlpha = true;
@@ -72078,6 +72084,7 @@ var BABYLON;
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
             this._teleportationCircle.material = teleportationCircleMaterial;
             var torus = BABYLON.Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
+            torus.isPickable = false;
             torus.parent = this._teleportationCircle;
             var animationInnerCircle = new BABYLON.Animation("animationInnerCircle", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
             var keys = [];
@@ -72314,6 +72321,7 @@ var BABYLON;
                     this._moveTeleportationSelectorTo(hit.pickedPoint);
                     return;
                 }
+                console.log(hit.pickedMesh.name);
                 // If not, we're in a selection scenario
                 this._hideTeleportationCircle();
                 this._teleportationAllowed = false;

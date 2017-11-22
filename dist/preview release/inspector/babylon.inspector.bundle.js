@@ -68,8 +68,8 @@ var INSPECTOR =
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!../../../Tools/Gulp/node_modules/css-loader/index.js!./babylon.inspector.css", function() {
-				var newContent = require("!!../../../Tools/Gulp/node_modules/css-loader/index.js!./babylon.inspector.css");
+			module.hot.accept("!!../../../tools/gulp/node_modules/css-loader/index.js!./babylon.inspector.css", function() {
+				var newContent = require("!!../../../tools/gulp/node_modules/css-loader/index.js!./babylon.inspector.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
