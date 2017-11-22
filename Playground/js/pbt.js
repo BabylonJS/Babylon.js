@@ -529,18 +529,4 @@ showBJSPGMenu = function() {
     }
 }
 
-var showPBTError = function (errorMessage) {
-    var errorContent =
-        '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>';
-
-    errorContent += errorMessage + '</div>';
-
-    document.getElementById("errorZone").style.display = 'block';
-    document.getElementById("errorZone").innerHTML = errorContent;
-
-    // Close button error
-    document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
-        document.getElementById("errorZone").style.display = 'none';
-    });
-}
     
