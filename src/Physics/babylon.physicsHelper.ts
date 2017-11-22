@@ -13,7 +13,7 @@ module BABYLON {
      */
     export enum PhysicsUpdraftMode {
         Center, // the upstream forces will pull towards the top center of the cylinder
-        Perpendicular // once a impostor is inside the cylinder, it will shoot out perpendicular towards the ground of the cylinder
+        Perpendicular // once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder
     }
 
     export class PhysicsHelper {
