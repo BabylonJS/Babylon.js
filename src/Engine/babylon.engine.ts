@@ -4572,8 +4572,7 @@
 
             if (isTextureForRendering) {
                 texture!._designatedSlot = this._activeChannel;
-                let uniform = this._boundUniforms[texture!._initialSlot];
-                this._gl.uniform1i(uniform, this._activeChannel);
+                this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
             }
         }
 
@@ -4644,6 +4643,11 @@
             return channel;
         }
 
+        private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {
+            let uniform = this._boundUniforms[sourceSlot];
+            this._gl.uniform1i(uniform, destination);
+        }
+
         private _setTexture(channel: number, texture: Nullable<BaseTexture>): boolean {
             // Not ready?
             if (!texture) {
@@ -4686,8 +4690,7 @@
             channel = this._getCorrectTextureChannel(channel, internalTexture);
 
             if (this._boundTexturesCache[channel] === internalTexture) {
-                let uniform = this._boundUniforms[internalTexture._initialSlot];
-                this._gl.uniform1i(uniform, channel);
+                this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
                 return false;
             }
 
