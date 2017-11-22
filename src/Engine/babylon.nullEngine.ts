@@ -368,8 +368,8 @@
         }
 
         public _bindTextureDirectly(target: number, texture: InternalTexture): void {
-            if (this._boundTexturesCache[this._activeTextureChannel] !== texture) {
-                this._boundTexturesCache[this._activeTextureChannel] = texture;
+            if (this._boundTexturesCache[this._activeChannel] !== texture) {
+                this._boundTexturesCache[this._activeChannel] = texture;
             }
         }
 
