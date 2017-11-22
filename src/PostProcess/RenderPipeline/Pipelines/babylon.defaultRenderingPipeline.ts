@@ -233,7 +233,10 @@
                 this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));  
 
 				this.fxaa.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
-			} else {
+			} else if (this._hdr && this.imageProcessing) {
+                this.finalMerge = this.imageProcessing;
+            }
+            else {
 				this.finalMerge = new BABYLON.PassPostProcess("finalMerge", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FinalMergePostProcessId, () => { return this.finalMerge; }, true)); 
                 
