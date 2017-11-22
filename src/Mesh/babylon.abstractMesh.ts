@@ -1778,6 +1778,27 @@
             VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
             this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
         }
+        /**
+         * Align the mesh with a normal.
+         * Returns the mesh.  
+         */
+        public alignWithNormal(normal:BABYLON.Vector3, upDirection?:BABYLON.Vector3):AbstractMesh{       
+            if(!upDirection){
+                upDirection = BABYLON.Axis.Y;
+            }
+            
+            var axis0 = Tmp.Vector3[0];
+            var axis1 = Tmp.Vector3[1];
+            Vector3.CrossToRef(upDirection, normal, axis0);
+            Vector3.CrossToRef(normal, axis0, axis1);
+
+            if(this.rotationQuaternion){
+                Quaternion.RotationQuaternionFromAxisToRef(axis1, normal, axis0, this.rotationQuaternion);
+            }else{
+                Vector3.RotationFromAxisToRef(axis1, normal, axis0, this.rotation);
+            }
+            return this;
+        }
 
         protected checkOcclusionQuery() {
             var engine = this.getEngine();
