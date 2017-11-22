@@ -303,7 +303,6 @@ module BABYLON {
                 if (!this._webVRpresenting) {
                     this._webVRCamera.position = this._position;
                     this._scene.activeCamera = this._webVRCamera;
-                    this._scene.imageProcessingConfiguration.isEnabled = true;
                 }
             }
             else {
@@ -334,7 +333,6 @@ module BABYLON {
             }
             this._deviceOrientationCamera.position = this._position;
             this._scene.activeCamera = this._deviceOrientationCamera;
-            this._scene.imageProcessingConfiguration.isEnabled = false;
 
             if (this._canvas) {
                 this._scene.activeCamera.attachControl(this._canvas);
@@ -373,11 +371,26 @@ module BABYLON {
 
             this._scene.gamepadManager.onGamepadConnectedObservable.add((pad) => this._onNewGamepadConnected(pad));
 
-            this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove", 1.0, this._webVRCamera);
+            // Creates an image processing post process for the vignette not relying
+            // on the main scene configuration for image processing to reduce setup and spaces 
+            // (gamma/linear) conflicts.
+            const imageProcessingConfiguration = new ImageProcessingConfiguration();
+            imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
+            this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove", 
+                1.0, 
+                this._webVRCamera,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                imageProcessingConfiguration);
+            // Force recompilation of the postprocess to be ready before hand and not block the animation.
+            // Simply touching the property forces recompilation of the effect.
+            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
+            // Go back to default (both variants would be compiled).
+            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
+
             this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
-            this._scene.imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
-            this._scene.imageProcessingConfiguration.vignetteEnabled = true;      
-            this._scene.imageProcessingConfiguration.isEnabled = false;      
 
             this._createGazeTracker();
             this._createTeleportationCircles();
@@ -681,12 +694,12 @@ module BABYLON {
             animationPP2.setEasingFunction(easingFunction);
             this._postProcessMove.animations.push(animationPP2);
             
-            this._scene.imageProcessingConfiguration.vignetteWeight = 0;
-            this._scene.imageProcessingConfiguration.vignetteStretch = 0;
-            this._scene.imageProcessingConfiguration.vignetteEnabled = true;
+            this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
+            this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
+            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
         
             this._scene.beginAnimation(this._postProcessMove, 0, 6, false, 1, () => {
-                this._scene.imageProcessingConfiguration.vignetteEnabled = false;
+                this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 6, false, 1);
         }
@@ -789,12 +802,12 @@ module BABYLON {
             animationPP2.setKeys(vignetteStretchKeys);
             this._postProcessMove.animations.push(animationPP2);
         
-            this._scene.imageProcessingConfiguration.vignetteWeight = 8;
-            this._scene.imageProcessingConfiguration.vignetteStretch = 10;
-            this._scene.imageProcessingConfiguration.vignetteEnabled = true;
+            this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 8;
+            this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 10;
+            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
             
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, () => {
-                this._scene.imageProcessingConfiguration.vignetteEnabled = false;
+                this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1);
         }
