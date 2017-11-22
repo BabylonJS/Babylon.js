@@ -51,6 +51,7 @@
 - Added `pivot` property to the SPS solid particles ([jerome](https://github.com/jbousquie)) 
 - Added the mesh facet depth sort to FacetData  ([jerome](https://github.com/jbousquie)) 
 - Added `LineSystem` and `LineMesh` per point colors ([jerome](https://github.com/jbousquie))  
+- Added `AdvancedDynamicTexture.renderScale` to allow users to render at higher DPI ([deltakosh](https://github.com/deltakosh))
 
 ## Bug fixes
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))

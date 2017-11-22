@@ -749,7 +749,7 @@
         // Cache
         private _internalTexturesCache = new Array<InternalTexture>();
         protected _activeTextureChannel: number;
-        protected _activeTexturesCache: { [key: string]: Nullable<WebGLTexture> } = {};
+        protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
         protected _currentEffect: Nullable<Effect>;
         protected _currentProgram: Nullable<WebGLProgram>;
         private _compiledEffects: { [key: string]: Effect } = {}
@@ -1302,8 +1302,8 @@
         }
 
         public resetTextureCache() {
-            for (var key in this._activeTexturesCache) {
-                this._activeTexturesCache[key] = null;
+            for (var key in this._boundTexturesCache) {
+                this._boundTexturesCache[key] = null;
             }
         }
 
@@ -3181,7 +3181,7 @@
                 if (!hostingScene) {
                     hostingScene = this.scenes[this.scenes.length - 1];
                 }
-                hostingScene.postProcessManager.directRender([this._rescalePostProcess], rtt);
+                hostingScene.postProcessManager.directRender([this._rescalePostProcess], rtt, true);
 
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, destination);
                 this._gl.copyTexImage2D(this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
@@ -4530,9 +4530,9 @@
         }
 
         public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>): void {
-            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
+            if (this._boundTexturesCache[this._activeTextureChannel] !== texture) {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                this._activeTexturesCache[this._activeTextureChannel] = texture;
+                this._boundTexturesCache[this._activeTextureChannel] = texture;
             }
         }
 
@@ -4573,7 +4573,7 @@
         private _setTexture(channel: number, texture: Nullable<BaseTexture>): boolean {
             // Not ready?
             if (!texture) {
-                if (this._activeTexturesCache[channel] != null) {
+                if (this._boundTexturesCache[channel] != null) {
                     this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
@@ -4613,7 +4613,7 @@
                 this.activateTextureChannel(this._gl.TEXTURE0 + channel);
             }
 
-            if (this._activeTexturesCache[this._activeTextureChannel] === internalTexture) {
+            if (this._boundTexturesCache[this._activeTextureChannel] === internalTexture) {
                 return false;
             }
 
