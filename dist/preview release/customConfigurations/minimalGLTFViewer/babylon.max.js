@@ -15600,6 +15600,26 @@ var BABYLON;
             BABYLON.VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
         };
+        /**
+         * Align the mesh with a normal.
+         * Returns the mesh.
+         */
+        AbstractMesh.prototype.alignWithNormal = function (normal, upDirection) {
+            if (!upDirection) {
+                upDirection = BABYLON.Axis.Y;
+            }
+            var axisX = BABYLON.Tmp.Vector3[0];
+            var axisZ = BABYLON.Tmp.Vector3[1];
+            BABYLON.Vector3.CrossToRef(upDirection, normal, axisZ);
+            BABYLON.Vector3.CrossToRef(normal, axisZ, axisX);
+            if (this.rotationQuaternion) {
+                BABYLON.Quaternion.RotationQuaternionFromAxisToRef(axisX, normal, axisZ, this.rotationQuaternion);
+            }
+            else {
+                BABYLON.Vector3.RotationFromAxisToRef(axisX, normal, axisZ, this.rotation);
+            }
+            return this;
+        };
         AbstractMesh.prototype.checkOcclusionQuery = function () {
             var engine = this.getEngine();
             if (engine.webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
@@ -60169,6 +60189,9 @@ var BABYLON;
                 this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.FxaaPostProcessId, function () { return _this.fxaa; }, true));
                 this.fxaa.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
             }
+            else if (this._hdr && this.imageProcessing) {
+                this.finalMerge = this.imageProcessing;
+            }
             else {
                 this.finalMerge = new BABYLON.PassPostProcess("finalMerge", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new BABYLON.PostProcessRenderEffect(engine, this.FinalMergePostProcessId, function () { return _this.finalMerge; }, true));
@@ -61079,7 +61102,7 @@ var BABYLON;
 (function (BABYLON) {
     var ImageProcessingPostProcess = /** @class */ (function (_super) {
         __extends(ImageProcessingPostProcess, _super);
-        function ImageProcessingPostProcess(name, options, camera, samplingMode, engine, reusable, textureType) {
+        function ImageProcessingPostProcess(name, options, camera, samplingMode, engine, reusable, textureType, imageProcessingConfiguration) {
             if (camera === void 0) { camera = null; }
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             var _this = _super.call(this, name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable, null, textureType, "postprocess", null, true) || this;
@@ -61103,9 +61126,17 @@ var BABYLON;
                 IMAGEPROCESSINGPOSTPROCESS: false,
                 EXPOSURE: false,
             };
-            // Setup the default processing configuration to the scene.
-            _this._attachImageProcessingConfiguration(null, true);
-            _this.imageProcessingConfiguration.applyByPostProcess = true;
+            // Setup the configuration as forced by the constructor. This would then not force the 
+            // scene materials output in linear space and let untouched the default forward pass.
+            if (imageProcessingConfiguration) {
+                _this._attachImageProcessingConfiguration(imageProcessingConfiguration, true);
+                _this.imageProcessingConfiguration.applyByPostProcess = false;
+                _this.fromLinearSpace = false;
+            }
+            else {
+                _this._attachImageProcessingConfiguration(null, true);
+                _this.imageProcessingConfiguration.applyByPostProcess = true;
+            }
             _this.onApply = function (effect) {
                 _this.imageProcessingConfiguration.bind(effect, _this.aspectRatio);
             };
@@ -71804,7 +71835,6 @@ var BABYLON;
                 if (!this._webVRpresenting) {
                     this._webVRCamera.position = this._position;
                     this._scene.activeCamera = this._webVRCamera;
-                    this._scene.imageProcessingConfiguration.isEnabled = true;
                 }
             }
             else {
@@ -71832,7 +71862,6 @@ var BABYLON;
             }
             this._deviceOrientationCamera.position = this._position;
             this._scene.activeCamera = this._deviceOrientationCamera;
-            this._scene.imageProcessingConfiguration.isEnabled = false;
             if (this._canvas) {
                 this._scene.activeCamera.attachControl(this._canvas);
             }
@@ -71867,11 +71896,18 @@ var BABYLON;
                 this._enableTeleportationOnController(this._webVRCamera.rightController);
             }
             this._scene.gamepadManager.onGamepadConnectedObservable.add(function (pad) { return _this._onNewGamepadConnected(pad); });
-            this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove", 1.0, this._webVRCamera);
+            // Creates an image processing post process for the vignette not relying
+            // on the main scene configuration for image processing to reduce setup and spaces 
+            // (gamma/linear) conflicts.
+            var imageProcessingConfiguration = new BABYLON.ImageProcessingConfiguration();
+            imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
+            this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove", 1.0, this._webVRCamera, undefined, undefined, undefined, undefined, imageProcessingConfiguration);
+            // Force recompilation of the postprocess to be ready before hand and not block the animation.
+            // Simply touching the property forces recompilation of the effect.
+            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
+            // Go back to default (both variants would be compiled).
+            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
             this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
-            this._scene.imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
-            this._scene.imageProcessingConfiguration.vignetteEnabled = true;
-            this._scene.imageProcessingConfiguration.isEnabled = false;
             this._createGazeTracker();
             this._createTeleportationCircles();
             this.meshSelectionPredicate = function (mesh) {
@@ -72134,11 +72170,11 @@ var BABYLON;
             animationPP2.setKeys(vignetteStretchKeys);
             animationPP2.setEasingFunction(easingFunction);
             this._postProcessMove.animations.push(animationPP2);
-            this._scene.imageProcessingConfiguration.vignetteWeight = 0;
-            this._scene.imageProcessingConfiguration.vignetteStretch = 0;
-            this._scene.imageProcessingConfiguration.vignetteEnabled = true;
+            this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
+            this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
+            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
             this._scene.beginAnimation(this._postProcessMove, 0, 6, false, 1, function () {
-                _this._scene.imageProcessingConfiguration.vignetteEnabled = false;
+                _this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 6, false, 1);
         };
@@ -72218,11 +72254,11 @@ var BABYLON;
             });
             animationPP2.setKeys(vignetteStretchKeys);
             this._postProcessMove.animations.push(animationPP2);
-            this._scene.imageProcessingConfiguration.vignetteWeight = 8;
-            this._scene.imageProcessingConfiguration.vignetteStretch = 10;
-            this._scene.imageProcessingConfiguration.vignetteEnabled = true;
+            this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 8;
+            this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 10;
+            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, function () {
-                _this._scene.imageProcessingConfiguration.vignetteEnabled = false;
+                _this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1);
         };
@@ -78518,10 +78554,12 @@ var BABYLON;
          * Setup the ground according to the specified options.
          */
         EnvironmentHelper.prototype._setupGround = function (sceneSize) {
+            var _this = this;
             if (!this._ground) {
                 this._ground = BABYLON.Mesh.CreatePlane("BackgroundPlane", sceneSize.groundSize, this._scene);
                 this._ground.rotation.x = Math.PI / 2; // Face up by default.
                 this._ground.parent = this._rootMesh;
+                this._ground.onDisposeObservable.add(function () { _this._ground = null; });
             }
             this._ground.receiveShadows = this._options.enableGroundShadow;
         };
@@ -78606,8 +78644,10 @@ var BABYLON;
          * Setup the skybox according to the specified options.
          */
         EnvironmentHelper.prototype._setupSkybox = function (sceneSize) {
+            var _this = this;
             if (!this._skybox) {
                 this._skybox = BABYLON.Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, BABYLON.Mesh.BACKSIDE);
+                this._skybox.onDisposeObservable.add(function () { _this._skybox = null; });
             }
             this._skybox.parent = this._rootMesh;
         };
@@ -78658,7 +78698,7 @@ var BABYLON;
             if (this._skyboxMaterial) {
                 this._skyboxMaterial.dispose(true, true);
             }
-            this._rootMesh.dispose(true);
+            this._rootMesh.dispose(false);
         };
         /**
          * Default ground texture URL.
