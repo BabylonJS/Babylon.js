@@ -749,7 +749,7 @@
         // Cache
         private _internalTexturesCache = new Array<InternalTexture>();
         protected _activeTextureChannel: number;
-        protected _activeTexturesCache: { [key: string]: Nullable<WebGLTexture> } = {};
+        protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
         protected _currentEffect: Nullable<Effect>;
         protected _currentProgram: Nullable<WebGLProgram>;
         private _compiledEffects: { [key: string]: Effect } = {}
@@ -1302,8 +1302,8 @@
         }
 
         public resetTextureCache() {
-            for (var key in this._activeTexturesCache) {
-                this._activeTexturesCache[key] = null;
+            for (var key in this._boundTexturesCache) {
+                this._boundTexturesCache[key] = null;
             }
         }
 
@@ -4511,13 +4511,19 @@
             }
         }
 
+        private _boundUniforms: { [key: number]: WebGLUniformLocation } = {};
+
         public bindSamplers(effect: Effect): void {
             this.setProgram(effect.getProgram());
 
             var samplers = effect.getSamplers();
             for (var index = 0; index < samplers.length; index++) {
                 var uniform = effect.getUniform(samplers[index]);
-                this._gl.uniform1i(uniform, index);
+
+                if (uniform) {
+                    this._gl.uniform1i(uniform, index);
+                    this._boundUniforms[index] = uniform;
+                }
             }
             this._currentEffect = null;
         }
@@ -4530,15 +4536,35 @@
         }
 
         public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>): void {
-            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
+            let currentTextureBound = this._boundTexturesCache[this._activeTextureChannel];
+            if (currentTextureBound !== texture) {
+                if (currentTextureBound) {
+                    currentTextureBound._designatedSlot = -1;
+                }
+
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                this._activeTexturesCache[this._activeTextureChannel] = texture;
+                this._boundTexturesCache[this._activeTextureChannel] = texture;
+                if (texture) {
+                    texture._designatedSlot = this._activeTextureChannel;
+                    if (texture._designatedSlot !== texture._initialSlot && texture._initialSlot > -1) {
+                        let uniform = this._boundUniforms[texture._initialSlot];
+                        this._gl.uniform1i(uniform, this._activeTextureChannel);
+                        this._boundUniforms[this._activeTextureChannel] = uniform;
+                    }
+                }
             }
         }
 
         public _bindTexture(channel: number, texture: Nullable<InternalTexture>): void {
             if (channel < 0) {
                 return;
+            }
+
+            if (texture) {
+                texture._initialSlot = channel;
+                if (texture._designatedSlot > -1 && texture._designatedSlot !== channel) {
+                    channel = texture._designatedSlot;
+                }
             }
 
             this.activateTextureChannel(this._gl.TEXTURE0 + channel);
@@ -4573,7 +4599,7 @@
         private _setTexture(channel: number, texture: Nullable<BaseTexture>): boolean {
             // Not ready?
             if (!texture) {
-                if (this._activeTexturesCache[channel] != null) {
+                if (this._boundTexturesCache[channel] != null) {
                     this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
@@ -4609,11 +4635,20 @@
                 internalTexture = this.emptyTexture;
             }
 
+            internalTexture._initialSlot = channel;
+            if (channel !== internalTexture._designatedSlot) {
+                if (internalTexture._designatedSlot > -1) {
+                    channel = internalTexture._designatedSlot;
+                } else {
+                    internalTexture._designatedSlot = channel;
+                }
+            }
+
             if (!alreadyActivated) {
                 this.activateTextureChannel(this._gl.TEXTURE0 + channel);
             }
 
-            if (this._activeTexturesCache[this._activeTextureChannel] === internalTexture) {
+            if (this._boundTexturesCache[this._activeTextureChannel] === internalTexture) {
                 return false;
             }
 
