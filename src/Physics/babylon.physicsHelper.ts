@@ -8,6 +8,14 @@ module BABYLON {
         Linear // impulse gets weaker if it's further from the origin
     }
 
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    export enum PhysicsUpdraftMode {
+        Center, // the upstream forces will pull towards the top center of the cylinder
+        Perpendicular // once a impostor is inside the cylinder, it will shoot out perpendicular towards the ground of the cylinder
+    }
+
     export class PhysicsHelper {
 
         private _scene: Scene;
@@ -118,7 +126,7 @@ module BABYLON {
          * @param {number} strength the strength of the updraft
          * @param {number} height the height of the updraft
          */
-        public updraft(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsUpdraftEvent> {
+        public updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent> {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -128,7 +136,7 @@ module BABYLON {
                 return null;
             }
 
-            var event = new PhysicsUpdraftEvent(this._physicsEngine, this._scene, origin, radius, strength, height);
+            var event = new PhysicsUpdraftEvent(this._physicsEngine, this._scene, origin, radius, strength, height, updraftMode);
 
             event.dispose(false);
 
@@ -341,25 +349,32 @@ module BABYLON {
         private _scene: Scene;
         private _origin: Vector3;
         private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
+        private _originDirection: Vector3 = Vector3.Zero(); // used if the updraftMode is perpendicular
         private _radius: number;
         private _strength: number;
         private _height: number;
+        private _updraftMode: PhysicsUpdraftMode;
         private _tickCallback: any;
         private _cylinder: Mesh;
         private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
-        private _rays: Array<Ray> = [];
         private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
  
-        constructor(physicsEngine: PhysicsEngine, scene: Scene, origin: Vector3, radius: number, strength: number, height: number) {
+        constructor(physicsEngine: PhysicsEngine, scene: Scene, origin: Vector3, radius: number, strength: number, height: number, updraftMode: PhysicsUpdraftMode) {
             this._physicsEngine = physicsEngine;
             this._scene = scene;
             this._origin = origin;
             this._radius = radius;
             this._strength = strength;
             this._height = height;
+            this._updraftMode = updraftMode;
 
+            // TODO: for this._cylinderPosition & this._originTop, take rotation into account
             this._origin.addToRef(new Vector3(0, this._height / 2, 0), this._cylinderPosition);
             this._origin.addToRef(new Vector3(0, this._height, 0), this._originTop);
+
+            if (this._updraftMode === PhysicsUpdraftMode.Perpendicular) {
+                this._originDirection = this._origin.subtract(this._originTop).normalize();
+            }
  
             this._tickCallback = this._tick.bind(this);
         }
@@ -373,7 +388,6 @@ module BABYLON {
 
             return {
                 cylinder: this._cylinder,
-                rays: this._rays,
             };
         }
 
@@ -413,28 +427,23 @@ module BABYLON {
                 return null;
             }
 
-            if (!this._intersectsWithCylinder(impostor, this._origin, this._radius)) {
+            if (!this._intersectsWithCylinder(impostor)) {
                 return null;
             }
 
-            var impostorObject = (<Mesh>impostor.object);
             var impostorObjectCenter = impostor.getObjectCenter();
-            var direction = impostorObjectCenter.subtract(this._originTop);
 
-            var ray = new Ray(this._originTop, direction, this._radius);
-            this._rays.push(ray);
-            var hit = ray.intersectsMesh(impostorObject);
-
-            var contactPoint = hit.pickedPoint;
-            if (!contactPoint) {
-                return null;
+            if (this._updraftMode === PhysicsUpdraftMode.Perpendicular) {
+                var direction = this._originDirection;
+            } else {
+                var direction = impostorObjectCenter.subtract(this._originTop);
             }
 
             var multiplier = this._strength * -1;
 
             var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
 
-            return { force: force, contactPoint: contactPoint };
+            return { force: force, contactPoint: impostorObjectCenter };
         }
 
         private _tick() {
@@ -460,7 +469,7 @@ module BABYLON {
             }
         }
 
-        private _intersectsWithCylinder(impostor: PhysicsImpostor, origin: Vector3, radius: number): boolean {
+        private _intersectsWithCylinder(impostor: PhysicsImpostor): boolean {
             var impostorObject = <Mesh>impostor.object;
 
             this._prepareCylinder();
@@ -486,7 +495,6 @@ module BABYLON {
 
     export interface PhysicsUpdraftEventData {
         cylinder: Mesh;
-        rays: Array<Ray>;
     }
 
 }
