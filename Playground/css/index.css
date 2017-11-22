@@ -104,19 +104,19 @@ body {
     background-color:#CDC8F9;
 }
 
-.pbt-back-white{ 
-    background-color: white
-}
-
 .pbt-margin-decor-on {
     background-color: #364249; 
     width:5px;
+} 
+
+.pbt-back-highlight-dark {
+    background-color:#364249; 
 }
 
-.pbt-margin-decor-off {
-    background-color: #FF0000;
+.pbt-margin-decor-on-dark {
+    background-color: #CDC8F9;
     width:5px;
-}     
+}      
 
 .wrapper #jsEditor {
     padding-top:5px;
