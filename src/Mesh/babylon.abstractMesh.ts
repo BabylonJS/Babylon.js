@@ -1787,15 +1787,15 @@
                 upDirection = BABYLON.Axis.Y;
             }
             
-            var axis0 = Tmp.Vector3[0];
-            var axis1 = Tmp.Vector3[1];
-            Vector3.CrossToRef(upDirection, normal, axis0);
-            Vector3.CrossToRef(normal, axis0, axis1);
-
+            var axisX = Tmp.Vector3[0];
+            var axisZ = Tmp.Vector3[1];
+            Vector3.CrossToRef(upDirection, normal, axisZ);
+            Vector3.CrossToRef(normal, axisZ, axisX);
+            
             if(this.rotationQuaternion){
-                Quaternion.RotationQuaternionFromAxisToRef(axis1, normal, axis0, this.rotationQuaternion);
+                Quaternion.RotationQuaternionFromAxisToRef(axisX, normal, axisZ, this.rotationQuaternion);
             }else{
-                Vector3.RotationFromAxisToRef(axis1, normal, axis0, this.rotation);
+                Vector3.RotationFromAxisToRef(axisX, normal, axisZ, this.rotation);
             }
             return this;
         }
