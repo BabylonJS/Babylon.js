@@ -3181,7 +3181,7 @@
                 if (!hostingScene) {
                     hostingScene = this.scenes[this.scenes.length - 1];
                 }
-                hostingScene.postProcessManager.directRender([this._rescalePostProcess], rtt);
+                hostingScene.postProcessManager.directRender([this._rescalePostProcess], rtt, true);
 
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, destination);
                 this._gl.copyTexImage2D(this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);

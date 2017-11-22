@@ -1,10 +1,15 @@
 // jsEditor Manipulation
-var PBT = function() {
+var PBT = function() {    
     this.decorationStyles = new Array();
     this.decorations = new Array();
     this.lineRanges = new Array();
     var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-    
+    var background = "pbt-back-highlight";
+    var margin = "pbt-margin-decor-on";
+    if(localStorage.getItem("bjs-playground-theme") =="dark") {
+        background += "-dark";
+        margin +="-dark";
+    }
     this.clearDecorLines = function() {
         this.decorations = jsEditor.deltaDecorations(this.decorations, []);
     }
@@ -16,8 +21,8 @@ var PBT = function() {
         this.decorationStyles.push({ range: new monaco.Range(1,1,endLineNm,1), options: { isWholeLine: true, inlineClassName: 'pbt-fade' }});
         
         for(var i = 0; i < lineRanges.length; i +=2) {          
-            this.decorationStyles.push({ range: new monaco.Range(lineRanges[i],1,lineRanges[i + 1],1), options: { isWholeLine: true, linesDecorationsClassName: 'pbt-margin-decor-on' }});
-            this.decorationStyles.push({ range: new monaco.Range(lineRanges[i],1,lineRanges[i + 1],1), options: { isWholeLine: true, className: 'pbt-back-highlight' }});
+            this.decorationStyles.push({ range: new monaco.Range(lineRanges[i],1,lineRanges[i + 1],1), options: { isWholeLine: true, linesDecorationsClassName: margin }});
+            this.decorationStyles.push({ range: new monaco.Range(lineRanges[i],1,lineRanges[i + 1],1), options: { isWholeLine: true, className: background }});
             this.decorationStyles.push({ range: new monaco.Range(lineRanges[i],1,lineRanges[i + 1],1), options: { isWholeLine: true, inlineClassName: 'pbt-darken' }});
         }
 
@@ -275,8 +280,10 @@ var PBT = function() {
         var type = type||"C"; 
         type = type.substr(0,1).toUpperCase();
         if(type !="R") {
-            if(type != "C") {
-                type = "C";
+            if(type != "S") {
+                if(type != "C") {
+                    type = "C";
+                }
             }
         }
         this.type = type;   
@@ -285,9 +292,21 @@ var PBT = function() {
         this.addButton = function(text, func, checked) {
             this.buttons.push({
                 text: text||"", 
-                func: func||null, 
+                func: func||function(){}, 
                 checked: checked||false
-        });
+            });
+        }
+
+        this.addSlider = function(text, func, unit, onVal, min, max, value) {        
+            this.buttons.push({
+                text: text||"",                
+                func: func||function(){},
+                unit: unit||"", 
+                onVal: onVal||function(){},
+                min: min||0,
+                max: max||10,
+                value: value||0
+            });
         }
         return this;
     }
@@ -295,7 +314,7 @@ var PBT = function() {
     this.SelectionDialog = function(options) {
         options = options||{};
         var justStarted = true;
-        var width = options.width||0.15;
+        var width = options.width||0.3;
         var top = options.top||0;
         var left = options.left||0;  
         var verticalAlignment = options.verticalAlignment||BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
@@ -304,10 +323,12 @@ var PBT = function() {
         this.container = new BABYLON.GUI.Rectangle();
         this.container.verticalAlignment = verticalAlignment;
         this.container.horizontalAlignment = horizontalAlignment;   
-        this.container.width = 0.25;
         var height = 36 * groups.length;
         for(var i = 0; i < groups.length; i++) {
             height += 32 * groups[i].buttons.length;
+            if(groups[i].type == "S") {
+                height += 31 * groups[i].buttons.length;
+            }
         }
         this.container.height = height + "px";
         this.container.cornerRadius = 10;
@@ -316,6 +337,7 @@ var PBT = function() {
         this.container.background = "#CDC8F9";
         this.container.top = top;
         this.container.left = left;
+        this.container.width = width;
         advancedTexture.addControl(this.container);
         
         var panel = new BABYLON.GUI.StackPanel(); 
@@ -325,7 +347,7 @@ var PBT = function() {
         panel.left = 5;
         this.container.addControl(panel);
 
-    var addRadio = function(text, parent, group, func, checked) {
+        var addRadio = function(text, parent, group, func, checked) {
             checked = checked || false;
             var button = new BABYLON.GUI.RadioButton();
             button.width = "20px";
@@ -337,16 +359,18 @@ var PBT = function() {
             button.justStarted = true;
             button.func = func;
 
-        button.onIsCheckedChangedObservable.add(function(state) {                       		
+            button.onIsCheckedChangedObservable.add(function(state) {                       		
                 if (state && !justStarted) {                  
                     func();
                 }
             }); 
 
-        var header = BABYLON.GUI.Control.AddHeader(button, text, "200px", { isHorizontal: true, controlFirst: true });
+            var header = BABYLON.GUI.Control.AddHeader(button, text, "200px", { isHorizontal: true, controlFirst: true });
             header.height = "30px";
+            header.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            header.left = "4px";
 
-        parent.addControl(header);    
+            parent.addControl(header);    
             button.isChecked = checked; 
         }
 
@@ -365,9 +389,38 @@ var PBT = function() {
             
             var header = BABYLON.GUI.Control.AddHeader(button, text, "200px", { isHorizontal: true, controlFirst: true });
             header.height = "30px";
+            header.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            header.left = "4px";
             
             parent.addControl(header);    
             button.isChecked = checked;
+        }
+
+        var addSldr = function(text, parent, func, unit, onValueChange, min, max, value) {         
+            var button = new BABYLON.GUI.Slider();  
+            button.value = value;
+            button.minimum = min;
+            button.maximum = max;
+            button.width = "200px";
+            button.height = "20px";
+            button.color = "#364249";
+            button.background = "white"; 
+            button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            button.left = "4px";
+
+            var header = new BABYLON.GUI.TextBlock();
+            header.text = text+": " + value + " " + unit;
+            header.height = "30px";
+            header.color = "#364249";
+            header.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            header.left = "4px";
+            parent.addControl(header);  
+
+            button.onValueChangedObservable.add(function(value) {
+                header.text = "Y-rotation: " + onValueChange(value) + " " + unit;
+                func(value);
+            });
+            parent.addControl(button);
         }
 
         var groupHeader = function(name) {
@@ -376,8 +429,9 @@ var PBT = function() {
             groupHeading.height = "30px";
             groupHeading.textWrapping = true;
             groupHeading.color = "black";
+            groupHeading.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
             groupHeading.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-            groupHeading.left = "-2px";
+            groupHeading.left = "2px";
             panel.addControl(groupHeading);
         }
 
@@ -397,6 +451,11 @@ var PBT = function() {
             if(group.type == "R") {
                 for(var i = 0; i < group.buttons.length; i++) {
                     addRadio(group.buttons[i].text, panel, group.name, group.buttons[i].func, group.buttons[i].checked);
+                }
+            }
+            else if(group.type == "S") {
+                for(var i = 0; i < group.buttons.length; i++) {
+                    addSldr(group.buttons[i].text, panel, group.buttons[i].func, group.buttons[i].unit, group.buttons[i].onVal, group.buttons[i].min, group.buttons[i].max, group.buttons[i].value);
                 }
             }
             else {
@@ -469,4 +528,5 @@ showBJSPGMenu = function() {
         headings[i].style.visibility = 'visible';
     }
 }
+
     
