@@ -34,6 +34,8 @@ declare module BABYLON.GUI {
         private _renderAtIdealSize;
         private _focusedControl;
         private _blockNextFocusCheck;
+        private _renderScale;
+        renderScale: number;
         background: string;
         idealWidth: number;
         idealHeight: number;
@@ -59,7 +61,7 @@ declare module BABYLON.GUI {
         private _manageFocus();
         private _attachToOnPointerOut(scene);
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean): AdvancedDynamicTexture;
-        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>): AdvancedDynamicTexture;
+        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number): AdvancedDynamicTexture;
     }
 }
 

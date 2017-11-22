@@ -40,6 +40,7 @@ var BABYLON;
                 _this._idealHeight = 0;
                 _this._renderAtIdealSize = false;
                 _this._blockNextFocusCheck = false;
+                _this._renderScale = 1;
                 scene = _this.getScene();
                 if (!scene || !_this._texture) {
                     return _this;
@@ -63,6 +64,20 @@ var BABYLON;
                 _this._texture.isReady = true;
                 return _this;
             }
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "renderScale", {
+                get: function () {
+                    return this._renderScale;
+                },
+                set: function (value) {
+                    if (value === this._renderScale) {
+                        return;
+                    }
+                    this._renderScale = value;
+                    this._onResize();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "background", {
                 get: function () {
                     return this._background;
@@ -234,8 +249,8 @@ var BABYLON;
                 // Check size
                 var engine = scene.getEngine();
                 var textureSize = this.getSize();
-                var renderWidth = engine.getRenderWidth();
-                var renderHeight = engine.getRenderHeight();
+                var renderWidth = engine.getRenderWidth() * this._renderScale;
+                var renderHeight = engine.getRenderHeight() * this._renderScale;
                 if (this._renderAtIdealSize) {
                     if (this._idealWidth) {
                         renderHeight = (renderHeight * this._idealWidth) / renderWidth;
@@ -326,8 +341,8 @@ var BABYLON;
                 var engine = scene.getEngine();
                 var textureSize = this.getSize();
                 if (this._isFullscreen) {
-                    x = x * (textureSize.width / engine.getRenderWidth());
-                    y = y * (textureSize.height / engine.getRenderHeight());
+                    x = x * ((textureSize.width / this._renderScale) / engine.getRenderWidth());
+                    y = y * ((textureSize.height / this._renderScale) / engine.getRenderHeight());
                 }
                 if (this._capturingControl) {
                     this._capturingControl._processObservables(type, x, y, buttonIndex);
@@ -459,10 +474,11 @@ var BABYLON;
                 result.attachToMesh(mesh, supportPointerMove);
                 return result;
             };
-            AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene) {
+            AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene, sampling) {
                 if (foreground === void 0) { foreground = true; }
                 if (scene === void 0) { scene = null; }
-                var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+                if (sampling === void 0) { sampling = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
+                var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
                 // Display
                 var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
                 layer.texture = result;
