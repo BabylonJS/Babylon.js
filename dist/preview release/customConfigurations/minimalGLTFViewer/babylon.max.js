@@ -10447,7 +10447,7 @@ var BABYLON;
                 if (!hostingScene) {
                     hostingScene = _this.scenes[_this.scenes.length - 1];
                 }
-                hostingScene.postProcessManager.directRender([_this._rescalePostProcess], rtt);
+                hostingScene.postProcessManager.directRender([_this._rescalePostProcess], rtt, true);
                 _this._bindTextureDirectly(_this._gl.TEXTURE_2D, destination);
                 _this._gl.copyTexImage2D(_this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
                 _this.unBindFramebuffer(rtt);
@@ -47279,14 +47279,16 @@ var BABYLON;
             var options = {
                 attributes: [BABYLON.VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
-                needAlphaBlending: false,
+                needAlphaBlending: true,
                 defines: defines
             };
+            if (useVertexAlpha === false) {
+                options.needAlphaBlending = false;
+            }
             if (!useVertexColor) {
                 options.uniforms.push("color");
             }
             else {
-                options.needAlphaBlending = (useVertexAlpha) ? true : false;
                 options.defines.push("#define VERTEXCOLOR");
                 options.attributes.push(BABYLON.VertexBuffer.ColorKind);
             }
@@ -48242,7 +48244,7 @@ var BABYLON;
          * The parameter `lines` is an array of lines, each line being an array of successive Vector3.
          * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter. The way to update it is the same than for
          * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point.
-         * The optional parameter `useVertexAlpha' is to be set to `true` (default `false`) when the alpha value from the former `Color4` array must be used.
+         * The optional parameter `useVertexAlpha' is to be set to `false` (default `true`) when you don't need the alpha blending (faster).
          * updating a simple Line mesh, you just need to update every line in the `lines` array : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
          * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -48298,7 +48300,7 @@ var BABYLON;
          * The parameter `points` is an array successive Vector3.
          * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
          * The optional parameter `colors` is an array of successive Color4, one per line point.
-         * The optional parameter `useVertexAlpha' is to be set to `true` (default `false`) when the alpha value from the former `Color4` array must be used.
+         * The optional parameter `useVertexAlpha' is to be set to `false` (default `true`) when you don't need alpha blending (faster).
          * When updating an instance, remember that only point positions can change, not the number of points.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
@@ -67287,7 +67289,7 @@ var BABYLON;
                 }
                 impostor.applyImpulse(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
             });
-            event.cleanup(false);
+            event.dispose(false);
             return event;
         };
         /**
@@ -67314,7 +67316,7 @@ var BABYLON;
                 }
                 impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
             });
-            event.cleanup(false);
+            event.dispose(false);
             return event;
         };
         /**
@@ -67334,7 +67336,7 @@ var BABYLON;
                 return null;
             }
             var event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radius, strength, falloff);
-            event.cleanup(false);
+            event.dispose(false);
             return event;
         };
         return PhysicsHelper;
@@ -67398,7 +67400,7 @@ var BABYLON;
          * Disposes the radialSphere.
          * @param {bolean} force
          */
-        PhysicsRadialExplosionEvent.prototype.cleanup = function (force) {
+        PhysicsRadialExplosionEvent.prototype.dispose = function (force) {
             var _this = this;
             if (force === void 0) { force = true; }
             if (force) {
@@ -67471,7 +67473,7 @@ var BABYLON;
          * Disposes the radialSphere.
          * @param {bolean} force
          */
-        PhysicsGravitationalFieldEvent.prototype.cleanup = function (force) {
+        PhysicsGravitationalFieldEvent.prototype.dispose = function (force) {
             var _this = this;
             if (force === void 0) { force = true; }
             if (force) {
