@@ -51,7 +51,7 @@ module BABYLON {
                 impostor.applyImpulse(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
             });
 
-            event.cleanup(false);
+            event.dispose(false);
 
             return event;
         }
@@ -85,7 +85,7 @@ module BABYLON {
                 impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
             })
 
-            event.cleanup(false);
+            event.dispose(false);
 
             return event;
         }
@@ -109,7 +109,7 @@ module BABYLON {
 
             var event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radius, strength, falloff);
 
-            event.cleanup(false);
+            event.dispose(false);
 
             return event;
         }
@@ -190,7 +190,7 @@ module BABYLON {
          * Disposes the radialSphere.
          * @param {bolean} force
          */
-        public cleanup(force: boolean = true) {
+        public dispose(force: boolean = true) {
             if (force) {
                 this._radialSphere.dispose();
             } else {
@@ -299,7 +299,7 @@ module BABYLON {
          * Disposes the radialSphere.
          * @param {bolean} force
          */
-        public cleanup(force: boolean = true) {
+        public dispose(force: boolean = true) {
             if (force) {
                 this._radialSphere.dispose();
             } else {
