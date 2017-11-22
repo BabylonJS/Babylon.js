@@ -48,15 +48,18 @@
             var options = {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
-                needAlphaBlending: false,
+                needAlphaBlending: true,
                 defines: defines
             };
+            
+            if (useVertexAlpha === false) {
+                options.needAlphaBlending = false;
+            }
             
             if (!useVertexColor) {
                 options.uniforms.push("color");
             }
             else {
-                options.needAlphaBlending = (useVertexAlpha) ? true : false;
                 options.defines.push("#define VERTEXCOLOR");
                 options.attributes.push(VertexBuffer.ColorKind);
             }
