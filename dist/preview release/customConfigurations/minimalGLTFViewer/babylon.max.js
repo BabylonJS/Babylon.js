@@ -71596,13 +71596,14 @@ var BABYLON;
             this._teleportationAllowed = false;
             this._rotationAllowed = true;
             this._teleportationRequestInitiated = false;
-            //private _classicGamepadTeleportationRequestInitiated = false;
             this._rotationRightAsked = false;
             this._rotationLeftAsked = false;
             this._teleportationFillColor = "#444444";
             this._teleportationBorderColor = "#FFFFFF";
             this._rotationAngle = 0;
             this._haloCenter = new BABYLON.Vector3(0, 0, 0);
+            this._padSensibilityUp = 0.7;
+            this._padSensibilityDown = 0.3;
             this._scene = scene;
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
                 this._position = new BABYLON.Vector3(0, 2, 0);
@@ -71915,7 +71916,8 @@ var BABYLON;
             this.meshSelectionPredicate = function (mesh) {
                 if (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
                     && mesh.name.indexOf("teleportationCircle") === -1
-                    && mesh.name.indexOf("torusTeleportation") === -1) {
+                    && mesh.name.indexOf("torusTeleportation") === -1
+                    && mesh.name.indexOf("ray") === -1) {
                     return true;
                 }
                 return false;
@@ -71929,12 +71931,12 @@ var BABYLON;
             if (gamepad.leftStick) {
                 gamepad.onleftstickchanged(function (stickValues) {
                     if (!_this._teleportationRequestInitiated) {
-                        if (stickValues.y < -0.6) {
+                        if (stickValues.y < -_this._padSensibilityUp) {
                             _this._teleportationRequestInitiated = true;
                         }
                     }
                     else {
-                        if (stickValues.y > -0.4) {
+                        if (stickValues.y > -_this._padSensibilityDown) {
                             if (_this._teleportationAllowed) {
                                 _this._teleportCamera();
                             }
@@ -71946,7 +71948,7 @@ var BABYLON;
             if (gamepad.rightStick) {
                 gamepad.onrightstickchanged(function (stickValues) {
                     if (!_this._rotationLeftAsked) {
-                        if (stickValues.x < -0.6) {
+                        if (stickValues.x < -_this._padSensibilityUp) {
                             _this._rotationLeftAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(false);
@@ -71954,12 +71956,12 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stickValues.x > -0.4) {
+                        if (stickValues.x > -_this._padSensibilityDown) {
                             _this._rotationLeftAsked = false;
                         }
                     }
                     if (!_this._rotationRightAsked) {
-                        if (stickValues.x > 0.6) {
+                        if (stickValues.x > _this._padSensibilityUp) {
                             _this._rotationRightAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(true);
@@ -71967,7 +71969,7 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stickValues.x < 0.4) {
+                        if (stickValues.x < _this._padSensibilityDown) {
                             _this._rotationRightAsked = false;
                         }
                     }
@@ -72004,14 +72006,15 @@ var BABYLON;
                 webVRController.onPadValuesChangedObservable.add(function (stateObject) {
                     // on pressed
                     if (!_this._teleportationRequestInitiated) {
-                        if (stateObject.y < -0.6) {
+                        if (stateObject.y < -_this._padSensibilityUp) {
                             laserPointer.isVisible = true;
                             _this._teleportationRequestInitiated = true;
                         }
                     }
                     else {
-                        if (stateObject.y > -0.4) {
+                        if (stateObject.y > -_this._padSensibilityDown) {
                             if (_this._teleportationAllowed) {
+                                _this._teleportationAllowed = false;
                                 _this._teleportCamera();
                             }
                             _this._teleportationRequestInitiated = false;
@@ -72019,7 +72022,7 @@ var BABYLON;
                         }
                     }
                     if (!_this._rotationLeftAsked) {
-                        if (stateObject.x < -0.6) {
+                        if (stateObject.x < -_this._padSensibilityUp) {
                             _this._rotationLeftAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(false);
@@ -72027,12 +72030,12 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stateObject.x > -0.4) {
+                        if (stateObject.x > -_this._padSensibilityDown) {
                             _this._rotationLeftAsked = false;
                         }
                     }
                     if (!_this._rotationRightAsked) {
-                        if (stateObject.x > 0.6) {
+                        if (stateObject.x > _this._padSensibilityUp) {
                             _this._rotationRightAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(true);
@@ -72040,7 +72043,7 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stateObject.x < 0.4) {
+                        if (stateObject.x < _this._padSensibilityDown) {
                             _this._rotationRightAsked = false;
                         }
                     }
@@ -72060,6 +72063,7 @@ var BABYLON;
         };
         VRExperienceHelper.prototype._createTeleportationCircles = function () {
             this._teleportationCircle = BABYLON.Mesh.CreateGround("teleportationCircle", 2, 2, 2, this._scene);
+            this._teleportationCircle.isPickable = false;
             var length = 512;
             var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", length, this._scene, true);
             dynamicTexture.hasAlpha = true;
@@ -72080,6 +72084,7 @@ var BABYLON;
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
             this._teleportationCircle.material = teleportationCircleMaterial;
             var torus = BABYLON.Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
+            torus.isPickable = false;
             torus.parent = this._teleportationCircle;
             var animationInnerCircle = new BABYLON.Animation("animationInnerCircle", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
             var keys = [];
@@ -72316,6 +72321,7 @@ var BABYLON;
                     this._moveTeleportationSelectorTo(hit.pickedPoint);
                     return;
                 }
+                console.log(hit.pickedMesh.name);
                 // If not, we're in a selection scenario
                 this._hideTeleportationCircle();
                 this._teleportationAllowed = false;
