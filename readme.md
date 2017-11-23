@@ -44,7 +44,7 @@ In addition, if direction, upVector, rightVector, near clip distance, far clip d
 
 ```
 
-light.light_near = 1000.0;
+light.light_near = 0.01;
 light.computeTextureMatrix();
 
 ```
@@ -53,7 +53,7 @@ light.computeTextureMatrix();
 
 ```
 
-light.light_near = 0.1;
+light.light_far = 1000.0;
 light.computeTextureMatrix();
 
 ```
