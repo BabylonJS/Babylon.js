@@ -388,7 +388,13 @@ module INSPECTOR {
                     let objToDetail = this.value;
                     // Display all properties that are not functions
                     let propToDisplay = Helpers.GetAllLinesPropertiesAsString(objToDetail);
-                    propToDisplay.sort().reverse();
+
+                    // special case for color3
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b')) == 0) {
+                        propToDisplay.sort();
+                    } else {
+                        propToDisplay.sort().reverse();
+                    }
 
                     for (let prop of propToDisplay) {
                         let infos = new Property(prop, this._property.value);
