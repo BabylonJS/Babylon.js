@@ -32,28 +32,22 @@
         private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
-        constructor(name: string, scene: Nullable<Scene> = null, parent: Nullable<Node> = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor?: boolean) {
+        constructor(name: string, scene: Nullable<Scene> = null, parent: Nullable<Node> = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor?: boolean, public useVertexAlpha?: boolean) {
             super(name, scene, parent, source, doNotCloneChildren);
 
             if (source) {
                 this.color = source.color.clone();
                 this.alpha = source.alpha;
                 this.useVertexColor = source.useVertexColor;
+                this.useVertexAlpha = source.useVertexAlpha;
             }
 
             this._intersectionThreshold = 0.1;
 
+            var defines: String[] = []; 
             var options = {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
-<<<<<<< HEAD
-                needAlphaBlending: false,
-            };
-
-            if (!useVertexColor) {
-                options.uniforms.push("color");
-                options.needAlphaBlending = true;
-=======
                 needAlphaBlending: true,
                 defines: defines
             };
@@ -68,7 +62,6 @@
             else {
                 options.defines.push("#define VERTEXCOLOR");
                 options.attributes.push(VertexBuffer.ColorKind);
->>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
             }
 
             this._colorShader = new ShaderMaterial("colorShader", this.getScene(), "color", options);

@@ -1,4 +1,8 @@
 module BABYLON {
+    export interface VRTeleportationOptions {
+        floorMeshName?: string; // If you'd like to provide a mesh acting as the floor
+    }
+
     export class VRExperienceHelper {
         private _scene: BABYLON.Scene;
         private _position: Vector3;
@@ -32,8 +36,6 @@ module BABYLON {
         public onControllerMeshLoaded: (controller: WebVRController) => void;
 
         private _useCustomVRButton: boolean = false;
-<<<<<<< HEAD
-=======
         private _teleportationRequested: boolean = false;
         private _teleportationEnabledOnLeftController: boolean = false;
         private _teleportationEnabledOnRightController: boolean = false;
@@ -66,7 +68,6 @@ module BABYLON {
         private _currentHit: Nullable<PickingInfo>;
         private _pointerDownOnMeshAsked = false;
         private _isActionableMesh = false;
->>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
 
         public get deviceOrientationCamera(): DeviceOrientationCamera {
             return this._deviceOrientationCamera;
@@ -206,12 +207,24 @@ module BABYLON {
             this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);            
             this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
             this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
-            
+        
             this.updateButtonVisibility();
         }
 
         // Raised when one of the controller has loaded successfully its associated default mesh
         private _onDefaultMeshLoaded(webVRController: WebVRController) {
+            if (webVRController.hand === "left") {
+                this._leftControllerReady = true;
+                if (this._teleportationRequested && !this._teleportationEnabledOnLeftController) {
+                    this._enableTeleportationOnController(webVRController);
+                }
+            }
+            if (webVRController.hand === "right") {
+                this._rightControllerReady = true;
+                if (this._teleportationRequested && !this._teleportationEnabledOnRightController) {
+                    this._enableTeleportationOnController(webVRController);
+                }
+            }
             if (this.onControllerMeshLoaded) {
                 this.onControllerMeshLoaded(webVRController);
             }
@@ -334,11 +347,7 @@ module BABYLON {
                 this._scene.activeCamera.attachControl(this._canvas);
             }
 
-<<<<<<< HEAD
-            this.updateButtonVisibility();
-=======
             this.updateButtonVisibility();  
->>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
         }
 
         public get position(): Vector3 {
@@ -353,8 +362,6 @@ module BABYLON {
             }
         }
 
-<<<<<<< HEAD
-=======
         public enableTeleportation(vrTeleportationOptions: VRTeleportationOptions = {}) {
             this._teleportationRequested = true;
 
@@ -1021,7 +1028,6 @@ module BABYLON {
             }
         }
 
->>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
         public dispose() {
             if (this.isInVRMode()) {
                 this.exitVR();

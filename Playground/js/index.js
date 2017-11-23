@@ -326,11 +326,8 @@
                 var showInspector = false;
                 var showDebugLayer = false;
                 var initialTabIndex = 0;
-<<<<<<< HEAD
-=======
                 showBJSPGMenu();
                 jsEditor.updateOptions({ readOnly: false });
->>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
 
                 if (document.getElementsByClassName('insp-wrapper').length > 0) {
                     for (var i = 0; i < engine.scenes.length; i++) {
@@ -644,11 +641,7 @@
         // Fonts
         setFontSize = function (size) {
             fontSize = size;
-<<<<<<< HEAD
-            document.querySelector(".view-lines").style.fontSize = size + "px";
-=======
             jsEditor.updateOptions({ fontSize: size });
->>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 

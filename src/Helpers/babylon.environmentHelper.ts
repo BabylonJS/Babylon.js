@@ -100,7 +100,7 @@ namespace BABYLON {
          */
         skyboxTexture: string | BaseTexture;
         /**
-         * The color mixed in the ground texture by default.
+         * The color mixed in the skybox texture by default.
          * BabylonJS clearColor by default.
          */
         skyboxColor: Color3;
@@ -123,7 +123,7 @@ namespace BABYLON {
         rootPosition: Vector3;
 
         /**
-         * Sets up the inmage processing in the scene.
+         * Sets up the image processing in the scene.
          * true by default.
          */
         setupImageProcessing: boolean;
@@ -299,8 +299,8 @@ namespace BABYLON {
         /**
          * Stores the creation options.
          */
-        private readonly _options: IEnvironmentHelperOptions;
         private readonly _scene: Scene;
+        private _options: IEnvironmentHelperOptions;
 
         /**
          * constructor
@@ -363,12 +363,13 @@ namespace BABYLON {
                 this._groundMirror = null;
             }
 
-            this._setupBackground();
-
             if (this._options.environmentTexture && !newOptions.environmentTexture && this._scene.environmentTexture) {
                 this._scene.environmentTexture.dispose();
             }
 
+            this._options = newOptions;
+
+            this._setupBackground();
             this._setupImageProcessing();
         }
 
@@ -436,8 +437,8 @@ namespace BABYLON {
 
                 if (this._options.enableGroundMirror) {
                     this._setupGroundMirrorTexture(sceneSize);
-                    this._setupMirrorInGroundMaterial();
                 }
+                this._setupMirrorInGroundMaterial();
             }
 
             if (this._options.createSkybox) {

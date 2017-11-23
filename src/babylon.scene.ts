@@ -96,7 +96,7 @@
         private static _FOGMODE_EXP2 = 2;
         private static _FOGMODE_LINEAR = 3;
 
-        private static _uniqueIdCounter = 0;        
+        private static _uniqueIdCounter = 0;
 
         public static MinDeltaTime = 1.0;
         public static MaxDeltaTime = 1000.0;
@@ -147,7 +147,7 @@
             if (this._environmentTexture === value) {
                 return;
             }
-            
+
             this._environmentTexture = value;
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
@@ -253,37 +253,37 @@
         * An event triggered before animating the scene
         * @type {BABYLON.Observable}
         */
-        public onBeforeAnimationsObservable = new Observable<Scene>();       
-        
+        public onBeforeAnimationsObservable = new Observable<Scene>();
+
         /**
         * An event triggered after animations processing
         * @type {BABYLON.Observable}
         */
-        public onAfterAnimationsObservable = new Observable<Scene>();               
+        public onAfterAnimationsObservable = new Observable<Scene>();
 
         /**
         * An event triggered before draw calls are ready to be sent
         * @type {BABYLON.Observable}
         */
-        public onBeforeDrawPhaseObservable = new Observable<Scene>();          
+        public onBeforeDrawPhaseObservable = new Observable<Scene>();
 
         /**
         * An event triggered after draw calls have been sent
         * @type {BABYLON.Observable}
         */
-        public onAfterDrawPhaseObservable = new Observable<Scene>();         
-        
+        public onAfterDrawPhaseObservable = new Observable<Scene>();
+
         /**
         * An event triggered when physic simulation is about to be run
         * @type {BABYLON.Observable}
         */
-        public onBeforePhysicsObservable = new Observable<Scene>();          
-        
+        public onBeforePhysicsObservable = new Observable<Scene>();
+
         /**
         * An event triggered when physic simulation has been done
         * @type {BABYLON.Observable}
         */
-        public onAfterPhysicsObservable = new Observable<Scene>();           
+        public onAfterPhysicsObservable = new Observable<Scene>();
 
         /**
         * An event triggered when the scene is ready
@@ -324,47 +324,47 @@
         * An event triggered when active meshes evaluation is about to start
         * @type {BABYLON.Observable}
         */
-        public onBeforeActiveMeshesEvaluationObservable = new Observable<Scene>();        
+        public onBeforeActiveMeshesEvaluationObservable = new Observable<Scene>();
 
         /**
         * An event triggered when active meshes evaluation is done
         * @type {BABYLON.Observable}
         */
-        public onAfterActiveMeshesEvaluationObservable = new Observable<Scene>();           
+        public onAfterActiveMeshesEvaluationObservable = new Observable<Scene>();
 
         /**
         * An event triggered when particles rendering is about to start
         * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
         * @type {BABYLON.Observable}
         */
-        public onBeforeParticlesRenderingObservable = new Observable<Scene>();        
-        
+        public onBeforeParticlesRenderingObservable = new Observable<Scene>();
+
         /**
         * An event triggered when particles rendering is done
         * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
         * @type {BABYLON.Observable}
         */
-        public onAfterParticlesRenderingObservable = new Observable<Scene>();  
+        public onAfterParticlesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when sprites rendering is about to start
         * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
         * @type {BABYLON.Observable}
         */
-        public onBeforeSpritesRenderingObservable = new Observable<Scene>();        
-        
+        public onBeforeSpritesRenderingObservable = new Observable<Scene>();
+
         /**
         * An event triggered when sprites rendering is done
         * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
         * @type {BABYLON.Observable}
         */
-        public onAfterSpritesRenderingObservable = new Observable<Scene>();          
+        public onAfterSpritesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
         * @type {BABYLON.Observable}
         */
-        public onDataLoadedObservable = new Observable<Scene>();            
+        public onDataLoadedObservable = new Observable<Scene>();
 
         /**
         * An event triggered when a camera is created
@@ -407,12 +407,12 @@
         * @type {BABYLON.Observable}
         */
         public onNewTransformNodeAddedObservable = new Observable<TransformNode>();
-        
+
         /**
         * An event triggered when a transform node is removed
         * @type {BABYLON.Observable}
         */
-        public onTransformNodeRemovedObservable = new Observable<TransformNode>();        
+        public onTransformNodeRemovedObservable = new Observable<TransformNode>();
 
         /**
         * An event triggered when a mesh is created
@@ -432,13 +432,13 @@
         * @type {BABYLON.Observable}
         */
         public OnBeforeRenderTargetsRenderObservable = new Observable<Scene>();
-        
+
         /**
         * An event triggered when render targets were rendered.
         * Can happen multiple times per frame.
         * @type {BABYLON.Observable}
         */
-        public OnAfterRenderTargetsRenderObservable = new Observable<Scene>();      
+        public OnAfterRenderTargetsRenderObservable = new Observable<Scene>();
 
         /**
         * An event triggered before calculating deterministic simulation step
@@ -553,7 +553,7 @@
          * You have the possibility to skip the process and the call to onKeyboardObservable by setting KeyboardInfoPre.skipOnPointerObservable to true
          */
         public onPreKeyboardObservable = new Observable<KeyboardInfoPre>();
-        
+
         /**
          * Observable event triggered each time an keyboard event is received from the hosting window
          */
@@ -1116,7 +1116,7 @@
 
         public getRenderTargetsDuration(): number {
             Tools.Warn("getRenderTargetsDuration is deprecated. Please use SceneInstrumentation class");
-            return 0;            
+            return 0;
         }
 
         public getRenderDuration(): number {
@@ -1200,7 +1200,7 @@
         }
 
         private _processPointerMove(pickResult: Nullable<PickingInfo>, evt: PointerEvent): Scene {
-            
+
             var canvas = this._engine.getRenderingCanvas();
 
             if (!canvas) {
@@ -1252,7 +1252,7 @@
                 }
             }
 
-            return this;            
+            return this;
         }
 
         /**
@@ -1263,7 +1263,7 @@
             let evt = new PointerEvent("pointerdown");
 
             return this._processPointerDown(pickResult, evt);
-        }        
+        }
 
         private _processPointerDown(pickResult: Nullable<PickingInfo>, evt: PointerEvent): Scene {
             if (pickResult && pickResult.hit && pickResult.pickedMesh) {
@@ -1330,9 +1330,9 @@
             clickInfo.singleClick = true;
 
             return this._processPointerUp(pickResult, evt, clickInfo);
-        }    
+        }
 
-        private _processPointerUp(pickResult: Nullable<PickingInfo>, evt: PointerEvent, clickInfo: ClickInfo): Scene {            
+        private _processPointerUp(pickResult: Nullable<PickingInfo>, evt: PointerEvent, clickInfo: ClickInfo): Scene {
             if (pickResult && pickResult && pickResult.pickedMesh) {
                 this._pickedUpMesh = pickResult.pickedMesh;
                 if (this._pickedDownMesh === this._pickedUpMesh) {
@@ -1560,7 +1560,7 @@
                 }
 
                 // Meshes
-                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerMovePredicate, false, this.cameraToUseForPointers);             
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerMovePredicate, false, this.cameraToUseForPointers);
 
                 this._processPointerMove(pickResult, evt);
             };
@@ -1643,7 +1643,7 @@
                 this._pickedUpMesh = null;
                 this._meshPickProceed = false;
 
-                this._updatePointerPosition(evt);      
+                this._updatePointerPosition(evt);
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
                     // PreObservable support
                     if (this.onPrePointerObservable.hasObservers()) {
@@ -1762,18 +1762,18 @@
             };
 
             let engine = this.getEngine();
-            this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(()=>{
+            this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(() => {
                 if (!canvas) {
                     return;
                 }
                 canvas.addEventListener("keydown", this._onKeyDown, false);
-                canvas.addEventListener("keyup", this._onKeyUp, false);   
+                canvas.addEventListener("keyup", this._onKeyUp, false);
             });
 
-            this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(()=>{       
+            this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
                 if (!canvas) {
                     return;
-                }                         
+                }
                 canvas.removeEventListener("keydown", this._onKeyDown);
                 canvas.removeEventListener("keyup", this._onKeyUp);
             });
@@ -1836,7 +1836,7 @@
             this.onKeyboardObservable.clear();
             this.onPreKeyboardObservable.clear();
             this.onPointerObservable.clear();
-            this.onPrePointerObservable.clear();     
+            this.onPrePointerObservable.clear();
         }
 
         // Ready
@@ -2082,7 +2082,7 @@
             this._useAlternateCameraConfiguration = active;
         }
 
-        public getViewMatrix(): Matrix {            
+        public getViewMatrix(): Matrix {
             return this._useAlternateCameraConfiguration ? this._alternateViewMatrix : this._viewMatrix;
         }
 
@@ -2145,7 +2145,7 @@
             if (!this._alternateSceneUbo) {
                 this._createAlternateUbo();
             }
-            
+
             if (this._alternateSceneUbo.useUbo) {
                 this._alternateSceneUbo.updateMatrix("viewProjection", this._alternateTransformMatrix);
                 this._alternateSceneUbo.updateMatrix("view", this._alternateViewMatrix);
@@ -2186,13 +2186,13 @@
             this.onMeshRemovedObservable.notifyObservers(toRemove);
 
             return index;
-        }        
+        }
 
         public addTransformNode(newTransformNode: TransformNode) {
             this.transformNodes.push(newTransformNode);
 
             this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
-        }        
+        }
 
         public removeTransformNode(toRemove: TransformNode): number {
             var index = this.transformNodes.indexOf(toRemove);
@@ -2620,7 +2620,7 @@
             return this.transformNodes.filter(function (m) {
                 return m.id === id;
             })
-        }        
+        }
 
         /**
          * Get a mesh with its auto-generated unique id
@@ -2669,7 +2669,7 @@
                 if (this.transformNodes[index].id === id) {
                     return this.transformNodes[index];
                 }
-            }            
+            }
 
             for (index = this.cameras.length - 1; index >= 0; index--) {
                 if (this.cameras[index].id === id) {
@@ -2752,7 +2752,7 @@
             }
 
             return null;
-        }        
+        }
 
         public getSoundByName(name: string): Nullable<Sound> {
             var index: number;
@@ -2923,7 +2923,7 @@
         public _isInIntermediateRendering(): boolean {
             return this._intermediateRendering
         }
-        
+
         private _activeMeshesFrozen = false;
 
         /**
@@ -2934,7 +2934,7 @@
             this._activeMeshesFrozen = true;
             return this;
         }
-        
+
         /**
          * Use this function to restart evaluating active meshes on every frame
          */
@@ -3010,7 +3010,7 @@
                 if (mesh.alwaysSelectAsActiveMesh || mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
-                        
+
                     mesh._activate(this._renderId);
                     if (meshLOD !== mesh) {
                         meshLOD._activate(this._renderId);
@@ -3057,7 +3057,7 @@
             if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 let boundingInfo = sourceMesh.getBoundingInfo();
 
-                this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);    
+                this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
             }
 
             if (mesh && mesh.subMeshes) {
@@ -3107,7 +3107,7 @@
                 throw new Error("Active camera not set");
 
             Tools.StartPerformanceCounter("Rendering camera " + this.activeCamera.name);
-           
+
             // Viewport
             engine.setViewport(this.activeCamera.viewport);
 
@@ -3211,7 +3211,7 @@
                 }
                 engine.setDepthBuffer(true);
             }
-        
+
             // Activate HighlightLayer stencil
             if (renderhighlights) {
                 this._engine.setStencilBuffer(true);
@@ -3270,7 +3270,7 @@
 
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
-           
+
             // Reset some special arrays
             this._renderTargets.reset();
 
@@ -3291,7 +3291,7 @@
             if (this.activeCamera) {
                 this.activeCamera.update();
             }
-            
+
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
                 this._renderForCamera(camera._rigCameras[index]);
@@ -3368,60 +3368,66 @@
                 this.simplificationQueue.executeNext();
             }
 
-            if(this._engine.isDeterministicLockStep()){
-              var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) / 1000;
+            if (this._engine.isDeterministicLockStep()) {
+                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
 
-              var defaultTimeStep = (60.0 / 1000.0);
-              if (this._physicsEngine) {
-                defaultTimeStep = this._physicsEngine.getTimeStep();
-              }
+                var defaultFPS = (60.0 / 1000.0);
 
-              var maxSubSteps = this._engine.getLockstepMaxSteps();
+                let defaultFrameTime = 1000 / 60; // frame time in MS
 
-              this._timeAccumulator += deltaTime;
+                if (this._physicsEngine) {
+                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000; //timestep in physics engine is in seconds
+                }
+                let stepsTaken = 0;
 
-              // compute the amount of fixed steps we should have taken since the last step
-              var internalSteps = Math.floor(this._timeAccumulator / defaultTimeStep);
-              internalSteps = Math.min(internalSteps, maxSubSteps);
+                var maxSubSteps = this._engine.getLockstepMaxSteps();
 
-              for(this._currentInternalStep = 0; this._currentInternalStep < internalSteps; this._currentInternalStep++){
+                var internalSteps = Math.floor(deltaTime / (1000 * defaultFPS));
+                internalSteps = Math.min(internalSteps, maxSubSteps);
 
-                this.onBeforeStepObservable.notifyObservers(this);
+                do {
+                    this.onBeforeStepObservable.notifyObservers(this);
 
+                    // Animations
+                    this._animationRatio = defaultFrameTime * defaultFPS;
+                    this._animate();
+                    this.onAfterAnimationsObservable.notifyObservers(this);
+
+                    // Physics
+                    if (this._physicsEngine) {
+                        this.onBeforePhysicsObservable.notifyObservers(this);
+                        this._physicsEngine._step(defaultFPS);
+                        this.onAfterPhysicsObservable.notifyObservers(this);
+                    }
+
+                    this.onAfterStepObservable.notifyObservers(this);
+                    this._currentStepId++;
+
+                    if ((internalSteps > 1) && (stepsTaken != internalSteps - 1)) {
+                        this._evaluateActiveMeshes();
+                    }
+
+                    stepsTaken++;
+                    deltaTime -= defaultFrameTime;
+
+                } while (deltaTime > 0 && stepsTaken < maxSubSteps);
+
+                this._timeAccumulator = deltaTime;
+
+            }
+            else {
                 // Animations
-                this._animationRatio = defaultTimeStep * (60.0 / 1000.0);
+                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
+                this._animationRatio = deltaTime * (60.0 / 1000.0);
                 this._animate();
                 this.onAfterAnimationsObservable.notifyObservers(this);
 
                 // Physics
                 if (this._physicsEngine) {
-                   this.onBeforePhysicsObservable.notifyObservers(this);
-                   this._physicsEngine._step(defaultTimeStep);
-                   this.onAfterPhysicsObservable.notifyObservers(this);
+                    this.onBeforePhysicsObservable.notifyObservers(this);
+                    this._physicsEngine._step(deltaTime / 1000.0);
+                    this.onAfterPhysicsObservable.notifyObservers(this);
                 }
-                this._timeAccumulator -= defaultTimeStep;
-
-                this.onAfterStepObservable.notifyObservers(this);
-                this._currentStepId++;
-
-                if((internalSteps > 1) && (this._currentInternalStep != internalSteps - 1)) {
-                    this._evaluateActiveMeshes();
-                }
-              }
-            }
-            else {
-              // Animations
-              var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-              this._animationRatio = deltaTime * (60.0 / 1000.0);
-              this._animate();
-              this.onAfterAnimationsObservable.notifyObservers(this);
-
-              // Physics
-              if (this._physicsEngine) {
-                this.onBeforePhysicsObservable.notifyObservers(this);
-                this._physicsEngine._step(deltaTime / 1000.0);
-                this.onAfterPhysicsObservable.notifyObservers(this);
-              }
             }
 
             // Before render
@@ -4001,7 +4007,7 @@
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            
+
             result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), cameraViewSpace ? Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
             return this;
         }
@@ -4178,7 +4184,7 @@
         public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
             if (!this._tempPickingRay) {
                 this._tempPickingRay = Ray.Zero();
-            }            
+            }
             this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay, camera);
 
             return this._internalPickSprites(this._tempPickingRay, predicate, fastCheck, camera);
@@ -4201,7 +4207,7 @@
                 if (!this._cachedRayForTransform) {
                     this._cachedRayForTransform = Ray.Zero();
                 }
-                
+
                 Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
                 return this._cachedRayForTransform;
             }, predicate, fastCheck);
@@ -4233,7 +4239,7 @@
                 if (!this._cachedRayForTransform) {
                     this._cachedRayForTransform = Ray.Zero();
                 }
-                
+
                 Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
                 return this._cachedRayForTransform;
             }, predicate);
@@ -4337,7 +4343,7 @@
 
             if (this.postProcessManager) {
                 this.postProcessManager._rebuild();
-            }         
+            }
 
             for (var layer of this.layers) {
                 layer._rebuild();
@@ -4357,7 +4363,7 @@
 
             if (this._postProcessRenderPipelineManager) {
                 this._postProcessRenderPipelineManager._rebuild();
-            }            
+            }
         }
 
         public _rebuildTextures(): void {
