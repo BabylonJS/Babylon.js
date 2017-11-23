@@ -20,6 +20,7 @@
 		uniform vec2 depthValues{X};
 	#endif
 	#ifdef SPOTLIGHT{X}
+		uniform bool textureProjectionFlag{X};
 		uniform vec4 vLightDirection{X};
 		uniform mat4 textureMatrix{X};
 		uniform sampler2D projectionLightSampler{X};

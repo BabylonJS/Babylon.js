@@ -1,38 +1,138 @@
 ﻿module BABYLON {
     export class SpotLight extends ShadowLight {
-        private _angle: number;
-//======================================
-        public computeTextureMatrix(): void{
+        /**
+            upVector , rightVector and direction will form the coordinate system for this spot light. 
+            These three vectors will be used as projection matrix when doing texture projection.
             
+            Also we have the following rules always holds:
+            direction cross up   = right
+            right cross dirction = up
+            up cross right       = forward
+
+            light_near and light_far will control the range of the texture projection. If a plane is 
+            out of the range in spot light space, there is no texture projection.
+
+            Warning:
+            Change the angle of the Spotlight, direction of the SpotLight will not re-compute the 
+            projection matrix. Need to call computeTextureMatrix() to recompute manually. Add inheritance
+            to the setting function of the 2 attributes will solve the problem.
+        */
+        private _enableProjectionTexture : boolean;
+        @serialize()
+        /**
+         * Allows reading whether texture projection is enabled.
+         */
+        public get enableProjectionTexture(): boolean {
+            return this._enableProjectionTexture;
+        }
+        /**
+         * Allows setting whether texture projection is enabled.
+         */
+        public set enableProjectionTexture(value: boolean) {
+            this._enableProjectionTexture = value;
+        }
+
+        private _light_far  :number;
+        @serialize()
+        /**
+         * Allows reading the far clip of the Spotlight for texture projection.
+         */
+        public get light_far(): number {
+            return this._light_far;
+        }
+        /**
+         * Allows setting the far clip of the Spotlight for texture projection.
+         */
+        public set light_far(value: number) {
+            this._light_far = value;
+            this.computeTextureMatrix();
+        }
+
+        private _light_near :number;
+        @serialize()
+        /**
+         * Allows reading the near clip of the Spotlight for texture projection.
+         */
+        public get light_near(): number {
+            return this._light_near;
+        }
+        /**
+         * Allows setting the near clip of the Spotlight for texture projection.
+         */
+        public set light_near(value: number) {
+            this._light_near = value;
+            this.computeTextureMatrix();
+        }
+
+        private _upVector:Vector3;
+        @serializeAsVector3()
+        /**
+         * Allows reading the up vector axis of the Spotlight for texture projection.
+         */
+        public get upVector(): Vector3 {
+            return this._upVector;
+        }
+        /**
+         * Allows setting the up vector axis of the Spotlight for texture projection.
+         */
+        public set upVector(value: Vector3) {
+            this._upVector = Vector3.Normalize(value);
+            this._rightVector = Vector3.Cross(this._direction,this._upVector);
+        }
+
+        private _rightVector:Vector3;
+        @serializeAsVector3()
+        /**
+         * Allows reading the right vector axis of the Spotlight for texture projection.
+         */
+        public get rightVector(): Vector3 {
+            return this._rightVector;
+        }
+        /**
+         * Allows setting the right vector axis of the Spotlight for texture projection.
+         */
+        public set rightVector(value: Vector3) {
+            this._rightVector = Vector3.Normalize(value);
+            this._upVector = Vector3.Cross(this._rightVector,this._direction);
+        }
+        /**
+         * Main function for light texture projection matrix computing.
+         */
+        public computeTextureMatrix(): void{    
             var T = Matrix.Zero();
             Matrix.TranslationToRef(-this.position.x, -this.position.y, -this.position.z, T);
 
-            var F = this.direction.normalize();
-            var U = new Vector3(-F.z, 0.0, F.x);
-            var R = Vector3.Cross(F, U);
+            if ((Math.abs(Vector3.Dot(this.direction, this.upVector)) > 0 ) ||  (Math.abs(Vector3.Dot(this.direction, this.rightVector)) > 0 )){
+                /**
+                 * reset the up, forward and right vector for spot light if they are invalid.
+                 */
+                this.upVector = Vector3.Normalize(new Vector3(-this.direction.z,0,this.direction.x));
+                if (this.upVector.length() === 0){
+                    this.upVector = Vector3.Normalize(new Vector3(this.direction.y,-this.direction.x,0));
+                }
+            }
+
+            var F = Vector3.Normalize(this.direction);
+            var U = Vector3.Normalize(this.upVector);
+            var R = Vector3.Normalize(this.rightVector);
 
             var O = Matrix.Zero();
             Matrix.FromValuesToRef(R.x, U.x, F.x, 0.0,
                 R.y, U.y, F.y, 0.0,
                 R.z, U.z, F.z, 0.0,
-                0.0, 0.0, 0.0, 1.0, O);
+                0.0, 0.0, 0.0, 1.0, O);                
 
-            //console.log(O);
-            //console.log(T);
-                
-            //var viewLightMatrix = O;
-            //viewLightMatrix.multiplyToRef(T,viewLightMatrix);
-            var viewLightMatrix = T;
+            var viewLightMatrix = Matrix.Zero();
+            viewLightMatrix.copyFrom(T);
             viewLightMatrix.multiplyToRef(O,viewLightMatrix);
-            var light_far = 100.0;
-            var light_near = 0.1;
-
+            var light_far = this.light_far;
+            var light_near = this.light_near;
 
             var P = light_far / (light_far - light_near);
             var Q = - P * light_near;
             var S = 1.0 / Math.tan(this._angle / 2.0);
             var A = 1.0;
-
+            
             var projectionLightMatrix = Matrix.Zero();
             Matrix.FromValuesToRef(S/A, 0.0, 0.0, 0.0,
                 0.0, S, 0.0, 0.0,
@@ -45,16 +145,12 @@
                 0.0, 0.0, 0.5, 0.0,
                 0.5, 0.5, 0.5, 1.0, scaleMatrix);
                 
-            //this._textureMatrix = scaleMatrix;
-            //this._textureMatrix.multiplyToRef(projectionLightMatrix, this._textureMatrix);
-            //this._textureMatrix.multiplyToRef(viewLightMatrix, this._textureMatrix);
-            this._textureMatrix = viewLightMatrix;
+            this._textureMatrix.copyFrom(viewLightMatrix);
             this._textureMatrix.multiplyToRef(projectionLightMatrix, this._textureMatrix);
             this._textureMatrix.multiplyToRef(scaleMatrix, this._textureMatrix);
-            
-            console.log( this._textureMatrix);
         }
-//=====================||===============
+
+        private _angle: number;
         @serialize()
         public get angle(): number {
             return this._angle
@@ -136,9 +232,16 @@
 //Remember to remove this after testing
 //            this.projectionTexture = new BABYLON.StandardMaterial("ground", scene); 
             //Material test
-            var groundMaterial = new BABYLON.StandardMaterial("red", scene);
-            groundMaterial.projectedLightTexture = new BABYLON.Texture("textures/red.jpg", scene);
-            this._projectionMaterial = groundMaterial;
+            var groundMaterial = new BABYLON.StandardMaterial("ProjectionTexure", scene);
+            this.projectionMaterial = groundMaterial;
+            this.projectionMaterial.projectedLightTexture = new BABYLON.Texture("",scene);
+            this.upVector = Vector3.Normalize(new Vector3(-direction.z,0,direction.x));
+            if (this.upVector.length() === 0){
+                this.upVector = Vector3.Normalize(new Vector3(direction.y,-direction.x,0));
+            }
+            this.enableProjectionTexture = false;
+            this.light_far = 100.0;
+            this.light_near = 0.1;
             this.computeTextureMatrix();
         }
 
@@ -181,7 +284,7 @@
             this._uniformBuffer.addUniform("vLightDirection", 3);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
             this._uniformBuffer.addUniform("depthValues", 2);
-
+            this._uniformBuffer.addUniform("textureProjectionFlag",2);
             //=======================================
             //this._uniformBuffer.addUniform("textureMatrix", 16);
             //this._uniformBuffer.addUniform("tester", 2);
@@ -224,13 +327,9 @@
                 lightIndex);
 
             //=======================================
-            //debugger;
-            //console.log("textureMatrix" + lightIndex);
-            //.this._uniformBuffer.updateMatrix("textureMatrix" + lightIndex, this._textureMatrix);
+            effect.setBool("textureProjectionFlag" + lightIndex, this._enableProjectionTexture);
             effect.setMatrix("textureMatrix" + lightIndex, this._textureMatrix);
-            
             effect.setTexture("projectionLightSampler" + lightIndex, this._projectionMaterial.projectedLightTexture);
-            //this._uniformBuffer.updateFloat2("tester", 0.0, 0.0, lightIndex);
             return this;
         }
     }
