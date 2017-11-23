@@ -410,6 +410,7 @@ module BABYLON {
             // (gamma/linear) conflicts.
             const imageProcessingConfiguration = new ImageProcessingConfiguration();
             imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
+            imageProcessingConfiguration.vignetteEnabled = true;
             this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove", 
                 1.0, 
                 this._webVRCamera,
@@ -418,11 +419,8 @@ module BABYLON {
                 undefined,
                 undefined,
                 imageProcessingConfiguration);
-            // Force recompilation of the postprocess to be ready before hand and not block the animation.
-            // Simply touching the property forces recompilation of the effect.
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
-            // Go back to default (both variants would be compiled).
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
+            
+            this._webVRCamera.detachPostProcess(this._postProcessMove)
 
             this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
 
@@ -790,10 +788,10 @@ module BABYLON {
             
             this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
             this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
-        
+
+            this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 6, false, 1, () => {
-                this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
+                this._webVRCamera.detachPostProcess(this._postProcessMove)
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 6, false, 1);
         }
@@ -920,10 +918,10 @@ module BABYLON {
         
             this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 8;
             this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 10;
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
             
+            this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, () => {
-                this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
+                this._webVRCamera.detachPostProcess(this._postProcessMove)
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1);
         }
