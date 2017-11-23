@@ -29,7 +29,7 @@ This feature enables user to add texture to spot light to make it project desire
 For a particular spot light, set its projection texture and mark it as texture projection enabled
 will autometically handle everything.
 
-'''javascript
+'''
 
 light.projectionMaterial.projectedLightTexture = new BABYLON.Texture("textures/upenn.jpg",scene);
 light.enableProjectionTexture = true;
@@ -40,7 +40,7 @@ You can optimize these values for projection settings:
 
 * Near Clip Distance
 
-'''javascript
+'''
 
 light.light_near = 1000.0;
 light.computeTextureMatrix();
@@ -49,7 +49,7 @@ light.computeTextureMatrix();
 
 * Far Clip Distance
 
-'''javascript
+'''
 
 light.light_near = 0.1;
 light.computeTextureMatrix();
@@ -61,7 +61,7 @@ light.computeTextureMatrix();
 If up vector is not properly set, resulting in the up vector is not perpendicular to direction vector, 
 then it will be autometically reset. It is not necessary for up vector to be a unit vector.
 
-'''javascript
+'''
 
 light.upVector = new BABYLON.Vector3(1,0,1);
 light.computeTextureMatrix();
@@ -74,7 +74,7 @@ light.computeTextureMatrix();
 If right vector is not properly set, resulting in the right vector is not perpendicular to direction vector, 
 then it will be autometically reset. It is not necessary for right vector to be a unit vector.
 
-'''javascript
+'''
 
 light.rightVector = new BABYLON.Vector3(1,0,1);
 light.computeTextureMatrix();
@@ -83,7 +83,7 @@ light.computeTextureMatrix();
 
 ### Demo running code in playground
 
-'''javascript
+'''
 
 var createScene = function () {
 	var scene = new BABYLON.Scene(engine);
