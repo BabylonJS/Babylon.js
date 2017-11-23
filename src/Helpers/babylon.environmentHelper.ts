@@ -495,6 +495,7 @@ namespace BABYLON {
                 this._ground = Mesh.CreatePlane("BackgroundPlane", sceneSize.groundSize, this._scene);
                 this._ground.rotation.x = Math.PI / 2; // Face up by default.
                 this._ground.parent = this._rootMesh;
+                this._ground.onDisposeObservable.add(() => { this._ground = null; })
             }
             
             this._ground.receiveShadows = this._options.enableGroundShadow;
@@ -602,7 +603,8 @@ namespace BABYLON {
          */
         private _setupSkybox(sceneSize: ISceneSize): void {
             if (!this._skybox) {
-                this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, BABYLON.Mesh.BACKSIDE);
+                this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, BABYLON.Mesh.BACKSIDE);                
+                this._skybox.onDisposeObservable.add(() => { this._skybox = null; })
             }
             this._skybox.parent = this._rootMesh;
         }
@@ -661,7 +663,7 @@ namespace BABYLON {
             if (this._skyboxMaterial) {
                 this._skyboxMaterial.dispose(true, true);
             }
-            this._rootMesh.dispose(true);
+            this._rootMesh.dispose(false);
         }
     }
 }

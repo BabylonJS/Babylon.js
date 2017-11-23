@@ -558,8 +558,8 @@
          * Observable event triggered each time an keyboard event is received from the hosting window
          */
         public onKeyboardObservable = new Observable<KeyboardInfo>();
-        private _onKeyDown: (evt: Event) => void;
-        private _onKeyUp: (evt: Event) => void;
+        private _onKeyDown: (evt: KeyboardEvent) => void;
+        private _onKeyUp: (evt: KeyboardEvent) => void;
         private _onCanvasFocusObserver: Nullable<Observer<Engine>>;
         private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
 
@@ -1786,18 +1786,18 @@
             }
 
             if (attachMove) {
-                canvas.addEventListener(eventPrefix + "move", this._onPointerMove, false);
+                canvas.addEventListener(eventPrefix + "move", <any>this._onPointerMove, false);
                 // Wheel
-                canvas.addEventListener('mousewheel', this._onPointerMove, false);
-                canvas.addEventListener('DOMMouseScroll', this._onPointerMove, false);
+                canvas.addEventListener('mousewheel', <any>this._onPointerMove, false);
+                canvas.addEventListener('DOMMouseScroll', <any>this._onPointerMove, false);
             }
 
             if (attachDown) {
-                canvas.addEventListener(eventPrefix + "down", this._onPointerDown, false);
+                canvas.addEventListener(eventPrefix + "down", <any>this._onPointerDown, false);
             }
 
             if (attachUp) {
-                window.addEventListener(eventPrefix + "up", this._onPointerUp, false);
+                window.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
             }
 
             canvas.tabIndex = 1;
@@ -1812,9 +1812,9 @@
                 return;
             }
 
-            canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
-            canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
-            window.removeEventListener(eventPrefix + "up", this._onPointerUp);
+            canvas.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
+            canvas.removeEventListener(eventPrefix + "down", <any>this._onPointerDown);
+            window.removeEventListener(eventPrefix + "up", <any>this._onPointerUp);
 
             if (this._onCanvasBlurObserver) {
                 engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
@@ -1825,8 +1825,8 @@
             }
 
             // Wheel
-            canvas.removeEventListener('mousewheel', this._onPointerMove);
-            canvas.removeEventListener('DOMMouseScroll', this._onPointerMove);
+            canvas.removeEventListener('mousewheel', <any>this._onPointerMove);
+            canvas.removeEventListener('DOMMouseScroll', <any>this._onPointerMove);
 
             // Keyboard
             canvas.removeEventListener("keydown", this._onKeyDown);

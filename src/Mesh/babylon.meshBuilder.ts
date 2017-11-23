@@ -358,6 +358,11 @@
          * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function.  
          * The parameter `lines` is an array of lines, each line being an array of successive Vector3.   
          * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter. The way to update it is the same than for 
+<<<<<<< HEAD
+=======
+         * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point.  
+         * The optional parameter `useVertexAlpha' is to be set to `false` (default `true`) when you don't need the alpha blending (faster).  
+>>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
          * updating a simple Line mesh, you just need to update every line in the `lines` array : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines   
          * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.      
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
@@ -397,6 +402,11 @@
          * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.  
          * The parameter `points` is an array successive Vector3.   
          * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines    
+<<<<<<< HEAD
+=======
+         * The optional parameter `colors` is an array of successive Color4, one per line point.  
+         * The optional parameter `useVertexAlpha' is to be set to `false` (default `true`) when you don't need alpha blending (faster).  
+>>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
          * When updating an instance, remember that only point positions can change, not the number of points.      
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
@@ -425,7 +435,7 @@
             var dashSize = options.dashSize || 3;
 
             if (instance) {  //  dashed lines update
-                var positionFunction = (positions: number[]): void => {
+                var positionFunction = (positions: FloatArray): void => {
                     var curvect = Vector3.Zero();
                     var nbSeg = positions.length / 6;
                     var lg = 0;

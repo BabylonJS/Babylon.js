@@ -45,7 +45,7 @@
      * Represent an Observer registered to a given Observable object.
      */
     export class Observer<T> {
-        constructor(public callback: (eventData: Nullable<T>, eventState: EventState) => void, public mask: number, public scope: any = null) {
+        constructor(public callback: (eventData: T, eventState: EventState) => void, public mask: number, public scope: any = null) {
         }
     }
 
@@ -176,7 +176,7 @@
          * @param eventData
          * @param mask
          */
-        public notifyObservers(eventData: Nullable<T>, mask: number = -1, target?: any, currentTarget?: any): boolean {
+        public notifyObservers(eventData: T, mask: number = -1, target?: any, currentTarget?: any): boolean {
             if (!this._observers.length) {
                 return true;
             }

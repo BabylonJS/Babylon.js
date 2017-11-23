@@ -1312,9 +1312,6 @@
             // Skeleton
             this.skeleton = null;
 
-            // Animations
-            this.getScene().stopAnimation(this);
-
             // Physics
             if (this.physicsImpostor) {
                 this.physicsImpostor.dispose(/*!doNotRecurse*/);
@@ -1396,7 +1393,6 @@
             // Remove from scene
             this.getScene().removeMesh(this);
 
-            this._cache = null;
             if (disposeMaterialAndTextures) {
                 if (this.material) {
                     this.material.dispose(false, true);
@@ -1411,19 +1407,6 @@
                         index--;
                     }
                 }
-
-                // Children
-                var objects = this.getDescendants(true);
-                for (index = 0; index < objects.length; index++) {
-                    objects[index].dispose();
-                }
-            } else {
-                var childMeshes = this.getChildMeshes(true);
-                for (index = 0; index < childMeshes.length; index++) {
-                    var child = childMeshes[index];
-                    child.parent = null;
-                    child.computeWorldMatrix(true);
-                }
             }
 
             // facet data
@@ -1437,7 +1420,7 @@
 
             this._isDisposed = true;
 
-            super.dispose();
+            super.dispose(doNotRecurse);
         }
 
         /**
@@ -1795,6 +1778,27 @@
 
             VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
             this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
+        }
+        /**
+         * Align the mesh with a normal.
+         * Returns the mesh.  
+         */
+        public alignWithNormal(normal:BABYLON.Vector3, upDirection?:BABYLON.Vector3):AbstractMesh{       
+            if(!upDirection){
+                upDirection = BABYLON.Axis.Y;
+            }
+            
+            var axisX = Tmp.Vector3[0];
+            var axisZ = Tmp.Vector3[1];
+            Vector3.CrossToRef(upDirection, normal, axisZ);
+            Vector3.CrossToRef(normal, axisZ, axisX);
+            
+            if(this.rotationQuaternion){
+                Quaternion.RotationQuaternionFromAxisToRef(axisX, normal, axisZ, this.rotationQuaternion);
+            }else{
+                Vector3.RotationFromAxisToRef(axisX, normal, axisZ, this.rotation);
+            }
+            return this;
         }
 
         protected checkOcclusionQuery() {

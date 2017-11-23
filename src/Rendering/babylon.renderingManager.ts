@@ -30,21 +30,19 @@
         private _renderingGroups = new Array<RenderingGroup>();
         private _depthStencilBufferAlreadyCleaned: boolean;
 
-        private _currentIndex: number;
-
-        private _autoClearDepthStencil: { [id:number]: RenderingManageAutoClearOptions } = {};
-        private _customOpaqueSortCompareFn: { [id:number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
-        private _customAlphaTestSortCompareFn: { [id:number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
-        private _customTransparentSortCompareFn: { [id:number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
+        private _autoClearDepthStencil: { [id: number]: RenderingManageAutoClearOptions } = {};
+        private _customOpaqueSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
+        private _customAlphaTestSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
+        private _customTransparentSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
         private _renderinGroupInfo: Nullable<RenderingGroupInfo> = null;
 
         constructor(scene: Scene) {
             this._scene = scene;
 
             for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
-                this._autoClearDepthStencil[i] = { autoClear: true, depth:true, stencil: true };
+                this._autoClearDepthStencil[i] = { autoClear: true, depth: true, stencil: true };
             }
-        }        
+        }
 
         private _clearDepthStencilBuffer(depth = true, stencil = true): void {
             if (this._depthStencilBufferAlreadyCleaned) {
@@ -56,8 +54,8 @@
         }
 
         public render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>,
-            activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void {          
-                  
+            activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void {
+
             // Check if there's at least on observer on the onRenderingGroupObservable and initialize things to fire it
             let observable = this._scene.onRenderingGroupObservable.hasObservers() ? this._scene.onRenderingGroupObservable : null;
             let info: Nullable<RenderingGroupInfo> = null;
@@ -82,10 +80,8 @@
             for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
                 var renderingGroup = this._renderingGroups[index];
-                if(!renderingGroup && !observable)
+                if (!renderingGroup && !observable)
                     continue;
-
-                this._currentIndex = index;
 
                 let renderingGroupMask = 0;
 
@@ -197,7 +193,7 @@
             this._customOpaqueSortCompareFn[renderingGroupId] = opaqueSortCompareFn;
             this._customAlphaTestSortCompareFn[renderingGroupId] = alphaTestSortCompareFn;
             this._customTransparentSortCompareFn[renderingGroupId] = transparentSortCompareFn;
-                
+
             if (this._renderingGroups[renderingGroupId]) {
                 var group = this._renderingGroups[renderingGroupId];
                 group.opaqueSortCompareFn = this._customOpaqueSortCompareFn[renderingGroupId];
@@ -216,8 +212,8 @@
          */
         public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean,
             depth = true,
-            stencil = true): void {            
-            this._autoClearDepthStencil[renderingGroupId] = { 
+            stencil = true): void {
+            this._autoClearDepthStencil[renderingGroupId] = {
                 autoClear: autoClearDepthStencil,
                 depth: depth,
                 stencil: stencil

@@ -46,12 +46,29 @@
             var options = {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
+<<<<<<< HEAD
                 needAlphaBlending: false,
             };
 
             if (!useVertexColor) {
                 options.uniforms.push("color");
                 options.needAlphaBlending = true;
+=======
+                needAlphaBlending: true,
+                defines: defines
+            };
+            
+            if (useVertexAlpha === false) {
+                options.needAlphaBlending = false;
+            }
+            
+            if (!useVertexColor) {
+                options.uniforms.push("color");
+            }
+            else {
+                options.defines.push("#define VERTEXCOLOR");
+                options.attributes.push(VertexBuffer.ColorKind);
+>>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
             }
 
             this._colorShader = new ShaderMaterial("colorShader", this.getScene(), "color", options);

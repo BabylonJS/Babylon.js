@@ -67,6 +67,7 @@
 
             setToMultipleID("currentScript", "innerHTML", "Custom");
             setToMultipleID("safemodeToggle", "addClass", "checked");
+            setToMultipleID("minimapToggle", "addClass", "checked");
 
             setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
@@ -325,6 +326,11 @@
                 var showInspector = false;
                 var showDebugLayer = false;
                 var initialTabIndex = 0;
+<<<<<<< HEAD
+=======
+                showBJSPGMenu();
+                jsEditor.updateOptions({ readOnly: false });
+>>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
 
                 if (document.getElementsByClassName('insp-wrapper').length > 0) {
                     for (var i = 0; i < engine.scenes.length; i++) {
@@ -638,7 +644,11 @@
         // Fonts
         setFontSize = function (size) {
             fontSize = size;
+<<<<<<< HEAD
             document.querySelector(".view-lines").style.fontSize = size + "px";
+=======
+            jsEditor.updateOptions({ fontSize: size });
+>>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
@@ -758,6 +768,18 @@
 
         var formatCode = function () {
             jsEditor.getAction('editor.action.format').run();
+        }
+
+        var toggleMinimap = function () {
+            var minimapToggle = document.getElementById("minimapToggle1600");
+            if (minimapToggle.classList.contains('checked')) {
+                jsEditor.updateOptions({ minimap: { enabled: false } });
+                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square-o" aria-hidden="true"></i>');
+            } else {
+                jsEditor.updateOptions({ minimap: { enabled: true } });
+                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
+            }
+            minimapToggle.classList.toggle('checked');
         }
 
 
@@ -969,6 +991,8 @@
         setToMultipleID("editorFullscreenButton", "click", editorGoFullscreen);
         // Format
         setToMultipleID("formatButton", "click", formatCode);
+        // Format
+        setToMultipleID("minimapToggle", "click", toggleMinimap);
         // Debug
         setToMultipleID("debugButton", "click", toggleDebug);
         // Metadata

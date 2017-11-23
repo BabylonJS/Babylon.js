@@ -433,10 +433,7 @@
             img.onerror = err => {
                 Tools.Error("Error while trying to load image: " + url);
 
-                if (Tools.UseFallbackTexture) {
-                    img.src = Tools.fallbackTexture;
-                    onLoad(img);
-                } else {
+                if (onError) {
                     onError("Error while trying to load image: " + url, err);
                 }
             };
@@ -488,8 +485,12 @@
             return img;
         }
 
+<<<<<<< HEAD
         //ANY
         public static LoadFile(url: string, callback: (data: any, responseURL?: string) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): Nullable<XMLHttpRequest> {
+=======
+        public static LoadFile(url: string, callback: (data: string | ArrayBuffer, responseURL?: string) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): Nullable<XMLHttpRequest> {
+>>>>>>> cd73dd39a56cfca813287f1d9dbf0a82c8349665
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
@@ -516,7 +517,7 @@
                         req.onreadystatechange = () => { };//some browsers have issues where onreadystatechange can be called multiple times with the same value
 
                         if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
-                            callback(!useArrayBuffer ? req.responseText : req.response, req.responseURL);
+                            callback(!useArrayBuffer ? req.responseText : <ArrayBuffer>req.response, req.responseURL);
                         } else { // Failed
                             let e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
                             if (onError) {
@@ -704,14 +705,14 @@
             return true;
         }
 
-        public static RegisterTopRootEvents(events: { name: string; handler: EventListener }[]): void {
+        public static RegisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
-                window.addEventListener(event.name, event.handler, false);
+                window.addEventListener(event.name, <any>event.handler, false);
 
                 try {
                     if (window.parent) {
-                        window.parent.addEventListener(event.name, event.handler, false);
+                        window.parent.addEventListener(event.name, <any>event.handler, false);
                     }
                 } catch (e) {
                     // Silently fails...
@@ -719,14 +720,14 @@
             }
         }
 
-        public static UnregisterTopRootEvents(events: { name: string; handler: EventListener }[]): void {
+        public static UnregisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
-                window.removeEventListener(event.name, event.handler);
+                window.removeEventListener(event.name, <any>event.handler);
 
                 try {
                     if (window.parent) {
-                        window.parent.removeEventListener(event.name, event.handler);
+                        window.parent.removeEventListener(event.name, <any>event.handler);
                     }
                 } catch (e) {
                     // Silently fails...
@@ -734,7 +735,7 @@
             }
         }
 
-        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName? : string): void {
+        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -774,7 +775,7 @@
             }
         }
 
-        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName? : string) {
+        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
             var base64Image = screenshotCanvas.toDataURL(mimeType);
             if (successCallback) {
                 successCallback(base64Image);
@@ -784,26 +785,25 @@
                 if (!screenshotCanvas.toBlob) {
                     //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
                     screenshotCanvas.toBlob = function (callback, type, quality) {
-                        var canvas = this;
-                        setTimeout(function() {
-                            var binStr = atob( canvas.toDataURL(type, quality).split(',')[1] ),
+                        setTimeout(() => {
+                            var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
                                 len = binStr.length,
                                 arr = new Uint8Array(len);
 
-                            for (var i = 0; i < len; i++ ) {
+                            for (var i = 0; i < len; i++) {
                                 arr[i] = binStr.charCodeAt(i);
                             }
-                            callback( new Blob( [arr], {type: type || 'image/png'} ) );
+                            callback(new Blob([arr], { type: type || 'image/png' }));
                         });
                     }
                 }
-                screenshotCanvas.toBlob(function(blob) {
+                screenshotCanvas.toBlob(function (blob) {
                     var url = URL.createObjectURL(blob);
                     //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                     if (("download" in document.createElement("a"))) {
                         var a = window.document.createElement("a");
                         a.href = url;
-                        if(fileName) {
+                        if (fileName) {
                             a.setAttribute("download", fileName);
                         }
                         else {
@@ -821,8 +821,9 @@
                     }
                     else {
                         var newWindow = window.open("");
+                        if (!newWindow) return;
                         var img = newWindow.document.createElement("img");
-                        img.onload = function() {
+                        img.onload = function () {
                             // no longer need to read the blob so it's revoked
                             URL.revokeObjectURL(url);
                         };
@@ -895,7 +896,7 @@
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
 
-        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing : boolean = false, fileName? : string): void {
+        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
             var width: number;
             var height: number;
 
@@ -943,7 +944,7 @@
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = null;
             texture.samples = samples;
-            if(antialiasing) {
+            if (antialiasing) {
                 texture.addPostProcess(new BABYLON.FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
             }
             texture.onAfterRenderObservable.add(() => {
