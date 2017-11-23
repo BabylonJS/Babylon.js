@@ -1,0 +1,17 @@
+{
+  "name": "babylonjsplayground",
+  "version": "3.0.0",
+  "description": "Babylon.js is a 3D engine based on webgl and javascript",
+  "main": "",
+  "repository": {
+    "url": "https://github.com/BabylonJS/Babylon.js/"
+  },
+  "readme": "https://github.com/BabylonJS/Babylon.js/blob/master/readme.md",
+  "license": "(Apache-2.0)",
+  "devDependencies": {
+    "monaco-editor": "~0.10.1"
+  },
+  "scripts": {
+    "test": "browser-sync start --server --files **/* --no-inject-changes --startPath index.html"
+  }
+}

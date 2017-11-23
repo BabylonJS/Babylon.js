@@ -1,0 +1,68 @@
+
+// Color for a property type
+.property-type {
+  color:$color-bot;
+}
+
+.property-name {
+  color:$color-top;
+}
+
+.insp-tree {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height    : calc(50% - #{$tabbar-height} - #{$searchbar-height});
+  
+    
+    .line {
+        padding:3px;
+        cursor:pointer;
+        // Hover
+        &:hover {
+            background-color:$background-lighter;
+        }
+        // Line active (selected)
+        &.active {
+            background-color:$background-lighter3;
+            .line-content {
+                background-color:$background;
+            }
+        }
+        // > before title names
+        &.unfolded:before{            
+            width      : 1em;
+            height     : 1em;
+            line-height: 1em;
+            display    : inline-block;
+            font-family: 'FontAwesome', sans-serif;
+            content    : "\f078";            
+        }
+        &.folded:before{            
+            width      : 1em;
+            height     : 1em;
+            line-height: 1em;
+            display    : inline-block;
+            font-family: 'FontAwesome', sans-serif;
+            content    : "\f054";
+        }
+        
+        &.unfolded.transformNode > span:first-of-type{
+            color:$color-top;
+        }
+        &.folded.transformNode > span:first-of-type{ 
+            color:$color-top;
+        }
+
+        // Sub lines
+        .line-content {
+            padding-left:15px;
+            &:hover { 
+                background-color:$background;
+            }
+            .line:hover:first-child {            
+                background-color:$background-lighter2;
+            }
+            
+        }
+    }
+}

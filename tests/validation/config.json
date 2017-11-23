@@ -1,0 +1,342 @@
+﻿{
+  "root": "https://rawgit.com/BabylonJS/Website/master",
+  "tests": [
+    {
+      "title": "Sponza",
+      "sceneFolder": "/Scenes/Sponza/",
+      "sceneFilename": "Sponza.babylon",
+      "referenceImage": "Sponza.png"
+    },
+    {
+      "title": "Windows cafe",
+      "sceneFolder": "/Scenes/WCafe/",
+      "sceneFilename": "WCafe.babylon",
+      "referenceImage": "WCafe.png"
+    },
+    {
+      "title": "Espilit",
+      "renderCount": 10,
+      "sceneFolder": "/Scenes/Espilit/",
+      "sceneFilename": "Espilit.binary.babylon",
+      "referenceImage": "Espilit.png"
+    },
+    {
+      "title": "The car",
+      "sceneFolder": "/Scenes/TheCar/",
+      "sceneFilename": "TheCar.binary.babylon",
+      "referenceImage": "TheCar.png"
+    },
+    {
+      "title": "Viper",
+      "sceneFolder": "/Scenes/Viper/",
+      "sceneFilename": "Viper.babylon",
+      "referenceImage": "Viper.png"
+    },
+    {
+      "title": "Retail",
+      "sceneFolder": "/Scenes/Retail/",
+      "sceneFilename": "Retail.babylon",
+      "referenceImage": "Retail.png"
+    },
+    {
+      "title": "Hill Valley",
+      "sceneFolder": "/Scenes/hillvalley/",
+      "sceneFilename": "HillValley.incremental.babylon",
+      "referenceImage": "HillValley.png"
+    },
+    {
+      "title": "Heart",
+      "sceneFolder": "/Scenes/Heart/",
+      "sceneFilename": "Heart.babylon",
+      "referenceImage": "heart.png"
+    },
+    {
+      "title": "Mansion",
+      "sceneFolder": "/Scenes/Mansion/",
+      "sceneFilename": "Mansion.babylon",
+      "referenceImage": "Mansion.png"
+    },
+    {
+      "title": "SpaceDeK",
+      "sceneFolder": "/Scenes/SpaceDek/",
+      "sceneFilename": "SpaceDek.babylon",
+      "referenceImage": "SpaceDeK.png"
+    },
+    {
+      "title": "Flat2009",
+      "sceneFolder": "/Scenes/Flat2009/",
+      "sceneFilename": "Flat2009.babylon",
+      "referenceImage": "Flat2009.png"
+    },
+    {
+      "title": "CSG",
+      "scriptToRun": "/Demos/CSG/csg.js",
+      "functionToCall": "CreateCSGTestScene",
+      "referenceImage": "csg.png"
+    },
+    {
+      "title": "Charting",
+      "renderCount": 3,
+      "scriptToRun": "/Demos/Charting/charting.js",
+      "functionToCall": "CreateChartingTestScene",
+      "referenceImage": "charting.png"
+    },
+    {
+      "title": "Fog",
+      "scriptToRun": "/Demos/Fog/fog.js",
+      "functionToCall": "CreateFogScene",
+      "referenceImage": "fog.png"
+    },
+    {
+      "title": "Polygon",
+      "scriptToRun": "/Demos/Polygon/polygon.js",
+      "functionToCall": "CreatePolygonScene",
+      "referenceImage": "polygon.png"
+    },
+    {
+      "title": "Soft Shadows",
+      "renderCount": 5,
+      "scriptToRun": "/Demos/SoftShadows/softShadows.js",
+      "functionToCall": "CreateSoftShadowsTestScene",
+      "referenceImage": "softShadows.png"
+    },
+    {
+      "title": "Fresnel",
+      "scriptToRun": "/Demos/Fresnel/fresnel.js",
+      "functionToCall": "CreateFresnelTestScene",
+      "referenceImage": "fresnel.png"
+    },
+    {
+      "title": "Highlights",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/Highlights/highlights.js",
+      "functionToCall": "CreateHighlightsScene",
+      "referenceImage": "highlights.png",
+      "rootPath": "/Demos/Highlights/",
+      "replaceUrl": "room.hdr, reflectivity.png, albedo.png"
+    },
+    {
+      "title": "Lines",
+      "scriptToRun": "/Demos/Lines/lines.js",
+      "functionToCall": "CreateLinesTestScene",
+      "referenceImage": "lines.png",
+      "replace": "updateVerticesDataDirectly, updateVerticesData"
+    },
+    {
+      "title": "Bones",
+      "scriptToRun": "/Demos/Bones/bones.js",
+      "functionToCall": "CreateBonesTestScene",
+      "referenceImage": "bones.png",
+      "replace": "Dude.babylon, dude.babylon"
+    },
+    {
+      "title": "LOD",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/LOD/lod.js",
+      "functionToCall": "CreateLODTestScene",
+      "referenceImage": "lod.png"
+    },
+    {
+      "title": "Lens",
+      "scriptToRun": "/Demos/Lens/lensFlares.js",
+      "functionToCall": "CreateLensFlaresTestScene",
+      "referenceImage": "lens.png",
+      "rootPath": "/Demos/Lens/",
+      "replaceUrl": "lens4.png, lens5.png"
+    },
+    {
+      "title": "Self shadowing",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/SelfShadowing/shadows.js",
+      "functionToCall": "CreateShadowsTestScene",
+      "referenceImage": "selfShadowing.png"
+    },
+    {
+      "title": "Advanced shadows",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/AdvancedShadows/advancedShadows.js",
+      "functionToCall": "CreateAdvancedShadowsTestScene",
+      "referenceImage": "advancedShadows.png",
+      "replace": "/ground, /Ground"
+    },
+    {
+      "title": "point light shadows",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/PointLightShadowMap/pointLightShadows.js",
+      "functionToCall": "CreatePointLightShadowScene",
+      "referenceImage": "pointLightShadows.png",
+      "replace": "/ground, /Ground"
+    },
+    {
+      "title": "Displacement map",
+      "scriptToRun": "/Demos/DisplacementMap/displacementMap.js",
+      "functionToCall": "CreateDisplacementTestScene",
+      "referenceImage": "displacementMap.png",
+      "replace": "/Scenes/Customs/skybox/, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Assets/skybox/"
+    },
+    {
+      "title": "Normals",
+      "scriptToRun": "/Demos/Normals/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "normals.png"
+    },
+    {
+      "title": "GLTF Normals",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFNormals/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltfnormals.png"
+    },
+    {
+      "title": "GLTF Material",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialScene",
+      "referenceImage": "gltfMaterial.png"
+    },
+    {
+      "title": "GLTF Material Alpha",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialAlphaScene",
+      "referenceImage": "gltfMaterialAlpha.png"
+    },
+    {
+      "title": "GLTF Primitive Attribute",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createPrimitiveAttributeScene",
+      "referenceImage": "gltfPrimitiveAttribute.png"
+    },
+    {
+      "title": "GLTF Metallic Roughness",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialMetallicRoughnessScene",
+      "referenceImage": "gltfMaterialMetallicRoughness.png"
+    },
+    {
+      "title": "GLTF Specular Glossiness",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialSpecularGlossinessScene",
+      "referenceImage": "gltfMaterialSpecularGlossiness.png"
+    },
+    {
+      "title": "GLTF Texture Sampler",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createTextureSamplerScene",
+      "referenceImage": "gltfTextureSampler.png"
+    },
+    {
+      "title": "PBR glossy",
+      "renderCount": 20,
+      "replace": "engine.setHardwareScalingLevel, //engine.setHardwareScalingLevel",
+      "scriptToRun": "/Demos/PBRGlossy/index.js",
+      "functionToCall": "CreatePBRGlossyScene",
+      "referenceImage": "pbrglossy.png"
+    },
+    {
+      "title": "PBR rough",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/PBRRough/index.js",
+      "functionToCall": "CreatePBRRoughScene",
+      "referenceImage": "PBRRough.png"
+    },
+    {
+      "title": "GLTF LOD",
+      "renderCount": 500,
+      "playgroundId": "#TC80RU#41",
+      "referenceImage": "GLTF LOD.png"
+    },
+    {
+      "title": "Reflection probes",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
+      "functionToCall": "CreateReflectionProbeTestScene ",
+      "referenceImage": "refprobe.png"
+    },
+    {
+      "title": "PBRMetallicRoughnessMaterial",
+      "playgroundId": "#2FDQT5#13",
+      "referenceImage": "PBRMetallicRoughnessMaterial.png"
+    },
+    {
+      "title": "PBRSpecularGlossinessMaterial",
+      "playgroundId": "#Z1VL3V#4",
+      "referenceImage": "PBRSpecularGlossinessMaterial.png"
+    },
+    {
+      "title": "PBR",
+      "playgroundId": "#LCA0Q4",
+      "referenceImage": "pbr.png"
+    },
+    {
+      "title": "MultiSample render targets",
+      "renderCount": 10,
+      "playgroundId": "#12MKMN#0",
+      "referenceImage": "MultiSample render targets.png"
+    },
+    {
+      "title": "Default rendering pipeline",
+      "renderCount": 20,
+      "playgroundId": "#5XB8YT#2",
+      "referenceImage": "DefaultRenderingPipeline.png"
+    },
+    {
+      "title": "Billboard",
+      "renderCount": 20,
+      "playgroundId": "#UJEIL#13",
+      "referenceImage": "Billboard.png"
+    },
+    {
+      "title": "setParent",
+      "renderCount": 20,
+      "playgroundId": "#JD49CT#2",
+      "referenceImage": "setParent.png"
+    },
+    {
+      "title": "GUI",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GUI/gui.js",
+      "functionToCall": "createScene",
+      "referenceImage": "GUI.png"
+    },
+    {
+      "title": "Water material (only visual check)",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/WaterMaterial/water.js",
+      "functionToCall": "CreateWaterTestScene",
+      "referenceImage": "waterMaterial.png",
+      "onlyVisual": true
+    },
+    {
+      "title": "Instances (only visual check)",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/Instances/instances.js",
+      "functionToCall": "CreateInstancesTestScene",
+      "referenceImage": "instances.png",
+      "replace": "ground., Ground.",
+      "onlyVisual": true
+    },
+    {
+      "title": "Procedural textures (only visual check)",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
+      "functionToCall": "CreateProceduralTextureTestScene",
+      "referenceImage": "procedural.png",
+      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land",
+      "onlyVisual": true
+    },
+    {
+      "title": "Instanced Bones (only visual check)",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/InstancedBones/bones2.js",
+      "functionToCall": "CreateBones2TestScene",
+      "referenceImage": "instancedBones.png",
+      "replace": "Dude.babylon, dude.babylon",
+      "onlyVisual": true
+    }
+  ]
+}

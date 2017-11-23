@@ -1,0 +1,153 @@
+// The main class of the detail panel
+.insp-details {
+  background-color: $background;
+  overflow-y: auto;
+  overflow-x: auto;
+  color:$color;
+  font-family: $font;
+
+  .details {
+      padding-left: 5px;
+  }
+
+  // Common defintion between header row and detail row
+  .base-row {      
+    display:flex;
+    width:100%;
+
+    .base-property {
+        padding: 2px 0 2px 0;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    // Property name
+    .prop-name {
+        @extend .property-name;
+        @extend .base-property;
+        width:35%;
+    }
+    // property value
+    .prop-value {
+        @extend .base-property;
+        width:59%;
+        padding-left:10px;
+        &.clickable {
+            cursor:pointer;
+            &:hover {
+                background-color:$background-lighter2;
+            }
+            &:after {
+                font-family: 'FontAwesome', sans-serif;
+                content: "\00a0 \00a0 \00a0 \f054"; // 4 space before + chevron right
+            }
+        }   
+    }
+    
+    // input {
+    //     border:0;
+    //     font-family: $font;
+    //     background-color: $background-lighter;
+    //     color:$color;
+    //     // Remove blue border on focus
+    //     &:focus {
+    //         outline:none;
+    //     }
+    // }
+  }
+  
+  // A line of details composed of name, type, value, id, flagId
+  .row {
+    @extend .base-row;
+    &:nth-child(even) {
+        background-color:$background-lighter;
+    }
+    &.unfolded {          
+        .prop-value.clickable:after {
+            font-family: 'FontAwesome', sans-serif;
+            content: "\00a0 \00a0 \00a0 \f078"; // 4 space before + chevron down
+        }
+    }
+  }
+
+  
+  // Name, type, value, Id, FlagId
+  .header-row {
+    @extend .base-row;
+    background-color: $background-lighter; 
+    color           : $color;
+    width           : 100%;
+    max-width       : 100%;
+    
+    // Special definition for text color: the color is the default one
+    // All header columns
+    & > * {
+        color:$color !important;
+        padding:5px 0 5px 5px !important;
+        cursor: pointer;
+        &:hover {
+            background-color:$background-lighter2;
+        }
+    }
+
+    .header-col {
+        display:flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .sort-direction {
+            margin-right:5px;
+        }
+    }
+  }
+  
+  // A div used to view a property in the property line (color, texture...)
+  .element-viewer {
+      position:relative;
+      width:10px;
+      height:10px;
+      display:inline-block;
+      margin-left:5px;
+  }
+
+  // The div displaying a color
+  .color-element {
+      @extend .element-viewer;
+      top: 2px;
+  }
+
+  // The div displaying a texture element
+  .texture-element {
+      @extend .element-viewer;
+      color:$color-top;
+      margin-left:10px; 
+
+      .texture-viewer {
+          
+          color:$color;
+          position:absolute;
+          z-index:10;
+          bottom:0;
+          right:0;
+          display:block;
+          width:150px;
+          height:150px;
+          border: 1px solid $background-lighter3;
+          background-color: $background;
+          transform: translateX(100%) translateY(100%);
+          
+          display: none;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: center;
+
+          .texture-viewer-img {
+              margin:10px 0 10px 0;
+              max-width:110px;
+              max-height:110px;
+          }
+      }
+  }
+   
+
+}

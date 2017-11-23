@@ -1,0 +1,8 @@
+language: node_js
+node_js:
+  - "6"
+before_script:
+  - npm install -g gulp
+  - cd ./Tools/Gulp
+  - npm install
+script: gulp typescript

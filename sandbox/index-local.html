@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>BabylonJS - Sandbox</title>
+    <link href="index.css" rel="stylesheet" />
+    <script src="https://babylonjs.azurewebsites.net/cannon.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/Oimo.js"></script>
+	<script src="../Tools/DevLoader/BabylonLoader.js"></script>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <div id="logo">
+    </div>
+    <div id="help01" class="help">
+        <span class="helpText">Press this button to open your assets' files</span>
+        <img id="helpArrow" src="./Assets/FlecheTuto.png" />
+    </div>
+    <div id="help02" class="help2">
+        <span class="helpText">Or directly drag'n'drop your files in the browser</span>
+    </div>
+    <div id="perf" class="perffooter">
+        <div class="footerLeft">
+            <div id="miscCounters"></div>
+        </div>
+        <div class="footerRight">
+            <div id="fps"></div>
+            <img id="btnDownArrow" src="./Assets/FlecheDown.png" />
+        </div>
+    </div>
+    <div class="footer">
+        <div class="footerLeft">
+            Powered by <a href="http://www.babylonjs.com/" target="_blank">Babylon.js</a><br />
+        </div>
+        <div class="footerRight">
+            <ul>
+                <li id="btnFullscreen">
+                    <img src="./Assets/BtnFullscreen.png" alt="Switch the scene to full screen" title="Switch the scene to full screen" />
+                </li>
+                <li id="btnPerf">
+                    <img src="./Assets/BtnPerf.png" alt="Display inspector" title="Display inspector" />
+                </li>
+                <li id="btnFiles">
+                    <div class="custom-upload" title="Open your .babylon scene from your hard drive">
+                        <input type="file" id="files" multiple />
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="loadingText" class="loadingText"></div>
+    <div id="errorZone"></div>
+    <script>
+        BABYLONDEVTOOLS.Loader.require('index.js')
+            .load();
+    </script>	
+</body>
+</html>
