@@ -27,8 +27,7 @@ This feature enables user to add texture to spot light to make it project desire
 ### How to use
 
 For a particular spot light, set its projection texture and mark it as texture projection enabled
-will autometically handle everything. If direction, upVector, rightVector and angle is changed,
-```light.computeTextureMatrix()``` need to be called.
+will autometically handle everything. 
 
 ```
 	
@@ -37,7 +36,9 @@ light.enableProjectionTexture = true;
 	
 ```
 
-You can optimize these values for projection settings:
+You can optimize these values for projection settings.
+In addition, if direction, upVector, rightVector, near clip distance, far clip distance and angle is changed,
+```light.computeTextureMatrix()``` need to be called to make texture follow the light.
 
 * Near Clip Distance
 
