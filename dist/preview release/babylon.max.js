@@ -8014,7 +8014,7 @@ var BABYLON;
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._internalTexturesCache = new Array();
-            this._activeTexturesCache = {};
+            this._boundTexturesCache = {};
             this._compiledEffects = {};
             this._vertexAttribArraysEnabled = [];
             this._uintIndicesCurrentlySet = false;
@@ -8872,8 +8872,8 @@ var BABYLON;
             }
         };
         Engine.prototype.resetTextureCache = function () {
-            for (var key in this._activeTexturesCache) {
-                this._activeTexturesCache[key] = null;
+            for (var key in this._boundTexturesCache) {
+                this._boundTexturesCache[key] = null;
             }
         };
         Engine.prototype.isDeterministicLockStep = function () {
@@ -11518,9 +11518,9 @@ var BABYLON;
             }
         };
         Engine.prototype._bindTextureDirectly = function (target, texture) {
-            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
+            if (this._boundTexturesCache[this._activeTextureChannel] !== texture) {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                this._activeTexturesCache[this._activeTextureChannel] = texture;
+                this._boundTexturesCache[this._activeTextureChannel] = texture;
             }
         };
         Engine.prototype._bindTexture = function (channel, texture) {
@@ -11554,7 +11554,7 @@ var BABYLON;
         Engine.prototype._setTexture = function (channel, texture) {
             // Not ready?
             if (!texture) {
-                if (this._activeTexturesCache[channel] != null) {
+                if (this._boundTexturesCache[channel] != null) {
                     this.activateTextureChannel(this._gl.TEXTURE0 + channel);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
@@ -11591,7 +11591,7 @@ var BABYLON;
             if (!alreadyActivated) {
                 this.activateTextureChannel(this._gl.TEXTURE0 + channel);
             }
-            if (this._activeTexturesCache[this._activeTextureChannel] === internalTexture) {
+            if (this._boundTexturesCache[this._activeTextureChannel] === internalTexture) {
                 return false;
             }
             if (internalTexture && internalTexture.is3D) {
@@ -66827,7 +66827,7 @@ var BABYLON;
             this._physicsEngine.removeImpostor(this);
             this.physicsBody = null;
             this._parent = this._parent || this._getPhysicsParent();
-            if (!this.parent || this._options.ignoreParent) {
+            if (!this._isDisposed && (!this.parent || this._options.ignoreParent)) {
                 this._physicsEngine.addImpostor(this);
             }
         };
@@ -67411,6 +67411,14 @@ var BABYLON;
         PhysicsRadialImpulseFallof[PhysicsRadialImpulseFallof["Constant"] = 0] = "Constant";
         PhysicsRadialImpulseFallof[PhysicsRadialImpulseFallof["Linear"] = 1] = "Linear"; // impulse gets weaker if it's further from the origin
     })(PhysicsRadialImpulseFallof = BABYLON.PhysicsRadialImpulseFallof || (BABYLON.PhysicsRadialImpulseFallof = {}));
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    var PhysicsUpdraftMode;
+    (function (PhysicsUpdraftMode) {
+        PhysicsUpdraftMode[PhysicsUpdraftMode["Center"] = 0] = "Center";
+        PhysicsUpdraftMode[PhysicsUpdraftMode["Perpendicular"] = 1] = "Perpendicular"; // once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder
+    })(PhysicsUpdraftMode = BABYLON.PhysicsUpdraftMode || (BABYLON.PhysicsUpdraftMode = {}));
     var PhysicsHelper = /** @class */ (function () {
         function PhysicsHelper(scene) {
             this._scene = scene;
@@ -67493,24 +67501,43 @@ var BABYLON;
             event.dispose(false);
             return event;
         };
+        /**
+         * @param {Vector3} origin the origin of the updraft
+         * @param {number} radius the radius of the updraft
+         * @param {number} strength the strength of the updraft
+         * @param {number} height the height of the updraft
+         */
+        PhysicsHelper.prototype.updraft = function (origin, radius, strength, height, updraftMode) {
+            if (!this._physicsEngine) {
+                BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                return null;
+            }
+            if (this._physicsEngine.getImpostors().length === 0) {
+                return null;
+            }
+            var event = new PhysicsUpdraftEvent(this._physicsEngine, this._scene, origin, radius, strength, height, updraftMode);
+            event.dispose(false);
+            return event;
+        };
         return PhysicsHelper;
     }());
     BABYLON.PhysicsHelper = PhysicsHelper;
     /***** Radial explosion *****/
     var PhysicsRadialExplosionEvent = /** @class */ (function () {
         function PhysicsRadialExplosionEvent(scene) {
+            this._sphereOptions = { segments: 32, diameter: 1 }; // TODO: make configurable
             this._rays = [];
             this._dataFetched = false; // check if the data has been fetched. If not, do cleanup
             this._scene = scene;
         }
         /**
-         * Returns the data related to the radial explosion event (radialSphere & rays).
+         * Returns the data related to the radial explosion event (sphere & rays).
          * @returns {PhysicsRadialExplosionEventData}
          */
         PhysicsRadialExplosionEvent.prototype.getData = function () {
             this._dataFetched = true;
             return {
-                radialSphere: this._radialSphere,
+                sphere: this._sphere,
                 rays: this._rays,
             };
         };
@@ -67527,7 +67554,7 @@ var BABYLON;
             if (impostor.mass === 0) {
                 return null;
             }
-            if (!this._intersectsWithRadialSphere(impostor, origin, radius)) {
+            if (!this._intersectsWithSphere(impostor, origin, radius)) {
                 return null;
             }
             var impostorObject = impostor.object;
@@ -67551,38 +67578,38 @@ var BABYLON;
             return { force: force, contactPoint: contactPoint };
         };
         /**
-         * Disposes the radialSphere.
+         * Disposes the sphere.
          * @param {bolean} force
          */
         PhysicsRadialExplosionEvent.prototype.dispose = function (force) {
             var _this = this;
             if (force === void 0) { force = true; }
             if (force) {
-                this._radialSphere.dispose();
+                this._sphere.dispose();
             }
             else {
                 setTimeout(function () {
                     if (!_this._dataFetched) {
-                        _this._radialSphere.dispose();
+                        _this._sphere.dispose();
                     }
                 }, 0);
             }
         };
         /*** Helpers ***/
-        PhysicsRadialExplosionEvent.prototype._prepareRadialSphere = function () {
-            if (!this._radialSphere) {
-                this._radialSphere = BABYLON.MeshBuilder.CreateSphere("radialSphere", { segments: 32, diameter: 1 }, this._scene);
-                this._radialSphere.isVisible = false;
+        PhysicsRadialExplosionEvent.prototype._prepareSphere = function () {
+            if (!this._sphere) {
+                this._sphere = BABYLON.MeshBuilder.CreateSphere("radialExplosionEventSphere", this._sphereOptions, this._scene);
+                this._sphere.isVisible = false;
             }
         };
-        PhysicsRadialExplosionEvent.prototype._intersectsWithRadialSphere = function (impostor, origin, radius) {
+        PhysicsRadialExplosionEvent.prototype._intersectsWithSphere = function (impostor, origin, radius) {
             var impostorObject = impostor.object;
-            this._prepareRadialSphere();
-            this._radialSphere.position = origin;
-            this._radialSphere.scaling = new BABYLON.Vector3(radius * 2, radius * 2, radius * 2);
-            this._radialSphere._updateBoundingInfo();
-            this._radialSphere.computeWorldMatrix(true);
-            return this._radialSphere.intersectsMesh(impostorObject, true);
+            this._prepareSphere();
+            this._sphere.position = origin;
+            this._sphere.scaling = new BABYLON.Vector3(radius * 2, radius * 2, radius * 2);
+            this._sphere._updateBoundingInfo();
+            this._sphere.computeWorldMatrix(true);
+            return this._sphere.intersectsMesh(impostorObject, true);
         };
         return PhysicsRadialExplosionEvent;
     }());
@@ -67601,13 +67628,13 @@ var BABYLON;
             this._tickCallback = this._tick.bind(this);
         }
         /**
-         * Returns the data related to the gravitational field event (radialSphere).
+         * Returns the data related to the gravitational field event (sphere).
          * @returns {PhysicsGravitationalFieldEventData}
          */
         PhysicsGravitationalFieldEvent.prototype.getData = function () {
             this._dataFetched = true;
             return {
-                radialSphere: this._radialSphere,
+                sphere: this._sphere,
             };
         };
         /**
@@ -67624,38 +67651,148 @@ var BABYLON;
             this._scene.unregisterBeforeRender(this._tickCallback);
         };
         /**
-         * Disposes the radialSphere.
+         * Disposes the sphere.
          * @param {bolean} force
          */
         PhysicsGravitationalFieldEvent.prototype.dispose = function (force) {
             var _this = this;
             if (force === void 0) { force = true; }
             if (force) {
-                this._radialSphere.dispose();
+                this._sphere.dispose();
             }
             else {
                 setTimeout(function () {
                     if (!_this._dataFetched) {
-                        _this._radialSphere.dispose();
+                        _this._sphere.dispose();
                     }
                 }, 0);
             }
         };
         PhysicsGravitationalFieldEvent.prototype._tick = function () {
             // Since the params won't change, we fetch the event only once
-            if (this._radialSphere) {
+            if (this._sphere) {
                 this._physicsHelper.applyRadialExplosionForce(this._origin, this._radius, this._strength * -1, this._falloff);
             }
             else {
                 var radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._radius, this._strength * -1, this._falloff);
                 if (radialExplosionEvent) {
-                    this._radialSphere = radialExplosionEvent.getData().radialSphere.clone('radialSphereClone');
+                    this._sphere = radialExplosionEvent.getData().sphere.clone('radialExplosionEventSphereClone');
                 }
             }
         };
         return PhysicsGravitationalFieldEvent;
     }());
     BABYLON.PhysicsGravitationalFieldEvent = PhysicsGravitationalFieldEvent;
+    /***** Updraft *****/
+    var PhysicsUpdraftEvent = /** @class */ (function () {
+        function PhysicsUpdraftEvent(physicsEngine, scene, origin, radius, strength, height, updraftMode) {
+            this._originTop = BABYLON.Vector3.Zero(); // the most upper part of the cylinder
+            this._originDirection = BABYLON.Vector3.Zero(); // used if the updraftMode is perpendicular
+            this._cylinderPosition = BABYLON.Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
+            this._dataFetched = false; // check if the has been fetched the data. If not, do cleanup
+            this._physicsEngine = physicsEngine;
+            this._scene = scene;
+            this._origin = origin;
+            this._radius = radius;
+            this._strength = strength;
+            this._height = height;
+            this._updraftMode = updraftMode;
+            // TODO: for this._cylinderPosition & this._originTop, take rotation into account
+            this._origin.addToRef(new BABYLON.Vector3(0, this._height / 2, 0), this._cylinderPosition);
+            this._origin.addToRef(new BABYLON.Vector3(0, this._height, 0), this._originTop);
+            if (this._updraftMode === PhysicsUpdraftMode.Perpendicular) {
+                this._originDirection = this._origin.subtract(this._originTop).normalize();
+            }
+            this._tickCallback = this._tick.bind(this);
+        }
+        /**
+         * Returns the data related to the updraft event (cylinder).
+         * @returns {PhysicsGravitationalFieldEventData}
+         */
+        PhysicsUpdraftEvent.prototype.getData = function () {
+            this._dataFetched = true;
+            return {
+                cylinder: this._cylinder,
+            };
+        };
+        /**
+         * Enables the updraft.
+         */
+        PhysicsUpdraftEvent.prototype.enable = function () {
+            this._tickCallback.call(this);
+            this._scene.registerBeforeRender(this._tickCallback);
+        };
+        /**
+         * Disables the cortex.
+         */
+        PhysicsUpdraftEvent.prototype.disable = function () {
+            this._scene.unregisterBeforeRender(this._tickCallback);
+        };
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        PhysicsUpdraftEvent.prototype.dispose = function (force) {
+            var _this = this;
+            if (force === void 0) { force = true; }
+            if (force) {
+                this._cylinder.dispose();
+            }
+            else {
+                setTimeout(function () {
+                    if (!_this._dataFetched) {
+                        _this._cylinder.dispose();
+                    }
+                }, 0);
+            }
+        };
+        PhysicsUpdraftEvent.prototype.getImpostorForceAndContactPoint = function (impostor) {
+            if (impostor.mass === 0) {
+                return null;
+            }
+            if (!this._intersectsWithCylinder(impostor)) {
+                return null;
+            }
+            var impostorObjectCenter = impostor.getObjectCenter();
+            if (this._updraftMode === PhysicsUpdraftMode.Perpendicular) {
+                var direction = this._originDirection;
+            }
+            else {
+                var direction = impostorObjectCenter.subtract(this._originTop);
+            }
+            var multiplier = this._strength * -1;
+            var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
+            return { force: force, contactPoint: impostorObjectCenter };
+        };
+        PhysicsUpdraftEvent.prototype._tick = function () {
+            var _this = this;
+            this._physicsEngine.getImpostors().forEach(function (impostor) {
+                var impostorForceAndContactPoint = _this.getImpostorForceAndContactPoint(impostor);
+                if (!impostorForceAndContactPoint) {
+                    return;
+                }
+                impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            });
+        };
+        /*** Helpers ***/
+        PhysicsUpdraftEvent.prototype._prepareCylinder = function () {
+            if (!this._cylinder) {
+                this._cylinder = BABYLON.MeshBuilder.CreateCylinder("updraftEventCylinder", {
+                    height: this._height,
+                    diameter: this._radius * 2,
+                }, this._scene);
+                this._cylinder.isVisible = false;
+            }
+        };
+        PhysicsUpdraftEvent.prototype._intersectsWithCylinder = function (impostor) {
+            var impostorObject = impostor.object;
+            this._prepareCylinder();
+            this._cylinder.position = this._cylinderPosition;
+            return this._cylinder.intersectsMesh(impostorObject, true);
+        };
+        return PhysicsUpdraftEvent;
+    }());
+    BABYLON.PhysicsUpdraftEvent = PhysicsUpdraftEvent;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.physicsHelper.js.map
@@ -71750,17 +71887,21 @@ var BABYLON;
             this._teleportationAllowed = false;
             this._rotationAllowed = true;
             this._teleportationRequestInitiated = false;
-            //private _classicGamepadTeleportationRequestInitiated = false;
             this._rotationRightAsked = false;
             this._rotationLeftAsked = false;
             this._teleportationFillColor = "#444444";
             this._teleportationBorderColor = "#FFFFFF";
             this._rotationAngle = 0;
             this._haloCenter = new BABYLON.Vector3(0, 0, 0);
+            this._padSensibilityUp = 0.65;
+            this._padSensibilityDown = 0.35;
+            this.onNewMeshSelected = new BABYLON.Observable();
+            this._pointerDownOnMeshAsked = false;
+            this._isActionableMesh = false;
             this._scene = scene;
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
                 this._position = new BABYLON.Vector3(0, 2, 0);
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 1.7, 0), scene);
             }
             else {
                 this._position = this._scene.activeCamera.position.clone();
@@ -72066,10 +72207,15 @@ var BABYLON;
             this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
             this._createGazeTracker();
             this._createTeleportationCircles();
+            // To be optionnaly changed by user to define his custom selection logic
             this.meshSelectionPredicate = function (mesh) {
-                if (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
+                return true;
+            };
+            this._meshSelectionPredicate = function (mesh) {
+                if (mesh.name.indexOf(_this._floorMeshName) !== -1 || (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
                     && mesh.name.indexOf("teleportationCircle") === -1
-                    && mesh.name.indexOf("torusTeleportation") === -1) {
+                    && mesh.name.indexOf("torusTeleportation") === -1
+                    && mesh.name.indexOf("laserPointer") === -1)) {
                     return true;
                 }
                 return false;
@@ -72080,19 +72226,24 @@ var BABYLON;
         };
         VRExperienceHelper.prototype._onNewGamepadConnected = function (gamepad) {
             var _this = this;
-            if (gamepad.leftStick) {
+            if (gamepad.leftStick && gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
                 gamepad.onleftstickchanged(function (stickValues) {
-                    if (!_this._teleportationRequestInitiated) {
-                        if (stickValues.y < -0.6) {
-                            _this._teleportationRequestInitiated = true;
-                        }
-                    }
-                    else {
-                        if (stickValues.y > -0.4) {
-                            if (_this._teleportationAllowed) {
-                                _this._teleportCamera();
+                    // Listening to classic/xbox gamepad only if no VR controller is active
+                    if ((!_this._leftLaserPointer && !_this._rightLaserPointer) ||
+                        ((_this._leftLaserPointer && !_this._leftLaserPointer.isVisible) &&
+                            (_this._rightLaserPointer && !_this._rightLaserPointer.isVisible))) {
+                        if (!_this._teleportationRequestInitiated) {
+                            if (stickValues.y < -_this._padSensibilityUp) {
+                                _this._teleportationRequestInitiated = true;
                             }
-                            _this._teleportationRequestInitiated = false;
+                        }
+                        else {
+                            if (stickValues.y > -_this._padSensibilityDown) {
+                                if (_this._teleportationAllowed) {
+                                    _this._teleportCamera();
+                                }
+                                _this._teleportationRequestInitiated = false;
+                            }
                         }
                     }
                 });
@@ -72100,7 +72251,7 @@ var BABYLON;
             if (gamepad.rightStick) {
                 gamepad.onrightstickchanged(function (stickValues) {
                     if (!_this._rotationLeftAsked) {
-                        if (stickValues.x < -0.6) {
+                        if (stickValues.x < -_this._padSensibilityUp) {
                             _this._rotationLeftAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(false);
@@ -72108,12 +72259,12 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stickValues.x > -0.4) {
+                        if (stickValues.x > -_this._padSensibilityDown) {
                             _this._rotationLeftAsked = false;
                         }
                     }
                     if (!_this._rotationRightAsked) {
-                        if (stickValues.x > 0.6) {
+                        if (stickValues.x > _this._padSensibilityUp) {
                             _this._rotationRightAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(true);
@@ -72121,7 +72272,7 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stickValues.x < 0.4) {
+                        if (stickValues.x < _this._padSensibilityDown) {
                             _this._rotationRightAsked = false;
                         }
                     }
@@ -72139,41 +72290,69 @@ var BABYLON;
                         break;
                     }
                 }
-                var laserPointer = BABYLON.Mesh.CreateCylinder("laserPointer", 3, 0.004, 0.0001, 20, 1, this._scene, false);
+                var laserPointer = BABYLON.Mesh.CreateCylinder("laserPointer", 1, 0.004, 0.0002, 20, 1, this._scene, false);
                 var laserPointerMaterial = new BABYLON.StandardMaterial("laserPointerMat", this._scene);
                 laserPointerMaterial.emissiveColor = new BABYLON.Color3(0.7, 0.7, 0.7);
                 laserPointerMaterial.alpha = 0.6;
                 laserPointer.material = laserPointerMaterial;
                 laserPointer.rotation.x = Math.PI / 2;
                 laserPointer.parent = controllerMesh;
-                laserPointer.position.z = -1.5;
+                laserPointer.position.z = -0.5;
                 laserPointer.position.y = 0;
                 laserPointer.isVisible = false;
+                if (webVRController.hand === "left") {
+                    this._leftLaserPointer = laserPointer;
+                }
+                else {
+                    this._rightLaserPointer = laserPointer;
+                }
                 webVRController.onMainButtonStateChangedObservable.add(function (stateObject) {
                     // Enabling / disabling laserPointer 
                     if (stateObject.value === 1) {
                         laserPointer.isVisible = !laserPointer.isVisible;
+                        // Laser pointer can only be active on left or right, not both at the same time
+                        if (webVRController.hand === "left" && _this._rightLaserPointer) {
+                            _this._rightLaserPointer.isVisible = false;
+                        }
+                        else if (_this._leftLaserPointer) {
+                            _this._leftLaserPointer.isVisible = false;
+                        }
                     }
                 });
                 webVRController.onPadValuesChangedObservable.add(function (stateObject) {
-                    // on pressed
                     if (!_this._teleportationRequestInitiated) {
-                        if (stateObject.y < -0.6) {
-                            laserPointer.isVisible = true;
+                        if (stateObject.y < -_this._padSensibilityUp) {
+                            // If laser pointer wasn't enabled yet
+                            if (webVRController.hand === "left" && _this._leftLaserPointer) {
+                                _this._leftLaserPointer.isVisible = true;
+                                if (_this._rightLaserPointer) {
+                                    _this._rightLaserPointer.isVisible = false;
+                                }
+                            }
+                            else if (_this._rightLaserPointer) {
+                                _this._rightLaserPointer.isVisible = true;
+                                if (_this._leftLaserPointer) {
+                                    _this._leftLaserPointer.isVisible = false;
+                                }
+                            }
                             _this._teleportationRequestInitiated = true;
                         }
                     }
                     else {
-                        if (stateObject.y > -0.4) {
-                            if (_this._teleportationAllowed) {
-                                _this._teleportCamera();
+                        // Listening to the proper controller values changes to confirm teleportation
+                        if ((webVRController.hand === "left" && _this._leftLaserPointer && _this._leftLaserPointer.isVisible)
+                            || (webVRController.hand === "right" && _this._rightLaserPointer && _this._rightLaserPointer.isVisible)) {
+                            if (stateObject.y > -_this._padSensibilityDown) {
+                                if (_this._teleportationAllowed) {
+                                    _this._teleportationAllowed = false;
+                                    _this._teleportCamera();
+                                }
+                                _this._teleportationRequestInitiated = false;
                             }
-                            _this._teleportationRequestInitiated = false;
-                            laserPointer.isVisible = false;
                         }
                     }
                     if (!_this._rotationLeftAsked) {
-                        if (stateObject.x < -0.6) {
+                        if (stateObject.x < -_this._padSensibilityUp) {
                             _this._rotationLeftAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(false);
@@ -72181,12 +72360,12 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stateObject.x > -0.4) {
+                        if (stateObject.x > -_this._padSensibilityDown) {
                             _this._rotationLeftAsked = false;
                         }
                     }
                     if (!_this._rotationRightAsked) {
-                        if (stateObject.x > 0.6) {
+                        if (stateObject.x > _this._padSensibilityUp) {
                             _this._rotationRightAsked = true;
                             if (_this._rotationAllowed) {
                                 _this._rotateCamera(true);
@@ -72194,9 +72373,25 @@ var BABYLON;
                         }
                     }
                     else {
-                        if (stateObject.x < 0.4) {
+                        if (stateObject.x < _this._padSensibilityDown) {
                             _this._rotationRightAsked = false;
                         }
+                    }
+                });
+                webVRController.onTriggerStateChangedObservable.add(function (stateObject) {
+                    if (!_this._pointerDownOnMeshAsked) {
+                        if (stateObject.value > _this._padSensibilityUp) {
+                            _this._pointerDownOnMeshAsked = true;
+                            if (_this._currentMeshSelected && _this._currentHit) {
+                                _this._scene.simulatePointerDown(_this._currentHit);
+                            }
+                        }
+                    }
+                    else if (stateObject.value < _this._padSensibilityDown) {
+                        if (_this._currentMeshSelected && _this._currentHit) {
+                            _this._scene.simulatePointerUp(_this._currentHit);
+                        }
+                        _this._pointerDownOnMeshAsked = false;
                     }
                 });
             }
@@ -72208,12 +72403,13 @@ var BABYLON;
             this._gazeTracker.isPickable = false;
             var targetMat = new BABYLON.StandardMaterial("targetMat", this._scene);
             targetMat.specularColor = BABYLON.Color3.Black();
-            targetMat.emissiveColor = BABYLON.Color3.White();
+            targetMat.emissiveColor = new BABYLON.Color3(0.7, 0.7, 0.7);
             targetMat.backFaceCulling = false;
             this._gazeTracker.material = targetMat;
         };
         VRExperienceHelper.prototype._createTeleportationCircles = function () {
             this._teleportationCircle = BABYLON.Mesh.CreateGround("teleportationCircle", 2, 2, 2, this._scene);
+            this._teleportationCircle.isPickable = false;
             var length = 512;
             var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", length, this._scene, true);
             dynamicTexture.hasAlpha = true;
@@ -72234,6 +72430,7 @@ var BABYLON;
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
             this._teleportationCircle.material = teleportationCircleMaterial;
             var torus = BABYLON.Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
+            torus.isPickable = false;
             torus.parent = this._teleportationCircle;
             var animationInnerCircle = new BABYLON.Animation("animationInnerCircle", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
             var keys = [];
@@ -72334,49 +72531,70 @@ var BABYLON;
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 6, false, 1);
         };
-        VRExperienceHelper.prototype._moveTeleportationSelectorTo = function (coordinates) {
-            this._teleportationAllowed = true;
-            if (this._teleportationRequestInitiated) {
-                this._displayTeleportationCircle();
+        VRExperienceHelper.prototype._moveTeleportationSelectorTo = function (hit) {
+            if (hit.pickedPoint) {
+                this._teleportationAllowed = true;
+                if (this._teleportationRequestInitiated) {
+                    this._displayTeleportationCircle();
+                }
+                else {
+                    this._hideTeleportationCircle();
+                }
+                this._haloCenter.copyFrom(hit.pickedPoint);
+                this._teleportationCircle.position.copyFrom(hit.pickedPoint);
+                var pickNormal = hit.getNormal();
+                if (pickNormal) {
+                    var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
+                    var axis2 = BABYLON.Vector3.Cross(pickNormal, axis1);
+                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._teleportationCircle.rotation);
+                }
+                this._teleportationCircle.position.y += 0.1;
             }
-            else {
-                this._hideTeleportationCircle();
-            }
-            this._haloCenter.copyFrom(coordinates);
-            this._teleportationCircle.position = coordinates;
-            this._teleportationCircle.position.y += 0.001;
         };
         VRExperienceHelper.prototype._teleportCamera = function () {
             var _this = this;
             this.currentVRCamera.animations = [];
-            var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position.x", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-            var animationCameraTeleportationKeys = [];
-            animationCameraTeleportationKeys.push({
+            var animationCameraTeleportationX = new BABYLON.Animation("animationCameraTeleportationX", "position.x", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            var animationCameraTeleportationXKeys = [];
+            animationCameraTeleportationXKeys.push({
                 frame: 0,
                 value: this.currentVRCamera.position.x
             });
-            animationCameraTeleportationKeys.push({
+            animationCameraTeleportationXKeys.push({
                 frame: 11,
                 value: this._haloCenter.x
             });
-            animationCameraTeleportation.setKeys(animationCameraTeleportationKeys);
             var easingFunction = new BABYLON.CircleEase();
             easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
-            animationCameraTeleportation.setEasingFunction(easingFunction);
-            this.currentVRCamera.animations.push(animationCameraTeleportation);
-            var animationZoomIn2 = new BABYLON.Animation("animationZoomIn", "position.z", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-            var keys2 = [];
-            keys2.push({
+            animationCameraTeleportationX.setKeys(animationCameraTeleportationXKeys);
+            animationCameraTeleportationX.setEasingFunction(easingFunction);
+            this.currentVRCamera.animations.push(animationCameraTeleportationX);
+            var animationCameraTeleportationY = new BABYLON.Animation("animationCameraTeleportationY", "position.y", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            var animationCameraTeleportationYKeys = [];
+            animationCameraTeleportationYKeys.push({
+                frame: 0,
+                value: this.currentVRCamera.position.y
+            });
+            animationCameraTeleportationYKeys.push({
+                frame: 11,
+                value: this._haloCenter.y + 1.7
+            });
+            animationCameraTeleportationY.setKeys(animationCameraTeleportationYKeys);
+            animationCameraTeleportationY.setEasingFunction(easingFunction);
+            this.currentVRCamera.animations.push(animationCameraTeleportationY);
+            var animationCameraTeleportationZ = new BABYLON.Animation("animationCameraTeleportationZ", "position.z", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            var animationCameraTeleportationZKeys = [];
+            animationCameraTeleportationZKeys.push({
                 frame: 0,
                 value: this.currentVRCamera.position.z
             });
-            keys2.push({
+            animationCameraTeleportationZKeys.push({
                 frame: 11,
                 value: this._haloCenter.z
             });
-            animationZoomIn2.setKeys(keys2);
-            animationZoomIn2.setEasingFunction(easingFunction);
-            this.currentVRCamera.animations.push(animationZoomIn2);
+            animationCameraTeleportationZ.setKeys(animationCameraTeleportationZKeys);
+            animationCameraTeleportationZ.setEasingFunction(easingFunction);
+            this.currentVRCamera.animations.push(animationCameraTeleportationZ);
             this._postProcessMove.animations = [];
             var animationPP = new BABYLON.Animation("animationPP", "vignetteWeight", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
             var vignetteWeightKeys = [];
@@ -72420,18 +72638,32 @@ var BABYLON;
         };
         VRExperienceHelper.prototype._castRayAndSelectObject = function () {
             var ray;
-            if (!this.currentVRCamera.rightController) {
+            if ((!this.currentVRCamera.rightController && !this.currentVRCamera.leftController) ||
+                (this._leftLaserPointer && !this._leftLaserPointer.isVisible && !this._rightLaserPointer) ||
+                (this._rightLaserPointer && !this._rightLaserPointer.isVisible && !this._leftLaserPointer) ||
+                (this._rightLaserPointer && this._leftLaserPointer && !this._rightLaserPointer.isVisible && !this._leftLaserPointer.isVisible)) {
                 ray = this.currentVRCamera.getForwardRay();
             }
             else {
-                ray = this.currentVRCamera.rightController.getForwardRay();
+                if (this._leftLaserPointer && this._leftLaserPointer.isVisible) {
+                    ray = this.currentVRCamera.leftController.getForwardRay();
+                }
+                else {
+                    ray = this.currentVRCamera.rightController.getForwardRay();
+                }
             }
-            var hit = this._scene.pickWithRay(ray, this.meshSelectionPredicate);
+            var hit = this._scene.pickWithRay(ray, this._meshSelectionPredicate);
+            // Moving the gazeTracker on the mesh face targetted
             if (hit && hit.pickedPoint) {
-                this._gazeTracker.scaling.x = hit.distance;
-                this._gazeTracker.scaling.y = hit.distance;
-                this._gazeTracker.scaling.z = hit.distance;
+                var multiplier = 1;
+                if (this._isActionableMesh) {
+                    multiplier = 3;
+                }
+                this._gazeTracker.scaling.x = hit.distance * multiplier;
+                this._gazeTracker.scaling.y = hit.distance * multiplier;
+                this._gazeTracker.scaling.z = hit.distance * multiplier;
                 var pickNormal = hit.getNormal();
+                // To avoid z-fighting
                 var deltaFighting = 0.002;
                 if (pickNormal) {
                     var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
@@ -72457,27 +72689,69 @@ var BABYLON;
                 else {
                     this._gazeTracker.position.z -= deltaFighting;
                 }
-            }
-            if (this._rayHelper) {
-                this._rayHelper.dispose();
-            }
-            if (this.currentVRCamera.rightController) {
-                this._rayHelper = BABYLON.RayHelper.CreateAndShow(ray, this._scene, new BABYLON.Color3(0.7, 0.7, 0.7));
+                // Changing the size of the laser pointer based on the distance from the targetted point
+                if (this._rightLaserPointer && this._rightLaserPointer.isVisible) {
+                    this._rightLaserPointer.scaling.y = hit.distance;
+                    this._rightLaserPointer.position.z = -hit.distance / 2;
+                }
+                if (this._leftLaserPointer && this._leftLaserPointer.isVisible) {
+                    this._leftLaserPointer.scaling.y = hit.distance;
+                    this._leftLaserPointer.position.z = -hit.distance / 2;
+                }
             }
             if (hit && hit.pickedMesh) {
+                this._currentHit = hit;
                 // The object selected is the floor, we're in a teleportation scenario
                 if (hit.pickedMesh.name.indexOf(this._floorMeshName) !== -1 && hit.pickedPoint) {
-                    this._moveTeleportationSelectorTo(hit.pickedPoint);
+                    // Moving the teleportation area to this targetted point
+                    this._moveTeleportationSelectorTo(hit);
                     return;
                 }
                 // If not, we're in a selection scenario
                 this._hideTeleportationCircle();
                 this._teleportationAllowed = false;
-                //currentMeshSelected = hit.pickedMesh;
+                if (hit.pickedMesh !== this._currentMeshSelected) {
+                    if (this.meshSelectionPredicate(hit.pickedMesh)) {
+                        this._currentMeshSelected = hit.pickedMesh;
+                        if (hit.pickedMesh.isPickable && hit.pickedMesh.actionManager) {
+                            this.changeGazeColor(new BABYLON.Color3(0, 0, 1));
+                            this.changeLaserColor(new BABYLON.Color3(0.2, 0.2, 1));
+                            this._isActionableMesh = true;
+                        }
+                        else {
+                            this.changeGazeColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                            this.changeLaserColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                            this._isActionableMesh = false;
+                        }
+                        this.onNewMeshSelected.notifyObservers(this._currentMeshSelected);
+                    }
+                    else {
+                        this._currentMeshSelected = null;
+                        this.changeGazeColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                        this.changeLaserColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                    }
+                }
             }
             else {
+                this._currentHit = null;
+                this._currentMeshSelected = null;
                 this._teleportationAllowed = false;
                 this._hideTeleportationCircle();
+                this.changeGazeColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                this.changeLaserColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+            }
+        };
+        VRExperienceHelper.prototype.changeLaserColor = function (color) {
+            if (this._leftLaserPointer && this._leftLaserPointer.material) {
+                this._leftLaserPointer.material.emissiveColor = color;
+            }
+            if (this._rightLaserPointer && this._rightLaserPointer.material) {
+                this._rightLaserPointer.material.emissiveColor = color;
+            }
+        };
+        VRExperienceHelper.prototype.changeGazeColor = function (color) {
+            if (this._gazeTracker.material) {
+                this._gazeTracker.material.emissiveColor = color;
             }
         };
         VRExperienceHelper.prototype.dispose = function () {
@@ -77128,8 +77402,8 @@ var BABYLON;
         NullEngine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset, count) {
         };
         NullEngine.prototype._bindTextureDirectly = function (target, texture) {
-            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
-                this._activeTexturesCache[this._activeTextureChannel] = texture;
+            if (this._boundTexturesCache[this._activeTextureChannel] !== texture) {
+                this._boundTexturesCache[this._activeTextureChannel] = texture;
             }
         };
         NullEngine.prototype._bindTexture = function (channel, texture) {
