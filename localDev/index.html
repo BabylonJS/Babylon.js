@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Local Development</title>
+	
+    <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
+	<script src="https://preview.babylonjs.com/cannon.js"></script>
+	<script src="https://preview.babylonjs.com/Oimo.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+	<script src="../tools/DevLoader/BabylonLoader.js"></script>
+	<script src="src/webgl-debug.js"></script>
+
+	<style>
+		html, body {
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			margin: 0;
+			overflow: hidden;
+		}
+
+		#renderCanvas {
+			width: 100%;
+			height: 100%;
+		}
+
+		#fps {
+			position: absolute;
+			background-color: black;
+			border: 2px solid red;
+			text-align: center;
+			font-size: 16px;
+			color: white;
+			top: 15px;
+			right: 10px;
+			width: 60px;
+			height: 20px;
+		}
+	</style>
+</head>
+<body>
+	<div id="fps">0</div>
+	<canvas id="renderCanvas" touch-action="none"></canvas>
+	
+	<script>
+		var canvas = document.getElementById("renderCanvas");
+	//	canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
+		var divFps = document.getElementById("fps");
+
+		// Global to simulate PG.
+		var engine = null;
+
+		// Allow querystring to navigate easily in debug in local samples.
+		var indexjs = 'src/index';
+		var sampleSearch = /sample=([0-9]+)/i;
+		var matches = null;
+		if ((matches = sampleSearch.exec(window.location)) !== null) {			
+			indexjs += '.';
+			indexjs += matches[1];
+		}
+		indexjs += '.js';
+
+		// Load the scripts + map file to allow vscode debug.
+		BABYLONDEVTOOLS.Loader
+			.require(indexjs)
+			.load(function() {
+				if (BABYLON.Engine.isSupported()) {
+					engine = new BABYLON.Engine(canvas, true, { stencil: true, disableWebGL2Support: false });
+					BABYLONDEVTOOLS.Loader.debugShortcut(engine);
+
+					// call the scene creation from the js.
+					if (typeof delayCreateScene !== "undefined") {
+						var scene = delayCreateScene();
+
+						if (scene) {
+							// Register a render loop to repeatedly render the scene
+
+							engine.runRenderLoop(function () {
+								if (scene.activeCamera) {
+									scene.render();
+								}
+								divFps.innerHTML = engine.getFps().toFixed() + " fps";
+							});
+						}
+					}
+					else {
+						var scene = createScene();
+
+						if (scene) {
+							// Register a render loop to repeatedly render the scene
+
+							engine.runRenderLoop(function () {
+								scene.render();
+								divFps.innerHTML = engine.getFps().toFixed() + " fps";
+							});
+						}
+					}
+
+					// Resize
+					window.addEventListener("resize", function () {
+						engine.resize();
+					});
+					
+				}
+				else {
+					alert('BabylonJS is not supported.')
+				}
+			});
+	</script>
+</body>
+</html>

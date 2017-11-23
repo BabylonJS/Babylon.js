@@ -1,0 +1,112 @@
+<style>
+    nav-bar {
+        position: absolute;
+        height: 160px;
+        width: 100%;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.3);
+        color: white;
+        transition: 1s;
+        align-items: flex-start;
+        justify-content: space-around;
+        display: flex;
+
+        flex-direction: column;
+    }
+
+    /* Big screens have room for the entire navbar */
+
+    @media screen and (min-width: 768px) {
+        nav-bar {
+            align-items: center;
+            flex-direction: row;
+            justify-content: space-between;
+            height: 80px;
+        }
+    }
+
+    div.flex-container {
+        display: flex;
+        width: 100%;
+    }
+
+    div.thumbnail {
+        position: relative;
+        overflow: hidden;
+        display: block;
+        width: 40px;
+        height: 40px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 20px;
+        margin: 0 10px;
+    }
+
+    div.title-container {
+        flex-direction: column;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    span.model-title {
+        font-size: 125%;
+    }
+
+    span.model-subtitle {
+        font-size: 90%;
+    }
+
+    div.button-container {
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    div.button {
+        cursor: pointer;
+        height: 30px;
+        margin: 0 10px;
+    }
+
+    div.button img {
+        height: 100%;
+    }
+</style>
+
+{{#if disableOnFullscreen}}
+<style>
+    viewer:fullscreen nav-bar {
+        display: none;
+    }
+
+    viewer:-moz-full-screen nav-bar {
+        display: none;
+    }
+
+    viewer:-webkit-full-screen nav-bar {
+        display: none;
+    }
+</style>
+{{/if}}
+
+<div class="flex-container" id="model-metadata">
+    <!-- holding the description -->
+    <div class="thumbnail">
+        <!-- holding the thumbnail 
+        <img src="{{thumbnail}}" alt="{{title}}">-->
+    </div>
+    <div class="title-container">
+
+        <span class="model-title">{{#if title}}{{title}}{{/if}}</span>
+        <span class="model-subtitle"> {{#if subtitle}}{{subtitle}} {{/if}}</span>
+    </div>
+</div>
+<div class="button-container flex-container">
+    <!-- holding the buttons -->
+    {{#eachInMap buttons}}
+    <div id="{{id}}" class="button">
+        {{#if text}}
+        <span>{{text}}</span>> {{/if}} {{#if image}}
+        <img src="{{image}}" alt="{{altText}}"> {{/if}}
+    </div>
+    {{/eachInMap}}
+</div>

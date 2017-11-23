@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - Basic usage</title>
+        <style>
+            babylon {
+                max-width: 800px;
+                max-height: 500px;
+                width: 100%;
+                height: 600px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <babylon model.title="Amazing Rabbit" model.subtitle="BabylonJS" model.thumbnail="https://www.babylonjs.com/img/favicon/apple-icon-144x144.png"
+            model.url="https://playground.babylonjs.com/scenes/Rabbit.babylon" camera.behaviors.auto-rotate="0" templates.nav-bar.params.disable-on-fullscreen="true"></babylon>
+        <script src="viewer.js"></script>
+        <script>
+            // The following lines are redundant. 
+            // They are only here to show how you could achive the tag initialization on your own.
+
+            // a simple way of disabling auto init 
+            BabylonViewer.disableInit = true;
+            // Initializing the viewer on specific HTML tags.
+            BabylonViewer.InitTags('babylon');
+        </script>
+    </body>
+
+</html>

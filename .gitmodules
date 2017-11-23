@@ -1,0 +1,3 @@
+[submodule "Exporters/XNA - OBJ/BabylonExport.Core/Exporters/ThroughXNA/DAE/ColladaXna"]
+	path = Exporters/XNA - OBJ/BabylonExport.Core/Exporters/ThroughXNA/DAE/ColladaXna
+	url = https://github.com/gwenael-hagenmuller/ColladaXna.git

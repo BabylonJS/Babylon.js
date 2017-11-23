@@ -1,0 +1,1 @@
+﻿sampleCoord{X} = sampleCenter + delta * KERNEL_OFFSET{X};

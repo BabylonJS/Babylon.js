@@ -1,0 +1,14 @@
+// Tooltip used when hovering on divisions
+
+.tooltip {
+    position        : absolute;
+    top             : $tabbar-height;
+    right           : 0;
+    color           : $color-top;
+    display         : none;
+    z-index         : 4;
+    font-family     : $font;  
+    padding         : 2px;
+    background-color: $background;
+    border          : 1px solid $background-lighter3;
+}
