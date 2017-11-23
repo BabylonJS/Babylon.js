@@ -30,10 +30,10 @@ For a particular spot light, set its projection texture and mark it as texture p
 will autometically handle everything.
 
 '''
-
+	
 light.projectionMaterial.projectedLightTexture = new BABYLON.Texture("textures/upenn.jpg",scene);
 light.enableProjectionTexture = true;
-
+	
 '''
 
 You can optimize these values for projection settings:
@@ -84,7 +84,7 @@ light.computeTextureMatrix();
 ### Demo running code in playground
 
 '''
-//
+	
 var createScene = function () {
 	var scene = new BABYLON.Scene(engine);
 
