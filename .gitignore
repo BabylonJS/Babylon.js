@@ -25,6 +25,8 @@ inspector/src/**/*.js
 serializers/src/**/*.js
 gui/src/**/*.js
 
+dist/
+
 # Build results
 [Dd]ebug/
 [Rr]elease/
