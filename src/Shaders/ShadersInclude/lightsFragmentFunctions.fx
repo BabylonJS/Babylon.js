@@ -32,9 +32,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 #ifdef NDOTL
 	result.ndl = ndl;
 #endif
-
 	result.diffuse = ndl * diffuseColor * attenuation;
-
 #ifdef SPECULARTERM
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
@@ -46,7 +44,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 	return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness, bool textureProjectionFlag, sampler2D projectionLightSampler, mat4 textureMatrix) {
 	lightingInfo result;
 
 	vec3 direction = lightData.xyz - vPositionW;
@@ -67,7 +65,6 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 		result.ndl = ndl;
 #endif
 		result.diffuse = ndl * diffuseColor * attenuation;
-
 #ifdef SPECULARTERM
 		// Specular
 		vec3 angleW = normalize(viewDirectionW + lightVectorW);
@@ -76,7 +73,14 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 
 		result.specular = specComp * specularColor * attenuation;
 #endif
-		return result;
+		if (textureProjectionFlag) 
+		{
+			vec4 strq = textureMatrix * vec4(vPositionW, 1.0);
+			strq /= strq.w;
+			vec4 aa = texture2D(projectionLightSampler, vec2(strq[0], strq[1]));
+			result.diffuse *= strq[3] < 0.0 ? vec3(0.0) : vec3(aa);
+		}
+        return result;
 	}
 
 	result.diffuse = vec3(0.);
