@@ -84,7 +84,7 @@ light.computeTextureMatrix();
 ### Demo running code in playground
 
 '''
-
+//
 var createScene = function () {
 	var scene = new BABYLON.Scene(engine);
 
