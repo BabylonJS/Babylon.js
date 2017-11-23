@@ -1,166 +1,79 @@
-Introduction
+Babylon.js
 ==========
 
-This is a branch of https://github.com/BabylonJS/Babylon.js .
+Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it.
 
-This branch is tend to add more features to the origin engine.
+[![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
 
-Team Members
-==========
+**Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
-Jiahao Liu https://github.com/lostink
+## CDN
+- https://cdn.babylonjs.com/babylon.js
+- https://cdn.babylonjs.com/babylon.max.js
+- https://cdn.babylonjs.com/babylon.worker.js
 
-Yalun Hu https://github.com/chestnutwww
+Additional references can be found on https://cdn.babylonjs.com/xxx where xxx is the folder structure you can find in the /dist folder like https://cdn.babylonjs.com/gui/babylon.gui.min.js
 
+For preview release you can use the following ones:
 
-Featue 0 : Spot Light Texture Projection
-==========
+- https://preview.babylonjs.com/babylon.js
+- https://preview.babylonjs.com/babylon.max.js
+- https://preview.babylonjs.com/babylon.worker.js
 
-### Feature Description
+Additional references can be found on https://preview.babylonjs.com/xxx where xxx is the folder structure you can find in the /dist/preview release folder like https://preview.babylonjs.com/gui/babylon.gui.min.js
 
-This feature enables user to add texture to spot light to make it project desired texture
+## NPM
 
-### Demo
-
-![](milestone1.gif)
-
-### How to use
-
-For a particular spot light, set its projection texture and mark it as texture projection enabled
-will autometically handle everything. 
+BabylonJS and its modules are published on NPM with full typing support. To install use
 
 ```
-	
-light.projectionMaterial.projectedLightTexture = new BABYLON.Texture("textures/upenn.jpg",scene);
-light.enableProjectionTexture = true;
-	
+npm install babylonjs --save
 ```
 
-You can optimize these values for projection settings.
-In addition, if direction, upVector, rightVector, near clip distance, far clip distance and angle is changed,
-```light.computeTextureMatrix()``` need to be called to make texture follow the light.
-
-* Near Clip Distance
+This will allow you to import BabylonJS entirely using:
 
 ```
-
-light.light_near = 0.01;
-light.computeTextureMatrix();
-
+import * as BABYLON from 'babylonjs';
 ```
 
-* Far Clip Distance
+or individual classes using:
 
 ```
-
-light.light_far = 1000.0;
-light.computeTextureMatrix();
-
+import { Scene, Engine } from 'babylonjs';
 ```
 
-* Up vector for spot light space
-
-If up vector is not properly set, resulting in the up vector is not perpendicular to direction vector, 
-then it will be autometically reset. It is not necessary for up vector to be a unit vector.
+If using TypeScript, don't forget to add 'babylonjs' to 'types' in tsconfig.json:
 
 ```
-
-light.upVector = new BABYLON.Vector3(1,0,1);
-light.computeTextureMatrix();
-
+    ....
+    "types": [
+        "babylonjs",
+        "anotherAwesomeDependency"
+    ],
+    ....
 ```
 
+To add a module install the respected package. A list of extra packages and their installation instructions can be found on [babylonjs' user at npm](https://www.npmjs.com/~babylonjs).
 
-* Right Vector for spot light space
+## Preview release
 
-If right vector is not properly set, resulting in the right vector is not perpendicular to direction vector, 
-then it will be autometically reset. It is not necessary for right vector to be a unit vector.
+**3.1-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
+If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
 
-```
+## Documentation
+- [Documentation](http://doc.babylonjs.com)
+- [Samples](https://github.com/BabylonJS/Samples)
+- [Video overview (1 hour) of BabylonJS features](http://www.youtube.com/watch?v=z80TYMqsdEM)
+- [Complete course (8 hours)](http://www.microsoftvirtualacademy.com/training-courses/introduction-to-webgl-3d-with-html5-and-babylon-js)
 
-light.rightVector = new BABYLON.Vector3(1,0,1);
-light.computeTextureMatrix();
+## Useful links
 
-```
+ - Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
+ - Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .babylon scenes with a simple drag'n'drop
+ - Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
+ - 3DS Max [exporter](https://github.com/BabylonJS/Exporters/tree/master/3ds%20Max) can be used to generate a .babylon file from 3DS Max
+ - Blender [exporter](https://github.com/BabylonJS/Exporters/tree/master/Blender) can be used to generate a .babylon file from Blender 3d
+ - Unity 5 [exporter](https://github.com/BabylonJS/Exporters/tree/master/Unity%205) can be used to export your geometries from Unity 5 scene editor(animations are supported)
 
-### Demo running code in playground
-
-```
-	
-var createScene = function () {
-	var scene = new BABYLON.Scene(engine);
-
-	// Setup environment
-	var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 90, BABYLON.Vector3.Zero(), scene);
-	camera.lowerBetaLimit = 0.1;
-	camera.upperBetaLimit = (Math.PI / 2) * 0.9;
-	camera.lowerRadiusLimit = 30;
-	camera.upperRadiusLimit = 150;
-	camera.attachControl(canvas, true);
-
-	// light2
-	var light2 = new BABYLON.SpotLight("spot02", 
-								new BABYLON.Vector3(30, 40, 20),
-								new BABYLON.Vector3(-1, -2, -1), 
-								1.1, 
-								1, 
-								scene);
-	light2.intensity = 0.5;
-	light2.projectionMaterial.projectedLightTexture = new BABYLON.Texture("textures/upenn.jpg",scene);
-	light2.enableProjectionTexture = true;
-
-	var lightSphere2 = BABYLON.Mesh.CreateSphere("sphere", 10, 2, scene);
-	lightSphere2.position = light2.position;
-	lightSphere2.material = new BABYLON.StandardMaterial("light", scene);
-	lightSphere2.material.emissiveColor = new BABYLON.Color3(1, 1, 0);
-
-	// Ground
-	var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", 
-										"textures/heightMap.png", 
-										200, 
-										200, 
-										100, 
-										0, 
-										10, 
-										scene, 
-										false);
-	var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
-	groundMaterial.diffuseTexture = new BABYLON.Texture("textures/ground.jpg", scene);
-	groundMaterial.diffuseTexture.uScale = 6;
-	groundMaterial.diffuseTexture.vScale = 6;
-	groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-	ground.position.y = -2.05;
-	ground.material = groundMaterial;
-
-	// Torus
-	var torus = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
-
-	// Box
-    var box = BABYLON.Mesh.CreateBox("box", 3);
-    box.parent = torus;	
-
-	// Shadows
-
-	var shadowGenerator2 = new BABYLON.ShadowGenerator(1024, light2);
-	shadowGenerator2.addShadowCaster(torus);
-	shadowGenerator2.usePoissonSampling = true;
-
-	ground.receiveShadows = true;
-
-	// Animations
-	var alpha = 0;
-	scene.registerBeforeRender(function () {
-		torus.rotation.x += 0.01;
-		torus.rotation.z += 0.02;
-
-		torus.position = new BABYLON.Vector3(Math.cos(alpha) * 30, 10, Math.sin(alpha) * 30);
-		alpha += 0.01;
-        light2.direction.x = Math.cos(alpha * 2);
-        light2.direction.z = Math.sin(alpha * 2);
-        light2.computeTextureMatrix();
-	});
-
-	return scene;
-}
-
-```
+## Features
+To get a complete list of supported features, please visit our [website](http://www.babylonjs.com/#specifications).
