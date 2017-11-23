@@ -30,8 +30,10 @@ For a particular spot light, set its projection texture and mark it as texture p
 will autometically handle everything.
 
 '''javascript
+
 light.projectionMaterial.projectedLightTexture = new BABYLON.Texture("textures/upenn.jpg",scene);
 light.enableProjectionTexture = true;
+
 '''
 
 You can optimize these values for projection settings:
@@ -39,15 +41,19 @@ You can optimize these values for projection settings:
 * Near Clip Distance
 
 '''javascript
+
 light.light_near = 1000.0;
 light.computeTextureMatrix();
+
 '''
 
 * Far Clip Distance
 
 '''javascript
+
 light.light_near = 0.1;
 light.computeTextureMatrix();
+
 '''
 
 * Up vector for spot light space
@@ -56,8 +62,10 @@ If up vector is not properly set, resulting in the up vector is not perpendicula
 then it will be autometically reset. It is not necessary for up vector to be a unit vector.
 
 '''javascript
+
 light.upVector = new BABYLON.Vector3(1,0,1);
 light.computeTextureMatrix();
+
 '''
 
 
@@ -67,13 +75,16 @@ If right vector is not properly set, resulting in the right vector is not perpen
 then it will be autometically reset. It is not necessary for right vector to be a unit vector.
 
 '''javascript
+
 light.rightVector = new BABYLON.Vector3(1,0,1);
 light.computeTextureMatrix();
+
 '''
 
 ### Demo running code in playground
 
 '''javascript
+
 var createScene = function () {
 	var scene = new BABYLON.Scene(engine);
 
@@ -86,8 +97,12 @@ var createScene = function () {
 	camera.attachControl(canvas, true);
 
 	// light2
-	var light2 = new BABYLON.SpotLight("spot02", new BABYLON.Vector3(30, 40, 20),
-												new BABYLON.Vector3(-1, -2, -1), 1.1, 1, scene);
+	var light2 = new BABYLON.SpotLight("spot02", 
+								new BABYLON.Vector3(30, 40, 20),
+								new BABYLON.Vector3(-1, -2, -1), 
+								1.1, 
+								1, 
+								scene);
 	light2.intensity = 0.5;
     light2.projectionMaterial.projectedLightTexture = new BABYLON.Texture("textures/upenn.jpg",scene);
     light2.enableProjectionTexture = true;
@@ -98,7 +113,15 @@ var createScene = function () {
 	lightSphere2.material.emissiveColor = new BABYLON.Color3(1, 1, 0);
 
 	// Ground
-	var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "textures/heightMap.png", 200, 200, 100, 0, 10, scene, false);
+	var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", 
+														"textures/heightMap.png", 
+														200, 
+														200, 
+														100, 
+														0, 
+														10, 
+														scene, 
+														false);
 	var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
 	groundMaterial.diffuseTexture = new BABYLON.Texture("textures/ground.jpg", scene);
 	groundMaterial.diffuseTexture.uScale = 6;
@@ -137,4 +160,5 @@ var createScene = function () {
 
 	return scene;
 }
+
 '''
