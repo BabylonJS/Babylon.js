@@ -104,8 +104,8 @@ var createScene = function () {
 								1, 
 								scene);
 	light2.intensity = 0.5;
-    light2.projectionMaterial.projectedLightTexture = new BABYLON.Texture("textures/upenn.jpg",scene);
-    light2.enableProjectionTexture = true;
+	light2.projectionMaterial.projectedLightTexture = new BABYLON.Texture("textures/upenn.jpg",scene);
+	light2.enableProjectionTexture = true;
 
 	var lightSphere2 = BABYLON.Mesh.CreateSphere("sphere", 10, 2, scene);
 	lightSphere2.position = light2.position;
@@ -114,14 +114,14 @@ var createScene = function () {
 
 	// Ground
 	var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", 
-														"textures/heightMap.png", 
-														200, 
-														200, 
-														100, 
-														0, 
-														10, 
-														scene, 
-														false);
+										"textures/heightMap.png", 
+										200, 
+										200, 
+										100, 
+										0, 
+										10, 
+										scene, 
+										false);
 	var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
 	groundMaterial.diffuseTexture = new BABYLON.Texture("textures/ground.jpg", scene);
 	groundMaterial.diffuseTexture.uScale = 6;
