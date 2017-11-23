@@ -157,7 +157,7 @@ module BABYLON {
             this._physicsEngine.removeImpostor(this);
             this.physicsBody = null;
             this._parent = this._parent || this._getPhysicsParent();
-            if (!this.parent || this._options.ignoreParent) {
+            if (!this._isDisposed && (!this.parent || this._options.ignoreParent)) {
                 this._physicsEngine.addImpostor(this);
             }
         }
