@@ -3,7 +3,7 @@ module BABYLON {
     /**
      * The strenght of the force in correspondence to the distance of the affected object
      */
-    export enum PhysicsRadialImpulseFallof {
+    export enum PhysicsRadialImpulseFalloff {
         Constant, // impulse is constant in strength across it's whole radius
         Linear // impulse gets weaker if it's further from the origin
     }
@@ -34,9 +34,9 @@ module BABYLON {
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
          */
-        public applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant): Nullable<PhysicsRadialExplosionEvent> {
+        public applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant): Nullable<PhysicsRadialExplosionEvent> {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
                 return null;
@@ -67,9 +67,9 @@ module BABYLON {
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
          */
-        public applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant): Nullable<PhysicsRadialExplosionEvent> {
+        public applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant): Nullable<PhysicsRadialExplosionEvent> {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -100,9 +100,9 @@ module BABYLON {
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
          */
-        public gravitationalField(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant): Nullable<PhysicsGravitationalFieldEvent> {
+        public gravitationalField(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant): Nullable<PhysicsGravitationalFieldEvent> {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -177,10 +177,10 @@ module BABYLON {
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear
          * @returns {Nullable<PhysicsForceAndContactPoint>}
          */
-        public getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof): Nullable<PhysicsForceAndContactPoint> {
+        public getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint> {
             if (impostor.mass === 0) {
                 return null;
             }
@@ -207,7 +207,7 @@ module BABYLON {
                 return null;
             }
 
-            var multiplier = falloff === PhysicsRadialImpulseFallof.Constant
+            var multiplier = falloff === PhysicsRadialImpulseFalloff.Constant
                 ? strength
                 : strength * (1 - (distanceFromOrigin / radius));
 
@@ -265,12 +265,12 @@ module BABYLON {
         private _origin: Vector3;
         private _radius: number;
         private _strength: number;
-        private _falloff: PhysicsRadialImpulseFallof;
+        private _falloff: PhysicsRadialImpulseFalloff;
         private _tickCallback: any;
         private _sphere: Mesh;
         private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
 
-        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFallof = PhysicsRadialImpulseFallof.Constant) {
+        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant) {
             this._physicsHelper = physicsHelper;
             this._scene = scene;
             this._origin = origin;
