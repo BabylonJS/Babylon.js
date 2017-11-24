@@ -112,7 +112,7 @@
             var engine = this.getScene().getEngine();
 
             // Draw order
-            engine.draw(false, subMesh.indexStart, subMesh.indexCount);
+            engine.drawElementsType(Engine.DrawType.LINES, subMesh.indexStart, subMesh.indexCount);
             return this;
         }
 

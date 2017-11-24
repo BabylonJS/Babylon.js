@@ -151,9 +151,17 @@
     }
 
     export class Material implements IAnimatable {
+        // Triangle views
         private static _TriangleFillMode = 0;
         private static _WireFrameFillMode = 1;
         private static _PointFillMode = 2;
+        // Draw modes
+        private static _PointListDrawMode = 3;
+        private static _LineListDrawMode = 4;
+        private static _LineLoopDrawMode = 5;
+        private static _LineStripDrawMode = 6;
+        private static _TriangleStripDrawMode = 7;
+        private static _TriangleFanDrawMode = 8;
 
         public static get TriangleFillMode(): number {
             return Material._TriangleFillMode;
@@ -165,6 +173,30 @@
 
         public static get PointFillMode(): number {
             return Material._PointFillMode;
+        }
+
+        public static get PointListDrawMode(): number {
+            return Material._PointListDrawMode;
+        }
+
+        public static get LineListDrawMode(): number {
+            return Material._LineListDrawMode;
+        }
+
+        public static get LineLoopDrawMode(): number {
+            return Material._LineLoopDrawMode;
+        }
+
+        public static get LineStripDrawMode(): number {
+            return Material._LineStripDrawMode;
+        }
+
+        public static get TriangleStripDrawMode(): number {
+            return Material._TriangleStripDrawMode;
+        }
+
+        public static get TriangleFanDrawMode(): number {
+            return Material._TriangleFanDrawMode;
         }
 
         private static _ClockWiseSideOrientation = 0;
@@ -353,7 +385,7 @@
         }
 
         public set pointsCloud(value: boolean) {
-            this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);            
+            this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
         }
 
         @serialize()
@@ -368,6 +400,33 @@
 
             this._fillMode = value;
             this.markAsDirty(Material.MiscDirtyFlag);
+        }
+
+        public static fillModeToDrawType(fillMode: number): Engine.DrawType {
+            switch (fillMode) {
+                // Triangle views
+                case Material.TriangleFillMode:
+                    return Engine.DrawType.TRIANGLES;
+                case Material.PointFillMode:
+                    return Engine.DrawType.POINTS;
+                case Material.WireFrameFillMode:
+                    return Engine.DrawType.LINES;
+                // Draw modes
+                case Material.PointListDrawMode:
+                    return Engine.DrawType.POINTS
+                case Material.LineListDrawMode:
+                    return Engine.DrawType.LINES;
+                case Material.LineLoopDrawMode:
+                    return Engine.DrawType.LINE_LOOP
+                case Material.LineStripDrawMode:
+                    return Engine.DrawType.LINE_STRIP
+                case Material.TriangleStripDrawMode:
+                    return Engine.DrawType.TRIANGLE_STRIP
+                case Material.TriangleFanDrawMode:
+                    return Engine.DrawType.TRIANGLE_FAN;
+                default:
+                    return Engine.DrawType.TRIANGLES;
+            }
         }
 
         public _effect: Nullable<Effect>;

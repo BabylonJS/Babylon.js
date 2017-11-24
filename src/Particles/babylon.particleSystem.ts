@@ -560,7 +560,7 @@
                 engine.setDepthWrite(true);
             }
 
-            engine.draw(true, 0, this.particles.length * 6);
+            engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, this.particles.length * 6);
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
 
             return this.particles.length;

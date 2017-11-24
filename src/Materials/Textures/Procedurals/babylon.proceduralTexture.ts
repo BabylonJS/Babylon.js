@@ -335,7 +335,7 @@
                     engine.clear(scene.clearColor, true, true, true);
 
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, 6);
 
                     // Mipmaps
                     if (face === 5) {
@@ -352,7 +352,7 @@
                 engine.clear(scene.clearColor, true, true, true);
 
                 // Draw order
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, 6);
             }
 
             // Unbind
