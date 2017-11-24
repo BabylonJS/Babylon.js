@@ -2987,7 +2987,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=checkBox.js.map
+//# sourceMappingURL=checkbox.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
