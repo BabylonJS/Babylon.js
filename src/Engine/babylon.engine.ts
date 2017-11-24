@@ -2408,6 +2408,18 @@
         }
 
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
+            this.drawElementsType(useTriangles ? Engine.DrawType.TRIANGLES : Engine.DrawType.LINES, indexStart, indexCount, instancesCount);
+        }
+
+        public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
+            this.drawArraysType(Engine.DrawType.POINTS, verticesStart, verticesCount, instancesCount);
+        }
+
+        public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
+            this.drawArraysType(useTriangles ? Engine.DrawType.TRIANGLES : Engine.DrawType.LINES, verticesStart, verticesCount, instancesCount);
+        }
+
+        public drawElementsType(type: Engine.DrawType, indexStart: number, indexCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
 
@@ -2416,37 +2428,22 @@
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
             if (instancesCount) {
-                this._gl.drawElementsInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult, instancesCount);
-                return;
+                this._gl.drawElementsInstanced(type, indexCount, indexFormat, indexStart * mult, instancesCount);
+            } else {
+                this._gl.drawElements(type, indexCount, indexFormat, indexStart * mult);
             }
-
-            this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult);
         }
 
-        public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
+        public drawArraysType(type: Engine.DrawType, verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
             this._drawCalls.addCount(1, false);
 
             if (instancesCount) {
-                this._gl.drawArraysInstanced(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
-                return;
+                this._gl.drawArraysInstanced(type, verticesStart, verticesCount, instancesCount);
+            } else {
+                this._gl.drawArrays(type, verticesStart, verticesCount);
             }
-
-            this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
-        }
-
-        public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
-            // Apply states
-            this.applyStates();
-            this._drawCalls.addCount(1, false);
-
-            if (instancesCount) {
-                this._gl.drawArraysInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
-                return;
-            }
-
-            this._gl.drawArrays(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount);
         }
 
         // Shaders
@@ -5398,6 +5395,18 @@
             } catch (e) {
                 return false;
             }
+        }
+    }
+
+    export namespace Engine {
+        export enum DrawType {
+            POINTS = 0,
+            LINES = 1,
+            LINE_LOOP = 2,
+            LINE_STRIP = 3,
+            TRIANGLES = 4,
+            TRIANGLE_STRIP = 5,
+            TRIANGLE_FAN = 6,
         }
     }
 }

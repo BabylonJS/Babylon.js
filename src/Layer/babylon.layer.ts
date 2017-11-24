@@ -152,11 +152,11 @@
             // Draw order
             if (!this.alphaTest) {
                 engine.setAlphaMode(this.alphaBlendingMode);
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, 6);
                 engine.setAlphaMode(Engine.ALPHA_DISABLE);
             }
             else {
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, 6);
             }
 
             this.onAfterRenderObservable.notifyObservers(this);

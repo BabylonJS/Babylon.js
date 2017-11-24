@@ -691,12 +691,12 @@
             if (this.outerGlow) {
                 currentEffect.setFloat("offset", 0);
                 engine.setStencilFunction(Engine.NOTEQUAL);
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, 6);
             }
             if (this.innerGlow) {
                 currentEffect.setFloat("offset", 1);
                 engine.setStencilFunction(Engine.EQUAL);
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, 6);
             }
 
             // Restore Cache

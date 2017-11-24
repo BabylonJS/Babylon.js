@@ -1050,25 +1050,15 @@
             let scene = this.getScene();
             let engine = scene.getEngine();
 
-            // Draw order
-            switch (fillMode) {
-                case Material.PointFillMode:
-                    engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    break;
-                case Material.WireFrameFillMode:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
-                    }
-                    break;
-
-                default:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(true, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
-                    }
+            var drawType: Engine.DrawType = Material.fillModeToDrawType(fillMode);
+            if (this._unIndexed || fillMode == Material.PointFillMode) {
+                // or triangles as points
+                engine.drawArraysType(drawType, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+            } else if (fillMode == Material.WireFrameFillMode) {
+                // Triangles as wireframe
+                engine.drawElementsType(drawType, 0, subMesh.linesIndexCount, instancesCount);
+            } else {
+                engine.drawElementsType(drawType, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
 
             if (scene._isAlternateRenderingEnabled && !alternate) {

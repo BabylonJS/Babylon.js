@@ -250,12 +250,12 @@
             engine.setDepthFunctionToLessOrEqual();
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.draw(true, 0, max * 6);
+            engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, max * 6);
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
             engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            engine.draw(true, 0, max * 6);
+            engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, max * 6);
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
