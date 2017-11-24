@@ -103,6 +103,14 @@
             this._markAllSubMeshesAsTexturesDirty();
         }
 
+        @serializeAsTexture()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
+        public lightmapTexture: BaseTexture;
+
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useLightmapAsShadowmap = false;
+
         /**
          * Return the active textures of the material.
          */
@@ -125,7 +133,23 @@
                 activeTextures.push(this.occlusionTexture);
             }
 
+            if (this.lightmapTexture) {
+                activeTextures.push(this.lightmapTexture);
+            }
+
             return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this.lightmapTexture === texture) {
+                return true;
+            }
+
+            return false;
         }
 
         /**
