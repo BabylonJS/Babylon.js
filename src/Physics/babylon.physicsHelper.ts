@@ -1,21 +1,5 @@
 module BABYLON {
 
-    /**
-     * The strenght of the force in correspondence to the distance of the affected object
-     */
-    export enum PhysicsRadialImpulseFalloff {
-        Constant, // impulse is constant in strength across it's whole radius
-        Linear // impulse gets weaker if it's further from the origin
-    }
-
-    /**
-     * The strenght of the force in correspondence to the distance of the affected object
-     */
-    export enum PhysicsUpdraftMode {
-        Center, // the upstream forces will pull towards the top center of the cylinder
-        Perpendicular // once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder
-    }
-
     export class PhysicsHelper {
 
         private _scene: Scene;
@@ -125,8 +109,9 @@ module BABYLON {
          * @param {number} radius the radius of the updraft
          * @param {number} strength the strength of the updraft
          * @param {number} height the height of the updraft
+         * @param {PhysicsUpdraftMode} updraftMode possible options: Center & Perpendicular. Defaults to Center
          */
-        public updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent> {
+        public updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode: PhysicsUpdraftMode = PhysicsUpdraftMode.Center): Nullable<PhysicsUpdraftEvent> {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -143,6 +128,7 @@ module BABYLON {
             return event;
         }
     }
+
 
     /***** Radial explosion *****/
 
@@ -256,6 +242,7 @@ module BABYLON {
 
     }
 
+
     /***** Gravitational Field *****/
 
     export class PhysicsGravitationalFieldEvent {
@@ -337,9 +324,6 @@ module BABYLON {
 
     }
 
-    export interface PhysicsGravitationalFieldEventData {
-        sphere: Mesh;
-    }
 
     /***** Updraft *****/
 
@@ -368,7 +352,6 @@ module BABYLON {
             this._height = height;
             this._updraftMode = updraftMode;
 
-            // TODO: for this._cylinderPosition & this._originTop, take rotation into account
             this._origin.addToRef(new Vector3(0, this._height / 2, 0), this._cylinderPosition);
             this._origin.addToRef(new Vector3(0, this._height, 0), this._originTop);
 
@@ -381,7 +364,7 @@ module BABYLON {
 
         /**
          * Returns the data related to the updraft event (cylinder).
-         * @returns {PhysicsGravitationalFieldEventData}
+         * @returns {PhysicsUpdraftEventData}
          */
         public getData(): PhysicsUpdraftEventData {
             this._dataFetched = true;
@@ -481,16 +464,40 @@ module BABYLON {
 
     }
 
+
+    /***** Enums *****/
+
+    /**
+    * The strenght of the force in correspondence to the distance of the affected object
+    */
+    export enum PhysicsRadialImpulseFalloff {
+        Constant, // impulse is constant in strength across it's whole radius
+        Linear // impulse gets weaker if it's further from the origin
+    }
+
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    export enum PhysicsUpdraftMode {
+        Center, // the upstream forces will pull towards the top center of the cylinder
+        Perpendicular // once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder
+    }
+
+
     /***** Data interfaces *****/
+
+    export interface PhysicsForceAndContactPoint {
+        force: Vector3;
+        contactPoint: Vector3;
+    }
 
     export interface PhysicsRadialExplosionEventData {
         sphere: Mesh;
         rays: Array<Ray>;
     }
 
-    export interface PhysicsForceAndContactPoint {
-        force: Vector3;
-        contactPoint: Vector3;
+    export interface PhysicsGravitationalFieldEventData {
+        sphere: Mesh;
     }
 
     export interface PhysicsUpdraftEventData {
