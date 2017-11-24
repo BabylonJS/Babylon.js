@@ -149,6 +149,17 @@
             return this._source;
         }
 
+        public get isUnIndexed(): boolean {
+            return this._unIndexed;
+        }
+
+        public set isUnIndexed(value: boolean) {
+            if (this._unIndexed !== value) {
+                this._unIndexed = value;
+                this._markSubMeshesAsAttributesDirty();
+            }
+        }
+
         /**
          * @constructor
          * @param {string} name The value used by scene.getMeshByName() to do a lookup.
@@ -2105,6 +2116,7 @@
             }
 
             // Geometry
+            serializationObject.isUnIndexed = this.isUnIndexed;
             var geometry = this._geometry;
             if (geometry) {
                 var geometryId = geometry.id;
@@ -2364,6 +2376,7 @@
             }
 
             // Geometry
+            mesh.isUnIndexed = !!parsedMesh.isUnIndexed;
             mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
 
             if (parsedMesh.delayLoadingFile) {
