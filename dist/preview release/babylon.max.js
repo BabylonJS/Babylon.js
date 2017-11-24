@@ -36762,6 +36762,7 @@ var BABYLON;
                  * Occlusion Channel Strenght.
                  */
                 _this.occlusionStrength = 1.0;
+                _this.useLightmapAsShadowmap = false;
                 _this._transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
                 _this._useAlphaFromAlbedoTexture = true;
                 _this._useAmbientInGrayScale = true;
@@ -36805,7 +36806,19 @@ var BABYLON;
                 if (this.occlusionTexture) {
                     activeTextures.push(this.occlusionTexture);
                 }
+                if (this.lightmapTexture) {
+                    activeTextures.push(this.lightmapTexture);
+                }
                 return activeTextures;
+            };
+            PBRBaseSimpleMaterial.prototype.hasTexture = function (texture) {
+                if (_super.prototype.hasTexture.call(this, texture)) {
+                    return true;
+                }
+                if (this.lightmapTexture === texture) {
+                    return true;
+                }
+                return false;
             };
             PBRBaseSimpleMaterial.prototype.getClassName = function () {
                 return "PBRBaseSimpleMaterial";
@@ -36857,6 +36870,14 @@ var BABYLON;
             __decorate([
                 BABYLON.serialize()
             ], PBRBaseSimpleMaterial.prototype, "doubleSided", null);
+            __decorate([
+                BABYLON.serializeAsTexture(),
+                BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
+            ], PBRBaseSimpleMaterial.prototype, "lightmapTexture", void 0);
+            __decorate([
+                BABYLON.serialize(),
+                BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            ], PBRBaseSimpleMaterial.prototype, "useLightmapAsShadowmap", void 0);
             return PBRBaseSimpleMaterial;
         }(BABYLON.PBRBaseMaterial));
         Internals.PBRBaseSimpleMaterial = PBRBaseSimpleMaterial;
@@ -67406,11 +67427,11 @@ var BABYLON;
     /**
      * The strenght of the force in correspondence to the distance of the affected object
      */
-    var PhysicsRadialImpulseFallof;
-    (function (PhysicsRadialImpulseFallof) {
-        PhysicsRadialImpulseFallof[PhysicsRadialImpulseFallof["Constant"] = 0] = "Constant";
-        PhysicsRadialImpulseFallof[PhysicsRadialImpulseFallof["Linear"] = 1] = "Linear"; // impulse gets weaker if it's further from the origin
-    })(PhysicsRadialImpulseFallof = BABYLON.PhysicsRadialImpulseFallof || (BABYLON.PhysicsRadialImpulseFallof = {}));
+    var PhysicsRadialImpulseFalloff;
+    (function (PhysicsRadialImpulseFalloff) {
+        PhysicsRadialImpulseFalloff[PhysicsRadialImpulseFalloff["Constant"] = 0] = "Constant";
+        PhysicsRadialImpulseFalloff[PhysicsRadialImpulseFalloff["Linear"] = 1] = "Linear"; // impulse gets weaker if it's further from the origin
+    })(PhysicsRadialImpulseFalloff = BABYLON.PhysicsRadialImpulseFalloff || (BABYLON.PhysicsRadialImpulseFalloff = {}));
     /**
      * The strenght of the force in correspondence to the distance of the affected object
      */
@@ -67431,10 +67452,10 @@ var BABYLON;
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
          */
         PhysicsHelper.prototype.applyRadialExplosionImpulse = function (origin, radius, strength, falloff) {
-            if (falloff === void 0) { falloff = PhysicsRadialImpulseFallof.Constant; }
+            if (falloff === void 0) { falloff = PhysicsRadialImpulseFalloff.Constant; }
             if (!this._physicsEngine) {
                 BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
                 return null;
@@ -67458,10 +67479,10 @@ var BABYLON;
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
          */
         PhysicsHelper.prototype.applyRadialExplosionForce = function (origin, radius, strength, falloff) {
-            if (falloff === void 0) { falloff = PhysicsRadialImpulseFallof.Constant; }
+            if (falloff === void 0) { falloff = PhysicsRadialImpulseFalloff.Constant; }
             if (!this._physicsEngine) {
                 BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -67485,10 +67506,10 @@ var BABYLON;
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear. Defaults to Constant
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
          */
         PhysicsHelper.prototype.gravitationalField = function (origin, radius, strength, falloff) {
-            if (falloff === void 0) { falloff = PhysicsRadialImpulseFallof.Constant; }
+            if (falloff === void 0) { falloff = PhysicsRadialImpulseFalloff.Constant; }
             if (!this._physicsEngine) {
                 BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -67547,7 +67568,7 @@ var BABYLON;
          * @param {Vector3} origin the origin of the explosion
          * @param {number} radius the explosion radius
          * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFallof} falloff possible options: Constant & Linear
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear
          * @returns {Nullable<PhysicsForceAndContactPoint>}
          */
         PhysicsRadialExplosionEvent.prototype.getImpostorForceAndContactPoint = function (impostor, origin, radius, strength, falloff) {
@@ -67571,7 +67592,7 @@ var BABYLON;
             if (distanceFromOrigin > radius) {
                 return null;
             }
-            var multiplier = falloff === PhysicsRadialImpulseFallof.Constant
+            var multiplier = falloff === PhysicsRadialImpulseFalloff.Constant
                 ? strength
                 : strength * (1 - (distanceFromOrigin / radius));
             var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
@@ -67617,7 +67638,7 @@ var BABYLON;
     /***** Gravitational Field *****/
     var PhysicsGravitationalFieldEvent = /** @class */ (function () {
         function PhysicsGravitationalFieldEvent(physicsHelper, scene, origin, radius, strength, falloff) {
-            if (falloff === void 0) { falloff = PhysicsRadialImpulseFallof.Constant; }
+            if (falloff === void 0) { falloff = PhysicsRadialImpulseFalloff.Constant; }
             this._dataFetched = false; // check if the has been fetched the data. If not, do cleanup
             this._physicsHelper = physicsHelper;
             this._scene = scene;
