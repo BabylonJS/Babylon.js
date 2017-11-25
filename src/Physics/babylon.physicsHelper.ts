@@ -501,7 +501,7 @@ module BABYLON {
         private _strength: number;
         private _height: number;
         private _angularVelocity: number;
-        private _centripetalForceThreshold: number = 0.6;
+        private _centripetalForceThreshold: number = 0.7; // at which distance, relative to the radius the centripetal forces should kick in
         private _updraftMultiplier: number = 0.02;
         private _tickCallback: any;
         private _cylinder: Mesh;
@@ -599,7 +599,7 @@ module BABYLON {
             var forceZ = (perpendicularDirection.z + directionToOrigin.z) / 2;
 
             // TODO: find a more physically based solution
-            if (absoluteDistanceFromOrigin > 0.8) {
+            if (absoluteDistanceFromOrigin > this._centripetalForceThreshold) {
                 forceX = directionToOrigin.x * this._strength / 8;
                 forceY = directionToOrigin.y * this._updraftMultiplier;
                 forceZ = directionToOrigin.z * this._strength / 8;
