@@ -127,6 +127,30 @@ module BABYLON {
 
             return event;
         }
+
+        /**
+         * @param {Vector3} origin the origin of the vortex
+         * @param {number} radius the radius of the vortex
+         * @param {number} strength the strength of the vortex
+         * @param {number} height the height of the vortex
+         * @param {number} angularVelocity the angularVelocity for the vortex
+         */
+        public vortex(origin: Vector3, radius: number, strength: number, height: number, angularVelocity: number): Nullable<PhysicsVortexEvent> {
+            if (!this._physicsEngine) {
+                Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                return null;
+            }
+
+            if (this._physicsEngine.getImpostors().length === 0) {
+                return null;
+            }
+
+            var event = new PhysicsVortexEvent(this._physicsEngine, this._scene, origin, radius, strength, height, angularVelocity);
+
+            event.dispose(false);
+
+            return event;
+        }
     }
 
 
@@ -465,6 +489,190 @@ module BABYLON {
     }
 
 
+    /***** Vortex *****/
+
+    export class PhysicsVortexEvent {
+
+        private _physicsEngine: PhysicsEngine;
+        private _scene: Scene;
+        private _origin: Vector3;
+        private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
+        private _radius: number;
+        private _strength: number;
+        private _height: number;
+        private _angularVelocity: number;
+        private _centripetalForceThreshold: number = 0.6;
+        private _updraftMultiplier: number = 0.02;
+        private _tickCallback: any;
+        private _cylinder: Mesh;
+        private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
+        private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
+
+        constructor(physicsEngine: PhysicsEngine, scene: Scene, origin: Vector3, radius: number, strength: number, height: number, angularVelocity: number) {
+            this._physicsEngine = physicsEngine;
+            this._scene = scene;
+            this._origin = origin;
+            this._radius = radius;
+            this._strength = strength;
+            this._height = height;
+            this._angularVelocity = angularVelocity;
+
+            this._origin.addToRef(new Vector3(0, this._height / 2, 0), this._cylinderPosition);
+            this._origin.addToRef(new Vector3(0, this._height, 0), this._originTop);
+
+            this._tickCallback = this._tick.bind(this);
+        }
+
+        /**
+         * Returns the data related to the vortex event (cylinder).
+         * @returns {PhysicsVortexEventData}
+         */
+        public getData(): PhysicsVortexEventData {
+            this._dataFetched = true;
+
+            return {
+                cylinder: this._cylinder,
+            };
+        }
+
+        /**
+         * Enables the vortex.
+         */
+        public enable() {
+            this._tickCallback.call(this);
+            this._scene.registerBeforeRender(this._tickCallback);
+        }
+
+        /**
+         * Disables the cortex.
+         */
+        public disable() {
+            this._scene.unregisterBeforeRender(this._tickCallback);
+        }
+
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        public dispose(force: boolean = true) {
+            if (force) {
+                this._cylinder.dispose();
+            } else {
+                setTimeout(() => {
+                    if (!this._dataFetched) {
+                        this._cylinder.dispose();
+                    }
+                }, 0);
+            }
+        }
+
+        private getImpostorForceAndContactPoint(impostor: PhysicsImpostor): Nullable<PhysicsForceAndContactPoint> {
+            if (impostor.mass === 0) {
+                return null;
+            }
+
+            if (!this._intersectsWithCylinder(impostor)) {
+                return null;
+            }
+
+            var impostorObject = <Mesh>impostor.object;
+            var impostorObjectCenter = impostor.getObjectCenter();
+            var originOnPlane = new Vector3(this._origin.x, impostorObjectCenter.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
+            var originToImpostorDirection = impostorObjectCenter.subtract(originOnPlane);
+
+            var ray = new Ray(originOnPlane, originToImpostorDirection, this._radius);
+            var hit = ray.intersectsMesh(impostorObject);
+            var contactPoint = hit.pickedPoint;
+            if (!contactPoint) {
+                return null;
+            }
+
+            var absoluteDistanceFromOrigin = hit.distance / this._radius;
+            var perpendicularDirection = Vector3.Cross(originOnPlane, impostorObjectCenter).normalize();
+            var directionToOrigin = contactPoint.normalize();
+            if (absoluteDistanceFromOrigin > this._centripetalForceThreshold) {
+                directionToOrigin = directionToOrigin.negate();
+            }
+
+            var forceX = (perpendicularDirection.x + directionToOrigin.x) / 2;
+            var forceY = this._originTop.y * this._updraftMultiplier;
+            var forceZ = (perpendicularDirection.z + directionToOrigin.z) / 2;
+
+            // TODO: find a more physically based solution
+            if (absoluteDistanceFromOrigin > 0.8) {
+                forceX = directionToOrigin.x * this._strength / 8;
+                forceY = directionToOrigin.y * this._updraftMultiplier;
+                forceZ = directionToOrigin.z * this._strength / 8;
+            }
+
+            // TODO: implement angular velocity
+
+            var force = new Vector3(forceX, forceY, forceZ);
+
+            force = force.multiplyByFloats(this._strength, this._strength, this._strength);
+
+            /*
+            // DEBUG
+                // Force - Red
+                var debugForceRay = new Ray(impostorObjectCenter, force, 0.2);
+                var debugForceRayHelper = new BABYLON.RayHelper(debugForceRay);
+                debugForceRayHelper.show(this._scene, new BABYLON.Color3(1, 0, 0));
+                setTimeout(function (debugForceRayHelper) { debugForceRayHelper.dispose() }, 20, debugForceRayHelper);
+
+
+                // Direction to origin - Blue
+                 var debugDirectionRay = new Ray(impostorObjectCenter, directionToOrigin, 2.5);
+                var debugDirectionRayHelper = new BABYLON.RayHelper(debugDirectionRay);
+                debugDirectionRayHelper.show(this._scene, new BABYLON.Color3(0, 0, 1));
+                setTimeout(function (debugDirectionRayHelper) { debugDirectionRayHelper.dispose() }, 20, debugDirectionRayHelper);
+
+                // Perpendicular direction - Green
+                var debugPerpendicularDirectionRay = new Ray(impostorObjectCenter, perpendicularDirection, 2.5);
+                var debugPerpendicularDirectionRayHelper = new BABYLON.RayHelper(debugPerpendicularDirectionRay);
+                debugPerpendicularDirectionRayHelper.show(this._scene, new BABYLON.Color3(0, 1, 0));
+                setTimeout(function (debugPerpendicularDirectionRayHelper) { debugPerpendicularDirectionRayHelper.dispose() }, 20, debugPerpendicularDirectionRayHelper);
+            // DEBUG /END
+            */
+
+            return { force: force, contactPoint: impostorObjectCenter };
+        }
+
+        private _tick() {
+            this._physicsEngine.getImpostors().forEach(impostor => {
+                var impostorForceAndContactPoint = this.getImpostorForceAndContactPoint(impostor);
+                if (!impostorForceAndContactPoint) {
+                    return;
+                }
+
+                impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            });
+        }
+
+        /*** Helpers ***/
+
+        private _prepareCylinder(): void {
+            if (!this._cylinder) {
+                this._cylinder = MeshBuilder.CreateCylinder("vortexEventCylinder", {
+                    height: this._height,
+                    diameter: this._radius * 2,
+                }, this._scene);
+                this._cylinder.isVisible = false;
+            }
+        }
+
+        private _intersectsWithCylinder(impostor: PhysicsImpostor): boolean {
+            var impostorObject = <Mesh>impostor.object;
+
+            this._prepareCylinder();
+
+            this._cylinder.position = this._cylinderPosition;
+
+            return this._cylinder.intersectsMesh(impostorObject, true);
+        }
+
+    }
+
+
     /***** Enums *****/
 
     /**
@@ -501,6 +709,10 @@ module BABYLON {
     }
 
     export interface PhysicsUpdraftEventData {
+        cylinder: Mesh;
+    }
+
+    export interface PhysicsVortexEventData {
         cylinder: Mesh;
     }
 
