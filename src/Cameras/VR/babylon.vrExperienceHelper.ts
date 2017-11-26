@@ -35,6 +35,7 @@ module BABYLON {
         public onExitingVR: () => void;
         public onControllerMeshLoaded: (controller: WebVRController) => void;
 
+        private _rayLength: number;
         private _useCustomVRButton: boolean = false;
         private _teleportationRequested: boolean = false;
         private _teleportationEnabledOnLeftController: boolean = false;
@@ -116,6 +117,10 @@ module BABYLON {
                     if (webVROptions.customVRButton) {
                         this._btnVR = webVROptions.customVRButton;
                     }
+                }
+
+                if (webVROptions.rayLength) {
+                    this._rayLength = webVROptions.rayLength
                 }
             }
 
@@ -414,7 +419,7 @@ module BABYLON {
                         && mesh.name.indexOf("teleportationCircle") === -1
                         && mesh.name.indexOf("torusTeleportation") === -1
                         && mesh.name.indexOf("laserPointer") === -1)) {
-                    return true;
+                    return (mesh.isEnabled() && mesh.isVisible && mesh.isPickable);
                 }
                 return false;
             }
@@ -906,14 +911,14 @@ module BABYLON {
                 (this._leftLaserPointer && !this._leftLaserPointer.isVisible && !this._rightLaserPointer) || 
                 (this._rightLaserPointer && !this._rightLaserPointer.isVisible && !this._leftLaserPointer) || 
                 (this._rightLaserPointer && this._leftLaserPointer && !this._rightLaserPointer.isVisible && !this._leftLaserPointer.isVisible)) {
-                    ray = this.currentVRCamera.getForwardRay();
+                    ray = this.currentVRCamera.getForwardRay(this._rayLength);
                 
             } else {
                 if (this._leftLaserPointer && this._leftLaserPointer.isVisible) {
-                    ray = (<any>this.currentVRCamera).leftController.getForwardRay();
+                    ray = (<any>this.currentVRCamera).leftController.getForwardRay(this._rayLength);
                 }
                 else {
-                    ray = (<any>this.currentVRCamera).rightController.getForwardRay();
+                    ray = (<any>this.currentVRCamera).rightController.getForwardRay(this._rayLength);
                 }
             }
         
