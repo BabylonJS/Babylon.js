@@ -161,7 +161,6 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            this._transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
             this._useAlphaFromAlbedoTexture = true;
             this._useAmbientInGrayScale = true;
         }
