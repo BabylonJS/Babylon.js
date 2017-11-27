@@ -35,7 +35,7 @@ module BABYLON {
         public onExitingVR: () => void;
         public onControllerMeshLoaded: (controller: WebVRController) => void;
 
-        private _hmdOffsetFromPosition = new Vector3(0,0,0);
+        private _hmdOffsetFromPosition = Vector3.Zero();
         private _rayLength: number;
         private _useCustomVRButton: boolean = false;
         private _teleportationRequested: boolean = false;
@@ -115,15 +115,14 @@ module BABYLON {
                 this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
                 this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
                 // Set rotation from previous camera
-                if(this._scene.activeCamera instanceof TargetCamera){
+                if(this._scene.activeCamera instanceof TargetCamera && this._scene.activeCamera.rotation){
                     var targetCamera = this._scene.activeCamera;
-                    if(targetCamera.rotationQuaternion && targetCamera.rotation){
+                    if(targetCamera.rotationQuaternion){
                         this._deviceOrientationCamera.rotationQuaternion.copyFrom(targetCamera.rotationQuaternion);
-                        this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
-                    }else if(targetCamera.rotation){
+                    }else{
                         this._deviceOrientationCamera.rotationQuaternion.copyFrom(Quaternion.RotationYawPitchRoll(targetCamera.rotation.y, targetCamera.rotation.x, targetCamera.rotation.z));
-                        this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
                     }
+                    this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
                 }
             }
             this._scene.activeCamera = this._deviceOrientationCamera;
