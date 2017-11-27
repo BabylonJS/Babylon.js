@@ -35,6 +35,7 @@ module BABYLON {
         public onExitingVR: () => void;
         public onControllerMeshLoaded: (controller: WebVRController) => void;
 
+        private _hmdOffsetFromPosition = new Vector3(0,0,0);
         private _rayLength: number;
         private _useCustomVRButton: boolean = false;
         private _teleportationRequested: boolean = false;
@@ -817,8 +818,19 @@ module BABYLON {
             }
         }
 
+        // webVRCamera.devicePosition is not the actual offset from webVRCamera.position so this function computes
+        // the actual global offset. Left eye is used instead of center to avoid additional computation on each call.
+        private _updateHmdOffsetFromPosition(){
+            if(this.webVRCamera.leftCamera){
+                this._hmdOffsetFromPosition.copyFrom(this.webVRCamera.leftCamera.globalPosition).subtractInPlace(this.webVRCamera.position);
+            }else{
+                this._hmdOffsetFromPosition.copyFrom(this.webVRCamera.devicePosition);
+            }
+        }
+
         private _teleportCamera() {
             this.currentVRCamera.animations = [];
+            this._updateHmdOffsetFromPosition();
         
             var animationCameraTeleportationX = new BABYLON.Animation("animationCameraTeleportationX", "position.x", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -830,7 +842,7 @@ module BABYLON {
             });
             animationCameraTeleportationXKeys.push({
                 frame: 11,
-                value: this._haloCenter.x
+                value: this._haloCenter.x-this._hmdOffsetFromPosition.x
             });
         
             var easingFunction = new BABYLON.CircleEase();
@@ -867,7 +879,7 @@ module BABYLON {
             });
             animationCameraTeleportationZKeys.push({
                 frame: 11,
-                value: this._haloCenter.z
+                value: this._haloCenter.z-this._hmdOffsetFromPosition.z
             });
         
             animationCameraTeleportationZ.setKeys(animationCameraTeleportationZKeys);
