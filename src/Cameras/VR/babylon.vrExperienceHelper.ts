@@ -63,9 +63,18 @@ module BABYLON {
         private _currentMeshSelected: Nullable<AbstractMesh>;
         public onNewMeshSelected = new Observable<AbstractMesh>();
 
-        private _meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
-        public meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
+        private _raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
+        /**
+         * To be optionaly changed by user to define custom ray selection
+         */
+        public raySelectionPredicate: (mesh: AbstractMesh) => boolean;
+
+        /**
+         * To be optionaly changed by user to define custom selection logic (after ray selection)
+         */
+        public meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
+        
         private _currentHit: Nullable<PickingInfo>;
         private _pointerDownOnMeshAsked = false;
         private _isActionableMesh = false;
@@ -409,17 +418,20 @@ module BABYLON {
             this._createGazeTracker();
             this._createTeleportationCircles();
 
-            // To be optionnaly changed by user to define his custom selection logic
+            this.raySelectionPredicate = (mesh) => {
+                return true;
+            }
+
             this.meshSelectionPredicate = (mesh) => {
                 return true;
             }
 
-            this._meshSelectionPredicate = (mesh) => {
+            this._raySelectionPredicate = (mesh) => {
                 if (mesh.name.indexOf(this._floorMeshName) !== -1 || (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1 
                         && mesh.name.indexOf("teleportationCircle") === -1
                         && mesh.name.indexOf("torusTeleportation") === -1
                         && mesh.name.indexOf("laserPointer") === -1)) {
-                    return (mesh.isEnabled() && mesh.isVisible && mesh.isPickable);
+                    return this.raySelectionPredicate(mesh);
                 }
                 return false;
             }
@@ -922,7 +934,7 @@ module BABYLON {
                 }
             }
         
-            var hit = this._scene.pickWithRay(ray, this._meshSelectionPredicate);
+            var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
 
             // Moving the gazeTracker on the mesh face targetted
             if (hit && hit.pickedPoint) {
