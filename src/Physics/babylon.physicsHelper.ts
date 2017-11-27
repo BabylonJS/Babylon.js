@@ -594,15 +594,15 @@ module BABYLON {
                 directionToOrigin = directionToOrigin.negate();
             }
 
-            var forceX = (perpendicularDirection.x + directionToOrigin.x) / 2;
-            var forceY = this._originTop.y * this._updraftMultiplier;
-            var forceZ = (perpendicularDirection.z + directionToOrigin.z) / 2;
-
             // TODO: find a more physically based solution
             if (absoluteDistanceFromOrigin > this._centripetalForceThreshold) {
-                forceX = directionToOrigin.x * this._strength / 8;
-                forceY = directionToOrigin.y * this._updraftMultiplier;
-                forceZ = directionToOrigin.z * this._strength / 8;
+                var forceX = directionToOrigin.x * this._strength / 8;
+                var forceY = directionToOrigin.y * this._updraftMultiplier;
+                var forceZ = directionToOrigin.z * this._strength / 8;
+            } else {
+                var forceX = (perpendicularDirection.x + directionToOrigin.x) / 2;
+                var forceY = this._originTop.y * this._updraftMultiplier;
+                var forceZ = (perpendicularDirection.z + directionToOrigin.z) / 2;
             }
 
             // TODO: implement angular velocity
