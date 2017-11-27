@@ -129,13 +129,12 @@ module BABYLON {
         }
 
         /**
-         * @param {Vector3} origin the origin of the vortex
+         * @param {Vector3} origin the of the vortex
          * @param {number} radius the radius of the vortex
          * @param {number} strength the strength of the vortex
-         * @param {number} height the height of the vortex
-         * @param {number} angularVelocity the angularVelocity for the vortex
+         * @param {number} height   the height of the vortex
          */
-        public vortex(origin: Vector3, radius: number, strength: number, height: number, angularVelocity: number): Nullable<PhysicsVortexEvent> {
+        public vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent> {
             if (!this._physicsEngine) {
                 Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -145,7 +144,7 @@ module BABYLON {
                 return null;
             }
 
-            var event = new PhysicsVortexEvent(this._physicsEngine, this._scene, origin, radius, strength, height, angularVelocity);
+            var event = new PhysicsVortexEvent(this._physicsEngine, this._scene, origin, radius, strength, height);
 
             event.dispose(false);
 
@@ -500,7 +499,6 @@ module BABYLON {
         private _radius: number;
         private _strength: number;
         private _height: number;
-        private _angularVelocity: number;
         private _centripetalForceThreshold: number = 0.7; // at which distance, relative to the radius the centripetal forces should kick in
         private _updraftMultiplier: number = 0.02;
         private _tickCallback: any;
@@ -508,14 +506,13 @@ module BABYLON {
         private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
         private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
 
-        constructor(physicsEngine: PhysicsEngine, scene: Scene, origin: Vector3, radius: number, strength: number, height: number, angularVelocity: number) {
+        constructor(physicsEngine: PhysicsEngine, scene: Scene, origin: Vector3, radius: number, strength: number, height: number) {
             this._physicsEngine = physicsEngine;
             this._scene = scene;
             this._origin = origin;
             this._radius = radius;
             this._strength = strength;
             this._height = height;
-            this._angularVelocity = angularVelocity;
 
             this._origin.addToRef(new Vector3(0, this._height / 2, 0), this._cylinderPosition);
             this._origin.addToRef(new Vector3(0, this._height, 0), this._originTop);
@@ -605,34 +602,8 @@ module BABYLON {
                 var forceZ = (perpendicularDirection.z + directionToOrigin.z) / 2;
             }
 
-            // TODO: implement angular velocity
-
             var force = new Vector3(forceX, forceY, forceZ);
-
             force = force.multiplyByFloats(this._strength, this._strength, this._strength);
-
-            /*
-            // DEBUG
-                // Force - Red
-                var debugForceRay = new Ray(impostorObjectCenter, force, 0.2);
-                var debugForceRayHelper = new BABYLON.RayHelper(debugForceRay);
-                debugForceRayHelper.show(this._scene, new BABYLON.Color3(1, 0, 0));
-                setTimeout(function (debugForceRayHelper) { debugForceRayHelper.dispose() }, 20, debugForceRayHelper);
-
-
-                // Direction to origin - Blue
-                 var debugDirectionRay = new Ray(impostorObjectCenter, directionToOrigin, 2.5);
-                var debugDirectionRayHelper = new BABYLON.RayHelper(debugDirectionRay);
-                debugDirectionRayHelper.show(this._scene, new BABYLON.Color3(0, 0, 1));
-                setTimeout(function (debugDirectionRayHelper) { debugDirectionRayHelper.dispose() }, 20, debugDirectionRayHelper);
-
-                // Perpendicular direction - Green
-                var debugPerpendicularDirectionRay = new Ray(impostorObjectCenter, perpendicularDirection, 2.5);
-                var debugPerpendicularDirectionRayHelper = new BABYLON.RayHelper(debugPerpendicularDirectionRay);
-                debugPerpendicularDirectionRayHelper.show(this._scene, new BABYLON.Color3(0, 1, 0));
-                setTimeout(function (debugPerpendicularDirectionRayHelper) { debugPerpendicularDirectionRayHelper.dispose() }, 20, debugPerpendicularDirectionRayHelper);
-            // DEBUG /END
-            */
 
             return { force: force, contactPoint: impostorObjectCenter };
         }
