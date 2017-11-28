@@ -808,6 +808,10 @@ module BABYLON.GLTF2 {
         }
 
         private _loadSkin(context: string, skin: IGLTFSkin): Skeleton {
+            if (skin.babylonSkeleton) {
+                return skin.babylonSkeleton;
+            }
+
             const skeletonId = "skeleton" + skin.index;
             skin.babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
 
@@ -1049,9 +1053,19 @@ module BABYLON.GLTF2 {
                     }
                 };
 
-                const keys = new Array(inputData.length);
-                for (let frameIndex = 0; frameIndex < inputData.length; frameIndex++) {
-                    keys[frameIndex] = getNextKey(frameIndex);
+                let keys: Array<any>;
+                if (inputData.length === 1) {
+                    let key = getNextKey(0);
+                    keys = [
+                        { frame: key.frame, value: key.value },
+                        { frame: key.frame + 1, value: key.value }
+                    ];
+                }
+                else {
+                    keys = new Array(inputData.length);
+                    for (let frameIndex = 0; frameIndex < inputData.length; frameIndex++) {
+                        keys[frameIndex] = getNextKey(frameIndex);
+                    }
                 }
 
                 if (targetPath === "influence") {
