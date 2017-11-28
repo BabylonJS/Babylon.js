@@ -304,6 +304,8 @@ var BABYLON;
                             continue;
                         }
                         control.notRenderable = false;
+                        // Account for RenderScale.
+                        projectedPosition.scaleInPlace(this.renderScale);
                         control._moveToProjectedPosition(projectedPosition);
                     }
                 }
