@@ -349,7 +349,6 @@ module BABYLON {
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
             if (this.rotationQuaternion) {
-                this.rotationQuaternion = this.rotationQuaternion || new Quaternion();
                 Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
             }
             else {
