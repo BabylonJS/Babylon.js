@@ -37,6 +37,7 @@ module BABYLON {
         defaultLightingOnControllers?: boolean; // creating a default HemiLight only on controllers
         useCustomVRButton?: boolean; // if you don't want to use the default VR button of the helper
         customVRButton?: HTMLButtonElement; //if you'd like to provide your own button to the VRHelper
+        rayLength?: number; // to change the length of the ray for gaze/controllers.
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
