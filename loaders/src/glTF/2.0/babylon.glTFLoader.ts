@@ -306,8 +306,9 @@ module BABYLON.GLTF2 {
             switch (this._parent.coordinateSystemMode) {
                 case GLTFLoaderCoordinateSystemMode.AUTO: {
                     if (!this._babylonScene.useRightHandedSystem) {
-                        this._rootNode.babylonMesh.rotation = new Vector3(0, Math.PI, 0);
-                        this._rootNode.babylonMesh.scaling = new Vector3(1, 1, -1);
+                        this._rootNode.rotation = [ 0, 1, 0, 0 ];
+                        this._rootNode.scale = [ 1, 1, -1 ];
+                        this._loadTransform(this._rootNode);
                     }
                     break;
                 }
@@ -386,7 +387,7 @@ module BABYLON.GLTF2 {
                 this._loadMesh("#/meshes/" + node.mesh, node, mesh);
             }
 
-            node.babylonMesh.parent = node.parent ? node.parent.babylonMesh : null;
+            node.babylonMesh.parent = node.parent.babylonMesh;
 
             node.babylonAnimationTargets = node.babylonAnimationTargets || [];
             node.babylonAnimationTargets.push(node.babylonMesh);
@@ -814,6 +815,7 @@ module BABYLON.GLTF2 {
 
             const skeletonId = "skeleton" + skin.index;
             skin.babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
+            skin.babylonSkeleton.overrideMesh = this._rootNode.babylonMesh;
 
             if (skin.inverseBindMatrices == null) {
                 this._loadBones(context, skin, null);
@@ -834,9 +836,6 @@ module BABYLON.GLTF2 {
 
         private _createBone(node: IGLTFNode, skin: IGLTFSkin, parent: Nullable<Bone>, localMatrix: Matrix, baseMatrix: Matrix, index: number): Bone {
             const babylonBone = new Bone(node.name || "bone" + node.index, skin.babylonSkeleton, parent, localMatrix, null, baseMatrix, index);
-
-            node.babylonBones = node.babylonBones || {};
-            node.babylonBones[skin.index] = babylonBone;
 
             node.babylonAnimationTargets = node.babylonAnimationTargets || [];
             node.babylonAnimationTargets.push(babylonBone);
@@ -871,7 +870,7 @@ module BABYLON.GLTF2 {
             }
 
             let babylonParentBone: Nullable<Bone> = null;
-            if (node.index !== skin.skeleton && node.parent && node.parent !== this._rootNode) {
+            if (node.parent !== this._rootNode) {
                 babylonParentBone = this._loadBone(node.parent, skin, inverseBindMatrixData, babylonBones);
                 baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
             }
@@ -890,7 +889,7 @@ module BABYLON.GLTF2 {
                     node.translation ? Vector3.FromArray(node.translation) : Vector3.Zero());
         }
 
-        private _traverseNodes(context: string, indices: number[], action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: Nullable<IGLTFNode> = null): void {
+        private _traverseNodes(context: string, indices: number[], action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): void {
             for (const index of indices) {
                 const node = GLTFLoader._GetProperty(this._gltf.nodes, index);
                 if (!node) {
@@ -901,7 +900,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public _traverseNode(context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: Nullable<IGLTFNode>) => boolean, parentNode: Nullable<IGLTFNode> = null): void {
+        public _traverseNode(context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): void {
             if (GLTFLoaderExtension.TraverseNode(this, context, node, action, parentNode)) {
                 return;
             }
