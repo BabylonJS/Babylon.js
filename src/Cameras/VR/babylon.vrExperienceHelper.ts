@@ -31,10 +31,11 @@ module BABYLON {
         private _onVRRequestPresentStart: () => void;
         private _onVRRequestPresentComplete: (success: boolean) => void;
         
-        public onEnteringVR: () => void;
-        public onExitingVR: () => void;
-        public onControllerMeshLoaded: (controller: WebVRController) => void;
+        public onEnteringVR = new Observable(); 
+        public onExitingVR = new Observable();
+        public onControllerMeshLoaded = new Observable<WebVRController>();  
 
+        private _hmdOffsetFromPosition = Vector3.Zero();
         private _rayLength: number;
         private _useCustomVRButton: boolean = false;
         private _teleportationRequested: boolean = false;
@@ -113,6 +114,16 @@ module BABYLON {
                 this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position, scene);
                 this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
                 this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
+                // Set rotation from previous camera
+                if(this._scene.activeCamera instanceof TargetCamera && this._scene.activeCamera.rotation){
+                    var targetCamera = this._scene.activeCamera;
+                    if(targetCamera.rotationQuaternion){
+                        this._deviceOrientationCamera.rotationQuaternion.copyFrom(targetCamera.rotationQuaternion);
+                    }else{
+                        this._deviceOrientationCamera.rotationQuaternion.copyFrom(Quaternion.RotationYawPitchRoll(targetCamera.rotation.y, targetCamera.rotation.x, targetCamera.rotation.z));
+                    }
+                    this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
+                }
             }
             this._scene.activeCamera = this._deviceOrientationCamera;
             this._canvas = scene.getEngine().getRenderingCanvas();
@@ -240,7 +251,7 @@ module BABYLON {
                 }
             }
             if (this.onControllerMeshLoaded) {
-                this.onControllerMeshLoaded(webVRController);
+                this.onControllerMeshLoaded.notifyObservers(webVRController);
             }
         }
 
@@ -316,7 +327,7 @@ module BABYLON {
             }
 
             if (this.onEnteringVR) {
-                this.onEnteringVR();
+                this.onEnteringVR.notifyObservers({});
             }
             if (this._webVRrequesting)
                 return;
@@ -345,7 +356,7 @@ module BABYLON {
          */
         public exitVR() {
             if (this.onExitingVR) {
-                this.onExitingVR();
+                this.onExitingVR.notifyObservers({});
             }
             if (this._webVRpresenting) {
                 this._scene.getEngine().disableVR();
@@ -399,6 +410,7 @@ module BABYLON {
             // (gamma/linear) conflicts.
             const imageProcessingConfiguration = new ImageProcessingConfiguration();
             imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
+            imageProcessingConfiguration.vignetteEnabled = true;
             this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove", 
                 1.0, 
                 this._webVRCamera,
@@ -407,11 +419,8 @@ module BABYLON {
                 undefined,
                 undefined,
                 imageProcessingConfiguration);
-            // Force recompilation of the postprocess to be ready before hand and not block the animation.
-            // Simply touching the property forces recompilation of the effect.
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
-            // Go back to default (both variants would be compiled).
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
+            
+            this._webVRCamera.detachPostProcess(this._postProcessMove)
 
             this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
 
@@ -779,10 +788,10 @@ module BABYLON {
             
             this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
             this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
-        
+
+            this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 6, false, 1, () => {
-                this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
+                this._webVRCamera.detachPostProcess(this._postProcessMove)
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 6, false, 1);
         }
@@ -808,8 +817,19 @@ module BABYLON {
             }
         }
 
+        // webVRCamera.devicePosition is not the actual offset from webVRCamera.position so this function computes
+        // the actual global offset. Left eye is used instead of center to avoid additional computation on each call.
+        private _updateHmdOffsetFromPosition(){
+            if(this.webVRCamera.leftCamera){
+                this._hmdOffsetFromPosition.copyFrom(this.webVRCamera.leftCamera.globalPosition).subtractInPlace(this.webVRCamera.position);
+            }else{
+                this._hmdOffsetFromPosition.copyFrom(this.webVRCamera.devicePosition);
+            }
+        }
+
         private _teleportCamera() {
             this.currentVRCamera.animations = [];
+            this._updateHmdOffsetFromPosition();
         
             var animationCameraTeleportationX = new BABYLON.Animation("animationCameraTeleportationX", "position.x", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -821,7 +841,7 @@ module BABYLON {
             });
             animationCameraTeleportationXKeys.push({
                 frame: 11,
-                value: this._haloCenter.x
+                value: this._haloCenter.x-this._hmdOffsetFromPosition.x
             });
         
             var easingFunction = new BABYLON.CircleEase();
@@ -858,7 +878,7 @@ module BABYLON {
             });
             animationCameraTeleportationZKeys.push({
                 frame: 11,
-                value: this._haloCenter.z
+                value: this._haloCenter.z-this._hmdOffsetFromPosition.z
             });
         
             animationCameraTeleportationZ.setKeys(animationCameraTeleportationZKeys);
@@ -909,10 +929,10 @@ module BABYLON {
         
             this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 8;
             this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 10;
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
             
+            this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, () => {
-                this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
+                this._webVRCamera.detachPostProcess(this._postProcessMove)
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1);
         }
