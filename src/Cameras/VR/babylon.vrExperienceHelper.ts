@@ -35,7 +35,6 @@ module BABYLON {
         public onExitingVR = new Observable();
         public onControllerMeshLoaded = new Observable<WebVRController>();  
 
-        private _hmdOffsetFromPosition = Vector3.Zero();
         private _rayLength: number;
         private _useCustomVRButton: boolean = false;
         private _teleportationRequested: boolean = false;
@@ -817,19 +816,8 @@ module BABYLON {
             }
         }
 
-        // webVRCamera.devicePosition is not the actual offset from webVRCamera.position so this function computes
-        // the actual global offset. Left eye is used instead of center to avoid additional computation on each call.
-        private _updateHmdOffsetFromPosition(){
-            if(this.webVRCamera.leftCamera){
-                this._hmdOffsetFromPosition.copyFrom(this.webVRCamera.leftCamera.globalPosition).subtractInPlace(this.webVRCamera.position);
-            }else{
-                this._hmdOffsetFromPosition.copyFrom(this.webVRCamera.devicePosition);
-            }
-        }
-
         private _teleportCamera() {
             this.currentVRCamera.animations = [];
-            this._updateHmdOffsetFromPosition();
         
             var animationCameraTeleportationX = new BABYLON.Animation("animationCameraTeleportationX", "position.x", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -841,7 +829,7 @@ module BABYLON {
             });
             animationCameraTeleportationXKeys.push({
                 frame: 11,
-                value: this._haloCenter.x-this._hmdOffsetFromPosition.x
+                value: this._haloCenter.x-(this.webVRCamera.leftCamera!.globalPosition.x-this.webVRCamera.position.x)
             });
         
             var easingFunction = new BABYLON.CircleEase();
@@ -878,7 +866,7 @@ module BABYLON {
             });
             animationCameraTeleportationZKeys.push({
                 frame: 11,
-                value: this._haloCenter.z-this._hmdOffsetFromPosition.z
+                value: this._haloCenter.z-(this.webVRCamera.leftCamera!.globalPosition.z-this.webVRCamera.position.z)
             });
         
             animationCameraTeleportationZ.setKeys(animationCameraTeleportationZKeys);
