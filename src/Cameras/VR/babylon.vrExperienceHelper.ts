@@ -31,9 +31,9 @@ module BABYLON {
         private _onVRRequestPresentStart: () => void;
         private _onVRRequestPresentComplete: (success: boolean) => void;
         
-        public onEnteringVR: () => void;
-        public onExitingVR: () => void;
-        public onControllerMeshLoaded: (controller: WebVRController) => void;
+        public onEnteringVR = new Observable(); 
+        public onExitingVR = new Observable();
+        public onControllerMeshLoaded = new Observable<WebVRController>();  
 
         private _hmdOffsetFromPosition = Vector3.Zero();
         private _rayLength: number;
@@ -251,7 +251,7 @@ module BABYLON {
                 }
             }
             if (this.onControllerMeshLoaded) {
-                this.onControllerMeshLoaded(webVRController);
+                this.onControllerMeshLoaded.notifyObservers(webVRController);
             }
         }
 
@@ -327,7 +327,7 @@ module BABYLON {
             }
 
             if (this.onEnteringVR) {
-                this.onEnteringVR();
+                this.onEnteringVR.notifyObservers({});
             }
             if (this._webVRrequesting)
                 return;
@@ -356,7 +356,7 @@ module BABYLON {
          */
         public exitVR() {
             if (this.onExitingVR) {
-                this.onExitingVR();
+                this.onExitingVR.notifyObservers({});
             }
             if (this._webVRpresenting) {
                 this._scene.getEngine().disableVR();
