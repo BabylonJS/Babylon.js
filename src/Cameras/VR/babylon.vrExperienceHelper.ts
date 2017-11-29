@@ -817,61 +817,27 @@ module BABYLON {
         }
 
         private _teleportCamera() {
+            // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
+            // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
+            var teleportLocation = this._haloCenter.subtract(this.webVRCamera.leftCamera!.globalPosition.subtract(this.webVRCamera.position)).add(this.position)
+
+            // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
-        
-            var animationCameraTeleportationX = new BABYLON.Animation("animationCameraTeleportationX", "position.x", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        
-            var animationCameraTeleportationXKeys = [];
-            animationCameraTeleportationXKeys.push({
+            var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position", 90, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            var animationCameraTeleportationKeys = [];
+            animationCameraTeleportationKeys.push({
                 frame: 0,
-                value: this.currentVRCamera.position.x
+                value: this.currentVRCamera.position
             });
-            animationCameraTeleportationXKeys.push({
+            animationCameraTeleportationKeys.push({
                 frame: 11,
-                value: this._haloCenter.x-(this.webVRCamera.leftCamera!.globalPosition.x-this.webVRCamera.position.x)
+                value: teleportLocation
             });
-        
             var easingFunction = new BABYLON.CircleEase();
             easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
-
-            animationCameraTeleportationX.setKeys(animationCameraTeleportationXKeys);
-            animationCameraTeleportationX.setEasingFunction(easingFunction);
-            this.currentVRCamera.animations.push(animationCameraTeleportationX);
-
-            var animationCameraTeleportationY = new BABYLON.Animation("animationCameraTeleportationY", "position.y", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-    
-            var animationCameraTeleportationYKeys = [];
-            animationCameraTeleportationYKeys.push({
-                frame: 0,
-                value: this.currentVRCamera.position.y
-            });
-            animationCameraTeleportationYKeys.push({
-                frame: 11,
-                value: this._haloCenter.y+1.7
-            });
-        
-            animationCameraTeleportationY.setKeys(animationCameraTeleportationYKeys);
-            animationCameraTeleportationY.setEasingFunction(easingFunction);
-            this.currentVRCamera.animations.push(animationCameraTeleportationY);
-        
-            var animationCameraTeleportationZ = new BABYLON.Animation("animationCameraTeleportationZ", "position.z", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        
-            var animationCameraTeleportationZKeys = [];
-            animationCameraTeleportationZKeys.push({
-                frame: 0,
-                value: this.currentVRCamera.position.z
-            });
-            animationCameraTeleportationZKeys.push({
-                frame: 11,
-                value: this._haloCenter.z-(this.webVRCamera.leftCamera!.globalPosition.z-this.webVRCamera.position.z)
-            });
-        
-            animationCameraTeleportationZ.setKeys(animationCameraTeleportationZKeys);
-            animationCameraTeleportationZ.setEasingFunction(easingFunction);
-            this.currentVRCamera.animations.push(animationCameraTeleportationZ);
+            animationCameraTeleportation.setKeys(animationCameraTeleportationKeys);
+            animationCameraTeleportation.setEasingFunction(easingFunction);
+            this.currentVRCamera.animations.push(animationCameraTeleportation);
         
             this._postProcessMove.animations = [];
         
