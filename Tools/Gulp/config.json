@@ -1667,6 +1667,7 @@
         "libraries": [
             {
                 "files": [],
+                "noBundleInName": true,
                 "output": "babylon.viewer.js",
                 "webpack": "../../Viewer/webpack.gulp.config.js",
                 "bundle": "true",
