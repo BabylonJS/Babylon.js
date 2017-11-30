@@ -62,6 +62,7 @@ module BABYLON {
         private _rightLaserPointer: Nullable<Mesh>;
         private _currentMeshSelected: Nullable<AbstractMesh>;
         public onNewMeshSelected = new Observable<AbstractMesh>();
+        private _circleEase:CircleEase;
 
         private _raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
@@ -233,6 +234,10 @@ module BABYLON {
             this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
         
             this.updateButtonVisibility();
+
+            //create easing functions
+            this._circleEase = new BABYLON.CircleEase();
+            this._circleEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
         }
 
         // Raised when one of the controller has loaded successfully its associated default mesh
@@ -734,10 +739,8 @@ module BABYLON {
             });
         
             animationRotation.setKeys(animationRotationKeys);
-        
-            var easingFunction = new BABYLON.CircleEase();
-            easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
-            animationRotation.setEasingFunction(easingFunction);
+
+            animationRotation.setEasingFunction(this._circleEase);
         
             this.currentVRCamera.animations.push(animationRotation);
         
@@ -761,7 +764,7 @@ module BABYLON {
             });
         
             animationPP.setKeys(vignetteWeightKeys);
-            animationPP.setEasingFunction(easingFunction);
+            animationPP.setEasingFunction(this._circleEase);
             this._postProcessMove.animations.push(animationPP);
         
             var animationPP2 = new BABYLON.Animation("animationPP2", "vignetteStretch", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
@@ -782,7 +785,7 @@ module BABYLON {
             });
         
             animationPP2.setKeys(vignetteStretchKeys);
-            animationPP2.setEasingFunction(easingFunction);
+            animationPP2.setEasingFunction(this._circleEase);
             this._postProcessMove.animations.push(animationPP2);
             
             this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
@@ -819,26 +822,25 @@ module BABYLON {
         private _teleportCamera() {
             // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
             // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
-            this.webVRCamera.leftCamera!.globalPosition.subtractToRef(this.webVRCamera.position, this._workingVector)
-            this._haloCenter.subtractToRef(this._workingVector, this._workingVector)
-            this._workingVector.addInPlace(this.position)
+            this.webVRCamera.leftCamera!.globalPosition.subtractToRef(this.webVRCamera.position, this._workingVector);
+            this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
+            this._workingVector.addInPlace(this.position);
             
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
             var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position", 90, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-            var animationCameraTeleportationKeys = [];
-            animationCameraTeleportationKeys.push({
-                frame: 0,
-                value: this.currentVRCamera.position
-            });
-            animationCameraTeleportationKeys.push({
-                frame: 11,
-                value: this._workingVector
-            });
-            var easingFunction = new BABYLON.CircleEase();
-            easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+            var animationCameraTeleportationKeys = [{
+                    frame: 0,
+                    value: this.currentVRCamera.position
+                },
+                {
+                    frame: 11,
+                    value: this._workingVector
+                }
+            ];
+            
             animationCameraTeleportation.setKeys(animationCameraTeleportationKeys);
-            animationCameraTeleportation.setEasingFunction(easingFunction);
+            animationCameraTeleportation.setEasingFunction(this._circleEase);
             this.currentVRCamera.animations.push(animationCameraTeleportation);
         
             this._postProcessMove.animations = [];
