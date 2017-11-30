@@ -1,12 +1,8 @@
 import { ViewerConfiguration } from './../configuration/configuration';
 import { Template } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { ShadowGenerator, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
-
-// A small hack for the inspector. to be removed!
-import * as BABYLON from 'babylonjs';
-window['BABYLON'] = BABYLON;
 
 export class DefaultViewer extends AbstractViewer {
 
@@ -354,7 +350,7 @@ export class DefaultViewer extends AbstractViewer {
                 //position. Some lights don't support shadows
                 if (light instanceof ShadowLight) {
                     if (lightConfig.shadowEnabled) {
-                        var shadowGenerator = new BABYLON.ShadowGenerator(512, light);
+                        var shadowGenerator = new ShadowGenerator(512, light);
                         this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                         // add the focues meshes to the shadow list
                         let shadownMap = shadowGenerator.getShadowMap();
