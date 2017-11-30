@@ -71370,6 +71370,9 @@ var BABYLON;
             _this.onControllersAttachedObservable = new BABYLON.Observable();
             _this.onControllerMeshLoadedObservable = new BABYLON.Observable();
             _this.rigParenting = true; // should the rig cameras be used as parent instead of this camera.
+            if (webVROptions.defaultHeight) {
+                _this.position.y = webVROptions.defaultHeight;
+            }
             _this.minZ = 0.1;
             //legacy support - the compensation boolean was removed.
             if (arguments.length === 5) {
@@ -71948,13 +71951,14 @@ var BABYLON;
             this._isActionableMesh = false;
             this._workingVector = BABYLON.Vector3.Zero();
             this._scene = scene;
+            this._defaultHeight = webVROptions.defaultHeight || 1.7;
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
-                this._position = new BABYLON.Vector3(0, 2, 0);
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 1.7, 0), scene);
+                this._position = new BABYLON.Vector3(0, this._defaultHeight, 0);
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
             }
             else {
                 this._position = this._scene.activeCamera.position.clone();
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position, scene);
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
                 this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
                 this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
                 // Set rotation from previous camera
@@ -72620,7 +72624,7 @@ var BABYLON;
             // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
             this.webVRCamera.leftCamera.globalPosition.subtractToRef(this.webVRCamera.position, this._workingVector);
             this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
-            this._workingVector.addInPlace(this.position);
+            this._workingVector.y += this._defaultHeight;
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
             var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position", 90, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
