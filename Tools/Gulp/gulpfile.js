@@ -401,7 +401,7 @@ var buildExternalLibrary = function (library, settings, watch) {
         if (library.webpack) {
             return waitAll.on("end", function () {
                 return webpack(require(library.webpack))
-                    .pipe(rename(library.output.replace(".js", ".bundle.js")))
+                    .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
                     .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
                     .pipe(uglify())
                     .pipe(optimisejs())
