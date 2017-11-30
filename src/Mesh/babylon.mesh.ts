@@ -665,15 +665,19 @@
 
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
-         * This means the mesh underlying bounding box and sphere are recomputed.   
-         * Returns the Mesh.  
+         * This means the mesh underlying bounding box and sphere are recomputed.
+         * Returns the Mesh.
          */
         public refreshBoundingInfo(): Mesh {
+            return this._refreshBoundingInfo(false);
+        }
+
+        public _refreshBoundingInfo(applySkeleton: boolean): Mesh {
             if (this._boundingInfo && this._boundingInfo.isLocked) {
                 return this;
             }
-            var data = this.getVerticesData(VertexBuffer.PositionKind);
 
+            var data = this._getPositionData(applySkeleton);
             if (data) {
                 var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
                 this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
@@ -687,6 +691,55 @@
 
             this._updateBoundingInfo();
             return this;
+        }
+
+        private _getPositionData(applySkeleton: boolean): Nullable<FloatArray> {
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
+
+            if (data && applySkeleton && this.skeleton) {
+                data = data.slice();
+
+                var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+                if (matricesWeightsData && matricesIndicesData) {
+                    var needExtras = this.numBoneInfluencers > 4;
+                    var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
+                    var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
+
+                    var skeletonMatrices = this.skeleton.getTransformMatrices(this);
+
+                    var tempVector = Tmp.Vector3[0];
+                    var finalMatrix = Tmp.Matrix[0];
+                    var tempMatrix = Tmp.Matrix[1];
+
+                    var matWeightIdx = 0;
+                    for (var index = 0; index < data.length; index += 3, matWeightIdx += 4) {
+                        finalMatrix.reset();
+
+                        var inf: number;
+                        var weight: number;
+                        for (inf = 0; inf < 4; inf++) {
+                            weight = matricesWeightsData[matWeightIdx + inf];
+                            if (weight <= 0) break;
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                            finalMatrix.addToSelf(tempMatrix);
+                        }
+                        if (needExtras) {
+                            for (inf = 0; inf < 4; inf++) {
+                                weight = matricesWeightsExtraData![matWeightIdx + inf];
+                                if (weight <= 0) break;
+                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
+                                finalMatrix.addToSelf(tempMatrix);
+                            }
+                        }
+
+                        Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
+                        tempVector.toArray(data, index);
+                    }
+                }
+            }
+
+            return data;
         }
 
         public _createGlobalSubMesh(force: boolean): Nullable<SubMesh> {
@@ -3115,10 +3168,6 @@
             var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
             var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
 
-            if (!matricesWeightsExtraData || !matricesIndicesExtraData) {
-                return this;
-            }
-
             var skeletonMatrices = skeleton.getTransformMatrices(this);
 
             var tempVector3 = Vector3.Zero();
@@ -3139,9 +3188,9 @@
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
-                        weight = matricesWeightsExtraData[matWeightIdx + inf];
+                        weight = matricesWeightsExtraData![matWeightIdx + inf];
                         if (weight > 0) {
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
 
                         } else break;
