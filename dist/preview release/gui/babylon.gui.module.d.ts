@@ -170,8 +170,8 @@ declare module BABYLON.GUI {
         private _transformCenterX;
         private _transformCenterY;
         private _transformMatrix;
-        private _invertTransformMatrix;
-        private _transformedPosition;
+        protected _invertTransformMatrix: Matrix2D;
+        protected _transformedPosition: Vector2;
         private _isMatrixDirty;
         private _cachedOffsetX;
         private _cachedOffsetY;
@@ -461,7 +461,7 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _pointerIsDown;
-        private _updateValueFromPointer(x);
+        private _updateValueFromPointer(x, y);
         _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: Vector2): void;
         _onPointerUp(target: Control, coordinates: Vector2, buttonIndex: number): void;

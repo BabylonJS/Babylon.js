@@ -180,9 +180,12 @@ module BABYLON {
             return this._rightController;
         };
 
+
+        
         public getForwardRay(length = 100): Ray {
             if (this.leftCamera) {
-                return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
+                // Use left eye to avoid computation to compute center on every call
+                return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.leftCamera.globalPosition); // Need the actual rendered camera
             }
             else {
                 return super.getForwardRay(length);

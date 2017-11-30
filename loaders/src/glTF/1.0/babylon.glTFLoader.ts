@@ -445,7 +445,7 @@ module BABYLON.GLTF1 {
     /**
     * Imports a skeleton
     */
-    var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, newSkeleton: Skeleton, id: string): Skeleton => {
+    var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, newSkeleton: Skeleton | undefined, id: string): Skeleton => {
 
         if (!newSkeleton) {
             newSkeleton = new Skeleton(skins.name || "", "", gltfRuntime.scene);
@@ -785,7 +785,7 @@ module BABYLON.GLTF1 {
                 var newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
                 newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(node.skin);
 
-                if (newMesh.skeleton === null && skin.babylonSkeleton) {
+                if (newMesh.skeleton === null) {
                     newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton, node.skin);
 
                     if (!skin.babylonSkeleton) {
@@ -892,10 +892,10 @@ module BABYLON.GLTF1 {
                         persCamera.minZ = perspectiveCamera.znear;
                     }
 
-                    lastNode = persCamera;
-                }
-            }
-        }
+                     lastNode = persCamera;
+                 }
+             }
+         }
 
         // Empty node
         if (!node.jointName) {

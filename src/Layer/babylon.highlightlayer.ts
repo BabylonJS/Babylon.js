@@ -825,7 +825,7 @@
 
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
-                if (meshHighlightToCheck) {
+                if (this._meshes[meshHighlightToCheck]) {
                     this._shouldRender = true;
                     break;
                 }

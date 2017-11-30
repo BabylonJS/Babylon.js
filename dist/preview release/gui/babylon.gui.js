@@ -2833,7 +2833,11 @@ var BABYLON;
                 }
                 context.restore();
             };
-            Slider.prototype._updateValueFromPointer = function (x) {
+            Slider.prototype._updateValueFromPointer = function (x, y) {
+                if (this.rotation != 0) {
+                    this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+                    x = this._transformedPosition.x;
+                }
                 this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
             };
             Slider.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
@@ -2841,13 +2845,13 @@ var BABYLON;
                     return false;
                 }
                 this._pointerIsDown = true;
-                this._updateValueFromPointer(coordinates.x);
+                this._updateValueFromPointer(coordinates.x, coordinates.y);
                 this._host._capturingControl = this;
                 return true;
             };
             Slider.prototype._onPointerMove = function (target, coordinates) {
                 if (this._pointerIsDown) {
-                    this._updateValueFromPointer(coordinates.x);
+                    this._updateValueFromPointer(coordinates.x, coordinates.y);
                 }
                 _super.prototype._onPointerMove.call(this, target, coordinates);
             };
