@@ -27,6 +27,7 @@
         public SPECULAROVERALPHA = false;
         public RADIANCEOVERALPHA = false;
         public ALPHAFRESNEL = false;
+        public LINEARALPHAFRESNEL = false;
         public PREMULTIPLYALPHA = false;
 
         public EMISSIVE = false;
@@ -394,9 +395,15 @@
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or occlude the blended part.
+         * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
          */
         protected _useAlphaFresnel = false;
+
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
+         */
+        protected _useLinearAlphaFresnel = false;
 
         /**
          * The transparency mode of the material.
@@ -572,7 +579,7 @@
                 return false;
             }
 
-            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST;
+            return this._albedoTexture != null && this._albedoTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST);
         }
 
         /**
@@ -871,7 +878,8 @@
                 defines.ALPHATESTVALUE = this._alphaCutOff;
                 defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
-                defines.ALPHAFRESNEL = this._useAlphaFresnel;
+                defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
+                defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;
             }
 
             if (defines._areImageProcessingDirty) {

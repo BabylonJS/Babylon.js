@@ -1699,7 +1699,13 @@ var INSPECTOR;
                     var objToDetail = this.value;
                     // Display all properties that are not functions
                     var propToDisplay = INSPECTOR.Helpers.GetAllLinesPropertiesAsString(objToDetail);
-                    propToDisplay.sort().reverse();
+                    // special case for color3
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b')) == 0) {
+                        propToDisplay.sort();
+                    }
+                    else {
+                        propToDisplay.sort().reverse();
+                    }
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
                         var infos = new INSPECTOR.Property(prop, this._property.value);

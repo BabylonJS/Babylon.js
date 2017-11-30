@@ -181,7 +181,13 @@ var BABYLON;
             };
         };
         GLTFFileLoader._parseVersion = function (version) {
-            var match = (version + "").match(/^(\d+)\.(\d+)$/);
+            if (version === "1.0" || version === "1.0.1") {
+                return {
+                    major: 1,
+                    minor: 0
+                };
+            }
+            var match = (version + "").match(/^(\d+)\.(\d+)/);
             if (!match) {
                 return null;
             }
@@ -999,6 +1005,9 @@ var BABYLON;
             };
             GLTFLoader.prototype._loadSkin = function (context, skin) {
                 var _this = this;
+                if (skin.babylonSkeleton) {
+                    return skin.babylonSkeleton;
+                }
                 var skeletonId = "skeleton" + skin.index;
                 skin.babylonSkeleton = new BABYLON.Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
                 if (skin.inverseBindMatrices == null) {
@@ -1206,9 +1215,19 @@ var BABYLON;
                         }
                     }
                     ;
-                    var keys = new Array(inputData.length);
-                    for (var frameIndex = 0; frameIndex < inputData.length; frameIndex++) {
-                        keys[frameIndex] = getNextKey(frameIndex);
+                    var keys;
+                    if (inputData.length === 1) {
+                        var key = getNextKey(0);
+                        keys = [
+                            { frame: key.frame, value: key.value },
+                            { frame: key.frame + 1, value: key.value }
+                        ];
+                    }
+                    else {
+                        keys = new Array(inputData.length);
+                        for (var frameIndex = 0; frameIndex < inputData.length; frameIndex++) {
+                            keys[frameIndex] = getNextKey(frameIndex);
+                        }
                     }
                     if (targetPath === "influence") {
                         var morphTargetManager = targetNode.babylonMesh.morphTargetManager;
