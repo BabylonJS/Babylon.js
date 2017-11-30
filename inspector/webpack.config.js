@@ -15,8 +15,8 @@ module.exports = {
     },
     module: {
         loaders: [
-            { test: /\.css$/, loader: "style!css" },
-            { test: /babylon.inspector.min.js$/, loader: "imports?Split=split!exports?INSPECTOR" }
+            { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+            //    { test: /babylon.inspector.min.js$/, loader: "imports?Split=split!exports-loader?INSPECTOR" }
         ]
     }
 }
