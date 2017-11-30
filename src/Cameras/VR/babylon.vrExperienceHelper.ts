@@ -824,7 +824,7 @@ module BABYLON {
             // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
             this.webVRCamera.leftCamera!.globalPosition.subtractToRef(this.webVRCamera.position, this._workingVector);
             this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
-            this._workingVector.addInPlace(this.position);
+            this._workingVector.y += 1.7;
             
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
