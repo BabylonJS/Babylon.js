@@ -331,22 +331,31 @@ module BABYLON {
         }
 
         private static _lookAtVectorCache = new Vector3(0, 0, 0);
-        public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): TransformNode {
-            /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
-            /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
-            /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
-            /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
-            /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
-            /// <returns>Mesh oriented towards targetMesh</returns>
 
+        /**
+         * Orients a mesh towards a target point. Mesh must be drawn facing user.
+         * @param targetPoint the position (must be in same space as current mesh) to look at
+         * @param yawCor optional yaw (y-axis) correction in radians
+         * @param pitchCor optional pitch (x-axis) correction in radians
+         * @param rollCor optional roll (z-axis) correction in radians
+         * @param space the choosen space of the target
+         * @returns the TransformNode. 
+         */
+        public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): TransformNode {
             var dv = AbstractMesh._lookAtVectorCache;
             var pos = space === Space.LOCAL ? this.position : this.getAbsolutePosition();
             targetPoint.subtractToRef(pos, dv);
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
-            this.rotationQuaternion = this.rotationQuaternion || new Quaternion();
-            Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
+            if (this.rotationQuaternion) {
+                Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
+            }
+            else {
+                this.rotation.x = pitch + pitchCor;
+                this.rotation.y = yaw + yawCor;
+                this.rotation.z = rollCor;
+            }
             return this;
         }
 

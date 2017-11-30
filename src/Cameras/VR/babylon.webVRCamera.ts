@@ -37,6 +37,7 @@ module BABYLON {
         defaultLightingOnControllers?: boolean; // creating a default HemiLight only on controllers
         useCustomVRButton?: boolean; // if you don't want to use the default VR button of the helper
         customVRButton?: HTMLButtonElement; //if you'd like to provide your own button to the VRHelper
+        rayLength?: number; // to change the length of the ray for gaze/controllers.
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -179,9 +180,12 @@ module BABYLON {
             return this._rightController;
         };
 
+
+        
         public getForwardRay(length = 100): Ray {
             if (this.leftCamera) {
-                return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
+                // Use left eye to avoid computation to compute center on every call
+                return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.leftCamera.globalPosition); // Need the actual rendered camera
             }
             else {
                 return super.getForwardRay(length);

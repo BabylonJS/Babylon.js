@@ -388,7 +388,12 @@ void main(void) {
 		// for use with the linear HDR render target. The final composition will be converted back to gamma encoded values for eventual display.
 		// Uses power 2.0 rather than 2.2 for simplicity/efficiency, and because the mapping does not need to map the gamma applied to RGB.
 		float opacityPerceptual = alpha;
-		float opacity0 = opacityPerceptual * opacityPerceptual;
+
+		#ifdef LINEARALPHAFRESNEL
+			float opacity0 = opacityPerceptual;
+		#else
+			float opacity0 = opacityPerceptual * opacityPerceptual;
+		#endif
 		float opacity90 = fresnelGrazingReflectance(opacity0);
 
 		vec3 normalForward = faceforward(normalW, -viewDirectionW, normalW);

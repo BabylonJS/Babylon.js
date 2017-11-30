@@ -4154,7 +4154,7 @@
             return pickingInfo || new PickingInfo();
         }
 
-        private _tempPickingRay: Ray;
+        private _tempPickingRay: Nullable<Ray> = BABYLON.Ray ? Ray.Zero() : null;
 
         /** Launch a ray to try to pick a mesh in the scene
          * @param x position on screen
@@ -4164,13 +4164,13 @@
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
-            if (!this._tempPickingRay) {
-                this._tempPickingRay = Ray.Zero();
+            if (!BABYLON.PickingInfo) {
+                return null;
             }
 
             return this._internalPick(world => {
-                this.createPickingRayToRef(x, y, world, this._tempPickingRay, camera || null);
-                return this._tempPickingRay;
+                this.createPickingRayToRef(x, y, world, this._tempPickingRay!, camera || null);
+                return this._tempPickingRay!;
             }, predicate, fastCheck);
         }
 
@@ -4182,12 +4182,9 @@
          * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            if (!this._tempPickingRay) {
-                this._tempPickingRay = Ray.Zero();
-            }
-            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay, camera);
+            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay!, camera);
 
-            return this._internalPickSprites(this._tempPickingRay, predicate, fastCheck, camera);
+            return this._internalPickSprites(this._tempPickingRay!, predicate, fastCheck, camera);
         }
 
         private _cachedRayForTransform: Ray;
