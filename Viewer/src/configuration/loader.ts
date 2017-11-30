@@ -2,7 +2,7 @@ import { mapperManager } from './mappers';
 import { ViewerConfiguration } from './configuration';
 import { getConfigurationType } from './types';
 
-import deepmerge from 'deepmerge';
+import * as deepmerge from '../../assets/deepmerge.min.js';
 
 export class ConfigurationLoader {
 
