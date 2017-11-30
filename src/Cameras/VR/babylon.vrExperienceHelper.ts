@@ -815,12 +815,14 @@ module BABYLON {
                 this._teleportationCircle.position.y += 0.1;
             }
         }
-
+        private _workingVector = Vector3.Zero();
         private _teleportCamera() {
             // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
             // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
-            var teleportLocation = this._haloCenter.subtract(this.webVRCamera.leftCamera!.globalPosition.subtract(this.webVRCamera.position)).add(this.position)
-
+            this.webVRCamera.leftCamera!.globalPosition.subtractToRef(this.webVRCamera.position, this._workingVector)
+            this._haloCenter.subtractToRef(this._workingVector, this._workingVector)
+            this._workingVector.addInPlace(this.position)
+            
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
             var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position", 90, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -831,7 +833,7 @@ module BABYLON {
             });
             animationCameraTeleportationKeys.push({
                 frame: 11,
-                value: teleportLocation
+                value: this._workingVector
             });
             var easingFunction = new BABYLON.CircleEase();
             easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
