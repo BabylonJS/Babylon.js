@@ -484,7 +484,7 @@
 
         public get gamepadManager(): GamepadManager {
             if (!this._gamepadManager) {
-                this._gamepadManager = new GamepadManager();
+                this._gamepadManager = new GamepadManager(this);
             }
 
             return this._gamepadManager;
@@ -3428,6 +3428,11 @@
                     this._physicsEngine._step(deltaTime / 1000.0);
                     this.onAfterPhysicsObservable.notifyObservers(this);
                 }
+            }
+
+            // update gamepad manager
+            if (this._gamepadManager && this._gamepadManager._isMonitoring) {
+                this._gamepadManager._checkGamepadsStatus();
             }
 
             // Before render
