@@ -22,8 +22,7 @@ import { InitTags } from './initializer';
 global.Promise = Promise || require('es6-promise').Promise;
 
 export let disableInit: boolean = false;
-
-setTimeout(() => {
+document.addEventListener("DOMContentLoaded", function (event) {
     if (disableInit) return;
     InitTags();
 });
