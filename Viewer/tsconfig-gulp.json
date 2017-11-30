@@ -15,6 +15,21 @@
             "dom",
             "es2015.promise",
             "es5"
-        ]
+        ],
+        "types": [
+            "node"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "babylonjs": [
+                "../dist/preview release/babylon.max.js"
+            ],
+            "babylonjs-materials": [
+                "../dist/preview release/materialsLibrary/babylonjs.materials.js"
+            ],
+            "babylonjs-loaders": [
+                "../dist/preview release/loaders/babylonjs.loaders.js"
+            ]
+        }
     }
 }

@@ -1,8 +1,12 @@
+
+
 import { ViewerConfiguration } from './../configuration/configuration';
 import { Template } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { ShadowGenerator, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { ShadowGenerator, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
+
+import { ShadowOnlyMaterial } from 'babylonjs-materials';
 
 export class DefaultViewer extends AbstractViewer {
 
@@ -103,7 +107,7 @@ export class DefaultViewer extends AbstractViewer {
                                     let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
                                     requestFullScreen.call(viewerElement);
                                 } else {
-                                    let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || document.mozCancelFullScreen
+                                    let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
                                     exitFullscreen.call(document);
                                 }
 
@@ -226,7 +230,8 @@ export class DefaultViewer extends AbstractViewer {
             //default configuration
             if (this.configuration.ground === true) {
                 ground.receiveShadows = true;
-                ground.material.alpha = 0.4;
+                if (ground.material)
+                    ground.material.alpha = 0.4;
             }
 
 
