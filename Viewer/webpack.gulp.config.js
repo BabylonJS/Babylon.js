@@ -1,7 +1,7 @@
 module.exports = {
-    context: __dirname,
+    //context: __dirname,
     entry: [
-        './src/index.ts'
+        __dirname + '/src/index.ts'
     ]
     ,
     output: {
@@ -11,14 +11,16 @@ module.exports = {
     },
     externals: {
         cannon: true,
-        //babylonjs: 'BABYLON'
+        vertx: true
     },
     resolve: {
         extensions: ['.ts', '.js'],
         alias: {
-            babylonjs: __dirname + '/../dist/preview release/babylon.max.js',
+            "babylonjs": __dirname + '/../dist/preview release/babylon.max.js',
             "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
-            "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js'
+            "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
+            "es6-promise": __dirname + '/assets/es6-promise.min.js',
+            "deepmerge": __dirname + '/assets/deepmerge.min.js',
         }
     },
     module: {
