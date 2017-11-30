@@ -231,7 +231,11 @@ module BABYLON.GUI {
         // Events
         private _pointerIsDown = false;
 
-        private _updateValueFromPointer(x: number): void {
+        private _updateValueFromPointer(x: number, y:number): void {
+            if(this.rotation != 0){
+                this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+                x = this._transformedPosition.x;
+            }
             this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
 
@@ -242,7 +246,7 @@ module BABYLON.GUI {
 
             this._pointerIsDown = true;
 
-            this._updateValueFromPointer(coordinates.x);
+            this._updateValueFromPointer(coordinates.x, coordinates.y);
             this._host._capturingControl = this;
 
             return true;
@@ -250,7 +254,7 @@ module BABYLON.GUI {
 
         public _onPointerMove(target: Control, coordinates: Vector2): void {
             if (this._pointerIsDown) {
-                this._updateValueFromPointer(coordinates.x);
+                this._updateValueFromPointer(coordinates.x, coordinates.y);
             }
 
             super._onPointerMove(target, coordinates);
