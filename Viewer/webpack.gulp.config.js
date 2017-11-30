@@ -1,13 +1,9 @@
 module.exports = {
     context: __dirname,
-    entry: {
-        'viewer-latest': [
-            '../dist/preview release/babylon.max.js',
-            '../dist/preview release/materialsLibrary/babylonjs.materials.js',
-            '../dist/preview release/loaders/babylonjs.loaders.js',
-            './src/index.ts'
-        ]
-    },
+    entry: [
+        './src/index.ts'
+    ]
+    ,
     output: {
         libraryTarget: 'var',
         library: 'BabylonViewer',
@@ -15,12 +11,16 @@ module.exports = {
     },
     externals: {
         cannon: true,
-        babylonjs: 'BABYLON'
+        //babylonjs: 'BABYLON'
     },
     resolve: {
-        extensions: ['.ts', '.js']
+        extensions: ['.ts', '.js'],
+        alias: {
+            babylonjs: __dirname + '/../dist/preview release/babylon.max.js',
+            "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
+            "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js'
+        }
     },
-    //devtool: 'source-map',
     module: {
         loaders: [{
             test: /\.tsx?$/,
