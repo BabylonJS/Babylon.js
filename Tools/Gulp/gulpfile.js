@@ -49,7 +49,8 @@ var tsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
-    strictFunctionTypes: true
+    strictFunctionTypes: true,
+    types: []
 };
 var tsProject = typescript.createProject(tsConfig);
 
@@ -64,7 +65,8 @@ var externalTsConfig = {
     noImplicitReturns: true,
     noImplicitThis: true,
     noUnusedLocals: true,
-    strictNullChecks: true
+    strictNullChecks: true,
+    types: []
 };
 
 var minimist = require("minimist");
@@ -398,9 +400,11 @@ var buildExternalLibrary = function (library, settings, watch) {
 
         if (library.webpack) {
             return waitAll.on("end", function () {
-                webpack(require(library.webpack))
+                return webpack(require(library.webpack))
                     .pipe(rename(library.output.replace(".js", ".bundle.js")))
                     .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
+                    .pipe(uglify())
+                    .pipe(optimisejs())
                     .pipe(gulp.dest(outputDirectory))
             });
         }
