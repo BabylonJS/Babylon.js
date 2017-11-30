@@ -403,8 +403,8 @@ var buildExternalLibrary = function (library, settings, watch) {
                 return webpack(require(library.webpack))
                     .pipe(rename(library.output.replace(".js", ".bundle.js")))
                     .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
-                    .pipe(uglify())
-                    .pipe(optimisejs())
+                    //.pipe(uglify())
+                    //.pipe(optimisejs())
                     .pipe(gulp.dest(outputDirectory))
             });
         }
