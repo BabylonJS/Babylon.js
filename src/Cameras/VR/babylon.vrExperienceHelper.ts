@@ -458,58 +458,78 @@ module BABYLON {
         }
 
         private _onNewGamepadConnected(gamepad: Gamepad) {
-            if (gamepad.leftStick && gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
-                gamepad.onleftstickchanged((stickValues) => {
-                    // Listening to classic/xbox gamepad only if no VR controller is active
-                    if ((!this._leftLaserPointer && !this._rightLaserPointer) || 
-                        ((this._leftLaserPointer && !this._leftLaserPointer.isVisible) && 
-                        (this._rightLaserPointer && !this._rightLaserPointer.isVisible))) {
-                        if (!this._teleportationRequestInitiated) {
-                            if (stickValues.y < -this._padSensibilityUp) {
-                                this._teleportationRequestInitiated = true;
+            if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
+                if (gamepad.leftStick) {
+                    gamepad.onleftstickchanged((stickValues) => {
+                        // Listening to classic/xbox gamepad only if no VR controller is active
+                        if ((!this._leftLaserPointer && !this._rightLaserPointer) || 
+                            ((this._leftLaserPointer && !this._leftLaserPointer.isVisible) && 
+                            (this._rightLaserPointer && !this._rightLaserPointer.isVisible))) {
+                            if (!this._teleportationRequestInitiated) {
+                                if (stickValues.y < -this._padSensibilityUp) {
+                                    this._teleportationRequestInitiated = true;
+                                }
+                            }
+                            else {
+                                if (stickValues.y > -this._padSensibilityDown) {
+                                    if (this._teleportationAllowed) {
+                                        this._teleportCamera();
+                                    }
+                                    this._teleportationRequestInitiated = false;
+                                }
+                            }
+                        }
+                    });
+                }
+                if (gamepad.rightStick) {
+                    gamepad.onrightstickchanged((stickValues) => {
+                        if (!this._rotationLeftAsked) {
+                            if (stickValues.x < -this._padSensibilityUp) {
+                                this._rotationLeftAsked = true;
+                                if (this._rotationAllowed) {
+                                    this._rotateCamera(false);
+                                }
                             }
                         }
                         else {
-                            if (stickValues.y > -this._padSensibilityDown) {
-                                if (this._teleportationAllowed) {
-                                    this._teleportCamera();
+                            if (stickValues.x > -this._padSensibilityDown) {
+                                this._rotationLeftAsked = false;
+                            }
+                        }
+            
+                        if (!this._rotationRightAsked) {
+                            if (stickValues.x > this._padSensibilityUp) {
+                                this._rotationRightAsked = true;
+                                if (this._rotationAllowed) {
+                                    this._rotateCamera(true);
                                 }
-                                this._teleportationRequestInitiated = false;
                             }
                         }
-                    }
-                });
-            }
-            if (gamepad.rightStick) {
-                gamepad.onrightstickchanged((stickValues) => {
-                    if (!this._rotationLeftAsked) {
-                        if (stickValues.x < -this._padSensibilityUp) {
-                            this._rotationLeftAsked = true;
-                            if (this._rotationAllowed) {
-                                this._rotateCamera(false);
+                        else {
+                            if (stickValues.x < this._padSensibilityDown) {
+                                this._rotationRightAsked = false;
                             }
                         }
-                    }
-                    else {
-                        if (stickValues.x > -this._padSensibilityDown) {
-                            this._rotationLeftAsked = false;
-                        }
-                    }
-        
-                    if (!this._rotationRightAsked) {
-                        if (stickValues.x > this._padSensibilityUp) {
-                            this._rotationRightAsked = true;
-                            if (this._rotationAllowed) {
-                                this._rotateCamera(true);
+                    });
+                }
+                if (gamepad.type === BABYLON.Gamepad.XBOX) {
+                    (<Xbox360Pad>gamepad).onbuttondown((buttonPressed: Xbox360Button) => {
+                        if (buttonPressed === Xbox360Button.A) {
+                            this._pointerDownOnMeshAsked = true;
+                            if (this._currentMeshSelected && this._currentHit) {
+                                this._scene.simulatePointerDown(this._currentHit);
                             }
                         }
-                    }
-                    else {
-                        if (stickValues.x < this._padSensibilityDown) {
-                            this._rotationRightAsked = false;
+                    });
+                    (<Xbox360Pad>gamepad).onbuttonup((buttonPressed: Xbox360Button) => {
+                        if (buttonPressed === Xbox360Button.A) {
+                            if (this._currentMeshSelected && this._currentHit) {
+                                this._scene.simulatePointerUp(this._currentHit);
+                            }
+                            this._pointerDownOnMeshAsked = false;
                         }
-                    }
-                });
+                    });
+                }
             }
         }
 
@@ -919,6 +939,7 @@ module BABYLON {
 
             // Moving the gazeTracker on the mesh face targetted
             if (hit && hit.pickedPoint) {
+                this._gazeTracker.isVisible = true;
                 var multiplier = 1;
                 if (this._isActionableMesh) {
                     multiplier = 3;
@@ -967,13 +988,19 @@ module BABYLON {
                     this._leftLaserPointer.position.z = -hit.distance / 2;
                 }
             }
+            else {
+                this._gazeTracker.isVisible = false;
+            }
         
             if (hit && hit.pickedMesh) {
                 this._currentHit = hit;
+                if (this._pointerDownOnMeshAsked) {
+                    this._scene.simulatePointerMove(this._currentHit);
+                }
                 // The object selected is the floor, we're in a teleportation scenario
                 if (hit.pickedMesh.name.indexOf(this._floorMeshName) !== -1 && hit.pickedPoint) {
                     // Moving the teleportation area to this targetted point
-                    this._moveTeleportationSelectorTo(hit)
+                    this._moveTeleportationSelectorTo(hit);
                     return;
                 }
                 // If not, we're in a selection scenario
