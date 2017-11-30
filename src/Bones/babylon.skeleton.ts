@@ -4,6 +4,11 @@
         public dimensionsAtRest: Vector3;
         public needInitialSkinMatrix = false;
 
+        /**
+         * Specifies an override mesh for getting the world matrix when binding this skeleton to a mesh
+         */
+        public overrideMesh: AbstractMesh;
+
         public animations: Array<Animation>;
 
         private _scene: Scene;

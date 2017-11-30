@@ -800,6 +800,10 @@
                 return this._masterMesh.getWorldMatrix();
             }
 
+            if (this.skeleton && this.skeleton.overrideMesh) {
+                return this.skeleton.overrideMesh.getWorldMatrix();
+            }
+
             return super.getWorldMatrix();
         }
 
