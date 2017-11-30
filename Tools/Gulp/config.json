@@ -1178,7 +1178,8 @@
         "loaders",
         "serializers",
         "inspector",
-        "gui"
+        "gui",
+        "viewer"
     ],
     "materialsLibrary": {
         "libraries": [
@@ -1660,6 +1661,22 @@
         "build": {
             "srcOutputDirectory": "../../inspector/",
             "distOutputDirectory": "/inspector/"
+        }
+    },
+    "viewer": {
+        "libraries": [
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.viewer.js",
+                "webpack": "../../Viewer/webpack.gulp.config.js",
+                "bundle": "true",
+                "moduleDeclaration": "BabylonViewer"
+            }
+        ],
+        "build": {
+            "srcOutputDirectory": "../../Viewer/",
+            "distOutputDirectory": "/viewer/"
         }
     }
 }
