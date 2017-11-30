@@ -32,6 +32,7 @@ if (BABYLON.Engine.isSupported()) {
     if (!currentHelpCounter) currentHelpCounter = 0;
 
     // Setting up some GLTF values
+    BABYLON.GLTFFileLoader.IncrementalLoading = false;
     BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
         currentPluginName = plugin.name;
 
@@ -71,6 +72,11 @@ if (BABYLON.Engine.isSupported()) {
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
+        // removing glTF created camera
+        if (currentScene.activeCamera && currentPluginName === "gltf") {
+            currentScene.activeCamera.dispose();
+            currentScene.activeCamera = null;
+        }
         // Attach camera to canvas inputs
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {
             currentScene.createDefaultCameraOrLight(true);

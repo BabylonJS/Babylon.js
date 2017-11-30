@@ -253,7 +253,14 @@ module BABYLON {
         }
 
         private static _parseVersion(version: string): Nullable<{ major: number, minor: number }> {
-            const match = (version + "").match(/^(\d+)\.(\d+)$/);
+            if (version === "1.0" || version === "1.0.1") {
+                return {
+                    major: 1,
+                    minor: 0
+                };
+            }
+
+            const match = (version + "").match(/^(\d+)\.(\d+)/);
             if (!match) {
                 return null;
             }

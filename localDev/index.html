@@ -65,7 +65,7 @@
 			.require(indexjs)
 			.load(function() {
 				if (BABYLON.Engine.isSupported()) {
-					engine = new BABYLON.Engine(canvas, true, { stencil: true, disableWebGL2Support: false });
+					engine = new BABYLON.Engine(canvas, true, { stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true });
 					BABYLONDEVTOOLS.Loader.debugShortcut(engine);
 
 					// call the scene creation from the js.

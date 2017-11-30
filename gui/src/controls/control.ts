@@ -33,8 +33,8 @@ module BABYLON.GUI {
         private _transformCenterX = 0.5;
         private _transformCenterY = 0.5;
         private _transformMatrix = Matrix2D.Identity();
-        private _invertTransformMatrix = Matrix2D.Identity();
-        private _transformedPosition = Vector2.Zero();
+        protected _invertTransformMatrix = Matrix2D.Identity();
+        protected _transformedPosition = Vector2.Zero();
         private _isMatrixDirty = true;
         private _cachedOffsetX: number;
         private _cachedOffsetY: number;
