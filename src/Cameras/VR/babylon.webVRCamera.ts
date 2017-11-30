@@ -38,6 +38,7 @@ module BABYLON {
         useCustomVRButton?: boolean; // if you don't want to use the default VR button of the helper
         customVRButton?: HTMLButtonElement; //if you'd like to provide your own button to the VRHelper
         rayLength?: number; // to change the length of the ray for gaze/controllers.
+        defaultHeight?: number; // to change the default offset from the ground to account for user's height
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -66,6 +67,10 @@ module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
 
+            if(webVROptions.defaultHeight){
+                this.position.y = webVROptions.defaultHeight;
+            }
+            
             this.minZ = 0.1;
 
             //legacy support - the compensation boolean was removed.

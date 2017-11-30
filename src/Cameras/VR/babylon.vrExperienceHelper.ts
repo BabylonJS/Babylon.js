@@ -79,6 +79,7 @@ module BABYLON {
         private _currentHit: Nullable<PickingInfo>;
         private _pointerDownOnMeshAsked = false;
         private _isActionableMesh = false;
+        private _defaultHeight:number;
 
         public get deviceOrientationCamera(): DeviceOrientationCamera {
             return this._deviceOrientationCamera;
@@ -105,13 +106,15 @@ module BABYLON {
         constructor(scene: Scene, public webVROptions: WebVROptions = {}) {
             this._scene = scene;
 
+            this._defaultHeight = webVROptions.defaultHeight || 1.7;
+
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
-                this._position = new BABYLON.Vector3(0, 2, 0);
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 1.7, 0), scene);
+                this._position = new BABYLON.Vector3(0, this._defaultHeight, 0);
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
             }
             else {
                 this._position = this._scene.activeCamera.position.clone();
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position, scene);
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
                 this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
                 this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
                 // Set rotation from previous camera
@@ -824,7 +827,7 @@ module BABYLON {
             // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
             this.webVRCamera.leftCamera!.globalPosition.subtractToRef(this.webVRCamera.position, this._workingVector);
             this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
-            this._workingVector.addInPlace(this.position);
+            this._workingVector.y += this._defaultHeight;
             
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
