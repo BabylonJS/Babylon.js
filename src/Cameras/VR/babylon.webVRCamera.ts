@@ -351,6 +351,14 @@ module BABYLON {
                     if (webVrController.defaultModel) {
                         webVrController.defaultModel.setEnabled(false);
                     }
+
+                    if(webVrController.hand === "right"){
+                        this._rightController = null;
+                    }
+                    if(webVrController.hand === "left"){
+                        this._rightController = null;
+                    }
+                    this.controllers.splice(this.controllers.indexOf(webVrController), 1)
                 }
             });
 
