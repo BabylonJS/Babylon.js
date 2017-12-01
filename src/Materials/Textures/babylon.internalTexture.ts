@@ -116,7 +116,7 @@ module BABYLON {
 
                 case InternalTexture.DATASOURCE_RAW:
                     proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps, 
-                                                            this.invertY, this.samplingMode, this._compression); 
+                                                            this.invertY, this.samplingMode, this._compression, this.type); 
                     proxy._swapAndDie(this);
 
                     this.isReady = true;
