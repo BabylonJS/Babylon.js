@@ -418,7 +418,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useHorizonOcclusion = false;
+        public useHorizonOcclusion = true;
         
         /**
          * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
@@ -426,7 +426,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useRadianceOcclusion = false;
+        public useRadianceOcclusion = true;
 
         /**
          * Gets the image processing configuration used either in this material.

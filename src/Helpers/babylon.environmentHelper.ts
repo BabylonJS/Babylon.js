@@ -459,6 +459,10 @@ namespace BABYLON {
             let groundSize = this._options.groundSize;
             let skyboxSize = this._options.skyboxSize;
             let rootPosition = this._options.rootPosition;
+            if (!this._scene.meshes || this._scene.meshes.length === 1) { // 1 only means the root of the helper.
+                return { groundSize, skyboxSize, rootPosition };
+            }
+            
             const sceneExtends = this._scene.getWorldExtends();
             const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
             let bias = 0.0001;
