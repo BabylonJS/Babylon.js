@@ -232,9 +232,8 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index: number;
-        parent?: IGLTFNode;
+        parent: IGLTFNode;
         babylonMesh: Mesh;
-        babylonBones?: { [skin: number]: Bone };
         babylonAnimationTargets?: Node[];
     }
 

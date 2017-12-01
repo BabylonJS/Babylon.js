@@ -275,13 +275,13 @@
          * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
          * makes the reflect vector face the model (under horizon).
          */
-        protected _useHorizonOcclusion = false; // USEHORIZONOCCLUSION
+        protected _useHorizonOcclusion = true;
 
         /**
          * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
          * too much the area relying on ambient texture to define their ambient occlusion.
          */
-        protected _useRadianceOcclusion = false;
+        protected _useRadianceOcclusion = true;
         
         /**
          * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.

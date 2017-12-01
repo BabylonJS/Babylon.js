@@ -3218,18 +3218,21 @@
             return internalFormat;
         }
 
-        public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null): void {
+        public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type = Engine.TEXTURETYPE_UNSIGNED_INT): void {
             if (!texture) {
                 return;
             }
 
             var internalFormat = this._getInternalFormat(format);
+            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
+            var textureType = this._getWebGLTextureType(type);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
             if (!this._doNotHandleContextLost) {
                 texture._bufferView = data;
                 texture.format = format;
+                texture.type = type;
                 texture.invertY = invertY;
                 texture._compression = compression;
             }
@@ -3241,7 +3244,7 @@
             if (compression && data) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, data);
             } else {
-                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture.width, texture.height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalSizedFomat, texture.width, texture.height, 0, internalFormat, textureType, data);
             }
 
             if (texture.generateMipMaps) {
@@ -3252,7 +3255,7 @@
             texture.isReady = true;
         }
 
-        public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null): InternalTexture {
+        public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW);
             texture.baseWidth = width;
             texture.baseHeight = height;
@@ -3263,12 +3266,13 @@
             texture.samplingMode = samplingMode;
             texture.invertY = invertY;
             texture._compression = compression;
+            texture.type = type;
 
             if (!this._doNotHandleContextLost) {
                 texture._bufferView = data;
             }
 
-            this.updateRawTexture(texture, data, format, invertY, compression);
+            this.updateRawTexture(texture, data, format, invertY, compression, type);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
 
             // Filters
