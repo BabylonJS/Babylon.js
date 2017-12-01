@@ -1328,6 +1328,7 @@
             let evt = new PointerEvent("pointerup");
             let clickInfo = new ClickInfo();
             clickInfo.singleClick = true;
+            clickInfo.ignore = true;
 
             return this._processPointerUp(pickResult, evt, clickInfo);
         }
