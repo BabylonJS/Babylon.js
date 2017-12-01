@@ -1,11 +1,11 @@
 {
     "build": {
-        "filename": "babylon.custom.js",
+        "filename": "babylon.max.js",
         "minFilename": "babylon.js",
         "minWorkerFilename": "babylon.worker.js",
         "declarationFilename": "babylon.d.ts",
         "declarationModuleFilename": "babylon.module.d.ts",
-        "outputDirectory": "../../../stacky/resources",
+        "outputDirectory": "../../dist/preview release",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
@@ -14,7 +14,7 @@
         ],
         "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
         "srcOutputDirectory": "../../src/",
-        "currentConfig": "custom"
+        "currentConfig": "all"
     },
     "buildConfigurations": {
         "all": [
@@ -83,15 +83,6 @@
             "instrumentation",
             "backgroundMaterial",
             "environmentHelper"
-        ],
-        "custom": [
-            "meshBuilder",
-            "standardMaterial",
-            "freeCamera",
-            "directionalLight",
-            "physics",
-            "csg",
-            "animations"
         ],
         "minimal": [
             "standardMaterial",
@@ -1187,7 +1178,8 @@
         "loaders",
         "serializers",
         "inspector",
-        "gui"
+        "gui",
+        "viewer"
     ],
     "materialsLibrary": {
         "libraries": [
@@ -1669,6 +1661,22 @@
         "build": {
             "srcOutputDirectory": "../../inspector/",
             "distOutputDirectory": "/inspector/"
+        }
+    },
+    "viewer": {
+        "libraries": [
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.viewer.js",
+                "webpack": "../../Viewer/webpack.gulp.config.js",
+                "bundle": "true",
+                "moduleDeclaration": "BabylonViewer"
+            }
+        ],
+        "build": {
+            "srcOutputDirectory": "../../Viewer/",
+            "distOutputDirectory": "/viewer/"
         }
     }
 }
