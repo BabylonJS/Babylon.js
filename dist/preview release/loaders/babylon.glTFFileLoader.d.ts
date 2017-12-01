@@ -792,11 +792,8 @@ declare module BABYLON.GLTF2 {
         translation?: number[];
         weights?: number[];
         index: number;
-        parent?: IGLTFNode;
+        parent: IGLTFNode;
         babylonMesh: Mesh;
-        babylonBones?: {
-            [skin: number]: Bone;
-        };
         babylonAnimationTargets?: Node[];
     }
     interface IGLTFSampler extends IGLTFChildRootProperty {
@@ -911,13 +908,13 @@ declare module BABYLON.GLTF2 {
         private _loadAllMorphTargetVertexDataAsync(context, node, mesh, onSuccess);
         private _loadMorphTargetVertexDataAsync(context, vertexData, attributes, onSuccess);
         private _loadTransform(node);
-        private _loadSkin(context, skin);
+        private _loadSkinAsync(context, skin, onSuccess);
         private _createBone(node, skin, parent, localMatrix, baseMatrix, index);
         private _loadBones(context, skin, inverseBindMatrixData);
         private _loadBone(node, skin, inverseBindMatrixData, babylonBones);
         private _getNodeMatrix(node);
-        private _traverseNodes(context, indices, action, parentNode?);
-        _traverseNode(context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: Nullable<IGLTFNode>) => boolean, parentNode?: Nullable<IGLTFNode>): void;
+        private _traverseNodes(context, indices, action, parentNode);
+        _traverseNode(context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): void;
         private _loadAnimations();
         private _loadAnimation(context, animation);
         private _loadAnimationChannel(animation, channelContext, channel, samplerContext, sampler);
@@ -976,12 +973,12 @@ declare module BABYLON.GLTF2 {
     abstract class GLTFLoaderExtension {
         enabled: boolean;
         readonly abstract name: string;
-        protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: Nullable<IGLTFNode>): boolean;
+        protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean;
         protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean;
         protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         protected _loadExtension<T>(context: string, property: IGLTFProperty, action: (context: string, extension: T, onComplete: () => void) => void): boolean;
         static _Extensions: GLTFLoaderExtension[];
-        static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: Nullable<IGLTFNode>): boolean;
+        static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean;
         static LoadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean;
         static LoadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         private static _ApplyExtensions(action);

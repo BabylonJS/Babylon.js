@@ -1,7 +1,7 @@
 module.exports = {
     entry: [
         "../../dist/preview release/inspector/babylon.inspector.css",
-        "../../dist/preview release/inspector/babylon.inspector.min.js"
+        "../../dist/preview release/inspector/babylon.inspector.js"
     ],
     output: {
         libraryTarget: "var",
@@ -15,8 +15,12 @@ module.exports = {
     },
     module: {
         loaders: [
-            { test: /\.css$/, loader: "style!css" },
-            { test: /babylon.inspector.min.js$/, loader: "imports?Split=split!exports?INSPECTOR" }
+            { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+            {
+                test: /babylon.inspector.js/, use: [
+                    "imports-loader?Split=split", "exports-loader?INSPECTOR"]
+
+            }
         ]
     }
 }

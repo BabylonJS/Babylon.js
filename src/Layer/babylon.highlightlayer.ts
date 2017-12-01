@@ -429,6 +429,11 @@
                     return;
                 }
 
+                // Do not block in blend mode.
+                if (material.needAlphaBlendingForMesh(mesh)) {
+                    return;
+                }
+
                 // Culling
                 engine.setState(material.backFaceCulling);
 
