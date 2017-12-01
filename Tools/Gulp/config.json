@@ -1,11 +1,11 @@
 {
     "build": {
-        "filename": "babylon.max.js",
+        "filename": "babylon.custom.js",
         "minFilename": "babylon.js",
         "minWorkerFilename": "babylon.worker.js",
         "declarationFilename": "babylon.d.ts",
         "declarationModuleFilename": "babylon.module.d.ts",
-        "outputDirectory": "../../dist/preview release",
+        "outputDirectory": "../../../stacky/resources",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
@@ -14,7 +14,7 @@
         ],
         "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
         "srcOutputDirectory": "../../src/",
-        "currentConfig": "all"
+        "currentConfig": "custom"
     },
     "buildConfigurations": {
         "all": [
@@ -83,6 +83,15 @@
             "instrumentation",
             "backgroundMaterial",
             "environmentHelper"
+        ],
+        "custom": [
+            "meshBuilder",
+            "standardMaterial",
+            "freeCamera",
+            "directionalLight",
+            "physics",
+            "csg",
+            "animations"
         ],
         "minimal": [
             "standardMaterial",
@@ -212,7 +221,8 @@
                 "../../src/Tools/babylon.performanceMonitor.js",
                 "../../src/Materials/babylon.imageProcessingConfiguration.js",
                 "../../src/Materials/Textures/babylon.colorGradingTexture.js",
-                "../../src/Materials/babylon.colorCurves.js"
+                "../../src/Materials/babylon.colorCurves.js",
+                "../../src/Mesh/babylon.linesMesh.js"
             ],
             "shaderIncludes": [
                 "depthPrePass"
@@ -348,8 +358,7 @@
         "additionalMeshes": {
             "files": [
                 "../../src/Mesh/babylon.groundMesh.js",
-                "../../src/Mesh/babylon.instancedMesh.js",
-                "../../src/Mesh/babylon.linesMesh.js"
+                "../../src/Mesh/babylon.instancedMesh.js"
             ],
             "dependUpon": [
                 "core"
@@ -1178,8 +1187,7 @@
         "loaders",
         "serializers",
         "inspector",
-        "gui",
-        "viewer"
+        "gui"
     ],
     "materialsLibrary": {
         "libraries": [
@@ -1661,22 +1669,6 @@
         "build": {
             "srcOutputDirectory": "../../inspector/",
             "distOutputDirectory": "/inspector/"
-        }
-    },
-    "viewer": {
-        "libraries": [
-            {
-                "files": [],
-                "noBundleInName": true,
-                "output": "babylon.viewer.js",
-                "webpack": "../../Viewer/webpack.gulp.config.js",
-                "bundle": "true",
-                "moduleDeclaration": "BabylonViewer"
-            }
-        ],
-        "build": {
-            "srcOutputDirectory": "../../Viewer/",
-            "distOutputDirectory": "/viewer/"
         }
     }
 }
