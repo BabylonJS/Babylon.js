@@ -250,7 +250,7 @@
             var intersectInfo: Nullable<IntersectionInfo> = null;
 
             // LineMesh first as it's also a Mesh...
-            if (LinesMesh && this._mesh instanceof LinesMesh) {
+            if (this._mesh instanceof LinesMesh) {
                 var lineMesh = this._mesh;
 
                 // Line test
