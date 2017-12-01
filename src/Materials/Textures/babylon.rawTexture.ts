@@ -11,7 +11,7 @@
         }
 
         public update(data: ArrayBufferView): void {
-            this._engine.updateRawTexture(this._texture, data, this.format, this._invertY);
+            this._engine.updateRawTexture(this._texture, data, this._texture!.format, this._texture!.invertY, undefined, this._texture!.type);
         }
 
         // Statics
