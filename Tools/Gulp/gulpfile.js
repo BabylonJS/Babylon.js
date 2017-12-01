@@ -226,7 +226,13 @@ gulp.task("build", ["shaders"], function () {
 /*
 * Compiles all typescript files and creating a js and a declaration file.
 */
+var alreadyCompiled = false;
 gulp.task("typescript-compile", function () {
+    if (alreadyCompiled) {
+        return;
+    }
+    alreadyCompiled = true;
+
     var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject());
