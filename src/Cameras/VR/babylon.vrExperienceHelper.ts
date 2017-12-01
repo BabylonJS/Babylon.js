@@ -272,6 +272,7 @@ module BABYLON {
             this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
             this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
             this._scene.gamepadManager.onGamepadConnectedObservable.add((pad) => this._onNewGamepadConnected(pad));
+            this._scene.gamepadManager.onGamepadDisconnectedObservable.add((pad) => this._onNewGamepadDisconnected(pad));
         
             this.updateButtonVisibility();
 
@@ -282,6 +283,7 @@ module BABYLON {
 
         // Raised when one of the controller has loaded successfully its associated default mesh
         private _onDefaultMeshLoaded(webVRController: WebVRController) {
+            console.log("mesh loaded")
             if (webVRController.hand === "left") {
                 this._leftControllerReady = true;
                 if (this._interactionsRequested && !this._interactionsEnabledOnLeftController) {
@@ -546,6 +548,7 @@ module BABYLON {
         }
 
         private _onNewGamepadConnected(gamepad: Gamepad) {
+            console.log("gamepad connected!")
             if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
                 if (gamepad.leftStick) {
                     gamepad.onleftstickchanged((stickValues) => {
@@ -605,6 +608,7 @@ module BABYLON {
                 }
                 if (gamepad.type === BABYLON.Gamepad.XBOX) {
                     (<Xbox360Pad>gamepad).onbuttondown((buttonPressed: Xbox360Button) => {
+                        console.log("bdown")
                         if (this._interactionsEnabled && buttonPressed === Xbox360Button.A) {
                             this._pointerDownOnMeshAsked = true;
                             if (this._currentMeshSelected && this._currentHit) {
@@ -613,6 +617,7 @@ module BABYLON {
                         }
                     });
                     (<Xbox360Pad>gamepad).onbuttonup((buttonPressed: Xbox360Button) => {
+                        console.log("bup")
                         if (this._interactionsEnabled && buttonPressed === Xbox360Button.A) {
                             if (this._currentMeshSelected && this._currentHit) {
                                 this._scene.simulatePointerUp(this._currentHit);
@@ -620,6 +625,27 @@ module BABYLON {
                             this._pointerDownOnMeshAsked = false;
                         }
                     });
+                }
+            }
+        }
+
+        private _onNewGamepadDisconnected(gamepad: Gamepad) {
+            if(gamepad instanceof WebVRController){
+                if (gamepad.hand === "left") {
+                    this._interactionsEnabledOnLeftController = false;
+                    this._teleportationEnabledOnLeftController = false;
+                    this._leftControllerReady = false;
+                    if(this._leftLaserPointer){
+                        this._leftLaserPointer.dispose();
+                    }
+                }
+                if (gamepad.hand === "right") {
+                    this._interactionsEnabledOnRightController = false;
+                    this._teleportationEnabledOnRightController = false;
+                    this._rightControllerReady = false;
+                    if(this._rightLaserPointer){
+                        this._rightLaserPointer.dispose();
+                    }
                 }
             }
         }
@@ -1035,20 +1061,15 @@ module BABYLON {
         }
 
         private _castRayAndSelectObject () {
+            //console.log("cast")
             var ray;
-            if ((!(<WebVRFreeCamera>this.currentVRCamera).rightController && !(<WebVRFreeCamera>this.currentVRCamera).leftController) || 
-                (this._leftLaserPointer && !this._leftLaserPointer.isVisible && !this._rightLaserPointer) || 
-                (this._rightLaserPointer && !this._rightLaserPointer.isVisible && !this._leftLaserPointer) || 
-                (this._rightLaserPointer && this._leftLaserPointer && !this._rightLaserPointer.isVisible && !this._leftLaserPointer.isVisible)) {
-                    ray = this.currentVRCamera.getForwardRay(this._rayLength);
-                
-            } else {
-                if (this._leftLaserPointer && this._leftLaserPointer.isVisible) {
-                    ray = (<any>this.currentVRCamera).leftController.getForwardRay(this._rayLength);
-                }
-                else {
-                    ray = (<any>this.currentVRCamera).rightController.getForwardRay(this._rayLength);
-                }
+            if (this._leftLaserPointer && this._leftLaserPointer.isVisible && (<any>this.currentVRCamera).leftController) {
+                ray = (<any>this.currentVRCamera).leftController.getForwardRay(this._rayLength);
+            }
+            else if(this._rightLaserPointer && this._rightLaserPointer.isVisible && (<any>this.currentVRCamera).rightController){
+                ray = (<any>this.currentVRCamera).rightController.getForwardRay(this._rayLength);
+            }else{
+                ray = this.currentVRCamera.getForwardRay(this._rayLength);
             }
         
             var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
