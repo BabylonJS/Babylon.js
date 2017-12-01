@@ -212,7 +212,8 @@
                 "../../src/Tools/babylon.performanceMonitor.js",
                 "../../src/Materials/babylon.imageProcessingConfiguration.js",
                 "../../src/Materials/Textures/babylon.colorGradingTexture.js",
-                "../../src/Materials/babylon.colorCurves.js"
+                "../../src/Materials/babylon.colorCurves.js",
+                "../../src/Mesh/babylon.linesMesh.js"
             ],
             "shaderIncludes": [
                 "depthPrePass"
@@ -348,8 +349,7 @@
         "additionalMeshes": {
             "files": [
                 "../../src/Mesh/babylon.groundMesh.js",
-                "../../src/Mesh/babylon.instancedMesh.js",
-                "../../src/Mesh/babylon.linesMesh.js"
+                "../../src/Mesh/babylon.instancedMesh.js"
             ],
             "dependUpon": [
                 "core"
