@@ -323,7 +323,7 @@
             this.uvs4 = this._mergeElement(this.uvs4, other.uvs4, count * 2);
             this.uvs5 = this._mergeElement(this.uvs5, other.uvs5, count * 2);
             this.uvs6 = this._mergeElement(this.uvs6, other.uvs6, count * 2);
-            this.colors = this._mergeElement(this.colors, other.colors, count * 4);
+            this.colors = this._mergeElement(this.colors, other.colors, count * 4, 1);
             this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices, count * 4);
             this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights, count * 4);
             this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra, count * 4);
@@ -331,21 +331,25 @@
             return this;
         }
 
-        private _mergeElement(source: Nullable<FloatArray>, other: Nullable<FloatArray>, length = 0): Nullable<FloatArray> {
+        private _mergeElement(source: Nullable<FloatArray>, other: Nullable<FloatArray>, length = 0, defaultValue = 0): Nullable<FloatArray> {
             if (!other && !source) {
                 return null;
             }
 
             if (!other) {
-                return this._mergeElement(source, new Float32Array((<FloatArray>source).length), length);
+                var padding = new Float32Array((<FloatArray>source).length);
+                padding.fill(defaultValue);
+                return this._mergeElement(source, padding, length);
             }
 
             if (!source) {
                 if (length === 0 || length === other.length) {
                     return other;
                 }
-
-                return this._mergeElement(new Float32Array(length - other.length), other, length);
+                
+                var padding = new Float32Array(length - other.length);
+                padding.fill(defaultValue);
+                return this._mergeElement(padding, other, length);
             }
 
             var len = other.length + source.length;

@@ -903,13 +903,47 @@
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._forceAlphaTest);
 
             // Attribs
-            if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE)) {
-                if (mesh) {
-                    if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                        mesh.createNormals(true);
-                        Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
-                    }
+            if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE) && mesh) {
+                let bufferMesh = null;
+                if (mesh instanceof InstancedMesh) {
+                    bufferMesh = (mesh as InstancedMesh).sourceMesh;
                 }
+                else if (mesh instanceof Mesh) {
+                    bufferMesh = mesh as Mesh;
+                }
+
+                if (bufferMesh) { 
+                    if (bufferMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                        // If the first normal's components is the zero vector in one of the submeshes, we have invalid normals
+                        let normalVertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.NormalKind);
+                        let normals = normalVertexBuffer!.getData();
+                        let vertexBufferOffset = normalVertexBuffer!.getOffset();
+                        let strideSize = normalVertexBuffer!.getStrideSize();
+                        let offset = vertexBufferOffset + subMesh.indexStart * strideSize;
+                         
+                        if (normals![offset] === 0 && normals![offset + 1] === 0 && normals![offset + 2] === 0) {
+                            defines.NORMAL = false;
+                        }
+                        if (bufferMesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                            // If the first tangent's components is the zero vector in one of the submeshes, we have invalid tangents
+                            let tangentVertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.TangentKind);
+                            let tangents = tangentVertexBuffer!.getData();
+                            let vertexBufferOffset = tangentVertexBuffer!.getOffset();
+                            let strideSize = tangentVertexBuffer!.getStrideSize();
+                            let offset = vertexBufferOffset + subMesh.indexStart * strideSize;
+
+                            if (tangents![offset] === 0 && tangents![offset + 1] === 0 && tangents![offset + 2] === 0) {
+                                defines.TANGENT = false;
+                            }
+                        }
+                    }
+                    else {
+                        if (!scene.getEngine().getCaps().standardDerivatives) {
+                            bufferMesh.createNormals(true);
+                            Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + bufferMesh.name);
+                        }
+                    }
+                }   
             }
 
             // Get correct effect
