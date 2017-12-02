@@ -30,6 +30,7 @@ module BABYLON {
         private _webVRCamera: WebVRFreeCamera;
         private _vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
         private _deviceOrientationCamera: DeviceOrientationCamera;
+        private _existingCamera: Camera;
         
         private _onKeyDown: (event: KeyboardEvent) => void;
         private _onVrDisplayPresentChange: any;
@@ -158,25 +159,16 @@ module BABYLON {
                 this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
             }
             else {
+                this._existingCamera = this._scene.activeCamera
                 this._position = this._scene.activeCamera.position.clone();
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
-                this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
-                this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
-                // Set rotation from previous camera
-                if(this._scene.activeCamera instanceof TargetCamera && this._scene.activeCamera.rotation){
-                    var targetCamera = this._scene.activeCamera;
-                    if(targetCamera.rotationQuaternion){
-                        this._deviceOrientationCamera.rotationQuaternion.copyFrom(targetCamera.rotationQuaternion);
-                    }else{
-                        this._deviceOrientationCamera.rotationQuaternion.copyFrom(Quaternion.RotationYawPitchRoll(targetCamera.rotation.y, targetCamera.rotation.x, targetCamera.rotation.z));
-                    }
-                    this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
-                }
             }
-            this._scene.activeCamera = this._deviceOrientationCamera;
+            
             this._canvas = scene.getEngine().getRenderingCanvas();
             if (this._canvas) {
-                this._scene.activeCamera.attachControl(this._canvas);
+                if(this._deviceOrientationCamera){
+                    this._scene.activeCamera = this._deviceOrientationCamera;
+                    this._scene.activeCamera.attachControl(this._canvas);
+                }
             }
 
             if (webVROptions) {
@@ -446,12 +438,17 @@ module BABYLON {
                 this._position = this._scene.activeCamera.position.clone();
                 
             }
-            this._deviceOrientationCamera.position = this._position;
-            this._scene.activeCamera = this._deviceOrientationCamera;
 
-            if (this._canvas) {
-                this._scene.activeCamera.attachControl(this._canvas);
-            }
+            if(this._deviceOrientationCamera){
+                this._deviceOrientationCamera.position = this._position;
+                this._scene.activeCamera = this._deviceOrientationCamera;
+                if (this._canvas) {
+                    this._scene.activeCamera.attachControl(this._canvas);
+                }
+            }else if(this._existingCamera){
+                this._existingCamera.position = this._position;
+                this._scene.activeCamera = this._existingCamera;
+            }            
 
             this.updateButtonVisibility();  
         }
@@ -1215,7 +1212,10 @@ module BABYLON {
             if (this.isInVRMode()) {
                 this.exitVR();
             }
-            this._deviceOrientationCamera.dispose();
+
+            if(this._deviceOrientationCamera){
+                this._deviceOrientationCamera.dispose();
+            }
 
             if (this._passProcessMove) {
                 this._passProcessMove.dispose();
