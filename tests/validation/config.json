@@ -230,6 +230,20 @@
       "referenceImage": "gltfTextureSampler.png"
     },
     {
+      "title": "GLTF 1.0 Skin Animation Test",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTF1CesiumMan/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltf1CesiumMan.png"
+    },
+    {
+      "title": "GLTF Mesh Primitive Attribute Test",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFMeshPrimitiveAttributeTest/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltfMeshPrimAttribTest.png"
+    },
+    {
       "title": "PBR glossy",
       "renderCount": 20,
       "replace": "engine.setHardwareScalingLevel, //engine.setHardwareScalingLevel",
