@@ -4,10 +4,15 @@ module BABYLON {
         floorMeshes?: Mesh[];
     }
 
+    export interface VRExperienceHelperOptions extends WebVROptions {
+        createFallbackVRDeviceOrientationFreeCamera?: boolean; // Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found
+    }
+
     export class VRExperienceHelper {
         private _scene: BABYLON.Scene;
         private _position: Vector3;
         private _btnVR: HTMLButtonElement;
+        private _btnVRDisplayed: Boolean;
 
         // Can the system support WebVR, even if a headset isn't plugged in?
         private _webVRsupported = false;
@@ -25,6 +30,7 @@ module BABYLON {
         private _webVRCamera: WebVRFreeCamera;
         private _vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
         private _deviceOrientationCamera: DeviceOrientationCamera;
+        private _existingCamera: Camera;
         
         private _onKeyDown: (event: KeyboardEvent) => void;
         private _onVrDisplayPresentChange: any;
@@ -139,35 +145,30 @@ module BABYLON {
             return this._vrDeviceOrientationCamera;
         }
                 
-        constructor(scene: Scene, public webVROptions: WebVROptions = {}) {
+        constructor(scene: Scene, public webVROptions: VRExperienceHelperOptions = {}) {
             this._scene = scene;
 
             this._defaultHeight = webVROptions.defaultHeight || 1.7;
+
+            if(webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined){
+                webVROptions.createFallbackVRDeviceOrientationFreeCamera = true;
+            }
 
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
                 this._position = new BABYLON.Vector3(0, this._defaultHeight, 0);
                 this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
             }
             else {
+                this._existingCamera = this._scene.activeCamera
                 this._position = this._scene.activeCamera.position.clone();
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
-                this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
-                this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
-                // Set rotation from previous camera
-                if(this._scene.activeCamera instanceof TargetCamera && this._scene.activeCamera.rotation){
-                    var targetCamera = this._scene.activeCamera;
-                    if(targetCamera.rotationQuaternion){
-                        this._deviceOrientationCamera.rotationQuaternion.copyFrom(targetCamera.rotationQuaternion);
-                    }else{
-                        this._deviceOrientationCamera.rotationQuaternion.copyFrom(Quaternion.RotationYawPitchRoll(targetCamera.rotation.y, targetCamera.rotation.x, targetCamera.rotation.z));
-                    }
-                    this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
-                }
             }
-            this._scene.activeCamera = this._deviceOrientationCamera;
+            
             this._canvas = scene.getEngine().getRenderingCanvas();
             if (this._canvas) {
-                this._scene.activeCamera.attachControl(this._canvas);
+                if(this._deviceOrientationCamera){
+                    this._scene.activeCamera = this._deviceOrientationCamera;
+                    this._scene.activeCamera.attachControl(this._canvas);
+                }
             }
 
             if (webVROptions) {
@@ -228,7 +229,13 @@ module BABYLON {
             document.addEventListener("webkitfullscreenchange", () => { this._onFullscreenChange() }, false);
             document.addEventListener("msfullscreenchange", () => { this._onFullscreenChange() }, false);
 
-            if (!this._useCustomVRButton) {
+            this._scene.getEngine().onVRDisplayChangedObservable.add((e)=>{
+                if(!this._useCustomVRButton && !this._btnVRDisplayed && e.vrDisplay){
+                    document.body.appendChild(this._btnVR);
+                }
+            })
+            
+            if (!this._useCustomVRButton && webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
                 document.body.appendChild(this._btnVR);
             }
 
@@ -268,10 +275,13 @@ module BABYLON {
             window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
 
             // Create the cameras
-            this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);            
+            if(webVROptions.createFallbackVRDeviceOrientationFreeCamera){
+                this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);  
+            }     
             this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
             this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
             this._scene.gamepadManager.onGamepadConnectedObservable.add((pad) => this._onNewGamepadConnected(pad));
+            this._scene.gamepadManager.onGamepadDisconnectedObservable.add((pad) => this._onNewGamepadDisconnected(pad));
         
             this.updateButtonVisibility();
 
@@ -397,7 +407,7 @@ module BABYLON {
                     this._scene.activeCamera = this._webVRCamera;
                 }
             }
-            else {
+            else if(this._vrDeviceOrientationCamera){
                 this._vrDeviceOrientationCamera.position = this._position;
                 this._scene.activeCamera = this._vrDeviceOrientationCamera;
                 this._scene.getEngine().switchFullscreen(true);
@@ -428,12 +438,17 @@ module BABYLON {
                 this._position = this._scene.activeCamera.position.clone();
                 
             }
-            this._deviceOrientationCamera.position = this._position;
-            this._scene.activeCamera = this._deviceOrientationCamera;
 
-            if (this._canvas) {
-                this._scene.activeCamera.attachControl(this._canvas);
-            }
+            if(this._deviceOrientationCamera){
+                this._deviceOrientationCamera.position = this._position;
+                this._scene.activeCamera = this._deviceOrientationCamera;
+                if (this._canvas) {
+                    this._scene.activeCamera.attachControl(this._canvas);
+                }
+            }else if(this._existingCamera){
+                this._existingCamera.position = this._position;
+                this._scene.activeCamera = this._existingCamera;
+            }            
 
             this.updateButtonVisibility();  
         }
@@ -620,6 +635,27 @@ module BABYLON {
                             this._pointerDownOnMeshAsked = false;
                         }
                     });
+                }
+            }
+        }
+
+        private _onNewGamepadDisconnected(gamepad: Gamepad) {
+            if(gamepad instanceof WebVRController){
+                if (gamepad.hand === "left") {
+                    this._interactionsEnabledOnLeftController = false;
+                    this._teleportationEnabledOnLeftController = false;
+                    this._leftControllerReady = false;
+                    if(this._leftLaserPointer){
+                        this._leftLaserPointer.dispose();
+                    }
+                }
+                if (gamepad.hand === "right") {
+                    this._interactionsEnabledOnRightController = false;
+                    this._teleportationEnabledOnRightController = false;
+                    this._rightControllerReady = false;
+                    if(this._rightLaserPointer){
+                        this._rightLaserPointer.dispose();
+                    }
                 }
             }
         }
@@ -1036,19 +1072,13 @@ module BABYLON {
 
         private _castRayAndSelectObject () {
             var ray;
-            if ((!(<WebVRFreeCamera>this.currentVRCamera).rightController && !(<WebVRFreeCamera>this.currentVRCamera).leftController) || 
-                (this._leftLaserPointer && !this._leftLaserPointer.isVisible && !this._rightLaserPointer) || 
-                (this._rightLaserPointer && !this._rightLaserPointer.isVisible && !this._leftLaserPointer) || 
-                (this._rightLaserPointer && this._leftLaserPointer && !this._rightLaserPointer.isVisible && !this._leftLaserPointer.isVisible)) {
-                    ray = this.currentVRCamera.getForwardRay(this._rayLength);
-                
-            } else {
-                if (this._leftLaserPointer && this._leftLaserPointer.isVisible) {
-                    ray = (<any>this.currentVRCamera).leftController.getForwardRay(this._rayLength);
-                }
-                else {
-                    ray = (<any>this.currentVRCamera).rightController.getForwardRay(this._rayLength);
-                }
+            if (this._leftLaserPointer && this._leftLaserPointer.isVisible && (<any>this.currentVRCamera).leftController) {
+                ray = (<any>this.currentVRCamera).leftController.getForwardRay(this._rayLength);
+            }
+            else if(this._rightLaserPointer && this._rightLaserPointer.isVisible && (<any>this.currentVRCamera).rightController){
+                ray = (<any>this.currentVRCamera).rightController.getForwardRay(this._rayLength);
+            }else{
+                ray = this.currentVRCamera.getForwardRay(this._rayLength);
             }
         
             var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
@@ -1182,7 +1212,10 @@ module BABYLON {
             if (this.isInVRMode()) {
                 this.exitVR();
             }
-            this._deviceOrientationCamera.dispose();
+
+            if(this._deviceOrientationCamera){
+                this._deviceOrientationCamera.dispose();
+            }
 
             if (this._passProcessMove) {
                 this._passProcessMove.dispose();
