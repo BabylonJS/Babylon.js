@@ -283,7 +283,6 @@ module BABYLON {
 
         // Raised when one of the controller has loaded successfully its associated default mesh
         private _onDefaultMeshLoaded(webVRController: WebVRController) {
-            console.log("mesh loaded")
             if (webVRController.hand === "left") {
                 this._leftControllerReady = true;
                 if (this._interactionsRequested && !this._interactionsEnabledOnLeftController) {
@@ -548,7 +547,6 @@ module BABYLON {
         }
 
         private _onNewGamepadConnected(gamepad: Gamepad) {
-            console.log("gamepad connected!")
             if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
                 if (gamepad.leftStick) {
                     gamepad.onleftstickchanged((stickValues) => {
@@ -608,7 +606,6 @@ module BABYLON {
                 }
                 if (gamepad.type === BABYLON.Gamepad.XBOX) {
                     (<Xbox360Pad>gamepad).onbuttondown((buttonPressed: Xbox360Button) => {
-                        console.log("bdown")
                         if (this._interactionsEnabled && buttonPressed === Xbox360Button.A) {
                             this._pointerDownOnMeshAsked = true;
                             if (this._currentMeshSelected && this._currentHit) {
@@ -617,7 +614,6 @@ module BABYLON {
                         }
                     });
                     (<Xbox360Pad>gamepad).onbuttonup((buttonPressed: Xbox360Button) => {
-                        console.log("bup")
                         if (this._interactionsEnabled && buttonPressed === Xbox360Button.A) {
                             if (this._currentMeshSelected && this._currentHit) {
                                 this._scene.simulatePointerUp(this._currentHit);
@@ -1061,7 +1057,6 @@ module BABYLON {
         }
 
         private _castRayAndSelectObject () {
-            //console.log("cast")
             var ray;
             if (this._leftLaserPointer && this._leftLaserPointer.isVisible && (<any>this.currentVRCamera).leftController) {
                 ray = (<any>this.currentVRCamera).leftController.getForwardRay(this._rayLength);
