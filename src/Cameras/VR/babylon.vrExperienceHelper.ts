@@ -4,10 +4,15 @@ module BABYLON {
         floorMeshes?: Mesh[];
     }
 
+    export interface VRExperienceHelperOptions extends WebVROptions {
+        createFallbackVRDeviceOrientationFreeCamera?: boolean; // Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found
+    }
+
     export class VRExperienceHelper {
         private _scene: BABYLON.Scene;
         private _position: Vector3;
         private _btnVR: HTMLButtonElement;
+        private _btnVRDisplayed: Boolean;
 
         // Can the system support WebVR, even if a headset isn't plugged in?
         private _webVRsupported = false;
@@ -139,10 +144,14 @@ module BABYLON {
             return this._vrDeviceOrientationCamera;
         }
                 
-        constructor(scene: Scene, public webVROptions: WebVROptions = {}) {
+        constructor(scene: Scene, public webVROptions: VRExperienceHelperOptions = {}) {
             this._scene = scene;
 
             this._defaultHeight = webVROptions.defaultHeight || 1.7;
+
+            if(webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined){
+                webVROptions.createFallbackVRDeviceOrientationFreeCamera = true;
+            }
 
             if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
                 this._position = new BABYLON.Vector3(0, this._defaultHeight, 0);
@@ -228,7 +237,13 @@ module BABYLON {
             document.addEventListener("webkitfullscreenchange", () => { this._onFullscreenChange() }, false);
             document.addEventListener("msfullscreenchange", () => { this._onFullscreenChange() }, false);
 
-            if (!this._useCustomVRButton) {
+            this._scene.getEngine().onVRDisplayChangedObservable.add((e)=>{
+                if(!this._useCustomVRButton && !this._btnVRDisplayed && e.vrDisplay){
+                    document.body.appendChild(this._btnVR);
+                }
+            })
+            
+            if (!this._useCustomVRButton && webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
                 document.body.appendChild(this._btnVR);
             }
 
@@ -268,7 +283,9 @@ module BABYLON {
             window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
 
             // Create the cameras
-            this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);            
+            if(webVROptions.createFallbackVRDeviceOrientationFreeCamera){
+                this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);  
+            }     
             this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
             this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
             this._scene.gamepadManager.onGamepadConnectedObservable.add((pad) => this._onNewGamepadConnected(pad));
@@ -398,7 +415,7 @@ module BABYLON {
                     this._scene.activeCamera = this._webVRCamera;
                 }
             }
-            else {
+            else if(this._vrDeviceOrientationCamera){
                 this._vrDeviceOrientationCamera.position = this._position;
                 this._scene.activeCamera = this._vrDeviceOrientationCamera;
                 this._scene.getEngine().switchFullscreen(true);
