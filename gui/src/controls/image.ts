@@ -174,6 +174,7 @@ module BABYLON.GUI {
         }
         set cellId(value: number) {
             this._cellId = value;
+            this._markAsDirty();
         }
 
         constructor(public name?: string, url: Nullable<string> = null) {
