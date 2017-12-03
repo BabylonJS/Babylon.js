@@ -3523,7 +3523,11 @@ var BABYLON;
                     return this._cellWidth;
                 },
                 set: function (value) {
+                    if (this._cellWidth === value) {
+                        return;
+                    }
                     this._cellWidth = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -3533,7 +3537,11 @@ var BABYLON;
                     return this._cellHeight;
                 },
                 set: function (value) {
+                    if (this._cellHeight === value) {
+                        return;
+                    }
                     this._cellHeight = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -3543,7 +3551,11 @@ var BABYLON;
                     return this._cellId;
                 },
                 set: function (value) {
+                    if (this._cellId === value) {
+                        return;
+                    }
                     this._cellId = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
