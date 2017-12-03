@@ -173,6 +173,10 @@ module BABYLON.GUI {
             return this._cellId;
         }
         set cellId(value: number) {
+            if (this._cellId === value) {
+                 return;
+             }
+            
             this._cellId = value;
             this._markAsDirty();
         }
