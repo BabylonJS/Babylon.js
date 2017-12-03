@@ -161,7 +161,7 @@ module BABYLON.GUI {
         set cellWidth(value: number) {
             if(this._cellWidth === value){
                 return;
-            )
+            }
             
             this._cellWidth = value;
         }
@@ -172,7 +172,7 @@ module BABYLON.GUI {
         set cellHeight(value: number) {
             if(this._cellHeight === value){
                 return;
-            )
+            }
             
             this._cellHeight = value;
         }
