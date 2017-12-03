@@ -159,21 +159,36 @@ module BABYLON.GUI {
             return this._cellWidth;
         }
         set cellWidth(value: number) {
+            if(this._cellWidth === value){
+                return;
+            }
+            
             this._cellWidth = value;
+            this._markAsDirty();
         }
 
         get cellHeight(): number {
             return this._cellHeight;
         }
         set cellHeight(value: number) {
+            if(this._cellHeight === value){
+                return;
+            }
+            
             this._cellHeight = value;
+            this._markAsDirty();
         }
 
         get cellId(): number {
             return this._cellId;
         }
         set cellId(value: number) {
+            if (this._cellId === value) {
+                 return;
+             }
+            
             this._cellId = value;
+            this._markAsDirty();
         }
 
         constructor(public name?: string, url: Nullable<string> = null) {
