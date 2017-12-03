@@ -164,6 +164,7 @@ module BABYLON.GUI {
             }
             
             this._cellWidth = value;
+            this._markAsDirty();
         }
 
         get cellHeight(): number {
@@ -175,6 +176,7 @@ module BABYLON.GUI {
             }
             
             this._cellHeight = value;
+            this._markAsDirty();
         }
 
         get cellId(): number {
