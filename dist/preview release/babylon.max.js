@@ -22110,7 +22110,7 @@ var BABYLON;
                     proxy._swapAndDie(this);
                     return;
                 case InternalTexture.DATASOURCE_RAW:
-                    proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                    proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps, this.invertY, this.samplingMode, this._compression, this.type);
                     proxy._swapAndDie(this);
                     this.isReady = true;
                     return;
@@ -29101,26 +29101,31 @@ var BABYLON;
             this.uvs4 = this._mergeElement(this.uvs4, other.uvs4, count * 2);
             this.uvs5 = this._mergeElement(this.uvs5, other.uvs5, count * 2);
             this.uvs6 = this._mergeElement(this.uvs6, other.uvs6, count * 2);
-            this.colors = this._mergeElement(this.colors, other.colors, count * 4);
+            this.colors = this._mergeElement(this.colors, other.colors, count * 4, 1);
             this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices, count * 4);
             this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights, count * 4);
             this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra, count * 4);
             this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra, count * 4);
             return this;
         };
-        VertexData.prototype._mergeElement = function (source, other, length) {
+        VertexData.prototype._mergeElement = function (source, other, length, defaultValue) {
             if (length === void 0) { length = 0; }
+            if (defaultValue === void 0) { defaultValue = 0; }
             if (!other && !source) {
                 return null;
             }
             if (!other) {
-                return this._mergeElement(source, new Float32Array(source.length), length);
+                var padding = new Float32Array(source.length);
+                padding.fill(defaultValue);
+                return this._mergeElement(source, padding, length);
             }
             if (!source) {
                 if (length === 0 || length === other.length) {
                     return other;
                 }
-                return this._mergeElement(new Float32Array(length - other.length), other, length);
+                var padding = new Float32Array(length - other.length);
+                padding.fill(defaultValue);
+                return this._mergeElement(padding, other, length);
             }
             var len = other.length + source.length;
             var isSrcTypedArray = source instanceof Float32Array;
@@ -36297,11 +36302,42 @@ var BABYLON;
             // Values that need to be evaluated on every frame
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._forceAlphaTest);
             // Attribs
-            if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE)) {
-                if (mesh) {
-                    if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                        mesh.createNormals(true);
-                        BABYLON.Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
+            if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE) && mesh) {
+                var bufferMesh = null;
+                if (mesh instanceof BABYLON.InstancedMesh) {
+                    bufferMesh = mesh.sourceMesh;
+                }
+                else if (mesh instanceof BABYLON.Mesh) {
+                    bufferMesh = mesh;
+                }
+                if (bufferMesh) {
+                    if (bufferMesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+                        // If the first normal's components is the zero vector in one of the submeshes, we have invalid normals
+                        var normalVertexBuffer = bufferMesh.getVertexBuffer(BABYLON.VertexBuffer.NormalKind);
+                        var normals = normalVertexBuffer.getData();
+                        var vertexBufferOffset = normalVertexBuffer.getOffset();
+                        var strideSize = normalVertexBuffer.getStrideSize();
+                        var offset = vertexBufferOffset + subMesh.indexStart * strideSize;
+                        if (normals[offset] === 0 && normals[offset + 1] === 0 && normals[offset + 2] === 0) {
+                            defines.NORMAL = false;
+                        }
+                        if (bufferMesh.isVerticesDataPresent(BABYLON.VertexBuffer.TangentKind)) {
+                            // If the first tangent's components is the zero vector in one of the submeshes, we have invalid tangents
+                            var tangentVertexBuffer = bufferMesh.getVertexBuffer(BABYLON.VertexBuffer.TangentKind);
+                            var tangents = tangentVertexBuffer.getData();
+                            var vertexBufferOffset_1 = tangentVertexBuffer.getOffset();
+                            var strideSize_1 = tangentVertexBuffer.getStrideSize();
+                            var offset_1 = vertexBufferOffset_1 + subMesh.indexStart * strideSize_1;
+                            if (tangents[offset_1] === 0 && tangents[offset_1 + 1] === 0 && tangents[offset_1 + 2] === 0) {
+                                defines.TANGENT = false;
+                            }
+                        }
+                    }
+                    else {
+                        if (!scene.getEngine().getCaps().standardDerivatives) {
+                            bufferMesh.createNormals(true);
+                            BABYLON.Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + bufferMesh.name);
+                        }
                     }
                 }
             }
@@ -51811,7 +51847,7 @@ var BABYLON;
             return _this;
         }
         RawTexture.prototype.update = function (data) {
-            this._engine.updateRawTexture(this._texture, data, this.format, this._invertY);
+            this._engine.updateRawTexture(this._texture, data, this._texture.format, this._texture.invertY, undefined, this._texture.type);
         };
         // Statics
         RawTexture.CreateLuminanceTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
