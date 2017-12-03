@@ -4347,6 +4347,9 @@ var BABYLON;
             InputText.prototype.processKey = function (keyCode, key) {
                 // Specific cases
                 switch (keyCode) {
+                    case 32://SPACE
+                        key = " "; //ie11 key for space is "Spacebar" 
+                        break;
                     case 8:// BACKSPACE
                         if (this._text && this._text.length > 0) {
                             if (this._cursorOffset === 0) {
