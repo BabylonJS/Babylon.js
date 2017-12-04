@@ -1033,7 +1033,7 @@ module BABYLON {
                 }
                 this._haloCenter.copyFrom(hit.pickedPoint);
                 this._teleportationCircle.position.copyFrom(hit.pickedPoint);
-                var pickNormal = hit.getNormal();
+                var pickNormal = hit.getNormal(true, false);
                 if (pickNormal) {
                     var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
                     var axis2 = BABYLON.Vector3.Cross(pickNormal, axis1);
