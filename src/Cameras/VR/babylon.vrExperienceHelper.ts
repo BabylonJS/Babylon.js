@@ -1050,8 +1050,13 @@ module BABYLON {
 
             // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
             // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
-            this.webVRCamera.leftCamera!.globalPosition.subtractToRef(this.webVRCamera.position, this._workingVector);
-            this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
+            if(this.webVRCamera.leftCamera){
+                this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
+                this._workingVector.subtractInPlace(this.webVRCamera.position);
+                this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
+            }else{
+                this._workingVector.copyFrom(this._haloCenter);
+            }
             this._workingVector.y += this._defaultHeight;
 
             // Create animation from the camera's position to the new location
