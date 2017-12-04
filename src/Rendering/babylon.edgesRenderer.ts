@@ -324,7 +324,7 @@
             this._lineShader.bind(this._source.getWorldMatrix());
 
             // Draw order
-            engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, this._indicesCount);
+            engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount);
             this._lineShader.unbind();
             engine.setDepthWrite(true);
         }

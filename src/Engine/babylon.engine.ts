@@ -2408,41 +2408,72 @@
         }
 
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
-            this.drawElementsType(useTriangles ? Engine.DrawType.TRIANGLES : Engine.DrawType.LINES, indexStart, indexCount, instancesCount);
+            this.drawElementsType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, indexStart, indexCount, instancesCount);
         }
 
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
-            this.drawArraysType(Engine.DrawType.POINTS, verticesStart, verticesCount, instancesCount);
+            this.drawArraysType(Material.PointFillMode, verticesStart, verticesCount, instancesCount);
         }
 
         public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
-            this.drawArraysType(useTriangles ? Engine.DrawType.TRIANGLES : Engine.DrawType.LINES, verticesStart, verticesCount, instancesCount);
+            this.drawArraysType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, verticesStart, verticesCount, instancesCount);
         }
 
-        public drawElementsType(type: Engine.DrawType, indexStart: number, indexCount: number, instancesCount?: number): void {
+        public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
 
             this._drawCalls.addCount(1, false);
             // Render
+
+            const drawMode = this.DrawMode(fillMode);
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
             if (instancesCount) {
-                this._gl.drawElementsInstanced(type, indexCount, indexFormat, indexStart * mult, instancesCount);
+                this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
             } else {
-                this._gl.drawElements(type, indexCount, indexFormat, indexStart * mult);
+                this._gl.drawElements(drawMode, indexCount, indexFormat, indexStart * mult);
             }
         }
 
-        public drawArraysType(type: Engine.DrawType, verticesStart: number, verticesCount: number, instancesCount?: number): void {
+        public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
             this._drawCalls.addCount(1, false);
 
+            const drawMode = this.DrawMode(fillMode);
             if (instancesCount) {
-                this._gl.drawArraysInstanced(type, verticesStart, verticesCount, instancesCount);
+                this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
             } else {
-                this._gl.drawArrays(type, verticesStart, verticesCount);
+                this._gl.drawArrays(drawMode, verticesStart, verticesCount);
+            }
+        }
+
+        private DrawMode(fillMode: number): number
+        {
+            switch (fillMode) {
+                // Triangle views
+                case Material.TriangleFillMode:
+                    return this._gl.TRIANGLES;
+                case Material.PointFillMode:
+                    return this._gl.POINTS;
+                case Material.WireFrameFillMode:
+                    return this._gl.LINES;
+                // Draw modes
+                case Material.PointListDrawMode:
+                    return this._gl.POINTS
+                case Material.LineListDrawMode:
+                    return this._gl.LINES;
+                case Material.LineLoopDrawMode:
+                    return this._gl.LINE_LOOP
+                case Material.LineStripDrawMode:
+                    return this._gl.LINE_STRIP
+                case Material.TriangleStripDrawMode:
+                    return this._gl.TRIANGLE_STRIP
+                case Material.TriangleFanDrawMode:
+                    return this._gl.TRIANGLE_FAN;
+                default:
+                    return this._gl.TRIANGLES;
             }
         }
 
@@ -5395,18 +5426,6 @@
             } catch (e) {
                 return false;
             }
-        }
-    }
-
-    export namespace Engine {
-        export enum DrawType {
-            POINTS = 0,
-            LINES = 1,
-            LINE_LOOP = 2,
-            LINE_STRIP = 3,
-            TRIANGLES = 4,
-            TRIANGLE_STRIP = 5,
-            TRIANGLE_FAN = 6,
         }
     }
 }

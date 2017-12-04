@@ -95,7 +95,7 @@
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
-                    engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, 6);
+                    engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }
@@ -145,7 +145,7 @@
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
-                    engine.drawElementsType(Engine.DrawType.TRIANGLES, 0, 6);
+                    engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }
