@@ -1113,8 +1113,8 @@ module BABYLON {
             animationPP2.setKeys(vignetteStretchKeys);
             this._postProcessMove.animations.push(animationPP2);
 
-            this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 8;
-            this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 10;
+            this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
+            this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
 
             this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, () => {
