@@ -258,10 +258,10 @@
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
         }
 
-        public drawElementsType(type: Engine.DrawType, indexStart: number, indexCount: number, instancesCount?: number): void {
+        public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
         }
 
-        public drawArraysType(type: Engine.DrawType, verticesStart: number, verticesCount: number, instancesCount?: number): void {
+        public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         }
 
         public _createTexture(): WebGLTexture {

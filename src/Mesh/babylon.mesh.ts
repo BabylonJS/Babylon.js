@@ -1061,15 +1061,14 @@
             let scene = this.getScene();
             let engine = scene.getEngine();
 
-            var drawType: Engine.DrawType = Material.fillModeToDrawType(fillMode);
             if (this._unIndexed || fillMode == Material.PointFillMode) {
                 // or triangles as points
-                engine.drawArraysType(drawType, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+                engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
             } else if (fillMode == Material.WireFrameFillMode) {
                 // Triangles as wireframe
-                engine.drawElementsType(drawType, 0, subMesh.linesIndexCount, instancesCount);
+                engine.drawElementsType(fillMode, 0, subMesh.linesIndexCount, instancesCount);
             } else {
-                engine.drawElementsType(drawType, subMesh.indexStart, subMesh.indexCount, instancesCount);
+                engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
 
             if (scene._isAlternateRenderingEnabled && !alternate) {

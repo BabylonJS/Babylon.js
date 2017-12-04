@@ -85,7 +85,7 @@
                     this._colorShader.bind(worldMatrix);
 
                     // Draw order
-                    engine.drawElementsType(Engine.DrawType.LINES, 0, 24);
+                    engine.drawElementsType(Material.TriangleFillMode, 0, 24);
                 }
 
                 // Front
@@ -95,7 +95,7 @@
                 this._colorShader.bind(worldMatrix);
 
                 // Draw order
-                engine.drawElementsType(Engine.DrawType.LINES, 0, 24);
+                engine.drawElementsType(Material.TriangleFillMode, 0, 24);
             }
             this._colorShader.unbind();
             engine.setDepthFunctionToLessOrEqual();
@@ -131,7 +131,7 @@
             this._scene.resetCachedMaterial();
             this._colorShader.bind(worldMatrix);
 
-            engine.drawElementsType(Engine.DrawType.LINES, 0, 24);
+            engine.drawElementsType(Material.TriangleFillMode, 0, 24);
 
             this._colorShader.unbind();
             engine.setDepthFunctionToLessOrEqual();

@@ -151,7 +151,7 @@
             this._engine.bindTransformFeedbackBuffer(this._targetBuffer.getBuffer());
             this._engine.setRasterizerState(false);
             this._engine.beginTransformFeedback();
-            this._engine.drawArraysType(Engine.DrawType.POINTS, 0, this._capacity);
+            this._engine.drawArraysType(Material.PointListDrawMode, 0, this._capacity);
             this._engine.endTransformFeedback();
             this._engine.setRasterizerState(true);
             this._engine.bindTransformFeedbackBuffer(null);
@@ -163,7 +163,7 @@
             this._engine.bindVertexArrayObject(this._targetVAO, null);
 
             // Render
-            this._engine.drawArraysType(Engine.DrawType.POINTS, 0, this._capacity);            
+            this._engine.drawArraysType(Material.PointListDrawMode, 0, this._capacity);            
 
             // Switch VAOs
             let tmpVAO = this._sourceVAO;

@@ -402,33 +402,6 @@
             this.markAsDirty(Material.MiscDirtyFlag);
         }
 
-        public static fillModeToDrawType(fillMode: number): Engine.DrawType {
-            switch (fillMode) {
-                // Triangle views
-                case Material.TriangleFillMode:
-                    return Engine.DrawType.TRIANGLES;
-                case Material.PointFillMode:
-                    return Engine.DrawType.POINTS;
-                case Material.WireFrameFillMode:
-                    return Engine.DrawType.LINES;
-                // Draw modes
-                case Material.PointListDrawMode:
-                    return Engine.DrawType.POINTS
-                case Material.LineListDrawMode:
-                    return Engine.DrawType.LINES;
-                case Material.LineLoopDrawMode:
-                    return Engine.DrawType.LINE_LOOP
-                case Material.LineStripDrawMode:
-                    return Engine.DrawType.LINE_STRIP
-                case Material.TriangleStripDrawMode:
-                    return Engine.DrawType.TRIANGLE_STRIP
-                case Material.TriangleFanDrawMode:
-                    return Engine.DrawType.TRIANGLE_FAN;
-                default:
-                    return Engine.DrawType.TRIANGLES;
-            }
-        }
-
         public _effect: Nullable<Effect>;
         public _wasPreviouslyReady = false;
         private _useUBO: boolean;
