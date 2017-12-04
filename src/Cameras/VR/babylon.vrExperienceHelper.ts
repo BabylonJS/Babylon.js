@@ -148,6 +148,7 @@ module BABYLON {
 
         constructor(scene: Scene, public webVROptions: VRExperienceHelperOptions = {}) {
             this._scene = scene;
+            this._canvas = scene.getEngine().getRenderingCanvas();
 
             this._defaultHeight = webVROptions.defaultHeight || 1.7;
             
@@ -180,8 +181,7 @@ module BABYLON {
                         this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
                     }
                 }
-                this._scene.activeCamera = this._deviceOrientationCamera;
-                this._canvas = scene.getEngine().getRenderingCanvas();
+                this._scene.activeCamera = this._deviceOrientationCamera;                
                 if (this._canvas) {
                     this._scene.activeCamera.attachControl(this._canvas);
                 }
