@@ -358,7 +358,10 @@ module BABYLON {
                     if(webVrController.hand === "left"){
                         this._rightController = null;
                     }
-                    this.controllers.splice(this.controllers.indexOf(webVrController), 1)
+                    const controllerIndex = this.controllers.indexOf(webVrController);
+                    if (controllerIndex !== -1) {
+                        this.controllers.splice(controllerIndex, 1);
+                    }
                 }
             });
 
