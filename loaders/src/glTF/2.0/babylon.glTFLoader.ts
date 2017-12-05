@@ -463,30 +463,51 @@ module BABYLON.GLTF2 {
                 };
             });
 
-            const multiMaterial = new MultiMaterial(node.babylonMesh.name, this._babylonScene);
-            node.babylonMesh.material = multiMaterial;
-            const subMaterials = multiMaterial.subMaterials;
-            for (let index = 0; index < primitives.length; index++) {
-                const primitive = primitives[index];
-
+            if (primitives.length === 1) {  
+                const primitive = primitives[0];
                 if (primitive.material == null) {
-                    subMaterials[index] = this._getDefaultMaterial();
+                    node.babylonMesh.material = this._getDefaultMaterial();
                 }
                 else {
                     const material = GLTFLoader._GetProperty(this._gltf.materials, primitive.material);
                     if (!material) {
                         throw new Error(context + ": Failed to find material " + primitive.material);
                     }
-
+    
                     this._loadMaterial("#/materials/" + material.index, material, (babylonMaterial, isNew) => {
                         if (isNew && this._parent.onMaterialLoaded) {
                             this._parent.onMaterialLoaded(babylonMaterial);
                         }
-
-                        subMaterials[index] = babylonMaterial;
-                    });
-                }
-            };
+                        node.babylonMesh.material = babylonMaterial;
+                    }); 
+                } 
+            }
+            else {
+                const multiMaterial = new MultiMaterial(node.babylonMesh.name, this._babylonScene);
+                node.babylonMesh.material = multiMaterial;
+                const subMaterials = multiMaterial.subMaterials;
+                for (let index = 0; index < primitives.length; index++) {
+                    const primitive = primitives[index];
+    
+                    if (primitive.material == null) {
+                        subMaterials[index] = this._getDefaultMaterial();
+                    }
+                    else {
+                        const material = GLTFLoader._GetProperty(this._gltf.materials, primitive.material);
+                        if (!material) {
+                            throw new Error(context + ": Failed to find material " + primitive.material);
+                        }
+    
+                        this._loadMaterial("#/materials/" + material.index, material, (babylonMaterial, isNew) => {
+                            if (isNew && this._parent.onMaterialLoaded) {
+                                this._parent.onMaterialLoaded(babylonMaterial);
+                            }
+    
+                            subMaterials[index] = babylonMaterial;
+                        });
+                    }
+                };
+            }
         }
 
         private _loadAllVertexDataAsync(context: string, mesh: IGLTFMesh, onSuccess: () => void): void {
@@ -1739,6 +1760,9 @@ module BABYLON.GLTF2 {
                         }
                     }
                 }
+                else {
+                    remaining++;
+                }
             }
 
             if (remaining === 0) {
@@ -1757,6 +1781,13 @@ module BABYLON.GLTF2 {
                             });
                         }
                     }
+                }
+                else if (mesh.material !== null) {
+                    this._compileMaterialAsync(mesh.material, mesh, () => {
+                        if (--remaining === 0) {
+                            onSuccess();
+                        }
+                    })
                 }
             }
         }
