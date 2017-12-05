@@ -8014,7 +8014,8 @@ var BABYLON;
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._internalTexturesCache = new Array();
-            this._activeTexturesCache = {};
+            this._boundTexturesCache = {};
+            this._boundTexturesOrder = new Array();
             this._compiledEffects = {};
             this._vertexAttribArraysEnabled = [];
             this._uintIndicesCurrentlySet = false;
@@ -8024,6 +8025,7 @@ var BABYLON;
             this._currentInstanceBuffers = new Array();
             this._vaoRecordInProgress = false;
             this._mustWipeVertexAttributes = false;
+            this._nextFreeTextureSlot = 0;
             // Hardware supported Compressed Textures
             this._texturesSupported = new Array();
             this._onVRFullScreenTriggered = function () {
@@ -8041,6 +8043,7 @@ var BABYLON;
                     _this.setSize(_this._oldSize.width, _this._oldSize.height);
                 }
             };
+            this._boundUniforms = {};
             var canvas = null;
             Engine.Instances.push(this);
             if (!canvasOrContext) {
@@ -8872,8 +8875,12 @@ var BABYLON;
             }
         };
         Engine.prototype.resetTextureCache = function () {
-            for (var key in this._activeTexturesCache) {
-                this._activeTexturesCache[key] = null;
+            for (var key in this._boundTexturesCache) {
+                var boundTexture = this._boundTexturesCache[key];
+                if (boundTexture) {
+                    this._removeDesignatedSlot(boundTexture);
+                }
+                this._boundTexturesCache[key] = null;
             }
         };
         Engine.prototype.isDeterministicLockStep = function () {
@@ -11507,27 +11514,53 @@ var BABYLON;
             var samplers = effect.getSamplers();
             for (var index = 0; index < samplers.length; index++) {
                 var uniform = effect.getUniform(samplers[index]);
-                this._gl.uniform1i(uniform, index);
+                if (uniform) {
+                    this._boundUniforms[index] = uniform;
+                }
             }
             this._currentEffect = null;
         };
-        Engine.prototype.activateTextureChannel = function (textureChannel) {
-            if (this._activeTextureChannel !== textureChannel) {
-                this._gl.activeTexture(textureChannel);
-                this._activeTextureChannel = textureChannel;
+        Engine.prototype._activateTextureChannel = function (channel) {
+            if (this._activeChannel !== channel) {
+                this._gl.activeTexture(this._gl.TEXTURE0 + channel);
+                this._activeChannel = channel;
+            }
+        };
+        Engine.prototype._removeDesignatedSlot = function (internalTexture) {
+            internalTexture._designatedSlot = -1;
+            var index = this._boundTexturesOrder.indexOf(internalTexture);
+            if (index > -1) {
+                this._boundTexturesOrder.splice(index, 1);
             }
         };
         Engine.prototype._bindTextureDirectly = function (target, texture) {
-            if (this._activeTexturesCache[this._activeTextureChannel] !== texture) {
+            var currentTextureBound = this._boundTexturesCache[this._activeChannel];
+            var isTextureForRendering = texture && texture._initialSlot > -1;
+            if (currentTextureBound !== texture) {
+                if (currentTextureBound) {
+                    this._removeDesignatedSlot(currentTextureBound);
+                }
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                this._activeTexturesCache[this._activeTextureChannel] = texture;
+                if (this._activeChannel >= 0) {
+                    this._boundTexturesCache[this._activeChannel] = texture;
+                }
+                if (isTextureForRendering) {
+                    this._boundTexturesOrder.push(texture);
+                }
+            }
+            if (isTextureForRendering) {
+                texture._designatedSlot = this._activeChannel;
+                this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
             }
         };
         Engine.prototype._bindTexture = function (channel, texture) {
             if (channel < 0) {
                 return;
             }
-            this.activateTextureChannel(this._gl.TEXTURE0 + channel);
+            if (texture) {
+                channel = this._getCorrectTextureChannel(channel, texture);
+            }
+            this._activateTextureChannel(channel);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         };
         Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
@@ -11535,7 +11568,7 @@ var BABYLON;
         };
         Engine.prototype.unbindAllTextures = function () {
             for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
+                this._activateTextureChannel(channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 if (this.webGLVersion > 1) {
@@ -11547,15 +11580,45 @@ var BABYLON;
             if (channel < 0) {
                 return;
             }
-            if (this._setTexture(channel, texture)) {
-                this._gl.uniform1i(uniform, channel);
+            if (uniform) {
+                this._boundUniforms[channel] = uniform;
             }
+            this._setTexture(channel, texture);
+        };
+        Engine.prototype._getCorrectTextureChannel = function (channel, internalTexture) {
+            internalTexture._initialSlot = channel;
+            if (channel !== internalTexture._designatedSlot) {
+                if (internalTexture._designatedSlot > -1) {
+                    channel = internalTexture._designatedSlot;
+                }
+                else {
+                    if (this._boundTexturesCache[channel]) {
+                        if (this._nextFreeTextureSlot > -1) {
+                            channel = this._nextFreeTextureSlot;
+                        }
+                        else {
+                            var oldestTexture = this._boundTexturesOrder.splice(0, 1)[0];
+                            channel = oldestTexture._designatedSlot;
+                        }
+                    }
+                    internalTexture._designatedSlot = channel;
+                }
+            }
+            this._nextFreeTextureSlot = Math.max(channel + 1, this._nextFreeTextureSlot);
+            if (this._nextFreeTextureSlot >= this._caps.maxTexturesImageUnits) {
+                this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
+            }
+            return channel;
+        };
+        Engine.prototype._bindSamplerUniformToChannel = function (sourceSlot, destination) {
+            var uniform = this._boundUniforms[sourceSlot];
+            this._gl.uniform1i(uniform, destination);
         };
         Engine.prototype._setTexture = function (channel, texture) {
             // Not ready?
             if (!texture) {
-                if (this._activeTexturesCache[channel] != null) {
-                    this.activateTextureChannel(this._gl.TEXTURE0 + channel);
+                if (this._boundTexturesCache[channel] != null) {
+                    this._activateTextureChannel(channel);
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                     if (this.webGLVersion > 1) {
@@ -11567,7 +11630,7 @@ var BABYLON;
             // Video
             var alreadyActivated = false;
             if (texture.video) {
-                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
+                this._activateTextureChannel(channel);
                 alreadyActivated = true;
                 texture.update();
             }
@@ -11588,11 +11651,13 @@ var BABYLON;
             else {
                 internalTexture = this.emptyTexture;
             }
-            if (!alreadyActivated) {
-                this.activateTextureChannel(this._gl.TEXTURE0 + channel);
-            }
-            if (this._activeTexturesCache[this._activeTextureChannel] === internalTexture) {
+            channel = this._getCorrectTextureChannel(channel, internalTexture);
+            if (this._boundTexturesCache[channel] === internalTexture) {
+                this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
                 return false;
+            }
+            if (!alreadyActivated) {
+                this._activateTextureChannel(channel);
             }
             if (internalTexture && internalTexture.is3D) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture);
@@ -22024,6 +22089,8 @@ var BABYLON;
         function InternalTexture(engine, dataSource) {
             this.onLoadedObservable = new BABYLON.Observable();
             // Private
+            this._initialSlot = -1;
+            this._designatedSlot = -1;
             this._dataSource = InternalTexture.DATASOURCE_UNKNOWN;
             this._references = 1;
             this._engine = engine;
