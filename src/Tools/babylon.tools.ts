@@ -24,7 +24,14 @@
 
     export class Tools {
         public static BaseUrl = "";
-        public static CorsBehavior: any = "anonymous";
+
+        /**
+         * Default behaviour for cors in the application.
+         * It can be a string if the expected behavior is identical in the entire app.
+         * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
+         */
+        public static CorsBehavior: string | ((url: string | string[]) => string) = "anonymous";
+
         public static UseFallbackTexture = true;
 
         /**
@@ -384,19 +391,20 @@
             }
         }
 
-        public static SetCorsBehavior(url: string, img: HTMLImageElement): void {
+        public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
+            if (url && url.indexOf("data:") === 0) {
+                return;
+            }
+
             if (Tools.CorsBehavior) {
-                switch (typeof (Tools.CorsBehavior)) {
-                    case "function":
-                        var result = Tools.CorsBehavior(url);
-                        if (result) {
-                            img.crossOrigin = result;
-                        }
-                        break;
-                    case "string":
-                    default:
-                        img.crossOrigin = Tools.CorsBehavior;
-                        break;
+                if (typeof(Tools.CorsBehavior) === 'string' || Tools.CorsBehavior instanceof String) {
+                    element.crossOrigin = <string>Tools.CorsBehavior;
+                }
+                else {
+                    var result = Tools.CorsBehavior(url);
+                    if (result) {
+                        element.crossOrigin = result;
+                    }
                 }
             }
         }
@@ -421,10 +429,7 @@
             url = Tools.PreprocessUrl(url);
 
             var img = new Image();
-
-            if (url.substr(0, 5) !== "data:") {
-                Tools.SetCorsBehavior(url, img);
-            }
+            Tools.SetCorsBehavior(url, img);
 
             img.onload = () => {
                 onLoad(img);
