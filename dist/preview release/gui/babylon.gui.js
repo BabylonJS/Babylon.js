@@ -3511,7 +3511,7 @@ var BABYLON;
                         _this._onImageLoaded();
                     };
                     if (value) {
-                        this._domImage.crossOrigin = "anonymous";
+                        BABYLON.Tools.SetCorsBehavior(value, this._domImage);
                         this._domImage.src = value;
                     }
                 },
