@@ -253,7 +253,9 @@ BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
 canvas = document.createElement("canvas");
 canvas.className = "renderCanvas";
 document.body.appendChild(canvas);
-engine = new BABYLON.Engine(canvas, false);
+engine = new BABYLON.Engine(canvas, false, {
+    constantAnimationDeltaTime: 16
+});
 engine.setDitheringState(false);
 
 // Loading tests

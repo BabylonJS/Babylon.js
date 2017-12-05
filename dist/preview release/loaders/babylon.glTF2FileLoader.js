@@ -666,32 +666,52 @@ var BABYLON;
                     }
                     ;
                 });
-                var multiMaterial = new BABYLON.MultiMaterial(node.babylonMesh.name, this._babylonScene);
-                node.babylonMesh.material = multiMaterial;
-                var subMaterials = multiMaterial.subMaterials;
-                var _loop_1 = function (index) {
-                    var primitive = primitives[index];
+                if (primitives.length === 1) {
+                    var primitive = primitives[0];
                     if (primitive.material == null) {
-                        subMaterials[index] = this_1._getDefaultMaterial();
+                        node.babylonMesh.material = this._getDefaultMaterial();
                     }
                     else {
-                        var material = GLTFLoader._GetProperty(this_1._gltf.materials, primitive.material);
+                        var material = GLTFLoader._GetProperty(this._gltf.materials, primitive.material);
                         if (!material) {
                             throw new Error(context + ": Failed to find material " + primitive.material);
                         }
-                        this_1._loadMaterial("#/materials/" + material.index, material, function (babylonMaterial, isNew) {
+                        this._loadMaterial("#/materials/" + material.index, material, function (babylonMaterial, isNew) {
                             if (isNew && _this._parent.onMaterialLoaded) {
                                 _this._parent.onMaterialLoaded(babylonMaterial);
                             }
-                            subMaterials[index] = babylonMaterial;
+                            node.babylonMesh.material = babylonMaterial;
                         });
                     }
-                };
-                var this_1 = this;
-                for (var index = 0; index < primitives.length; index++) {
-                    _loop_1(index);
                 }
-                ;
+                else {
+                    var multiMaterial = new BABYLON.MultiMaterial(node.babylonMesh.name, this._babylonScene);
+                    node.babylonMesh.material = multiMaterial;
+                    var subMaterials_1 = multiMaterial.subMaterials;
+                    var _loop_1 = function (index) {
+                        var primitive = primitives[index];
+                        if (primitive.material == null) {
+                            subMaterials_1[index] = this_1._getDefaultMaterial();
+                        }
+                        else {
+                            var material = GLTFLoader._GetProperty(this_1._gltf.materials, primitive.material);
+                            if (!material) {
+                                throw new Error(context + ": Failed to find material " + primitive.material);
+                            }
+                            this_1._loadMaterial("#/materials/" + material.index, material, function (babylonMaterial, isNew) {
+                                if (isNew && _this._parent.onMaterialLoaded) {
+                                    _this._parent.onMaterialLoaded(babylonMaterial);
+                                }
+                                subMaterials_1[index] = babylonMaterial;
+                            });
+                        }
+                    };
+                    var this_1 = this;
+                    for (var index = 0; index < primitives.length; index++) {
+                        _loop_1(index);
+                    }
+                    ;
+                }
             };
             GLTFLoader.prototype._loadAllVertexDataAsync = function (context, mesh, onSuccess) {
                 var primitives = mesh.primitives;
@@ -1809,6 +1829,9 @@ var BABYLON;
                             }
                         }
                     }
+                    else {
+                        remaining++;
+                    }
                 }
                 if (remaining === 0) {
                     onSuccess();
@@ -1827,6 +1850,13 @@ var BABYLON;
                                 });
                             }
                         }
+                    }
+                    else if (mesh.material !== null) {
+                        this._compileMaterialAsync(mesh.material, mesh, function () {
+                            if (--remaining === 0) {
+                                onSuccess();
+                            }
+                        });
                     }
                 }
             };

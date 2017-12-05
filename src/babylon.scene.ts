@@ -3404,10 +3404,6 @@
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
 
-                    if ((internalSteps > 1) && (stepsTaken != internalSteps - 1)) {
-                        this._evaluateActiveMeshes();
-                    }
-
                     stepsTaken++;
                     deltaTime -= defaultFrameTime;
 

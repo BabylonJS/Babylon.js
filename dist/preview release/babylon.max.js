@@ -20676,7 +20676,7 @@ var BABYLON;
                 var defaultFPS = (60.0 / 1000.0);
                 var defaultFrameTime = 1000 / 60; // frame time in MS
                 if (this._physicsEngine) {
-                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000;
+                    defaultFrameTime = this._physicsEngine.getTimeStep() * 1000;
                 }
                 var stepsTaken = 0;
                 var maxSubSteps = this._engine.getLockstepMaxSteps();
@@ -20691,7 +20691,7 @@ var BABYLON;
                     // Physics
                     if (this._physicsEngine) {
                         this.onBeforePhysicsObservable.notifyObservers(this);
-                        this._physicsEngine._step(defaultFPS);
+                        this._physicsEngine._step(defaultFrameTime / 1000);
                         this.onAfterPhysicsObservable.notifyObservers(this);
                     }
                     this.onAfterStepObservable.notifyObservers(this);
@@ -20701,8 +20701,8 @@ var BABYLON;
                     }
                     stepsTaken++;
                     deltaTime -= defaultFrameTime;
-                } while (deltaTime > 0 && stepsTaken < maxSubSteps);
-                this._timeAccumulator = deltaTime;
+                } while (deltaTime > 0 && stepsTaken < internalSteps);
+                this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
             }
             else {
                 // Animations
@@ -57598,6 +57598,8 @@ var BABYLON;
                 pointingPoseMeshName: 'POINTING_POSE'
             };
             _this.onTrackpadChangedObservable = new BABYLON.Observable();
+            _this.onTrackpadValuesChangedObservable = new BABYLON.Observable();
+            _this.trackpad = { x: 0, y: 0 };
             _this.controllerType = BABYLON.PoseEnabledControllerType.WINDOWS;
             _this._loadedMeshInfo = null;
             return _this;
@@ -57637,6 +57639,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(WindowsMotionController.prototype, "onTouchpadValuesChangedObservable", {
+            get: function () {
+                return this.onTrackpadValuesChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Called once per frame by the engine.
          */
@@ -57645,6 +57654,11 @@ var BABYLON;
             // Only need to animate axes if there is a loaded mesh
             if (this._loadedMeshInfo) {
                 if (this.browserGamepad.axes) {
+                    if (this.browserGamepad.axes[2] != this.trackpad.x || this.browserGamepad.axes[3] != this.trackpad.y) {
+                        this.trackpad.x = this.browserGamepad["axes"][2];
+                        this.trackpad.y = this.browserGamepad["axes"][3];
+                        this.onTrackpadValuesChangedObservable.notifyObservers(this.trackpad);
+                    }
                     for (var axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
                         this.lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
                     }

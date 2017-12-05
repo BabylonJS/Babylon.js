@@ -830,10 +830,7 @@ var BABYLON;
             if (!node.babylonNode) {
                 return newMesh;
             }
-            var multiMat = new BABYLON.MultiMaterial("multimat" + id, gltfRuntime.scene);
-            if (!newMesh.material) {
-                newMesh.material = multiMat;
-            }
+            var subMaterials = [];
             var vertexData = new BABYLON.VertexData();
             var geometry = new BABYLON.Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
             var verticesStarts = new Array();
@@ -921,12 +918,26 @@ var BABYLON;
                     }
                     vertexData.merge(tempVertexData);
                     // Sub material
-                    var material = gltfRuntime.scene.getMaterialByID(primitive.material);
-                    multiMat.subMaterials.push(material === null ? GLTF1.GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
+                    var material_1 = gltfRuntime.scene.getMaterialByID(primitive.material);
+                    subMaterials.push(material_1 === null ? GLTF1.GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material_1);
                     // Update vertices start and index start
                     verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
                     indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
                 }
+            }
+            var material;
+            if (subMaterials.length > 1) {
+                material = new BABYLON.MultiMaterial("multimat" + id, gltfRuntime.scene);
+                material.subMaterials = subMaterials;
+            }
+            else {
+                material = new BABYLON.StandardMaterial("multimat" + id, gltfRuntime.scene);
+            }
+            if (subMaterials.length === 1) {
+                material = subMaterials[0];
+            }
+            if (!newMesh.material) {
+                newMesh.material = material;
             }
             // Apply geometry
             geometry.setAllVerticesData(vertexData, false);
