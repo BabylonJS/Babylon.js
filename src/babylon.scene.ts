@@ -3377,7 +3377,7 @@
                 let defaultFrameTime = 1000 / 60; // frame time in MS
 
                 if (this._physicsEngine) {
-                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000; //timestep in physics engine is in seconds
+                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000;
                 }
                 let stepsTaken = 0;
 
@@ -4475,7 +4475,7 @@
             return null;
         }
 
-        public createDefaultVRExperience(webVROptions: WebVROptions = {}): VRExperienceHelper {
+        public createDefaultVRExperience(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
             return new BABYLON.VRExperienceHelper(this, webVROptions);
         }
 
@@ -4492,7 +4492,7 @@
 
             for (var i in list) {
                 var item = list[i];
-                if (Tags.MatchesQuery(item, tagsQuery)) {
+                if (Tags && Tags.MatchesQuery(item, tagsQuery)) {
                     listByTags.push(item);
                     forEach(item);
                 }

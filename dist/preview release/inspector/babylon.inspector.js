@@ -1562,8 +1562,9 @@ var INSPECTOR;
         PropertyLine.prototype._createElements = function () {
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
-                this._elements.push(new INSPECTOR.ColorPickerElement(this.value, this));
-                //this._elements.push(new ColorElement(this.value));
+                if (!INSPECTOR.Helpers.IsBrowserIE()) {
+                    this._elements.push(new INSPECTOR.ColorPickerElement(this.value, this));
+                }
             }
             // Texture
             if (this.type == 'Texture') {
@@ -2256,6 +2257,14 @@ var INSPECTOR;
         Helpers.IsBrowserEdge = function () {
             //Detect if we are running on a faulty buggy OS.
             var regexp = /Edge/;
+            return regexp.test(navigator.userAgent);
+        };
+        /**
+         * Returns true if the user browser is IE.
+         */
+        Helpers.IsBrowserIE = function () {
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /Trident.*rv\:11\./;
             return regexp.test(navigator.userAgent);
         };
         /**

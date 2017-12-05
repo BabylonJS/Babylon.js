@@ -5,7 +5,7 @@ var Test = (function () {
         var _this = this;
         var canvas = document.getElementById(canvasId);
         this.engine = new BABYLON.Engine(canvas, true);
-        BABYLONDEVTOOLS.Loader.debugShortcut(this.engine);
+        // BABYLONDEVTOOLS.Loader.debugShortcut(this.engine);
         this.scene = null;
         window.addEventListener("resize", function () {
             _this.engine.resize();
@@ -15,17 +15,17 @@ var Test = (function () {
     Test.prototype._run = function () {
         var _this = this;
         this._initScene();
-        this.scene.debugLayer.show({
-            popup: false,
-            parentElement: document.getElementById('inspector'),
-            newColors: {
-                backgroundColor: '#eee',
-                backgroundColorLighter: '#fff',
-                backgroundColorLighter2: '#fff',
-                backgroundColorLighter3: '#fff',
-                color: '#333'
-            }
-        });
+        // this.scene.debugLayer.show({
+        //     popup: false,
+        //     parentElement: document.getElementById('inspector'),
+        //     newColors: {
+        //         backgroundColor: '#eee',
+        //         backgroundColorLighter: '#fff',
+        //         backgroundColorLighter2: '#fff',
+        //         backgroundColorLighter3: '#fff',
+        //         color: '#333'
+        //     }
+        // });
         this.scene.executeWhenReady(function () {
             _this.engine.runRenderLoop(function () {
                 _this.scene.render();
@@ -51,7 +51,7 @@ var Test = (function () {
         let p = sceneRoot;
         for (let i = 0; i < num; i++) {
             // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
-            let sphere = BABYLON.Mesh.CreateSphere(`sphere${i}`, 16, 2, scene);
+            let sphere = BABYLON.Mesh.CreateSphere('sphere' + i, 16, 2, scene);
 
             // Move the sphere upward 1/2 its height        
             sphere.position.y = 0.2;
@@ -62,13 +62,14 @@ var Test = (function () {
         }
 
         let t = 0;
-        scene.registerBeforeRender(() => {
-            ground.rotation.y += 0.01;
-            ground.position.y = Math.cos(t += 0.01);
-        });
+        // scene.registerBeforeRender(() => {
+        //     ground.rotation.y += 0.01;
+        //     ground.position.y = Math.cos(t += 0.01);
+        // });
 
         scene.createDefaultCameraOrLight(true);
         scene.activeCamera.attachControl(canvas);
+        scene.debugLayer.show();
 
         this.scene = scene;
     };
