@@ -4475,7 +4475,7 @@
             return null;
         }
 
-        public createDefaultVRExperience(webVROptions: WebVROptions = {}): VRExperienceHelper {
+        public createDefaultVRExperience(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
             return new BABYLON.VRExperienceHelper(this, webVROptions);
         }
 
