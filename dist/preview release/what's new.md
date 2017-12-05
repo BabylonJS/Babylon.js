@@ -1,6 +1,7 @@
 # 3.1.0:
 
 ## Major updates
+- Added VRExperienceHelper to create WebVR experience with 2 lines of code. [Doc here](http://doc.babylonjs.com/how_to/webvr_helper) ([davrous](https://github.com/davrous), [TrevorDev](https://github.com/TrevorDev))
 - Viewer (TODO)
 - Added BackgroundMaterial [Doc here](https://doc.babylonjs.com/how_to/backgroundmaterial)
 - Added EnvironmentHelper [Doc here](https://doc.babylonjs.com/babylon101/environment#skybox-and-ground)
