@@ -721,6 +721,10 @@ declare module INSPECTOR {
          */
         static IsBrowserEdge(): boolean;
         /**
+         * Returns true if the user browser is IE.
+         */
+        static IsBrowserIE(): boolean;
+        /**
          * Returns the name of the type of the given object, where the name
          * is in PROPERTIES constant.
          * Returns 'Undefined' if no type exists for this object
