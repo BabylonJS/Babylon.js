@@ -26,11 +26,12 @@
             if (urlsOrVideo instanceof HTMLVideoElement) {
                 this.video = <any>urlsOrVideo;
             } else {
-                urls = <any>urlsOrVideo;
-
+                urls = urlsOrVideo;
+                
                 this.video = document.createElement("video");
                 this.video.autoplay = false;
                 this.video.loop = true;
+                Tools.SetCorsBehavior(urls, this.video);
             }
 
             this._engine = (<Scene>this.getScene()).getEngine();
