@@ -5936,7 +5936,7 @@ vColor=color;\n\
             var name = "custom_" + CustomMaterial.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
-            var fn_afterBind = this._afterBind;
+            var fn_afterBind = this._afterBind.bind(this);
             this._afterBind = function (m, e) {
                 if (!e) {
                     return;
