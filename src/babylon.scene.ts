@@ -3377,7 +3377,7 @@
                 let defaultFrameTime = 1000 / 60; // frame time in MS
 
                 if (this._physicsEngine) {
-                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000; //timestep in physics engine is in seconds
+                    defaultFrameTime = this._physicsEngine.getTimeStep() * 1000;
                 }
                 let stepsTaken = 0;
 
@@ -3397,7 +3397,7 @@
                     // Physics
                     if (this._physicsEngine) {
                         this.onBeforePhysicsObservable.notifyObservers(this);
-                        this._physicsEngine._step(defaultFPS);
+                        this._physicsEngine._step((defaultFrameTime / 1000));
                         this.onAfterPhysicsObservable.notifyObservers(this);
                     }
 
@@ -3411,9 +3411,9 @@
                     stepsTaken++;
                     deltaTime -= defaultFrameTime;
 
-                } while (deltaTime > 0 && stepsTaken < maxSubSteps);
+                } while (deltaTime > 0 && stepsTaken < internalSteps);
 
-                this._timeAccumulator = deltaTime;
+                this._timeAccumulator = 0; //deltaTime < 0 ? 0 : deltaTime;
 
             }
             else {
@@ -4492,7 +4492,7 @@
 
             for (var i in list) {
                 var item = list[i];
-                if (Tags.MatchesQuery(item, tagsQuery)) {
+                if (Tags && Tags.MatchesQuery(item, tagsQuery)) {
                     listByTags.push(item);
                     forEach(item);
                 }
