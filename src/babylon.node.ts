@@ -426,6 +426,11 @@
             return serializationRanges;
         }
 
+        // override it in derived class
+        public computeWorldMatrix(force?: boolean): Matrix {
+            return Matrix.Identity();
+        }
+
         public dispose(): void {
             this.parent = null;
 
