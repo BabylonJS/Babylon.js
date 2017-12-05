@@ -931,7 +931,8 @@
                 "../../src/Physics/Plugins/babylon.oimoJSPlugin.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "picking"
             ]
         },
         "textureFormats": {
