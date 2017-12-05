@@ -13,8 +13,7 @@
 		vec4 shadowsInfo;
 		vec2 depthValues;
 	} light{X};
-#ifdef SPOTLIGHT{X}
-	uniform bool textureProjectionFlag{X};
+#ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform mat4 textureMatrix{X};
 	uniform sampler2D projectionLightSampler{X};
 #endif

@@ -14,7 +14,7 @@
 			#endif
 		#else
 			#ifdef SPOTLIGHT{X}
-				info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness, textureProjectionFlag{X}, projectionLightSampler{X}, textureMatrix{X});
+				info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
 			#endif
 			#ifdef HEMILIGHT{X}
 				info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, glossiness);
@@ -22,6 +22,9 @@
 			#if defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
 				info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
 			#endif
+		#endif
+		#ifdef PROJECTEDLIGHTTEXTURE{X}
+			info = computeProjectionTexture(info,projectionLightSampler{X},textureMatrix{X});
 		#endif
     #endif
 	#ifdef SHADOW{X}

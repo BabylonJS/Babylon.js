@@ -384,7 +384,19 @@
             }
             return b.renderPriority - a.renderPriority;
         }
-
+         // Projection texture, if needed
+        @serializeAsTexture("projectedLightTexture")
+        private _projectedLightTexture: Nullable<BaseTexture>;;
+        
+        public get projectedLightTexture(): Nullable<BaseTexture> {
+            return this._projectedLightTexture;
+        }
+        /**
+        * Allows setting the projection texture of the light.
+        */
+        public set projectedLightTexture(value: Nullable<BaseTexture>) {
+            this._projectedLightTexture = value;
+        }
         /**
          * Disposes the light.  
          */
@@ -403,7 +415,9 @@
             }
 
             this._uniformBuffer.dispose();
-
+            if (this._projectedLightTexture){
+                this._projectedLightTexture.dispose();
+            }
             // Remove from scene
             this.getScene().removeLight(this);
             super.dispose();
@@ -663,7 +677,6 @@
             }
             return photometricScale;
         }
-
         public _reorderLightsInScene(): void {
             var scene = this.getScene();
             if (this._renderPriority != 0) {
@@ -671,5 +684,8 @@
             }
             this.getScene().sortLightsByPriority();
         }
+
+
+
     }
 }

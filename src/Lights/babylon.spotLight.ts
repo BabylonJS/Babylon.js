@@ -17,22 +17,8 @@
             projection matrix. Need to call computeTextureMatrix() to recompute manually. Add inheritance
             to the setting function of the 2 attributes will solve the problem.
         */
-        private _enableProjectionTexture : boolean;
-        @serialize()
-        /**
-         * Allows reading whether texture projection is enabled.
-         */
-        public get enableProjectionTexture(): boolean {
-            return this._enableProjectionTexture;
-        }
-        /**
-         * Allows setting whether texture projection is enabled.
-         */
-        public set enableProjectionTexture(value: boolean) {
-            this._enableProjectionTexture = value;
-        }
 
-        private _light_far  :number;
+        protected _light_far  :number;
         @serialize()
         /**
          * Allows reading the far clip of the Spotlight for texture projection.
@@ -48,7 +34,7 @@
             this.computeTextureMatrix();
         }
 
-        private _light_near :number;
+        protected _light_near :number;
         @serialize()
         /**
          * Allows reading the near clip of the Spotlight for texture projection.
@@ -63,49 +49,15 @@
             this._light_near = value;
             this.computeTextureMatrix();
         }
-
-        private _upVector:Vector3;
-        @serializeAsVector3()
-        /**
-         * Allows reading the up vector axis of the Spotlight for texture projection.
-         */
-        public get upVector(): Vector3 {
-            return this._upVector;
-        }
-        /**
-         * Allows setting the up vector axis of the Spotlight for texture projection.
-         */
-        public set upVector(value: Vector3) {
-            this._upVector = Vector3.Normalize(value);
-            this._rightVector = Vector3.Cross(this._direction,this._upVector);
-        }
-
-        private _rightVector:Vector3;
-        @serializeAsVector3()
-        /**
-         * Allows reading the right vector axis of the Spotlight for texture projection.
-         */
-        public get rightVector(): Vector3 {
-            return this._rightVector;
-        }
-        /**
-         * Allows setting the right vector axis of the Spotlight for texture projection.
-         */
-        public set rightVector(value: Vector3) {
-            this._rightVector = Vector3.Normalize(value);
-            this._upVector = Vector3.Cross(this._rightVector,this._direction);
-        }
         /**
          * Main function for light texture projection matrix computing.
          */
         public computeTextureMatrix(): void{    
+            /*
             var T = Matrix.Zero();
             Matrix.TranslationToRef(-this.position.x, -this.position.y, -this.position.z, T);
 
             if ((Math.abs(Vector3.Dot(this.direction, this.upVector)) > 0 ) ||  (Math.abs(Vector3.Dot(this.direction, this.rightVector)) > 0 )){
-                /**
-                 * reset the up, forward and right vector for spot light if they are invalid.
-                 */
                 this.upVector = Vector3.Normalize(new Vector3(-this.direction.z,0,this.direction.x));
                 if (this.upVector.length() === 0){
                     this.upVector = Vector3.Normalize(new Vector3(this.direction.y,-this.direction.x,0));
@@ -121,10 +73,14 @@
                 R.y, U.y, F.y, 0.0,
                 R.z, U.z, F.z, 0.0,
                 0.0, 0.0, 0.0, 1.0, O);                
-
             var viewLightMatrix = Matrix.Zero();
             viewLightMatrix.copyFrom(T);
             viewLightMatrix.multiplyToRef(O,viewLightMatrix);
+            */
+
+            var viewLightMatrix = Matrix.Zero();
+            Matrix.LookAtLHToRef(this.position, this.position.add(this.direction), Vector3.Up(), viewLightMatrix);
+
             var light_far = this.light_far;
             var light_near = this.light_near;
 
@@ -175,21 +131,6 @@
             this._shadowAngleScale = value;
             this.forceProjectionMatrixCompute();
         }
-
-        private _projectionMaterial: StandardMaterial;
-        @serialize()
-        /**
-        * Allows reading the projecton texture
-        */
-        public get projectionMaterial(): StandardMaterial{
-            return this._projectionMaterial;
-        }
-        /**
-        * Allows setting the value of projection texture
-        */
-        public set projectionMaterial(value: StandardMaterial) {
-            this._projectionMaterial = value;
-        }
         @serialize()
         public exponent: number;
 
@@ -232,16 +173,8 @@
 //Remember to remove this after testing
 //            this.projectionTexture = new BABYLON.StandardMaterial("ground", scene); 
             //Material test
-            var groundMaterial = new BABYLON.StandardMaterial("ProjectionTexure", scene);
-            this.projectionMaterial = groundMaterial;
-            this.projectionMaterial.projectedLightTexture = new BABYLON.Texture("",scene);
-            this.upVector = Vector3.Normalize(new Vector3(-direction.z,0,direction.x));
-            if (this.upVector.length() === 0){
-                this.upVector = Vector3.Normalize(new Vector3(direction.y,-direction.x,0));
-            }
-            this.enableProjectionTexture = false;
-            this.light_far = 100.0;
-            this.light_near = 0.1;
+            this.light_far = 1000.0;
+            this.light_near = 1e-7;
             this.computeTextureMatrix();
         }
 
@@ -327,9 +260,10 @@
                 lightIndex);
 
             //=======================================
-            effect.setBool("textureProjectionFlag" + lightIndex, this._enableProjectionTexture);
             effect.setMatrix("textureMatrix" + lightIndex, this._textureMatrix);
-            effect.setTexture("projectionLightSampler" + lightIndex, this._projectionMaterial.projectedLightTexture);
+            if (this.projectedLightTexture){
+                effect.setTexture("projectionLightSampler" + lightIndex, this.projectedLightTexture);
+            }
             return this;
         }
     }

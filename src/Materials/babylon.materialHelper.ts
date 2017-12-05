@@ -193,6 +193,12 @@
                         defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
                     }
 
+                    //Projection texture
+                    if (light.projectedLightTexture){
+                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = true;
+                    }else{
+                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = false;                        
+                    }
                     lightIndex++;
                     if (lightIndex === maxSimultaneousLights)
                         break;
@@ -273,7 +279,10 @@
                     uniformBuffersList.push("Light" + lightIndex);
                 }
                 //====================
-                samplersList.push("shadowSampler" + lightIndex, "projectionLightSampler" + lightIndex,);
+                samplersList.push("shadowSampler" + lightIndex,);
+                if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]){
+                    samplersList.push("projectionLightSampler" + lightIndex,);
+                }
             }
 
             if (defines["NUM_MORPH_INFLUENCERS"]) {

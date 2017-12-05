@@ -44,7 +44,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 	return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness, bool textureProjectionFlag, sampler2D projectionLightSampler, mat4 textureMatrix) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness) {
 	lightingInfo result;
 
 	vec3 direction = lightData.xyz - vPositionW;
@@ -73,13 +73,6 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 
 		result.specular = specComp * specularColor * attenuation;
 #endif
-		if (textureProjectionFlag) 
-		{
-			vec4 strq = textureMatrix * vec4(vPositionW, 1.0);
-			strq /= strq.w;
-			vec4 aa = texture2D(projectionLightSampler, vec2(strq[0], strq[1]));
-			result.diffuse *= strq[3] < 0.0 ? vec3(0.0) : vec3(aa);
-		}
         return result;
 	}
 
@@ -114,5 +107,14 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 	result.specular = specComp * specularColor;
 #endif
 
+	return result;
+}
+
+lightingInfo computeProjectionTexture(lightingInfo origin,sampler2D projectionLightSampler, mat4 textureMatrix){
+	lightingInfo result = origin;
+	vec4 strq = textureMatrix * vec4(vPositionW, 1.0);
+	strq /= strq.w;
+	vec4 aa = texture2D(projectionLightSampler, vec2(strq[0], strq[1]));
+	result.diffuse *= strq[3] < 0.0 ? vec3(0.0) : vec3(aa);
 	return result;
 }
