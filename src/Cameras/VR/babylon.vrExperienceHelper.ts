@@ -13,7 +13,7 @@ module BABYLON {
         private _scene: BABYLON.Scene;
         private _position: Vector3;
         private _btnVR: HTMLButtonElement;
-        private _btnVRDisplayed: Boolean;
+        private _btnVRDisplayed: boolean;
 
         // Can the system support WebVR, even if a headset isn't plugged in?
         private _webVRsupported = false;
@@ -39,8 +39,8 @@ module BABYLON {
         private _onVRRequestPresentStart: () => void;
         private _onVRRequestPresentComplete: (success: boolean) => void;
 
-        public onEnteringVR = new Observable();
-        public onExitingVR = new Observable();
+        public onEnteringVR = new Observable<VRExperienceHelper>();
+        public onExitingVR = new Observable<VRExperienceHelper>();
         public onControllerMeshLoaded = new Observable<WebVRController>();
 
         private _rayLength: number;
@@ -413,7 +413,7 @@ module BABYLON {
 
             if (this.onEnteringVR) {
                 try {
-                    this.onEnteringVR.notifyObservers({});
+                    this.onEnteringVR.notifyObservers(this);
                 }
                 catch (err) {
                     Tools.Warn("Error in your custom logic onEnteringVR: " + err);
@@ -447,7 +447,7 @@ module BABYLON {
         public exitVR() {
             if (this.onExitingVR) {
                 try {
-                    this.onExitingVR.notifyObservers({});
+                    this.onExitingVR.notifyObservers(this);
                 }
                 catch (err) {
                     Tools.Warn("Error in your custom logic onExitingVR: " + err);
