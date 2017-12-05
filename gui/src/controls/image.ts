@@ -150,7 +150,7 @@ module BABYLON.GUI {
                 this._onImageLoaded();
             }
             if (value) {
-                this._domImage.crossOrigin = "anonymous";
+                Tools.SetCorsBehavior(value, this._domImage);
                 this._domImage.src = value;
             }
         }
