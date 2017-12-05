@@ -908,9 +908,7 @@
         }
 
         public computeWorldMatrix(force?: boolean): Matrix {
-            if(force){
-                this.getViewMatrix(force);
-            }
+            this.getViewMatrix(force);
             return this.getWorldMatrix();
         }
 
