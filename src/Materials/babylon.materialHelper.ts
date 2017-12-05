@@ -272,7 +272,6 @@
                     "depthValues" + lightIndex,
                     //================================
                     "textureMatrix" + lightIndex,
-                    "textureProjectionFlag" + lightIndex,
                 );
 
                 if (uniformBuffersList) {

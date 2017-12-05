@@ -217,11 +217,6 @@
             this._uniformBuffer.addUniform("vLightDirection", 3);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
             this._uniformBuffer.addUniform("depthValues", 2);
-            this._uniformBuffer.addUniform("textureProjectionFlag",2);
-            //=======================================
-            //this._uniformBuffer.addUniform("textureMatrix", 16);
-            //this._uniformBuffer.addUniform("tester", 2);
-
             this._uniformBuffer.create();
         }
 
