@@ -38619,19 +38619,14 @@ var BABYLON;
             BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
         };
         TargetCamera.prototype._getViewMatrix = function () {
-            if (!this.lockedTarget) {
-                // Compute
-                this._updateCameraRotationMatrix();
-                BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-                // Computing target and final matrix
-                this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+            if (this.lockedTarget) {
+                this.setTarget(this._getLockedTargetPosition());
             }
-            else {
-                var targetPosition = this._getLockedTargetPosition();
-                if (targetPosition) {
-                    this._currentTarget.copyFrom(targetPosition);
-                }
-            }
+            // Compute
+            this._updateCameraRotationMatrix();
+            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             if (this.getScene().useRightHandedSystem) {
                 BABYLON.Matrix.LookAtRHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             }
