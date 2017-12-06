@@ -39,7 +39,7 @@ if (BABYLON.Engine.isSupported()) {
 
         if (plugin.name === "gltf" && plugin instanceof BABYLON.GLTFFileLoader) {
             plugin.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.ALL;
-            plugin.compileMaterials = true;
+            //  plugin.compileMaterials = true;
         }
     });
 
@@ -100,7 +100,7 @@ if (BABYLON.Engine.isSupported()) {
             currentScene.activeCamera.pinchDeltaPercentage = 0.01;
         }
 
-        currentScene.activeCamera.attachControl(canvas); 
+        currentScene.activeCamera.attachControl(canvas);
 
         // Environment
         if (currentPluginName === "gltf") {
@@ -236,7 +236,7 @@ if (BABYLON.Engine.isSupported()) {
     }
 }
 
-function sizeScene () {
+function sizeScene() {
     let divInspWrapper = document.getElementsByClassName('insp-wrapper')[0];
     if (divInspWrapper) {
         let divFooter = document.getElementsByClassName('footer')[0];
