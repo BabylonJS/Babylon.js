@@ -1,4 +1,5 @@
 ﻿/// <reference path="../dist/preview release/babylon.d.ts" />
+/// <reference path="../dist/preview release/loaders/babylon.glTFFileLoader.d.ts" />
 
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.getElementById("renderCanvas");
@@ -21,7 +22,7 @@ if (BABYLON.Engine.isSupported()) {
     var currentPluginName;
     var toExecuteAfterSceneCreation;
 
-    canvas.addEventListener("contextmenu", function(evt) {
+    canvas.addEventListener("contextmenu", function (evt) {
         evt.preventDefault();
     }, false);
 
@@ -33,14 +34,13 @@ if (BABYLON.Engine.isSupported()) {
 
     // Setting up some GLTF values
     BABYLON.GLTFFileLoader.IncrementalLoading = false;
-    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
+    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
         currentPluginName = plugin.name;
 
-        if (plugin.name !== "gltf") {
-            return;
+        if (plugin.name === "gltf" && plugin instanceof BABYLON.GLTFFileLoader) {
+            plugin.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.ALL;
+            plugin.compileMaterials = true;
         }
-
-        plugin.compileMaterials = true;
     });
 
     // Resize

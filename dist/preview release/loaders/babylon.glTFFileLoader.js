@@ -3,27 +3,63 @@ var BABYLON;
 (function (BABYLON) {
     var GLTFLoaderCoordinateSystemMode;
     (function (GLTFLoaderCoordinateSystemMode) {
-        // Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene (scene.useRightHandedSystem).
-        // NOTE: When scene.useRightHandedSystem is false, an additional transform will be added to the root to transform the data from right-handed to left-handed.
+        /**
+         * Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene.
+         */
         GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["AUTO"] = 0] = "AUTO";
-        // The glTF right-handed data is not transformed in any form and is loaded directly.
-        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["PASS_THROUGH"] = 1] = "PASS_THROUGH";
-        // Sets the useRightHandedSystem flag on the scene.
-        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 2] = "FORCE_RIGHT_HANDED";
+        /**
+         * Sets the useRightHandedSystem flag on the scene.
+         */
+        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 1] = "FORCE_RIGHT_HANDED";
     })(GLTFLoaderCoordinateSystemMode = BABYLON.GLTFLoaderCoordinateSystemMode || (BABYLON.GLTFLoaderCoordinateSystemMode = {}));
+    var GLTFLoaderAnimationStartMode;
+    (function (GLTFLoaderAnimationStartMode) {
+        /**
+         * No animation will start.
+         */
+        GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["NONE"] = 0] = "NONE";
+        /**
+         * The first animation will start.
+         */
+        GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["FIRST"] = 1] = "FIRST";
+        /**
+         * All animations will start.
+         */
+        GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["ALL"] = 2] = "ALL";
+    })(GLTFLoaderAnimationStartMode = BABYLON.GLTFLoaderAnimationStartMode || (BABYLON.GLTFLoaderAnimationStartMode = {}));
     var GLTFFileLoader = /** @class */ (function () {
         function GLTFFileLoader() {
-            // V2 options
+            // #endregion
+            // #region V2 options
+            /**
+             * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED).
+             */
             this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+            /**
+             * The animation start mode (NONE, FIRST, ALL).
+             */
+            this.animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
+            /**
+             * Set to true to compile materials before raising the success callback.
+             */
             this.compileMaterials = false;
-            this.compileShadowGenerators = false;
+            /**
+             * Set to true to also compile materials with clip planes.
+             */
             this.useClipPlane = false;
+            /**
+             * Set to true to compile shadow generators before raising the success callback.
+             */
+            this.compileShadowGenerators = false;
             this.name = "gltf";
             this.extensions = {
                 ".gltf": { isBinary: false },
                 ".glb": { isBinary: true }
             };
         }
+        /**
+         * Disposes the loader, releases resources during load, and cancels any outstanding requests.
+         */
         GLTFFileLoader.prototype.dispose = function () {
             if (this._loader) {
                 this._loader.dispose();
@@ -215,9 +251,10 @@ var BABYLON;
             }
             return result;
         };
-        // V1 options
-        GLTFFileLoader.HomogeneousCoordinates = false;
+        // #endregion
+        // #region V1 options
         GLTFFileLoader.IncrementalLoading = true;
+        GLTFFileLoader.HomogeneousCoordinates = false;
         return GLTFFileLoader;
     }());
     BABYLON.GLTFFileLoader = GLTFFileLoader;
@@ -2663,21 +2700,38 @@ var BABYLON;
                 }
                 return skeletons;
             };
-            GLTFLoader.prototype._getAnimationTargets = function () {
-                var targets = new Array();
-                var animations = this._gltf.animations;
-                if (animations) {
-                    for (var _i = 0, animations_1 = animations; _i < animations_1.length; _i++) {
-                        var animation = animations_1[_i];
-                        targets.push.apply(targets, animation.targets);
-                    }
-                }
-                return targets;
-            };
             GLTFLoader.prototype._startAnimations = function () {
-                for (var _i = 0, _a = this._getAnimationTargets(); _i < _a.length; _i++) {
-                    var target = _a[_i];
-                    this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
+                var animations = this._gltf.animations;
+                if (!animations) {
+                    return;
+                }
+                switch (this._parent.animationStartMode) {
+                    case BABYLON.GLTFLoaderAnimationStartMode.NONE: {
+                        // do nothing
+                        break;
+                    }
+                    case BABYLON.GLTFLoaderAnimationStartMode.FIRST: {
+                        var animation = animations[0];
+                        for (var _i = 0, _a = animation.targets; _i < _a.length; _i++) {
+                            var target = _a[_i];
+                            this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
+                        }
+                        break;
+                    }
+                    case BABYLON.GLTFLoaderAnimationStartMode.ALL: {
+                        for (var _b = 0, animations_1 = animations; _b < animations_1.length; _b++) {
+                            var animation = animations_1[_b];
+                            for (var _c = 0, _d = animation.targets; _c < _d.length; _c++) {
+                                var target = _d[_c];
+                                this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
+                            }
+                        }
+                        break;
+                    }
+                    default: {
+                        BABYLON.Tools.Error("Invalid animation start mode " + this._parent.animationStartMode);
+                        return;
+                    }
                 }
             };
             GLTFLoader.prototype._loadDefaultScene = function (nodeNames) {
@@ -2688,6 +2742,7 @@ var BABYLON;
                 this._loadScene("#/scenes/" + scene.index, scene, nodeNames);
             };
             GLTFLoader.prototype._loadScene = function (context, scene, nodeNames) {
+                var _this = this;
                 this._rootNode = { babylonMesh: new BABYLON.Mesh("__root__", this._babylonScene) };
                 switch (this._parent.coordinateSystemMode) {
                     case BABYLON.GLTFLoaderCoordinateSystemMode.AUTO: {
@@ -2696,10 +2751,6 @@ var BABYLON;
                             this._rootNode.scale = [1, 1, -1];
                             this._loadTransform(this._rootNode);
                         }
-                        break;
-                    }
-                    case BABYLON.GLTFLoaderCoordinateSystemMode.PASS_THROUGH: {
-                        // do nothing
                         break;
                     }
                     case BABYLON.GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED: {
@@ -2727,6 +2778,7 @@ var BABYLON;
                     this._traverseNodes(context, nodeIndices, function (node) {
                         if (nodeNames.indexOf(node.name) !== -1) {
                             filteredNodeIndices_1.push(node.index);
+                            node.parent = _this._rootNode;
                             return false;
                         }
                         return true;
@@ -3951,10 +4003,6 @@ var BABYLON;
             };
             GLTFLoader.prototype._compileMaterialAsync = function (babylonMaterial, babylonMesh, onSuccess) {
                 var _this = this;
-                if (!this._parent.compileMaterials) {
-                    onSuccess();
-                    return;
-                }
                 if (this._parent.useClipPlane) {
                     babylonMaterial.forceCompilation(babylonMesh, function () {
                         babylonMaterial.forceCompilation(babylonMesh, function () {
