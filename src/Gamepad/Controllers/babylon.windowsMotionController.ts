@@ -66,6 +66,8 @@ module BABYLON {
         };
 
         public onTrackpadChangedObservable = new Observable<ExtendedGamepadButton>();
+        public onTrackpadValuesChangedObservable = new Observable<StickValues>();
+        public trackpad: StickValues = { x: 0, y: 0 };
 
         constructor(vrGamepad: any) {
             super(vrGamepad);
@@ -92,6 +94,10 @@ module BABYLON {
         public get onTouchpadButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onTrackpadChangedObservable;
         }
+
+        public get onTouchpadValuesChangedObservable(): Observable<StickValues> {
+            return this.onTrackpadValuesChangedObservable;
+        }
         
         /**
          * Called once per frame by the engine.
@@ -102,6 +108,11 @@ module BABYLON {
             // Only need to animate axes if there is a loaded mesh
             if (this._loadedMeshInfo) {
                 if (this.browserGamepad.axes) {
+                    if(this.browserGamepad.axes[2] != this.trackpad.x || this.browserGamepad.axes[3] != this.trackpad.y){
+                        this.trackpad.x = this.browserGamepad["axes"][2];
+                        this.trackpad.y = this.browserGamepad["axes"][3];
+                        this.onTrackpadValuesChangedObservable.notifyObservers(this.trackpad);
+                    }
                     for (let axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
                         this.lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
                     }

@@ -318,6 +318,12 @@
       "referenceImage": "GUI.png"
     },
     {
+      "title": "Up Vector",
+      "renderCount": 20,
+      "playgroundId": "#2FNBTG#27",
+      "referenceImage": "upVector.png"
+    },
+    {
       "title": "Water material (only visual check)",
       "renderCount": 10,
       "scriptToRun": "/Demos/WaterMaterial/water.js",
