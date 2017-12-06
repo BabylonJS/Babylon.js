@@ -98,6 +98,7 @@ export interface ViewerConfiguration {
         size?: number;
         receiveShadows?: boolean;
         shadowOnly?: boolean;
+        mirror?: boolean;
         material?: {
             [propName: string]: any;
         }
