@@ -3,10 +3,8 @@
 import { ViewerConfiguration } from './../configuration/configuration';
 import { Template } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { ShadowGenerator, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { ShadowGenerator, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
-
-import { ShadowOnlyMaterial } from 'babylonjs-materials';
 
 export class DefaultViewer extends AbstractViewer {
 
@@ -223,7 +221,7 @@ export class DefaultViewer extends AbstractViewer {
 
             var ground = Mesh.CreateGround('ground', groundConfig.size || 1000, groundConfig.size || 1000, 8, this.scene);
             if (this.configuration.ground === true || groundConfig.shadowOnly) {
-                ground.material = new ShadowOnlyMaterial('groundmat', this.scene);
+                ground.material = new BackgroundMaterial('groundmat', this.scene); //new ShadowOnlyMaterial('groundmat', this.scene);
             } else {
                 ground.material = new StandardMaterial('groundmat', this.scene);
             }
@@ -233,6 +231,8 @@ export class DefaultViewer extends AbstractViewer {
                 if (ground.material)
                     ground.material.alpha = 0.4;
             }
+
+
 
 
             this.extendClassWithConfig(ground, groundConfig);
