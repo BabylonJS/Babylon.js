@@ -56,6 +56,10 @@ module BABYLON {
         public deviceRotationQuaternion: Quaternion;
         public deviceScaleFactor: number = 1;
 
+        private _deviceToWorld = Matrix.Identity();
+        private _worldToDevice = Matrix.Identity();
+        private deviceWorldPosition = Vector3.Zero();
+
         public controllers: Array<WebVRController> = [];
         public onControllersAttachedObservable = new Observable<Array<WebVRController>>();
         public onControllerMeshLoadedObservable = new Observable<WebVRController>();
@@ -66,7 +70,7 @@ module BABYLON {
 
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
-
+            this._cache.position = Vector3.Zero();
             if(webVROptions.defaultHeight){
                 this.position.y = webVROptions.defaultHeight;
             }
@@ -276,6 +280,47 @@ module BABYLON {
             camRight.position.copyFrom(this.devicePosition);
         }
 
+        private _workingVector = Vector3.Zero();
+        private _oneVector = Vector3.One();
+        private _workingMatrix = Matrix.Identity();
+        public _updateCache(ignoreParentClass?: boolean): void {
+            if(!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)){
+                // Get current device position in babylon world
+                Vector3.TransformCoordinatesToRef(this.devicePosition, this._deviceToWorld, this.deviceWorldPosition);
+
+                // Set working vector to the device position in room space rotated by the new rotation
+                this.rotationQuaternion.toRotationMatrix(this._workingMatrix);
+                Vector3.TransformCoordinatesToRef(this.devicePosition, this._workingMatrix, this._workingVector);
+
+                // Subtract this vector from the current device position in world to get the translation for the device world matrix
+                this.deviceWorldPosition.subtractToRef(this._workingVector, this._workingVector)
+                Matrix.ComposeToRef(this._oneVector, this.rotationQuaternion, this._workingVector, this._deviceToWorld);             
+                
+                // Add translation from anchor position
+                this._deviceToWorld.getTranslationToRef(this._workingVector)
+                this._workingVector.addInPlace(this.position);
+                this._workingVector.subtractInPlace(this._cache.position)
+                this._deviceToWorld.setTranslation(this._workingVector)
+
+                // Set an inverted matrix to be used when updating the camera
+                this._deviceToWorld.invertToRef(this._worldToDevice)
+                
+                // Update the gamepad to ensure the mesh is updated on the same frame as camera
+                this.controllers.forEach((controller)=>{
+                    controller._deviceToWorld = this._deviceToWorld;
+                    controller.update();
+                })
+            }
+
+            if (!ignoreParentClass) {
+                super._updateCache();
+            }
+        }
+        
+        public _getViewMatrix(): Matrix {
+            return Matrix.Identity();
+        }
+
         /**
          * This function is called by the two RIG cameras.
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
@@ -313,7 +358,8 @@ module BABYLON {
 
                 this._webvrViewMatrix.invert();
             }
-
+            
+            parentCamera._worldToDevice.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             return this._webvrViewMatrix;
         }
 
@@ -368,7 +414,7 @@ module BABYLON {
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
-
+                    webVrController._deviceToWorld = this._deviceToWorld;
                     if (this.webVROptions.controllerMeshes) {
                         if (webVrController.defaultModel) {
                             webVrController.defaultModel.setEnabled(true);

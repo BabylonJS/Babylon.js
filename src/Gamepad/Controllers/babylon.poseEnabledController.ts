@@ -59,6 +59,8 @@ module BABYLON {
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
         
+        public _deviceToWorld = Matrix.Identity();
+
         constructor(browserGamepad: any) {
             super(browserGamepad.id, browserGamepad.index, browserGamepad);
             this.type = Gamepad.POSE_ENABLED;
@@ -73,15 +75,23 @@ module BABYLON {
             Quaternion.RotationYawPitchRollToRef(Math.PI, 0, 0, this._leftHandSystemQuaternion);
         }
 
+        private _workingMatrix = Matrix.Identity();
+        private _workingQuaternion = Quaternion.Identity();
+        private _workingVector = Vector3.Zero();
         public update() {
             super.update();
             var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
             
             if (this._mesh) {
-                this._mesh.position.copyFrom(this._calculatedPosition);
+                Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this._workingVector)
+                this._mesh.position.copyFrom(this._workingVector);
+
+
                 if (this._mesh.rotationQuaternion) {
-                    this._mesh.rotationQuaternion.copyFrom(this._calculatedRotation);
+                    this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
+                    Quaternion.FromRotationMatrixToRef(this._workingMatrix, this._workingQuaternion);
+                    this._mesh.rotationQuaternion.copyFrom(this._workingQuaternion.multiplyInPlace(this._calculatedRotation));
                 }
             }
         }
