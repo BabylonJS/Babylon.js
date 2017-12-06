@@ -727,7 +727,6 @@
         private _onContextRestored: (evt: Event) => void;
         private _contextWasLost = false;
         private _doNotHandleContextLost = false;
-        private _constantAnimationDeltaTime = -1;
 
         // FPS
         private _performanceMonitor = new PerformanceMonitor();
@@ -873,14 +872,9 @@
                     options.stencil = true;
                 }
 
-                if (options.constantAnimationDeltaTime === undefined) {
-                    options.constantAnimationDeltaTime = -1;
-                }
-
                 this._deterministicLockstep = options.deterministicLockstep;
                 this._lockstepMaxSteps = options.lockstepMaxSteps;
                 this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
-                this._constantAnimationDeltaTime = options.constantAnimationDeltaTime;
 
                 // GL
                 if (!options.disableWebGL2Support) {
@@ -5054,7 +5048,7 @@
         }
 
         public getDeltaTime(): number {
-            return this._constantAnimationDeltaTime > -1 ? this._constantAnimationDeltaTime : this._deltaTime;
+            return this._deltaTime;
         }
 
         private _measureFps(): void {
