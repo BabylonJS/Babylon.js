@@ -1804,10 +1804,7 @@ var BABYLON;
             if (!node.babylonNode) {
                 return newMesh;
             }
-            var multiMat = new BABYLON.MultiMaterial("multimat" + id, gltfRuntime.scene);
-            if (!newMesh.material) {
-                newMesh.material = multiMat;
-            }
+            var subMaterials = [];
             var vertexData = new BABYLON.VertexData();
             var geometry = new BABYLON.Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
             var verticesStarts = new Array();
@@ -1895,12 +1892,26 @@ var BABYLON;
                     }
                     vertexData.merge(tempVertexData);
                     // Sub material
-                    var material = gltfRuntime.scene.getMaterialByID(primitive.material);
-                    multiMat.subMaterials.push(material === null ? GLTF1.GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
+                    var material_1 = gltfRuntime.scene.getMaterialByID(primitive.material);
+                    subMaterials.push(material_1 === null ? GLTF1.GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material_1);
                     // Update vertices start and index start
                     verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
                     indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
                 }
+            }
+            var material;
+            if (subMaterials.length > 1) {
+                material = new BABYLON.MultiMaterial("multimat" + id, gltfRuntime.scene);
+                material.subMaterials = subMaterials;
+            }
+            else {
+                material = new BABYLON.StandardMaterial("multimat" + id, gltfRuntime.scene);
+            }
+            if (subMaterials.length === 1) {
+                material = subMaterials[0];
+            }
+            if (!newMesh.material) {
+                newMesh.material = material;
             }
             // Apply geometry
             geometry.setAllVerticesData(vertexData, false);
@@ -3767,32 +3778,52 @@ var BABYLON;
                     }
                     ;
                 });
-                var multiMaterial = new BABYLON.MultiMaterial(node.babylonMesh.name, this._babylonScene);
-                node.babylonMesh.material = multiMaterial;
-                var subMaterials = multiMaterial.subMaterials;
-                var _loop_1 = function (index) {
-                    var primitive = primitives[index];
+                if (primitives.length === 1) {
+                    var primitive = primitives[0];
                     if (primitive.material == null) {
-                        subMaterials[index] = this_1._getDefaultMaterial();
+                        node.babylonMesh.material = this._getDefaultMaterial();
                     }
                     else {
-                        var material = GLTFLoader._GetProperty(this_1._gltf.materials, primitive.material);
+                        var material = GLTFLoader._GetProperty(this._gltf.materials, primitive.material);
                         if (!material) {
                             throw new Error(context + ": Failed to find material " + primitive.material);
                         }
-                        this_1._loadMaterial("#/materials/" + material.index, material, function (babylonMaterial, isNew) {
+                        this._loadMaterial("#/materials/" + material.index, material, function (babylonMaterial, isNew) {
                             if (isNew && _this._parent.onMaterialLoaded) {
                                 _this._parent.onMaterialLoaded(babylonMaterial);
                             }
-                            subMaterials[index] = babylonMaterial;
+                            node.babylonMesh.material = babylonMaterial;
                         });
                     }
-                };
-                var this_1 = this;
-                for (var index = 0; index < primitives.length; index++) {
-                    _loop_1(index);
                 }
-                ;
+                else {
+                    var multiMaterial = new BABYLON.MultiMaterial(node.babylonMesh.name, this._babylonScene);
+                    node.babylonMesh.material = multiMaterial;
+                    var subMaterials_1 = multiMaterial.subMaterials;
+                    var _loop_1 = function (index) {
+                        var primitive = primitives[index];
+                        if (primitive.material == null) {
+                            subMaterials_1[index] = this_1._getDefaultMaterial();
+                        }
+                        else {
+                            var material = GLTFLoader._GetProperty(this_1._gltf.materials, primitive.material);
+                            if (!material) {
+                                throw new Error(context + ": Failed to find material " + primitive.material);
+                            }
+                            this_1._loadMaterial("#/materials/" + material.index, material, function (babylonMaterial, isNew) {
+                                if (isNew && _this._parent.onMaterialLoaded) {
+                                    _this._parent.onMaterialLoaded(babylonMaterial);
+                                }
+                                subMaterials_1[index] = babylonMaterial;
+                            });
+                        }
+                    };
+                    var this_1 = this;
+                    for (var index = 0; index < primitives.length; index++) {
+                        _loop_1(index);
+                    }
+                    ;
+                }
             };
             GLTFLoader.prototype._loadAllVertexDataAsync = function (context, mesh, onSuccess) {
                 var primitives = mesh.primitives;
@@ -4910,6 +4941,9 @@ var BABYLON;
                             }
                         }
                     }
+                    else {
+                        remaining++;
+                    }
                 }
                 if (remaining === 0) {
                     onSuccess();
@@ -4928,6 +4962,13 @@ var BABYLON;
                                 });
                             }
                         }
+                    }
+                    else if (mesh.material !== null) {
+                        this._compileMaterialAsync(mesh.material, mesh, function () {
+                            if (--remaining === 0) {
+                                onSuccess();
+                            }
+                        });
                     }
                 }
             };

@@ -17903,6 +17903,7 @@ var BABYLON;
             this._forcePointsCloud = false;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
+            this.useConstantAnimationDeltaTime = false;
             this.constantlyUpdateMeshUnderPointer = false;
             this.hoverCursor = "pointer";
             this.defaultCursor = "";
@@ -19604,7 +19605,7 @@ var BABYLON;
                 }
                 this._animationTimeLast = now;
             }
-            var deltaTime = (now - this._animationTimeLast) * this.animationTimeScale;
+            var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
             this._animationTime += deltaTime;
             this._animationTimeLast = now;
             for (var index = 0; index < this._activeAnimatables.length; index++) {
@@ -20676,7 +20677,7 @@ var BABYLON;
                 var defaultFPS = (60.0 / 1000.0);
                 var defaultFrameTime = 1000 / 60; // frame time in MS
                 if (this._physicsEngine) {
-                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000;
+                    defaultFrameTime = this._physicsEngine.getTimeStep() * 1000;
                 }
                 var stepsTaken = 0;
                 var maxSubSteps = this._engine.getLockstepMaxSteps();
@@ -20691,18 +20692,15 @@ var BABYLON;
                     // Physics
                     if (this._physicsEngine) {
                         this.onBeforePhysicsObservable.notifyObservers(this);
-                        this._physicsEngine._step(defaultFPS);
+                        this._physicsEngine._step(defaultFrameTime / 1000);
                         this.onAfterPhysicsObservable.notifyObservers(this);
                     }
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
-                    if ((internalSteps > 1) && (stepsTaken != internalSteps - 1)) {
-                        this._evaluateActiveMeshes();
-                    }
                     stepsTaken++;
                     deltaTime -= defaultFrameTime;
-                } while (deltaTime > 0 && stepsTaken < maxSubSteps);
-                this._timeAccumulator = deltaTime;
+                } while (deltaTime > 0 && stepsTaken < internalSteps);
+                this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
             }
             else {
                 // Animations
@@ -38425,7 +38423,7 @@ var BABYLON;
             _this._cameraTransformMatrix = BABYLON.Matrix.Zero();
             _this._cameraRotationMatrix = BABYLON.Matrix.Zero();
             _this._referencePoint = new BABYLON.Vector3(0, 0, 1);
-            _this._defaultUpVector = new BABYLON.Vector3(0, 1, 0);
+            _this._currentUpVector = new BABYLON.Vector3(0, 1, 0);
             _this._transformedReferencePoint = BABYLON.Vector3.Zero();
             _this._lookAtTemp = BABYLON.Matrix.Zero();
             _this._tempMatrix = BABYLON.Matrix.Zero();
@@ -38514,7 +38512,7 @@ var BABYLON;
         // Target
         TargetCamera.prototype.setTarget = function (target) {
             this.upVector.normalize();
-            BABYLON.Matrix.LookAtLHToRef(this.position, target, this._defaultUpVector, this._camMatrix);
+            BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
             this._camMatrix.invert();
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
             var vDir = target.subtract(this.position);
@@ -38614,27 +38612,22 @@ var BABYLON;
                 BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
             }
             //update the up vector!
-            BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
+            BABYLON.Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
         };
         TargetCamera.prototype._getViewMatrix = function () {
-            if (!this.lockedTarget) {
-                // Compute
-                this._updateCameraRotationMatrix();
-                BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-                // Computing target and final matrix
-                this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+            if (this.lockedTarget) {
+                this.setTarget(this._getLockedTargetPosition());
             }
-            else {
-                var targetPosition = this._getLockedTargetPosition();
-                if (targetPosition) {
-                    this._currentTarget.copyFrom(targetPosition);
-                }
-            }
+            // Compute
+            this._updateCameraRotationMatrix();
+            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             if (this.getScene().useRightHandedSystem) {
-                BABYLON.Matrix.LookAtRHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+                BABYLON.Matrix.LookAtRHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
             }
             else {
-                BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+                BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
             }
             return this._viewMatrix;
         };
@@ -57598,6 +57591,8 @@ var BABYLON;
                 pointingPoseMeshName: 'POINTING_POSE'
             };
             _this.onTrackpadChangedObservable = new BABYLON.Observable();
+            _this.onTrackpadValuesChangedObservable = new BABYLON.Observable();
+            _this.trackpad = { x: 0, y: 0 };
             _this.controllerType = BABYLON.PoseEnabledControllerType.WINDOWS;
             _this._loadedMeshInfo = null;
             return _this;
@@ -57637,6 +57632,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(WindowsMotionController.prototype, "onTouchpadValuesChangedObservable", {
+            get: function () {
+                return this.onTrackpadValuesChangedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Called once per frame by the engine.
          */
@@ -57645,6 +57647,11 @@ var BABYLON;
             // Only need to animate axes if there is a loaded mesh
             if (this._loadedMeshInfo) {
                 if (this.browserGamepad.axes) {
+                    if (this.browserGamepad.axes[2] != this.trackpad.x || this.browserGamepad.axes[3] != this.trackpad.y) {
+                        this.trackpad.x = this.browserGamepad["axes"][2];
+                        this.trackpad.y = this.browserGamepad["axes"][3];
+                        this.onTrackpadValuesChangedObservable.notifyObservers(this.trackpad);
+                    }
                     for (var axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
                         this.lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
                     }
@@ -72203,14 +72210,14 @@ var BABYLON;
             }
             // Exiting VR mode using 'ESC' key on desktop
             this._onKeyDown = function (event) {
-                if (event.keyCode === 27 && _this.isInVRMode()) {
+                if (event.keyCode === 27 && _this.isInVRMode) {
                     _this.exitVR();
                 }
             };
             document.addEventListener("keydown", this._onKeyDown);
             // Exiting VR mode double tapping the touch screen
             this._scene.onPrePointerObservable.add(function (pointerInfo, eventState) {
-                if (_this.isInVRMode()) {
+                if (_this.isInVRMode) {
                     _this.exitVR();
                     if (_this._fullscreenVRpresenting) {
                         _this._scene.getEngine().switchFullscreen(true);
@@ -72358,9 +72365,16 @@ var BABYLON;
                 }
             }
         };
-        VRExperienceHelper.prototype.isInVRMode = function () {
-            return this._webVRpresenting || this._fullscreenVRpresenting;
-        };
+        Object.defineProperty(VRExperienceHelper.prototype, "isInVRMode", {
+            /**
+             * Gets a value indicating if we are currently in VR mode.
+             */
+            get: function () {
+                return this._webVRpresenting || this._fullscreenVRpresenting;
+            },
+            enumerable: true,
+            configurable: true
+        });
         VRExperienceHelper.prototype.onVrDisplayPresentChange = function () {
             var vrDisplay = this._scene.getEngine().getVRDevice();
             if (vrDisplay) {
@@ -72386,7 +72400,7 @@ var BABYLON;
                 return;
             }
             this._btnVR.className = "babylonVRicon";
-            if (this.isInVRMode()) {
+            if (this.isInVRMode) {
                 this._btnVR.className += " vrdisplaypresenting";
             }
             else {
@@ -73170,7 +73184,7 @@ var BABYLON;
             }
         };
         VRExperienceHelper.prototype.dispose = function () {
-            if (this.isInVRMode()) {
+            if (this.isInVRMode) {
                 this.exitVR();
             }
             if (this._deviceOrientationCamera) {
