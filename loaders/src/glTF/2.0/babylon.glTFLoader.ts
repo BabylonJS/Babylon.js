@@ -272,22 +272,36 @@ module BABYLON.GLTF2 {
             return skeletons;
         }
 
-        private _getAnimationTargets(): any[] {
-            const targets = new Array();
-
+        private _startAnimations(): void {
             const animations = this._gltf.animations;
-            if (animations) {
-                for (const animation of animations) {
-                    targets.push(...animation.targets);
-                }
+            if (!animations) {
+                return;
             }
 
-            return targets;
-        }
-
-        private _startAnimations(): void {
-            for (const target of this._getAnimationTargets()) { 
-                this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
+            switch (this._parent.animationStartMode) {
+                case GLTFLoaderAnimationStartMode.NONE: {
+                    // do nothing
+                    break;
+                }
+                case GLTFLoaderAnimationStartMode.FIRST: {
+                    const animation = animations[0];
+                    for (const target of animation.targets) {
+                        this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
+                    }
+                    break;
+                }
+                case GLTFLoaderAnimationStartMode.ALL: {
+                    for (const animation of animations) {
+                        for (const target of animation.targets) {
+                            this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    Tools.Error("Invalid animation start mode " + this._parent.animationStartMode);
+                    return;
+                }
             }
         }
 
@@ -310,10 +324,6 @@ module BABYLON.GLTF2 {
                         this._rootNode.scale = [ 1, 1, -1 ];
                         this._loadTransform(this._rootNode);
                     }
-                    break;
-                }
-                case GLTFLoaderCoordinateSystemMode.PASS_THROUGH: {
-                    // do nothing
                     break;
                 }
                 case GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED: {
@@ -346,6 +356,7 @@ module BABYLON.GLTF2 {
                 this._traverseNodes(context, nodeIndices, node => {
                     if (nodeNames.indexOf(node.name) !== -1) {
                         filteredNodeIndices.push(node.index);
+                        node.parent = this._rootNode;
                         return false;
                     }
 
@@ -1724,11 +1735,6 @@ module BABYLON.GLTF2 {
         }
 
         private _compileMaterialAsync(babylonMaterial: Material, babylonMesh: AbstractMesh, onSuccess: () => void): void {
-            if (!this._parent.compileMaterials) {
-                onSuccess();
-                return;
-            }
-
             if (this._parent.useClipPlane) {
                 babylonMaterial.forceCompilation(babylonMesh, () => {
                     babylonMaterial.forceCompilation(babylonMesh, () => {
