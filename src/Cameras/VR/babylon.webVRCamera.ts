@@ -52,9 +52,18 @@ module BABYLON {
 
         protected _descendants: Array<Node> = [];
 
+        // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
+        private _deviceRoomPosition = Vector3.Zero();
+        private _deviceRoomRotationQuaternion = Quaternion.Identity(); 
+
+        // Represents device position and rotation in babylon space
         public devicePosition = Vector3.Zero();
-        public deviceRotationQuaternion: Quaternion;
+        public deviceRotationQuaternion = Quaternion.Identity();        
+
         public deviceScaleFactor: number = 1;
+
+        private _deviceToWorld = Matrix.Identity();
+        private _worldToDevice = Matrix.Identity();
 
         public controllers: Array<WebVRController> = [];
         public onControllersAttachedObservable = new Observable<Array<WebVRController>>();
@@ -66,7 +75,7 @@ module BABYLON {
 
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
-
+            this._cache.position = Vector3.Zero();
             if(webVROptions.defaultHeight){
                 this.position.y = webVROptions.defaultHeight;
             }
@@ -90,7 +99,6 @@ module BABYLON {
             }
 
             this.rotationQuaternion = new Quaternion();
-            this.deviceRotationQuaternion = new Quaternion();
 
             if (this.webVROptions && this.webVROptions.positionScale) {
                 this.deviceScaleFactor = this.webVROptions.positionScale;
@@ -210,16 +218,16 @@ module BABYLON {
         updateFromDevice(poseData: DevicePose) {
             if (poseData && poseData.orientation) {
                 this.rawPose = poseData;
-                this.deviceRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
+                this._deviceRoomRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
 
                 if (this.getScene().useRightHandedSystem) {
-                    this.deviceRotationQuaternion.z *= -1;
-                    this.deviceRotationQuaternion.w *= -1;
+                    this._deviceRoomRotationQuaternion.z *= -1;
+                    this._deviceRoomRotationQuaternion.w *= -1;
                 }
                 if (this.webVROptions.trackPosition && this.rawPose.position) {
-                    this.devicePosition.copyFromFloats(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2]);
+                    this._deviceRoomPosition.copyFromFloats(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2]);
                     if (this.getScene().useRightHandedSystem) {
-                        this.devicePosition.z *= -1;
+                        this._deviceRoomPosition.z *= -1;
                     }
                 }
             }
@@ -269,11 +277,60 @@ module BABYLON {
         public _updateRigCameras() {
             var camLeft = <TargetCamera>this._rigCameras[0];
             var camRight = <TargetCamera>this._rigCameras[1];
-            camLeft.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
-            camRight.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
+            camLeft.rotationQuaternion.copyFrom(this._deviceRoomRotationQuaternion);
+            camRight.rotationQuaternion.copyFrom(this._deviceRoomRotationQuaternion);
 
-            camLeft.position.copyFrom(this.devicePosition);
-            camRight.position.copyFrom(this.devicePosition);
+            camLeft.position.copyFrom(this._deviceRoomPosition);
+            camRight.position.copyFrom(this._deviceRoomPosition);
+        }
+
+        private _workingVector = Vector3.Zero();
+        private _oneVector = Vector3.One();
+        private _workingMatrix = Matrix.Identity();
+        public _updateCache(ignoreParentClass?: boolean): void {
+            if(!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)){
+                // Set working vector to the device position in room space rotated by the new rotation
+                this.rotationQuaternion.toRotationMatrix(this._workingMatrix);
+                Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._workingMatrix, this._workingVector);
+
+                // Subtract this vector from the current device position in world to get the translation for the device world matrix
+                this.devicePosition.subtractToRef(this._workingVector, this._workingVector)
+                Matrix.ComposeToRef(this._oneVector, this.rotationQuaternion, this._workingVector, this._deviceToWorld);             
+                
+                // Add translation from anchor position
+                this._deviceToWorld.getTranslationToRef(this._workingVector)
+                this._workingVector.addInPlace(this.position);
+                this._workingVector.subtractInPlace(this._cache.position)
+                this._deviceToWorld.setTranslation(this._workingVector)
+
+                // Set an inverted matrix to be used when updating the camera
+                this._deviceToWorld.invertToRef(this._worldToDevice)
+                
+                // Update the gamepad to ensure the mesh is updated on the same frame as camera
+                this.controllers.forEach((controller)=>{
+                    controller._deviceToWorld = this._deviceToWorld;
+                    controller.update();
+                })
+                this.update();
+            }
+
+            if (!ignoreParentClass) {
+                super._updateCache();
+            }
+        }
+        public update() {
+            // Get current device position in babylon world
+            Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
+            
+            // Get current device rotation in babylon world
+            Matrix.FromQuaternionToRef(this._deviceRoomRotationQuaternion, this._workingMatrix);
+            this._deviceToWorld.multiplyToRef(this._workingMatrix, this._workingMatrix);
+            Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
+
+            super.update();
+        }
+        public _getViewMatrix(): Matrix {
+            return Matrix.Identity();
         }
 
         /**
@@ -313,7 +370,8 @@ module BABYLON {
 
                 this._webvrViewMatrix.invert();
             }
-
+            
+            parentCamera._worldToDevice.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             return this._webvrViewMatrix;
         }
 
@@ -368,7 +426,7 @@ module BABYLON {
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
-
+                    webVrController._deviceToWorld = this._deviceToWorld;
                     if (this.webVROptions.controllerMeshes) {
                         if (webVrController.defaultModel) {
                             webVrController.defaultModel.setEnabled(true);
