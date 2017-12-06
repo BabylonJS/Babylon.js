@@ -14,7 +14,7 @@
 		vec2 depthValues;
 	} light{X};
 #ifdef PROJECTEDLIGHTTEXTURE{X}
-	uniform mat4 textureMatrix{X};
+	uniform mat4 textureProjectionMatrix{X};
 	uniform sampler2D projectionLightSampler{X};
 #endif
 #ifdef SHADOW{X}

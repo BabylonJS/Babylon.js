@@ -26,7 +26,7 @@
 		uniform vec3 vLightGround{X};
 	#endif
 	#ifdef PROJECTEDLIGHTTEXTURE{X}
-		uniform mat4 textureMatrix{X};
+		uniform mat4 textureProjectionMatrix{X};
 		uniform sampler2D projectionLightSampler{X};
 	#endif
 #endif

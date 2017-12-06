@@ -270,8 +270,7 @@
                     "lightMatrix" + lightIndex,
                     "shadowsInfo" + lightIndex,
                     "depthValues" + lightIndex,
-                    //================================
-                    "textureMatrix" + lightIndex,
+                    "textureProjectionMatrix" + lightIndex,
                 );
 
                 if (uniformBuffersList) {
