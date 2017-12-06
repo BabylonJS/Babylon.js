@@ -85,7 +85,7 @@ module BABYLON.GLTF2 {
 
         // IE 11 Compatibility.
         private static _progressEventFactory: (name: string, data: IProgressEventData) => ProgressEvent;
-        
+
         private static _createProgressEventByConstructor(name: string, data: IProgressEventData): ProgressEvent {
             return new ProgressEvent(name, data);
         }
@@ -272,22 +272,36 @@ module BABYLON.GLTF2 {
             return skeletons;
         }
 
-        private _getAnimationTargets(): any[] {
-            const targets = new Array();
-
+        private _startAnimations(): void {
             const animations = this._gltf.animations;
-            if (animations) {
-                for (const animation of animations) {
-                    targets.push(...animation.targets);
-                }
+            if (!animations) {
+                return;
             }
 
-            return targets;
-        }
-
-        private _startAnimations(): void {
-            for (const target of this._getAnimationTargets()) { 
-                this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
+            switch (this._parent.animationStartMode) {
+                case GLTFLoaderAnimationStartMode.NONE: {
+                    // do nothing
+                    break;
+                }
+                case GLTFLoaderAnimationStartMode.FIRST: {
+                    const animation = animations[0];
+                    for (const target of animation.targets) {
+                        this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
+                    }
+                    break;
+                }
+                case GLTFLoaderAnimationStartMode.ALL: {
+                    for (const animation of animations) {
+                        for (const target of animation.targets) {
+                            this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    Tools.Error("Invalid animation start mode " + this._parent.animationStartMode);
+                    return;
+                }
             }
         }
 
@@ -306,14 +320,10 @@ module BABYLON.GLTF2 {
             switch (this._parent.coordinateSystemMode) {
                 case GLTFLoaderCoordinateSystemMode.AUTO: {
                     if (!this._babylonScene.useRightHandedSystem) {
-                        this._rootNode.rotation = [ 0, 1, 0, 0 ];
-                        this._rootNode.scale = [ 1, 1, -1 ];
+                        this._rootNode.rotation = [0, 1, 0, 0];
+                        this._rootNode.scale = [1, 1, -1];
                         this._loadTransform(this._rootNode);
                     }
-                    break;
-                }
-                case GLTFLoaderCoordinateSystemMode.PASS_THROUGH: {
-                    // do nothing
                     break;
                 }
                 case GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED: {
@@ -346,6 +356,7 @@ module BABYLON.GLTF2 {
                 this._traverseNodes(context, nodeIndices, node => {
                     if (nodeNames.indexOf(node.name) !== -1) {
                         filteredNodeIndices.push(node.index);
+                        node.parent = this._rootNode;
                         return false;
                     }
 
@@ -463,14 +474,10 @@ module BABYLON.GLTF2 {
                 };
             });
 
-            const multiMaterial = new MultiMaterial(node.babylonMesh.name, this._babylonScene);
-            node.babylonMesh.material = multiMaterial;
-            const subMaterials = multiMaterial.subMaterials;
-            for (let index = 0; index < primitives.length; index++) {
-                const primitive = primitives[index];
-
+            if (primitives.length === 1) {
+                const primitive = primitives[0];
                 if (primitive.material == null) {
-                    subMaterials[index] = this._getDefaultMaterial();
+                    node.babylonMesh.material = this._getDefaultMaterial();
                 }
                 else {
                     const material = GLTFLoader._GetProperty(this._gltf.materials, primitive.material);
@@ -482,11 +489,36 @@ module BABYLON.GLTF2 {
                         if (isNew && this._parent.onMaterialLoaded) {
                             this._parent.onMaterialLoaded(babylonMaterial);
                         }
-
-                        subMaterials[index] = babylonMaterial;
+                        node.babylonMesh.material = babylonMaterial;
                     });
                 }
-            };
+            }
+            else {
+                const multiMaterial = new MultiMaterial(node.babylonMesh.name, this._babylonScene);
+                node.babylonMesh.material = multiMaterial;
+                const subMaterials = multiMaterial.subMaterials;
+                for (let index = 0; index < primitives.length; index++) {
+                    const primitive = primitives[index];
+
+                    if (primitive.material == null) {
+                        subMaterials[index] = this._getDefaultMaterial();
+                    }
+                    else {
+                        const material = GLTFLoader._GetProperty(this._gltf.materials, primitive.material);
+                        if (!material) {
+                            throw new Error(context + ": Failed to find material " + primitive.material);
+                        }
+
+                        this._loadMaterial("#/materials/" + material.index, material, (babylonMaterial, isNew) => {
+                            if (isNew && this._parent.onMaterialLoaded) {
+                                this._parent.onMaterialLoaded(babylonMaterial);
+                            }
+
+                            subMaterials[index] = babylonMaterial;
+                        });
+                    }
+                };
+            }
         }
 
         private _loadAllVertexDataAsync(context: string, mesh: IGLTFMesh, onSuccess: () => void): void {
@@ -774,7 +806,7 @@ module BABYLON.GLTF2 {
                             // Tangent data for morph targets is stored as xyz delta.
                             // The vertexData.tangent is stored as xyzw.
                             // So we need to skip every fourth vertexData.tangent.
-                            for (let i = 0, j = 0; i < values.length; i++, j++) {
+                            for (let i = 0, j = 0; i < values.length; i++ , j++) {
                                 values[i] += vertexData.tangents![j];
                                 if ((i + 1) % 3 == 0) {
                                     j++;
@@ -1317,7 +1349,7 @@ module BABYLON.GLTF2 {
             this._loaderTrackers.push(tracker);
 
             this._addLoaderPendingData(tracker);
-            
+
             action();
 
             this._removeLoaderPendingData(tracker);
@@ -1621,7 +1653,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private static _AssignIndices(array?: Array<{index: number}>): void {
+        private static _AssignIndices(array?: Array<{ index: number }>): void {
             if (array) {
                 for (let index = 0; index < array.length; index++) {
                     array[index].index = index;
@@ -1703,11 +1735,6 @@ module BABYLON.GLTF2 {
         }
 
         private _compileMaterialAsync(babylonMaterial: Material, babylonMesh: AbstractMesh, onSuccess: () => void): void {
-            if (!this._parent.compileMaterials) {
-                onSuccess();
-                return;
-            }
-
             if (this._parent.useClipPlane) {
                 babylonMaterial.forceCompilation(babylonMesh, () => {
                     babylonMaterial.forceCompilation(babylonMesh, () => {
@@ -1739,6 +1766,9 @@ module BABYLON.GLTF2 {
                         }
                     }
                 }
+                else {
+                    remaining++;
+                }
             }
 
             if (remaining === 0) {
@@ -1757,6 +1787,13 @@ module BABYLON.GLTF2 {
                             });
                         }
                     }
+                }
+                else if (mesh.material !== null) {
+                    this._compileMaterialAsync(mesh.material, mesh, () => {
+                        if (--remaining === 0) {
+                            onSuccess();
+                        }
+                    })
                 }
             }
         }
