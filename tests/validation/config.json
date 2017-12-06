@@ -324,6 +324,14 @@
       "referenceImage": "upVector.png"
     },
     {
+      "title": "Procedural textures",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
+      "functionToCall": "CreateProceduralTextureTestScene",
+      "referenceImage": "procedural.png",
+      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land"
+    },
+    {
       "title": "Water material (only visual check)",
       "renderCount": 10,
       "scriptToRun": "/Demos/WaterMaterial/water.js",
@@ -338,15 +346,6 @@
       "functionToCall": "CreateInstancesTestScene",
       "referenceImage": "instances.png",
       "replace": "ground., Ground.",
-      "onlyVisual": true
-    },
-    {
-      "title": "Procedural textures (only visual check)",
-      "renderCount": 10,
-      "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
-      "functionToCall": "CreateProceduralTextureTestScene",
-      "referenceImage": "procedural.png",
-      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land",
       "onlyVisual": true
     },
     {

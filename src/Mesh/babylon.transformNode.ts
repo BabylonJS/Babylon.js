@@ -456,7 +456,7 @@ module BABYLON {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
-                
+
                 if (this.parent && this.parent.computeWorldMatrix) {
                     this.parent.computeWorldMatrix(true);
                 }
