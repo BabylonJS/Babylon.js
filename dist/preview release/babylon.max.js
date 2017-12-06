@@ -72210,14 +72210,14 @@ var BABYLON;
             }
             // Exiting VR mode using 'ESC' key on desktop
             this._onKeyDown = function (event) {
-                if (event.keyCode === 27 && _this.isInVRMode()) {
+                if (event.keyCode === 27 && _this.isInVRMode) {
                     _this.exitVR();
                 }
             };
             document.addEventListener("keydown", this._onKeyDown);
             // Exiting VR mode double tapping the touch screen
             this._scene.onPrePointerObservable.add(function (pointerInfo, eventState) {
-                if (_this.isInVRMode()) {
+                if (_this.isInVRMode) {
                     _this.exitVR();
                     if (_this._fullscreenVRpresenting) {
                         _this._scene.getEngine().switchFullscreen(true);
@@ -72365,9 +72365,16 @@ var BABYLON;
                 }
             }
         };
-        VRExperienceHelper.prototype.isInVRMode = function () {
-            return this._webVRpresenting || this._fullscreenVRpresenting;
-        };
+        Object.defineProperty(VRExperienceHelper.prototype, "isInVRMode", {
+            /**
+             * Gets a value indicating if we are currently in VR mode.
+             */
+            get: function () {
+                return this._webVRpresenting || this._fullscreenVRpresenting;
+            },
+            enumerable: true,
+            configurable: true
+        });
         VRExperienceHelper.prototype.onVrDisplayPresentChange = function () {
             var vrDisplay = this._scene.getEngine().getVRDevice();
             if (vrDisplay) {
@@ -72393,7 +72400,7 @@ var BABYLON;
                 return;
             }
             this._btnVR.className = "babylonVRicon";
-            if (this.isInVRMode()) {
+            if (this.isInVRMode) {
                 this._btnVR.className += " vrdisplaypresenting";
             }
             else {
@@ -73177,7 +73184,7 @@ var BABYLON;
             }
         };
         VRExperienceHelper.prototype.dispose = function () {
-            if (this.isInVRMode()) {
+            if (this.isInVRMode) {
                 this.exitVR();
             }
             if (this._deviceOrientationCamera) {

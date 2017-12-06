@@ -151,7 +151,7 @@ module BABYLON {
             this._canvas = scene.getEngine().getRenderingCanvas();
 
             this._defaultHeight = webVROptions.defaultHeight || 1.7;
-            
+
             if (webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined) {
                 webVROptions.createFallbackVRDeviceOrientationFreeCamera = true;
             }
@@ -181,7 +181,7 @@ module BABYLON {
                         this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
                     }
                 }
-                this._scene.activeCamera = this._deviceOrientationCamera;                
+                this._scene.activeCamera = this._deviceOrientationCamera;
                 if (this._canvas) {
                     this._scene.activeCamera.attachControl(this._canvas);
                 }
@@ -263,7 +263,7 @@ module BABYLON {
 
             // Exiting VR mode using 'ESC' key on desktop
             this._onKeyDown = (event: KeyboardEvent) => {
-                if (event.keyCode === 27 && this.isInVRMode()) {
+                if (event.keyCode === 27 && this.isInVRMode) {
                     this.exitVR();
                 }
             };
@@ -271,7 +271,7 @@ module BABYLON {
 
             // Exiting VR mode double tapping the touch screen
             this._scene.onPrePointerObservable.add((pointerInfo, eventState) => {
-                if (this.isInVRMode()) {
+                if (this.isInVRMode) {
                     this.exitVR();
                     if (this._fullscreenVRpresenting) {
                         this._scene.getEngine().switchFullscreen(true);
@@ -359,7 +359,10 @@ module BABYLON {
             }
         }
 
-        private isInVRMode() {
+        /**
+         * Gets a value indicating if we are currently in VR mode.
+         */
+        public get isInVRMode(): boolean {
             return this._webVRpresenting || this._fullscreenVRpresenting;
         }
 
@@ -393,7 +396,7 @@ module BABYLON {
                 return;
             }
             this._btnVR.className = "babylonVRicon";
-            if (this.isInVRMode()) {
+            if (this.isInVRMode) {
                 this._btnVR.className += " vrdisplaypresenting";
             } else {
                 if (this._webVRready) this._btnVR.className += " vrdisplayready";
@@ -1050,11 +1053,11 @@ module BABYLON {
 
             // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
             // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
-            if(this.webVRCamera.leftCamera){
+            if (this.webVRCamera.leftCamera) {
                 this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
                 this._workingVector.subtractInPlace(this.webVRCamera.position);
                 this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
-            }else{
+            } else {
                 this._workingVector.copyFrom(this._haloCenter);
             }
             this._workingVector.y += this._defaultHeight;
@@ -1271,7 +1274,7 @@ module BABYLON {
         }
 
         public dispose() {
-            if (this.isInVRMode()) {
+            if (this.isInVRMode) {
                 this.exitVR();
             }
 
