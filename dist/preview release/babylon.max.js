@@ -8588,7 +8588,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-beta-7";
+                return "3.1-rc-0";
             },
             enumerable: true,
             configurable: true
