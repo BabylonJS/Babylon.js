@@ -36,9 +36,6 @@
     "dependencies": {
         "babylonjs": "^3.1.0-beta6",
         "babylonjs-loaders": "^3.1.0-beta6",
-        "babylonjs-materials": "^3.1.0-beta6",
-        "babylonjs-post-process": "^3.1.0-beta6",
-        "babylonjs-procedural-textures": "^3.1.0-beta6",
         "deepmerge": "^2.0.1",
         "es6-promise": "^4.1.1",
         "handlebars": "^4.0.11"
