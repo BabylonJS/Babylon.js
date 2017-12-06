@@ -72241,7 +72241,12 @@ var BABYLON;
                 }
                 if (this._btnVR) {
                     this._btnVR.addEventListener("click", function () {
-                        _this.enterVR();
+                        if (!_this.isInVRMode) {
+                            _this.enterVR();
+                        }
+                        else {
+                            _this.exitVR();
+                        }
                     });
                 }
                 window.addEventListener("resize", function () {
@@ -72456,7 +72461,7 @@ var BABYLON;
             this.updateButtonVisibility();
         };
         VRExperienceHelper.prototype.updateButtonVisibility = function () {
-            if (!this._btnVR) {
+            if (!this._btnVR || this._useCustomVRButton) {
                 return;
             }
             this._btnVR.className = "babylonVRicon";
