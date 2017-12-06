@@ -41,10 +41,14 @@ module BABYLON {
     }
 
     export class PoseEnabledController extends Gamepad implements PoseControlled {
+        // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
+        private _deviceRoomPosition = Vector3.Zero();
+        private _deviceRoomRotationQuaternion = new Quaternion();
+
+        // Represents device position and rotation in babylon space
         public devicePosition = Vector3.Zero();
         public deviceRotationQuaternion = new Quaternion();
-        private _devicePosition: Vector3;
-        private _deviceRotationQuaternion: Quaternion;
+
         deviceScaleFactor: number = 1;
 
         public position: Vector3;
@@ -69,8 +73,6 @@ module BABYLON {
             this.controllerType = PoseEnabledControllerType.GENERIC;
             this.position = Vector3.Zero();
             this.rotationQuaternion = new Quaternion();
-            this._devicePosition = Vector3.Zero();
-            this._deviceRotationQuaternion = new Quaternion();
 
             this._calculatedPosition = Vector3.Zero();
             this._calculatedRotation = new Quaternion();
@@ -86,7 +88,7 @@ module BABYLON {
             Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this.devicePosition)
             this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
-            
+
             if (this._mesh) {
                 this._mesh.position.copyFrom(this.devicePosition);
 
@@ -100,29 +102,29 @@ module BABYLON {
             if (poseData) {
                 this.rawPose = poseData;
                 if (poseData.position) {
-                    this._devicePosition.copyFromFloats(poseData.position[0], poseData.position[1], -poseData.position[2]);
+                    this._deviceRoomPosition.copyFromFloats(poseData.position[0], poseData.position[1], -poseData.position[2]);
                     if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
-                        this._devicePosition.z *= -1;
+                        this._deviceRoomPosition.z *= -1;
                     }
 
-                    this._devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
+                    this._deviceRoomPosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
 
                 }
                 let pose = this.rawPose;
                 if (poseData.orientation && pose.orientation) {
-                    this._deviceRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
+                    this._deviceRoomRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
                     if (this._mesh) {
                         if (this._mesh.getScene().useRightHandedSystem) {
-                            this._deviceRotationQuaternion.z *= -1;
-                            this._deviceRotationQuaternion.w *= -1;
+                            this._deviceRoomRotationQuaternion.z *= -1;
+                            this._deviceRoomRotationQuaternion.w *= -1;
                         } else {
-                            this._deviceRotationQuaternion.multiplyToRef(this._leftHandSystemQuaternion, this._deviceRotationQuaternion);
+                            this._deviceRoomRotationQuaternion.multiplyToRef(this._leftHandSystemQuaternion, this._deviceRoomRotationQuaternion);
                         }
                     }
 
                     // if the camera is set, rotate to the camera's rotation
-                    this._deviceRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
+                    this._deviceRoomRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
                 }
             }
         }
