@@ -52,6 +52,7 @@ module BABYLON.GLTF2 {
         private _parent: GLTFFileLoader;
         private _rootUrl: string;
         private _defaultMaterial: PBRMaterial;
+        private _defaultSampler = {} as IGLTFSampler;
         private _rootNode: IGLTFNode;
         private _successCallback: () => void;
         private _progressCallback: (event: ProgressEvent) => void;
@@ -219,6 +220,7 @@ module BABYLON.GLTF2 {
             GLTFLoader._AssignIndices(this._gltf.materials);
             GLTFLoader._AssignIndices(this._gltf.meshes);
             GLTFLoader._AssignIndices(this._gltf.nodes);
+            GLTFLoader._AssignIndices(this._gltf.samplers);
             GLTFLoader._AssignIndices(this._gltf.scenes);
             GLTFLoader._AssignIndices(this._gltf.skins);
             GLTFLoader._AssignIndices(this._gltf.textures);
@@ -227,7 +229,7 @@ module BABYLON.GLTF2 {
                 const buffers = this._gltf.buffers;
                 if (buffers && buffers[0] && !buffers[0].uri) {
                     const binaryBuffer = buffers[0];
-                    if (binaryBuffer.byteLength != data.bin.byteLength) {
+                    if (binaryBuffer.byteLength < data.bin.byteLength - 3 || binaryBuffer.byteLength > data.bin.byteLength) {
                         Tools.Warn("Binary buffer length (" + binaryBuffer.byteLength + ") from JSON does not match chunk length (" + data.bin.byteLength + ")");
                     }
 
@@ -555,7 +557,7 @@ module BABYLON.GLTF2 {
          * @param {IGLTFAccessor} accessor 
          */
         private _convertToFloat4ColorArray(context: string, data: ArrayBufferView, accessor: IGLTFAccessor): Float32Array {
-            const colorComponentCount = GLTFLoader._GetNumComponents(accessor.type);
+            const colorComponentCount = GLTFLoader._GetNumComponents(context, accessor.type);
             if (colorComponentCount === 4 && accessor.componentType === EComponentType.FLOAT) {
                 return data as Float32Array;
             }
@@ -658,7 +660,7 @@ module BABYLON.GLTF2 {
                             break;
                         }
                         default: {
-                            Tools.Warn("Ignoring unrecognized attribute '" + attribute + "'");
+                            Tools.Warn(context + ": Ignoring unrecognized attribute '" + attribute + "'");
                             break;
                         }
                     }
@@ -795,7 +797,7 @@ module BABYLON.GLTF2 {
                             break;
                         }
                         default: {
-                            Tools.Warn("Ignoring unrecognized attribute '" + attribute + "'");
+                            Tools.Warn(context + ": Ignoring unrecognized attribute '" + attribute + "'");
                             break;
                         }
                     }
@@ -1202,14 +1204,15 @@ module BABYLON.GLTF2 {
             }
 
             this._loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView, bufferViewData => {
-                const numComponents = GLTFLoader._GetNumComponents(accessor.type);
-                if (numComponents === 0) {
-                    throw new Error(context + ": Invalid type " + accessor.type);
-                }
+                const numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
 
                 let data: ArrayBufferView;
-                let byteOffset = accessor.byteOffset || 0;
-                let byteStride = bufferView.byteStride;
+                const byteOffset = accessor.byteOffset || 0;
+                const byteStride = bufferView.byteStride;
+
+                if (byteStride === 0) {
+                    Tools.Warn(context + ": Byte stride of 0 is not valid");
+                }
 
                 try {
                     switch (accessor.componentType) {
@@ -1255,7 +1258,7 @@ module BABYLON.GLTF2 {
 
             const targetLength = count * numComponents;
 
-            if (byteStride == null || byteStride === numComponents * typedArray.BYTES_PER_ELEMENT) {
+            if (!byteStride || byteStride === numComponents * typedArray.BYTES_PER_ELEMENT) {
                 return new typedArray(data.buffer, byteOffset, targetLength);
             }
 
@@ -1507,16 +1510,15 @@ module BABYLON.GLTF2 {
         }
 
         public _loadTexture(context: string, texture: IGLTFTexture, coordinatesIndex?: number): Texture {
-            const sampler = (texture.sampler == null ? <IGLTFSampler>{} : GLTFLoader._GetProperty(this._gltf.samplers, texture.sampler));
+            const sampler = (texture.sampler == undefined ? this._defaultSampler : GLTFLoader._GetProperty(this._gltf.samplers, texture.sampler));
             if (!sampler) {
                 throw new Error(context + ": Failed to find sampler " + texture.sampler);
             }
 
-            const noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
-            const samplingMode = GLTFLoader._GetTextureSamplingMode(sampler.magFilter, sampler.minFilter);
+            this._loadSampler("#/samplers/" + sampler.index, sampler);
 
             this._addPendingData(texture);
-            const babylonTexture = new Texture(null, this._babylonScene, noMipMaps, false, samplingMode, () => {
+            const babylonTexture = new Texture(null, this._babylonScene, sampler.noMipMaps, false, sampler.samplingMode, () => {
                 this._tryCatchOnError(() => {
                     this._removePendingData(texture);
                 });
@@ -1553,8 +1555,8 @@ module BABYLON.GLTF2 {
             }
 
             babylonTexture.coordinatesIndex = coordinatesIndex || 0;
-            babylonTexture.wrapU = GLTFLoader._GetTextureWrapMode(sampler.wrapS);
-            babylonTexture.wrapV = GLTFLoader._GetTextureWrapMode(sampler.wrapT);
+            babylonTexture.wrapU = sampler.wrapU;
+            babylonTexture.wrapV = sampler.wrapV;
             babylonTexture.name = texture.name || "texture" + texture.index;
 
             if (this._parent.onTextureLoaded) {
@@ -1562,6 +1564,17 @@ module BABYLON.GLTF2 {
             }
 
             return babylonTexture;
+        }
+
+        private _loadSampler(context: string, sampler: IGLTFSampler): void {
+            if (sampler.noMipMaps != undefined) {
+                return;
+            }
+
+            sampler.noMipMaps = (sampler.minFilter === ETextureMinFilter.NEAREST || sampler.minFilter === ETextureMinFilter.LINEAR);
+            sampler.samplingMode = GLTFLoader._GetTextureSamplingMode(context, sampler.magFilter, sampler.minFilter);
+            sampler.wrapU = GLTFLoader._GetTextureWrapMode(context, sampler.wrapS);
+            sampler.wrapV = GLTFLoader._GetTextureWrapMode(context, sampler.wrapT);
         }
 
         private _loadImageAsync(context: string, image: IGLTFImage, onSuccess: (data: ArrayBufferView) => void): void {
@@ -1648,7 +1661,7 @@ module BABYLON.GLTF2 {
             return array[index];
         }
 
-        private static _GetTextureWrapMode(mode?: ETextureWrapMode): number {
+        private static _GetTextureWrapMode(context: string, mode?: ETextureWrapMode): number {
             // Set defaults if undefined
             mode = mode == undefined ? ETextureWrapMode.REPEAT : mode;
 
@@ -1657,12 +1670,12 @@ module BABYLON.GLTF2 {
                 case ETextureWrapMode.MIRRORED_REPEAT: return Texture.MIRROR_ADDRESSMODE;
                 case ETextureWrapMode.REPEAT: return Texture.WRAP_ADDRESSMODE;
                 default:
-                    Tools.Warn("Invalid texture wrap mode (" + mode + ")");
+                    Tools.Warn(context + ": Invalid texture wrap mode " + mode);
                     return Texture.WRAP_ADDRESSMODE;
             }
         }
 
-        private static _GetTextureSamplingMode(magFilter?: ETextureMagFilter, minFilter?: ETextureMinFilter): number {
+        private static _GetTextureSamplingMode(context: string, magFilter?: ETextureMagFilter, minFilter?: ETextureMinFilter): number {
             // Set defaults if undefined
             magFilter = magFilter == undefined ? ETextureMagFilter.LINEAR : magFilter;
             minFilter = minFilter == undefined ? ETextureMinFilter.LINEAR_MIPMAP_LINEAR : minFilter;
@@ -1676,13 +1689,13 @@ module BABYLON.GLTF2 {
                     case ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return Texture.LINEAR_NEAREST_MIPLINEAR;
                     case ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return Texture.LINEAR_LINEAR_MIPLINEAR;
                     default:
-                        Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
+                        Tools.Warn(context + ": Invalid texture minification filter " + minFilter);
                         return Texture.LINEAR_LINEAR_MIPLINEAR;
                 }
             }
             else {
                 if (magFilter !== ETextureMagFilter.NEAREST) {
-                    Tools.Warn("Invalid texture magnification filter (" + magFilter + ")");
+                    Tools.Warn(context + "Invalid texture magnification filter " + magFilter);
                 }
 
                 switch (minFilter) {
@@ -1693,13 +1706,13 @@ module BABYLON.GLTF2 {
                     case ETextureMinFilter.NEAREST_MIPMAP_LINEAR: return Texture.NEAREST_NEAREST_MIPLINEAR;
                     case ETextureMinFilter.LINEAR_MIPMAP_LINEAR: return Texture.NEAREST_LINEAR_MIPLINEAR;
                     default:
-                        Tools.Warn("Invalid texture minification filter (" + minFilter + ")");
+                        Tools.Warn(context + ": Invalid texture minification filter " + minFilter);
                         return Texture.NEAREST_NEAREST_MIPNEAREST;
                 }
             }
         }
 
-        private static _GetNumComponents(type: string): number {
+        private static _GetNumComponents(context: string, type: string): number {
             switch (type) {
                 case "SCALAR": return 1;
                 case "VEC2": return 2;
@@ -1710,7 +1723,7 @@ module BABYLON.GLTF2 {
                 case "MAT4": return 16;
             }
 
-            return 0;
+            throw new Error(context + ": Invalid type " + type);
         }
 
         private _compileMaterialAsync(babylonMaterial: Material, babylonMesh: AbstractMesh, onSuccess: () => void): void {
