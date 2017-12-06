@@ -683,6 +683,7 @@ declare module BABYLON.GUI {
         placeholderColor: string;
         placeholderText: string;
         text: string;
+        width: string | number;
         constructor(name?: string | undefined, text?: string);
         onBlur(): void;
         onFocus(): void;

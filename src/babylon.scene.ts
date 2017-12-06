@@ -181,6 +181,7 @@
         public forceShowBoundingBoxes = false;
         public clipPlane: Nullable<Plane>;
         public animationsEnabled = true;
+        public useConstantAnimationDeltaTime = false;
         public constantlyUpdateMeshUnderPointer = false;
 
         public hoverCursor = "pointer";
@@ -2070,7 +2071,7 @@
                 }
                 this._animationTimeLast = now;
             }
-            var deltaTime = (now - this._animationTimeLast) * this.animationTimeScale;
+            var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
             this._animationTime += deltaTime;
             this._animationTimeLast = now;
             for (var index = 0; index < this._activeAnimatables.length; index++) {
@@ -3377,7 +3378,7 @@
                 let defaultFrameTime = 1000 / 60; // frame time in MS
 
                 if (this._physicsEngine) {
-                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000;
+                    defaultFrameTime = this._physicsEngine.getTimeStep() * 1000;
                 }
                 let stepsTaken = 0;
 
@@ -3397,28 +3398,24 @@
                     // Physics
                     if (this._physicsEngine) {
                         this.onBeforePhysicsObservable.notifyObservers(this);
-                        this._physicsEngine._step(defaultFPS);
+                        this._physicsEngine._step(defaultFrameTime / 1000);
                         this.onAfterPhysicsObservable.notifyObservers(this);
                     }
 
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
 
-                    if ((internalSteps > 1) && (stepsTaken != internalSteps - 1)) {
-                        this._evaluateActiveMeshes();
-                    }
-
                     stepsTaken++;
                     deltaTime -= defaultFrameTime;
 
-                } while (deltaTime > 0 && stepsTaken < maxSubSteps);
+                } while (deltaTime > 0 && stepsTaken < internalSteps);
 
-                this._timeAccumulator = deltaTime;
+                this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
 
             }
             else {
                 // Animations
-                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
+                var deltaTime = this.useConstantAnimationDeltaTime ? 16 : Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
                 this._animationRatio = deltaTime * (60.0 / 1000.0);
                 this._animate();
                 this.onAfterAnimationsObservable.notifyObservers(this);

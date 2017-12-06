@@ -581,11 +581,8 @@ module BABYLON.GLTF1 {
         if (!node.babylonNode) {
             return newMesh;
         }
-        var multiMat = new MultiMaterial("multimat" + id, gltfRuntime.scene);
 
-        if (!newMesh.material) {
-            newMesh.material = multiMat;
-        }
+        const subMaterials : Material[] = [];
 
         var vertexData = new VertexData();
         var geometry = new Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
@@ -690,13 +687,30 @@ module BABYLON.GLTF1 {
                 vertexData.merge(tempVertexData);
 
                 // Sub material
-                var material = gltfRuntime.scene.getMaterialByID(primitive.material);
-                multiMat.subMaterials.push(material === null ? GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
+                let material = gltfRuntime.scene.getMaterialByID(primitive.material);
+
+                subMaterials.push(material === null ? GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
 
                 // Update vertices start and index start
                 verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
                 indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
             }
+        }
+        let material : StandardMaterial | MultiMaterial;
+        if (subMaterials.length > 1) {
+            material = new MultiMaterial("multimat" + id, gltfRuntime.scene);
+            (material as MultiMaterial).subMaterials = subMaterials;
+        }
+        else {
+            material = new StandardMaterial("multimat" + id, gltfRuntime.scene);
+        }
+
+        if (subMaterials.length === 1) {
+            material = (subMaterials[0] as StandardMaterial);
+        }
+
+        if (!newMesh.material) {
+            newMesh.material = material;
         }
 
         // Apply geometry

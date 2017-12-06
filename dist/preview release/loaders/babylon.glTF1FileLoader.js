@@ -3,27 +3,63 @@ var BABYLON;
 (function (BABYLON) {
     var GLTFLoaderCoordinateSystemMode;
     (function (GLTFLoaderCoordinateSystemMode) {
-        // Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene (scene.useRightHandedSystem).
-        // NOTE: When scene.useRightHandedSystem is false, an additional transform will be added to the root to transform the data from right-handed to left-handed.
+        /**
+         * Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene.
+         */
         GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["AUTO"] = 0] = "AUTO";
-        // The glTF right-handed data is not transformed in any form and is loaded directly.
-        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["PASS_THROUGH"] = 1] = "PASS_THROUGH";
-        // Sets the useRightHandedSystem flag on the scene.
-        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 2] = "FORCE_RIGHT_HANDED";
+        /**
+         * Sets the useRightHandedSystem flag on the scene.
+         */
+        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 1] = "FORCE_RIGHT_HANDED";
     })(GLTFLoaderCoordinateSystemMode = BABYLON.GLTFLoaderCoordinateSystemMode || (BABYLON.GLTFLoaderCoordinateSystemMode = {}));
+    var GLTFLoaderAnimationStartMode;
+    (function (GLTFLoaderAnimationStartMode) {
+        /**
+         * No animation will start.
+         */
+        GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["NONE"] = 0] = "NONE";
+        /**
+         * The first animation will start.
+         */
+        GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["FIRST"] = 1] = "FIRST";
+        /**
+         * All animations will start.
+         */
+        GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["ALL"] = 2] = "ALL";
+    })(GLTFLoaderAnimationStartMode = BABYLON.GLTFLoaderAnimationStartMode || (BABYLON.GLTFLoaderAnimationStartMode = {}));
     var GLTFFileLoader = /** @class */ (function () {
         function GLTFFileLoader() {
-            // V2 options
+            // #endregion
+            // #region V2 options
+            /**
+             * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED).
+             */
             this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+            /**
+             * The animation start mode (NONE, FIRST, ALL).
+             */
+            this.animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
+            /**
+             * Set to true to compile materials before raising the success callback.
+             */
             this.compileMaterials = false;
-            this.compileShadowGenerators = false;
+            /**
+             * Set to true to also compile materials with clip planes.
+             */
             this.useClipPlane = false;
+            /**
+             * Set to true to compile shadow generators before raising the success callback.
+             */
+            this.compileShadowGenerators = false;
             this.name = "gltf";
             this.extensions = {
                 ".gltf": { isBinary: false },
                 ".glb": { isBinary: true }
             };
         }
+        /**
+         * Disposes the loader, releases resources during load, and cancels any outstanding requests.
+         */
         GLTFFileLoader.prototype.dispose = function () {
             if (this._loader) {
                 this._loader.dispose();
@@ -215,9 +251,10 @@ var BABYLON;
             }
             return result;
         };
-        // V1 options
-        GLTFFileLoader.HomogeneousCoordinates = false;
+        // #endregion
+        // #region V1 options
         GLTFFileLoader.IncrementalLoading = true;
+        GLTFFileLoader.HomogeneousCoordinates = false;
         return GLTFFileLoader;
     }());
     BABYLON.GLTFFileLoader = GLTFFileLoader;
@@ -830,10 +867,7 @@ var BABYLON;
             if (!node.babylonNode) {
                 return newMesh;
             }
-            var multiMat = new BABYLON.MultiMaterial("multimat" + id, gltfRuntime.scene);
-            if (!newMesh.material) {
-                newMesh.material = multiMat;
-            }
+            var subMaterials = [];
             var vertexData = new BABYLON.VertexData();
             var geometry = new BABYLON.Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
             var verticesStarts = new Array();
@@ -921,12 +955,26 @@ var BABYLON;
                     }
                     vertexData.merge(tempVertexData);
                     // Sub material
-                    var material = gltfRuntime.scene.getMaterialByID(primitive.material);
-                    multiMat.subMaterials.push(material === null ? GLTF1.GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
+                    var material_1 = gltfRuntime.scene.getMaterialByID(primitive.material);
+                    subMaterials.push(material_1 === null ? GLTF1.GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material_1);
                     // Update vertices start and index start
                     verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
                     indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
                 }
+            }
+            var material;
+            if (subMaterials.length > 1) {
+                material = new BABYLON.MultiMaterial("multimat" + id, gltfRuntime.scene);
+                material.subMaterials = subMaterials;
+            }
+            else {
+                material = new BABYLON.StandardMaterial("multimat" + id, gltfRuntime.scene);
+            }
+            if (subMaterials.length === 1) {
+                material = subMaterials[0];
+            }
+            if (!newMesh.material) {
+                newMesh.material = material;
             }
             // Apply geometry
             geometry.setAllVerticesData(vertexData, false);
