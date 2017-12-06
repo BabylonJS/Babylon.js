@@ -3,27 +3,63 @@ var BABYLON;
 (function (BABYLON) {
     var GLTFLoaderCoordinateSystemMode;
     (function (GLTFLoaderCoordinateSystemMode) {
-        // Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene (scene.useRightHandedSystem).
-        // NOTE: When scene.useRightHandedSystem is false, an additional transform will be added to the root to transform the data from right-handed to left-handed.
+        /**
+         * Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene.
+         */
         GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["AUTO"] = 0] = "AUTO";
-        // The glTF right-handed data is not transformed in any form and is loaded directly.
-        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["PASS_THROUGH"] = 1] = "PASS_THROUGH";
-        // Sets the useRightHandedSystem flag on the scene.
-        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 2] = "FORCE_RIGHT_HANDED";
+        /**
+         * Sets the useRightHandedSystem flag on the scene.
+         */
+        GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 1] = "FORCE_RIGHT_HANDED";
     })(GLTFLoaderCoordinateSystemMode = BABYLON.GLTFLoaderCoordinateSystemMode || (BABYLON.GLTFLoaderCoordinateSystemMode = {}));
+    var GLTFLoaderAnimationStartMode;
+    (function (GLTFLoaderAnimationStartMode) {
+        /**
+         * No animation will start.
+         */
+        GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["NONE"] = 0] = "NONE";
+        /**
+         * The first animation will start.
+         */
+        GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["FIRST"] = 1] = "FIRST";
+        /**
+         * All animations will start.
+         */
+        GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["ALL"] = 2] = "ALL";
+    })(GLTFLoaderAnimationStartMode = BABYLON.GLTFLoaderAnimationStartMode || (BABYLON.GLTFLoaderAnimationStartMode = {}));
     var GLTFFileLoader = /** @class */ (function () {
         function GLTFFileLoader() {
-            // V2 options
+            // #endregion
+            // #region V2 options
+            /**
+             * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED).
+             */
             this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+            /**
+             * The animation start mode (NONE, FIRST, ALL).
+             */
+            this.animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
+            /**
+             * Set to true to compile materials before raising the success callback.
+             */
             this.compileMaterials = false;
-            this.compileShadowGenerators = false;
+            /**
+             * Set to true to also compile materials with clip planes.
+             */
             this.useClipPlane = false;
+            /**
+             * Set to true to compile shadow generators before raising the success callback.
+             */
+            this.compileShadowGenerators = false;
             this.name = "gltf";
             this.extensions = {
                 ".gltf": { isBinary: false },
                 ".glb": { isBinary: true }
             };
         }
+        /**
+         * Disposes the loader, releases resources during load, and cancels any outstanding requests.
+         */
         GLTFFileLoader.prototype.dispose = function () {
             if (this._loader) {
                 this._loader.dispose();
@@ -215,9 +251,10 @@ var BABYLON;
             }
             return result;
         };
-        // V1 options
-        GLTFFileLoader.HomogeneousCoordinates = false;
+        // #endregion
+        // #region V1 options
         GLTFFileLoader.IncrementalLoading = true;
+        GLTFFileLoader.HomogeneousCoordinates = false;
         return GLTFFileLoader;
     }());
     BABYLON.GLTFFileLoader = GLTFFileLoader;
