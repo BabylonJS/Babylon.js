@@ -228,7 +228,11 @@ module BABYLON {
                 }
                 if (this._btnVR) {
                     this._btnVR.addEventListener("click", () => {
-                        this.enterVR();
+                        if(!this.isInVRMode){
+                            this.enterVR();
+                        }else{
+                            this.exitVR();
+                        }
                     });
                 }
 
@@ -392,7 +396,7 @@ module BABYLON {
         }
 
         private updateButtonVisibility() {
-            if (!this._btnVR) {
+            if (!this._btnVR || this._useCustomVRButton) {
                 return;
             }
             this._btnVR.className = "babylonVRicon";
