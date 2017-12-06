@@ -41,8 +41,10 @@ module BABYLON {
     }
 
     export class PoseEnabledController extends Gamepad implements PoseControlled {
-        devicePosition: Vector3;
-        deviceRotationQuaternion: Quaternion;
+        public devicePosition = Vector3.Zero();
+        public deviceRotationQuaternion = new Quaternion();
+        private _devicePosition: Vector3;
+        private _deviceRotationQuaternion: Quaternion;
         deviceScaleFactor: number = 1;
 
         public position: Vector3;
@@ -67,8 +69,8 @@ module BABYLON {
             this.controllerType = PoseEnabledControllerType.GENERIC;
             this.position = Vector3.Zero();
             this.rotationQuaternion = new Quaternion();
-            this.devicePosition = Vector3.Zero();
-            this.deviceRotationQuaternion = new Quaternion();
+            this._devicePosition = Vector3.Zero();
+            this._deviceRotationQuaternion = new Quaternion();
 
             this._calculatedPosition = Vector3.Zero();
             this._calculatedRotation = new Quaternion();
@@ -76,22 +78,20 @@ module BABYLON {
         }
 
         private _workingMatrix = Matrix.Identity();
-        private _workingQuaternion = Quaternion.Identity();
-        private _workingVector = Vector3.Zero();
         public update() {
             super.update();
             var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
+
+            Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this.devicePosition)
+            this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
+            Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
             
             if (this._mesh) {
-                Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this._workingVector)
-                this._mesh.position.copyFrom(this._workingVector);
-
+                this._mesh.position.copyFrom(this.devicePosition);
 
                 if (this._mesh.rotationQuaternion) {
-                    this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
-                    Quaternion.FromRotationMatrixToRef(this._workingMatrix, this._workingQuaternion);
-                    this._mesh.rotationQuaternion.copyFrom(this._workingQuaternion.multiplyInPlace(this._calculatedRotation));
+                    this._mesh.rotationQuaternion.copyFrom(this.deviceRotationQuaternion.multiplyInPlace(this._calculatedRotation));
                 }
             }
         }
@@ -100,29 +100,29 @@ module BABYLON {
             if (poseData) {
                 this.rawPose = poseData;
                 if (poseData.position) {
-                    this.devicePosition.copyFromFloats(poseData.position[0], poseData.position[1], -poseData.position[2]);
+                    this._devicePosition.copyFromFloats(poseData.position[0], poseData.position[1], -poseData.position[2]);
                     if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
-                        this.devicePosition.z *= -1;
+                        this._devicePosition.z *= -1;
                     }
 
-                    this.devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
+                    this._devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
 
                 }
                 let pose = this.rawPose;
                 if (poseData.orientation && pose.orientation) {
-                    this.deviceRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
+                    this._deviceRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
                     if (this._mesh) {
                         if (this._mesh.getScene().useRightHandedSystem) {
-                            this.deviceRotationQuaternion.z *= -1;
-                            this.deviceRotationQuaternion.w *= -1;
+                            this._deviceRotationQuaternion.z *= -1;
+                            this._deviceRotationQuaternion.w *= -1;
                         } else {
-                            this.deviceRotationQuaternion.multiplyToRef(this._leftHandSystemQuaternion, this.deviceRotationQuaternion);
+                            this._deviceRotationQuaternion.multiplyToRef(this._leftHandSystemQuaternion, this._deviceRotationQuaternion);
                         }
                     }
 
                     // if the camera is set, rotate to the camera's rotation
-                    this.deviceRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
+                    this._deviceRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
                 }
             }
         }
