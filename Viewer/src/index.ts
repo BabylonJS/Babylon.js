@@ -13,13 +13,12 @@ import { AbstractViewer } from './viewer/viewer';
 // load babylon and needed modules.
 import 'babylonjs';
 import 'babylonjs-loaders';
-import 'babylonjs-materials';
 import '../assets/pep.min';
 
 import { InitTags } from './initializer';
 
 // promise polyfill, if needed!
-global.Promise = Promise || require('es6-promise').Promise;
+global.Promise = typeof Promise === 'undefined' ? require('es6-promise').Promise : Promise;
 
 export let disableInit: boolean = false;
 document.addEventListener("DOMContentLoaded", function (event) {
