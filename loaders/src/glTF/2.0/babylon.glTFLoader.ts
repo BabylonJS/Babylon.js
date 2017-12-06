@@ -1766,7 +1766,7 @@ module BABYLON.GLTF2 {
                         }
                     }
                 }
-                else {
+                else if (mesh.material) {
                     remaining++;
                 }
             }
@@ -1788,7 +1788,7 @@ module BABYLON.GLTF2 {
                         }
                     }
                 }
-                else if (mesh.material !== null) {
+                else if (mesh.material) {
                     this._compileMaterialAsync(mesh.material, mesh, () => {
                         if (--remaining === 0) {
                             onSuccess();
