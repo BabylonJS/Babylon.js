@@ -1370,7 +1370,7 @@ var BABYLON;
                 this.notRenderable = false;
             };
             Control.prototype.linkWithMesh = function (mesh) {
-                if (!this._host || this._root !== this._host._rootContainer) {
+                if (!this._host || this._root && this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
                     return;
                 }

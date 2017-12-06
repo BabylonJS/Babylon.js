@@ -181,6 +181,7 @@
         public forceShowBoundingBoxes = false;
         public clipPlane: Nullable<Plane>;
         public animationsEnabled = true;
+        public useConstantAnimationDeltaTime = false;
         public constantlyUpdateMeshUnderPointer = false;
 
         public hoverCursor = "pointer";
@@ -2070,7 +2071,7 @@
                 }
                 this._animationTimeLast = now;
             }
-            var deltaTime = (now - this._animationTimeLast) * this.animationTimeScale;
+            var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
             this._animationTime += deltaTime;
             this._animationTimeLast = now;
             for (var index = 0; index < this._activeAnimatables.length; index++) {

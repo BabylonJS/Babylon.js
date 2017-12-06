@@ -8026,7 +8026,6 @@ var BABYLON;
             this.onContextRestoredObservable = new BABYLON.Observable();
             this._contextWasLost = false;
             this._doNotHandleContextLost = false;
-            this._constantAnimationDeltaTime = -1;
             // FPS
             this._performanceMonitor = new BABYLON.PerformanceMonitor();
             this._fps = 60;
@@ -8096,13 +8095,9 @@ var BABYLON;
                 if (options.stencil === undefined) {
                     options.stencil = true;
                 }
-                if (options.constantAnimationDeltaTime === undefined) {
-                    options.constantAnimationDeltaTime = -1;
-                }
                 this._deterministicLockstep = options.deterministicLockstep;
                 this._lockstepMaxSteps = options.lockstepMaxSteps;
                 this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
-                this._constantAnimationDeltaTime = options.constantAnimationDeltaTime;
                 // GL
                 if (!options.disableWebGL2Support) {
                     try {
@@ -12001,7 +11996,7 @@ var BABYLON;
             return this._fps;
         };
         Engine.prototype.getDeltaTime = function () {
-            return this._constantAnimationDeltaTime > -1 ? this._constantAnimationDeltaTime : this._deltaTime;
+            return this._deltaTime;
         };
         Engine.prototype._measureFps = function () {
             this._performanceMonitor.sampleFrame();
@@ -17908,6 +17903,7 @@ var BABYLON;
             this._forcePointsCloud = false;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
+            this.useConstantAnimationDeltaTime = false;
             this.constantlyUpdateMeshUnderPointer = false;
             this.hoverCursor = "pointer";
             this.defaultCursor = "";
@@ -19609,7 +19605,7 @@ var BABYLON;
                 }
                 this._animationTimeLast = now;
             }
-            var deltaTime = (now - this._animationTimeLast) * this.animationTimeScale;
+            var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
             this._animationTime += deltaTime;
             this._animationTimeLast = now;
             for (var index = 0; index < this._activeAnimatables.length; index++) {
@@ -38427,7 +38423,7 @@ var BABYLON;
             _this._cameraTransformMatrix = BABYLON.Matrix.Zero();
             _this._cameraRotationMatrix = BABYLON.Matrix.Zero();
             _this._referencePoint = new BABYLON.Vector3(0, 0, 1);
-            _this._defaultUpVector = new BABYLON.Vector3(0, 1, 0);
+            _this._currentUpVector = new BABYLON.Vector3(0, 1, 0);
             _this._transformedReferencePoint = BABYLON.Vector3.Zero();
             _this._lookAtTemp = BABYLON.Matrix.Zero();
             _this._tempMatrix = BABYLON.Matrix.Zero();
@@ -38516,7 +38512,7 @@ var BABYLON;
         // Target
         TargetCamera.prototype.setTarget = function (target) {
             this.upVector.normalize();
-            BABYLON.Matrix.LookAtLHToRef(this.position, target, this._defaultUpVector, this._camMatrix);
+            BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
             this._camMatrix.invert();
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
             var vDir = target.subtract(this.position);
@@ -38616,7 +38612,7 @@ var BABYLON;
                 BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
             }
             //update the up vector!
-            BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
+            BABYLON.Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
         };
         TargetCamera.prototype._getViewMatrix = function () {
             if (this.lockedTarget) {
@@ -38628,10 +38624,10 @@ var BABYLON;
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             if (this.getScene().useRightHandedSystem) {
-                BABYLON.Matrix.LookAtRHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+                BABYLON.Matrix.LookAtRHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
             }
             else {
-                BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+                BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
             }
             return this._viewMatrix;
         };
