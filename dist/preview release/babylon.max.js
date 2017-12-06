@@ -8026,6 +8026,7 @@ var BABYLON;
             this.onContextRestoredObservable = new BABYLON.Observable();
             this._contextWasLost = false;
             this._doNotHandleContextLost = false;
+            this._constantAnimationDeltaTime = -1;
             // FPS
             this._performanceMonitor = new BABYLON.PerformanceMonitor();
             this._fps = 60;
@@ -8095,9 +8096,13 @@ var BABYLON;
                 if (options.stencil === undefined) {
                     options.stencil = true;
                 }
+                if (options.constantAnimationDeltaTime === undefined) {
+                    options.constantAnimationDeltaTime = -1;
+                }
                 this._deterministicLockstep = options.deterministicLockstep;
                 this._lockstepMaxSteps = options.lockstepMaxSteps;
                 this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
+                this._constantAnimationDeltaTime = options.constantAnimationDeltaTime;
                 // GL
                 if (!options.disableWebGL2Support) {
                     try {
@@ -11996,7 +12001,7 @@ var BABYLON;
             return this._fps;
         };
         Engine.prototype.getDeltaTime = function () {
-            return this._deltaTime;
+            return this._constantAnimationDeltaTime > -1 ? this._constantAnimationDeltaTime : this._deltaTime;
         };
         Engine.prototype._measureFps = function () {
             this._performanceMonitor.sampleFrame();
@@ -20696,9 +20701,6 @@ var BABYLON;
                     }
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
-                    if ((internalSteps > 1) && (stepsTaken != internalSteps - 1)) {
-                        this._evaluateActiveMeshes();
-                    }
                     stepsTaken++;
                     deltaTime -= defaultFrameTime;
                 } while (deltaTime > 0 && stepsTaken < internalSteps);

@@ -2777,10 +2777,10 @@ var BABYLON;
                         context.shadowOffsetY = this.shadowOffsetY;
                     }
                     if (this._thumbWidth.isPixel) {
-                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.height);
+                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
                     }
                     else {
-                        effectiveThumbWidth = this._currentMeasure.height * this._thumbWidth.getValue(this._host);
+                        effectiveThumbWidth = this._currentMeasure.width * this._thumbWidth.getValue(this._host);
                     }
                     if (this._barOffset.isPixel) {
                         effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
@@ -4325,6 +4325,22 @@ var BABYLON;
                     this._text = value;
                     this._markAsDirty();
                     this.onTextChangedObservable.notifyObservers(this);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "width", {
+                get: function () {
+                    return this._width.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._width.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._width.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                    this.autoStretchWidth = false;
                 },
                 enumerable: true,
                 configurable: true
