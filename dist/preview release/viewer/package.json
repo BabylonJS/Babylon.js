@@ -15,7 +15,6 @@
         "readme.md",
         "package.json"
     ],
-    //"typings": "babylonjs.serializers.module.d.ts",
     "keywords": [
         "3D",
         "javascript",
