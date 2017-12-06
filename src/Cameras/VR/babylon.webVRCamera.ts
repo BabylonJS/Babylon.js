@@ -52,11 +52,11 @@ module BABYLON {
 
         protected _descendants: Array<Node> = [];
 
-        // _device* represents device position and rotation in room space
-        private _devicePosition = Vector3.Zero();
-        private _deviceRotationQuaternion = Quaternion.Identity(); 
+        // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
+        private _deviceRoomPosition = Vector3.Zero();
+        private _deviceRoomRotationQuaternion = Quaternion.Identity(); 
 
-        // device* represents device position and rotation in babylon space
+        // Represents device position and rotation in babylon space
         public devicePosition = Vector3.Zero();
         public deviceRotationQuaternion = Quaternion.Identity();        
 
@@ -218,16 +218,16 @@ module BABYLON {
         updateFromDevice(poseData: DevicePose) {
             if (poseData && poseData.orientation) {
                 this.rawPose = poseData;
-                this._deviceRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
+                this._deviceRoomRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
 
                 if (this.getScene().useRightHandedSystem) {
-                    this._deviceRotationQuaternion.z *= -1;
-                    this._deviceRotationQuaternion.w *= -1;
+                    this._deviceRoomRotationQuaternion.z *= -1;
+                    this._deviceRoomRotationQuaternion.w *= -1;
                 }
                 if (this.webVROptions.trackPosition && this.rawPose.position) {
-                    this._devicePosition.copyFromFloats(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2]);
+                    this._deviceRoomPosition.copyFromFloats(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2]);
                     if (this.getScene().useRightHandedSystem) {
-                        this._devicePosition.z *= -1;
+                        this._deviceRoomPosition.z *= -1;
                     }
                 }
             }
@@ -277,11 +277,11 @@ module BABYLON {
         public _updateRigCameras() {
             var camLeft = <TargetCamera>this._rigCameras[0];
             var camRight = <TargetCamera>this._rigCameras[1];
-            camLeft.rotationQuaternion.copyFrom(this._deviceRotationQuaternion);
-            camRight.rotationQuaternion.copyFrom(this._deviceRotationQuaternion);
+            camLeft.rotationQuaternion.copyFrom(this._deviceRoomRotationQuaternion);
+            camRight.rotationQuaternion.copyFrom(this._deviceRoomRotationQuaternion);
 
-            camLeft.position.copyFrom(this._devicePosition);
-            camRight.position.copyFrom(this._devicePosition);
+            camLeft.position.copyFrom(this._deviceRoomPosition);
+            camRight.position.copyFrom(this._deviceRoomPosition);
         }
 
         private _workingVector = Vector3.Zero();
@@ -291,7 +291,7 @@ module BABYLON {
             if(!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)){
                 // Set working vector to the device position in room space rotated by the new rotation
                 this.rotationQuaternion.toRotationMatrix(this._workingMatrix);
-                Vector3.TransformCoordinatesToRef(this._devicePosition, this._workingMatrix, this._workingVector);
+                Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._workingMatrix, this._workingVector);
 
                 // Subtract this vector from the current device position in world to get the translation for the device world matrix
                 this.devicePosition.subtractToRef(this._workingVector, this._workingVector)
@@ -320,10 +320,10 @@ module BABYLON {
         }
         public update() {
             // Get current device position in babylon world
-            Vector3.TransformCoordinatesToRef(this._devicePosition, this._deviceToWorld, this.devicePosition);
+            Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
             
             // Get current device rotation in babylon world
-            Matrix.FromQuaternionToRef(this._deviceRotationQuaternion, this._workingMatrix);
+            Matrix.FromQuaternionToRef(this._deviceRoomRotationQuaternion, this._workingMatrix);
             this._deviceToWorld.multiplyToRef(this._workingMatrix, this._workingMatrix);
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
 
