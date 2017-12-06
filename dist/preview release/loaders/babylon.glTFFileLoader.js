@@ -4033,7 +4033,7 @@ var BABYLON;
                             }
                         }
                     }
-                    else {
+                    else if (mesh.material) {
                         remaining++;
                     }
                 }
@@ -4055,7 +4055,7 @@ var BABYLON;
                             }
                         }
                     }
-                    else if (mesh.material !== null) {
+                    else if (mesh.material) {
                         this._compileMaterialAsync(mesh.material, mesh, function () {
                             if (--remaining === 0) {
                                 onSuccess();
