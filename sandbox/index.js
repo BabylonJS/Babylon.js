@@ -39,7 +39,7 @@ if (BABYLON.Engine.isSupported()) {
 
         if (plugin.name === "gltf" && plugin instanceof BABYLON.GLTFFileLoader) {
             plugin.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.ALL;
-            //  plugin.compileMaterials = true;
+            plugin.compileMaterials = true;
         }
     });
 
