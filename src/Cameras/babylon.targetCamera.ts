@@ -271,26 +271,23 @@
             } else {
                 Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
             }
+
             //update the up vector!
             BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
         }
 
         public _getViewMatrix(): Matrix {
-            if (!this.lockedTarget) {
-                // Compute
-                this._updateCameraRotationMatrix();
-
-                Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-
-                // Computing target and final matrix
-                this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
-            } else {
-                let targetPosition = this._getLockedTargetPosition();
-
-                if (targetPosition) {
-                    this._currentTarget.copyFrom(targetPosition);
-                }
+            if (this.lockedTarget) {
+                this.setTarget(this._getLockedTargetPosition()!);
             }
+
+            // Compute
+            this._updateCameraRotationMatrix();
+
+            Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
 
             if (this.getScene().useRightHandedSystem) {
                 Matrix.LookAtRHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
