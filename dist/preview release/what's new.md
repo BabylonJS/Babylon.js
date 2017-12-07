@@ -1,6 +1,7 @@
-# 3.1.0:
+# 3.1.0
 
 ## Major updates
+
 - Added VRExperienceHelper to create WebVR experience with 2 lines of code. [Doc here](http://doc.babylonjs.com/how_to/webvr_helper) ([davrous](https://github.com/davrous), [TrevorDev](https://github.com/TrevorDev))
 - Viewer (TODO)
 - Added BackgroundMaterial [Doc here](https://doc.babylonjs.com/how_to/backgroundmaterial)
@@ -20,12 +21,15 @@
 - Added support for `material.separateCullingPass`. [Doc here](http://doc.babylonjs.com/tutorials/transparency_and_how_meshes_are_rendered#things-to-do-and-not-to-do) ([sebavan](https://github.com/sebavan))
 - Added support for Windows Motion Controllers ([Lewis Weaver](https://github.com/leweaver))
 - Added support for Particle animation in ParticleSystem. [Doc here](http://doc.babylonjs.com/tutorials/particles#particle-animation) ([Ibraheem Osama](https://github.com/IbraheemOsama))
-- More robust TypeScript code with *strictNullChecks*, *noImplicitAny*, *noImplicitThis* and *noImplicitReturns* compiler options ([deltakosh](https://github.com/deltakosh))
+- More robust TypeScript code with *strictNullChecks*, *noImplicitAny*, *noImplicitThis* and *noImplicitReturns* compiler options ([deltakosh](https://github.com/deltakosh) and [RaananW](https://github.com/RaananW))
 - Introduced `NullEngine` which can be used to use Babylon.js in headless mode. [Doc here](http://doc.babylonjs.com/generals/nullengine) ([deltakosh](https://github.com/deltakosh))
 - New instrumentations tools. [Doc here](http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation) ([deltakosh](https://github.com/deltakosh))
 - Complete rework of Unity3D exporter. [Doc here](http://doc.babylonjs.com/resources/intro) ([MackeyK24](https://github.com/MackeyK24))
+- Introducing the BabylonJS viewer, an HTML-based 3D/model viewer, with Babylon at its core. [BabylonJS viewer documentation](http://doc.babylonjs.com/extensions/the_babylon_viewer) ([RaananW](https://github.com/RaananW))
+- Full NPM support for BabylonJS and its modules, based on UMD and including Typings. [BabylonJS on npm](https://www.npmjs.com/~babylonjs). ([RaananW](https://github.com/RaananW))
 
 ## Updates
+
 - Introduced `TransformNode` class as a parent of `AbstractMesh`. This class was extensively asked by the community to hold only tranformation for a node ([deltakosh](https://github.com/deltakosh))
 - Added `boundingInfo.centerOn` to recreate the bounding info to be centered around a specific point given a specific extend ([deltakosh](https://github.com/deltakosh))
 - Added `mesh.normalizeToUnitCube` to uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units) ([deltakosh](https://github.com/deltakosh))
@@ -37,7 +41,7 @@
 - Several inspector improvements ([temechon](https://github.com/temechon))
 - New observables for actions: `onBeforeExecuteObservable` for all actions and `onInterpolationDoneObservable` for `InterpolateValueAction` ([deltakosh](https://github.com/deltakosh))
 - New observables for gamepads: `onButtonDownObservable`, `onButtonUpObservable`, `onPadDownObservable`, `onPadUpObservable` ([deltakosh](https://github.com/deltakosh))
-- New `camera.storeState()` and `camera.restoreState()` functions to store / restore cameras position / rotation / fov. (Doc here)[http://doc.babylonjs.com/tutorials/cameras#state] ([deltakosh](https://github.com/deltakosh))
+- New `camera.storeState()` and `camera.restoreState()` functions to store / restore cameras position / rotation / fov. [Doc here](http://doc.babylonjs.com/tutorials/cameras#state) ([deltakosh](https://github.com/deltakosh))
 - POW2 textures rescale is now done by shaders (It was previously done using canvas) ([deltakosh](https://github.com/deltakosh))
 - Added `SceneLoader.CleanBoneMatrixWeights` to force the loader to normalize matrix weights when loading bones (off by default) ([deltakosh](https://github.com/deltakosh)) 
 - Added `camera.onViewMatrixChangedObservable` and `camera.onProjectionMatrixChangedObservable` ([deltakosh](https://github.com/deltakosh))
@@ -47,17 +51,33 @@
 - GUI: Added support for pointer move events on projected UI ([deltakosh](https://github.com/deltakosh))
 - Normals are generated automatically by StandardMaterial if meshes do not have normals ([deltakosh](https://github.com/deltakosh))
 - Added `mesh.onMaterialChangedObservable` to notify when a new material is set ([deltakosh](https://github.com/deltakosh))
-- Improved the SPS perfs for dead or invisible solid particles ([jerome](https://github.com/jbousquie))  
-- Added `enableDepthSort` parameter to the SPS in order to sort the particles from the camera position ([jerome](https://github.com/jbousquie)) 
-- Added `pivot` property to the SPS solid particles ([jerome](https://github.com/jbousquie)) 
-- Added the mesh facet depth sort to FacetData  ([jerome](https://github.com/jbousquie)) 
-- Added `LineSystem` and `LineMesh` per point colors ([jerome](https://github.com/jbousquie))  
+- Improved the SPS perfs for dead or invisible solid particles ([jerome](https://github.com/jbousquie))
+- Added `enableDepthSort` parameter to the SPS in order to sort the particles from the camera position ([jerome](https://github.com/jbousquie))
+- Added `pivot` property to the SPS solid particles ([jerome](https://github.com/jbousquie))
+- Added the mesh facet depth sort to FacetData  ([jerome](https://github.com/jbousquie))
+- Added `LineSystem` and `LineMesh` per point colors ([jerome](https://github.com/jbousquie))
 - Added `AdvancedDynamicTexture.renderScale` to allow users to render at higher DPI ([deltakosh](https://github.com/deltakosh))
+- WaterMaterial works on VR ([RaananW](https://github.com/RaananW))
+- Playground has an optional createEngine function to replace the default engine. [Example](https://www.babylonjs-playground.com/#5CAP01#5) ([RaananW](https://github.com/RaananW))
+- Error handling in the Assets Manager was revamped and now also includes a message and an exception (if provided). [Doc](http://doc.babylonjs.com/how_to/how_to_use_assetsmanager#task-state-and-error-handling) ([RaananW](https://github.com/RaananW))
+- Asset Task has a state (INIT, RUNNING, DONE and ERROR). [Doc](http://doc.babylonjs.com/how_to/how_to_use_assetsmanager#task-state-and-error-handling) ([RaananW](https://github.com/RaananW))
+- Added new options to the physics impostor constructor - ignoreParent and diableBidirectionalTransformation. [Doc](http://doc.babylonjs.com/how_to/using_the_physics_engine#impostors) ([RaananW](https://github.com/RaananW))
+- It is now possible to define which loader to use when loading assets using the SceneLoader. [Commit](https://github.com/BabylonJS/Babylon.js/commit/91bffeaafc668980be0f9cf83df69b8eb2e2ba5f) ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
+
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))
+- MTLLoader didn't parse values correctly ([RaananW](https://github.com/RaananW))
+- Fixed an error with child positions of parents in the physics engine ([RaananW](https://github.com/RaananW))
+- Fixed a bug with error while executing onSuccess callbacks in the Assets manager. ([RaananW](https://github.com/RaananW))
+- Fixed a bug with the Heightmap impostor when the heightmap is scaled or rotated. [Commit](https://github.com/BabylonJS/Babylon.js/commit/e898c4f26512a5466b5b594aecf4711f1dfd50e0) ([RaananW](https://github.com/RaananW))
+- Fixed an error with deterministic step. ([RaananW](https://github.com/RaananW))
+- Fixed a bug with controller jitter when in VR. ([RaananW](https://github.com/RaananW))
+- Fixed a bug with impostor jitter when in VR. ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
+
 - `Gamepads` was removed in favor of `scene.gamepadManager`
 - `DynamicFloatArray`, `MapTexture` and `RectPakingMap` were removed because there were not used anymore
 - `IAssetTask` was removed in favor of `AbstractAssetTask` class
+- WebVR 1.0 support removed.
