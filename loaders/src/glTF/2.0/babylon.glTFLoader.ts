@@ -1716,7 +1716,7 @@ module BABYLON.GLTF2 {
             }
             else {
                 if (magFilter !== ETextureMagFilter.NEAREST) {
-                    Tools.Warn(context + "Invalid texture magnification filter " + magFilter);
+                    Tools.Warn(context + ": Invalid texture magnification filter " + magFilter);
                 }
 
                 switch (minFilter) {
