@@ -72482,9 +72482,6 @@ var BABYLON;
          * Otherwise, will use the fullscreen API.
          */
         VRExperienceHelper.prototype.enterVR = function () {
-            if (this._scene.activeCamera) {
-                this._position = this._scene.activeCamera.position.clone();
-            }
             if (this.onEnteringVR) {
                 try {
                     this.onEnteringVR.notifyObservers(this);
@@ -72492,6 +72489,9 @@ var BABYLON;
                 catch (err) {
                     BABYLON.Tools.Warn("Error in your custom logic onEnteringVR: " + err);
                 }
+            }
+            if (this._scene.activeCamera) {
+                this._position = this._scene.activeCamera.position.clone();
             }
             if (this._webVRrequesting)
                 return;
