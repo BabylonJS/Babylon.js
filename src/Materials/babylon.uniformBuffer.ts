@@ -6,8 +6,8 @@ module BABYLON {
         private _data: number[];
         private _bufferData: Float32Array;
         private _dynamic?: boolean;
-        private _uniformLocations: { [key:string]:number; };
-        private _uniformSizes: { [key:string]:number; };
+        private _uniformLocations: { [key: string]: number; };
+        private _uniformSizes: { [key: string]: number; };
         private _uniformLocationPointer: number;
         private _needSync: boolean;
         private _noUBO: boolean;
@@ -143,7 +143,7 @@ module BABYLON {
                 this.updateColor4 = this._updateColor4ForEffect;
             } else {
                 this._engine._uniformBuffers.push(this);
-                
+
                 this.updateMatrix3x3 = this._updateMatrix3x3ForUniform;
                 this.updateMatrix2x2 = this._updateMatrix2x2ForUniform;
                 this.updateFloat = this._updateFloatForUniform;
@@ -167,7 +167,7 @@ module BABYLON {
         public get useUbo(): boolean {
             return !this._noUBO;
         }
-        
+
         /**
          * Indicates if the WebGL underlying uniform buffer is in sync
          * with the javascript cache data.
@@ -222,7 +222,7 @@ module BABYLON {
                 var diff = this._uniformLocationPointer - oldPointer;
 
                 for (var i = 0; i < diff; i++) {
-                      this._data.push(0); 
+                    this._data.push(0);
                 }
             }
         }
@@ -375,7 +375,7 @@ module BABYLON {
 
             this._needSync = true;
         }
-        
+
         public _rebuild(): void {
             if (this._noUBO) {
                 return;
@@ -501,7 +501,7 @@ module BABYLON {
             UniformBuffer._tempBuffer[0] = x;
             UniformBuffer._tempBuffer[1] = y;
             this.updateUniform(name, UniformBuffer._tempBuffer, 2);
-        }        
+        }
 
         private _updateFloat3ForEffect(name: string, x: number, y: number, z: number, suffix = "") {
             this._currentEffect.setFloat3(name + suffix, x, y, z);
@@ -603,7 +603,7 @@ module BABYLON {
             if (this._noUBO || !this._buffer) {
                 return;
             }
-            
+
             effect.bindUniformBuffer(this._buffer, name);
         }
 
