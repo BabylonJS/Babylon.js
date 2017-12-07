@@ -18,6 +18,9 @@
                 Tools.Error("CannonJS is not available. Please make sure you included the js file.");
                 return;
             }
+
+            this._extendNamespace();
+
             this.world = new this.BJSCANNON.World();
             this.world.broadphase = new this.BJSCANNON.NaiveBroadphase();
             this.world.solver.iterations = iterations;
@@ -589,6 +592,47 @@
 
         public dispose() {
 
+        }
+
+        private _extendNamespace() {
+
+            //this will force cannon to execute at least one step when using interpolation
+            let step_tmp1 = new this.BJSCANNON.Vec3();
+            let Engine = this.BJSCANNON;
+            this.BJSCANNON.World.prototype.step = function (dt: number, timeSinceLastCalled: number, maxSubSteps: number) {
+                maxSubSteps = maxSubSteps || 10;
+                timeSinceLastCalled = timeSinceLastCalled || 0;
+                if (timeSinceLastCalled === 0) {
+                    this.internalStep(dt);
+                    this.time += dt;
+                } else {
+                    var internalSteps = Math.floor((this.time + timeSinceLastCalled) / dt) - Math.floor(this.time / dt);
+                    internalSteps = Math.min(internalSteps, maxSubSteps) || 1;
+                    var t0 = performance.now();
+                    for (var i = 0; i !== internalSteps; i++) {
+                        this.internalStep(dt);
+                        if (performance.now() - t0 > dt * 1000) {
+                            break;
+                        }
+                    }
+                    this.time += timeSinceLastCalled;
+                    var h = this.time % dt;
+                    var h_div_dt = h / dt;
+                    var interpvelo = step_tmp1;
+                    var bodies = this.bodies;
+                    for (var j = 0; j !== bodies.length; j++) {
+                        var b = bodies[j];
+                        if (b.type !== Engine.Body.STATIC && b.sleepState !== Engine.Body.SLEEPING) {
+                            b.position.vsub(b.previousPosition, interpvelo);
+                            interpvelo.scale(h_div_dt, interpvelo);
+                            b.position.vadd(interpvelo, b.interpolatedPosition);
+                        } else {
+                            b.interpolatedPosition.copy(b.position);
+                            b.interpolatedQuaternion.copy(b.quaternion);
+                        }
+                    }
+                }
+            };
         }
     }
 }
