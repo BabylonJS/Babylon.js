@@ -4551,7 +4551,7 @@
         private _moveBoundTextureOnTop(internalTexture: InternalTexture): void {
             let index = this._boundTexturesOrder.indexOf(internalTexture);
 
-            if (index > -1) {
+            if (index > -1 && index !== this._boundTexturesOrder.length - 1) {
                 this._boundTexturesOrder.splice(index, 1);
                 this._boundTexturesOrder.push(internalTexture);
             }
