@@ -736,10 +736,16 @@ module BABYLON {
                 if (webVRController.hand === "left") {
                     this._leftLaserPointer = laserPointer;
                     this._interactionsEnabledOnLeftController = true;
+                    if (!this._rightLaserPointer) {
+                        this._leftLaserPointer.isVisible = true;
+                    }
                 }
                 else {
                     this._rightLaserPointer = laserPointer;
                     this._interactionsEnabledOnRightController = true;
+                    if (!this._leftLaserPointer) {
+                        this._rightLaserPointer.isVisible = true;
+                    }
                 }
                 webVRController.onMainButtonStateChangedObservable.add((stateObject) => {
                     // Enabling / disabling laserPointer 
