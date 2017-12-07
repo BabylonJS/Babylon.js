@@ -931,7 +931,8 @@
                 "../../src/Physics/Plugins/babylon.oimoJSPlugin.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "picking"
             ]
         },
         "textureFormats": {
@@ -1178,7 +1179,8 @@
         "loaders",
         "serializers",
         "inspector",
-        "gui"
+        "gui",
+        "viewer"
     ],
     "materialsLibrary": {
         "libraries": [
@@ -1566,12 +1568,12 @@
                     "../../gui/src/controls/ellipse.ts",
                     "../../gui/src/controls/line.ts",
                     "../../gui/src/controls/slider.ts",
-                    "../../gui/src/controls/checkBox.ts",
+                    "../../gui/src/controls/checkbox.ts",
                     "../../gui/src/controls/radioButton.ts",
                     "../../gui/src/controls/textBlock.ts",
                     "../../gui/src/controls/image.ts",
                     "../../gui/src/controls/button.ts",
-                    "../../gui/src/controls/colorPicker.ts",
+                    "../../gui/src/controls/colorpicker.ts",
                     "../../gui/src/controls/inputText.ts",
                     "../../gui/src/controls/virtualKeyboard.ts"
                 ],
@@ -1660,6 +1662,22 @@
         "build": {
             "srcOutputDirectory": "../../inspector/",
             "distOutputDirectory": "/inspector/"
+        }
+    },
+    "viewer": {
+        "libraries": [
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.viewer.js",
+                "webpack": "../../Viewer/webpack.gulp.config.js",
+                "bundle": "true",
+                "moduleDeclaration": "BabylonViewer"
+            }
+        ],
+        "build": {
+            "srcOutputDirectory": "../../Viewer/",
+            "distOutputDirectory": "/viewer/"
         }
     }
 }

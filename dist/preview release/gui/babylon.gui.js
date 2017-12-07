@@ -304,6 +304,8 @@ var BABYLON;
                             continue;
                         }
                         control.notRenderable = false;
+                        // Account for RenderScale.
+                        projectedPosition.scaleInPlace(this.renderScale);
                         control._moveToProjectedPosition(projectedPosition);
                     }
                 }
@@ -1368,7 +1370,7 @@ var BABYLON;
                 this.notRenderable = false;
             };
             Control.prototype.linkWithMesh = function (mesh) {
-                if (!this._host || this._root !== this._host._rootContainer) {
+                if (!this._host || this._root && this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
                     return;
                 }
@@ -2775,10 +2777,10 @@ var BABYLON;
                         context.shadowOffsetY = this.shadowOffsetY;
                     }
                     if (this._thumbWidth.isPixel) {
-                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.height);
+                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
                     }
                     else {
-                        effectiveThumbWidth = this._currentMeasure.height * this._thumbWidth.getValue(this._host);
+                        effectiveThumbWidth = this._currentMeasure.width * this._thumbWidth.getValue(this._host);
                     }
                     if (this._barOffset.isPixel) {
                         effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
@@ -2831,7 +2833,11 @@ var BABYLON;
                 }
                 context.restore();
             };
-            Slider.prototype._updateValueFromPointer = function (x) {
+            Slider.prototype._updateValueFromPointer = function (x, y) {
+                if (this.rotation != 0) {
+                    this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+                    x = this._transformedPosition.x;
+                }
                 this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
             };
             Slider.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
@@ -2839,13 +2845,13 @@ var BABYLON;
                     return false;
                 }
                 this._pointerIsDown = true;
-                this._updateValueFromPointer(coordinates.x);
+                this._updateValueFromPointer(coordinates.x, coordinates.y);
                 this._host._capturingControl = this;
                 return true;
             };
             Slider.prototype._onPointerMove = function (target, coordinates) {
                 if (this._pointerIsDown) {
-                    this._updateValueFromPointer(coordinates.x);
+                    this._updateValueFromPointer(coordinates.x, coordinates.y);
                 }
                 _super.prototype._onPointerMove.call(this, target, coordinates);
             };
@@ -2987,7 +2993,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=checkBox.js.map
+//# sourceMappingURL=checkbox.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
@@ -3505,7 +3511,7 @@ var BABYLON;
                         _this._onImageLoaded();
                     };
                     if (value) {
-                        this._domImage.crossOrigin = "anonymous";
+                        BABYLON.Tools.SetCorsBehavior(value, this._domImage);
                         this._domImage.src = value;
                     }
                 },
@@ -3517,7 +3523,11 @@ var BABYLON;
                     return this._cellWidth;
                 },
                 set: function (value) {
+                    if (this._cellWidth === value) {
+                        return;
+                    }
                     this._cellWidth = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -3527,7 +3537,11 @@ var BABYLON;
                     return this._cellHeight;
                 },
                 set: function (value) {
+                    if (this._cellHeight === value) {
+                        return;
+                    }
                     this._cellHeight = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -3537,7 +3551,11 @@ var BABYLON;
                     return this._cellId;
                 },
                 set: function (value) {
+                    if (this._cellId === value) {
+                        return;
+                    }
                     this._cellId = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -4311,6 +4329,22 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "width", {
+                get: function () {
+                    return this._width.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._width.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._width.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                    this.autoStretchWidth = false;
+                },
+                enumerable: true,
+                configurable: true
+            });
             InputText.prototype.onBlur = function () {
                 this._isFocused = false;
                 this._scrollLeft = null;
@@ -4341,6 +4375,9 @@ var BABYLON;
             InputText.prototype.processKey = function (keyCode, key) {
                 // Specific cases
                 switch (keyCode) {
+                    case 32://SPACE
+                        key = " "; //ie11 key for space is "Spacebar" 
+                        break;
                     case 8:// BACKSPACE
                         if (this._text && this._text.length > 0) {
                             if (this._cursorOffset === 0) {

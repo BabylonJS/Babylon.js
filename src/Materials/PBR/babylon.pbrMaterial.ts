@@ -382,11 +382,19 @@
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or occlude the blended part.
+         * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAlphaFresnel = false;
+
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useLinearAlphaFresnel = false;
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
@@ -410,7 +418,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useHorizonOcclusion = false;
+        public useHorizonOcclusion = true;
         
         /**
          * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
@@ -418,7 +426,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useRadianceOcclusion = false;
+        public useRadianceOcclusion = true;
 
         /**
          * Gets the image processing configuration used either in this material.
