@@ -57,6 +57,8 @@ module BABYLON {
         private _teleportationAllowed: boolean = false;
         private _rotationAllowed: boolean = true;
         private _teleportationRequestInitiated = false;
+        private _teleportationBackRequestInitiated = false;
+        private teleportBackwardsVector = new Vector3(0, -1, -1);
         private _rotationRightAsked = false;
         private _rotationLeftAsked = false;
         private _teleportationCircle: Mesh;
@@ -617,6 +619,7 @@ module BABYLON {
                 if (gamepad.leftStick) {
                     gamepad.onleftstickchanged((stickValues) => {
                         if (this._teleportationEnabled) {
+                            this._teleportBackwardsCheck(stickValues);
                             // Listening to classic/xbox gamepad only if no VR controller is active
                             if ((!this._leftLaserPointer && !this._rightLaserPointer) ||
                                 ((this._leftLaserPointer && !this._leftLaserPointer.isVisible) &&
@@ -773,6 +776,49 @@ module BABYLON {
             }
         }
 
+        private _teleportBackwardsCheck(stateObject: StickValues){
+            // Teleport backwards
+            if(stateObject.y > this._padSensibilityUp) {
+                if(!this._teleportationBackRequestInitiated){
+                    if(!this.currentVRCamera){
+                        return;
+                    }
+
+                    // Get rotation and position of the current camera
+                    var rotation = Quaternion.FromRotationMatrix(this.currentVRCamera.getWorldMatrix().getRotationMatrix());
+                    var position = this.currentVRCamera.position;
+
+                    // If the camera has device position, use that instead
+                    if((<WebVRFreeCamera>this.currentVRCamera).devicePosition && (<WebVRFreeCamera>this.currentVRCamera).deviceRotationQuaternion){
+                        rotation = (<WebVRFreeCamera>this.currentVRCamera).deviceRotationQuaternion;
+                        position = (<WebVRFreeCamera>this.currentVRCamera).devicePosition;
+                    }
+
+                    // Get matrix with only the y rotation of the device rotation
+                    rotation.toEulerAnglesToRef(this._workingVector);
+                    this._workingVector.z = 0;
+                    this._workingVector.x = 0;
+                    Quaternion.RotationYawPitchRollToRef(this._workingVector.y, this._workingVector.x, this._workingVector.z, this._workingQuaternion);
+                    this._workingQuaternion.toRotationMatrix(this._workingMatrix);
+
+                    // Rotate backwards ray by device rotation to cast at the ground behind the user
+                    Vector3.TransformCoordinatesToRef(this.teleportBackwardsVector, this._workingMatrix, this._workingVector);
+                    
+                    // Teleport if ray hit the ground and is not to far away eg. backwards off a cliff
+                    var ray = new BABYLON.Ray(position, this._workingVector);
+                    var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
+                    if(hit && hit.pickedPoint && hit.pickedMesh &&this._isTeleportationFloor(hit.pickedMesh) && hit.distance < 5){
+                        this._teleportCamera(hit.pickedPoint);
+                    }
+                    
+                    this._teleportationBackRequestInitiated = true;
+                }
+            }else{
+                this._teleportationBackRequestInitiated = false;
+            }
+            
+        }
+
         private _enableTeleportationOnController(webVRController: WebVRController) {
             var controllerMesh = webVRController.mesh;
             if (controllerMesh) {
@@ -789,6 +835,7 @@ module BABYLON {
                     this._teleportationEnabledOnRightController = true;
                 }
                 webVRController.onPadValuesChangedObservable.add((stateObject) => {
+                    this._teleportBackwardsCheck(stateObject);
                     if (!this._teleportationRequestInitiated) {
                         if (stateObject.y < -this._padSensibilityUp) {
                             // If laser pointer wasn't enabled yet
@@ -1050,21 +1097,27 @@ module BABYLON {
             }
         }
         private _workingVector = Vector3.Zero();
-        private _teleportCamera() {
+        private _workingQuaternion = Quaternion.Identity();
+        private _workingMatrix = Matrix.Identity();
+        private _teleportCamera(location:Nullable<Vector3> = null) {
             if (!(this.currentVRCamera instanceof FreeCamera)) {
                 return;
             }
 
-            // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
-            // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
-            if (this.webVRCamera.leftCamera) {
-                this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
-                this._workingVector.subtractInPlace(this.webVRCamera.position);
-                this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
-            } else {
-                this._workingVector.copyFrom(this._haloCenter);
+            if(!location){
+                // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
+                // offset of the headset from the anchor.
+                if (this.webVRCamera.leftCamera) {
+                    this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
+                    this._workingVector.subtractInPlace(this.webVRCamera.position);
+                    this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
+                } else {
+                    this._workingVector.copyFrom(this._haloCenter);
+                }
+                location = this._workingVector;
             }
-            this._workingVector.y += this._defaultHeight;
+            // Add height to account for user's height offset
+            location.y += this._defaultHeight;
 
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
@@ -1075,7 +1128,7 @@ module BABYLON {
             },
             {
                 frame: 11,
-                value: this._workingVector
+                value: location
             }
             ];
 
