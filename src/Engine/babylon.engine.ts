@@ -1313,6 +1313,8 @@
                 }
                 this._boundTexturesCache[key] = null;
             }
+            this._nextFreeTextureSlot = 0;
+            this._activeChannel = -1;
         }
 
         public isDeterministicLockStep(): boolean {
@@ -2611,7 +2613,7 @@
                 return;
             }
             // Use program
-            this.setProgram(effect.getProgram());
+            this.bindSamplers(effect);
 
             this._currentEffect = effect;
 
@@ -4546,13 +4548,25 @@
             }
         }
 
-        private _removeDesignatedSlot(internalTexture: InternalTexture): void {
+        private _moveBoundTextureOnTop(internalTexture: InternalTexture): void {
+            let index = this._boundTexturesOrder.indexOf(internalTexture);
+
+            if (index > -1) {
+                this._boundTexturesOrder.splice(index, 1);
+                this._boundTexturesOrder.push(internalTexture);
+            }
+        }
+
+        private _removeDesignatedSlot(internalTexture: InternalTexture): number {
+            let currentSlot = internalTexture._designatedSlot;
             internalTexture._designatedSlot = -1;
             let index = this._boundTexturesOrder.indexOf(internalTexture);
 
             if (index > -1) {
                 this._boundTexturesOrder.splice(index, 1);
             }
+
+            return currentSlot;
         }
 
         public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>): void {
@@ -4628,21 +4642,16 @@
                 if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
                     channel = internalTexture._designatedSlot;
                 } else { // Not slot for this texture, let's pick a new one
-                    if (this._boundTexturesCache[channel]) { // There is already a texture in this slot
-                        if (this._nextFreeTextureSlot > -1) { // We can use a free slot
-                            channel = this._nextFreeTextureSlot;
-                        } else { // We need to recycle the oldest bound texture, sorry.
-                            let oldestTexture = this._boundTexturesOrder.splice(0, 1)[0];
-                            channel = oldestTexture._designatedSlot;
+                    if (this._nextFreeTextureSlot > -1) { // We can use a free slot
+                        channel = this._nextFreeTextureSlot;
+                        this._nextFreeTextureSlot++;
+                        if (this._nextFreeTextureSlot >= this._caps.maxTexturesImageUnits) {
+                            this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
                         }
+                    } else { // We need to recycle the oldest bound texture, sorry.
+                        channel = this._removeDesignatedSlot(this._boundTexturesOrder[0]);
                     }
-                    internalTexture._designatedSlot = channel;
                 }
-            }
-
-            this._nextFreeTextureSlot = Math.max(channel + 1, this._nextFreeTextureSlot);
-            if (this._nextFreeTextureSlot >= this._caps.maxTexturesImageUnits) {
-                this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
             }
 
             return channel;
@@ -4695,6 +4704,7 @@
             channel = this._getCorrectTextureChannel(channel, internalTexture);
 
             if (this._boundTexturesCache[channel] === internalTexture) {
+                this._moveBoundTextureOnTop(internalTexture);
                 this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
                 return false;
             }
