@@ -136,19 +136,6 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },
-        {
-            "name": "Launch Build Validation (Chrome + webgl 1.0)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:1338/tests/validation/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--disable-es3-apis"
-            ]
         }
     ]
 }
