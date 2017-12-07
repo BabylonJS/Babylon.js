@@ -49,7 +49,8 @@ var tsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
-    strictFunctionTypes: true
+    strictFunctionTypes: true,
+    types: []
 };
 var tsProject = typescript.createProject(tsConfig);
 
@@ -64,7 +65,8 @@ var externalTsConfig = {
     noImplicitReturns: true,
     noImplicitThis: true,
     noUnusedLocals: true,
-    strictNullChecks: true
+    strictNullChecks: true,
+    types: []
 };
 
 var minimist = require("minimist");
@@ -224,7 +226,14 @@ gulp.task("build", ["shaders"], function () {
 /*
 * Compiles all typescript files and creating a js and a declaration file.
 */
+var alreadyCompiled = false;
+var forceCompile = false;
 gulp.task("typescript-compile", function () {
+    if (!forceCompile && alreadyCompiled) {
+        return;
+    }
+    alreadyCompiled = true;
+
     var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject());
@@ -398,9 +407,11 @@ var buildExternalLibrary = function (library, settings, watch) {
 
         if (library.webpack) {
             return waitAll.on("end", function () {
-                webpack(require(library.webpack))
-                    .pipe(rename(library.output.replace(".js", ".bundle.js")))
+                return webpack(require(library.webpack))
+                    .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
                     .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
+                    .pipe(uglify())
+                    .pipe(optimisejs())
                     .pipe(gulp.dest(outputDirectory))
             });
         }
@@ -473,6 +484,7 @@ gulp.task("typescript-all", function (cb) {
  * Watch ts files and fire repective tasks.
  */
 gulp.task("watch", [], function () {
+    forceCompile = true;
     var interval = 1000;
     var tasks = [gulp.watch(config.typescript, { interval: interval }, ["typescript-compile"])];
 

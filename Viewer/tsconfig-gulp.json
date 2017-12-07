@@ -2,25 +2,31 @@
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
-        "noResolve": true,
+        "noResolve": false,
         "noImplicitAny": false, //mainly due to usage of external libs without typings.
         "strictNullChecks": true,
         "removeComments": true,
         "preserveConstEnums": true,
-        "sourceMap": true,
+        "sourceMap": false,
         "experimentalDecorators": true,
         "isolatedModules": false,
+        "declaration": false,
         "lib": [
             "dom",
             "es2015.promise",
             "es5"
         ],
-        //"declaration": true,
-        "outDir": "./temp/",
         "types": [
-            "node",
-            "babylonjs",
-            "babylonjs-loaders"
-        ]
+            "node"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "babylonjs": [
+                "../dist/preview release/babylon.max.js"
+            ],
+            "babylonjs-loaders": [
+                "../dist/preview release/loaders/babylonjs.loaders.js"
+            ]
+        }
     }
 }

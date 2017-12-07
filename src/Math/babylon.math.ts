@@ -1348,10 +1348,10 @@
             return (this.x * this.x + this.y * this.y + this.z * this.z);
         }
 
-        // Methods
         /**
          * Normalize the current Vector3.  
          * Returns the updated Vector3.  
+         * /!\ In place operation.
          */
         public normalize(): Vector3 {
             var len = this.length();
@@ -1363,6 +1363,33 @@
             this.y *= num;
             this.z *= num;
             return this;
+        }
+
+        /**
+         * Normalize the current Vector3 to a new vector.
+         * @returns the new Vector3.
+         */
+        public normalizeToNew(): Vector3 {
+            const normalized = new Vector3(0, 0, 0);
+            this.normalizeToRef(normalized);
+            return normalized;
+        }
+
+        /**
+         * Normalize the current Vector3 to the reference.
+         * @param the reference to update.
+         * @returns the updated Vector3.
+         */
+        public normalizeToRef(reference: Vector3): Vector3 {
+            var len = this.length();
+            if (len === 0 || len === 1.0) {
+                reference.set(this.x, this.y, this.z);
+                return reference;
+            }
+
+            const scale = 1.0 / len;
+            this.scaleToRef(scale, reference);
+            return reference;
         }
 
         /**

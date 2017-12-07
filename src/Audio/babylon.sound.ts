@@ -136,7 +136,7 @@ module BABYLON {
                                         this._htmlAudioElement = new Audio(url);
                                         this._htmlAudioElement.controls = false;
                                         this._htmlAudioElement.loop = this.loop;
-                                        this._htmlAudioElement.crossOrigin = "anonymous";
+                                        Tools.SetCorsBehavior(url, this._htmlAudioElement);
                                         this._htmlAudioElement.preload = "auto";
                                         this._htmlAudioElement.addEventListener("canplaythrough", () => {
                                             this._isReadyToPlay = true;

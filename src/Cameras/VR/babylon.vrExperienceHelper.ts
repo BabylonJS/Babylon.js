@@ -1,12 +1,19 @@
 module BABYLON {
     export interface VRTeleportationOptions {
         floorMeshName?: string; // If you'd like to provide a mesh acting as the floor
+        floorMeshes?: Mesh[];
+    }
+
+    export interface VRExperienceHelperOptions extends WebVROptions {
+        createDeviceOrientationCamera?: boolean; // Create a DeviceOrientationCamera to be used as your out of vr camera.
+        createFallbackVRDeviceOrientationFreeCamera?: boolean; // Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found
     }
 
     export class VRExperienceHelper {
         private _scene: BABYLON.Scene;
         private _position: Vector3;
         private _btnVR: HTMLButtonElement;
+        private _btnVRDisplayed: boolean;
 
         // Can the system support WebVR, even if a headset isn't plugged in?
         private _webVRsupported = false;
@@ -22,30 +29,34 @@ module BABYLON {
 
         private _canvas: Nullable<HTMLCanvasElement>;
         private _webVRCamera: WebVRFreeCamera;
-        private _vrDeviceOrientationCamera: VRDeviceOrientationFreeCamera;
-        private _deviceOrientationCamera: DeviceOrientationCamera;
-        
+        private _vrDeviceOrientationCamera: Nullable<VRDeviceOrientationFreeCamera>;
+        private _deviceOrientationCamera: Nullable<DeviceOrientationCamera>;
+        private _existingCamera: Camera;
+
         private _onKeyDown: (event: KeyboardEvent) => void;
         private _onVrDisplayPresentChange: any;
-        private _onVRDisplayChanged: (eventArgs:IDisplayChangedEventArgs) => void;
+        private _onVRDisplayChanged: (eventArgs: IDisplayChangedEventArgs) => void;
         private _onVRRequestPresentStart: () => void;
         private _onVRRequestPresentComplete: (success: boolean) => void;
-        
-        public onEnteringVR: () => void;
-        public onExitingVR: () => void;
-        public onControllerMeshLoaded: (controller: WebVRController) => void;
 
+        public onEnteringVR = new Observable<VRExperienceHelper>();
+        public onExitingVR = new Observable<VRExperienceHelper>();
+        public onControllerMeshLoaded = new Observable<WebVRController>();
+
+        private _rayLength: number;
         private _useCustomVRButton: boolean = false;
         private _teleportationRequested: boolean = false;
         private _teleportationEnabledOnLeftController: boolean = false;
         private _teleportationEnabledOnRightController: boolean = false;
+        private _interactionsEnabledOnLeftController: boolean = false;
+        private _interactionsEnabledOnRightController: boolean = false;
         private _leftControllerReady: boolean = false;
         private _rightControllerReady: boolean = false;
         private _floorMeshName: string;
+        private _floorMeshesCollection: Mesh[] = [];
         private _teleportationAllowed: boolean = false;
         private _rotationAllowed: boolean = true;
         private _teleportationRequestInitiated = false;
-        //private _classicGamepadTeleportationRequestInitiated = false;
         private _rotationRightAsked = false;
         private _rotationLeftAsked = false;
         private _teleportationCircle: Mesh;
@@ -55,22 +66,75 @@ module BABYLON {
         private _teleportationBorderColor: string = "#FFFFFF";
         private _rotationAngle: number = 0;
         private _haloCenter = new Vector3(0, 0, 0);
-        private _rayHelper: RayHelper;
         private _gazeTracker: BABYLON.Mesh;
+        private _padSensibilityUp = 0.65;
+        private _padSensibilityDown = 0.35;
+        private _leftLaserPointer: Nullable<Mesh>;
+        private _rightLaserPointer: Nullable<Mesh>;
+        private _currentMeshSelected: Nullable<AbstractMesh>;
+        public onNewMeshSelected = new Observable<AbstractMesh>();
+        private _circleEase: CircleEase;
 
+        private _raySelectionPredicate: (mesh: AbstractMesh) => boolean;
+
+        /**
+         * To be optionaly changed by user to define custom ray selection
+         */
+        public raySelectionPredicate: (mesh: AbstractMesh) => boolean;
+
+        /**
+         * To be optionaly changed by user to define custom selection logic (after ray selection)
+         */
         public meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
 
-        public get deviceOrientationCamera(): DeviceOrientationCamera {
+        private _currentHit: Nullable<PickingInfo>;
+        private _pointerDownOnMeshAsked = false;
+        private _isActionableMesh = false;
+        private _defaultHeight: number;
+        private _teleportationEnabled = false;
+        private _interactionsEnabled = false;
+        private _interactionsRequested = false;
+        private _displayGaze = true;
+        private _displayLaserPointer = true;
+
+        public get displayGaze(): boolean {
+            return this._displayGaze;
+        }
+
+        public set displayGaze(value: boolean) {
+            this._displayGaze = value;
+            if (!value) {
+                this._gazeTracker.isVisible = false;
+            }
+        }
+
+        public get displayLaserPointer(): boolean {
+            return this._displayLaserPointer;
+        }
+
+        public set displayLaserPointer(value: boolean) {
+            this._displayLaserPointer = value;
+            if (!value) {
+                if (this._rightLaserPointer) {
+                    this._rightLaserPointer.isVisible = false;
+                }
+                if (this._leftLaserPointer) {
+                    this._leftLaserPointer.isVisible = false;
+                }
+            }
+        }
+
+        public get deviceOrientationCamera(): Nullable<DeviceOrientationCamera> {
             return this._deviceOrientationCamera;
         }
 
         // Based on the current WebVR support, returns the current VR camera used
-        public get currentVRCamera(): FreeCamera {
+        public get currentVRCamera(): Nullable<Camera> {
             if (this._webVRready) {
                 return this._webVRCamera;
             }
             else {
-                return this._vrDeviceOrientationCamera;
+                return this._scene.activeCamera;
             }
         }
 
@@ -78,27 +142,53 @@ module BABYLON {
             return this._webVRCamera;
         }
 
-        public get vrDeviceOrientationCamera(): VRDeviceOrientationFreeCamera {
+        public get vrDeviceOrientationCamera(): Nullable<VRDeviceOrientationFreeCamera> {
             return this._vrDeviceOrientationCamera;
         }
-                
-        constructor(scene: Scene, public webVROptions: WebVROptions = {}) {
-            this._scene = scene;
 
-            if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
-                this._position = new BABYLON.Vector3(0, 2, 0);
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", new BABYLON.Vector3(0, 2, 0), scene);
+        constructor(scene: Scene, public webVROptions: VRExperienceHelperOptions = {}) {
+            this._scene = scene;
+            this._canvas = scene.getEngine().getRenderingCanvas();
+
+            this._defaultHeight = webVROptions.defaultHeight || 1.7;
+
+            if (webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined) {
+                webVROptions.createFallbackVRDeviceOrientationFreeCamera = true;
+            }
+
+            if (webVROptions.createDeviceOrientationCamera === undefined) {
+                webVROptions.createDeviceOrientationCamera = true;
+            }
+
+            if (!this._scene.activeCamera || webVROptions.createDeviceOrientationCamera) {
+                if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
+                    this._position = new BABYLON.Vector3(0, this._defaultHeight, 0);
+                    this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
+                }
+                else {
+                    this._position = this._scene.activeCamera.position.clone();
+                    this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
+                    this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
+                    this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
+                    // Set rotation from previous camera
+                    if (this._scene.activeCamera instanceof TargetCamera && this._scene.activeCamera.rotation) {
+                        var targetCamera = this._scene.activeCamera;
+                        if (targetCamera.rotationQuaternion) {
+                            this._deviceOrientationCamera.rotationQuaternion.copyFrom(targetCamera.rotationQuaternion);
+                        } else {
+                            this._deviceOrientationCamera.rotationQuaternion.copyFrom(Quaternion.RotationYawPitchRoll(targetCamera.rotation.y, targetCamera.rotation.x, targetCamera.rotation.z));
+                        }
+                        this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
+                    }
+                }
+                this._scene.activeCamera = this._deviceOrientationCamera;
+                if (this._canvas) {
+                    this._scene.activeCamera.attachControl(this._canvas);
+                }
             }
             else {
+                this._existingCamera = this._scene.activeCamera;
                 this._position = this._scene.activeCamera.position.clone();
-                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position, scene);
-                this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
-                this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
-            }
-            this._scene.activeCamera = this._deviceOrientationCamera;
-            this._canvas = scene.getEngine().getRenderingCanvas();
-            if (this._canvas) {
-                this._scene.activeCamera.attachControl(this._canvas);
             }
 
             if (webVROptions) {
@@ -107,6 +197,10 @@ module BABYLON {
                     if (webVROptions.customVRButton) {
                         this._btnVR = webVROptions.customVRButton;
                     }
+                }
+
+                if (webVROptions.rayLength) {
+                    this._rayLength = webVROptions.rayLength
                 }
             }
 
@@ -125,7 +219,7 @@ module BABYLON {
                 var style = document.createElement('style');
                 style.appendChild(document.createTextNode(css));
                 document.getElementsByTagName('head')[0].appendChild(style);
-            }  
+            }
 
             if (this._canvas) {
                 if (!this._useCustomVRButton) {
@@ -134,7 +228,11 @@ module BABYLON {
                 }
                 if (this._btnVR) {
                     this._btnVR.addEventListener("click", () => {
-                        this.enterVR();
+                        if(!this.isInVRMode){
+                            this.enterVR();
+                        }else{
+                            this.exitVR();
+                        }
                     });
                 }
 
@@ -155,30 +253,38 @@ module BABYLON {
             document.addEventListener("webkitfullscreenchange", () => { this._onFullscreenChange() }, false);
             document.addEventListener("msfullscreenchange", () => { this._onFullscreenChange() }, false);
 
-            if (!this._useCustomVRButton) {
+            this._scene.getEngine().onVRDisplayChangedObservable.add((e) => {
+                if (!this._useCustomVRButton && !this._btnVRDisplayed && e.vrDisplay) {
+                    document.body.appendChild(this._btnVR);
+                    this._btnVRDisplayed = true;
+                }
+            })
+
+            if (!this._useCustomVRButton && !this._btnVRDisplayed && webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
                 document.body.appendChild(this._btnVR);
+                this._btnVRDisplayed = true;
             }
 
             // Exiting VR mode using 'ESC' key on desktop
             this._onKeyDown = (event: KeyboardEvent) => {
-                if (event.keyCode === 27 && this.isInVRMode()) {
+                if (event.keyCode === 27 && this.isInVRMode) {
                     this.exitVR();
                 }
             };
             document.addEventListener("keydown", this._onKeyDown);
 
             // Exiting VR mode double tapping the touch screen
-            this._scene.onPrePointerObservable.add( (pointerInfo, eventState) => {
-                if (this.isInVRMode()) {
+            this._scene.onPrePointerObservable.add((pointerInfo, eventState) => {
+                if (this.isInVRMode) {
                     this.exitVR();
                     if (this._fullscreenVRpresenting) {
                         this._scene.getEngine().switchFullscreen(true);
                     }
                 }
             }, BABYLON.PointerEventTypes.POINTERDOUBLETAP, false);
-            
+
             // Listen for WebVR display changes
-            this._onVRDisplayChanged = (eventArgs:IDisplayChangedEventArgs) => this.onVRDisplayChanged(eventArgs);
+            this._onVRDisplayChanged = (eventArgs: IDisplayChangedEventArgs) => this.onVRDisplayChanged(eventArgs);
             this._onVrDisplayPresentChange = () => this.onVrDisplayPresentChange();
             this._onVRRequestPresentStart = () => {
                 this._webVRrequesting = true;
@@ -195,29 +301,46 @@ module BABYLON {
             window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
 
             // Create the cameras
-            this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);            
+            if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
+                this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
+            }
             this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
             this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
-        
+            this._scene.gamepadManager.onGamepadConnectedObservable.add((pad) => this._onNewGamepadConnected(pad));
+            this._scene.gamepadManager.onGamepadDisconnectedObservable.add((pad) => this._onNewGamepadDisconnected(pad));
+
             this.updateButtonVisibility();
+
+            //create easing functions
+            this._circleEase = new BABYLON.CircleEase();
+            this._circleEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
         }
 
         // Raised when one of the controller has loaded successfully its associated default mesh
         private _onDefaultMeshLoaded(webVRController: WebVRController) {
             if (webVRController.hand === "left") {
                 this._leftControllerReady = true;
+                if (this._interactionsRequested && !this._interactionsEnabledOnLeftController) {
+                    this._enableInteractionOnController(webVRController);
+                }
                 if (this._teleportationRequested && !this._teleportationEnabledOnLeftController) {
                     this._enableTeleportationOnController(webVRController);
                 }
             }
             if (webVRController.hand === "right") {
                 this._rightControllerReady = true;
+                if (this._interactionsRequested && !this._interactionsEnabledOnRightController) {
+                    this._enableInteractionOnController(webVRController);
+                }
                 if (this._teleportationRequested && !this._teleportationEnabledOnRightController) {
                     this._enableTeleportationOnController(webVRController);
                 }
             }
-            if (this.onControllerMeshLoaded) {
-                this.onControllerMeshLoaded(webVRController);
+            try {
+                this.onControllerMeshLoaded.notifyObservers(webVRController);
+            }
+            catch (err) {
+                Tools.Warn("Error in your custom logic onControllerMeshLoaded: " + err);
             }
         }
 
@@ -240,7 +363,10 @@ module BABYLON {
             }
         }
 
-        private isInVRMode() {
+        /**
+         * Gets a value indicating if we are currently in VR mode.
+         */
+        public get isInVRMode(): boolean {
             return this._webVRpresenting || this._fullscreenVRpresenting;
         }
 
@@ -248,10 +374,10 @@ module BABYLON {
             var vrDisplay = this._scene.getEngine().getVRDevice();
             if (vrDisplay) {
                 var wasPresenting = this._webVRpresenting;
-                
+
                 // A VR display is connected
                 this._webVRpresenting = vrDisplay.isPresenting;
-                
+
                 if (wasPresenting && !this._webVRpresenting)
                     this.exitVR();
             } else {
@@ -261,7 +387,7 @@ module BABYLON {
             this.updateButtonVisibility();
         }
 
-        private onVRDisplayChanged(eventArgs:IDisplayChangedEventArgs) {
+        private onVRDisplayChanged(eventArgs: IDisplayChangedEventArgs) {
             this._webVRsupported = eventArgs.vrSupported;
             this._webVRready = !!eventArgs.vrDisplay;
             this._webVRpresenting = eventArgs.vrDisplay && eventArgs.vrDisplay.isPresenting;
@@ -269,13 +395,13 @@ module BABYLON {
             this.updateButtonVisibility();
         }
 
-        private updateButtonVisibility() {            
-            if (!this._btnVR) {
+        private updateButtonVisibility() {
+            if (!this._btnVR || this._useCustomVRButton) {
                 return;
             }
             this._btnVR.className = "babylonVRicon";
-            if (this.isInVRMode()) {
-                this._btnVR.className += " vrdisplaypresenting";                
+            if (this.isInVRMode) {
+                this._btnVR.className += " vrdisplaypresenting";
             } else {
                 if (this._webVRready) this._btnVR.className += " vrdisplayready";
                 if (this._webVRsupported) this._btnVR.className += " vrdisplaysupported";
@@ -293,7 +419,12 @@ module BABYLON {
             }
 
             if (this.onEnteringVR) {
-                this.onEnteringVR();
+                try {
+                    this.onEnteringVR.notifyObservers(this);
+                }
+                catch (err) {
+                    Tools.Warn("Error in your custom logic onEnteringVR: " + err);
+                }
             }
             if (this._webVRrequesting)
                 return;
@@ -305,13 +436,13 @@ module BABYLON {
                     this._scene.activeCamera = this._webVRCamera;
                 }
             }
-            else {
+            else if (this._vrDeviceOrientationCamera) {
                 this._vrDeviceOrientationCamera.position = this._position;
                 this._scene.activeCamera = this._vrDeviceOrientationCamera;
                 this._scene.getEngine().switchFullscreen(true);
                 this.updateButtonVisibility();
             }
-            
+
             if (this._scene.activeCamera && this._canvas) {
                 this._scene.activeCamera.attachControl(this._canvas);
             }
@@ -322,23 +453,33 @@ module BABYLON {
          */
         public exitVR() {
             if (this.onExitingVR) {
-                this.onExitingVR();
+                try {
+                    this.onExitingVR.notifyObservers(this);
+                }
+                catch (err) {
+                    Tools.Warn("Error in your custom logic onExitingVR: " + err);
+                }
             }
             if (this._webVRpresenting) {
                 this._scene.getEngine().disableVR();
             }
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position.clone();
-                
-            }
-            this._deviceOrientationCamera.position = this._position;
-            this._scene.activeCamera = this._deviceOrientationCamera;
 
-            if (this._canvas) {
-                this._scene.activeCamera.attachControl(this._canvas);
             }
 
-            this.updateButtonVisibility();  
+            if (this._deviceOrientationCamera) {
+                this._deviceOrientationCamera.position = this._position;
+                this._scene.activeCamera = this._deviceOrientationCamera;
+                if (this._canvas) {
+                    this._scene.activeCamera.attachControl(this._canvas);
+                }
+            } else if (this._existingCamera) {
+                this._existingCamera.position = this._position;
+                this._scene.activeCamera = this._existingCamera;
+            }
+
+            this.updateButtonVisibility();
         }
 
         public get position(): Vector3 {
@@ -353,114 +494,225 @@ module BABYLON {
             }
         }
 
-        public enableTeleportation(vrTeleportationOptions: VRTeleportationOptions = {}) {
-            this._teleportationRequested = true;
+        public enableInteractions() {
+            if (!this._interactionsEnabled) {
+                this._interactionsRequested = true;
 
-            if (vrTeleportationOptions) {
-                if (vrTeleportationOptions.floorMeshName) {
-                    this._floorMeshName = vrTeleportationOptions.floorMeshName;
+                if (this._leftControllerReady && this._webVRCamera.leftController) {
+                    this._enableInteractionOnController(this._webVRCamera.leftController)
                 }
-            }
+                if (this._rightControllerReady && this._webVRCamera.rightController) {
+                    this._enableInteractionOnController(this._webVRCamera.rightController)
+                }
 
-            if (this._leftControllerReady && this._webVRCamera.leftController) {
-                this._enableTeleportationOnController(this._webVRCamera.leftController)
-            }
-            if (this._rightControllerReady && this._webVRCamera.rightController) {
-                this._enableTeleportationOnController(this._webVRCamera.rightController)
-            }
+                this._createGazeTracker();
 
-            this._scene.gamepadManager.onGamepadConnectedObservable.add((pad) => this._onNewGamepadConnected(pad));
-
-            // Creates an image processing post process for the vignette not relying
-            // on the main scene configuration for image processing to reduce setup and spaces 
-            // (gamma/linear) conflicts.
-            const imageProcessingConfiguration = new ImageProcessingConfiguration();
-            imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
-            this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove", 
-                1.0, 
-                this._webVRCamera,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                imageProcessingConfiguration);
-            // Force recompilation of the postprocess to be ready before hand and not block the animation.
-            // Simply touching the property forces recompilation of the effect.
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
-            // Go back to default (both variants would be compiled).
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
-
-            this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
-
-            this._createGazeTracker();
-            this._createTeleportationCircles();
-
-            this.meshSelectionPredicate = (mesh) => {
-                if (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1 
-                        && mesh.name.indexOf("teleportationCircle") === -1
-                        && mesh.name.indexOf("torusTeleportation") === -1) {
+                this.raySelectionPredicate = (mesh) => {
                     return true;
                 }
-                return false;
+
+                this.meshSelectionPredicate = (mesh) => {
+                    return true;
+                }
+
+                this._raySelectionPredicate = (mesh) => {
+                    if (this._isTeleportationFloor(mesh) || (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
+                        && mesh.name.indexOf("teleportationCircle") === -1
+                        && mesh.name.indexOf("torusTeleportation") === -1
+                        && mesh.name.indexOf("laserPointer") === -1)) {
+                        return this.raySelectionPredicate(mesh);
+                    }
+                    return false;
+                }
+
+                this._scene.registerBeforeRender(() => {
+                    this._castRayAndSelectObject();
+                });
+
+                this._interactionsEnabled = true;
+            }
+        }
+
+        private _isTeleportationFloor(mesh: AbstractMesh): boolean {
+            for (var i = 0; i < this._floorMeshesCollection.length; i++) {
+                if (this._floorMeshesCollection[i].id === mesh.id) {
+                    return true;
+                }
+            }
+            if (this._floorMeshName && mesh.name === this._floorMeshName) {
+                return true;
+            }
+            return false;
+        }
+
+        public addFloorMesh(floorMesh: Mesh): void {
+            if (!this._floorMeshesCollection) {
+                return;
             }
 
-            this._scene.registerBeforeRender(() => {
-                this._castRayAndSelectObject();
-            });
+            if (this._floorMeshesCollection.indexOf(floorMesh) > -1) {
+                return;
+            }
+
+            this._floorMeshesCollection.push(floorMesh);
+        }
+
+        public removeFloorMesh(floorMesh: Mesh): void {
+            if (!this._floorMeshesCollection) {
+                return
+            }
+
+            const meshIndex = this._floorMeshesCollection.indexOf(floorMesh);
+            if (meshIndex !== -1) {
+                this._floorMeshesCollection.splice(meshIndex, 1);
+            }
+        }
+
+        public enableTeleportation(vrTeleportationOptions: VRTeleportationOptions = {}) {
+            if (!this._teleportationEnabled) {
+                this._teleportationRequested = true;
+
+                this.enableInteractions();
+
+                if (vrTeleportationOptions) {
+                    if (vrTeleportationOptions.floorMeshName) {
+                        this._floorMeshName = vrTeleportationOptions.floorMeshName;
+                    }
+                    if (vrTeleportationOptions.floorMeshes) {
+                        this._floorMeshesCollection = vrTeleportationOptions.floorMeshes;
+                    }
+                }
+
+                if (this._leftControllerReady && this._webVRCamera.leftController) {
+                    this._enableTeleportationOnController(this._webVRCamera.leftController)
+                }
+                if (this._rightControllerReady && this._webVRCamera.rightController) {
+                    this._enableTeleportationOnController(this._webVRCamera.rightController)
+                }
+
+                // Creates an image processing post process for the vignette not relying
+                // on the main scene configuration for image processing to reduce setup and spaces 
+                // (gamma/linear) conflicts.
+                const imageProcessingConfiguration = new ImageProcessingConfiguration();
+                imageProcessingConfiguration.vignetteColor = new BABYLON.Color4(0, 0, 0, 0);
+                imageProcessingConfiguration.vignetteEnabled = true;
+                this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove",
+                    1.0,
+                    this._webVRCamera,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    imageProcessingConfiguration);
+
+                this._webVRCamera.detachPostProcess(this._postProcessMove)
+                this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
+                this._teleportationEnabled = true;
+                this._createTeleportationCircles();
+            }
         }
 
         private _onNewGamepadConnected(gamepad: Gamepad) {
-            if (gamepad.leftStick) {
-                gamepad.onleftstickchanged((stickValues) => {
-                    if (!this._teleportationRequestInitiated) {
-                        if (stickValues.y < -0.6) {
-                            this._teleportationRequestInitiated = true;
-                        }
-                    }
-                    else {
-                        if (stickValues.y > -0.4) {
-                            if (this._teleportationAllowed) {
-                                this._teleportCamera();
-                            }
-                            this._teleportationRequestInitiated = false;
-                        }
-                    }
-                });
-            }
-            if (gamepad.rightStick) {
-                gamepad.onrightstickchanged((stickValues) => {
-                    if (!this._rotationLeftAsked) {
-                        if (stickValues.x < -0.6) {
-                            this._rotationLeftAsked = true;
-                            if (this._rotationAllowed) {
-                                this._rotateCamera(false);
+            if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
+                if (gamepad.leftStick) {
+                    gamepad.onleftstickchanged((stickValues) => {
+                        if (this._teleportationEnabled) {
+                            // Listening to classic/xbox gamepad only if no VR controller is active
+                            if ((!this._leftLaserPointer && !this._rightLaserPointer) ||
+                                ((this._leftLaserPointer && !this._leftLaserPointer.isVisible) &&
+                                    (this._rightLaserPointer && !this._rightLaserPointer.isVisible))) {
+                                if (!this._teleportationRequestInitiated) {
+                                    if (stickValues.y < -this._padSensibilityUp) {
+                                        this._teleportationRequestInitiated = true;
+                                    }
+                                }
+                                else {
+                                    if (stickValues.y > -this._padSensibilityDown) {
+                                        if (this._teleportationAllowed) {
+                                            this._teleportCamera();
+                                        }
+                                        this._teleportationRequestInitiated = false;
+                                    }
+                                }
                             }
                         }
-                    }
-                    else {
-                        if (stickValues.x > -0.4) {
-                            this._rotationLeftAsked = false;
-                        }
-                    }
-        
-                    if (!this._rotationRightAsked) {
-                        if (stickValues.x > 0.6) {
-                            this._rotationRightAsked = true;
-                            if (this._rotationAllowed) {
-                                this._rotateCamera(true);
+                    });
+                }
+                if (gamepad.rightStick) {
+                    gamepad.onrightstickchanged((stickValues) => {
+                        if (this._teleportationEnabled) {
+                            if (!this._rotationLeftAsked) {
+                                if (stickValues.x < -this._padSensibilityUp) {
+                                    this._rotationLeftAsked = true;
+                                    if (this._rotationAllowed) {
+                                        this._rotateCamera(false);
+                                    }
+                                }
+                            }
+                            else {
+                                if (stickValues.x > -this._padSensibilityDown) {
+                                    this._rotationLeftAsked = false;
+                                }
+                            }
+                            if (!this._rotationRightAsked) {
+                                if (stickValues.x > this._padSensibilityUp) {
+                                    this._rotationRightAsked = true;
+                                    if (this._rotationAllowed) {
+                                        this._rotateCamera(true);
+                                    }
+                                }
+                            }
+                            else {
+                                if (stickValues.x < this._padSensibilityDown) {
+                                    this._rotationRightAsked = false;
+                                }
                             }
                         }
-                    }
-                    else {
-                        if (stickValues.x < 0.4) {
-                            this._rotationRightAsked = false;
+                    });
+                }
+                if (gamepad.type === BABYLON.Gamepad.XBOX) {
+                    (<Xbox360Pad>gamepad).onbuttondown((buttonPressed: Xbox360Button) => {
+                        if (this._interactionsEnabled && buttonPressed === Xbox360Button.A) {
+                            this._pointerDownOnMeshAsked = true;
+                            if (this._currentMeshSelected && this._currentHit) {
+                                this._scene.simulatePointerDown(this._currentHit);
+                            }
                         }
-                    }
-                });
+                    });
+                    (<Xbox360Pad>gamepad).onbuttonup((buttonPressed: Xbox360Button) => {
+                        if (this._interactionsEnabled && buttonPressed === Xbox360Button.A) {
+                            if (this._currentMeshSelected && this._currentHit) {
+                                this._scene.simulatePointerUp(this._currentHit);
+                            }
+                            this._pointerDownOnMeshAsked = false;
+                        }
+                    });
+                }
             }
         }
 
-        private _enableTeleportationOnController(webVRController: WebVRController) {
+        private _onNewGamepadDisconnected(gamepad: Gamepad) {
+            if (gamepad instanceof WebVRController) {
+                if (gamepad.hand === "left") {
+                    this._interactionsEnabledOnLeftController = false;
+                    this._teleportationEnabledOnLeftController = false;
+                    this._leftControllerReady = false;
+                    if (this._leftLaserPointer) {
+                        this._leftLaserPointer.dispose();
+                    }
+                }
+                if (gamepad.hand === "right") {
+                    this._interactionsEnabledOnRightController = false;
+                    this._teleportationEnabledOnRightController = false;
+                    this._rightControllerReady = false;
+                    if (this._rightLaserPointer) {
+                        this._rightLaserPointer.dispose();
+                    }
+                }
+            }
+        }
+
+        private _enableInteractionOnController(webVRController: WebVRController) {
             var controllerMesh = webVRController.mesh;
             if (controllerMesh) {
                 var childMeshes = controllerMesh.getChildMeshes();
@@ -471,41 +723,105 @@ module BABYLON {
                         break;
                     }
                 }
-                var laserPointer = BABYLON.Mesh.CreateCylinder("laserPointer", 3, 0.004, 0.0001, 20, 1, this._scene, false);
+                var laserPointer = BABYLON.Mesh.CreateCylinder("laserPointer", 1, 0.004, 0.0002, 20, 1, this._scene, false);
                 var laserPointerMaterial = new BABYLON.StandardMaterial("laserPointerMat", this._scene);
                 laserPointerMaterial.emissiveColor = new BABYLON.Color3(0.7, 0.7, 0.7);
                 laserPointerMaterial.alpha = 0.6;
                 laserPointer.material = laserPointerMaterial;
                 laserPointer.rotation.x = Math.PI / 2;
                 laserPointer.parent = controllerMesh;
-                laserPointer.position.z = -1.5;
+                laserPointer.position.z = -0.5;
                 laserPointer.position.y = 0;
                 laserPointer.isVisible = false;
+                if (webVRController.hand === "left") {
+                    this._leftLaserPointer = laserPointer;
+                    this._interactionsEnabledOnLeftController = true;
+                }
+                else {
+                    this._rightLaserPointer = laserPointer;
+                    this._interactionsEnabledOnRightController = true;
+                }
                 webVRController.onMainButtonStateChangedObservable.add((stateObject) => {
                     // Enabling / disabling laserPointer 
-                    if (stateObject.value === 1) {
+                    if (this._displayLaserPointer && stateObject.value === 1) {
                         laserPointer.isVisible = !laserPointer.isVisible;
+                        // Laser pointer can only be active on left or right, not both at the same time
+                        if (webVRController.hand === "left" && this._rightLaserPointer) {
+                            this._rightLaserPointer.isVisible = false;
+                        }
+                        else if (this._leftLaserPointer) {
+                            this._leftLaserPointer.isVisible = false;
+                        }
                     }
                 });
+                webVRController.onTriggerStateChangedObservable.add((stateObject) => {
+                    if (!this._pointerDownOnMeshAsked) {
+                        if (stateObject.value > this._padSensibilityUp) {
+                            this._pointerDownOnMeshAsked = true;
+                            if (this._currentMeshSelected && this._currentHit) {
+                                this._scene.simulatePointerDown(this._currentHit);
+                            }
+                        }
+                    }
+                    else if (stateObject.value < this._padSensibilityDown) {
+                        if (this._currentMeshSelected && this._currentHit) {
+                            this._scene.simulatePointerUp(this._currentHit);
+                        }
+                        this._pointerDownOnMeshAsked = false;
+                    }
+                });
+            }
+        }
+
+        private _enableTeleportationOnController(webVRController: WebVRController) {
+            var controllerMesh = webVRController.mesh;
+            if (controllerMesh) {
+                if (webVRController.hand === "left") {
+                    if (!this._interactionsEnabledOnLeftController) {
+                        this._enableInteractionOnController(webVRController);
+                    }
+                    this._teleportationEnabledOnLeftController = true;
+                }
+                else {
+                    if (!this._interactionsEnabledOnRightController) {
+                        this._enableInteractionOnController(webVRController);
+                    }
+                    this._teleportationEnabledOnRightController = true;
+                }
                 webVRController.onPadValuesChangedObservable.add((stateObject) => {
-                    // on pressed
                     if (!this._teleportationRequestInitiated) {
-                        if (stateObject.y < -0.6) {
-                            laserPointer.isVisible = true;
+                        if (stateObject.y < -this._padSensibilityUp) {
+                            // If laser pointer wasn't enabled yet
+                            if (this._displayLaserPointer && webVRController.hand === "left" && this._leftLaserPointer) {
+                                this._leftLaserPointer.isVisible = true;
+                                if (this._rightLaserPointer) {
+                                    this._rightLaserPointer.isVisible = false;
+                                }
+                            }
+                            else if (this._displayLaserPointer && this._rightLaserPointer) {
+                                this._rightLaserPointer.isVisible = true;
+                                if (this._leftLaserPointer) {
+                                    this._leftLaserPointer.isVisible = false;
+                                }
+                            }
                             this._teleportationRequestInitiated = true;
                         }
                     }
                     else {
-                        if (stateObject.y > -0.4) {
-                            if (this._teleportationAllowed) {
-                                this._teleportCamera();
+                        // Listening to the proper controller values changes to confirm teleportation
+                        if ((webVRController.hand === "left" && this._leftLaserPointer && this._leftLaserPointer.isVisible)
+                            || (webVRController.hand === "right" && this._rightLaserPointer && this._rightLaserPointer.isVisible)) {
+                            if (stateObject.y > -this._padSensibilityDown) {
+                                if (this._teleportationAllowed) {
+                                    this._teleportationAllowed = false;
+                                    this._teleportCamera();
+                                }
+                                this._teleportationRequestInitiated = false;
                             }
-                            this._teleportationRequestInitiated = false;
-                            laserPointer.isVisible = false;
                         }
                     }
                     if (!this._rotationLeftAsked) {
-                        if (stateObject.x < -0.6) {
+                        if (stateObject.x < -this._padSensibilityUp) {
                             this._rotationLeftAsked = true;
                             if (this._rotationAllowed) {
                                 this._rotateCamera(false);
@@ -513,13 +829,13 @@ module BABYLON {
                         }
                     }
                     else {
-                        if (stateObject.x > -0.4) {
+                        if (stateObject.x > -this._padSensibilityDown) {
                             this._rotationLeftAsked = false;
                         }
                     }
-        
+
                     if (!this._rotationRightAsked) {
-                        if (stateObject.x > 0.6) {
+                        if (stateObject.x > this._padSensibilityUp) {
                             this._rotationRightAsked = true;
                             if (this._rotationAllowed) {
                                 this._rotateCamera(true);
@@ -527,7 +843,7 @@ module BABYLON {
                         }
                     }
                     else {
-                        if (stateObject.x < 0.4) {
+                        if (stateObject.x < this._padSensibilityDown) {
                             this._rotationRightAsked = false;
                         }
                     }
@@ -540,26 +856,28 @@ module BABYLON {
             this._gazeTracker = BABYLON.Mesh.CreateTorus("gazeTracker", 0.0035, 0.0025, 20, this._scene, false);
             this._gazeTracker.bakeCurrentTransformIntoVertices();
             this._gazeTracker.isPickable = false;
+            this._gazeTracker.isVisible = false;
 
             var targetMat = new BABYLON.StandardMaterial("targetMat", this._scene);
             targetMat.specularColor = BABYLON.Color3.Black();
-            targetMat.emissiveColor = BABYLON.Color3.White();
+            targetMat.emissiveColor = new BABYLON.Color3(0.7, 0.7, 0.7)
             targetMat.backFaceCulling = false;
             this._gazeTracker.material = targetMat;
         }
 
         private _createTeleportationCircles() {
             this._teleportationCircle = BABYLON.Mesh.CreateGround("teleportationCircle", 2, 2, 2, this._scene);
-            
+            this._teleportationCircle.isPickable = false;
+
             var length = 512;
             var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", length, this._scene, true);
             dynamicTexture.hasAlpha = true;
             var context = dynamicTexture.getContext();
-    
+
             var centerX = length / 2;
             var centerY = length / 2;
             var radius = 200;
-    
+
             context.beginPath();
             context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
             context.fillStyle = this._teleportationFillColor;
@@ -569,16 +887,17 @@ module BABYLON {
             context.stroke();
             context.closePath();
             dynamicTexture.update();
-            
+
             var teleportationCircleMaterial = new BABYLON.StandardMaterial("TextPlaneMaterial", this._scene);
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
             this._teleportationCircle.material = teleportationCircleMaterial;
-            
+
             var torus = BABYLON.Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
+            torus.isPickable = false;
             torus.parent = this._teleportationCircle;
-            
+
             var animationInnerCircle = new BABYLON.Animation("animationInnerCircle", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        
+
             var keys = [];
             keys.push({
                 frame: 0,
@@ -592,46 +911,54 @@ module BABYLON {
                 frame: 60,
                 value: 0
             });
-        
+
             animationInnerCircle.setKeys(keys);
-        
+
             var easingFunction = new BABYLON.SineEase();
             easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
             animationInnerCircle.setEasingFunction(easingFunction);
-        
+
             torus.animations = [];
             torus.animations.push(animationInnerCircle);
-        
+
             this._scene.beginAnimation(torus, 0, 60, true);
-            
+
             this._hideTeleportationCircle();
         }
 
         private _displayTeleportationCircle() {
-            this._teleportationCircle.isVisible = true;
-            (<Mesh>this._teleportationCircle.getChildren()[0]).isVisible = true;
+            if (this._teleportationEnabled) {
+                this._teleportationCircle.isVisible = true;
+                (<Mesh>this._teleportationCircle.getChildren()[0]).isVisible = true;
+            }
         }
-        
+
         private _hideTeleportationCircle() {
-            this._teleportationCircle.isVisible = false;
-            (<Mesh>this._teleportationCircle.getChildren()[0]).isVisible = false;
+            if (this._teleportationEnabled) {
+                this._teleportationCircle.isVisible = false;
+                (<Mesh>this._teleportationCircle.getChildren()[0]).isVisible = false;
+            }
         }
 
         private _rotateCamera(right: boolean) {
+            if (!(this.currentVRCamera instanceof FreeCamera)) {
+                return;
+            }
+
             if (right) {
                 this._rotationAngle++;
             }
             else {
                 this._rotationAngle--;
             }
-        
+
             this.currentVRCamera.animations = [];
-         
+
             var target = BABYLON.Quaternion.FromRotationMatrix(BABYLON.Matrix.RotationY(Math.PI / 4 * this._rotationAngle));
-        
+
             var animationRotation = new BABYLON.Animation("animationRotation", "rotationQuaternion", 90, BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-            
+
             var animationRotationKeys = [];
             animationRotationKeys.push({
                 frame: 0,
@@ -641,20 +968,18 @@ module BABYLON {
                 frame: 6,
                 value: target
             });
-        
+
             animationRotation.setKeys(animationRotationKeys);
-        
-            var easingFunction = new BABYLON.CircleEase();
-            easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
-            animationRotation.setEasingFunction(easingFunction);
-        
+
+            animationRotation.setEasingFunction(this._circleEase);
+
             this.currentVRCamera.animations.push(animationRotation);
-        
+
             this._postProcessMove.animations = [];
-        
+
             var animationPP = new BABYLON.Animation("animationPP", "vignetteWeight", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        
+
             var vignetteWeightKeys = [];
             vignetteWeightKeys.push({
                 frame: 0,
@@ -668,14 +993,14 @@ module BABYLON {
                 frame: 6,
                 value: 0
             });
-        
+
             animationPP.setKeys(vignetteWeightKeys);
-            animationPP.setEasingFunction(easingFunction);
+            animationPP.setEasingFunction(this._circleEase);
             this._postProcessMove.animations.push(animationPP);
-        
+
             var animationPP2 = new BABYLON.Animation("animationPP2", "vignetteStretch", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        
+
             var vignetteStretchKeys = [];
             vignetteStretchKeys.push({
                 frame: 0,
@@ -689,82 +1014,80 @@ module BABYLON {
                 frame: 6,
                 value: 0
             });
-        
+
             animationPP2.setKeys(vignetteStretchKeys);
-            animationPP2.setEasingFunction(easingFunction);
+            animationPP2.setEasingFunction(this._circleEase);
             this._postProcessMove.animations.push(animationPP2);
-            
+
             this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
             this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
-        
+
+            this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 6, false, 1, () => {
-                this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
+                this._webVRCamera.detachPostProcess(this._postProcessMove)
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 6, false, 1);
         }
 
-        private _moveTeleportationSelectorTo(coordinates: Vector3) {
-            this._teleportationAllowed = true;
-            if (this._teleportationRequestInitiated) {
-                this._displayTeleportationCircle();
+        private _moveTeleportationSelectorTo(hit: PickingInfo) {
+            if (hit.pickedPoint) {
+                this._teleportationAllowed = true;
+                if (this._teleportationRequestInitiated) {
+                    this._displayTeleportationCircle();
+                }
+                else {
+                    this._hideTeleportationCircle();
+                }
+                this._haloCenter.copyFrom(hit.pickedPoint);
+                this._teleportationCircle.position.copyFrom(hit.pickedPoint);
+                var pickNormal = hit.getNormal(true, false);
+                if (pickNormal) {
+                    var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
+                    var axis2 = BABYLON.Vector3.Cross(pickNormal, axis1);
+                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._teleportationCircle.rotation);
+                }
+                this._teleportationCircle.position.y += 0.1;
             }
-            else {
-                this._hideTeleportationCircle();
-            }
-            this._haloCenter.copyFrom(coordinates);
-            this._teleportationCircle.position = coordinates;
-            this._teleportationCircle.position.y += 0.001;
         }
-
+        private _workingVector = Vector3.Zero();
         private _teleportCamera() {
+            if (!(this.currentVRCamera instanceof FreeCamera)) {
+                return;
+            }
+
+            // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
+            // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
+            if (this.webVRCamera.leftCamera) {
+                this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
+                this._workingVector.subtractInPlace(this.webVRCamera.position);
+                this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
+            } else {
+                this._workingVector.copyFrom(this._haloCenter);
+            }
+            this._workingVector.y += this._defaultHeight;
+
+            // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
-        
-            var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position.x", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        
-            var animationCameraTeleportationKeys = [];
-            animationCameraTeleportationKeys.push({
+            var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position", 90, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            var animationCameraTeleportationKeys = [{
                 frame: 0,
-                value: this.currentVRCamera.position.x
-            });
-            animationCameraTeleportationKeys.push({
+                value: this.currentVRCamera.position
+            },
+            {
                 frame: 11,
-                value: this._haloCenter.x
-            });
-        
+                value: this._workingVector
+            }
+            ];
+
             animationCameraTeleportation.setKeys(animationCameraTeleportationKeys);
-        
-            var easingFunction = new BABYLON.CircleEase();
-            easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
-            animationCameraTeleportation.setEasingFunction(easingFunction);
-        
+            animationCameraTeleportation.setEasingFunction(this._circleEase);
             this.currentVRCamera.animations.push(animationCameraTeleportation);
-        
-            var animationZoomIn2 = new BABYLON.Animation("animationZoomIn", "position.z", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        
-            var keys2 = [];
-            keys2.push({
-                frame: 0,
-                value: this.currentVRCamera.position.z
-            });
-            keys2.push({
-                frame: 11,
-                value: this._haloCenter.z
-            });
-        
-            animationZoomIn2.setKeys(keys2);
-        
-            animationZoomIn2.setEasingFunction(easingFunction);
-        
-            this.currentVRCamera.animations.push(animationZoomIn2);
-        
+
             this._postProcessMove.animations = [];
-        
+
             var animationPP = new BABYLON.Animation("animationPP", "vignetteWeight", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        
+
             var vignetteWeightKeys = [];
             vignetteWeightKeys.push({
                 frame: 0,
@@ -778,13 +1101,13 @@ module BABYLON {
                 frame: 11,
                 value: 0
             });
-        
+
             animationPP.setKeys(vignetteWeightKeys);
             this._postProcessMove.animations.push(animationPP);
-        
+
             var animationPP2 = new BABYLON.Animation("animationPP2", "vignetteStretch", 90, BABYLON.Animation.ANIMATIONTYPE_FLOAT,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        
+
             var vignetteStretchKeys = [];
             vignetteStretchKeys.push({
                 frame: 0,
@@ -798,95 +1121,170 @@ module BABYLON {
                 frame: 11,
                 value: 0
             });
-        
+
             animationPP2.setKeys(vignetteStretchKeys);
             this._postProcessMove.animations.push(animationPP2);
-        
-            this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 8;
-            this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 10;
-            this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = true;
-            
+
+            this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
+            this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
+
+            this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, () => {
-                this._postProcessMove.imageProcessingConfiguration.vignetteEnabled = false;
+                this._webVRCamera.detachPostProcess(this._postProcessMove)
             });
             this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1);
         }
 
-        private _castRayAndSelectObject () {
-            var ray;
-            if (!(<WebVRFreeCamera>this.currentVRCamera).rightController) {
-                ray = this.currentVRCamera.getForwardRay();
-            } else {
-                ray = (<any>this.currentVRCamera).rightController.getForwardRay();
+        private _castRayAndSelectObject() {
+            if (!(this.currentVRCamera instanceof FreeCamera)) {
+                return;
             }
-        
-            var hit = this._scene.pickWithRay(ray, this.meshSelectionPredicate);
 
+            var ray;
+            if (this._leftLaserPointer && this._leftLaserPointer.isVisible && (<any>this.currentVRCamera).leftController) {
+                ray = (<any>this.currentVRCamera).leftController.getForwardRay(this._rayLength);
+            }
+            else if (this._rightLaserPointer && this._rightLaserPointer.isVisible && (<any>this.currentVRCamera).rightController) {
+                ray = (<any>this.currentVRCamera).rightController.getForwardRay(this._rayLength);
+            } else {
+                ray = this.currentVRCamera.getForwardRay(this._rayLength);
+            }
+
+            var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
+
+            // Moving the gazeTracker on the mesh face targetted
             if (hit && hit.pickedPoint) {
-                this._gazeTracker.scaling.x = hit.distance;
-                this._gazeTracker.scaling.y = hit.distance;
-                this._gazeTracker.scaling.z = hit.distance;
-        
-                var pickNormal = hit.getNormal();
-                var deltaFighting = 0.002;
-                
-                if (pickNormal) {
-                    var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
-                    var axis2 = BABYLON.Vector3.Cross( pickNormal, axis1);
-                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._gazeTracker.rotation);
+                if (this._displayGaze) {
+                    let multiplier = 1;
+
+                    this._gazeTracker.isVisible = true;
+
+                    if (this._isActionableMesh) {
+                        multiplier = 3;
+                    }
+                    this._gazeTracker.scaling.x = hit.distance * multiplier;
+                    this._gazeTracker.scaling.y = hit.distance * multiplier;
+                    this._gazeTracker.scaling.z = hit.distance * multiplier;
+
+                    var pickNormal = hit.getNormal();
+                    // To avoid z-fighting
+                    let deltaFighting = 0.002;
+
+                    if (pickNormal) {
+                        var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
+                        var axis2 = BABYLON.Vector3.Cross(pickNormal, axis1);
+                        BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._gazeTracker.rotation);
+                    }
+                    this._gazeTracker.position.copyFrom(hit.pickedPoint);
+
+                    if (this._gazeTracker.position.x < 0) {
+                        this._gazeTracker.position.x += deltaFighting;
+                    }
+                    else {
+                        this._gazeTracker.position.x -= deltaFighting;
+                    }
+                    if (this._gazeTracker.position.y < 0) {
+                        this._gazeTracker.position.y += deltaFighting;
+                    }
+                    else {
+                        this._gazeTracker.position.y -= deltaFighting;
+                    }
+                    if (this._gazeTracker.position.z < 0) {
+                        this._gazeTracker.position.z += deltaFighting;
+                    }
+                    else {
+                        this._gazeTracker.position.z -= deltaFighting;
+                    }
                 }
-                this._gazeTracker.position.copyFrom(hit.pickedPoint);
-        
-                if (this._gazeTracker.position.x < 0) {
-                    this._gazeTracker.position.x += deltaFighting;
+
+                // Changing the size of the laser pointer based on the distance from the targetted point
+                if (this._rightLaserPointer && this._rightLaserPointer.isVisible) {
+                    this._rightLaserPointer.scaling.y = hit.distance;
+                    this._rightLaserPointer.position.z = -hit.distance / 2;
                 }
-                else {
-                    this._gazeTracker.position.x -= deltaFighting;
-                }
-                if (this._gazeTracker.position.y < 0) {
-                    this._gazeTracker.position.y += deltaFighting;
-                }
-                else {
-                    this._gazeTracker.position.y -= deltaFighting;
-                }
-                if (this._gazeTracker.position.z < 0) {
-                    this._gazeTracker.position.z += deltaFighting;
-                }
-                else {
-                    this._gazeTracker.position.z -= deltaFighting;
+                if (this._leftLaserPointer && this._leftLaserPointer.isVisible) {
+                    this._leftLaserPointer.scaling.y = hit.distance;
+                    this._leftLaserPointer.position.z = -hit.distance / 2;
                 }
             }
-        
-            if (this._rayHelper) {
-                this._rayHelper.dispose();
+            else {
+                this._gazeTracker.isVisible = false;
             }
-        
-            if ((<WebVRFreeCamera>this.currentVRCamera).rightController) {
-                this._rayHelper = BABYLON.RayHelper.CreateAndShow(ray, this._scene, new BABYLON.Color3(0.7, 0.7, 0.7));
-            }
-        
+
             if (hit && hit.pickedMesh) {
+                this._currentHit = hit;
+                if (this._pointerDownOnMeshAsked) {
+                    this._scene.simulatePointerMove(this._currentHit);
+                }
                 // The object selected is the floor, we're in a teleportation scenario
-                if (hit.pickedMesh.name.indexOf(this._floorMeshName) !== -1 && hit.pickedPoint) {
-                    this._moveTeleportationSelectorTo(hit.pickedPoint)
+                if (this._teleportationEnabled && this._isTeleportationFloor(hit.pickedMesh) && hit.pickedPoint) {
+                    // Moving the teleportation area to this targetted point
+                    this._moveTeleportationSelectorTo(hit);
                     return;
                 }
                 // If not, we're in a selection scenario
                 this._hideTeleportationCircle();
                 this._teleportationAllowed = false;
-                //currentMeshSelected = hit.pickedMesh;
+                if (hit.pickedMesh !== this._currentMeshSelected) {
+                    if (this.meshSelectionPredicate(hit.pickedMesh)) {
+                        this._currentMeshSelected = hit.pickedMesh;
+                        if (hit.pickedMesh.isPickable && hit.pickedMesh.actionManager) {
+                            this.changeGazeColor(new BABYLON.Color3(0, 0, 1));
+                            this.changeLaserColor(new BABYLON.Color3(0.2, 0.2, 1));
+                            this._isActionableMesh = true;
+                        }
+                        else {
+                            this.changeGazeColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                            this.changeLaserColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                            this._isActionableMesh = false;
+                        }
+                        try {
+                            this.onNewMeshSelected.notifyObservers(this._currentMeshSelected);
+                        }
+                        catch (err) {
+                            Tools.Warn("Error in your custom logic onNewMeshSelected: " + err);
+                        }
+                    }
+                    else {
+                        this._currentMeshSelected = null;
+                        this.changeGazeColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                        this.changeLaserColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                    }
+                }
             }
             else {
+                this._currentHit = null;
+                this._currentMeshSelected = null;
                 this._teleportationAllowed = false;
                 this._hideTeleportationCircle();
+                this.changeGazeColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+                this.changeLaserColor(new BABYLON.Color3(0.7, 0.7, 0.7));
+            }
+        }
+
+        public changeLaserColor(color: Color3) {
+            if (this._leftLaserPointer && this._leftLaserPointer.material) {
+                (<StandardMaterial>this._leftLaserPointer.material).emissiveColor = color;
+            }
+            if (this._rightLaserPointer && this._rightLaserPointer.material) {
+                (<StandardMaterial>this._rightLaserPointer.material).emissiveColor = color;
+            }
+        }
+
+        public changeGazeColor(color: Color3) {
+            if (this._gazeTracker.material) {
+                (<StandardMaterial>this._gazeTracker.material).emissiveColor = color;
             }
         }
 
         public dispose() {
-            if (this.isInVRMode()) {
+            if (this.isInVRMode) {
                 this.exitVR();
             }
-            this._deviceOrientationCamera.dispose();
+
+            if (this._deviceOrientationCamera) {
+                this._deviceOrientationCamera.dispose();
+            }
 
             if (this._passProcessMove) {
                 this._passProcessMove.dispose();
@@ -905,6 +1303,8 @@ module BABYLON {
             if (!this._useCustomVRButton) {
                 document.body.removeChild(this._btnVR);
             }
+
+            this._floorMeshesCollection = [];
 
             document.removeEventListener("keydown", this._onKeyDown);
             window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);

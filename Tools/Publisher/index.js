@@ -39,6 +39,10 @@ let packages = [
     {
         name: 'inspector',
         path: basePath + '/inspector/'
+    },
+    {
+        name: 'viewer',
+        path: basePath + '/viewer/'
     }
 ];
 
