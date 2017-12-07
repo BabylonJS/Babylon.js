@@ -24369,13 +24369,13 @@ var BABYLON;
             }
             else if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
-                this._queueLoad(this, scene);
+                this._queueLoad(scene);
             }
             return this;
         };
-        Mesh.prototype._queueLoad = function (mesh, scene) {
+        Mesh.prototype._queueLoad = function (scene) {
             var _this = this;
-            scene._addPendingData(mesh);
+            scene._addPendingData(this);
             var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
             BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
                 if (data instanceof ArrayBuffer) {
@@ -50505,6 +50505,7 @@ var BABYLON;
                     }
                 }
             }
+            _this._files = files;
             if (!_this._texture) {
                 if (!scene.useDelayedTextureLoading) {
                     if (prefiltered) {
@@ -72342,6 +72343,14 @@ var BABYLON;
                     }
                     if (this._leftLaserPointer) {
                         this._leftLaserPointer.isVisible = false;
+                    }
+                }
+                else {
+                    if (this._rightLaserPointer) {
+                        this._rightLaserPointer.isVisible = true;
+                    }
+                    else if (this._leftLaserPointer) {
+                        this._leftLaserPointer.isVisible = true;
                     }
                 }
             },
