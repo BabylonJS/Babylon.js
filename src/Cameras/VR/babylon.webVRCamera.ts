@@ -324,7 +324,7 @@ module BABYLON {
             
             // Get current device rotation in babylon world
             Matrix.FromQuaternionToRef(this._deviceRoomRotationQuaternion, this._workingMatrix);
-            this._deviceToWorld.multiplyToRef(this._workingMatrix, this._workingMatrix);
+            this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix)
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
 
             super.update();
