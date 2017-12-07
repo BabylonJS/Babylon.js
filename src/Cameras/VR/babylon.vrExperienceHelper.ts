@@ -122,6 +122,14 @@ module BABYLON {
                     this._leftLaserPointer.isVisible = false;
                 }
             }
+            else {
+                if(this._rightLaserPointer) {
+                    this._rightLaserPointer.isVisible = true;
+                }
+                else if (this._leftLaserPointer) {
+                    this._leftLaserPointer.isVisible = true;
+                }
+            }
         }
 
         public get deviceOrientationCamera(): Nullable<DeviceOrientationCamera> {
