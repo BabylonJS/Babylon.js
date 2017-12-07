@@ -12438,7 +12438,10 @@ var BABYLON;
                 // We defer the attach when the scene will be loaded
                 var observer = this._scene.onDataLoadedObservable.add(function () {
                     behavior.attach(_this);
-                    _this._scene.onDataLoadedObservable.remove(observer);
+                    setTimeout(function () {
+                        // Need to use a timeout to avoid removing an observer while iterating the list of observers
+                        _this._scene.onDataLoadedObservable.remove(observer);
+                    }, 0);
                 });
             }
             else {
