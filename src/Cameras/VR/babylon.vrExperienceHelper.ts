@@ -228,9 +228,9 @@ module BABYLON {
                 }
                 if (this._btnVR) {
                     this._btnVR.addEventListener("click", () => {
-                        if(!this.isInVRMode){
+                        if (!this.isInVRMode) {
                             this.enterVR();
-                        }else{
+                        } else {
                             this.exitVR();
                         }
                     });
@@ -414,10 +414,6 @@ module BABYLON {
          * Otherwise, will use the fullscreen API.
          */
         public enterVR() {
-            if (this._scene.activeCamera) {
-                this._position = this._scene.activeCamera.position.clone();
-            }
-
             if (this.onEnteringVR) {
                 try {
                     this.onEnteringVR.notifyObservers(this);
@@ -426,6 +422,11 @@ module BABYLON {
                     Tools.Warn("Error in your custom logic onEnteringVR: " + err);
                 }
             }
+
+            if (this._scene.activeCamera) {
+                this._position = this._scene.activeCamera.position.clone();
+            }
+
             if (this._webVRrequesting)
                 return;
 
