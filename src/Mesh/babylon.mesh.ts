@@ -1439,13 +1439,13 @@
             else if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
-                this._queueLoad(this, scene);
+                this._queueLoad(scene);
             }
             return this;
         }
 
-        private _queueLoad(mesh: Mesh, scene: Scene): Mesh {
-            scene._addPendingData(mesh);
+        private _queueLoad(scene: Scene): Mesh {
+            scene._addPendingData(this);
 
             var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
 
