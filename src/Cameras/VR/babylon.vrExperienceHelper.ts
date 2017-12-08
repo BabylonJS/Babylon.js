@@ -160,24 +160,37 @@ module BABYLON {
             this._scene = scene;
             this._canvas = scene.getEngine().getRenderingCanvas();
 
-            this._defaultHeight = webVROptions.defaultHeight || 1.7;
-
+            // Parse options
             if (webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined) {
                 webVROptions.createFallbackVRDeviceOrientationFreeCamera = true;
             }
-
             if (webVROptions.createDeviceOrientationCamera === undefined) {
                 webVROptions.createDeviceOrientationCamera = true;
             }
-
-            if (!this._scene.activeCamera || webVROptions.createDeviceOrientationCamera) {
-                if (!this._scene.activeCamera || isNaN(this._scene.activeCamera.position.x)) {
-                    this._position = new BABYLON.Vector3(0, this._defaultHeight, 0);
-                    this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
+            if (webVROptions.useCustomVRButton) {
+                this._useCustomVRButton = true;
+                if (webVROptions.customVRButton) {
+                    this._btnVR = webVROptions.customVRButton;
                 }
-                else {
-                    this._position = this._scene.activeCamera.position.clone();
-                    this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
+            }
+            if (webVROptions.rayLength) {
+                this._rayLength = webVROptions.rayLength
+            }
+            this._defaultHeight = webVROptions.defaultHeight || 1.7;
+
+            // Set position
+            if(this._scene.activeCamera){
+                this._position = this._scene.activeCamera.position.clone();
+            }else{
+                this._position = new BABYLON.Vector3(0, this._defaultHeight, 0);
+            }
+
+            // Set non-vr camera
+            if(webVROptions.createDeviceOrientationCamera || !this._scene.activeCamera){
+                this._deviceOrientationCamera = new BABYLON.DeviceOrientationCamera("deviceOrientationVRHelper", this._position.clone(), scene);
+                
+                // Copy data from existing camera
+                if(this._scene.activeCamera){
                     this._deviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
                     this._deviceOrientationCamera.maxZ = this._scene.activeCamera.maxZ;
                     // Set rotation from previous camera
@@ -191,29 +204,22 @@ module BABYLON {
                         this._deviceOrientationCamera.rotation = targetCamera.rotation.clone();
                     }
                 }
+
                 this._scene.activeCamera = this._deviceOrientationCamera;
                 if (this._canvas) {
                     this._scene.activeCamera.attachControl(this._canvas);
                 }
-            }
-            else {
+            }else{
                 this._existingCamera = this._scene.activeCamera;
-                this._position = this._scene.activeCamera.position.clone();
             }
 
-            if (webVROptions) {
-                if (webVROptions.useCustomVRButton) {
-                    this._useCustomVRButton = true;
-                    if (webVROptions.customVRButton) {
-                        this._btnVR = webVROptions.customVRButton;
-                    }
-                }
-
-                if (webVROptions.rayLength) {
-                    this._rayLength = webVROptions.rayLength
-                }
+            // Create VR cameras
+            if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
+            this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
             }
+            this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
 
+            // Create default button
             if (!this._useCustomVRButton) {
                 this._btnVR = <HTMLButtonElement>document.createElement("BUTTON");
                 this._btnVR.className = "babylonVRicon";
@@ -229,50 +235,42 @@ module BABYLON {
                 var style = document.createElement('style');
                 style.appendChild(document.createTextNode(css));
                 document.getElementsByTagName('head')[0].appendChild(style);
+
+                this.moveButtonToBottomRight();
             }
 
-            if (this._canvas) {
-                if (!this._useCustomVRButton) {
-                    this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-                    this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
-                }
-                if (this._btnVR) {
-                    this._btnVR.addEventListener("click", () => {
-                        if (!this.isInVRMode) {
-                            this.enterVR();
-                        } else {
-                            this.exitVR();
-                        }
-                    });
-                }
-
-                window.addEventListener("resize", () => {
-                    if (this._canvas && !this._useCustomVRButton) {
-                        this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-                        this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
-                    }
-
-                    if (this._fullscreenVRpresenting && this._webVRready) {
+            // VR button click event
+            if (this._btnVR) {
+                this._btnVR.addEventListener("click", () => {
+                    if (!this.isInVRMode) {
+                        this.enterVR();
+                    } else {
                         this.exitVR();
                     }
                 });
             }
 
+            // Window events
+            window.addEventListener("resize", () => {
+                this.moveButtonToBottomRight();
+                if (this._fullscreenVRpresenting && this._webVRready) {
+                    this.exitVR();
+                }
+            });
             document.addEventListener("fullscreenchange", () => { this._onFullscreenChange() }, false);
             document.addEventListener("mozfullscreenchange", () => { this._onFullscreenChange() }, false);
             document.addEventListener("webkitfullscreenchange", () => { this._onFullscreenChange() }, false);
             document.addEventListener("msfullscreenchange", () => { this._onFullscreenChange() }, false);
 
-            this._scene.getEngine().onVRDisplayChangedObservable.add((e) => {
-                if (!this._useCustomVRButton && !this._btnVRDisplayed && e.vrDisplay) {
-                    document.body.appendChild(this._btnVR);
-                    this._btnVRDisplayed = true;
-                }
-            })
-
-            if (!this._useCustomVRButton && !this._btnVRDisplayed && webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
-                document.body.appendChild(this._btnVR);
-                this._btnVRDisplayed = true;
+            // Display vr button when headset is connected
+            if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
+                this.displayVRButton();
+            }else{
+                this._scene.getEngine().onVRDisplayChangedObservable.add((e) => {
+                    if (e.vrDisplay) {
+                        this.displayVRButton();
+                    }
+                })
             }
 
             // Exiting VR mode using 'ESC' key on desktop
@@ -304,17 +302,12 @@ module BABYLON {
                 this._webVRrequesting = false;
                 this.updateButtonVisibility();
             };
-
             scene.getEngine().onVRDisplayChangedObservable.add(this._onVRDisplayChanged);
             scene.getEngine().onVRRequestPresentStart.add(this._onVRRequestPresentStart);
             scene.getEngine().onVRRequestPresentComplete.add(this._onVRRequestPresentComplete);
             window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
 
-            // Create the cameras
-            if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
-                this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
-            }
-            this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
+            // Gamepad connection events
             this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
             this._scene.gamepadManager.onGamepadConnectedObservable.add((pad) => this._onNewGamepadConnected(pad));
             this._scene.gamepadManager.onGamepadDisconnectedObservable.add((pad) => this._onNewGamepadDisconnected(pad));
@@ -403,6 +396,20 @@ module BABYLON {
             this._webVRpresenting = eventArgs.vrDisplay && eventArgs.vrDisplay.isPresenting;
 
             this.updateButtonVisibility();
+        }
+
+        private moveButtonToBottomRight(){
+            if (this._canvas && !this._useCustomVRButton) {
+                this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
+                this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+            }
+        }
+
+        private displayVRButton(){
+            if (!this._useCustomVRButton && !this._btnVRDisplayed) {
+                document.body.appendChild(this._btnVR);
+                this._btnVRDisplayed = true;
+            }
         }
 
         private updateButtonVisibility() {
@@ -628,24 +635,12 @@ module BABYLON {
                 if (gamepad.leftStick) {
                     gamepad.onleftstickchanged((stickValues) => {
                         if (this._teleportationEnabled) {
-                            this._teleportBackwardsCheck(stickValues);
+                            this._checkTeleportBackwards(stickValues);
                             // Listening to classic/xbox gamepad only if no VR controller is active
                             if ((!this._leftLaserPointer && !this._rightLaserPointer) ||
                                 ((this._leftLaserPointer && !this._leftLaserPointer.isVisible) &&
                                     (this._rightLaserPointer && !this._rightLaserPointer.isVisible))) {
-                                if (!this._teleportationRequestInitiated) {
-                                    if (stickValues.y < -this._padSensibilityUp) {
-                                        this._teleportationRequestInitiated = true;
-                                    }
-                                }
-                                else {
-                                    if (stickValues.y > -this._padSensibilityDown) {
-                                        if (this._teleportationAllowed) {
-                                            this._teleportCamera();
-                                        }
-                                        this._teleportationRequestInitiated = false;
-                                    }
-                                }
+                                this._checkTeleportWithRay(stickValues);
                             }
                         }
                     });
@@ -653,50 +648,19 @@ module BABYLON {
                 if (gamepad.rightStick) {
                     gamepad.onrightstickchanged((stickValues) => {
                         if (this._teleportationEnabled) {
-                            if (!this._rotationLeftAsked) {
-                                if (stickValues.x < -this._padSensibilityUp) {
-                                    this._rotationLeftAsked = true;
-                                    if (this._rotationAllowed) {
-                                        this._rotateCamera(false);
-                                    }
-                                }
-                            }
-                            else {
-                                if (stickValues.x > -this._padSensibilityDown) {
-                                    this._rotationLeftAsked = false;
-                                }
-                            }
-                            if (!this._rotationRightAsked) {
-                                if (stickValues.x > this._padSensibilityUp) {
-                                    this._rotationRightAsked = true;
-                                    if (this._rotationAllowed) {
-                                        this._rotateCamera(true);
-                                    }
-                                }
-                            }
-                            else {
-                                if (stickValues.x < this._padSensibilityDown) {
-                                    this._rotationRightAsked = false;
-                                }
-                            }
+                            this._checkRotate(stickValues);
                         }
                     });
                 }
                 if (gamepad.type === BABYLON.Gamepad.XBOX) {
                     (<Xbox360Pad>gamepad).onbuttondown((buttonPressed: Xbox360Button) => {
                         if (this._interactionsEnabled && buttonPressed === Xbox360Button.A) {
-                            this._pointerDownOnMeshAsked = true;
-                            if (this._currentMeshSelected && this._currentHit) {
-                                this._scene.simulatePointerDown(this._currentHit);
-                            }
+                            this._selectionPointerDown();
                         }
                     });
                     (<Xbox360Pad>gamepad).onbuttonup((buttonPressed: Xbox360Button) => {
                         if (this._interactionsEnabled && buttonPressed === Xbox360Button.A) {
-                            if (this._currentMeshSelected && this._currentHit) {
-                                this._scene.simulatePointerUp(this._currentHit);
-                            }
-                            this._pointerDownOnMeshAsked = false;
+                            this._selectionPointerUp();
                         }
                     });
                 }
@@ -775,23 +739,89 @@ module BABYLON {
                 webVRController.onTriggerStateChangedObservable.add((stateObject) => {
                     if (!this._pointerDownOnMeshAsked) {
                         if (stateObject.value > this._padSensibilityUp) {
-                            this._pointerDownOnMeshAsked = true;
-                            if (this._currentMeshSelected && this._currentHit) {
-                                this._scene.simulatePointerDown(this._currentHit);
-                            }
+                            this._selectionPointerDown();
                         }
-                    }
-                    else if (stateObject.value < this._padSensibilityDown) {
-                        if (this._currentMeshSelected && this._currentHit) {
-                            this._scene.simulatePointerUp(this._currentHit);
-                        }
-                        this._pointerDownOnMeshAsked = false;
+                    } else if (stateObject.value < this._padSensibilityDown) {
+                        this._selectionPointerUp();
                     }
                 });
             }
         }
 
-        private _teleportBackwardsCheck(stateObject: StickValues){
+        private _checkTeleportWithRay(stateObject: StickValues, webVRController:Nullable<WebVRController> = null){
+            if (!this._teleportationRequestInitiated) {
+                if (stateObject.y < -this._padSensibilityUp) {
+                    if(webVRController){
+                        // If laser pointer wasn't enabled yet
+                        if (this._displayLaserPointer && webVRController.hand === "left" && this._leftLaserPointer) {
+                            this._leftLaserPointer.isVisible = true;
+                            if (this._rightLaserPointer) {
+                                this._rightLaserPointer.isVisible = false;
+                            }
+                        } else if (this._displayLaserPointer && this._rightLaserPointer) {
+                            this._rightLaserPointer.isVisible = true;
+                            if (this._leftLaserPointer) {
+                                this._leftLaserPointer.isVisible = false;
+                            }
+                        }
+                    }
+                    this._teleportationRequestInitiated = true;
+                }
+            } else {
+                // Listening to the proper controller values changes to confirm teleportation
+                if (webVRController == null 
+                    ||(webVRController.hand === "left" && this._leftLaserPointer && this._leftLaserPointer.isVisible)
+                    || (webVRController.hand === "right" && this._rightLaserPointer && this._rightLaserPointer.isVisible)) {
+                    if (stateObject.y > -this._padSensibilityDown) {
+                        if (this._teleportationAllowed) {
+                            this._teleportationAllowed = false;
+                            this._teleportCamera();
+                        }
+                        this._teleportationRequestInitiated = false;
+                    }
+                }
+            }
+        }
+        private _selectionPointerDown(){
+            this._pointerDownOnMeshAsked = true;
+            if (this._currentMeshSelected && this._currentHit) {
+                this._scene.simulatePointerDown(this._currentHit);
+            }
+        }
+        private _selectionPointerUp(){
+            if (this._currentMeshSelected && this._currentHit) {
+                this._scene.simulatePointerUp(this._currentHit);
+            }
+            this._pointerDownOnMeshAsked = false;
+        }
+        private _checkRotate(stateObject: StickValues){
+            if (!this._rotationLeftAsked) {
+                if (stateObject.x < -this._padSensibilityUp) {
+                    this._rotationLeftAsked = true;
+                    if (this._rotationAllowed) {
+                        this._rotateCamera(false);
+                    }
+                }
+            } else {
+                if (stateObject.x > -this._padSensibilityDown) {
+                    this._rotationLeftAsked = false;
+                }
+            }
+
+            if (!this._rotationRightAsked) {
+                if (stateObject.x > this._padSensibilityUp) {
+                    this._rotationRightAsked = true;
+                    if (this._rotationAllowed) {
+                        this._rotateCamera(true);
+                    }
+                }
+            } else {
+                if (stateObject.x < this._padSensibilityDown) {
+                    this._rotationRightAsked = false;
+                }
+            }
+        }
+        private _checkTeleportBackwards(stateObject: StickValues){
             // Teleport backwards
             if(stateObject.y > this._padSensibilityUp) {
                 if(!this._teleportationBackRequestInitiated){
@@ -850,65 +880,9 @@ module BABYLON {
                     this._teleportationEnabledOnRightController = true;
                 }
                 webVRController.onPadValuesChangedObservable.add((stateObject) => {
-                    this._teleportBackwardsCheck(stateObject);
-                    if (!this._teleportationRequestInitiated) {
-                        if (stateObject.y < -this._padSensibilityUp) {
-                            // If laser pointer wasn't enabled yet
-                            if (this._displayLaserPointer && webVRController.hand === "left" && this._leftLaserPointer) {
-                                this._leftLaserPointer.isVisible = true;
-                                if (this._rightLaserPointer) {
-                                    this._rightLaserPointer.isVisible = false;
-                                }
-                            }
-                            else if (this._displayLaserPointer && this._rightLaserPointer) {
-                                this._rightLaserPointer.isVisible = true;
-                                if (this._leftLaserPointer) {
-                                    this._leftLaserPointer.isVisible = false;
-                                }
-                            }
-                            this._teleportationRequestInitiated = true;
-                        }
-                    }
-                    else {
-                        // Listening to the proper controller values changes to confirm teleportation
-                        if ((webVRController.hand === "left" && this._leftLaserPointer && this._leftLaserPointer.isVisible)
-                            || (webVRController.hand === "right" && this._rightLaserPointer && this._rightLaserPointer.isVisible)) {
-                            if (stateObject.y > -this._padSensibilityDown) {
-                                if (this._teleportationAllowed) {
-                                    this._teleportationAllowed = false;
-                                    this._teleportCamera();
-                                }
-                                this._teleportationRequestInitiated = false;
-                            }
-                        }
-                    }
-                    if (!this._rotationLeftAsked) {
-                        if (stateObject.x < -this._padSensibilityUp) {
-                            this._rotationLeftAsked = true;
-                            if (this._rotationAllowed) {
-                                this._rotateCamera(false);
-                            }
-                        }
-                    }
-                    else {
-                        if (stateObject.x > -this._padSensibilityDown) {
-                            this._rotationLeftAsked = false;
-                        }
-                    }
-
-                    if (!this._rotationRightAsked) {
-                        if (stateObject.x > this._padSensibilityUp) {
-                            this._rotationRightAsked = true;
-                            if (this._rotationAllowed) {
-                                this._rotateCamera(true);
-                            }
-                        }
-                    }
-                    else {
-                        if (stateObject.x < this._padSensibilityDown) {
-                            this._rotationRightAsked = false;
-                        }
-                    }
+                    this._checkTeleportBackwards(stateObject);
+                    this._checkTeleportWithRay(stateObject, webVRController);
+                    this._checkRotate(stateObject)
                 });
             }
         }
