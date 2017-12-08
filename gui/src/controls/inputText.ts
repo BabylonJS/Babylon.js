@@ -380,7 +380,7 @@ module BABYLON.GUI {
                             this._cursorOffset++;
                             currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
 
-                        } while (currentSize < absoluteCursorPosition);
+                        } while (currentSize < absoluteCursorPosition && (text.length >= this._cursorOffset));
 
                         // Find closest move
                         if (Math.abs(absoluteCursorPosition - currentSize) > previousDist) {
