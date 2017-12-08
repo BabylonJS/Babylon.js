@@ -3984,7 +3984,7 @@ var BABYLON;
                 }
                 else {
                     if (magFilter !== GLTF2.ETextureMagFilter.NEAREST) {
-                        BABYLON.Tools.Warn(context + "Invalid texture magnification filter " + magFilter);
+                        BABYLON.Tools.Warn(context + ": Invalid texture magnification filter " + magFilter);
                     }
                     switch (minFilter) {
                         case GLTF2.ETextureMinFilter.NEAREST: return BABYLON.Texture.NEAREST_NEAREST;

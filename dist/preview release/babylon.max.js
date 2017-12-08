@@ -24490,7 +24490,7 @@ var BABYLON;
          * Modifies the mesh geometry according to its own current World Matrix.
          * The mesh World Matrix is then reset.
          * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
-         * tuto : tuto : http://doc.babylonjs.com/tutorials/How_Rotations_and_Translations_Work#baking-transform
+         * tuto : tuto : http://doc.babylonjs.com/resources/baking_transformations
          * Note that, under the hood, this method sets a new VertexBuffer each call.
          * Returns the Mesh.
          */
@@ -53414,6 +53414,7 @@ var BABYLON;
             if (registeredPlugin) {
                 return registeredPlugin;
             }
+            BABYLON.Tools.Warn("Unable to find a plugin to load " + extension + " files. Trying to use .babylon default plugin.");
             return SceneLoader._getDefaultPlugin();
         };
         SceneLoader._getPluginForDirectLoad = function (data) {
@@ -68015,6 +68016,7 @@ var BABYLON;
                 BABYLON.Tools.Error("CannonJS is not available. Please make sure you included the js file.");
                 return;
             }
+            this._extendNamespace();
             this.world = new this.BJSCANNON.World();
             this.world.broadphase = new this.BJSCANNON.NaiveBroadphase();
             this.world.solver.iterations = iterations;
@@ -68501,6 +68503,47 @@ var BABYLON;
             result.z = shape.halfExtents.z * 2;
         };
         CannonJSPlugin.prototype.dispose = function () {
+        };
+        CannonJSPlugin.prototype._extendNamespace = function () {
+            //this will force cannon to execute at least one step when using interpolation
+            var step_tmp1 = new this.BJSCANNON.Vec3();
+            var Engine = this.BJSCANNON;
+            this.BJSCANNON.World.prototype.step = function (dt, timeSinceLastCalled, maxSubSteps) {
+                maxSubSteps = maxSubSteps || 10;
+                timeSinceLastCalled = timeSinceLastCalled || 0;
+                if (timeSinceLastCalled === 0) {
+                    this.internalStep(dt);
+                    this.time += dt;
+                }
+                else {
+                    var internalSteps = Math.floor((this.time + timeSinceLastCalled) / dt) - Math.floor(this.time / dt);
+                    internalSteps = Math.min(internalSteps, maxSubSteps) || 1;
+                    var t0 = performance.now();
+                    for (var i = 0; i !== internalSteps; i++) {
+                        this.internalStep(dt);
+                        if (performance.now() - t0 > dt * 1000) {
+                            break;
+                        }
+                    }
+                    this.time += timeSinceLastCalled;
+                    var h = this.time % dt;
+                    var h_div_dt = h / dt;
+                    var interpvelo = step_tmp1;
+                    var bodies = this.bodies;
+                    for (var j = 0; j !== bodies.length; j++) {
+                        var b = bodies[j];
+                        if (b.type !== Engine.Body.STATIC && b.sleepState !== Engine.Body.SLEEPING) {
+                            b.position.vsub(b.previousPosition, interpvelo);
+                            interpvelo.scale(h_div_dt, interpvelo);
+                            b.position.vadd(interpvelo, b.interpolatedPosition);
+                        }
+                        else {
+                            b.interpolatedPosition.copy(b.position);
+                            b.interpolatedQuaternion.copy(b.quaternion);
+                        }
+                    }
+                }
+            };
         };
         return CannonJSPlugin;
     }());
@@ -71750,7 +71793,7 @@ var BABYLON;
             BABYLON.Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
             // Get current device rotation in babylon world
             BABYLON.Matrix.FromQuaternionToRef(this._deviceRoomRotationQuaternion, this._workingMatrix);
-            this._deviceToWorld.multiplyToRef(this._workingMatrix, this._workingMatrix);
+            this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix);
             BABYLON.Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
             _super.prototype.update.call(this);
         };
@@ -72155,6 +72198,8 @@ var BABYLON;
             this._teleportationAllowed = false;
             this._rotationAllowed = true;
             this._teleportationRequestInitiated = false;
+            this._teleportationBackRequestInitiated = false;
+            this.teleportBackwardsVector = new BABYLON.Vector3(0, -1, -1);
             this._rotationRightAsked = false;
             this._rotationLeftAsked = false;
             this._teleportationFillColor = "#444444";
@@ -72172,6 +72217,8 @@ var BABYLON;
             this._displayGaze = true;
             this._displayLaserPointer = true;
             this._workingVector = BABYLON.Vector3.Zero();
+            this._workingQuaternion = BABYLON.Quaternion.Identity();
+            this._workingMatrix = BABYLON.Matrix.Identity();
             this._scene = scene;
             this._canvas = scene.getEngine().getRenderingCanvas();
             this._defaultHeight = webVROptions.defaultHeight || 1.7;
@@ -72667,6 +72714,7 @@ var BABYLON;
                 if (gamepad.leftStick) {
                     gamepad.onleftstickchanged(function (stickValues) {
                         if (_this._teleportationEnabled) {
+                            _this._teleportBackwardsCheck(stickValues);
                             // Listening to classic/xbox gamepad only if no VR controller is active
                             if ((!_this._leftLaserPointer && !_this._rightLaserPointer) ||
                                 ((_this._leftLaserPointer && !_this._leftLaserPointer.isVisible) &&
@@ -72826,6 +72874,42 @@ var BABYLON;
                 });
             }
         };
+        VRExperienceHelper.prototype._teleportBackwardsCheck = function (stateObject) {
+            // Teleport backwards
+            if (stateObject.y > this._padSensibilityUp) {
+                if (!this._teleportationBackRequestInitiated) {
+                    if (!this.currentVRCamera) {
+                        return;
+                    }
+                    // Get rotation and position of the current camera
+                    var rotation = BABYLON.Quaternion.FromRotationMatrix(this.currentVRCamera.getWorldMatrix().getRotationMatrix());
+                    var position = this.currentVRCamera.position;
+                    // If the camera has device position, use that instead
+                    if (this.currentVRCamera.devicePosition && this.currentVRCamera.deviceRotationQuaternion) {
+                        rotation = this.currentVRCamera.deviceRotationQuaternion;
+                        position = this.currentVRCamera.devicePosition;
+                    }
+                    // Get matrix with only the y rotation of the device rotation
+                    rotation.toEulerAnglesToRef(this._workingVector);
+                    this._workingVector.z = 0;
+                    this._workingVector.x = 0;
+                    BABYLON.Quaternion.RotationYawPitchRollToRef(this._workingVector.y, this._workingVector.x, this._workingVector.z, this._workingQuaternion);
+                    this._workingQuaternion.toRotationMatrix(this._workingMatrix);
+                    // Rotate backwards ray by device rotation to cast at the ground behind the user
+                    BABYLON.Vector3.TransformCoordinatesToRef(this.teleportBackwardsVector, this._workingMatrix, this._workingVector);
+                    // Teleport if ray hit the ground and is not to far away eg. backwards off a cliff
+                    var ray = new BABYLON.Ray(position, this._workingVector);
+                    var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
+                    if (hit && hit.pickedPoint && hit.pickedMesh && this._isTeleportationFloor(hit.pickedMesh) && hit.distance < 5) {
+                        this._teleportCamera(hit.pickedPoint);
+                    }
+                    this._teleportationBackRequestInitiated = true;
+                }
+            }
+            else {
+                this._teleportationBackRequestInitiated = false;
+            }
+        };
         VRExperienceHelper.prototype._enableTeleportationOnController = function (webVRController) {
             var _this = this;
             var controllerMesh = webVRController.mesh;
@@ -72843,6 +72927,7 @@ var BABYLON;
                     this._teleportationEnabledOnRightController = true;
                 }
                 webVRController.onPadValuesChangedObservable.add(function (stateObject) {
+                    _this._teleportBackwardsCheck(stateObject);
                     if (!_this._teleportationRequestInitiated) {
                         if (stateObject.y < -_this._padSensibilityUp) {
                             // If laser pointer wasn't enabled yet
@@ -73064,22 +73149,27 @@ var BABYLON;
                 this._teleportationCircle.position.y += 0.1;
             }
         };
-        VRExperienceHelper.prototype._teleportCamera = function () {
+        VRExperienceHelper.prototype._teleportCamera = function (location) {
             var _this = this;
+            if (location === void 0) { location = null; }
             if (!(this.currentVRCamera instanceof BABYLON.FreeCamera)) {
                 return;
             }
-            // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
-            // offset of the headset from the anchor. Then add the helper's position to account for user's height offset
-            if (this.webVRCamera.leftCamera) {
-                this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
-                this._workingVector.subtractInPlace(this.webVRCamera.position);
-                this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
+            if (!location) {
+                // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
+                // offset of the headset from the anchor.
+                if (this.webVRCamera.leftCamera) {
+                    this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
+                    this._workingVector.subtractInPlace(this.webVRCamera.position);
+                    this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
+                }
+                else {
+                    this._workingVector.copyFrom(this._haloCenter);
+                }
+                location = this._workingVector;
             }
-            else {
-                this._workingVector.copyFrom(this._haloCenter);
-            }
-            this._workingVector.y += this._defaultHeight;
+            // Add height to account for user's height offset
+            location.y += this._defaultHeight;
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
             var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position", 90, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -73089,7 +73179,7 @@ var BABYLON;
                 },
                 {
                     frame: 11,
-                    value: this._workingVector
+                    value: location
                 }
             ];
             animationCameraTeleportation.setKeys(animationCameraTeleportationKeys);
