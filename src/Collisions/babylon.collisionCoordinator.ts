@@ -194,8 +194,8 @@ module BABYLON {
             if (!this._init) return;
             if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000]) return;
 
-            position.divideToRef(collider.radius, this._scaledPosition);
-            displacement.divideToRef(collider.radius, this._scaledVelocity);
+            position.divideToRef(collider._radius, this._scaledPosition);
+            displacement.divideToRef(collider._radius, this._scaledVelocity);
 
             this._collisionsCallbackArray[collisionIndex] = onNewPosition;
 
@@ -203,7 +203,7 @@ module BABYLON {
                 collider: {
                     position: this._scaledPosition.asArray(),
                     velocity: this._scaledVelocity.asArray(),
-                    radius: collider.radius.asArray()
+                    radius: collider._radius.asArray()
                 },
                 collisionId: collisionIndex,
                 excludedMeshUniqueId: excludedMesh ? excludedMesh.uniqueId : null,
@@ -360,15 +360,15 @@ module BABYLON {
         private _finalPosition = Vector3.Zero();
 
         public getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void {
-            position.divideToRef(collider.radius, this._scaledPosition);
-            displacement.divideToRef(collider.radius, this._scaledVelocity);
+            position.divideToRef(collider._radius, this._scaledPosition);
+            displacement.divideToRef(collider._radius, this._scaledVelocity);
             collider.collidedMesh = null;
-            collider.retry = 0;
-            collider.initialVelocity = this._scaledVelocity;
-            collider.initialPosition = this._scaledPosition;
+            collider._retry = 0;
+            collider._initialVelocity = this._scaledVelocity;
+            collider._initialPosition = this._scaledPosition;
             this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, this._finalPosition, excludedMesh);
 
-            this._finalPosition.multiplyInPlace(collider.radius);
+            this._finalPosition.multiplyInPlace(collider._radius);
             //run the callback
             onNewPosition(collisionIndex, this._finalPosition, collider.collidedMesh);
         }
@@ -392,7 +392,7 @@ module BABYLON {
         private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: Nullable<AbstractMesh> = null): void {
             var closeDistance = Engine.CollisionsEpsilon * 10.0;
 
-            if (collider.retry >= maximumRetry) {
+            if (collider._retry >= maximumRetry) {
                 finalPosition.copyFrom(position);
                 return;
             }
@@ -424,7 +424,7 @@ module BABYLON {
                 return;
             }
 
-            collider.retry++;
+            collider._retry++;
             this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         }
     }
