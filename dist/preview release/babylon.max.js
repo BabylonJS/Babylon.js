@@ -8098,6 +8098,19 @@ var BABYLON;
                 this._deterministicLockstep = options.deterministicLockstep;
                 this._lockstepMaxSteps = options.lockstepMaxSteps;
                 this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
+                // Exceptions
+                if (!options.disableWebGL2Support) {
+                    if (navigator && navigator.userAgent) {
+                        var ua = navigator.userAgent;
+                        for (var _i = 0, _a = Engine.WebGL2ExceptionList; _i < _a.length; _i++) {
+                            var exception = _a[_i];
+                            if (ua.indexOf(exception) > -1) {
+                                options.disableWebGL2Support = true;
+                                break;
+                            }
+                        }
+                    }
+                }
                 // GL
                 if (!options.disableWebGL2Support) {
                     try {
@@ -12290,6 +12303,8 @@ var BABYLON;
                 return false;
             }
         };
+        /** Use this array to turn off WebGL2 on known buggy browsers version */
+        Engine.WebGL2ExceptionList = ["Chrome/63"];
         Engine.Instances = new Array();
         // Const statics
         Engine._ALPHA_DISABLE = 0;
