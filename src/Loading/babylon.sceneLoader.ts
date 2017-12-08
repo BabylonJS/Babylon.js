@@ -104,7 +104,7 @@
             if (registeredPlugin) {
                 return registeredPlugin;
             }
-
+            Tools.Warn("Unable to find a plugin to load " + extension + " files. Trying to use .babylon default plugin.");
             return SceneLoader._getDefaultPlugin();
         }
 
@@ -126,7 +126,7 @@
             }
 
             var queryStringPosition = sceneFilename.indexOf("?");
-            
+
             if (queryStringPosition !== -1) {
                 sceneFilename = sceneFilename.substring(0, queryStringPosition);
             }

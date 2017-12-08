@@ -136,6 +136,14 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
+        },
+        {
+            "name": "Launch Build Validation (Firefox)",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "webRoot": "${workspaceRoot}/",
+            "url": "http://localhost:1338/tests/validation/index.html"
         }
     ]
 }
