@@ -167,6 +167,9 @@ module BABYLON {
             if (webVROptions.createDeviceOrientationCamera === undefined) {
                 webVROptions.createDeviceOrientationCamera = true;
             }
+            if (webVROptions.defaultHeight === undefined) {
+                webVROptions.defaultHeight = 1.7;
+            }
             if (webVROptions.useCustomVRButton) {
                 this._useCustomVRButton = true;
                 if (webVROptions.customVRButton) {
@@ -176,7 +179,7 @@ module BABYLON {
             if (webVROptions.rayLength) {
                 this._rayLength = webVROptions.rayLength
             }
-            this._defaultHeight = webVROptions.defaultHeight || 1.7;
+            this._defaultHeight = webVROptions.defaultHeight;
 
             // Set position
             if(this._scene.activeCamera){
@@ -251,16 +254,11 @@ module BABYLON {
             }
 
             // Window events
-            window.addEventListener("resize", () => {
-                this.moveButtonToBottomRight();
-                if (this._fullscreenVRpresenting && this._webVRready) {
-                    this.exitVR();
-                }
-            });
-            document.addEventListener("fullscreenchange", () => { this._onFullscreenChange() }, false);
-            document.addEventListener("mozfullscreenchange", () => { this._onFullscreenChange() }, false);
-            document.addEventListener("webkitfullscreenchange", () => { this._onFullscreenChange() }, false);
-            document.addEventListener("msfullscreenchange", () => { this._onFullscreenChange() }, false);
+            window.addEventListener("resize", this._onResize);
+            document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
+            document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
+            document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
+            document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
 
             // Display vr button when headset is connected
             if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
@@ -309,8 +307,8 @@ module BABYLON {
 
             // Gamepad connection events
             this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
-            this._scene.gamepadManager.onGamepadConnectedObservable.add((pad) => this._onNewGamepadConnected(pad));
-            this._scene.gamepadManager.onGamepadDisconnectedObservable.add((pad) => this._onNewGamepadDisconnected(pad));
+            this._scene.gamepadManager.onGamepadConnectedObservable.add(this._onNewGamepadConnected);
+            this._scene.gamepadManager.onGamepadDisconnectedObservable.add(this._onNewGamepadDisconnected);
 
             this.updateButtonVisibility();
 
@@ -347,7 +345,14 @@ module BABYLON {
             }
         }
 
-        private _onFullscreenChange() {
+        private _onResize = ()=>{
+            this.moveButtonToBottomRight();
+            if (this._fullscreenVRpresenting && this._webVRready) {
+                this.exitVR();
+            }
+        }
+
+        private _onFullscreenChange = ()=>{
             if (document.fullscreen !== undefined) {
                 this._fullscreenVRpresenting = document.fullscreen;
             } else if (document.mozFullScreen !== undefined) {
@@ -543,12 +548,14 @@ module BABYLON {
                     return false;
                 }
 
-                this._scene.registerBeforeRender(() => {
-                    this._castRayAndSelectObject();
-                });
+                this._scene.registerBeforeRender(this.beforeRender);
 
                 this._interactionsEnabled = true;
             }
+        }
+
+        private beforeRender = () => {
+            this._castRayAndSelectObject();
         }
 
         private _isTeleportationFloor(mesh: AbstractMesh): boolean {
@@ -630,7 +637,7 @@ module BABYLON {
             }
         }
 
-        private _onNewGamepadConnected(gamepad: Gamepad) {
+        private _onNewGamepadConnected = (gamepad: Gamepad) => {
             if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
                 if (gamepad.leftStick) {
                     gamepad.onleftstickchanged((stickValues) => {
@@ -667,7 +674,7 @@ module BABYLON {
             }
         }
 
-        private _onNewGamepadDisconnected(gamepad: Gamepad) {
+        private _onNewGamepadDisconnected = (gamepad: Gamepad) => {
             if (gamepad instanceof WebVRController) {
                 if (gamepad.hand === "left") {
                     this._interactionsEnabledOnLeftController = false;
@@ -1324,10 +1331,6 @@ module BABYLON {
                 this.exitVR();
             }
 
-            if (this._deviceOrientationCamera) {
-                this._deviceOrientationCamera.dispose();
-            }
-
             if (this._passProcessMove) {
                 this._passProcessMove.dispose();
             }
@@ -1342,14 +1345,37 @@ module BABYLON {
             if (this._vrDeviceOrientationCamera) {
                 this._vrDeviceOrientationCamera.dispose();
             }
-            if (!this._useCustomVRButton) {
+            if (!this._useCustomVRButton && this._btnVR.parentNode) {
                 document.body.removeChild(this._btnVR);
             }
+
+            if (this._deviceOrientationCamera && (this._scene.activeCamera != this._deviceOrientationCamera)) {
+                this._deviceOrientationCamera.dispose();
+            }
+
+            this._gazeTracker.dispose();
+            this._teleportationCircle.dispose();
 
             this._floorMeshesCollection = [];
 
             document.removeEventListener("keydown", this._onKeyDown);
             window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+            
+            window.removeEventListener("resize", this._onResize);
+            document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+
+            this._scene.getEngine().onVRDisplayChangedObservable.removeCallback(this._onVRDisplayChanged);
+            this._scene.getEngine().onVRRequestPresentStart.removeCallback(this._onVRRequestPresentStart);
+            this._scene.getEngine().onVRRequestPresentComplete.removeCallback(this._onVRRequestPresentComplete);
+            window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+
+            this._scene.gamepadManager.onGamepadConnectedObservable.removeCallback(this._onNewGamepadConnected);
+            this._scene.gamepadManager.onGamepadDisconnectedObservable.removeCallback(this._onNewGamepadDisconnected);
+
+            this._scene.unregisterBeforeRender(this.beforeRender);
         }
 
         public getClassName(): string {
