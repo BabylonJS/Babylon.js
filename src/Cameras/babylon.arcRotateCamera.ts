@@ -657,7 +657,7 @@
                 if (!this._collider) {
                     this._collider = new Collider();
                 }
-                this._collider.radius = this.collisionRadius;
+                this._collider._radius = this.collisionRadius;
                 this._newPosition.subtractToRef(this.position, this._collisionVelocity);
                 this._collisionTriggered = true;
                 this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
@@ -685,7 +685,7 @@
         protected _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
 
             if (this.getScene().workerCollisions && this.checkCollisions) {
-                newPosition.multiplyInPlace(this._collider.radius);
+                newPosition.multiplyInPlace(this._collider._radius);
             }
 
             if (!collidedMesh) {

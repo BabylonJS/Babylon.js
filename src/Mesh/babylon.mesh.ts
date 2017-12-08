@@ -1439,13 +1439,13 @@
             else if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
-                this._queueLoad(this, scene);
+                this._queueLoad(scene);
             }
             return this;
         }
 
-        private _queueLoad(mesh: Mesh, scene: Scene): Mesh {
-            scene._addPendingData(mesh);
+        private _queueLoad(scene: Scene): Mesh {
+            scene._addPendingData(this);
 
             var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
 
@@ -1582,7 +1582,7 @@
          * Modifies the mesh geometry according to its own current World Matrix.  
          * The mesh World Matrix is then reset.
          * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
-         * tuto : tuto : http://doc.babylonjs.com/tutorials/How_Rotations_and_Translations_Work#baking-transform 
+         * tuto : tuto : http://doc.babylonjs.com/resources/baking_transformations
          * Note that, under the hood, this method sets a new VertexBuffer each call.   
          * Returns the Mesh.  
          */

@@ -951,6 +951,11 @@ declare module BABYLON.GLTF2 {
         minFilter?: ETextureMinFilter;
         wrapS?: ETextureWrapMode;
         wrapT?: ETextureWrapMode;
+        index: number;
+        noMipMaps: boolean;
+        samplingMode: number;
+        wrapU: number;
+        wrapV: number;
     }
     interface IGLTFScene extends IGLTFChildRootProperty {
         nodes: number[];
@@ -1004,6 +1009,7 @@ declare module BABYLON.GLTF2 {
         private _parent;
         private _rootUrl;
         private _defaultMaterial;
+        private _defaultSampler;
         private _rootNode;
         private _successCallback;
         private _progressCallback;
@@ -1083,14 +1089,15 @@ declare module BABYLON.GLTF2 {
         _loadMaterialBaseProperties(context: string, material: IGLTFMaterial): void;
         _loadMaterialAlphaProperties(context: string, material: IGLTFMaterial, colorFactor: number[]): void;
         _loadTexture(context: string, texture: IGLTFTexture, coordinatesIndex?: number): Texture;
+        private _loadSampler(context, sampler);
         private _loadImageAsync(context, image, onSuccess);
         _loadUriAsync(context: string, uri: string, onSuccess: (data: ArrayBufferView) => void): void;
         _tryCatchOnError(handler: () => void): void;
         private static _AssignIndices(array?);
         static _GetProperty<T extends IGLTFProperty>(array?: ArrayLike<T>, index?: number): Nullable<T>;
-        private static _GetTextureWrapMode(mode?);
-        private static _GetTextureSamplingMode(magFilter?, minFilter?);
-        private static _GetNumComponents(type);
+        private static _GetTextureWrapMode(context, mode?);
+        private static _GetTextureSamplingMode(context, magFilter?, minFilter?);
+        private static _GetNumComponents(context, type);
         private _compileMaterialAsync(babylonMaterial, babylonMesh, onSuccess);
         private _compileMaterialsAsync(onSuccess);
         private _compileShadowGeneratorsAsync(onSuccess);
