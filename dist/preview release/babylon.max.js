@@ -13935,7 +13935,7 @@ var BABYLON;
             this.getScene().stopAnimation(this);
             // Remove from scene
             this.getScene().removeTransformNode(this);
-            this._cache = null;
+            this._cache = {};
             if (!doNotRecurse) {
                 // Children
                 var objects = this.getDescendants(true);
@@ -14114,7 +14114,7 @@ var BABYLON;
                 if (collidedMesh === void 0) { collidedMesh = null; }
                 //TODO move this to the collision coordinator!
                 if (_this.getScene().workerCollisions)
-                    newPosition.multiplyInPlace(_this._collider.radius);
+                    newPosition.multiplyInPlace(_this._collider._radius);
                 newPosition.subtractToRef(_this._oldPositionForCollisions, _this._diffPositionForCollisions);
                 if (_this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
                     _this.position.addInPlace(_this._diffPositionForCollisions);
@@ -15023,14 +15023,23 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AbstractMesh.prototype, "collider", {
+            /**
+             * Gets Collider object used to compute collisions (not physics)
+             */
+            get: function () {
+                return this._collider;
+            },
+            enumerable: true,
+            configurable: true
+        });
         AbstractMesh.prototype.moveWithCollisions = function (displacement) {
             var globalPosition = this.getAbsolutePosition();
-            globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
-            this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
+            globalPosition.addToRef(this.ellipsoidOffset, this._oldPositionForCollisions);
             if (!this._collider) {
                 this._collider = new BABYLON.Collider();
             }
-            this._collider.radius = this.ellipsoid;
+            this._collider._radius = this.ellipsoid;
             this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
             return this;
         };
@@ -15082,8 +15091,8 @@ var BABYLON;
             var len;
             // Octrees
             if (this._submeshesOctree && this.useOctreeForCollisions) {
-                var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
-                var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);
+                var radius = collider._velocityWorldLength + Math.max(collider._radius.x, collider._radius.y, collider._radius.z);
+                var intersections = this._submeshesOctree.intersects(collider._basePointWorld, radius);
                 len = intersections.length;
                 subMeshes = intersections.data;
             }
@@ -15105,7 +15114,7 @@ var BABYLON;
             if (!this._boundingInfo || !this._boundingInfo._checkCollision(collider))
                 return this;
             // Transformation matrix
-            BABYLON.Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
+            BABYLON.Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, this._collisionsScalingMatrix);
             this.worldMatrixFromCache.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
             this._processCollisionsForSubMeshes(collider, this._collisionsTransformMatrix);
             return this;
@@ -38728,6 +38737,7 @@ var BABYLON;
         function FreeCamera(name, position, scene) {
             var _this = _super.call(this, name, position, scene) || this;
             _this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
+            _this.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
             _this.checkCollisions = false;
             _this.applyGravity = false;
             _this._needMoveForGravity = false;
@@ -38740,7 +38750,7 @@ var BABYLON;
                 if (collidedMesh === void 0) { collidedMesh = null; }
                 //TODO move this to the collision coordinator!
                 if (_this.getScene().workerCollisions)
-                    newPosition.multiplyInPlace(_this._collider.radius);
+                    newPosition.multiplyInPlace(_this._collider._radius);
                 var updatePosition = function (newPos) {
                     _this._newPosition.copyFrom(newPos);
                     _this._newPosition.subtractToRef(_this._oldPosition, _this._diffPosition);
@@ -38861,10 +38871,11 @@ var BABYLON;
                 globalPosition = this.position;
             }
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
+            this._oldPosition.addInPlace(this.ellipsoidOffset);
             if (!this._collider) {
                 this._collider = new BABYLON.Collider();
             }
-            this._collider.radius = this.ellipsoid;
+            this._collider._radius = this.ellipsoid;
             this._collider.collisionMask = this._collisionMask;
             //no need for clone, as long as gravity is not on.
             var actualDisplacement = displacement;
@@ -38904,6 +38915,9 @@ var BABYLON;
         __decorate([
             BABYLON.serializeAsVector3()
         ], FreeCamera.prototype, "ellipsoid", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], FreeCamera.prototype, "ellipsoidOffset", void 0);
         __decorate([
             BABYLON.serialize()
         ], FreeCamera.prototype, "checkCollisions", void 0);
@@ -39515,7 +39529,7 @@ var BABYLON;
             _this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
                 if (_this.getScene().workerCollisions && _this.checkCollisions) {
-                    newPosition.multiplyInPlace(_this._collider.radius);
+                    newPosition.multiplyInPlace(_this._collider._radius);
                 }
                 if (!collidedMesh) {
                     _this._previousPosition.copyFrom(_this.position);
@@ -40074,7 +40088,7 @@ var BABYLON;
                 if (!this._collider) {
                     this._collider = new BABYLON.Collider();
                 }
-                this._collider.radius = this.collisionRadius;
+                this._collider._radius = this.collisionRadius;
                 this._newPosition.subtractToRef(this.position, this._collisionVelocity);
                 this._collisionTriggered = true;
                 this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
@@ -44494,11 +44508,6 @@ var BABYLON;
     })();
     var Collider = /** @class */ (function () {
         function Collider() {
-            this.radius = BABYLON.Vector3.One();
-            this.retry = 0;
-            this.basePointWorld = BABYLON.Vector3.Zero();
-            this.velocityWorld = BABYLON.Vector3.Zero();
-            this.normalizedVelocity = BABYLON.Vector3.Zero();
             this._collisionPoint = BABYLON.Vector3.Zero();
             this._planeIntersectionPoint = BABYLON.Vector3.Zero();
             this._tempVector = BABYLON.Vector3.Zero();
@@ -44510,6 +44519,11 @@ var BABYLON;
             this._destinationPoint = BABYLON.Vector3.Zero();
             this._slidePlaneNormal = BABYLON.Vector3.Zero();
             this._displacementVector = BABYLON.Vector3.Zero();
+            this._radius = BABYLON.Vector3.One();
+            this._retry = 0;
+            this._basePointWorld = BABYLON.Vector3.Zero();
+            this._velocityWorld = BABYLON.Vector3.Zero();
+            this._normalizedVelocity = BABYLON.Vector3.Zero();
             this._collisionMask = -1;
         }
         Object.defineProperty(Collider.prototype, "collisionMask", {
@@ -44522,15 +44536,25 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Collider.prototype, "slidePlaneNormal", {
+            /**
+             * Gets the plane normal used to compute the sliding response (in local space)
+             */
+            get: function () {
+                return this._slidePlaneNormal;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         Collider.prototype._initialize = function (source, dir, e) {
-            this.velocity = dir;
-            BABYLON.Vector3.NormalizeToRef(dir, this.normalizedVelocity);
-            this.basePoint = source;
-            source.multiplyToRef(this.radius, this.basePointWorld);
-            dir.multiplyToRef(this.radius, this.velocityWorld);
-            this.velocityWorldLength = this.velocityWorld.length();
-            this.epsilon = e;
+            this._velocity = dir;
+            BABYLON.Vector3.NormalizeToRef(dir, this._normalizedVelocity);
+            this._basePoint = source;
+            source.multiplyToRef(this._radius, this._basePointWorld);
+            dir.multiplyToRef(this._radius, this._velocityWorld);
+            this._velocityWorldLength = this._velocityWorld.length();
+            this._epsilon = e;
             this.collisionFound = false;
         };
         Collider.prototype._checkPointInTriangle = function (point, pa, pb, pc, n) {
@@ -44550,12 +44574,12 @@ var BABYLON;
             return d >= 0;
         };
         Collider.prototype._canDoCollision = function (sphereCenter, sphereRadius, vecMin, vecMax) {
-            var distance = BABYLON.Vector3.Distance(this.basePointWorld, sphereCenter);
-            var max = Math.max(this.radius.x, this.radius.y, this.radius.z);
-            if (distance > this.velocityWorldLength + max + sphereRadius) {
+            var distance = BABYLON.Vector3.Distance(this._basePointWorld, sphereCenter);
+            var max = Math.max(this._radius.x, this._radius.y, this._radius.z);
+            if (distance > this._velocityWorldLength + max + sphereRadius) {
                 return false;
             }
-            if (!intersectBoxAASphere(vecMin, vecMax, this.basePointWorld, this.velocityWorldLength + max))
+            if (!intersectBoxAASphere(vecMin, vecMax, this._basePointWorld, this._velocityWorldLength + max))
                 return false;
             return true;
         };
@@ -44571,10 +44595,10 @@ var BABYLON;
                 trianglePlaneArray[faceIndex].copyFromPoints(p1, p2, p3);
             }
             var trianglePlane = trianglePlaneArray[faceIndex];
-            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
+            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this._normalizedVelocity, 0))
                 return;
-            var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this.basePoint);
-            var normalDotVelocity = BABYLON.Vector3.Dot(trianglePlane.normal, this.velocity);
+            var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this._basePoint);
+            var normalDotVelocity = BABYLON.Vector3.Dot(trianglePlane.normal, this._velocity);
             if (normalDotVelocity == 0) {
                 if (Math.abs(signedDistToTrianglePlane) >= 1.0)
                     return;
@@ -44600,8 +44624,8 @@ var BABYLON;
             var found = false;
             var t = 1.0;
             if (!embeddedInPlane) {
-                this.basePoint.subtractToRef(trianglePlane.normal, this._planeIntersectionPoint);
-                this.velocity.scaleToRef(t0, this._tempVector);
+                this._basePoint.subtractToRef(trianglePlane.normal, this._planeIntersectionPoint);
+                this._velocity.scaleToRef(t0, this._tempVector);
                 this._planeIntersectionPoint.addInPlace(this._tempVector);
                 if (this._checkPointInTriangle(this._planeIntersectionPoint, p1, p2, p3, trianglePlane.normal)) {
                     found = true;
@@ -44610,10 +44634,10 @@ var BABYLON;
                 }
             }
             if (!found) {
-                var velocitySquaredLength = this.velocity.lengthSquared();
+                var velocitySquaredLength = this._velocity.lengthSquared();
                 var a = velocitySquaredLength;
-                this.basePoint.subtractToRef(p1, this._tempVector);
-                var b = 2.0 * (BABYLON.Vector3.Dot(this.velocity, this._tempVector));
+                this._basePoint.subtractToRef(p1, this._tempVector);
+                var b = 2.0 * (BABYLON.Vector3.Dot(this._velocity, this._tempVector));
                 var c = this._tempVector.lengthSquared() - 1.0;
                 var lowestRoot = getLowestRoot(a, b, c, t);
                 if (lowestRoot.found) {
@@ -44621,8 +44645,8 @@ var BABYLON;
                     found = true;
                     this._collisionPoint.copyFrom(p1);
                 }
-                this.basePoint.subtractToRef(p2, this._tempVector);
-                b = 2.0 * (BABYLON.Vector3.Dot(this.velocity, this._tempVector));
+                this._basePoint.subtractToRef(p2, this._tempVector);
+                b = 2.0 * (BABYLON.Vector3.Dot(this._velocity, this._tempVector));
                 c = this._tempVector.lengthSquared() - 1.0;
                 lowestRoot = getLowestRoot(a, b, c, t);
                 if (lowestRoot.found) {
@@ -44630,8 +44654,8 @@ var BABYLON;
                     found = true;
                     this._collisionPoint.copyFrom(p2);
                 }
-                this.basePoint.subtractToRef(p3, this._tempVector);
-                b = 2.0 * (BABYLON.Vector3.Dot(this.velocity, this._tempVector));
+                this._basePoint.subtractToRef(p3, this._tempVector);
+                b = 2.0 * (BABYLON.Vector3.Dot(this._velocity, this._tempVector));
                 c = this._tempVector.lengthSquared() - 1.0;
                 lowestRoot = getLowestRoot(a, b, c, t);
                 if (lowestRoot.found) {
@@ -44640,12 +44664,12 @@ var BABYLON;
                     this._collisionPoint.copyFrom(p3);
                 }
                 p2.subtractToRef(p1, this._edge);
-                p1.subtractToRef(this.basePoint, this._baseToVertex);
+                p1.subtractToRef(this._basePoint, this._baseToVertex);
                 var edgeSquaredLength = this._edge.lengthSquared();
-                var edgeDotVelocity = BABYLON.Vector3.Dot(this._edge, this.velocity);
+                var edgeDotVelocity = BABYLON.Vector3.Dot(this._edge, this._velocity);
                 var edgeDotBaseToVertex = BABYLON.Vector3.Dot(this._edge, this._baseToVertex);
                 a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-                b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this.velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+                b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
                 c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
                 lowestRoot = getLowestRoot(a, b, c, t);
                 if (lowestRoot.found) {
@@ -44658,12 +44682,12 @@ var BABYLON;
                     }
                 }
                 p3.subtractToRef(p2, this._edge);
-                p2.subtractToRef(this.basePoint, this._baseToVertex);
+                p2.subtractToRef(this._basePoint, this._baseToVertex);
                 edgeSquaredLength = this._edge.lengthSquared();
-                edgeDotVelocity = BABYLON.Vector3.Dot(this._edge, this.velocity);
+                edgeDotVelocity = BABYLON.Vector3.Dot(this._edge, this._velocity);
                 edgeDotBaseToVertex = BABYLON.Vector3.Dot(this._edge, this._baseToVertex);
                 a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-                b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this.velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+                b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
                 c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
                 lowestRoot = getLowestRoot(a, b, c, t);
                 if (lowestRoot.found) {
@@ -44676,12 +44700,12 @@ var BABYLON;
                     }
                 }
                 p1.subtractToRef(p3, this._edge);
-                p3.subtractToRef(this.basePoint, this._baseToVertex);
+                p3.subtractToRef(this._basePoint, this._baseToVertex);
                 edgeSquaredLength = this._edge.lengthSquared();
-                edgeDotVelocity = BABYLON.Vector3.Dot(this._edge, this.velocity);
+                edgeDotVelocity = BABYLON.Vector3.Dot(this._edge, this._velocity);
                 edgeDotBaseToVertex = BABYLON.Vector3.Dot(this._edge, this._baseToVertex);
                 a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-                b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this.velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+                b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
                 c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
                 lowestRoot = getLowestRoot(a, b, c, t);
                 if (lowestRoot.found) {
@@ -44695,15 +44719,15 @@ var BABYLON;
                 }
             }
             if (found) {
-                var distToCollision = t * this.velocity.length();
-                if (!this.collisionFound || distToCollision < this.nearestDistance) {
+                var distToCollision = t * this._velocity.length();
+                if (!this.collisionFound || distToCollision < this._nearestDistance) {
                     if (!this.intersectionPoint) {
                         this.intersectionPoint = this._collisionPoint.clone();
                     }
                     else {
                         this.intersectionPoint.copyFrom(this._collisionPoint);
                     }
-                    this.nearestDistance = distToCollision;
+                    this._nearestDistance = distToCollision;
                     this.collisionFound = true;
                 }
             }
@@ -44718,11 +44742,11 @@ var BABYLON;
         };
         Collider.prototype._getResponse = function (pos, vel) {
             pos.addToRef(vel, this._destinationPoint);
-            vel.scaleInPlace((this.nearestDistance / vel.length()));
-            this.basePoint.addToRef(vel, pos);
+            vel.scaleInPlace((this._nearestDistance / vel.length()));
+            this._basePoint.addToRef(vel, pos);
             pos.subtractToRef(this.intersectionPoint, this._slidePlaneNormal);
             this._slidePlaneNormal.normalize();
-            this._slidePlaneNormal.scaleToRef(this.epsilon, this._displacementVector);
+            this._slidePlaneNormal.scaleToRef(this._epsilon, this._displacementVector);
             pos.addInPlace(this._displacementVector);
             this.intersectionPoint.addInPlace(this._displacementVector);
             this._slidePlaneNormal.scaleInPlace(BABYLON.Plane.SignedDistanceToPlaneFromPositionAndNormal(this.intersectionPoint, this._slidePlaneNormal, this._destinationPoint));
@@ -44849,14 +44873,14 @@ var BABYLON;
                 return;
             if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000])
                 return;
-            position.divideToRef(collider.radius, this._scaledPosition);
-            displacement.divideToRef(collider.radius, this._scaledVelocity);
+            position.divideToRef(collider._radius, this._scaledPosition);
+            displacement.divideToRef(collider._radius, this._scaledVelocity);
             this._collisionsCallbackArray[collisionIndex] = onNewPosition;
             var payload = {
                 collider: {
                     position: this._scaledPosition.asArray(),
                     velocity: this._scaledVelocity.asArray(),
-                    radius: collider.radius.asArray()
+                    radius: collider._radius.asArray()
                 },
                 collisionId: collisionIndex,
                 excludedMeshUniqueId: excludedMesh ? excludedMesh.uniqueId : null,
@@ -44960,14 +44984,14 @@ var BABYLON;
             this._finalPosition = BABYLON.Vector3.Zero();
         }
         CollisionCoordinatorLegacy.prototype.getNewPosition = function (position, displacement, collider, maximumRetry, excludedMesh, onNewPosition, collisionIndex) {
-            position.divideToRef(collider.radius, this._scaledPosition);
-            displacement.divideToRef(collider.radius, this._scaledVelocity);
+            position.divideToRef(collider._radius, this._scaledPosition);
+            displacement.divideToRef(collider._radius, this._scaledVelocity);
             collider.collidedMesh = null;
-            collider.retry = 0;
-            collider.initialVelocity = this._scaledVelocity;
-            collider.initialPosition = this._scaledPosition;
+            collider._retry = 0;
+            collider._initialVelocity = this._scaledVelocity;
+            collider._initialPosition = this._scaledPosition;
             this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, this._finalPosition, excludedMesh);
-            this._finalPosition.multiplyInPlace(collider.radius);
+            this._finalPosition.multiplyInPlace(collider._radius);
             //run the callback
             onNewPosition(collisionIndex, this._finalPosition, collider.collidedMesh);
         };
@@ -44987,7 +45011,7 @@ var BABYLON;
         CollisionCoordinatorLegacy.prototype._collideWithWorld = function (position, velocity, collider, maximumRetry, finalPosition, excludedMesh) {
             if (excludedMesh === void 0) { excludedMesh = null; }
             var closeDistance = BABYLON.Engine.CollisionsEpsilon * 10.0;
-            if (collider.retry >= maximumRetry) {
+            if (collider._retry >= maximumRetry) {
                 finalPosition.copyFrom(position);
                 return;
             }
@@ -45012,7 +45036,7 @@ var BABYLON;
                 finalPosition.copyFrom(position);
                 return;
             }
-            collider.retry++;
+            collider._retry++;
             this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         };
         return CollisionCoordinatorLegacy;

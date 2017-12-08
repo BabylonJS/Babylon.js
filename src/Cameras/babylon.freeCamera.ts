@@ -3,6 +3,9 @@
         @serializeAsVector3()
         public ellipsoid = new Vector3(0.5, 1, 0.5);
 
+        @serializeAsVector3()
+        public ellipsoidOffset = new Vector3(0, 0, 0);
+
         @serialize()
         public checkCollisions = false;
 
@@ -134,6 +137,7 @@
             }
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
+            this._oldPosition.addInPlace(this.ellipsoidOffset);
 
             if (!this._collider) {
                 this._collider = new Collider();

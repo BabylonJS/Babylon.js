@@ -1074,8 +1074,7 @@
         public moveWithCollisions(displacement: Vector3): AbstractMesh {
             var globalPosition = this.getAbsolutePosition();
 
-            globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
-            this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
+            globalPosition.addToRef(this.ellipsoidOffset, this._oldPositionForCollisions);
 
             if (!this._collider) {
                 this._collider = new Collider();

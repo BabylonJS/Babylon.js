@@ -66,6 +66,8 @@
 
 ## Bug fixes
 
+- Fixed a bug with ellipsoid offset not being taking in account on cameras ([deltakosh](https://github.com/deltakosh))
+- Fixed a bug with ellipsoid offset badly taking in account on meshes ([deltakosh](https://github.com/deltakosh))
 - Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))
 - MTLLoader didn't parse values correctly ([RaananW](https://github.com/RaananW))
 - Fixed an error with child positions of parents in the physics engine ([RaananW](https://github.com/RaananW))
