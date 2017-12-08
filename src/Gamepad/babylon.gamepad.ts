@@ -138,5 +138,11 @@
                 this._buttons[index] = this._setButtonValue(this.browserGamepad.buttons[index].value, this._buttons[index], index);
             }
         }
+
+        public dispose(){
+            super.dispose();
+            this.onButtonDownObservable.clear();
+            this.onButtonUpObservable.clear();
+        }
     }
 }
