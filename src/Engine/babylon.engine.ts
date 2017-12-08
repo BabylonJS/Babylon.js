@@ -310,6 +310,9 @@
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
      */
     export class Engine {
+        /** Use this array to turn off WebGL2 on known buggy browsers version */
+        public static WebGL2ExceptionList = ["Chrome/63"];
+
         public static Instances = new Array<Engine>();
 
         public static get LastCreatedEngine(): Nullable<Engine> {
@@ -875,6 +878,20 @@
                 this._deterministicLockstep = options.deterministicLockstep;
                 this._lockstepMaxSteps = options.lockstepMaxSteps;
                 this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
+
+                // Exceptions
+                if (!options.disableWebGL2Support) {
+                    if (navigator && navigator.userAgent) {
+                        let ua = navigator.userAgent;
+
+                        for (var exception of Engine.WebGL2ExceptionList) {
+                            if (ua.indexOf(exception) > -1) {
+                                options.disableWebGL2Support = true;
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 // GL
                 if (!options.disableWebGL2Support) {
