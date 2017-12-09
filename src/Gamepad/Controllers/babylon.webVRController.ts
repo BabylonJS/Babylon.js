@@ -13,6 +13,8 @@ module BABYLON {
 
         protected _buttons: Array<MutableGamepadButton>;
 
+        private static handCounter = 0;
+
         private _onButtonStateChange: (controlledIndex: number, buttonIndex: number, state: ExtendedGamepadButton) => void;
 
         public onButtonStateChange(callback: (controlledIndex: number, buttonIndex: number, state: ExtendedGamepadButton) => void) {
@@ -31,6 +33,10 @@ module BABYLON {
             super(vrGamepad);
             this._buttons = new Array<ExtendedGamepadButton>(vrGamepad.buttons.length);
             this.hand = vrGamepad.hand;
+            if(!this.hand){
+                this.hand = (WebVRController.handCounter % 2 == 0) ? "left" : "right";
+                WebVRController.handCounter++;
+            }
         }
 
         public update() {
