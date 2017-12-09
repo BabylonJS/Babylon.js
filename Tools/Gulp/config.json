@@ -169,6 +169,7 @@
     "workloads": {
         "core": {
             "files": [
+                "../../src/Materials/babylon.effect.js",
                 "../../src/babylon.types.js",
                 "../../src/Events/babylon.keyboardEvents.js",
                 "../../src/Events/babylon.pointerEvents.js",
@@ -201,7 +202,6 @@
                 "../../src/Materials/Textures/babylon.texture.js",
                 "../../src/Mesh/babylon.mesh.js",
                 "../../src/Mesh/babylon.subMesh.js",
-                "../../src/Materials/babylon.effect.js",
                 "../../src/Materials/babylon.materialHelper.js",
                 "../../src/Materials/babylon.material.js",
                 "../../src/Materials/babylon.uniformBuffer.js",
@@ -352,7 +352,8 @@
                 "../../src/Mesh/babylon.linesMesh.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "shaderMaterial"
             ],
             "shaders": [
                 "color.vertex",
@@ -365,7 +366,7 @@
             ],
             "dependUpon": [
                 "core",
-                "shaderMaterial"
+                "additionalMeshes"
             ]
         },
         "shaderMaterial": {

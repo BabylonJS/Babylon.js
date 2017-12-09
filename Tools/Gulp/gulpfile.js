@@ -6,6 +6,7 @@ var srcToVariable = require("gulp-content-to-variable");
 var appendSrcToVariable = require("./gulp-appendSrcToVariable");
 var addDtsExport = require("./gulp-addDtsExport");
 var addModuleExports = require("./gulp-addModuleExports");
+var babylonModuleExports = require("./gulp-babylonModule");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
 var rename = require("gulp-rename");
@@ -558,3 +559,96 @@ gulp.task("clean-JS-MAP", function () {
         "../../src/**/*.js.map", "../../src/**/*.js"
     ], { force: true });
 });
+
+
+gulp.task("modules-compile", function () {
+
+    if (!forceCompile && alreadyCompiled) {
+        return;
+    }
+    alreadyCompiled = true;
+
+    var tsResult = gulp.src(config.typescript)
+        .pipe(sourcemaps.init())
+        .pipe(tsProject());
+
+    //If this gulp task is running on travis, file the build!
+    if (process.env.TRAVIS) {
+        var error = false;
+        tsResult.on("error", function () {
+            error = true;
+        }).on("end", function () {
+            if (error) {
+                console.log("Typescript compile failed");
+                process.exit(1);
+            }
+        });
+    }
+
+    return merge2([
+        tsResult.dts
+            .pipe(gulp.dest(config.build.srcOutputDirectory)),
+        tsResult.js
+            .pipe(sourcemaps.write("./",
+                {
+                    includeContent: false,
+                    sourceRoot: (filePath) => {
+                        return "";
+                    }
+                }))
+            .pipe(gulp.dest(config.build.srcOutputDirectory))
+    ]);
+})
+
+gulp.task("modules", ["modules-compile"], function () {
+    let tasks = [];
+
+    Object.keys(config.workloads)
+        .forEach((moduleName) => {
+            let shadersFiles = [];
+            processDependency("shaders", config.workloads[moduleName], shadersFiles);
+            for (var index = 0; index < shadersFiles.length; index++) {
+                shadersFiles[index] = "../../src/Shaders/" + shadersFiles[index] + ".fx";
+            }
+
+            let shaderIncludeFiles = [];
+            processDependency("shaderIncludes", config.workloads[moduleName], shaderIncludeFiles);
+            for (var index = 0; index < shaderIncludeFiles.length; index++) {
+                shaderIncludeFiles[index] = "../../src/Shaders/ShadersInclude/" + shaderIncludeFiles[index] + ".fx";
+            }
+
+            let jsTask = merge2([
+                gulp.src(config.workloads[moduleName].files),
+                gulp.src(shadersFiles).
+                    pipe(expect.real({ errorOnFailure: true }, shadersFiles)).
+                    pipe(uncommentShader()).
+                    pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".fx", true)),
+                gulp.src(shaderIncludeFiles).
+                    pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles)).
+                    pipe(uncommentShader()).
+                    pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".include.fx", true))
+            ]).pipe(concat(moduleName + "." + config.build.minFilename))
+                .pipe(replace(extendsSearchRegex, ""))
+                .pipe(replace(decorateSearchRegex, ""))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(babylonModuleExports(moduleName, config.workloads[moduleName].dependUpon))
+                .pipe(gulp.dest(config.build.outputDirectory + '/commonjs/'))
+                .pipe(cleants())
+                .pipe(rename({ extname: ".min.js" }))
+                .pipe(uglify())
+                .pipe(optimisejs())
+                .pipe(gulp.dest(config.build.outputDirectory + '/commonjs/'));
+
+
+            let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
+            let dtsTask = gulp.src(dtsFiles)
+                .pipe(concat(moduleName + "." + config.build.declarationFilename))
+                .pipe(addDtsExport("BABYLON", "babylonjs/commonjs/" + moduleName, false, moduleName !== "core", config.workloads[moduleName].dependUpon))
+                .pipe(addDtsExport("BABYLON", "babylonjs/es6/" + moduleName))
+                .pipe(gulp.dest(config.build.outputDirectory + '/types/'));
+
+            tasks.push(jsTask, dtsTask);
+        });
+
+    return merge2(tasks);
+})
