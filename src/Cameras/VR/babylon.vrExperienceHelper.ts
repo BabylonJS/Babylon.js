@@ -635,12 +635,12 @@ module BABYLON {
                 if (gamepad.leftStick) {
                     gamepad.onleftstickchanged((stickValues) => {
                         if (this._teleportationEnabled) {
-                            this._checkTeleportBackwards(stickValues);
                             // Listening to classic/xbox gamepad only if no VR controller is active
                             if ((!this._leftLaserPointer && !this._rightLaserPointer) ||
                                 ((this._leftLaserPointer && !this._leftLaserPointer.isVisible) &&
                                     (this._rightLaserPointer && !this._rightLaserPointer.isVisible))) {
                                 this._checkTeleportWithRay(stickValues);
+                                this._checkTeleportBackwards(stickValues);
                             }
                         }
                     });
@@ -691,6 +691,13 @@ module BABYLON {
         private _enableInteractionOnController(webVRController: WebVRController) {
             var controllerMesh = webVRController.mesh;
             if (controllerMesh) {
+                var makeNotPick = (root:AbstractMesh)=>{
+                    root.name += " laserPointer"
+                    root.getChildMeshes().forEach((c)=>{
+                        makeNotPick(c)
+                    })
+                }
+                makeNotPick(controllerMesh)
                 var childMeshes = controllerMesh.getChildMeshes();
 
                 for (var i = 0; i < childMeshes.length; i++) {
@@ -707,7 +714,6 @@ module BABYLON {
                 laserPointer.rotation.x = Math.PI / 2;
                 laserPointer.parent = controllerMesh;
                 laserPointer.position.z = -0.5;
-                laserPointer.position.y = 0;
                 laserPointer.isVisible = false;
                 if (webVRController.hand === "left") {
                     this._leftLaserPointer = laserPointer;
@@ -1094,19 +1100,19 @@ module BABYLON {
             }
 
             if(!location){
-                // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
-                // offset of the headset from the anchor.
-                if (this.webVRCamera.leftCamera) {
-                    this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
-                    this._workingVector.subtractInPlace(this.webVRCamera.position);
-                    this._haloCenter.subtractToRef(this._workingVector, this._workingVector);
-                } else {
-                    this._workingVector.copyFrom(this._haloCenter);
-                }
-                location = this._workingVector;
+                location = this._haloCenter;
+            }
+            // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
+            // offset of the headset from the anchor.
+            if (this.webVRCamera.leftCamera) {
+                this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
+                this._workingVector.subtractInPlace(this.webVRCamera.position);
+                location.subtractToRef(this._workingVector, this._workingVector);
+            } else {
+                this._workingVector.copyFrom(location);
             }
             // Add height to account for user's height offset
-            location.y += this._defaultHeight;
+            this._workingVector.y += this._defaultHeight;
 
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
@@ -1117,7 +1123,7 @@ module BABYLON {
             },
             {
                 frame: 11,
-                value: location
+                value: this._workingVector
             }
             ];
 
@@ -1182,7 +1188,7 @@ module BABYLON {
                 return;
             }
 
-            var ray;
+            var ray:Ray;
             if (this._leftLaserPointer && this._leftLaserPointer.isVisible && (<any>this.currentVRCamera).leftController) {
                 ray = (<any>this.currentVRCamera).leftController.getForwardRay(this._rayLength);
             }
