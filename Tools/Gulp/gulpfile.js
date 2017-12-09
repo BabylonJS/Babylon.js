@@ -643,8 +643,8 @@ gulp.task("modules", ["modules-compile"], function () {
             let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
             let dtsTask = gulp.src(dtsFiles)
                 .pipe(concat(moduleName + "." + config.build.declarationFilename))
-                .pipe(addDtsExport("BABYLON", "babylonjs/commonjs/" + moduleName, false, moduleName !== "core", config.workloads[moduleName].dependUpon))
                 .pipe(addDtsExport("BABYLON", "babylonjs/es6/" + moduleName))
+                .pipe(addDtsExport("BABYLON", "babylonjs/commonjs/" + moduleName, false, moduleName !== "core", config.workloads[moduleName].dependUpon))
                 .pipe(gulp.dest(config.build.outputDirectory + '/types/'));
 
             tasks.push(jsTask, dtsTask);
