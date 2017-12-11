@@ -2174,6 +2174,7 @@
                 var instance = this.instances[index];
                 var serializationInstance: any = {
                     name: instance.name,
+                    id: instance.id,
                     position: instance.position.asArray(),
                     scaling: instance.scaling.asArray()
                 };
@@ -2473,7 +2474,6 @@
                 mesh.layerMask = 0x0FFFFFFF;
             }
 
-
             // Physics
             if (parsedMesh.physicsImpostor) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
@@ -2488,6 +2488,10 @@
                 for (var index = 0; index < parsedMesh.instances.length; index++) {
                     var parsedInstance = parsedMesh.instances[index];
                     var instance = mesh.createInstance(parsedInstance.name);
+
+                    if (parsedInstance.id) {
+                        instance.id = parsedInstance.id;
+                    }
 
                     if (Tags) {
                         Tags.AddTagsTo(instance, parsedInstance.tags);
