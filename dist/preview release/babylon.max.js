@@ -77764,6 +77764,8 @@ var BABYLON;
             this.renderWidth = 512;
             this.renderHeight = 256;
             this.textureSize = 512;
+            this.deterministicLockstep = false;
+            this.lockstepMaxSteps = 4;
         }
         return NullEngineOptions;
     }());
@@ -77777,6 +77779,12 @@ var BABYLON;
         function NullEngine(options) {
             if (options === void 0) { options = new NullEngineOptions(); }
             var _this = _super.call(this, null) || this;
+            if (options.deterministicLockstep === undefined) {
+                options.deterministicLockstep = false;
+            }
+            if (options.lockstepMaxSteps === undefined) {
+                options.lockstepMaxSteps = 4;
+            }
             _this._options = options;
             // Init caps
             // We consider we are on a webgl1 capable device
@@ -77827,6 +77835,12 @@ var BABYLON;
             }
             return _this;
         }
+        NullEngine.prototype.isDeterministicLockStep = function () {
+            return this._options.deterministicLockstep;
+        };
+        NullEngine.prototype.getLockstepMaxSteps = function () {
+            return this._options.lockstepMaxSteps;
+        };
         NullEngine.prototype.createVertexBuffer = function (vertices) {
             return {
                 capacity: 0,
