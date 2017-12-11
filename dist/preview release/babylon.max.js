@@ -8601,7 +8601,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-rc-1";
+                return "3.1-rc-2";
             },
             enumerable: true,
             configurable: true
@@ -25031,6 +25031,7 @@ var BABYLON;
                 var instance = this.instances[index];
                 var serializationInstance = {
                     name: instance.name,
+                    id: instance.id,
                     position: instance.position.asArray(),
                     scaling: instance.scaling.asArray()
                 };
@@ -25285,6 +25286,9 @@ var BABYLON;
                 for (var index = 0; index < parsedMesh.instances.length; index++) {
                     var parsedInstance = parsedMesh.instances[index];
                     var instance = mesh.createInstance(parsedInstance.name);
+                    if (parsedInstance.id) {
+                        instance.id = parsedInstance.id;
+                    }
                     if (BABYLON.Tags) {
                         BABYLON.Tags.AddTagsTo(instance, parsedInstance.tags);
                     }
@@ -32555,9 +32559,6 @@ var BABYLON;
         PostProcessManager.prototype.directRender = function (postProcesses, targetTexture, forceFullscreenViewport) {
             if (targetTexture === void 0) { targetTexture = null; }
             if (forceFullscreenViewport === void 0) { forceFullscreenViewport = false; }
-            if (!this._scene.activeCamera) {
-                return;
-            }
             var engine = this._scene.getEngine();
             for (var index = 0; index < postProcesses.length; index++) {
                 if (index < postProcesses.length - 1) {
