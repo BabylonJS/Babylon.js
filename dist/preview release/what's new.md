@@ -63,6 +63,9 @@
 - Asset Task has a state (INIT, RUNNING, DONE and ERROR). [Documentation](http://doc.babylonjs.com/how_to/how_to_use_assetsmanager#task-state-and-error-handling) ([RaananW](https://github.com/RaananW))
 - Added new options to the physics impostor constructor - ignoreParent and diableBidirectionalTransformation. [Documentation](http://doc.babylonjs.com/how_to/using_the_physics_engine#impostors) ([RaananW](https://github.com/RaananW))
 - It is now possible to define which loader to use when loading assets using the SceneLoader. [Commit](https://github.com/BabylonJS/Babylon.js/commit/91bffeaafc668980be0f9cf83df69b8eb2e2ba5f) ([RaananW](https://github.com/RaananW))
+- Added scope option to Observerable ([adam](https://github.com/abow))
+- Added shadowBlur, shadowOffsetX, shadowOffsetY, shadowColor to GUI Controls ([adam](https://github.com/abow))
+- Added alignWithNormal to AbstractMesh ([adam](https://github.com/abow))
 
 ## Bug fixes
 
@@ -76,6 +79,8 @@
 - Fixed an error with deterministic step. ([RaananW](https://github.com/RaananW))
 - Fixed a bug with controller jitter when in VR. ([RaananW](https://github.com/RaananW))
 - Fixed a bug with impostor jitter when in VR. ([RaananW](https://github.com/RaananW))
+- Fixed a bug with GUI Slider not working correctly when rotated ([adam](https://github.com/abow))
+- Fixed IE11 "spacebar" bug with GUI InputText ([adam](https://github.com/abow))
 
 ## Breaking changes
 
