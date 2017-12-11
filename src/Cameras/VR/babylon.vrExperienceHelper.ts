@@ -695,16 +695,16 @@ module BABYLON {
             var controllerMesh = webVRController.mesh;
             if (controllerMesh) {
                 var makeNotPick = (root:AbstractMesh)=>{
-                    root.name += " laserPointer"
+                    root.name += " laserPointer";
                     root.getChildMeshes().forEach((c)=>{
-                        makeNotPick(c)
-                    })
+                        makeNotPick(c);
+                    });
                 }
-                makeNotPick(controllerMesh)
+                makeNotPick(controllerMesh);
                 var childMeshes = controllerMesh.getChildMeshes();
 
                 for (var i = 0; i < childMeshes.length; i++) {
-                    if (childMeshes[i].name === "POINTING_POSE") {
+                    if (childMeshes[i].name && childMeshes[i].name.indexOf("POINTING_POSE") >= 0) {
                         controllerMesh = childMeshes[i];
                         break;
                     }
