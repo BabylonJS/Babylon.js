@@ -56,6 +56,8 @@ module BABYLON {
         private _deviceRoomPosition = Vector3.Zero();
         private _deviceRoomRotationQuaternion = Quaternion.Identity(); 
 
+        private _standingMatrix:Nullable<Matrix> = null;
+
         // Represents device position and rotation in babylon space
         public devicePosition = Vector3.Zero();
         public deviceRotationQuaternion = Quaternion.Identity();        
@@ -122,6 +124,24 @@ module BABYLON {
                     this.getEngine().enableVR();
                 }
             });
+
+            // Use standing matrix if availible
+            if(navigator && navigator.getVRDisplays){
+                navigator.getVRDisplays().then((displays:any)=>{
+                    if(!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform){
+                        return;
+                    }
+                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
+                    if (!this.getScene().useRightHandedSystem) {
+                        [2, 6, 8, 9, 14].forEach((num) => {
+                            this._standingMatrix.m[num] *= -1;
+                        });
+                    }
+
+                    // Move starting headset position by standing matrix
+                    this._deviceToWorld.multiplyToRef(this._standingMatrix, this._deviceToWorld);
+                })
+            }
 
             if (typeof(VRFrameData) !== "undefined")
                 this._frameData = new VRFrameData();
@@ -289,6 +309,9 @@ module BABYLON {
         private _workingMatrix = Matrix.Identity();
         public _updateCache(ignoreParentClass?: boolean): void {
             if(!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)){
+                // Update to ensure devicePosition is up to date with most recent _deviceRoomPosition
+                this.update();
+
                 // Set working vector to the device position in room space rotated by the new rotation
                 this.rotationQuaternion.toRotationMatrix(this._workingMatrix);
                 Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._workingMatrix, this._workingVector);
