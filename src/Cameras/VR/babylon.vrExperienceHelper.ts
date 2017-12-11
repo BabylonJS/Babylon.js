@@ -167,6 +167,9 @@ module BABYLON {
             if (webVROptions.createDeviceOrientationCamera === undefined) {
                 webVROptions.createDeviceOrientationCamera = true;
             }
+            if (webVROptions.defaultHeight === undefined) {
+                webVROptions.defaultHeight = 1.7;
+            }
             if (webVROptions.useCustomVRButton) {
                 this._useCustomVRButton = true;
                 if (webVROptions.customVRButton) {
@@ -176,7 +179,7 @@ module BABYLON {
             if (webVROptions.rayLength) {
                 this._rayLength = webVROptions.rayLength
             }
-            this._defaultHeight = webVROptions.defaultHeight || 1.7;
+            this._defaultHeight = webVROptions.defaultHeight;
 
             // Set position
             if(this._scene.activeCamera){
