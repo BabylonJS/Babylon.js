@@ -174,37 +174,35 @@ module BABYLON {
             }
         }
 
-        public useStandingMatrix = ()=>{
-            return new Promise<boolean>((res, rej)=>{
-                // Use standing matrix if availible
-                if(!navigator || !navigator.getVRDisplays){
-                    res(false);
-                }else{
-                    navigator.getVRDisplays().then((displays:any)=>{
-                        if(!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform){
-                            res(false);
-                        }else{
-                            this._standingMatrix = new BABYLON.Matrix();
-                            BABYLON.Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
-                            if (!this.getScene().useRightHandedSystem) {
-                                [2, 6, 8, 9, 14].forEach((num) => {
-                                    if(this._standingMatrix){
-                                        this._standingMatrix.m[num] *= -1;
-                                    }
-                                });
-                            }
-                            // Move starting headset position by standing matrix
-                            this._deviceToWorld.multiplyToRef(this._standingMatrix, this._deviceToWorld);
-
-                            // Correct for default height added originally
-                            var pos =  this._deviceToWorld.getTranslation()
-                            pos.y -= this._defaultHeight;
-                            this._deviceToWorld.setTranslation(pos)
-                            res(true)
+        public useStandingMatrix = (callback = (bool:boolean)=>{})=>{
+            // Use standing matrix if availible
+            if(!navigator || !navigator.getVRDisplays){
+                callback(false);
+            }else{
+                navigator.getVRDisplays().then((displays:any)=>{
+                    if(!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform){
+                        callback(false);
+                    }else{
+                        this._standingMatrix = new BABYLON.Matrix();
+                        BABYLON.Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
+                        if (!this.getScene().useRightHandedSystem) {
+                            [2, 6, 8, 9, 14].forEach((num) => {
+                                if(this._standingMatrix){
+                                    this._standingMatrix.m[num] *= -1;
+                                }
+                            });
                         }
-                    })
-                }
-            })
+                        // Move starting headset position by standing matrix
+                        this._deviceToWorld.multiplyToRef(this._standingMatrix, this._deviceToWorld);
+
+                        // Correct for default height added originally
+                        var pos =  this._deviceToWorld.getTranslation()
+                        pos.y -= this._defaultHeight;
+                        this._deviceToWorld.setTranslation(pos)
+                        callback(true)
+                    }
+                })
+            }
         }
 
         public dispose(): void {
