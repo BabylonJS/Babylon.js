@@ -75,11 +75,13 @@ module BABYLON {
 
         private _lightOnControllers: BABYLON.HemisphericLight;
 
+        private _defaultHeight = 0;
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
             this._cache.position = Vector3.Zero();
             if(webVROptions.defaultHeight){
-                this.position.y = webVROptions.defaultHeight;
+                this._defaultHeight = webVROptions.defaultHeight;
+                this.position.y = this._defaultHeight;
             }
             
             this.minZ = 0.1;
@@ -162,6 +164,16 @@ module BABYLON {
             });
         }
 
+        public deviceDistanceToRoomGround = ()=>{
+            if(this._standingMatrix){
+                // Add standing matrix offset to get real offset from ground in room
+                this._standingMatrix.getTranslationToRef(this._workingVector);
+                return this._deviceRoomPosition.y+this._workingVector.y
+            }else{
+                return this._defaultHeight;
+            }
+        }
+
         public useStandingMatrix = ()=>{
             return new Promise<boolean>((res, rej)=>{
                 // Use standing matrix if availible
@@ -181,9 +193,14 @@ module BABYLON {
                                     }
                                 });
                             }
-    
                             // Move starting headset position by standing matrix
                             this._deviceToWorld.multiplyToRef(this._standingMatrix, this._deviceToWorld);
+
+                            // Correct for default height added originally
+                            var pos =  this._deviceToWorld.getTranslation()
+                            pos.y -= this._defaultHeight;
+                            this._deviceToWorld.setTranslation(pos)
+                            res(true)
                         }
                     })
                 }

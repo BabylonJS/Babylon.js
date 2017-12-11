@@ -221,7 +221,7 @@ module BABYLON {
             this._vrDeviceOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
             }
             this._webVRCamera = new BABYLON.WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
-
+            this._webVRCamera.useStandingMatrix()
             // Create default button
             if (!this._useCustomVRButton) {
                 this._btnVR = <HTMLButtonElement>document.createElement("BUTTON");
@@ -1119,7 +1119,11 @@ module BABYLON {
                 this._workingVector.copyFrom(location);
             }
             // Add height to account for user's height offset
-            this._workingVector.y += this._defaultHeight;
+            if(this.isInVRMode){
+                this._workingVector.y += this.webVRCamera.deviceDistanceToRoomGround();
+            }else{
+                this._workingVector.y += this._defaultHeight;
+            }
 
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
