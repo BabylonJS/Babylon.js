@@ -244,8 +244,8 @@ module BABYLON {
         
         public getForwardRay(length = 100): Ray {
             if (this.leftCamera) {
-                this.deviceRotationQuaternion.toRotationMatrix(this._workingMatrix);
-                return super.getForwardRay(length, this._workingMatrix, this.devicePosition); // Need the actual rendered camera
+                // Use left eye to avoid computation to compute center on every call
+                return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.leftCamera.globalPosition); // Need the actual rendered camera
             }
             else {
                 return super.getForwardRay(length);
