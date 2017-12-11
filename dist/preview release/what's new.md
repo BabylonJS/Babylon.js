@@ -64,7 +64,7 @@
 - Added new options to the physics impostor constructor - ignoreParent and diableBidirectionalTransformation. [Documentation](http://doc.babylonjs.com/how_to/using_the_physics_engine#impostors) ([RaananW](https://github.com/RaananW))
 - It is now possible to define which loader to use when loading assets using the SceneLoader. [Commit](https://github.com/BabylonJS/Babylon.js/commit/91bffeaafc668980be0f9cf83df69b8eb2e2ba5f) ([RaananW](https://github.com/RaananW))
 - Added scope option to Observerable ([adam](https://github.com/abow))
-- Added shadowBlur, shadowOffsetX, shadowOffsetY to GUI Controls ([adam](https://github.com/abow))
+- Added shadowBlur, shadowOffsetX, shadowOffsetY, shadowColor to GUI Controls ([adam](https://github.com/abow))
 - Added alignWithNormal to AbstractMesh ([adam](https://github.com/abow))
 
 ## Bug fixes
