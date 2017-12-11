@@ -125,24 +125,6 @@ module BABYLON {
                 }
             });
 
-            // Use standing matrix if availible
-            if(navigator && navigator.getVRDisplays){
-                navigator.getVRDisplays().then((displays:any)=>{
-                    if(!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform){
-                        return;
-                    }
-                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
-                    if (!this.getScene().useRightHandedSystem) {
-                        [2, 6, 8, 9, 14].forEach((num) => {
-                            this._standingMatrix.m[num] *= -1;
-                        });
-                    }
-
-                    // Move starting headset position by standing matrix
-                    this._deviceToWorld.multiplyToRef(this._standingMatrix, this._deviceToWorld);
-                })
-            }
-
             if (typeof(VRFrameData) !== "undefined")
                 this._frameData = new VRFrameData();
 
@@ -178,6 +160,34 @@ module BABYLON {
                     });
                 }
             });
+        }
+
+        public useStandingMatrix = ()=>{
+            return new Promise<boolean>((res, rej)=>{
+                // Use standing matrix if availible
+                if(!navigator || !navigator.getVRDisplays){
+                    res(false);
+                }else{
+                    navigator.getVRDisplays().then((displays:any)=>{
+                        if(!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform){
+                            res(false);
+                        }else{
+                            this._standingMatrix = new BABYLON.Matrix();
+                            BABYLON.Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
+                            if (!this.getScene().useRightHandedSystem) {
+                                [2, 6, 8, 9, 14].forEach((num) => {
+                                    if(this._standingMatrix){
+                                        this._standingMatrix.m[num] *= -1;
+                                    }
+                                });
+                            }
+    
+                            // Move starting headset position by standing matrix
+                            this._deviceToWorld.multiplyToRef(this._standingMatrix, this._deviceToWorld);
+                        }
+                    })
+                }
+            })
         }
 
         public dispose(): void {
@@ -217,7 +227,7 @@ module BABYLON {
         
         public getForwardRay(length = 100): Ray {
             if (this.leftCamera) {
-                this.deviceRotationQuaternion.toRotationMatrix(this._workingMatrix)
+                this.deviceRotationQuaternion.toRotationMatrix(this._workingMatrix);
                 return super.getForwardRay(length, this._workingMatrix, this.devicePosition); // Need the actual rendered camera
             }
             else {
