@@ -298,7 +298,6 @@
         deterministicLockstep?: boolean;
         lockstepMaxSteps?: number;
         doNotHandleContextLost?: boolean;
-        constantAnimationDeltaTime?: number;
     }
 
     export interface IDisplayChangedEventArgs {
