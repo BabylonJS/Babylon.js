@@ -1,4 +1,19 @@
 ﻿module BABYLON {
+    BABYLON.Effect.ShadersStore["highlightLayerThresholdFragmentShader"] = "\r\n" +
+        "precision highp float;\r\n" +
+
+        "varying vec2 vUV;\r\n" +
+
+        "uniform float threshold;\r\n" +
+        "uniform sampler2D textureSampler;\r\n" +
+
+        "void main(void) {\r\n" +
+        "   vec4 color = texture2D(textureSampler, vUV);" +
+        "   float alpha = smoothstep(.0, threshold, color.a);" +
+        "   color.a = alpha;" +
+        "    gl_FragColor = color * alpha;\r\n" +
+        "}\r\n";
+
     /**
      * Special Glow Blur post process only blurring the alpha channel
      * It enforces keeping the most luminous color in the color channel.
@@ -56,6 +71,11 @@
          * The camera attached to the layer.
          */
         camera: Nullable<Camera>;
+
+        /**
+         * Threshold for cutting glow.
+         */
+        threshold: number;
     }
 
     /**
@@ -139,6 +159,7 @@
         private _cachedDefines: string;
         private _glowMapGenerationEffect: Effect;
         private _glowMapMergeEffect: Effect;
+        private _thresholdPostProcess: PostProcess;
         private _blurTexture: RenderTargetTexture;
         private _mainTexture: RenderTargetTexture;
         private _mainTextureDesiredSize: ISize = { width: 0, height: 0 };
@@ -400,6 +421,18 @@
                 });
             }
 
+            const postProcesses = [this._downSamplePostprocess, this._horizontalBlurPostprocess, this._verticalBlurPostprocess];
+
+            if (this._options.threshold) {
+                const threshold = this._options.threshold;
+                this._thresholdPostProcess = new BABYLON.PostProcess("thresold", "highlightLayerThreshold", ["screenSize", "threshold"], null, 0.25, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                this._thresholdPostProcess.onApplyObservable.add(function (effect) {
+                    effect.setFloat("threshold", threshold);
+                    effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
+                });
+                postProcesses.push(this._thresholdPostProcess);
+            }
+
             this._mainTexture.onAfterUnbindObservable.add(() => {
                 this.onBeforeBlurObservable.notifyObservers(this);
 
@@ -407,7 +440,7 @@
 
                 if (internalTexture) {
                     this._scene.postProcessManager.directRender(
-                        [this._downSamplePostprocess, this._horizontalBlurPostprocess, this._verticalBlurPostprocess],
+                        postProcesses,
                         internalTexture, true);
                 }
 
