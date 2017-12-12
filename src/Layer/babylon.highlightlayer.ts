@@ -1,19 +1,4 @@
 ﻿module BABYLON {
-    BABYLON.Effect.ShadersStore["highlightLayerThresholdFragmentShader"] = "\r\n" +
-        "precision highp float;\r\n" +
-
-        "varying vec2 vUV;\r\n" +
-
-        "uniform float threshold;\r\n" +
-        "uniform sampler2D textureSampler;\r\n" +
-
-        "void main(void) {\r\n" +
-        "   vec4 color = texture2D(textureSampler, vUV);" +
-        "   float alpha = smoothstep(.0, threshold, color.a);" +
-        "   color.a = alpha;" +
-        "    gl_FragColor = color * alpha;\r\n" +
-        "}\r\n";
-
     /**
      * Special Glow Blur post process only blurring the alpha channel
      * It enforces keeping the most luminous color in the color channel.
@@ -912,6 +897,7 @@
             this._downSamplePostprocess.dispose();
             this._horizontalBlurPostprocess.dispose();
             this._verticalBlurPostprocess.dispose();
+            this._thresholdPostProcess.dispose();
         }
 
         /**
