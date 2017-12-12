@@ -26878,7 +26878,7 @@ var BABYLON;
                     this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines, undefined, this._transformFeedbackVaryings);
                 }
                 this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
-                if (engine.webGLVersion > 1) {
+                if (engine.supportsUniformBuffers) {
                     for (var name in this._uniformBuffersNames) {
                         this.bindUniformBlock(name, this._uniformBuffersNames[name]);
                     }
