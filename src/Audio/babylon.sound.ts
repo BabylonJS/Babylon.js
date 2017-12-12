@@ -83,7 +83,7 @@ module BABYLON {
 
             if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
                 this._soundGain = Engine.audioEngine.audioContext.createGain();
-                this._soundGain.gain.value = this._volume;
+                Engine.audioEngine._setGain(this._volume, this._soundGain.gain);
                 this._inputAudioNode = this._soundGain;
                 this._ouputAudioNode = this._soundGain;
                 if (this.spatialSound) {
@@ -389,7 +389,8 @@ module BABYLON {
         public updateDistanceFromListener() {
             if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
-                this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
+                let value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
+                Engine.audioEngine._setGain(value, this._soundGain.gain);
             }
         }
 
@@ -510,7 +511,7 @@ module BABYLON {
                     this._soundGain.gain.linearRampToValueAtTime(newVolume, Engine.audioEngine.audioContext.currentTime + time);
                 }
                 else {
-                    this._soundGain.gain.value = newVolume;
+                    Engine.audioEngine._setGain(newVolume, this._soundGain.gain);
                 }
             }
             this._volume = newVolume;

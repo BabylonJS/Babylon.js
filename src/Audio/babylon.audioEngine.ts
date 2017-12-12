@@ -20,6 +20,19 @@
             return this._audioContext;
         }
 
+        public _setGain(value: number, node: AudioParam): void {
+            if (!this._audioContext) {
+                return;
+            }
+
+            if (node.setTargetAtTime) {
+                node.setTargetAtTime(value, this._audioContext.currentTime, 0.015);
+                return;
+            }
+
+            node.value = value;
+        }
+
         constructor() {
             if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -64,9 +77,9 @@
                 source.buffer = buffer;
                 source.connect(this.audioContext.destination);
                 source.start(0);
-  
+
                 setTimeout(() => {
-                    if (((<any>source).playbackState === (<any>source).PLAYING_STATE || (<any>source).playbackState === (<any>source).FINISHED_STATE)) { 
+                    if (((<any>source).playbackState === (<any>source).PLAYING_STATE || (<any>source).playbackState === (<any>source).FINISHED_STATE)) {
                         this.unlocked = true;
                         window.removeEventListener('touchend', unlockaudio, false);
                         if (this.onAudioUnlocked) {
@@ -85,7 +98,7 @@
                     this._audioContext = new AudioContext();
                     // create a global volume gain node 
                     this.masterGain = this._audioContext.createGain();
-                    this.masterGain.gain.value = 1;
+                    this._setGain(1, this.masterGain.gain);
                     this.masterGain.connect(this._audioContext.destination);
                     this._audioContextInitialized = true;
                 }
@@ -105,7 +118,7 @@
                     this.masterGain.connect(this._audioContext.destination);
                     this._connectedAnalyser = null;
                 }
-                this.masterGain.gain.value = 1;
+                this._setGain(1, this.masterGain.gain);
             }
             this.WarnedWebAudioUnsupported = false;
         }
@@ -121,7 +134,7 @@
 
         public setGlobalVolume(newVolume: number) {
             if (this.canUseWebAudio && this._audioContextInitialized) {
-                this.masterGain.gain.value = newVolume;
+                this._setGain(newVolume, this.masterGain.gain);
             }
         }
 
