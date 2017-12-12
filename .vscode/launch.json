@@ -134,13 +134,7 @@
                 "url": "http://localhost:1338",
                 "path": "${workspaceFolder}"
             }],
-            "preLaunchTask": "run",
-            "log": {
-                "consoleLevel": {
-                    "PathConversion": "Debug",
-                    "default": "Error"
-                }
-            }
+            "preLaunchTask": "run"
         },
         {
             "name": "Launch Build Validation (Chrome)",
