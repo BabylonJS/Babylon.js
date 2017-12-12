@@ -26,7 +26,9 @@
                 this._outputAudioNode.connect(Engine.audioEngine.masterGain);
 
                 if (this._options) {
-                    if (this._options.volume) { this._outputAudioNode.gain.value = this._options.volume; }
+                    if (this._options.volume) {
+                        Engine.audioEngine._setGain(this._options.volume, this._outputAudioNode.gain);
+                    }
                     if (this._options.mainTrack) { this._isMainTrack = this._options.mainTrack; }
                 }
 
@@ -78,7 +80,7 @@
 
         public setVolume(newVolume: number) {
             if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
-                this._outputAudioNode.gain.value = newVolume;
+                Engine.audioEngine._setGain(newVolume, this._outputAudioNode.gain);
             }
         }
 

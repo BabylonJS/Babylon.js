@@ -49539,6 +49539,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        AudioEngine.prototype._setGain = function (value, node) {
+            if (!this._audioContext) {
+                return;
+            }
+            if (node.setTargetAtTime) {
+                node.setTargetAtTime(value, this._audioContext.currentTime, 0.015);
+                return;
+            }
+            node.value = value;
+        };
         AudioEngine.prototype._unlockiOSaudio = function () {
             var _this = this;
             var unlockaudio = function () {
@@ -49568,7 +49578,7 @@ var BABYLON;
                     this._audioContext = new AudioContext();
                     // create a global volume gain node 
                     this.masterGain = this._audioContext.createGain();
-                    this.masterGain.gain.value = 1;
+                    this._setGain(1, this.masterGain.gain);
                     this.masterGain.connect(this._audioContext.destination);
                     this._audioContextInitialized = true;
                 }
@@ -49587,7 +49597,7 @@ var BABYLON;
                     this.masterGain.connect(this._audioContext.destination);
                     this._connectedAnalyser = null;
                 }
-                this.masterGain.gain.value = 1;
+                this._setGain(1, this.masterGain.gain);
             }
             this.WarnedWebAudioUnsupported = false;
         };
@@ -49601,7 +49611,7 @@ var BABYLON;
         };
         AudioEngine.prototype.setGlobalVolume = function (newVolume) {
             if (this.canUseWebAudio && this._audioContextInitialized) {
-                this.masterGain.gain.value = newVolume;
+                this._setGain(newVolume, this.masterGain.gain);
             }
         };
         AudioEngine.prototype.connectToAnalyser = function (analyser) {
@@ -49691,7 +49701,7 @@ var BABYLON;
             }
             if (BABYLON.Engine.audioEngine.canUseWebAudio && BABYLON.Engine.audioEngine.audioContext) {
                 this._soundGain = BABYLON.Engine.audioEngine.audioContext.createGain();
-                this._soundGain.gain.value = this._volume;
+                BABYLON.Engine.audioEngine._setGain(this._volume, this._soundGain.gain);
                 this._inputAudioNode = this._soundGain;
                 this._ouputAudioNode = this._soundGain;
                 if (this.spatialSound) {
@@ -49980,7 +49990,8 @@ var BABYLON;
         Sound.prototype.updateDistanceFromListener = function () {
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
-                this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
+                var value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
+                BABYLON.Engine.audioEngine._setGain(value, this._soundGain.gain);
             }
         };
         Sound.prototype.setAttenuationFunction = function (callback) {
@@ -50096,7 +50107,7 @@ var BABYLON;
                     this._soundGain.gain.linearRampToValueAtTime(newVolume, BABYLON.Engine.audioEngine.audioContext.currentTime + time);
                 }
                 else {
-                    this._soundGain.gain.value = newVolume;
+                    BABYLON.Engine.audioEngine._setGain(newVolume, this._soundGain.gain);
                 }
             }
             this._volume = newVolume;
@@ -50304,7 +50315,7 @@ var BABYLON;
                 this._outputAudioNode.connect(BABYLON.Engine.audioEngine.masterGain);
                 if (this._options) {
                     if (this._options.volume) {
-                        this._outputAudioNode.gain.value = this._options.volume;
+                        BABYLON.Engine.audioEngine._setGain(this._options.volume, this._outputAudioNode.gain);
                     }
                     if (this._options.mainTrack) {
                         this._isMainTrack = this._options.mainTrack;
@@ -50353,7 +50364,7 @@ var BABYLON;
         };
         SoundTrack.prototype.setVolume = function (newVolume) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
-                this._outputAudioNode.gain.value = newVolume;
+                BABYLON.Engine.audioEngine._setGain(newVolume, this._outputAudioNode.gain);
             }
         };
         SoundTrack.prototype.switchPanningModelToHRTF = function () {
