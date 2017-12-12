@@ -139,8 +139,7 @@ module BABYLON.GUI {
                         this._connectedInputText.processKey(13);
                         return;                        
                 }
-
-                this._connectedInputText.processKey(-1, key);
+                this._connectedInputText.processKey(-1, (this.shiftState ? key.toUpperCase() : key));
                 
                 if(this.shiftState === 1){
                     this.shiftState = 0;
