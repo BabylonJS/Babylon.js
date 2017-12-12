@@ -714,9 +714,13 @@ declare module BABYLON.GUI {
         defaultButtonPaddingBottom: string;
         defaultButtonColor: string;
         defaultButtonBackground: string;
+        shiftButtonColor: string;
+        selectedShiftThickness: number;
+        shiftState: number;
         protected _getTypeName(): string;
         private _createKey(key, propertySet);
         addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void;
+        applyShiftState(shiftState: number): void;
         private _connectedInputText;
         private _onFocusObserver;
         private _onBlurObserver;

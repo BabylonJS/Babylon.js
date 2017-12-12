@@ -8601,7 +8601,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1-rc-2";
+                return "3.1";
             },
             enumerable: true,
             configurable: true
@@ -35933,7 +35933,6 @@ var BABYLON;
             _this._forceIrradianceInFragment = false;
             /**
              * Force normal to face away from face.
-             * (Temporary internal fix to remove before 3.1)
              */
             _this._forceNormalForward = false;
             _this._renderTargets = new BABYLON.SmartArray(16);
@@ -37240,7 +37239,6 @@ var BABYLON;
             _this.environmentBRDFTexture = null;
             /**
              * Force normal to face away from face.
-             * (Temporary internal fix to remove before 3.1)
              */
             _this.forceNormalForward = false;
             /**
@@ -65136,7 +65134,7 @@ var BABYLON;
                 return;
             }
             // Coming Back in 3.x.
-            BABYLON.Tools.Error("Generation of Babylon HDR is coming back in 3.1.");
+            BABYLON.Tools.Error("Generation of Babylon HDR is coming back in 3.2.");
         };
         HDRCubeTexture._facesMapping = [
             "right",

@@ -21,14 +21,13 @@ declare module BABYLON {
         maxSimultaneousLights: number;
         highLevelFur: boolean;
         _meshes: AbstractMesh[];
-        private _worldViewProjectionMatrix;
         private _renderId;
         private _furTime;
         constructor(name: string, scene: Scene);
         furTime: number;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         updateFur(): void;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
@@ -38,6 +37,7 @@ declare module BABYLON {
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): FurMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial;
         static GenerateTexture(name: string, scene: Scene): DynamicTexture;
         static FurifyMesh(sourceMesh: Mesh, quality: number): Mesh[];

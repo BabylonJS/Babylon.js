@@ -17,7 +17,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var WaterMaterialDefines = (function (_super) {
+    var WaterMaterialDefines = /** @class */ (function (_super) {
         __extends(WaterMaterialDefines, _super);
         function WaterMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -25,6 +25,7 @@ var BABYLON;
             _this.REFLECTION = false;
             _this.CLIPPLANE = false;
             _this.ALPHATEST = false;
+            _this.DEPTHPREPASS = false;
             _this.POINTSIZE = false;
             _this.FOG = false;
             _this.NORMAL = false;
@@ -40,13 +41,12 @@ var BABYLON;
             _this.FRESNELSEPARATE = false;
             _this.BUMPSUPERIMPOSE = false;
             _this.BUMPAFFECTSREFLECTION = false;
-            _this.USERIGHTHANDEDSYSTEM = false;
             _this.rebuild();
             return _this;
         }
         return WaterMaterialDefines;
     }(BABYLON.MaterialDefines));
-    var WaterMaterial = (function (_super) {
+    var WaterMaterial = /** @class */ (function (_super) {
         __extends(WaterMaterial, _super);
         /**
         * Constructor
@@ -112,14 +112,22 @@ var BABYLON;
             * @param {number}: Defines the waves speed
             */
             _this.waveSpeed = 1.0;
+            _this._renderTargets = new BABYLON.SmartArray(16);
             /*
             * Private members
             */
             _this._mesh = null;
             _this._reflectionTransform = BABYLON.Matrix.Zero();
             _this._lastTime = 0;
-            // Create render targets
+            _this._lastDeltaTime = 0;
             _this._createRenderTargets(scene, renderTargetSize);
+            // Create render targets
+            _this.getRenderTargetTextures = function () {
+                _this._renderTargets.reset();
+                _this._renderTargets.push(_this._reflectionRTT);
+                _this._renderTargets.push(_this._refractionRTT);
+                return _this._renderTargets;
+            };
             return _this;
         }
         Object.defineProperty(WaterMaterial.prototype, "useLogarithmicDepth", {
@@ -150,20 +158,28 @@ var BABYLON;
         });
         // Methods
         WaterMaterial.prototype.addToRenderList = function (node) {
-            this._refractionRTT.renderList.push(node);
-            this._reflectionRTT.renderList.push(node);
+            if (this._refractionRTT && this._refractionRTT.renderList) {
+                this._refractionRTT.renderList.push(node);
+            }
+            if (this._reflectionRTT && this._reflectionRTT.renderList) {
+                this._reflectionRTT.renderList.push(node);
+            }
         };
         WaterMaterial.prototype.enableRenderTargets = function (enable) {
             var refreshRate = enable ? 1 : 0;
-            this._refractionRTT.refreshRate = refreshRate;
-            this._reflectionRTT.refreshRate = refreshRate;
+            if (this._refractionRTT) {
+                this._refractionRTT.refreshRate = refreshRate;
+            }
+            if (this._reflectionRTT) {
+                this._reflectionRTT.refreshRate = refreshRate;
+            }
         };
         WaterMaterial.prototype.getRenderList = function () {
-            return this._refractionRTT.renderList;
+            return this._refractionRTT ? this._refractionRTT.renderList : [];
         };
         Object.defineProperty(WaterMaterial.prototype, "renderTargetsEnabled", {
             get: function () {
-                return !(this._refractionRTT.refreshRate === 0);
+                return !(this._refractionRTT && this._refractionRTT.refreshRate === 0);
             },
             enumerable: true,
             configurable: true
@@ -212,7 +228,7 @@ var BABYLON;
                     }
                 }
             }
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
             if (defines._areMiscDirty) {
                 if (this._fresnelSeparate) {
@@ -229,7 +245,14 @@ var BABYLON;
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
+            // Configure this
             this._mesh = mesh;
+            if (this._waitingRenderList) {
+                for (var i = 0; i < this._waitingRenderList.length; i++) {
+                    this.addToRenderList(scene.getNodeByID(this._waitingRenderList[i]));
+                }
+                this._waitingRenderList = null;
+            }
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -279,7 +302,7 @@ var BABYLON;
                     // Water
                     "refractionSampler", "reflectionSampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array();
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -299,7 +322,7 @@ var BABYLON;
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
                 }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             this._renderId = scene.getRenderId();
@@ -313,6 +336,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect || !this._mesh) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -332,7 +358,7 @@ var BABYLON;
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
             }
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             if (defines.SPECULARTERM) {
@@ -355,7 +381,12 @@ var BABYLON;
                 this._activeEffect.setTexture("reflectionSampler", this._reflectionRTT);
             }
             var wrvp = this._mesh.getWorldMatrix().multiply(this._reflectionTransform).multiply(scene.getProjectionMatrix());
-            this._lastTime += scene.getEngine().getDeltaTime();
+            // Add delta time. Prevent adding delta time if it hasn't changed.
+            var deltaTime = scene.getEngine().getDeltaTime();
+            if (deltaTime !== this._lastDeltaTime) {
+                this._lastDeltaTime = deltaTime;
+                this._lastTime += this._lastDeltaTime;
+            }
             this._activeEffect.setMatrix("worldReflectionViewProjection", wrvp);
             this._activeEffect.setVector2("windDirection", this.windDirection);
             this._activeEffect.setFloat("waveLength", this.waveLength);
@@ -376,11 +407,11 @@ var BABYLON;
             this._refractionRTT = new BABYLON.RenderTargetTexture(name + "_refraction", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
             this._refractionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
             this._refractionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+            this._refractionRTT.ignoreCameraViewport = true;
             this._reflectionRTT = new BABYLON.RenderTargetTexture(name + "_reflection", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
             this._reflectionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
             this._reflectionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
-            scene.customRenderTargets.push(this._refractionRTT);
-            scene.customRenderTargets.push(this._reflectionRTT);
+            this._reflectionRTT.ignoreCameraViewport = true;
             var isVisible;
             var clipPlane = null;
             var savedViewMatrix;
@@ -399,7 +430,7 @@ var BABYLON;
                 if (_this._mesh) {
                     _this._mesh.isVisible = isVisible;
                 }
-                // Clip plane
+                // Clip plane 
                 scene.clipPlane = clipPlane;
             };
             this._reflectionRTT.onBeforeRender = function () {
@@ -488,102 +519,111 @@ var BABYLON;
         WaterMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
-            serializationObject.reflectionTexture.isRenderTarget = true;
-            serializationObject.refractionTexture.isRenderTarget = true;
+            serializationObject.renderList = [];
+            if (this._refractionRTT && this._refractionRTT.renderList) {
+                for (var i = 0; i < this._refractionRTT.renderList.length; i++) {
+                    serializationObject.renderList.push(this._refractionRTT.renderList[i].id);
+                }
+            }
             return serializationObject;
+        };
+        WaterMaterial.prototype.getClassName = function () {
+            return "WaterMaterial";
         };
         // Statics
         WaterMaterial.Parse = function (source, scene, rootUrl) {
-            return BABYLON.SerializationHelper.Parse(function () { return new WaterMaterial(source.name, scene); }, source, scene, rootUrl);
+            var mat = BABYLON.SerializationHelper.Parse(function () { return new WaterMaterial(source.name, scene); }, source, scene, rootUrl);
+            mat._waitingRenderList = source.renderList;
+            return mat;
         };
         WaterMaterial.CreateDefaultMesh = function (name, scene) {
             var mesh = BABYLON.Mesh.CreateGround(name, 512, 512, 32, scene, false);
             return mesh;
         };
+        __decorate([
+            BABYLON.serializeAsTexture("bumpTexture")
+        ], WaterMaterial.prototype, "_bumpTexture", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        ], WaterMaterial.prototype, "bumpTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], WaterMaterial.prototype, "diffuseColor", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], WaterMaterial.prototype, "specularColor", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "specularPower", void 0);
+        __decorate([
+            BABYLON.serialize("disableLighting")
+        ], WaterMaterial.prototype, "_disableLighting", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+        ], WaterMaterial.prototype, "disableLighting", void 0);
+        __decorate([
+            BABYLON.serialize("maxSimultaneousLights")
+        ], WaterMaterial.prototype, "_maxSimultaneousLights", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
+        ], WaterMaterial.prototype, "maxSimultaneousLights", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "windForce", void 0);
+        __decorate([
+            BABYLON.serializeAsVector2()
+        ], WaterMaterial.prototype, "windDirection", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "waveHeight", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "bumpHeight", void 0);
+        __decorate([
+            BABYLON.serialize("bumpSuperimpose")
+        ], WaterMaterial.prototype, "_bumpSuperimpose", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
+        ], WaterMaterial.prototype, "bumpSuperimpose", void 0);
+        __decorate([
+            BABYLON.serialize("fresnelSeparate")
+        ], WaterMaterial.prototype, "_fresnelSeparate", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
+        ], WaterMaterial.prototype, "fresnelSeparate", void 0);
+        __decorate([
+            BABYLON.serialize("bumpAffectsReflection")
+        ], WaterMaterial.prototype, "_bumpAffectsReflection", void 0);
+        __decorate([
+            BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
+        ], WaterMaterial.prototype, "bumpAffectsReflection", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], WaterMaterial.prototype, "waterColor", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "colorBlendFactor", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], WaterMaterial.prototype, "waterColor2", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "colorBlendFactor2", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "waveLength", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "waveSpeed", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "useLogarithmicDepth", null);
         return WaterMaterial;
     }(BABYLON.PushMaterial));
-    __decorate([
-        BABYLON.serializeAsTexture("bumpTexture")
-    ], WaterMaterial.prototype, "_bumpTexture", void 0);
-    __decorate([
-        BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    ], WaterMaterial.prototype, "bumpTexture", void 0);
-    __decorate([
-        BABYLON.serializeAsColor3()
-    ], WaterMaterial.prototype, "diffuseColor", void 0);
-    __decorate([
-        BABYLON.serializeAsColor3()
-    ], WaterMaterial.prototype, "specularColor", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], WaterMaterial.prototype, "specularPower", void 0);
-    __decorate([
-        BABYLON.serialize("disableLighting")
-    ], WaterMaterial.prototype, "_disableLighting", void 0);
-    __decorate([
-        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-    ], WaterMaterial.prototype, "disableLighting", void 0);
-    __decorate([
-        BABYLON.serialize("maxSimultaneousLights")
-    ], WaterMaterial.prototype, "_maxSimultaneousLights", void 0);
-    __decorate([
-        BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-    ], WaterMaterial.prototype, "maxSimultaneousLights", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], WaterMaterial.prototype, "windForce", void 0);
-    __decorate([
-        BABYLON.serializeAsVector2()
-    ], WaterMaterial.prototype, "windDirection", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], WaterMaterial.prototype, "waveHeight", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], WaterMaterial.prototype, "bumpHeight", void 0);
-    __decorate([
-        BABYLON.serialize("bumpSuperimpose")
-    ], WaterMaterial.prototype, "_bumpSuperimpose", void 0);
-    __decorate([
-        BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
-    ], WaterMaterial.prototype, "bumpSuperimpose", void 0);
-    __decorate([
-        BABYLON.serialize("fresnelSeparate")
-    ], WaterMaterial.prototype, "_fresnelSeparate", void 0);
-    __decorate([
-        BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
-    ], WaterMaterial.prototype, "fresnelSeparate", void 0);
-    __decorate([
-        BABYLON.serialize("bumpAffectsReflection")
-    ], WaterMaterial.prototype, "_bumpAffectsReflection", void 0);
-    __decorate([
-        BABYLON.expandToProperty("_markAllSubMeshesAsMiscDirty")
-    ], WaterMaterial.prototype, "bumpAffectsReflection", void 0);
-    __decorate([
-        BABYLON.serializeAsColor3()
-    ], WaterMaterial.prototype, "waterColor", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], WaterMaterial.prototype, "colorBlendFactor", void 0);
-    __decorate([
-        BABYLON.serializeAsColor3()
-    ], WaterMaterial.prototype, "waterColor2", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], WaterMaterial.prototype, "colorBlendFactor2", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], WaterMaterial.prototype, "waveLength", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], WaterMaterial.prototype, "waveSpeed", void 0);
-    __decorate([
-        BABYLON.serialize()
-    ], WaterMaterial.prototype, "useLogarithmicDepth", null);
     BABYLON.WaterMaterial = WaterMaterial;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.waterMaterial.js.map
 
 BABYLON.Effect.ShadersStore['waterVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef BUMP\nvarying vec2 vNormalUV;\n#ifdef BUMPSUPERIMPOSE\nvarying vec2 vNormalUV2;\n#endif\nuniform mat4 normalMatrix;\nuniform vec2 vNormalInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<logDepthDeclaration>\n\nuniform mat4 worldReflectionViewProjection;\nuniform vec2 windDirection;\nuniform float waveLength;\nuniform float time;\nuniform float windForce;\nuniform float waveHeight;\nuniform float waveSpeed;\n\nvarying vec3 vPosition;\nvarying vec3 vRefractionMapTexCoord;\nvarying vec3 vReflectionMapTexCoord;\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef BUMP\nif (vNormalInfos.x == 0.)\n{\nvNormalUV=vec2(normalMatrix*vec4((uv*1.0)/waveLength+time*windForce*windDirection,1.0,0.0));\n#ifdef BUMPSUPERIMPOSE\nvNormalUV2=vec2(normalMatrix*vec4((uv*0.721)/waveLength+time*1.2*windForce*windDirection,1.0,0.0));\n#endif\n}\nelse\n{\nvNormalUV=vec2(normalMatrix*vec4((uv2*1.0)/waveLength+time*windForce*windDirection ,1.0,0.0));\n#ifdef BUMPSUPERIMPOSE\nvNormalUV2=vec2(normalMatrix*vec4((uv2*0.721)/waveLength+time*1.2*windForce*windDirection ,1.0,0.0));\n#endif\n}\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\nvec3 p=position;\nfloat newY=(sin(((p.x/0.05)+time*waveSpeed))*waveHeight*windDirection.x*5.0)\n+(cos(((p.z/0.05)+time*waveSpeed))*waveHeight*windDirection.y*5.0);\np.y+=abs(newY);\ngl_Position=viewProjection*finalWorld*vec4(p,1.0);\n#ifdef REFLECTION\nworldPos=viewProjection*finalWorld*vec4(p,1.0);\n\nvPosition=position;\nvRefractionMapTexCoord.x=0.5*(worldPos.w+worldPos.x);\nvRefractionMapTexCoord.y=0.5*(worldPos.w+worldPos.y);\nvRefractionMapTexCoord.z=worldPos.w;\nworldPos=worldReflectionViewProjection*vec4(position,1.0);\nvReflectionMapTexCoord.x=0.5*(worldPos.w+worldPos.x);\nvReflectionMapTexCoord.y=0.5*(worldPos.w+worldPos.y);\nvReflectionMapTexCoord.z=worldPos.w;\n#endif\n#include<logDepthVertex>\n}\n";
-BABYLON.Effect.ShadersStore['waterPixelShader'] = "#ifdef LOGARITHMICDEPTH\n#extension GL_EXT_frag_depth : enable\n#endif\nprecision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n#ifdef SPECULARTERM\nuniform vec4 vSpecularColor;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef BUMP\nvarying vec2 vNormalUV;\nvarying vec2 vNormalUV2;\nuniform sampler2D normalSampler;\nuniform vec2 vNormalInfos;\n#endif\nuniform sampler2D refractionSampler;\nuniform sampler2D reflectionSampler;\n\nconst float LOG2=1.442695;\nuniform vec3 cameraPosition;\nuniform vec4 waterColor;\nuniform float colorBlendFactor;\nuniform vec4 waterColor2;\nuniform float colorBlendFactor2;\nuniform float bumpHeight;\nuniform float time;\n\nvarying vec3 vRefractionMapTexCoord;\nvarying vec3 vReflectionMapTexCoord;\nvarying vec3 vPosition;\n#include<clipPlaneFragmentDeclaration>\n#include<logDepthDeclaration>\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\n\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef BUMP\n#ifdef BUMPSUPERIMPOSE\nbaseColor=0.6*texture2D(normalSampler,vNormalUV)+0.4*texture2D(normalSampler,vec2(vNormalUV2.x,vNormalUV2.y));\n#else\nbaseColor=texture2D(normalSampler,vNormalUV);\n#endif\nvec3 bumpColor=baseColor.rgb;\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\nbaseColor.rgb*=vNormalInfos.y;\n#else\nvec3 bumpColor=vec3(1.0);\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec2 perturbation=bumpHeight*(baseColor.rg-0.5);\n#ifdef BUMPAFFECTSREFLECTION\nvec3 normalW=normalize(vNormalW+vec3(perturbation.x*8.0,0.0,perturbation.y*8.0));\nif (normalW.y<0.0) {\nnormalW.y=-normalW.y;\n}\n#else\nvec3 normalW=normalize(vNormalW);\n#endif\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\nvec2 perturbation=bumpHeight*(vec2(1.0,1.0)-0.5);\n#endif\n#ifdef FRESNELSEPARATE\n#ifdef REFLECTION\n\nvec3 eyeVector=normalize(vEyePosition-vPosition);\nvec2 projectedRefractionTexCoords=clamp(vRefractionMapTexCoord.xy/vRefractionMapTexCoord.z+perturbation*0.5,0.0,1.0);\nvec4 refractiveColor=texture2D(refractionSampler,projectedRefractionTexCoords);\nvec2 projectedReflectionTexCoords=clamp(vec2(\nvReflectionMapTexCoord.x/vReflectionMapTexCoord.z+perturbation.x*0.3,\nvReflectionMapTexCoord.y/vReflectionMapTexCoord.z+perturbation.y\n),0.0,1.0);\nvec4 reflectiveColor=texture2D(reflectionSampler,projectedReflectionTexCoords);\nvec3 upVector=vec3(0.0,1.0,0.0);\nfloat fresnelTerm=clamp(abs(pow(dot(eyeVector,upVector),3.0)),0.05,0.65);\nfloat IfresnelTerm=1.0-fresnelTerm;\nrefractiveColor=colorBlendFactor*waterColor+(1.0-colorBlendFactor)*refractiveColor;\nreflectiveColor=IfresnelTerm*colorBlendFactor2*waterColor+(1.0-colorBlendFactor2*IfresnelTerm)*reflectiveColor;\nvec4 combinedColor=refractiveColor*fresnelTerm+reflectiveColor*IfresnelTerm;\nbaseColor=combinedColor;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\n#ifdef SPECULARTERM\nfloat glossiness=vSpecularColor.a;\nvec3 specularBase=vec3(0.,0.,0.);\nvec3 specularColor=vSpecularColor.rgb;\n#else\nfloat glossiness=0.;\n#endif\n#include<lightFragment>[0..maxSimultaneousLights]\nvec3 finalDiffuse=clamp(baseColor.rgb,0.0,1.0);\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\n#else \n#ifdef REFLECTION\n\nvec3 eyeVector=normalize(vEyePosition-vPosition);\nvec2 projectedRefractionTexCoords=clamp(vRefractionMapTexCoord.xy/vRefractionMapTexCoord.z+perturbation,0.0,1.0);\nvec4 refractiveColor=texture2D(refractionSampler,projectedRefractionTexCoords);\nvec2 projectedReflectionTexCoords=clamp(vReflectionMapTexCoord.xy/vReflectionMapTexCoord.z+perturbation,0.0,1.0);\nvec4 reflectiveColor=texture2D(reflectionSampler,projectedReflectionTexCoords);\nvec3 upVector=vec3(0.0,1.0,0.0);\nfloat fresnelTerm=max(dot(eyeVector,upVector),0.0);\nvec4 combinedColor=refractiveColor*fresnelTerm+reflectiveColor*(1.0-fresnelTerm);\nbaseColor=colorBlendFactor*waterColor+(1.0-colorBlendFactor)*combinedColor;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\n#ifdef SPECULARTERM\nfloat glossiness=vSpecularColor.a;\nvec3 specularBase=vec3(0.,0.,0.);\nvec3 specularColor=vSpecularColor.rgb;\n#else\nfloat glossiness=0.;\n#endif\n#include<lightFragment>[0..maxSimultaneousLights]\nvec3 finalDiffuse=clamp(baseColor.rgb,0.0,1.0);\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\n#endif\n\nvec4 color=vec4(finalDiffuse+finalSpecular,alpha);\n#include<logDepthFragment>\n#include<fogFragment>\ngl_FragColor=color;\n}\n";
+BABYLON.Effect.ShadersStore['waterPixelShader'] = "#ifdef LOGARITHMICDEPTH\n#extension GL_EXT_frag_depth : enable\n#endif\nprecision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n#ifdef SPECULARTERM\nuniform vec4 vSpecularColor;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef BUMP\nvarying vec2 vNormalUV;\nvarying vec2 vNormalUV2;\nuniform sampler2D normalSampler;\nuniform vec2 vNormalInfos;\n#endif\nuniform sampler2D refractionSampler;\nuniform sampler2D reflectionSampler;\n\nconst float LOG2=1.442695;\nuniform vec3 cameraPosition;\nuniform vec4 waterColor;\nuniform float colorBlendFactor;\nuniform vec4 waterColor2;\nuniform float colorBlendFactor2;\nuniform float bumpHeight;\nuniform float time;\n\nvarying vec3 vRefractionMapTexCoord;\nvarying vec3 vReflectionMapTexCoord;\nvarying vec3 vPosition;\n#include<clipPlaneFragmentDeclaration>\n#include<logDepthDeclaration>\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\n\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef BUMP\n#ifdef BUMPSUPERIMPOSE\nbaseColor=0.6*texture2D(normalSampler,vNormalUV)+0.4*texture2D(normalSampler,vec2(vNormalUV2.x,vNormalUV2.y));\n#else\nbaseColor=texture2D(normalSampler,vNormalUV);\n#endif\nvec3 bumpColor=baseColor.rgb;\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\nbaseColor.rgb*=vNormalInfos.y;\n#else\nvec3 bumpColor=vec3(1.0);\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec2 perturbation=bumpHeight*(baseColor.rg-0.5);\n#ifdef BUMPAFFECTSREFLECTION\nvec3 normalW=normalize(vNormalW+vec3(perturbation.x*8.0,0.0,perturbation.y*8.0));\nif (normalW.y<0.0) {\nnormalW.y=-normalW.y;\n}\n#else\nvec3 normalW=normalize(vNormalW);\n#endif\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\nvec2 perturbation=bumpHeight*(vec2(1.0,1.0)-0.5);\n#endif\n#ifdef FRESNELSEPARATE\n#ifdef REFLECTION\n\nvec3 eyeVector=normalize(vEyePosition-vPosition);\nvec2 projectedRefractionTexCoords=clamp(vRefractionMapTexCoord.xy/vRefractionMapTexCoord.z+perturbation*0.5,0.0,1.0);\nvec4 refractiveColor=texture2D(refractionSampler,projectedRefractionTexCoords);\nvec2 projectedReflectionTexCoords=clamp(vec2(\nvReflectionMapTexCoord.x/vReflectionMapTexCoord.z+perturbation.x*0.3,\nvReflectionMapTexCoord.y/vReflectionMapTexCoord.z+perturbation.y\n),0.0,1.0);\nvec4 reflectiveColor=texture2D(reflectionSampler,projectedReflectionTexCoords);\nvec3 upVector=vec3(0.0,1.0,0.0);\nfloat fresnelTerm=clamp(abs(pow(dot(eyeVector,upVector),3.0)),0.05,0.65);\nfloat IfresnelTerm=1.0-fresnelTerm;\nrefractiveColor=colorBlendFactor*waterColor+(1.0-colorBlendFactor)*refractiveColor;\nreflectiveColor=IfresnelTerm*colorBlendFactor2*waterColor+(1.0-colorBlendFactor2*IfresnelTerm)*reflectiveColor;\nvec4 combinedColor=refractiveColor*fresnelTerm+reflectiveColor*IfresnelTerm;\nbaseColor=combinedColor;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\n#ifdef SPECULARTERM\nfloat glossiness=vSpecularColor.a;\nvec3 specularBase=vec3(0.,0.,0.);\nvec3 specularColor=vSpecularColor.rgb;\n#else\nfloat glossiness=0.;\n#endif\n#include<lightFragment>[0..maxSimultaneousLights]\nvec3 finalDiffuse=clamp(baseColor.rgb,0.0,1.0);\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\n#else \n#ifdef REFLECTION\n\nvec3 eyeVector=normalize(vEyePosition-vPosition);\nvec2 projectedRefractionTexCoords=clamp(vRefractionMapTexCoord.xy/vRefractionMapTexCoord.z+perturbation,0.0,1.0);\nvec4 refractiveColor=texture2D(refractionSampler,projectedRefractionTexCoords);\nvec2 projectedReflectionTexCoords=clamp(vReflectionMapTexCoord.xy/vReflectionMapTexCoord.z+perturbation,0.0,1.0);\nvec4 reflectiveColor=texture2D(reflectionSampler,projectedReflectionTexCoords);\nvec3 upVector=vec3(0.0,1.0,0.0);\nfloat fresnelTerm=max(dot(eyeVector,upVector),0.0);\nvec4 combinedColor=refractiveColor*fresnelTerm+reflectiveColor*(1.0-fresnelTerm);\nbaseColor=colorBlendFactor*waterColor+(1.0-colorBlendFactor)*combinedColor;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\n#ifdef SPECULARTERM\nfloat glossiness=vSpecularColor.a;\nvec3 specularBase=vec3(0.,0.,0.);\nvec3 specularColor=vSpecularColor.rgb;\n#else\nfloat glossiness=0.;\n#endif\n#include<lightFragment>[0..maxSimultaneousLights]\nvec3 finalDiffuse=clamp(baseColor.rgb,0.0,1.0);\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\n#endif\n\nvec4 color=vec4(finalDiffuse+finalSpecular,alpha);\n#include<logDepthFragment>\n#include<fogFragment>\ngl_FragColor=color;\n}\n";
