@@ -309,8 +309,8 @@
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
      */
     export class Engine {
-        /** Use this array to turn off WebGL2 on known buggy browsers version */
-        public static WebGL2ExceptionList = ["Chrome/63"];
+        /** Use this array to turn off some WebGL2 features on known buggy browsers version */
+        public static WebGL2UniformBuffersExceptionList = ["Chrome/63"];
 
         public static Instances = new Array<Engine>();
 
@@ -883,9 +883,9 @@
                     if (navigator && navigator.userAgent) {
                         let ua = navigator.userAgent;
 
-                        for (var exception of Engine.WebGL2ExceptionList) {
+                        for (var exception of Engine.WebGL2UniformBuffersExceptionList) {
                             if (ua.indexOf(exception) > -1) {
-                                options.disableWebGL2Support = true;
+                                this.disableUniformBuffers = true;
                                 break;
                             }
                         }
