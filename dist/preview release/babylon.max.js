@@ -8102,10 +8102,10 @@ var BABYLON;
                 if (!options.disableWebGL2Support) {
                     if (navigator && navigator.userAgent) {
                         var ua = navigator.userAgent;
-                        for (var _i = 0, _a = Engine.WebGL2ExceptionList; _i < _a.length; _i++) {
+                        for (var _i = 0, _a = Engine.WebGL2UniformBuffersExceptionList; _i < _a.length; _i++) {
                             var exception = _a[_i];
                             if (ua.indexOf(exception) > -1) {
-                                options.disableWebGL2Support = true;
+                                this.disableUniformBuffers = true;
                                 break;
                             }
                         }
@@ -12303,8 +12303,8 @@ var BABYLON;
                 return false;
             }
         };
-        /** Use this array to turn off WebGL2 on known buggy browsers version */
-        Engine.WebGL2ExceptionList = ["Chrome/63"];
+        /** Use this array to turn off some WebGL2 features on known buggy browsers version */
+        Engine.WebGL2UniformBuffersExceptionList = ["Chrome/63"];
         Engine.Instances = new Array();
         // Const statics
         Engine._ALPHA_DISABLE = 0;
