@@ -1386,8 +1386,13 @@ module BABYLON {
                 this._deviceOrientationCamera.dispose();
             }
 
-            this._gazeTracker.dispose();
-            this._teleportationTarget.dispose();
+            if(this._gazeTracker){
+                this._gazeTracker.dispose();
+            }
+            
+            if(this._teleportationTarget){
+                this._teleportationTarget.dispose();
+            }
 
             this._floorMeshesCollection = [];
 
