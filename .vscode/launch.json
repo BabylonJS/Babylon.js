@@ -125,6 +125,24 @@
             ]
         },
         {
+            "name": "Launch Local Dev (Experimental Firefox)",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "url": "http://localhost:1338/localDev/index.html",
+            "pathMappings": [{
+                "url": "http://localhost:1338",
+                "path": "${workspaceFolder}"
+            }],
+            "preLaunchTask": "run",
+            "log": {
+                "consoleLevel": {
+                    "PathConversion": "Debug",
+                    "default": "Error"
+                }
+            }
+        },
+        {
             "name": "Launch Build Validation (Chrome)",
             "type": "chrome",
             "request": "launch",
