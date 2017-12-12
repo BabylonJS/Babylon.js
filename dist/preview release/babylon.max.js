@@ -57151,10 +57151,11 @@ var BABYLON;
             BABYLON.Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this.devicePosition);
             this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
             BABYLON.Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
+            this.deviceRotationQuaternion.multiplyInPlace(this._calculatedRotation);
             if (this._mesh) {
                 this._mesh.position.copyFrom(this.devicePosition);
                 if (this._mesh.rotationQuaternion) {
-                    this._mesh.rotationQuaternion.copyFrom(this.deviceRotationQuaternion.multiplyInPlace(this._calculatedRotation));
+                    this._mesh.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
                 }
             }
         };
@@ -72311,6 +72312,7 @@ var BABYLON;
             this.teleportBackwardsVector = new BABYLON.Vector3(0, -1, -1);
             this._rotationRightAsked = false;
             this._rotationLeftAsked = false;
+            this._isDefaultTeleportationTarget = true;
             this._teleportationFillColor = "#444444";
             this._teleportationBorderColor = "#FFFFFF";
             this._rotationAngle = 0;
@@ -72564,6 +72566,20 @@ var BABYLON;
             this._circleEase = new BABYLON.CircleEase();
             this._circleEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
         }
+        Object.defineProperty(VRExperienceHelper.prototype, "teleportationTarget", {
+            get: function () {
+                return this._teleportationTarget;
+            },
+            set: function (value) {
+                if (value) {
+                    value.name = "teleportationTarget";
+                    this._isDefaultTeleportationTarget = false;
+                    this._teleportationTarget = value;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(VRExperienceHelper.prototype, "displayGaze", {
             get: function () {
                 return this._displayGaze;
@@ -72821,7 +72837,7 @@ var BABYLON;
                 };
                 this._raySelectionPredicate = function (mesh) {
                     if (_this._isTeleportationFloor(mesh) || (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
-                        && mesh.name.indexOf("teleportationCircle") === -1
+                        && mesh.name.indexOf("teleportationTarget") === -1
                         && mesh.name.indexOf("torusTeleportation") === -1
                         && mesh.name.indexOf("laserPointer") === -1)) {
                         return _this.raySelectionPredicate(mesh);
@@ -72890,7 +72906,9 @@ var BABYLON;
                 this._webVRCamera.detachPostProcess(this._postProcessMove);
                 this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
                 this._teleportationEnabled = true;
-                this._createTeleportationCircles();
+                if (this._isDefaultTeleportationTarget) {
+                    this._createTeleportationCircles();
+                }
             }
         };
         VRExperienceHelper.prototype._enableInteractionOnController = function (webVRController) {
@@ -73108,8 +73126,8 @@ var BABYLON;
             this._gazeTracker.material = targetMat;
         };
         VRExperienceHelper.prototype._createTeleportationCircles = function () {
-            this._teleportationCircle = BABYLON.Mesh.CreateGround("teleportationCircle", 2, 2, 2, this._scene);
-            this._teleportationCircle.isPickable = false;
+            this._teleportationTarget = BABYLON.Mesh.CreateGround("teleportationTarget", 2, 2, 2, this._scene);
+            this._teleportationTarget.isPickable = false;
             var length = 512;
             var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", length, this._scene, true);
             dynamicTexture.hasAlpha = true;
@@ -73128,10 +73146,10 @@ var BABYLON;
             dynamicTexture.update();
             var teleportationCircleMaterial = new BABYLON.StandardMaterial("TextPlaneMaterial", this._scene);
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
-            this._teleportationCircle.material = teleportationCircleMaterial;
+            this._teleportationTarget.material = teleportationCircleMaterial;
             var torus = BABYLON.Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
             torus.isPickable = false;
-            torus.parent = this._teleportationCircle;
+            torus.parent = this._teleportationTarget;
             var animationInnerCircle = new BABYLON.Animation("animationInnerCircle", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
             var keys = [];
             keys.push({
@@ -73153,18 +73171,22 @@ var BABYLON;
             torus.animations = [];
             torus.animations.push(animationInnerCircle);
             this._scene.beginAnimation(torus, 0, 60, true);
-            this._hideTeleportationCircle();
+            this._hideTeleportationTarget();
         };
-        VRExperienceHelper.prototype._displayTeleportationCircle = function () {
+        VRExperienceHelper.prototype._displayTeleportationTarget = function () {
             if (this._teleportationEnabled) {
-                this._teleportationCircle.isVisible = true;
-                this._teleportationCircle.getChildren()[0].isVisible = true;
+                this._teleportationTarget.isVisible = true;
+                if (this._isDefaultTeleportationTarget) {
+                    this._teleportationTarget.getChildren()[0].isVisible = true;
+                }
             }
         };
-        VRExperienceHelper.prototype._hideTeleportationCircle = function () {
+        VRExperienceHelper.prototype._hideTeleportationTarget = function () {
             if (this._teleportationEnabled) {
-                this._teleportationCircle.isVisible = false;
-                this._teleportationCircle.getChildren()[0].isVisible = false;
+                this._teleportationTarget.isVisible = false;
+                if (this._isDefaultTeleportationTarget) {
+                    this._teleportationTarget.getChildren()[0].isVisible = false;
+                }
             }
         };
         VRExperienceHelper.prototype._rotateCamera = function (right) {
@@ -73240,20 +73262,20 @@ var BABYLON;
             if (hit.pickedPoint) {
                 this._teleportationAllowed = true;
                 if (this._teleportationRequestInitiated) {
-                    this._displayTeleportationCircle();
+                    this._displayTeleportationTarget();
                 }
                 else {
-                    this._hideTeleportationCircle();
+                    this._hideTeleportationTarget();
                 }
                 this._haloCenter.copyFrom(hit.pickedPoint);
-                this._teleportationCircle.position.copyFrom(hit.pickedPoint);
+                this._teleportationTarget.position.copyFrom(hit.pickedPoint);
                 var pickNormal = hit.getNormal(true, false);
                 if (pickNormal) {
                     var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
                     var axis2 = BABYLON.Vector3.Cross(pickNormal, axis1);
-                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._teleportationCircle.rotation);
+                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._teleportationTarget.rotation);
                 }
-                this._teleportationCircle.position.y += 0.1;
+                this._teleportationTarget.position.y += 0.1;
             }
         };
         VRExperienceHelper.prototype._teleportCamera = function (location) {
@@ -73417,7 +73439,7 @@ var BABYLON;
                     return;
                 }
                 // If not, we're in a selection scenario
-                this._hideTeleportationCircle();
+                this._hideTeleportationTarget();
                 this._teleportationAllowed = false;
                 if (hit.pickedMesh !== this._currentMeshSelected) {
                     if (this.meshSelectionPredicate(hit.pickedMesh)) {
@@ -73450,7 +73472,7 @@ var BABYLON;
                 this._currentHit = null;
                 this._currentMeshSelected = null;
                 this._teleportationAllowed = false;
-                this._hideTeleportationCircle();
+                this._hideTeleportationTarget();
                 this.changeGazeColor(new BABYLON.Color3(0.7, 0.7, 0.7));
                 this.changeLaserColor(new BABYLON.Color3(0.7, 0.7, 0.7));
             }
@@ -73491,7 +73513,7 @@ var BABYLON;
                 this._deviceOrientationCamera.dispose();
             }
             this._gazeTracker.dispose();
-            this._teleportationCircle.dispose();
+            this._teleportationTarget.dispose();
             this._floorMeshesCollection = [];
             document.removeEventListener("keydown", this._onKeyDown);
             window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);

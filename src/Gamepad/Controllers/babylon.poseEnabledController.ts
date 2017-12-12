@@ -88,12 +88,13 @@ module BABYLON {
             Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this.devicePosition)
             this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
-
+            this.deviceRotationQuaternion.multiplyInPlace(this._calculatedRotation)
+            
             if (this._mesh) {
                 this._mesh.position.copyFrom(this.devicePosition);
 
                 if (this._mesh.rotationQuaternion) {
-                    this._mesh.rotationQuaternion.copyFrom(this.deviceRotationQuaternion.multiplyInPlace(this._calculatedRotation));
+                    this._mesh.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
                 }
             }
         }

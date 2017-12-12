@@ -38,7 +38,7 @@ module BABYLON {
         }
 
         public set groundColor(value: Color3) {
-            this.groundColor = value;
+            this._groundColor = value;
             this.updateShaderUniforms();
         }
     }
