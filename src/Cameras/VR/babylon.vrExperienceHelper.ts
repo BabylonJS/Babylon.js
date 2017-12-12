@@ -100,6 +100,9 @@ module BABYLON {
         private _displayGaze = true;
         private _displayLaserPointer = true;
 
+        private _dpadPressed = true;
+        //private _isVive = false;
+
         public get teleportationTarget(): Mesh {
             return this._teleportationTarget;
         }
@@ -782,7 +785,7 @@ module BABYLON {
 
         private _checkTeleportWithRay(stateObject: StickValues, webVRController:Nullable<WebVRController> = null){
             if (!this._teleportationRequestInitiated) {
-                if (stateObject.y < -this._padSensibilityUp) {
+                if (stateObject.y < -this._padSensibilityUp && this._dpadPressed) {
                     if(webVRController){
                         // If laser pointer wasn't enabled yet
                         if (this._displayLaserPointer && webVRController.hand === "left" && this._leftLaserPointer) {
@@ -833,7 +836,7 @@ module BABYLON {
             }
 
             if (!this._rotationLeftAsked) {
-                if (stateObject.x < -this._padSensibilityUp) {
+                if (stateObject.x < -this._padSensibilityUp && this._dpadPressed) {
                     this._rotationLeftAsked = true;
                     if (this._rotationAllowed) {
                         this._rotateCamera(false);
@@ -846,7 +849,7 @@ module BABYLON {
             }
 
             if (!this._rotationRightAsked) {
-                if (stateObject.x > this._padSensibilityUp) {
+                if (stateObject.x > this._padSensibilityUp && this._dpadPressed) {
                     this._rotationRightAsked = true;
                     if (this._rotationAllowed) {
                         this._rotateCamera(true);
@@ -864,7 +867,7 @@ module BABYLON {
                 return;
             }
             // Teleport backwards
-            if(stateObject.y > this._padSensibilityUp) {
+            if(stateObject.y > this._padSensibilityUp && this._dpadPressed) {
                 if(!this._teleportationBackRequestInitiated){
                     if(!this.currentVRCamera){
                         return;
@@ -919,6 +922,17 @@ module BABYLON {
                         this._enableInteractionOnController(webVRController);
                     }
                     this._teleportationEnabledOnRightController = true;
+                }
+                if (webVRController.controllerType === PoseEnabledControllerType.VIVE) {
+                    this._dpadPressed = false;
+                    webVRController.onPadStateChangedObservable.add((stateObject) => {
+                        this._dpadPressed = stateObject.pressed;
+                        if (!this._dpadPressed) {
+                            this._rotationLeftAsked = false;
+                            this._rotationRightAsked = false;
+                            this._teleportationBackRequestInitiated = false;
+                        }
+                    });
                 }
                 webVRController.onPadValuesChangedObservable.add((stateObject) => {
                     this._checkTeleportBackwards(stateObject);
