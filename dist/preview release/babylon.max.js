@@ -72325,6 +72325,7 @@ var BABYLON;
             this._interactionsRequested = false;
             this._displayGaze = true;
             this._displayLaserPointer = true;
+            this._dpadPressed = true;
             this._onResize = function () {
                 _this.moveButtonToBottomRight();
                 if (_this._fullscreenVRpresenting && _this._webVRready) {
@@ -72978,7 +72979,7 @@ var BABYLON;
         VRExperienceHelper.prototype._checkTeleportWithRay = function (stateObject, webVRController) {
             if (webVRController === void 0) { webVRController = null; }
             if (!this._teleportationRequestInitiated) {
-                if (stateObject.y < -this._padSensibilityUp) {
+                if (stateObject.y < -this._padSensibilityUp && this._dpadPressed) {
                     if (webVRController) {
                         // If laser pointer wasn't enabled yet
                         if (this._displayLaserPointer && webVRController.hand === "left" && this._leftLaserPointer) {
@@ -73030,7 +73031,7 @@ var BABYLON;
                 return;
             }
             if (!this._rotationLeftAsked) {
-                if (stateObject.x < -this._padSensibilityUp) {
+                if (stateObject.x < -this._padSensibilityUp && this._dpadPressed) {
                     this._rotationLeftAsked = true;
                     if (this._rotationAllowed) {
                         this._rotateCamera(false);
@@ -73043,7 +73044,7 @@ var BABYLON;
                 }
             }
             if (!this._rotationRightAsked) {
-                if (stateObject.x > this._padSensibilityUp) {
+                if (stateObject.x > this._padSensibilityUp && this._dpadPressed) {
                     this._rotationRightAsked = true;
                     if (this._rotationAllowed) {
                         this._rotateCamera(true);
@@ -73062,7 +73063,7 @@ var BABYLON;
                 return;
             }
             // Teleport backwards
-            if (stateObject.y > this._padSensibilityUp) {
+            if (stateObject.y > this._padSensibilityUp && this._dpadPressed) {
                 if (!this._teleportationBackRequestInitiated) {
                     if (!this.currentVRCamera) {
                         return;
@@ -73111,6 +73112,17 @@ var BABYLON;
                         this._enableInteractionOnController(webVRController);
                     }
                     this._teleportationEnabledOnRightController = true;
+                }
+                if (webVRController.controllerType === BABYLON.PoseEnabledControllerType.VIVE) {
+                    this._dpadPressed = false;
+                    webVRController.onPadStateChangedObservable.add(function (stateObject) {
+                        _this._dpadPressed = stateObject.pressed;
+                        if (!_this._dpadPressed) {
+                            _this._rotationLeftAsked = false;
+                            _this._rotationRightAsked = false;
+                            _this._teleportationBackRequestInitiated = false;
+                        }
+                    });
                 }
                 webVRController.onPadValuesChangedObservable.add(function (stateObject) {
                     _this._checkTeleportBackwards(stateObject);
