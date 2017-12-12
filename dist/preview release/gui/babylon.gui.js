@@ -4623,6 +4623,9 @@ var BABYLON;
                 _this.defaultButtonPaddingBottom = "2px";
                 _this.defaultButtonColor = "#DDD";
                 _this.defaultButtonBackground = "#070707";
+                _this.shiftButtonColor = "#7799FF";
+                _this.selectedShiftThickness = 1;
+                _this.shiftState = 0;
                 return _this;
             }
             VirtualKeyboard.prototype._getTypeName = function () {
@@ -4663,6 +4666,30 @@ var BABYLON;
                 }
                 this.addControl(panel);
             };
+            VirtualKeyboard.prototype.applyShiftState = function (shiftState) {
+                if (!this.children) {
+                    return;
+                }
+                for (var i = 0; i < this.children.length; i++) {
+                    var row = this.children[i];
+                    if (!row || !row.children) {
+                        continue;
+                    }
+                    var rowContainer = row;
+                    for (var j = 0; j < rowContainer.children.length; j++) {
+                        var button = rowContainer.children[j];
+                        if (!button || !button.children[0]) {
+                            continue;
+                        }
+                        var button_tblock = button.children[0];
+                        if (button_tblock.text === "\u21E7") {
+                            button.color = (shiftState ? this.shiftButtonColor : this.defaultButtonColor);
+                            button.thickness = (shiftState > 1 ? this.selectedShiftThickness : 0);
+                        }
+                        button_tblock.text = (shiftState > 0 ? button_tblock.text.toUpperCase() : button_tblock.text.toLowerCase());
+                    }
+                }
+            };
             Object.defineProperty(VirtualKeyboard.prototype, "connectedInputText", {
                 get: function () {
                     return this._connectedInputText;
@@ -4686,6 +4713,13 @@ var BABYLON;
                         return;
                     }
                     switch (key) {
+                        case "\u21E7":
+                            _this.shiftState++;
+                            if (_this.shiftState > 2) {
+                                _this.shiftState = 0;
+                            }
+                            _this.applyShiftState(_this.shiftState);
+                            return;
                         case "\u2190":
                             _this._connectedInputText.processKey(8);
                             return;
@@ -4693,7 +4727,11 @@ var BABYLON;
                             _this._connectedInputText.processKey(13);
                             return;
                     }
-                    _this._connectedInputText.processKey(-1, key);
+                    _this._connectedInputText.processKey(-1, (_this.shiftState ? key.toUpperCase() : key));
+                    if (_this.shiftState === 1) {
+                        _this.shiftState = 0;
+                        _this.applyShiftState(_this.shiftState);
+                    }
                 });
             };
             VirtualKeyboard.prototype.disconnect = function () {
@@ -4711,7 +4749,7 @@ var BABYLON;
                 returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
                 returnValue.addKeysRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]);
                 returnValue.addKeysRow(["a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\u21B5"]);
-                returnValue.addKeysRow(["z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
+                returnValue.addKeysRow(["\u21E7", "z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
                 returnValue.addKeysRow([" "], [{ width: "200px" }]);
                 return returnValue;
             };

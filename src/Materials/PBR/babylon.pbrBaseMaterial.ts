@@ -90,10 +90,10 @@
         public LINKREFRACTIONTOTRANSPARENCY = false;
 
         public INSTANCES = false;
-        
+
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
-        
+
         public NONUNIFORMSCALING = false;
 
         public MORPHTARGETS = false;
@@ -151,19 +151,19 @@
          * This impacts both the direct diffuse and specular highlights.
          */
         protected _directIntensity: number = 1.0;
-        
+
         /**
          * Intensity of the emissive part of the material.
          * This helps controlling the emissive effect without modifying the emissive color.
          */
         protected _emissiveIntensity: number = 1.0;
-        
+
         /**
          * Intensity of the environment e.g. how much the environment will light the object
          * either through harmonics for rough material or through the refelction for shiny ones.
          */
         protected _environmentIntensity: number = 1.0;
-        
+
         /**
          * This is a special control allowing the reduction of the specular highlights coming from the 
          * four lights of the scene. Those highlights may not be needed in full environment lighting.
@@ -171,7 +171,7 @@
         protected _specularIntensity: number = 1.0;
 
         private _lightingInfos: Vector4 = new Vector4(this._directIntensity, this._emissiveIntensity, this._environmentIntensity, this._specularIntensity);
-        
+
         /**
          * Debug Control allowing disabling the bump map on this material.
          */
@@ -181,7 +181,7 @@
          * AKA Diffuse Texture in standard nomenclature.
          */
         protected _albedoTexture: BaseTexture;
-        
+
         /**
          * AKA Occlusion Texture in other nomenclature.
          */
@@ -199,7 +199,7 @@
         protected _refractionTexture: BaseTexture;
 
         protected _emissiveTexture: BaseTexture;
-        
+
         /**
          * AKA Specular texture in other nomenclature.
          */
@@ -238,7 +238,7 @@
          * AKA Diffuse Color in other nomenclature.
          */
         protected _albedoColor = new Color3(1, 1, 1);
-        
+
         /**
          * AKA Specular Color in other nomenclature.
          */
@@ -247,7 +247,7 @@
         protected _reflectionColor = new Color3(1, 1, 1);
 
         protected _emissiveColor = new Color3(0, 0, 0);
-        
+
         /**
          * AKA Glossiness in other nomenclature.
          */
@@ -257,7 +257,7 @@
          * source material index of refraction (IOR)' / 'destination material IOR.
          */
         protected _indexOfRefraction = 0.66;
-        
+
         /**
          * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
          */
@@ -282,18 +282,18 @@
          * too much the area relying on ambient texture to define their ambient occlusion.
          */
         protected _useRadianceOcclusion = true;
-        
+
         /**
          * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
          */
         protected _useAlphaFromAlbedoTexture = false;
-        
+
         /**
          * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
          * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
          */
         protected _useSpecularOverAlpha = true;
-        
+
         /**
          * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
          */
@@ -323,26 +323,26 @@
          * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
          */
         protected _useAmbientInGrayScale = false;
-        
+
         /**
          * In case the reflectivity map does not contain the microsurface information in its alpha channel,
          * The material will try to infer what glossiness each pixel should be.
          */
         protected _useAutoMicroSurfaceFromReflectivityMap = false;
-        
+
         /**
          * BJS is using an harcoded light falloff based on a manually sets up range.
          * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
          * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
          */
         protected _usePhysicalLightFalloff = true;
-        
+
         /**
          * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
          * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
          */
         protected _useRadianceOverAlpha = true;
-        
+
         /**
          * Allows using the bump map in parallax mode.
          */
@@ -357,7 +357,7 @@
          * Controls the scale bias of the parallax mode.
          */
         protected _parallaxScaleBias = 0.05;
-        
+
         /**
          * If sets to true, disables all the lights affecting the material.
          */
@@ -366,7 +366,7 @@
         /**
          * Number of Simultaneous lights allowed on the material.
          */
-        protected _maxSimultaneousLights = 4;  
+        protected _maxSimultaneousLights = 4;
 
         /**
          * If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
@@ -424,7 +424,6 @@
 
         /**
          * Force normal to face away from face.
-         * (Temporary internal fix to remove before 3.1)
          */
         protected _forceNormalForward = false;
 
@@ -502,7 +501,7 @@
 
         public getClassName(): string {
             return "PBRBaseMaterial";
-        }  
+        }
 
         @serialize()
         public get useLogarithmicDepth(): boolean {
@@ -595,7 +594,7 @@
 
         private static _scaledReflectivity = new Color3();
 
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean { 
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -615,7 +614,7 @@
             }
 
             var engine = scene.getEngine();
-            
+
             // Lights
             MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
             defines._needNormals = true;
@@ -643,7 +642,7 @@
                             return false;
                         }
 
-                        MaterialHelper.PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT"); 
+                        MaterialHelper.PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
                         defines.AMBIENTINGRAYSCALE = this._useAmbientInGrayScale;
                     } else {
                         defines.AMBIENT = false;
@@ -654,7 +653,7 @@
                             return false;
                         }
 
-                        MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY"); 
+                        MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
                         defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
                     } else {
                         defines.OPACITY = false;
@@ -665,7 +664,7 @@
                         if (!reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
-                        
+
                         defines.REFLECTION = true;
                         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
                         defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
@@ -744,7 +743,7 @@
                             return false;
                         }
 
-                        MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP"); 
+                        MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                         defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
                     } else {
                         defines.LIGHTMAP = false;
@@ -800,7 +799,7 @@
                         defines.REFLECTIVITY = false;
                         defines.MICROSURFACEMAP = false;
                     }
-	
+
                     if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
                         // Bump texure can not be none blocking.
                         if (!this._bumpTexture.isReady()) {
@@ -891,9 +890,9 @@
             }
 
             defines.FORCENORMALFORWARD = this._forceNormalForward;
-            
+
             defines.RADIANCEOCCLUSION = this._useRadianceOcclusion;
-            
+
             defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
 
             // Misc.
@@ -912,7 +911,7 @@
                     bufferMesh = mesh as Mesh;
                 }
 
-                if (bufferMesh) { 
+                if (bufferMesh) {
                     if (bufferMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                         // If the first normal's components is the zero vector in one of the submeshes, we have invalid normals
                         let normalVertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.NormalKind);
@@ -920,7 +919,7 @@
                         let vertexBufferOffset = normalVertexBuffer!.getOffset();
                         let strideSize = normalVertexBuffer!.getStrideSize();
                         let offset = vertexBufferOffset + subMesh.indexStart * strideSize;
-                         
+
                         if (normals![offset] === 0 && normals![offset + 1] === 0 && normals![offset + 2] === 0) {
                             defines.NORMAL = false;
                         }
@@ -943,7 +942,7 @@
                             Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + bufferMesh.name);
                         }
                     }
-                }   
+                }
             }
 
             // Get correct effect
@@ -1052,20 +1051,20 @@
                 MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
-                        "mBones",
-                        "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
-                        "vLightingIntensity",
-                        "logarithmicDepthConstant",
-                        "vSphericalX", "vSphericalY", "vSphericalZ",
-                        "vSphericalXX", "vSphericalYY", "vSphericalZZ",
-                        "vSphericalXY", "vSphericalYZ", "vSphericalZX",
-                        "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos",
-                        "vTangentSpaceParams"
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+                    "mBones",
+                    "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                    "vLightingIntensity",
+                    "logarithmicDepthConstant",
+                    "vSphericalX", "vSphericalY", "vSphericalZ",
+                    "vSphericalXX", "vSphericalYY", "vSphericalZZ",
+                    "vSphericalXY", "vSphericalYZ", "vSphericalZX",
+                    "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos",
+                    "vTangentSpaceParams"
                 ];
 
-                var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler", 
+                var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
                     "bumpSampler", "lightmapSampler", "opacitySampler",
                     "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh",
                     "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh",
@@ -1076,10 +1075,10 @@
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
 
@@ -1103,7 +1102,7 @@
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
                 }, engine), defines);
-                
+
                 this.buildUniformLayout();
             }
 
@@ -1202,7 +1201,7 @@
                 this.bindViewProjection(effect);
                 reflectionTexture = this._getReflectionTexture();
                 var refractionTexture = this._getRefractionTexture();
-                               
+
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
 
                     // Texture uniforms
@@ -1243,8 +1242,8 @@
                                 this._activeEffect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
                             }
 
-                            this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos", 
-                                reflectionTexture.getSize().width, 
+                            this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos",
+                                reflectionTexture.getSize().width,
                                 reflectionTexture.lodGenerationScale,
                                 reflectionTexture.lodGenerationOffset);
                         }
@@ -1296,8 +1295,8 @@
                                 }
                             }
                             this._uniformBuffer.updateFloat4("vRefractionInfos", refractionTexture.level, this._indexOfRefraction, depth, this._invertRefractionY ? -1 : 1);
-                            this._uniformBuffer.updateFloat3("vRefractionMicrosurfaceInfos", 
-                                refractionTexture.getSize().width, 
+                            this._uniformBuffer.updateFloat3("vRefractionMicrosurfaceInfos",
+                                refractionTexture.getSize().width,
                                 refractionTexture.lodGenerationScale,
                                 refractionTexture.lodGenerationOffset);
                         }
