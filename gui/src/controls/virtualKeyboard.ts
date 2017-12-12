@@ -27,6 +27,8 @@ module BABYLON.GUI {
         public defaultButtonColor = "#DDD";
         public defaultButtonBackground = "#070707";    
         
+        public shiftState = 0;
+        
         protected _getTypeName(): string {
             return "VirtualKeyboard";
         }
@@ -75,6 +77,26 @@ module BABYLON.GUI {
         
             this.addControl(panel);
         }
+        
+        public applyShiftState(shiftState : number): void {
+            if(!this.children) return;
+            for(var i = 0; i < this.children.length; i++) {
+                let row = this.children[i];
+                if(!row) continue;
+
+                for(var j = 0; j < row.children.length; j++){
+                    let button = row.children[j];
+                    if(!button || !button.children[0]) continue;
+                    let button_tblock = button.children[0];
+
+                    if(button_tblock.text === "\u21E7"){
+                        button.color = (shiftState ? "#7799FF" : this.defaultButtonColor);
+                        button.thickness = (shiftState > 1 ? 1 : 0);
+                    }
+                    button_tblock.text = (shiftState > 0 ? button_tblock.text.toUpperCase() : button_tblock.text.toLowerCase());
+                }
+            }
+        }
 
         private _connectedInputText: Nullable<InputText>;
         private _onFocusObserver: Nullable<Observer<InputText>>;
@@ -103,6 +125,13 @@ module BABYLON.GUI {
                     return;
                 }
                 switch (key) {
+                    case "\u21E7":
+                        this.shiftState++;
+                        if(this.shiftState > 2){
+                            this.shiftState = 0;
+                        }
+                        this.applyShiftState(this.shiftState);
+                        return;
                     case "\u2190":
                         this._connectedInputText.processKey(8);
                         return;
@@ -110,8 +139,12 @@ module BABYLON.GUI {
                         this._connectedInputText.processKey(13);
                         return;                        
                 }
-
-                this._connectedInputText.processKey(-1, key);
+                this._connectedInputText.processKey(-1, (this.shiftState ? key.toUpperCase() : key));
+                
+                if(this.shiftState === 1){
+                    this.shiftState = 0;
+                    this.applyShiftState(this.shiftState);
+                }
             });
         }
 
@@ -134,7 +167,7 @@ module BABYLON.GUI {
             returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0","\u2190"]);
             returnValue.addKeysRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]);
             returnValue.addKeysRow(["a", "s", "d", "f", "g", "h", "j", "k", "l",";","'","\u21B5"]);
-            returnValue.addKeysRow(["z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
+            returnValue.addKeysRow(["\u21E7", "z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
             returnValue.addKeysRow([" "], [{ width: "200px"}]);
         
             return returnValue;
