@@ -804,7 +804,7 @@ module BABYLON {
                 if (webVRController == null 
                     ||(webVRController.hand === "left" && this._leftLaserPointer && this._leftLaserPointer.isVisible)
                     || (webVRController.hand === "right" && this._rightLaserPointer && this._rightLaserPointer.isVisible)) {
-                    if (stateObject.y > -this._padSensibilityDown) {
+                    if (Math.sqrt(stateObject.y*stateObject.y + stateObject.x*stateObject.x) < this._padSensibilityDown) {
                         if (this._teleportationAllowed) {
                             this._teleportationAllowed = false;
                             this._teleportCamera();
@@ -827,6 +827,11 @@ module BABYLON {
             this._pointerDownOnMeshAsked = false;
         }
         private _checkRotate(stateObject: StickValues){
+            // Only rotate when user is not currently selecting a teleportation location
+            if(this._teleportationRequestInitiated){
+                return;
+            }
+
             if (!this._rotationLeftAsked) {
                 if (stateObject.x < -this._padSensibilityUp) {
                     this._rotationLeftAsked = true;
@@ -854,6 +859,10 @@ module BABYLON {
             }
         }
         private _checkTeleportBackwards(stateObject: StickValues){
+            // Only teleport backwards when user is not currently selecting a teleportation location
+            if(this._teleportationRequestInitiated){
+                return;
+            }
             // Teleport backwards
             if(stateObject.y > this._padSensibilityUp) {
                 if(!this._teleportationBackRequestInitiated){
