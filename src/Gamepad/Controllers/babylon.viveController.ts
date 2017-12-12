@@ -7,6 +7,7 @@ module BABYLON {
         constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.VIVE;
+            this._invertLeftStickY = true;
         }
 
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
