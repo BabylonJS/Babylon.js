@@ -73002,7 +73002,7 @@ var BABYLON;
                 if (webVRController == null
                     || (webVRController.hand === "left" && this._leftLaserPointer && this._leftLaserPointer.isVisible)
                     || (webVRController.hand === "right" && this._rightLaserPointer && this._rightLaserPointer.isVisible)) {
-                    if (stateObject.y > -this._padSensibilityDown) {
+                    if (Math.sqrt(stateObject.y * stateObject.y + stateObject.x * stateObject.x) < this._padSensibilityDown) {
                         if (this._teleportationAllowed) {
                             this._teleportationAllowed = false;
                             this._teleportCamera();
@@ -73025,6 +73025,10 @@ var BABYLON;
             this._pointerDownOnMeshAsked = false;
         };
         VRExperienceHelper.prototype._checkRotate = function (stateObject) {
+            // Only rotate when user is not currently selecting a teleportation location
+            if (this._teleportationRequestInitiated) {
+                return;
+            }
             if (!this._rotationLeftAsked) {
                 if (stateObject.x < -this._padSensibilityUp) {
                     this._rotationLeftAsked = true;
@@ -73053,6 +73057,10 @@ var BABYLON;
             }
         };
         VRExperienceHelper.prototype._checkTeleportBackwards = function (stateObject) {
+            // Only teleport backwards when user is not currently selecting a teleportation location
+            if (this._teleportationRequestInitiated) {
+                return;
+            }
             // Teleport backwards
             if (stateObject.y > this._padSensibilityUp) {
                 if (!this._teleportationBackRequestInitiated) {
@@ -73510,8 +73518,12 @@ var BABYLON;
             if (this._deviceOrientationCamera && (this._scene.activeCamera != this._deviceOrientationCamera)) {
                 this._deviceOrientationCamera.dispose();
             }
-            this._gazeTracker.dispose();
-            this._teleportationTarget.dispose();
+            if (this._gazeTracker) {
+                this._gazeTracker.dispose();
+            }
+            if (this._teleportationTarget) {
+                this._teleportationTarget.dispose();
+            }
             this._floorMeshesCollection = [];
             document.removeEventListener("keydown", this._onKeyDown);
             window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
