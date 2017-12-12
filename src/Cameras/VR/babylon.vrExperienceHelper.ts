@@ -61,7 +61,8 @@ module BABYLON {
         private teleportBackwardsVector = new Vector3(0, -1, -1);
         private _rotationRightAsked = false;
         private _rotationLeftAsked = false;
-        private _teleportationCircle: Mesh;
+        private _teleportationTarget: Mesh;
+        private _isDefaultTeleportationTarget = true;
         private _postProcessMove: ImageProcessingPostProcess;
         private _passProcessMove: PassPostProcess;
         private _teleportationFillColor: string = "#444444";
@@ -98,6 +99,18 @@ module BABYLON {
         private _interactionsRequested = false;
         private _displayGaze = true;
         private _displayLaserPointer = true;
+
+        public get teleportationTarget(): Mesh {
+            return this._teleportationTarget;
+        }
+
+        public set teleportationTarget(value: Mesh) {
+            if (value) {
+                value.name = "teleportationTarget";
+                this._isDefaultTeleportationTarget = false;
+                this._teleportationTarget = value;
+            }
+        }
 
         public get displayGaze(): boolean {
             return this._displayGaze;
@@ -544,7 +557,7 @@ module BABYLON {
 
                 this._raySelectionPredicate = (mesh) => {
                     if (this._isTeleportationFloor(mesh) || (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
-                        && mesh.name.indexOf("teleportationCircle") === -1
+                        && mesh.name.indexOf("teleportationTarget") === -1
                         && mesh.name.indexOf("torusTeleportation") === -1
                         && mesh.name.indexOf("laserPointer") === -1)) {
                         return this.raySelectionPredicate(mesh);
@@ -637,7 +650,9 @@ module BABYLON {
                 this._webVRCamera.detachPostProcess(this._postProcessMove)
                 this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
                 this._teleportationEnabled = true;
-                this._createTeleportationCircles();
+                if (this._isDefaultTeleportationTarget) {
+                    this._createTeleportationCircles();
+                }
             }
         }
 
@@ -919,8 +934,8 @@ module BABYLON {
         }
 
         private _createTeleportationCircles() {
-            this._teleportationCircle = BABYLON.Mesh.CreateGround("teleportationCircle", 2, 2, 2, this._scene);
-            this._teleportationCircle.isPickable = false;
+            this._teleportationTarget = BABYLON.Mesh.CreateGround("teleportationTarget", 2, 2, 2, this._scene);
+            this._teleportationTarget.isPickable = false;
 
             var length = 512;
             var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", length, this._scene, true);
@@ -943,11 +958,11 @@ module BABYLON {
 
             var teleportationCircleMaterial = new BABYLON.StandardMaterial("TextPlaneMaterial", this._scene);
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
-            this._teleportationCircle.material = teleportationCircleMaterial;
+            this._teleportationTarget.material = teleportationCircleMaterial;
 
             var torus = BABYLON.Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
             torus.isPickable = false;
-            torus.parent = this._teleportationCircle;
+            torus.parent = this._teleportationTarget;
 
             var animationInnerCircle = new BABYLON.Animation("animationInnerCircle", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
@@ -976,20 +991,24 @@ module BABYLON {
 
             this._scene.beginAnimation(torus, 0, 60, true);
 
-            this._hideTeleportationCircle();
+            this._hideTeleportationTarget();
         }
 
-        private _displayTeleportationCircle() {
+        private _displayTeleportationTarget() {
             if (this._teleportationEnabled) {
-                this._teleportationCircle.isVisible = true;
-                (<Mesh>this._teleportationCircle.getChildren()[0]).isVisible = true;
+                this._teleportationTarget.isVisible = true;
+                if (this._isDefaultTeleportationTarget) {
+                    (<Mesh>this._teleportationTarget.getChildren()[0]).isVisible = true;
+                }
             }
         }
 
-        private _hideTeleportationCircle() {
+        private _hideTeleportationTarget() {
             if (this._teleportationEnabled) {
-                this._teleportationCircle.isVisible = false;
-                (<Mesh>this._teleportationCircle.getChildren()[0]).isVisible = false;
+                this._teleportationTarget.isVisible = false;
+                if (this._isDefaultTeleportationTarget) {
+                    (<Mesh>this._teleportationTarget.getChildren()[0]).isVisible = false;
+                }
             }
         }
 
@@ -1086,20 +1105,20 @@ module BABYLON {
             if (hit.pickedPoint) {
                 this._teleportationAllowed = true;
                 if (this._teleportationRequestInitiated) {
-                    this._displayTeleportationCircle();
+                    this._displayTeleportationTarget();
                 }
                 else {
-                    this._hideTeleportationCircle();
+                    this._hideTeleportationTarget();
                 }
                 this._haloCenter.copyFrom(hit.pickedPoint);
-                this._teleportationCircle.position.copyFrom(hit.pickedPoint);
+                this._teleportationTarget.position.copyFrom(hit.pickedPoint);
                 var pickNormal = hit.getNormal(true, false);
                 if (pickNormal) {
                     var axis1 = BABYLON.Vector3.Cross(BABYLON.Axis.Y, pickNormal);
                     var axis2 = BABYLON.Vector3.Cross(pickNormal, axis1);
-                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._teleportationCircle.rotation);
+                    BABYLON.Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._teleportationTarget.rotation);
                 }
-                this._teleportationCircle.position.y += 0.1;
+                this._teleportationTarget.position.y += 0.1;
             }
         }
         private _workingVector = Vector3.Zero();
@@ -1286,7 +1305,7 @@ module BABYLON {
                     return;
                 }
                 // If not, we're in a selection scenario
-                this._hideTeleportationCircle();
+                this._hideTeleportationTarget();
                 this._teleportationAllowed = false;
                 if (hit.pickedMesh !== this._currentMeshSelected) {
                     if (this.meshSelectionPredicate(hit.pickedMesh)) {
@@ -1319,7 +1338,7 @@ module BABYLON {
                 this._currentHit = null;
                 this._currentMeshSelected = null;
                 this._teleportationAllowed = false;
-                this._hideTeleportationCircle();
+                this._hideTeleportationTarget();
                 this.changeGazeColor(new BABYLON.Color3(0.7, 0.7, 0.7));
                 this.changeLaserColor(new BABYLON.Color3(0.7, 0.7, 0.7));
             }
@@ -1368,7 +1387,7 @@ module BABYLON {
             }
 
             this._gazeTracker.dispose();
-            this._teleportationCircle.dispose();
+            this._teleportationTarget.dispose();
 
             this._floorMeshesCollection = [];
 
