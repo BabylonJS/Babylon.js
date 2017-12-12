@@ -101,7 +101,6 @@ module BABYLON {
         private _displayLaserPointer = true;
 
         private _dpadPressed = true;
-        //private _isVive = false;
 
         public get teleportationTarget(): Mesh {
             return this._teleportationTarget;
