@@ -192,13 +192,6 @@ module BABYLON {
                                 }
                             });
                         }
-                        // Move starting headset position by standing matrix
-                        this._deviceToWorld.multiplyToRef(this._standingMatrix, this._deviceToWorld);
-
-                        // Correct for default height added originally
-                        var pos =  this._deviceToWorld.getTranslation()
-                        pos.y -= this._defaultHeight;
-                        this._deviceToWorld.setTranslation(pos)
                         callback(true)
                     }
                 })
