@@ -8601,7 +8601,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1";
+                return "3.1.1";
             },
             enumerable: true,
             configurable: true
@@ -14106,6 +14106,13 @@ var BABYLON;
              * True if the mesh must be rendered in any case.
              */
             _this.alwaysSelectAsActiveMesh = false;
+            /**
+             * This scene's action manager
+             * @type {BABYLON.ActionManager}
+            */
+            _this.actionManager = null;
+            // Physics
+            _this.physicsImpostor = null;
             // Collisions
             _this._checkCollisions = false;
             _this._collisionMask = -1;
@@ -36276,8 +36283,8 @@ var BABYLON;
                         defines.REFRACTION = true;
                         defines.REFRACTIONMAP_3D = refractionTexture.isCube;
                         defines.GAMMAREFRACTION = refractionTexture.gammaSpace;
-                        defines.REFRACTIONMAP_OPPOSITEZ = reflectionTexture.invertZ;
-                        defines.LODINREFRACTIONALPHA = reflectionTexture.lodLevelInAlpha;
+                        defines.REFRACTIONMAP_OPPOSITEZ = refractionTexture.invertZ;
+                        defines.LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
                         if (this._linkRefractionWithTransparency) {
                             defines.LINKREFRACTIONTOTRANSPARENCY = true;
                         }
