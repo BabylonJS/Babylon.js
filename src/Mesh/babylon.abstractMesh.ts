@@ -351,10 +351,10 @@
          * This scene's action manager
          * @type {BABYLON.ActionManager}
         */
-        public actionManager: Nullable<ActionManager>;
+        public actionManager: Nullable<ActionManager> = null;
 
         // Physics
-        public physicsImpostor: Nullable<PhysicsImpostor>;
+        public physicsImpostor: Nullable<PhysicsImpostor> = null;
 
         // Collisions
         private _checkCollisions = false;
