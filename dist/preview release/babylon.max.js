@@ -8601,7 +8601,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1";
+                return "3.1.1";
             },
             enumerable: true,
             configurable: true
@@ -14106,6 +14106,13 @@ var BABYLON;
              * True if the mesh must be rendered in any case.
              */
             _this.alwaysSelectAsActiveMesh = false;
+            /**
+             * This scene's action manager
+             * @type {BABYLON.ActionManager}
+            */
+            _this.actionManager = null;
+            // Physics
+            _this.physicsImpostor = null;
             // Collisions
             _this._checkCollisions = false;
             _this._collisionMask = -1;
@@ -36276,8 +36283,8 @@ var BABYLON;
                         defines.REFRACTION = true;
                         defines.REFRACTIONMAP_3D = refractionTexture.isCube;
                         defines.GAMMAREFRACTION = refractionTexture.gammaSpace;
-                        defines.REFRACTIONMAP_OPPOSITEZ = reflectionTexture.invertZ;
-                        defines.LODINREFRACTIONALPHA = reflectionTexture.lodLevelInAlpha;
+                        defines.REFRACTIONMAP_OPPOSITEZ = refractionTexture.invertZ;
+                        defines.LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
                         if (this._linkRefractionWithTransparency) {
                             defines.LINKREFRACTIONTOTRANSPARENCY = true;
                         }
@@ -57259,10 +57266,6 @@ var BABYLON;
             };
             _this._buttons = new Array(vrGamepad.buttons.length);
             _this.hand = vrGamepad.hand;
-            if (!_this.hand) {
-                _this.hand = (WebVRController.handCounter % 2 == 0) ? "left" : "right";
-                WebVRController.handCounter++;
-            }
             return _this;
         }
         WebVRController.prototype.onButtonStateChange = function (callback) {
@@ -57328,7 +57331,6 @@ var BABYLON;
             this.onPadStateChangedObservable.clear();
             this.onPadValuesChangedObservable.clear();
         };
-        WebVRController.handCounter = 0;
         return WebVRController;
     }(BABYLON.PoseEnabledController));
     BABYLON.WebVRController = WebVRController;
@@ -71667,12 +71669,6 @@ var BABYLON;
                                     }
                                 });
                             }
-                            // Move starting headset position by standing matrix
-                            _this._deviceToWorld.multiplyToRef(_this._standingMatrix, _this._deviceToWorld);
-                            // Correct for default height added originally
-                            var pos = _this._deviceToWorld.getTranslation();
-                            pos.y -= _this._defaultHeight;
-                            _this._deviceToWorld.setTranslation(pos);
                             callback(true);
                         }
                     });
@@ -72015,23 +72011,23 @@ var BABYLON;
                     if (_this.controllers.indexOf(webVrController_1) === -1) {
                         //add to the controllers array
                         _this.controllers.push(webVrController_1);
-                        //did we find enough controllers? Great! let the developer know.
-                        if (_this.controllers.length >= 2) {
-                            // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
-                            // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
-                            // So we're overriding setting left & right manually to be sure
-                            var firstViveWandDetected = false;
-                            for (var i = 0; i < _this.controllers.length; i++) {
-                                if (_this.controllers[i].controllerType === BABYLON.PoseEnabledControllerType.VIVE) {
-                                    if (!firstViveWandDetected) {
-                                        firstViveWandDetected = true;
-                                        _this.controllers[i].hand = "left";
-                                    }
-                                    else {
-                                        _this.controllers[i].hand = "right";
-                                    }
+                        // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
+                        // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
+                        // So we're overriding setting left & right manually to be sure
+                        var firstViveWandDetected = false;
+                        for (var i = 0; i < _this.controllers.length; i++) {
+                            if (_this.controllers[i].controllerType === BABYLON.PoseEnabledControllerType.VIVE) {
+                                if (!firstViveWandDetected) {
+                                    firstViveWandDetected = true;
+                                    _this.controllers[i].hand = "left";
+                                }
+                                else {
+                                    _this.controllers[i].hand = "right";
                                 }
                             }
+                        }
+                        //did we find enough controllers? Great! let the developer know.
+                        if (_this.controllers.length >= 2) {
                             _this.onControllersAttachedObservable.notifyObservers(_this.controllers);
                         }
                     }
@@ -72391,6 +72387,31 @@ var BABYLON;
                         });
                     }
                 }
+                else {
+                    var webVRController = gamepad;
+                    _this._tryEnableInteractionOnController(webVRController);
+                }
+            };
+            // This only succeeds if the controller's mesh exists for the controller so this must be called whenever new controller is connected or when mesh is loaded
+            this._tryEnableInteractionOnController = function (webVRController) {
+                if (webVRController.hand === "left") {
+                    _this._leftControllerReady = true;
+                    if (_this._interactionsRequested && !_this._interactionsEnabledOnLeftController) {
+                        _this._enableInteractionOnController(webVRController);
+                    }
+                    if (_this._teleportationRequested && !_this._teleportationEnabledOnLeftController) {
+                        _this._enableTeleportationOnController(webVRController);
+                    }
+                }
+                if (webVRController.hand === "right") {
+                    _this._rightControllerReady = true;
+                    if (_this._interactionsRequested && !_this._interactionsEnabledOnRightController) {
+                        _this._enableInteractionOnController(webVRController);
+                    }
+                    if (_this._teleportationRequested && !_this._teleportationEnabledOnRightController) {
+                        _this._enableTeleportationOnController(webVRController);
+                    }
+                }
             };
             this._onNewGamepadDisconnected = function (gamepad) {
                 if (gamepad instanceof BABYLON.WebVRController) {
@@ -72654,24 +72675,7 @@ var BABYLON;
         });
         // Raised when one of the controller has loaded successfully its associated default mesh
         VRExperienceHelper.prototype._onDefaultMeshLoaded = function (webVRController) {
-            if (webVRController.hand === "left") {
-                this._leftControllerReady = true;
-                if (this._interactionsRequested && !this._interactionsEnabledOnLeftController) {
-                    this._enableInteractionOnController(webVRController);
-                }
-                if (this._teleportationRequested && !this._teleportationEnabledOnLeftController) {
-                    this._enableTeleportationOnController(webVRController);
-                }
-            }
-            if (webVRController.hand === "right") {
-                this._rightControllerReady = true;
-                if (this._interactionsRequested && !this._interactionsEnabledOnRightController) {
-                    this._enableInteractionOnController(webVRController);
-                }
-                if (this._teleportationRequested && !this._teleportationEnabledOnRightController) {
-                    this._enableTeleportationOnController(webVRController);
-                }
-            }
+            this._tryEnableInteractionOnController(webVRController);
             try {
                 this.onControllerMeshLoaded.notifyObservers(webVRController);
             }

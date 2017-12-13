@@ -338,24 +338,7 @@ module BABYLON {
 
         // Raised when one of the controller has loaded successfully its associated default mesh
         private _onDefaultMeshLoaded(webVRController: WebVRController) {
-            if (webVRController.hand === "left") {
-                this._leftControllerReady = true;
-                if (this._interactionsRequested && !this._interactionsEnabledOnLeftController) {
-                    this._enableInteractionOnController(webVRController);
-                }
-                if (this._teleportationRequested && !this._teleportationEnabledOnLeftController) {
-                    this._enableTeleportationOnController(webVRController);
-                }
-            }
-            if (webVRController.hand === "right") {
-                this._rightControllerReady = true;
-                if (this._interactionsRequested && !this._interactionsEnabledOnRightController) {
-                    this._enableInteractionOnController(webVRController);
-                }
-                if (this._teleportationRequested && !this._teleportationEnabledOnRightController) {
-                    this._enableTeleportationOnController(webVRController);
-                }
-            }
+            this._tryEnableInteractionOnController(webVRController);
             try {
                 this.onControllerMeshLoaded.notifyObservers(webVRController);
             }
@@ -691,6 +674,31 @@ module BABYLON {
                             this._selectionPointerUp();
                         }
                     });
+                }
+            }else{
+                var webVRController = <WebVRController>gamepad;
+                this._tryEnableInteractionOnController(webVRController);
+            }
+        }
+
+        // This only succeeds if the controller's mesh exists for the controller so this must be called whenever new controller is connected or when mesh is loaded
+        private _tryEnableInteractionOnController = (webVRController:WebVRController) => {
+            if (webVRController.hand === "left") {
+                this._leftControllerReady = true;
+                if (this._interactionsRequested && !this._interactionsEnabledOnLeftController) {
+                    this._enableInteractionOnController(webVRController);
+                }
+                if (this._teleportationRequested && !this._teleportationEnabledOnLeftController) {
+                    this._enableTeleportationOnController(webVRController);
+                }
+            }
+            if (webVRController.hand === "right") {
+                this._rightControllerReady = true;
+                if (this._interactionsRequested && !this._interactionsEnabledOnRightController) {
+                    this._enableInteractionOnController(webVRController);
+                }
+                if (this._teleportationRequested && !this._teleportationEnabledOnRightController) {
+                    this._enableTeleportationOnController(webVRController);
                 }
             }
         }
