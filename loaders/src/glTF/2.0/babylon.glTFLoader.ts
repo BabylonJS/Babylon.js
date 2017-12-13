@@ -34,8 +34,8 @@ module BABYLON.GLTF2 {
     }
 
     interface GLTFLoaderRequest extends XMLHttpRequest {
-        _loaded: Nullable<number>;
-        _total: Nullable<number>;
+        _loaded?: number;
+        _total?: number;
     }
 
     interface IProgressEventData {
@@ -1644,11 +1644,11 @@ module BABYLON.GLTF2 {
                 this._tryCatchOnError(() => {
                     throw new LoadFileError(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""), request);
                 });
+            }, (oldRequest, newRequest) => {
+                this._requests.splice(this._requests.indexOf(oldRequest), 1, newRequest);
             }) as GLTFLoaderRequest;
 
             if (request) {
-                request._loaded = null;
-                request._total = null;
                 this._requests.push(request);
             }
         }

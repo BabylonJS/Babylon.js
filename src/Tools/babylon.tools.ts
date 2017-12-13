@@ -18,6 +18,18 @@
         }
     }
 
+    export class RetryStrategy {
+        public static ExponentialBackoff(maxRetries = 3, baseInterval = 500) {
+            return (url: string, request: XMLHttpRequest, retryIndex: number): number => {
+                if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
+                    return -1;
+                }
+
+                return Math.pow(2, retryIndex) * baseInterval;
+            };
+        }
+    }
+
     // Screenshots
     var screenshotCanvas: HTMLCanvasElement;
 
@@ -39,6 +51,7 @@
 
     export class Tools {
         public static BaseUrl = "";
+        public static DefaultRetryStrategy = RetryStrategy.ExponentialBackoff();
 
         /**
          * Default behaviour for cors in the application.
@@ -501,16 +514,18 @@
             return img;
         }
 
-        public static LoadFile(url: string, callback: (data: string | ArrayBuffer, responseURL?: string) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): Nullable<XMLHttpRequest> {
+        public static LoadFile(url: string, callback: (data: string | ArrayBuffer, responseURL?: string) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void, onRetry?: (oldRequest: XMLHttpRequest, newRequest: XMLHttpRequest) => void, retryStrategy: Nullable<(url: string, request: XMLHttpRequest, retryIndex: number) => number> = null): Nullable<XMLHttpRequest> {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
 
-            var request: Nullable<XMLHttpRequest> = null;
+            let request: Nullable<XMLHttpRequest> = null;
 
-            var noIndexedDB = () => {
+            let noIndexedDB = (retryIndex?: number) => {
+                let oldRequest = request;
                 request = new XMLHttpRequest();
-                var loadUrl = Tools.BaseUrl + url;
+
+                let loadUrl = Tools.BaseUrl + url;
                 request.open('GET', loadUrl, true);
 
                 if (useArrayBuffer) {
@@ -529,21 +544,35 @@
 
                         if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
                             callback(!useArrayBuffer ? req.responseText : <ArrayBuffer>req.response, req.responseURL);
-                        } else { // Failed
-                            let e = new LoadFileError("Error status: " + req.status + " - Unable to load " + loadUrl, req);
-                            if (onError) {
-                                onError(req, e);
-                            } else {
-                                throw e;
+                            return;
+                        }
+
+                        retryStrategy = retryStrategy || Tools.DefaultRetryStrategy;
+                        if (retryStrategy) {
+                            let waitTime = retryStrategy(loadUrl, req, retryIndex || 0);
+                            if (waitTime !== -1) {
+                                setTimeout(() => noIndexedDB((retryIndex || 0) + 1), waitTime);
+                                return;
                             }
+                        }
+
+                        let e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
+                        if (onError) {
+                            onError(req, e);
+                        } else {
+                            throw e;
                         }
                     }
                 };
 
-                request.send(null);
+                request.send();
+
+                if (oldRequest && onRetry) {
+                    onRetry(oldRequest, request);
+                }
             };
 
-            var loadFromIndexedDB = () => {
+            let loadFromIndexedDB = () => {
                 if (database) {
                     database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
                 }
@@ -551,7 +580,7 @@
 
             // If file and file input are set
             if (url.indexOf("file:") !== -1) {
-                var fileName = decodeURIComponent(url.substring(5).toLowerCase());
+                let fileName = decodeURIComponent(url.substring(5).toLowerCase());
                 if (FilesInput.FilesToLoad[fileName]) {
                     Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
                     return request;
