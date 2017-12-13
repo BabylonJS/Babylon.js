@@ -508,25 +508,25 @@ module BABYLON {
                         //add to the controllers array
                         this.controllers.push(webVrController);
 
-                        //did we find enough controllers? Great! let the developer know.
-                        if (this.controllers.length >= 2) {
-                            // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
-                            // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
-                            // So we're overriding setting left & right manually to be sure
-                            let firstViveWandDetected = false;
+                        // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
+                        // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
+                        // So we're overriding setting left & right manually to be sure
+                        let firstViveWandDetected = false;
 
-                            for (let i = 0; i < this.controllers.length; i++) {
-                                if (this.controllers[i].controllerType === PoseEnabledControllerType.VIVE) {
-                                    if (!firstViveWandDetected) {
-                                        firstViveWandDetected = true;
-                                        this.controllers[i].hand = "left";
-                                    }
-                                    else {
-                                        this.controllers[i].hand = "right";
-                                    }
+                        for (let i = 0; i < this.controllers.length; i++) {
+                            if (this.controllers[i].controllerType === PoseEnabledControllerType.VIVE) {
+                                if (!firstViveWandDetected) {
+                                    firstViveWandDetected = true;
+                                    this.controllers[i].hand = "left";
+                                }
+                                else {
+                                    this.controllers[i].hand = "right";
                                 }
                             }
-
+                        }
+                        
+                            //did we find enough controllers? Great! let the developer know.
+                        if (this.controllers.length >= 2) {
                             this.onControllersAttachedObservable.notifyObservers(this.controllers);
                         }
                     }
