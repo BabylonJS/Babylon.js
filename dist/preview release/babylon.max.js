@@ -8939,6 +8939,8 @@ var BABYLON;
                 }
                 this._boundTexturesCache[key] = null;
             }
+            this._nextFreeTextureSlot = 0;
+            this._activeChannel = -1;
         };
         Engine.prototype.isDeterministicLockStep = function () {
             return this._deterministicLockstep;
@@ -10052,7 +10054,7 @@ var BABYLON;
                 return;
             }
             // Use program
-            this.setProgram(effect.getProgram());
+            this.bindSamplers(effect);
             this._currentEffect = effect;
             if (effect.onBind) {
                 effect.onBind(effect);
@@ -10285,7 +10287,7 @@ var BABYLON;
         };
         // Textures
         Engine.prototype.wipeCaches = function (bruteForce) {
-            if (this.preventCacheWipeBetweenFrames) {
+            if (this.preventCacheWipeBetweenFrames && !bruteForce) {
                 return;
             }
             this.resetTextureCache();
@@ -11618,14 +11620,24 @@ var BABYLON;
                 this._activeChannel = channel;
             }
         };
+        Engine.prototype._moveBoundTextureOnTop = function (internalTexture) {
+            var index = this._boundTexturesOrder.indexOf(internalTexture);
+            if (index > -1 && index !== this._boundTexturesOrder.length - 1) {
+                this._boundTexturesOrder.splice(index, 1);
+                this._boundTexturesOrder.push(internalTexture);
+            }
+        };
         Engine.prototype._removeDesignatedSlot = function (internalTexture) {
+            var currentSlot = internalTexture._designatedSlot;
             internalTexture._designatedSlot = -1;
             var index = this._boundTexturesOrder.indexOf(internalTexture);
             if (index > -1) {
                 this._boundTexturesOrder.splice(index, 1);
             }
+            return currentSlot;
         };
-        Engine.prototype._bindTextureDirectly = function (target, texture) {
+        Engine.prototype._bindTextureDirectly = function (target, texture, isPartOfTextureArray) {
+            if (isPartOfTextureArray === void 0) { isPartOfTextureArray = false; }
             var currentTextureBound = this._boundTexturesCache[this._activeChannel];
             var isTextureForRendering = texture && texture._initialSlot > -1;
             if (currentTextureBound !== texture) {
@@ -11635,14 +11647,16 @@ var BABYLON;
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
                 if (this._activeChannel >= 0) {
                     this._boundTexturesCache[this._activeChannel] = texture;
-                }
-                if (isTextureForRendering) {
-                    this._boundTexturesOrder.push(texture);
+                    if (isTextureForRendering) {
+                        this._boundTexturesOrder.push(texture);
+                    }
                 }
             }
             if (isTextureForRendering) {
                 texture._designatedSlot = this._activeChannel;
-                this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
+                if (!isPartOfTextureArray) {
+                    this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
+                }
             }
         };
         Engine.prototype._bindTexture = function (channel, texture) {
@@ -11678,27 +11692,26 @@ var BABYLON;
             this._setTexture(channel, texture);
         };
         Engine.prototype._getCorrectTextureChannel = function (channel, internalTexture) {
+            if (!internalTexture) {
+                return -1;
+            }
             internalTexture._initialSlot = channel;
             if (channel !== internalTexture._designatedSlot) {
                 if (internalTexture._designatedSlot > -1) {
                     channel = internalTexture._designatedSlot;
                 }
                 else {
-                    if (this._boundTexturesCache[channel]) {
-                        if (this._nextFreeTextureSlot > -1) {
-                            channel = this._nextFreeTextureSlot;
-                        }
-                        else {
-                            var oldestTexture = this._boundTexturesOrder.splice(0, 1)[0];
-                            channel = oldestTexture._designatedSlot;
+                    if (this._nextFreeTextureSlot > -1) {
+                        channel = this._nextFreeTextureSlot;
+                        this._nextFreeTextureSlot++;
+                        if (this._nextFreeTextureSlot >= this._caps.maxTexturesImageUnits) {
+                            this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
                         }
                     }
-                    internalTexture._designatedSlot = channel;
+                    else {
+                        channel = this._removeDesignatedSlot(this._boundTexturesOrder[0]);
+                    }
                 }
-            }
-            this._nextFreeTextureSlot = Math.max(channel + 1, this._nextFreeTextureSlot);
-            if (this._nextFreeTextureSlot >= this._caps.maxTexturesImageUnits) {
-                this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
             }
             return channel;
         };
@@ -11706,7 +11719,8 @@ var BABYLON;
             var uniform = this._boundUniforms[sourceSlot];
             this._gl.uniform1i(uniform, destination);
         };
-        Engine.prototype._setTexture = function (channel, texture) {
+        Engine.prototype._setTexture = function (channel, texture, isPartOfTextureArray) {
+            if (isPartOfTextureArray === void 0) { isPartOfTextureArray = false; }
             // Not ready?
             if (!texture) {
                 if (this._boundTexturesCache[channel] != null) {
@@ -11743,16 +11757,21 @@ var BABYLON;
             else {
                 internalTexture = this.emptyTexture;
             }
-            channel = this._getCorrectTextureChannel(channel, internalTexture);
+            if (!isPartOfTextureArray) {
+                channel = this._getCorrectTextureChannel(channel, internalTexture);
+            }
             if (this._boundTexturesCache[channel] === internalTexture) {
-                this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
+                this._moveBoundTextureOnTop(internalTexture);
+                if (!isPartOfTextureArray) {
+                    this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
+                }
                 return false;
             }
             if (!alreadyActivated) {
                 this._activateTextureChannel(channel);
             }
             if (internalTexture && internalTexture.is3D) {
-                this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
                     switch (texture.wrapU) {
@@ -11798,7 +11817,7 @@ var BABYLON;
                 this._setAnisotropicLevel(this._gl.TEXTURE_3D, texture);
             }
             else if (internalTexture && internalTexture.isCube) {
-                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
                     // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
@@ -11809,7 +11828,7 @@ var BABYLON;
                 this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);
             }
             else {
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture, isPartOfTextureArray);
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
                     switch (texture.wrapU) {
@@ -11850,11 +11869,11 @@ var BABYLON;
                 this._textureUnits = new Int32Array(textures.length);
             }
             for (var i = 0; i < textures.length; i++) {
-                this._textureUnits[i] = channel + i;
+                this._textureUnits[i] = this._getCorrectTextureChannel(channel + i, textures[i].getInternalTexture());
             }
             this._gl.uniform1iv(uniform, this._textureUnits);
             for (var index = 0; index < textures.length; index++) {
-                this._setTexture(channel + index, textures[index]);
+                this._setTexture(this._textureUnits[index], textures[index], true);
             }
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
@@ -21280,7 +21299,7 @@ var BABYLON;
             if (index > -1) {
                 this._engine.scenes.splice(index, 1);
             }
-            this._engine.wipeCaches();
+            this._engine.wipeCaches(true);
             this._isDisposed = true;
         };
         Object.defineProperty(Scene.prototype, "isDisposed", {
