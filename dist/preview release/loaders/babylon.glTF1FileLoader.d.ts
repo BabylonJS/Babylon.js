@@ -29,8 +29,8 @@ declare module BABYLON {
         bin: Nullable<ArrayBufferView>;
     }
     interface IGLTFLoader extends IDisposable {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
     }
     class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
@@ -88,8 +88,8 @@ declare module BABYLON {
          * Disposes the loader, releases resources during load, and cancels any outstanding requests.
          */
         dispose(): void;
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
+        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
         canDirectLoad(data: string): boolean;
         rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;

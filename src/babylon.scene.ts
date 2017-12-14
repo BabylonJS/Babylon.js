@@ -3924,7 +3924,7 @@
                 this._engine.scenes.splice(index, 1);
             }
 
-            this._engine.wipeCaches();
+            this._engine.wipeCaches(true);
             this._isDisposed = true;
         }
 

@@ -75,7 +75,12 @@ var BABYLON;
                 this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
             catch (e) {
-                onError(e.message);
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    BABYLON.Tools.Error(e.message);
+                }
             }
         };
         GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
@@ -88,7 +93,12 @@ var BABYLON;
                 this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
             catch (e) {
-                onError(e.message);
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    BABYLON.Tools.Error(e.message);
+                }
             }
         };
         GLTFFileLoader.prototype.canDirectLoad = function (data) {
