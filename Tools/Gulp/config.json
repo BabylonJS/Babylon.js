@@ -202,10 +202,8 @@
                 "../../src/Mesh/babylon.mesh.js",
                 "../../src/Mesh/babylon.subMesh.js",
                 "../../src/Materials/babylon.effect.js",
-                "../../src/Materials/babylon.materialHelper.js",
                 "../../src/Materials/babylon.material.js",
                 "../../src/Materials/babylon.uniformBuffer.js",
-                "../../src/Materials/babylon.pushMaterial.js",
                 "../../src/Mesh/babylon.mesh.vertexData.js",
                 "../../src/Mesh/babylon.geometry.js",
                 "../../src/PostProcess/babylon.postProcessManager.js",
@@ -216,6 +214,15 @@
             ],
             "shaderIncludes": [
                 "depthPrePass"
+            ]
+        },
+        "materialCore": {
+            "files": [
+                "../../src/Materials/babylon.materialHelper.js",
+                "../../src/Materials/babylon.pushMaterial.js"
+            ],
+            "dependUpon": [
+                "core"
             ]
         },
         "particles": {
@@ -373,7 +380,7 @@
                 "../../src/Materials/babylon.shaderMaterial.js"
             ],
             "dependUpon": [
-                "core"
+                "materialCore"
             ]
         },
         "standardMaterial": {
@@ -381,7 +388,7 @@
                 "../../src/Materials/babylon.standardMaterial.js"
             ],
             "dependUpon": [
-                "core"
+                "materialCore"
             ],
             "shaders": [
                 "default.vertex",
@@ -438,7 +445,7 @@
                 "../../src/Materials/PBR/babylon.pbrSpecularGlossinessMaterial.js"
             ],
             "dependUpon": [
-                "core"
+                "materialCore"
             ],
             "shaders": [
                 "pbr.vertex",
