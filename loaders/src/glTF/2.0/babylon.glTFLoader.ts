@@ -54,9 +54,9 @@ module BABYLON.GLTF2 {
         private _defaultMaterial: PBRMaterial;
         private _defaultSampler = {} as IGLTFSampler;
         private _rootNode: IGLTFNode;
-        private _successCallback: () => void;
-        private _progressCallback: (event: ProgressEvent) => void;
-        private _errorCallback: (message: string) => void;
+        private _successCallback?: () => void;
+        private _progressCallback?: (event: ProgressEvent) => void;
+        private _errorCallback?: (message: string, exception?: any) => void;
         private _renderReady = false;
         private _requests = new Array<GLTFLoaderRequest>();
 
@@ -133,25 +133,27 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             this._loadAsync(meshesNames, scene, data, rootUrl, () => {
-                onSuccess(this._getMeshes(), [], this._getSkeletons());
+                if (onSuccess) {
+                    onSuccess(this._getMeshes(), [], this._getSkeletons());
+                }
             }, onProgress, onError);
         }
 
-        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             this._loadAsync(null, scene, data, rootUrl, onSuccess, onProgress, onError);
         }
 
-        private _loadAsync(nodeNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+        private _loadAsync(nodeNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
+            this._babylonScene = scene;
+            this._rootUrl = rootUrl;
+            this._successCallback = onSuccess;
+            this._progressCallback = onProgress;
+            this._errorCallback = onError;
+
             this._tryCatchOnError(() => {
                 this._loadData(data);
-                this._babylonScene = scene;
-                this._rootUrl = rootUrl;
-
-                this._successCallback = onSuccess;
-                this._progressCallback = onProgress;
-                this._errorCallback = onError;
 
                 this._addPendingData(this);
                 this._loadDefaultScene(nodeNames);
@@ -196,7 +198,11 @@ module BABYLON.GLTF2 {
             this._rootNode.babylonMesh.setEnabled(true);
 
             this._startAnimations();
-            this._successCallback();
+
+            if (this._successCallback) {
+                this._successCallback();
+            }
+
             this._renderReadyObservable.notifyObservers(this);
         }
 
@@ -1634,9 +1640,9 @@ module BABYLON.GLTF2 {
                         this._onProgress();
                     }
                 });
-            }, this._babylonScene.database, true, request => {
+            }, this._babylonScene.database, true, (request, exception) => {
                 this._tryCatchOnError(() => {
-                    throw new Error(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""));
+                    throw new LoadFileError(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""), request);
                 });
             }) as GLTFLoaderRequest;
 
@@ -1659,7 +1665,7 @@ module BABYLON.GLTF2 {
                 Tools.Error("glTF Loader: " + e.message);
 
                 if (this._errorCallback) {
-                    this._errorCallback(e.message);
+                    this._errorCallback(e.message, e);
                 }
 
                 this.dispose();
