@@ -8601,7 +8601,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.1.1";
+                return "3.2.0-alpha0";
             },
             enumerable: true,
             configurable: true
