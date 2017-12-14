@@ -2475,8 +2475,7 @@
             }
         }
 
-        private DrawMode(fillMode: number): number
-        {
+        private DrawMode(fillMode: number): number {
             switch (fillMode) {
                 // Triangle views
                 case Material.TriangleFillMode:
@@ -2951,7 +2950,7 @@
 
         // Textures
         public wipeCaches(bruteForce?: boolean): void {
-            if (this.preventCacheWipeBetweenFrames) {
+            if (this.preventCacheWipeBetweenFrames && !bruteForce) {
                 return;
             }
             this.resetTextureCache();
