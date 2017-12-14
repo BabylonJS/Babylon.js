@@ -4612,7 +4612,7 @@
             return currentSlot;
         }
 
-        public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>): void {
+        public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, isPartOfTextureArray = false): void {
             let currentTextureBound = this._boundTexturesCache[this._activeChannel];
             let isTextureForRendering = texture && texture._initialSlot > -1;
 
@@ -4625,16 +4625,18 @@
 
                 if (this._activeChannel >= 0) {
                     this._boundTexturesCache[this._activeChannel] = texture;
-                }
 
-                if (isTextureForRendering) {
-                    this._boundTexturesOrder.push(texture!);
+                    if (isTextureForRendering) {
+                        this._boundTexturesOrder.push(texture!);
+                    }
                 }
             }
 
             if (isTextureForRendering) {
                 texture!._designatedSlot = this._activeChannel;
-                this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
+                if (!isPartOfTextureArray) {
+                    this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
+                }
             }
         }
 
@@ -4678,7 +4680,11 @@
             this._setTexture(channel, texture);
         }
 
-        private _getCorrectTextureChannel(channel: number, internalTexture: InternalTexture) {
+        private _getCorrectTextureChannel(channel: number, internalTexture: Nullable<InternalTexture>) {
+            if (!internalTexture) {
+                return -1;
+            }
+
             internalTexture._initialSlot = channel;
 
             if (channel !== internalTexture._designatedSlot) {
@@ -4705,7 +4711,7 @@
             this._gl.uniform1i(uniform, destination);
         }
 
-        private _setTexture(channel: number, texture: Nullable<BaseTexture>): boolean {
+        private _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false): boolean {
             // Not ready?
             if (!texture) {
                 if (this._boundTexturesCache[channel] != null) {
@@ -4744,11 +4750,15 @@
                 internalTexture = this.emptyTexture;
             }
 
-            channel = this._getCorrectTextureChannel(channel, internalTexture);
+            if (!isPartOfTextureArray) {
+                channel = this._getCorrectTextureChannel(channel, internalTexture);
+            }
 
             if (this._boundTexturesCache[channel] === internalTexture) {
                 this._moveBoundTextureOnTop(internalTexture);
-                this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
+                if (!isPartOfTextureArray) {
+                    this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
+                }
                 return false;
             }
 
@@ -4757,7 +4767,7 @@
             }
 
             if (internalTexture && internalTexture.is3D) {
-                this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
 
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
@@ -4808,7 +4818,7 @@
                 this._setAnisotropicLevel(this._gl.TEXTURE_3D, texture);
             }
             else if (internalTexture && internalTexture.isCube) {
-                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
 
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
@@ -4820,7 +4830,7 @@
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);
             } else {
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture, isPartOfTextureArray);
 
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
@@ -4868,12 +4878,12 @@
                 this._textureUnits = new Int32Array(textures.length);
             }
             for (let i = 0; i < textures.length; i++) {
-                this._textureUnits[i] = channel + i;
+                this._textureUnits[i] = this._getCorrectTextureChannel(channel + i, textures[i].getInternalTexture());
             }
             this._gl.uniform1iv(uniform, this._textureUnits);
 
             for (var index = 0; index < textures.length; index++) {
-                this._setTexture(channel + index, textures[index]);
+                this._setTexture(this._textureUnits[index], textures[index], true);
             }
         }
 
