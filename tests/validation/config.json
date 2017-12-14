@@ -181,6 +181,13 @@
       "referenceImage": "normals.png"
     },
     {
+      "title": "Custom render target",
+      "scriptToRun": "/Demos/CustomRenderTarget/customRenderTarget.js",
+      "renderCount": 10,
+      "functionToCall": "CreateCustomRenderTargetTestScene",
+      "referenceImage": "customRTT.png"
+    },
+    {
       "title": "GLTF Normals",
       "renderCount": 20,
       "scriptToRun": "/Demos/GLTFNormals/index.js",
