@@ -824,9 +824,8 @@
                 if (meshHighlight.observerDefault) {
                     mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
                 }
+                delete this._meshes[mesh.uniqueId];
             }
-
-            this._meshes[mesh.uniqueId] = null;
 
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
