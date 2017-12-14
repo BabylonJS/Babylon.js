@@ -92,8 +92,8 @@ module BABYLON {
                 this._size = size;
                 this._useInGammaSpace = useInGammaSpace;
                 this._usePMREMGenerator = usePMREMGenerator &&
-                        caps.textureLOD &&
-                        caps.textureFloat &&
+                    caps.textureLOD &&
+                    caps.textureFloat &&
                     !this._useInGammaSpace;
             }
             else {
@@ -517,7 +517,7 @@ module BABYLON {
             }
 
             // Coming Back in 3.x.
-            Tools.Error("Generation of Babylon HDR is coming back in 3.1.");
+            Tools.Error("Generation of Babylon HDR is coming back in 3.2.");
         }
     }
 }

@@ -3,6 +3,21 @@
         animations: Array<Animation>;
     }
 
+    // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
+    // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+    export class LoadFileError extends Error {
+        // Polyfill for Object.setPrototypeOf if necessary.
+        private static _setPrototypeOf: (o: any, proto: object | null) => any =
+            (Object as any).setPrototypeOf || ((o, proto) => { o.__proto__ = proto; return o; });
+
+        constructor(message: string, public request?: XMLHttpRequest) {
+            super(message);
+            this.name = "LoadFileError";
+
+            LoadFileError._setPrototypeOf(this, LoadFileError.prototype);
+        }
+    }
+
     // Screenshots
     var screenshotCanvas: HTMLCanvasElement;
 
@@ -515,7 +530,7 @@
                         if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
                             callback(!useArrayBuffer ? req.responseText : <ArrayBuffer>req.response, req.responseURL);
                         } else { // Failed
-                            let e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
+                            let e = new LoadFileError("Error status: " + req.status + " - Unable to load " + loadUrl, req);
                             if (onError) {
                                 onError(req, e);
                             } else {

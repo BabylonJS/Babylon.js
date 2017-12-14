@@ -36,8 +36,8 @@ module BABYLON {
     }
 
     export interface IGLTFLoader extends IDisposable {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
     }
 
     export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
@@ -132,7 +132,7 @@ module BABYLON {
             }
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             try {
                 const loaderData = GLTFFileLoader._parse(data);
 
@@ -144,11 +144,16 @@ module BABYLON {
                 this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
             catch (e) {
-                onError(e.message);
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    Tools.Error(e.message);
+                }
             }
         }
 
-        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             try {
                 const loaderData = GLTFFileLoader._parse(data);
 
@@ -160,7 +165,12 @@ module BABYLON {
                 this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
             catch (e) {
-                onError(e.message);
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    Tools.Error(e.message);
+                }
             }
         }
 
