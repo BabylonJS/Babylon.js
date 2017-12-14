@@ -32,6 +32,8 @@ module BABYLON {
         public invertY: boolean;
 
         // Private
+        public _initialSlot = -1;
+        public _designatedSlot = -1;
         public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
         public _buffer: Nullable<ArrayBuffer | HTMLImageElement>;
         public _bufferView: Nullable<ArrayBufferView>;
@@ -75,7 +77,7 @@ module BABYLON {
         constructor(engine: Engine, dataSource: number) {
             this._engine = engine;
             this._dataSource = dataSource;
-            
+
             this._webGLTexture = engine._createTexture();
         }
 
@@ -110,32 +112,32 @@ module BABYLON {
                 case InternalTexture.DATASOURCE_URL:
                     proxy = this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, () => {
                         this.isReady = true;
-                    }, null, this._buffer, undefined, this.format); 
+                    }, null, this._buffer, undefined, this.format);
                     proxy._swapAndDie(this);
                     return;
 
                 case InternalTexture.DATASOURCE_RAW:
-                    proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps, 
-                                                            this.invertY, this.samplingMode, this._compression, this.type); 
+                    proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps,
+                        this.invertY, this.samplingMode, this._compression);
                     proxy._swapAndDie(this);
 
                     this.isReady = true;
-                return;
+                    return;
 
                 case InternalTexture.DATASOURCE_RAW3D:
-                    proxy = this._engine.createRawTexture3D(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps, 
-                        this.invertY, this.samplingMode, this._compression); 
+                    proxy = this._engine.createRawTexture3D(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps,
+                        this.invertY, this.samplingMode, this._compression);
                     proxy._swapAndDie(this);
 
                     this.isReady = true;
-                return;
-                
+                    return;
+
                 case InternalTexture.DATASOURCE_DYNAMIC:
-                    proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode); 
+                    proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode);
                     proxy._swapAndDie(this);
 
                     // The engine will make sure to update content so no need to flag it as isReady = true
-                return;
+                    return;
 
                 case InternalTexture.DATASOURCE_RENDERTARGET:
                     let options = new RenderTargetCreationOptions();
@@ -146,19 +148,19 @@ module BABYLON {
                     options.type = this.type;
 
                     if (this.isCube) {
-                        proxy = this._engine.createRenderTargetCubeTexture(this.width, options); 
+                        proxy = this._engine.createRenderTargetCubeTexture(this.width, options);
                     } else {
                         let size = {
                             width: this.width,
                             height: this.height
                         }
 
-                        proxy = this._engine.createRenderTargetTexture(size, options); 
+                        proxy = this._engine.createRenderTargetTexture(size, options);
                     }
                     proxy._swapAndDie(this);
 
                     this.isReady = true;
-                return;                                      
+                    return;
 
                 case InternalTexture.DATASOURCE_CUBE:
                     proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, () => {
@@ -172,14 +174,14 @@ module BABYLON {
                     proxy._swapAndDie(this);
 
                     this.isReady = true;
-                    return;                    
+                    return;
 
                 case InternalTexture.DATASOURCE_CUBEPREFILTERED:
                     proxy = this._engine.createPrefilteredCubeTexture(this.url, null, this._lodGenerationScale, this._lodGenerationOffset, (proxy) => {
                         if (proxy) {
                             proxy._swapAndDie(this);
                         }
-                        
+
                         this.isReady = true;
                     }, null, this.format, this._extension);
                     return;
@@ -207,14 +209,14 @@ module BABYLON {
             if (this._lodTextureMid) {
                 if (target._lodTextureMid) {
                     target._lodTextureMid.dispose();
-                }                
+                }
                 target._lodTextureMid = this._lodTextureMid;
             }
 
             if (this._lodTextureLow) {
                 if (target._lodTextureLow) {
                     target._lodTextureLow.dispose();
-                }                     
+                }
                 target._lodTextureLow = this._lodTextureLow;
             }
 
@@ -224,7 +226,7 @@ module BABYLON {
                 cache.splice(index, 1);
             }
         }
-        
+
         public dispose(): void {
             if (!this._webGLTexture) {
                 return;
