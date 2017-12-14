@@ -75,7 +75,12 @@ var BABYLON;
                 this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
             catch (e) {
-                onError(e.message);
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    BABYLON.Tools.Error(e.message);
+                }
             }
         };
         GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
@@ -88,7 +93,12 @@ var BABYLON;
                 this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
             catch (e) {
-                onError(e.message);
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    BABYLON.Tools.Error(e.message);
+                }
             }
         };
         GLTFFileLoader.prototype.canDirectLoad = function (data) {
@@ -2584,7 +2594,9 @@ var BABYLON;
             GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
                 var _this = this;
                 this._loadAsync(meshesNames, scene, data, rootUrl, function () {
-                    onSuccess(_this._getMeshes(), [], _this._getSkeletons());
+                    if (onSuccess) {
+                        onSuccess(_this._getMeshes(), [], _this._getSkeletons());
+                    }
                 }, onProgress, onError);
             };
             GLTFLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
@@ -2592,13 +2604,13 @@ var BABYLON;
             };
             GLTFLoader.prototype._loadAsync = function (nodeNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
                 var _this = this;
+                this._babylonScene = scene;
+                this._rootUrl = rootUrl;
+                this._successCallback = onSuccess;
+                this._progressCallback = onProgress;
+                this._errorCallback = onError;
                 this._tryCatchOnError(function () {
                     _this._loadData(data);
-                    _this._babylonScene = scene;
-                    _this._rootUrl = rootUrl;
-                    _this._successCallback = onSuccess;
-                    _this._progressCallback = onProgress;
-                    _this._errorCallback = onError;
                     _this._addPendingData(_this);
                     _this._loadDefaultScene(nodeNames);
                     _this._loadAnimations();
@@ -2636,7 +2648,9 @@ var BABYLON;
             GLTFLoader.prototype._onRenderReady = function () {
                 this._rootNode.babylonMesh.setEnabled(true);
                 this._startAnimations();
-                this._successCallback();
+                if (this._successCallback) {
+                    this._successCallback();
+                }
                 this._renderReadyObservable.notifyObservers(this);
             };
             GLTFLoader.prototype._onComplete = function () {
@@ -3914,9 +3928,9 @@ var BABYLON;
                             _this._onProgress();
                         }
                     });
-                }, this._babylonScene.database, true, function (request) {
+                }, this._babylonScene.database, true, function (request, exception) {
                     _this._tryCatchOnError(function () {
-                        throw new Error(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""));
+                        throw new BABYLON.LoadFileError(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""), request);
                     });
                 });
                 if (request) {
@@ -3935,7 +3949,7 @@ var BABYLON;
                 catch (e) {
                     BABYLON.Tools.Error("glTF Loader: " + e.message);
                     if (this._errorCallback) {
-                        this._errorCallback(e.message);
+                        this._errorCallback(e.message, e);
                     }
                     this.dispose();
                 }

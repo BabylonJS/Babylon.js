@@ -5789,8 +5789,25 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.smartArray.js.map
 
+
 var BABYLON;
 (function (BABYLON) {
+    // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
+    // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+    var LoadFileError = /** @class */ (function (_super) {
+        __extends(LoadFileError, _super);
+        function LoadFileError(message, request) {
+            var _this = _super.call(this, message) || this;
+            _this.request = request;
+            _this.name = "LoadFileError";
+            LoadFileError._setPrototypeOf(_this, LoadFileError.prototype);
+            return _this;
+        }
+        // Polyfill for Object.setPrototypeOf if necessary.
+        LoadFileError._setPrototypeOf = Object.setPrototypeOf || (function (o, proto) { o.__proto__ = proto; return o; });
+        return LoadFileError;
+    }(Error));
+    BABYLON.LoadFileError = LoadFileError;
     // Screenshots
     var screenshotCanvas;
     var cloneValue = function (source, destinationObject) {
@@ -6204,7 +6221,7 @@ var BABYLON;
                             callback(!useArrayBuffer ? req.responseText : req.response, req.responseURL);
                         }
                         else {
-                            var e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
+                            var e = new LoadFileError("Error status: " + req.status + " - Unable to load " + loadUrl, req);
                             if (onError) {
                                 onError(req, e);
                             }
@@ -53509,17 +53526,12 @@ var BABYLON;
                     return;
                 }
                 scene.database = database;
-                try {
-                    onSuccess(plugin, data, responseURL);
-                }
-                catch (e) {
-                    onError(null, e);
-                }
+                onSuccess(plugin, data, responseURL);
             };
             var manifestChecked = function (success) {
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress, database, useArrayBuffer, function (request) {
+                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress, database, useArrayBuffer, function (request, exception) {
                     if (request) {
-                        onError(request.status + " " + request.statusText);
+                        onError(request.status + " " + request.statusText, exception);
                     }
                 });
             };
@@ -53586,6 +53598,7 @@ var BABYLON;
             if (onSuccess === void 0) { onSuccess = null; }
             if (onProgress === void 0) { onProgress = null; }
             if (onError === void 0) { onError = null; }
+            if (pluginExtension === void 0) { pluginExtension = null; }
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return null;
@@ -53593,7 +53606,7 @@ var BABYLON;
             var loadingToken = {};
             scene._addPendingData(loadingToken);
             var errorHandler = function (message, exception) {
-                var errorMessage = "Unable to import meshes from " + rootUrl + sceneFilename + (message ? ": " + message : "");
+                var errorMessage = "Unable to import meshes from " + rootUrl + sceneFilename + ": " + message;
                 if (onError) {
                     onError(scene, errorMessage, exception);
                 }
@@ -53603,10 +53616,25 @@ var BABYLON;
                 }
                 scene._removePendingData(loadingToken);
             };
-            var progressHandler = function (event) {
-                if (onProgress) {
+            var progressHandler = onProgress ? function (event) {
+                try {
                     onProgress(event);
                 }
+                catch (e) {
+                    errorHandler("Error in onProgress callback", e);
+                }
+            } : undefined;
+            var successHandler = function (meshes, particleSystems, skeletons) {
+                scene.importedMeshesFiles.push(rootUrl + sceneFilename);
+                if (onSuccess) {
+                    try {
+                        onSuccess(meshes, particleSystems, skeletons);
+                    }
+                    catch (e) {
+                        errorHandler("Error in onSuccess callback", e);
+                    }
+                }
+                scene._removePendingData(loadingToken);
             };
             return SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data, responseURL) {
                 if (plugin.rewriteRootURL) {
@@ -53620,33 +53648,14 @@ var BABYLON;
                     if (!syncedPlugin.importMesh(meshNames, scene, data, rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;
                     }
-                    if (onSuccess) {
-                        // wrap onSuccess with try-catch to know if something went wrong.
-                        try {
-                            scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                            onSuccess(meshes, particleSystems, skeletons);
-                            scene._removePendingData(loadingToken);
-                        }
-                        catch (e) {
-                            var message = 'Error in onSuccess callback.';
-                            errorHandler(message, e);
-                        }
-                    }
+                    scene.loadingPluginName = plugin.name;
+                    successHandler(meshes, particleSystems, skeletons);
                 }
                 else {
                     var asyncedPlugin = plugin;
                     asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, function (meshes, particleSystems, skeletons) {
-                        if (onSuccess) {
-                            try {
-                                scene.importedMeshesFiles.push(rootUrl + sceneFilename);
-                                onSuccess(meshes, particleSystems, skeletons);
-                                scene._removePendingData(loadingToken);
-                            }
-                            catch (e) {
-                                var message = 'Error in onSuccess callback.';
-                                errorHandler(message, e);
-                            }
-                        }
+                        scene.loadingPluginName = plugin.name;
+                        successHandler(meshes, particleSystems, skeletons);
                     }, progressHandler, errorHandler);
                 }
             }, progressHandler, errorHandler, pluginExtension);
@@ -53661,6 +53670,10 @@ var BABYLON;
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
         SceneLoader.Load = function (rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension) {
+            if (onSuccess === void 0) { onSuccess = null; }
+            if (onProgress === void 0) { onProgress = null; }
+            if (onError === void 0) { onError = null; }
+            if (pluginExtension === void 0) { pluginExtension = null; }
             return SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onSuccess, onProgress, onError, pluginExtension);
         };
         /**
@@ -53673,6 +53686,10 @@ var BABYLON;
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
         */
         SceneLoader.Append = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension) {
+            if (onSuccess === void 0) { onSuccess = null; }
+            if (onProgress === void 0) { onProgress = null; }
+            if (onError === void 0) { onError = null; }
+            if (pluginExtension === void 0) { pluginExtension = null; }
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return null;
@@ -53694,10 +53711,24 @@ var BABYLON;
                 scene._removePendingData(loadingToken);
                 scene.getEngine().hideLoadingUI();
             };
-            var progressHandler = function (event) {
-                if (onProgress) {
+            var progressHandler = onProgress ? function (event) {
+                try {
                     onProgress(event);
                 }
+                catch (e) {
+                    errorHandler("Error in onProgress callback", e);
+                }
+            } : undefined;
+            var successHandler = function () {
+                if (onSuccess) {
+                    try {
+                        onSuccess(scene);
+                    }
+                    catch (e) {
+                        errorHandler("Error in onSuccess callback", e);
+                    }
+                }
+                scene._removePendingData(loadingToken);
             };
             return SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data, responseURL) {
                 if (plugin.load) {
@@ -53705,25 +53736,14 @@ var BABYLON;
                     if (!syncedPlugin.load(scene, data, rootUrl, errorHandler)) {
                         return;
                     }
-                    if (onSuccess) {
-                        try {
-                            onSuccess(scene);
-                        }
-                        catch (e) {
-                            errorHandler("Error in onSuccess callback", e);
-                        }
-                    }
                     scene.loadingPluginName = plugin.name;
-                    scene._removePendingData(loadingToken);
+                    successHandler();
                 }
                 else {
                     var asyncedPlugin = plugin;
                     asyncedPlugin.loadAsync(scene, data, rootUrl, function () {
-                        if (onSuccess) {
-                            onSuccess(scene);
-                        }
                         scene.loadingPluginName = plugin.name;
-                        scene._removePendingData(loadingToken);
+                        successHandler();
                     }, progressHandler, errorHandler);
                 }
                 if (SceneLoader.ShowLoadingScreen) {
@@ -75905,8 +75925,8 @@ var BABYLON;
                 if (meshHighlight.observerDefault) {
                     mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
                 }
+                delete this._meshes[mesh.uniqueId];
             }
-            this._meshes[mesh.uniqueId] = null;
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
                 if (this._meshes[meshHighlightToCheck]) {
