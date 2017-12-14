@@ -2425,45 +2425,73 @@
         }
 
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
+            this.drawElementsType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, indexStart, indexCount, instancesCount);
+        }
+
+        public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
+            this.drawArraysType(Material.PointFillMode, verticesStart, verticesCount, instancesCount);
+        }
+
+        public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
+            this.drawArraysType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, verticesStart, verticesCount, instancesCount);
+        }
+
+        public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
 
             this._drawCalls.addCount(1, false);
             // Render
+
+            const drawMode = this.DrawMode(fillMode);
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
             if (instancesCount) {
-                this._gl.drawElementsInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult, instancesCount);
-                return;
+                this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
+            } else {
+                this._gl.drawElements(drawMode, indexCount, indexFormat, indexStart * mult);
             }
-
-            this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult);
         }
 
-        public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
+        public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
             this._drawCalls.addCount(1, false);
 
+            const drawMode = this.DrawMode(fillMode);
             if (instancesCount) {
-                this._gl.drawArraysInstanced(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
-                return;
+                this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
+            } else {
+                this._gl.drawArrays(drawMode, verticesStart, verticesCount);
             }
-
-            this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
         }
 
-        public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
-            // Apply states
-            this.applyStates();
-            this._drawCalls.addCount(1, false);
-
-            if (instancesCount) {
-                this._gl.drawArraysInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
-                return;
+        private DrawMode(fillMode: number): number
+        {
+            switch (fillMode) {
+                // Triangle views
+                case Material.TriangleFillMode:
+                    return this._gl.TRIANGLES;
+                case Material.PointFillMode:
+                    return this._gl.POINTS;
+                case Material.WireFrameFillMode:
+                    return this._gl.LINES;
+                // Draw modes
+                case Material.PointListDrawMode:
+                    return this._gl.POINTS
+                case Material.LineListDrawMode:
+                    return this._gl.LINES;
+                case Material.LineLoopDrawMode:
+                    return this._gl.LINE_LOOP
+                case Material.LineStripDrawMode:
+                    return this._gl.LINE_STRIP
+                case Material.TriangleStripDrawMode:
+                    return this._gl.TRIANGLE_STRIP
+                case Material.TriangleFanDrawMode:
+                    return this._gl.TRIANGLE_FAN;
+                default:
+                    return this._gl.TRIANGLES;
             }
-
-            this._gl.drawArrays(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount);
         }
 
         // Shaders
