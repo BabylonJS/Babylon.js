@@ -9866,37 +9866,66 @@ var BABYLON;
             this._alphaState.apply(this._gl);
         };
         Engine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
+            this.drawElementsType(useTriangles ? BABYLON.Material.TriangleFillMode : BABYLON.Material.WireFrameFillMode, indexStart, indexCount, instancesCount);
+        };
+        Engine.prototype.drawPointClouds = function (verticesStart, verticesCount, instancesCount) {
+            this.drawArraysType(BABYLON.Material.PointFillMode, verticesStart, verticesCount, instancesCount);
+        };
+        Engine.prototype.drawUnIndexed = function (useTriangles, verticesStart, verticesCount, instancesCount) {
+            this.drawArraysType(useTriangles ? BABYLON.Material.TriangleFillMode : BABYLON.Material.WireFrameFillMode, verticesStart, verticesCount, instancesCount);
+        };
+        Engine.prototype.drawElementsType = function (fillMode, indexStart, indexCount, instancesCount) {
             // Apply states
             this.applyStates();
             this._drawCalls.addCount(1, false);
             // Render
+            var drawMode = this.DrawMode(fillMode);
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
             if (instancesCount) {
-                this._gl.drawElementsInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult, instancesCount);
-                return;
+                this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
             }
-            this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult);
+            else {
+                this._gl.drawElements(drawMode, indexCount, indexFormat, indexStart * mult);
+            }
         };
-        Engine.prototype.drawPointClouds = function (verticesStart, verticesCount, instancesCount) {
+        Engine.prototype.drawArraysType = function (fillMode, verticesStart, verticesCount, instancesCount) {
             // Apply states
             this.applyStates();
             this._drawCalls.addCount(1, false);
+            var drawMode = this.DrawMode(fillMode);
             if (instancesCount) {
-                this._gl.drawArraysInstanced(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
-                return;
+                this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
             }
-            this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
+            else {
+                this._gl.drawArrays(drawMode, verticesStart, verticesCount);
+            }
         };
-        Engine.prototype.drawUnIndexed = function (useTriangles, verticesStart, verticesCount, instancesCount) {
-            // Apply states
-            this.applyStates();
-            this._drawCalls.addCount(1, false);
-            if (instancesCount) {
-                this._gl.drawArraysInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
-                return;
+        Engine.prototype.DrawMode = function (fillMode) {
+            switch (fillMode) {
+                // Triangle views
+                case BABYLON.Material.TriangleFillMode:
+                    return this._gl.TRIANGLES;
+                case BABYLON.Material.PointFillMode:
+                    return this._gl.POINTS;
+                case BABYLON.Material.WireFrameFillMode:
+                    return this._gl.LINES;
+                // Draw modes
+                case BABYLON.Material.PointListDrawMode:
+                    return this._gl.POINTS;
+                case BABYLON.Material.LineListDrawMode:
+                    return this._gl.LINES;
+                case BABYLON.Material.LineLoopDrawMode:
+                    return this._gl.LINE_LOOP;
+                case BABYLON.Material.LineStripDrawMode:
+                    return this._gl.LINE_STRIP;
+                case BABYLON.Material.TriangleStripDrawMode:
+                    return this._gl.TRIANGLE_STRIP;
+                case BABYLON.Material.TriangleFanDrawMode:
+                    return this._gl.TRIANGLE_FAN;
+                default:
+                    return this._gl.TRIANGLES;
             }
-            this._gl.drawArrays(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount);
         };
         // Shaders
         Engine.prototype._releaseEffect = function (effect) {
@@ -23356,6 +23385,19 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Mesh.prototype, "isUnIndexed", {
+            get: function () {
+                return this._unIndexed;
+            },
+            set: function (value) {
+                if (this._unIndexed !== value) {
+                    this._unIndexed = value;
+                    this._markSubMeshesAsAttributesDirty();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         /**
          * Returns the string "Mesh".
@@ -24096,26 +24138,16 @@ var BABYLON;
             this.onBeforeDrawObservable.notifyObservers(this);
             var scene = this.getScene();
             var engine = scene.getEngine();
-            // Draw order
-            switch (fillMode) {
-                case BABYLON.Material.PointFillMode:
-                    engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    break;
-                case BABYLON.Material.WireFrameFillMode:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    }
-                    else {
-                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
-                    }
-                    break;
-                default:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(true, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    }
-                    else {
-                        engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
-                    }
+            if (this._unIndexed || fillMode == BABYLON.Material.PointFillMode) {
+                // or triangles as points
+                engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+            }
+            else if (fillMode == BABYLON.Material.WireFrameFillMode) {
+                // Triangles as wireframe
+                engine.drawElementsType(fillMode, 0, subMesh.linesIndexCount, instancesCount);
+            }
+            else {
+                engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
             if (scene._isAlternateRenderingEnabled && !alternate) {
                 var effect = subMesh.effect || this._effectiveMaterial.getEffect();
@@ -25004,6 +25036,7 @@ var BABYLON;
                 serializationObject.parentId = this.parent.id;
             }
             // Geometry
+            serializationObject.isUnIndexed = this.isUnIndexed;
             var geometry = this._geometry;
             if (geometry) {
                 var geometryId = geometry.id;
@@ -25217,6 +25250,7 @@ var BABYLON;
                 mesh.renderOverlay = parsedMesh.renderOverlay;
             }
             // Geometry
+            mesh.isUnIndexed = !!parsedMesh.isUnIndexed;
             mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
             if (parsedMesh.delayLoadingFile) {
                 mesh.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
@@ -27839,6 +27873,48 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Material, "PointListDrawMode", {
+            get: function () {
+                return Material._PointListDrawMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material, "LineListDrawMode", {
+            get: function () {
+                return Material._LineListDrawMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material, "LineLoopDrawMode", {
+            get: function () {
+                return Material._LineLoopDrawMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material, "LineStripDrawMode", {
+            get: function () {
+                return Material._LineStripDrawMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material, "TriangleStripDrawMode", {
+            get: function () {
+                return Material._TriangleStripDrawMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material, "TriangleFanDrawMode", {
+            get: function () {
+                return Material._TriangleFanDrawMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Material, "ClockWiseSideOrientation", {
             get: function () {
                 return Material._ClockWiseSideOrientation;
@@ -28315,9 +28391,17 @@ var BABYLON;
             return materialType.Parse(parsedMaterial, scene, rootUrl);
             ;
         };
+        // Triangle views
         Material._TriangleFillMode = 0;
         Material._WireFrameFillMode = 1;
         Material._PointFillMode = 2;
+        // Draw modes
+        Material._PointListDrawMode = 3;
+        Material._LineListDrawMode = 4;
+        Material._LineLoopDrawMode = 5;
+        Material._LineStripDrawMode = 6;
+        Material._TriangleStripDrawMode = 7;
+        Material._TriangleFanDrawMode = 8;
         Material._ClockWiseSideOrientation = 0;
         Material._CounterClockWiseSideOrientation = 1;
         Material._TextureDirtyFlag = 1;
@@ -32604,7 +32688,7 @@ var BABYLON;
                     this._prepareBuffers();
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 6);
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }
             }
@@ -32646,7 +32730,7 @@ var BABYLON;
                     this._prepareBuffers();
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 6);
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }
             }
@@ -43953,11 +44037,11 @@ var BABYLON;
             engine.setDepthFunctionToLessOrEqual();
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.draw(true, 0, max * 6);
+            engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, max * 6);
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-            engine.draw(true, 0, max * 6);
+            engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, max * 6);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
         };
         SpriteManager.prototype.dispose = function () {
@@ -45583,7 +45667,7 @@ var BABYLON;
             if (this.forceDepthWrite) {
                 engine.setDepthWrite(true);
             }
-            engine.draw(true, 0, this.particles.length * 6);
+            engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, this.particles.length * 6);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             return this.particles.length;
         };
@@ -45864,7 +45948,7 @@ var BABYLON;
             this._engine.bindTransformFeedbackBuffer(this._targetBuffer.getBuffer());
             this._engine.setRasterizerState(false);
             this._engine.beginTransformFeedback();
-            this._engine.drawPointClouds(0, this._capacity);
+            this._engine.drawArraysType(BABYLON.Material.PointListDrawMode, 0, this._capacity);
             this._engine.endTransformFeedback();
             this._engine.setRasterizerState(true);
             this._engine.bindTransformFeedbackBuffer(null);
@@ -45873,7 +45957,7 @@ var BABYLON;
             // Bind source VAO
             this._engine.bindVertexArrayObject(this._targetVAO, null);
             // Render
-            this._engine.drawPointClouds(0, this._capacity);
+            this._engine.drawArraysType(BABYLON.Material.PointListDrawMode, 0, this._capacity);
             // Switch VAOs
             var tmpVAO = this._sourceVAO;
             this._sourceVAO = this._targetVAO;
@@ -47744,7 +47828,7 @@ var BABYLON;
             }
             var engine = this.getScene().getEngine();
             // Draw order
-            engine.draw(false, subMesh.indexStart, subMesh.indexCount);
+            engine.drawElementsType(BABYLON.Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount);
             return this;
         };
         LinesMesh.prototype.dispose = function (doNotRecurse) {
@@ -56115,7 +56199,7 @@ var BABYLON;
                     // Clear
                     engine.clear(scene.clearColor, true, true, true);
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 6);
                     // Mipmaps
                     if (face === 5) {
                         engine.generateMipMapsForCubemap(this._texture);
@@ -56129,7 +56213,7 @@ var BABYLON;
                 // Clear
                 engine.clear(scene.clearColor, true, true, true);
                 // Draw order
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 6);
             }
             // Unbind
             engine.unBindFramebuffer(this._texture, this.isCube);
@@ -66694,7 +66778,7 @@ var BABYLON;
                 // Color
                 this._effect.setFloat4("color", flare.color.r * intensity, flare.color.g * intensity, flare.color.b * intensity, 1.0);
                 // Draw order
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 6);
             }
             engine.setDepthBuffer(true);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
@@ -70528,7 +70612,7 @@ var BABYLON;
                     this._colorShader.setColor4("color", this.backColor.toColor4());
                     this._colorShader.bind(worldMatrix);
                     // Draw order
-                    engine.draw(false, 0, 24);
+                    engine.drawElementsType(BABYLON.Material.LineListDrawMode, 0, 24);
                 }
                 // Front
                 engine.setDepthFunctionToLess();
@@ -70536,7 +70620,7 @@ var BABYLON;
                 this._colorShader.setColor4("color", this.frontColor.toColor4());
                 this._colorShader.bind(worldMatrix);
                 // Draw order
-                engine.draw(false, 0, 24);
+                engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 24);
             }
             this._colorShader.unbind();
             engine.setDepthFunctionToLessOrEqual();
@@ -70563,7 +70647,7 @@ var BABYLON;
             engine.setDepthFunctionToLess();
             this._scene.resetCachedMaterial();
             this._colorShader.bind(worldMatrix);
-            engine.draw(false, 0, 24);
+            engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 24);
             this._colorShader.unbind();
             engine.setDepthFunctionToLessOrEqual();
             engine.setDepthWrite(true);
@@ -75318,7 +75402,7 @@ var BABYLON;
             this._lineShader.setFloat("aspectRatio", engine.getAspectRatio(scene.activeCamera));
             this._lineShader.bind(this._source.getWorldMatrix());
             // Draw order
-            engine.draw(true, 0, this._indicesCount);
+            engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, this._indicesCount);
             this._lineShader.unbind();
             engine.setDepthWrite(true);
         };
@@ -75807,12 +75891,12 @@ var BABYLON;
             if (this.outerGlow) {
                 currentEffect.setFloat("offset", 0);
                 engine.setStencilFunction(BABYLON.Engine.NOTEQUAL);
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 6);
             }
             if (this.innerGlow) {
                 currentEffect.setFloat("offset", 1);
                 engine.setStencilFunction(BABYLON.Engine.EQUAL);
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 6);
             }
             // Restore Cache
             engine.setStencilFunction(previousStencilFunction);
@@ -76946,11 +77030,11 @@ var BABYLON;
             // Draw order
             if (!this.alphaTest) {
                 engine.setAlphaMode(this.alphaBlendingMode);
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 6);
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             }
             else {
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 6);
             }
             this.onAfterRenderObservable.notifyObservers(this);
         };
@@ -78119,6 +78203,10 @@ var BABYLON;
             this._cachedEffectForVertexBuffers = null;
         };
         NullEngine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
+        };
+        NullEngine.prototype.drawElementsType = function (fillMode, indexStart, indexCount, instancesCount) {
+        };
+        NullEngine.prototype.drawArraysType = function (fillMode, verticesStart, verticesCount, instancesCount) {
         };
         NullEngine.prototype._createTexture = function () {
             return {};
