@@ -242,6 +242,13 @@ module BABYLON.GLTF2 {
         minFilter?: ETextureMinFilter;
         wrapS?: ETextureWrapMode;
         wrapT?: ETextureWrapMode;
+
+        // Runtime values
+        index: number;
+        noMipMaps: boolean;
+        samplingMode: number;
+        wrapU: number;
+        wrapV: number;
     }
 
     export interface IGLTFScene extends IGLTFChildRootProperty {

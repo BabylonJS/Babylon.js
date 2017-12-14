@@ -29,8 +29,8 @@ declare module BABYLON {
         bin: Nullable<ArrayBufferView>;
     }
     interface IGLTFLoader extends IDisposable {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
     }
     class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
@@ -88,8 +88,8 @@ declare module BABYLON {
          * Disposes the loader, releases resources during load, and cancels any outstanding requests.
          */
         dispose(): void;
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
+        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
         canDirectLoad(data: string): boolean;
         rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
@@ -306,6 +306,11 @@ declare module BABYLON.GLTF2 {
         minFilter?: ETextureMinFilter;
         wrapS?: ETextureWrapMode;
         wrapT?: ETextureWrapMode;
+        index: number;
+        noMipMaps: boolean;
+        samplingMode: number;
+        wrapU: number;
+        wrapV: number;
     }
     interface IGLTFScene extends IGLTFChildRootProperty {
         nodes: number[];
@@ -359,10 +364,11 @@ declare module BABYLON.GLTF2 {
         private _parent;
         private _rootUrl;
         private _defaultMaterial;
+        private _defaultSampler;
         private _rootNode;
-        private _successCallback;
-        private _progressCallback;
-        private _errorCallback;
+        private _successCallback?;
+        private _progressCallback?;
+        private _errorCallback?;
         private _renderReady;
         private _requests;
         private _renderReadyObservable;
@@ -378,9 +384,9 @@ declare module BABYLON.GLTF2 {
         private static _createProgressEventByDocument(name, data);
         constructor(parent: GLTFFileLoader);
         dispose(): void;
-        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
-        loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
-        private _loadAsync(nodeNames, scene, data, rootUrl, onSuccess, onProgress, onError);
+        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
+        loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
+        private _loadAsync(nodeNames, scene, data, rootUrl, onSuccess?, onProgress?, onError?);
         private _onProgress();
         _executeWhenRenderReady(func: () => void): void;
         private _onRenderReady();
@@ -438,14 +444,15 @@ declare module BABYLON.GLTF2 {
         _loadMaterialBaseProperties(context: string, material: IGLTFMaterial): void;
         _loadMaterialAlphaProperties(context: string, material: IGLTFMaterial, colorFactor: number[]): void;
         _loadTexture(context: string, texture: IGLTFTexture, coordinatesIndex?: number): Texture;
+        private _loadSampler(context, sampler);
         private _loadImageAsync(context, image, onSuccess);
         _loadUriAsync(context: string, uri: string, onSuccess: (data: ArrayBufferView) => void): void;
         _tryCatchOnError(handler: () => void): void;
         private static _AssignIndices(array?);
         static _GetProperty<T extends IGLTFProperty>(array?: ArrayLike<T>, index?: number): Nullable<T>;
-        private static _GetTextureWrapMode(mode?);
-        private static _GetTextureSamplingMode(magFilter?, minFilter?);
-        private static _GetNumComponents(type);
+        private static _GetTextureWrapMode(context, mode?);
+        private static _GetTextureSamplingMode(context, magFilter?, minFilter?);
+        private static _GetNumComponents(context, type);
         private _compileMaterialAsync(babylonMaterial, babylonMesh, onSuccess);
         private _compileMaterialsAsync(onSuccess);
         private _compileShadowGeneratorsAsync(onSuccess);

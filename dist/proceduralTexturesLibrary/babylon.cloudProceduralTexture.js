@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var BABYLON;
 (function (BABYLON) {
-    var CloudProceduralTexture = (function (_super) {
+    var CloudProceduralTexture = /** @class */ (function (_super) {
         __extends(CloudProceduralTexture, _super);
         function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "cloudProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
