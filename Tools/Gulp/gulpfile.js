@@ -484,7 +484,7 @@ gulp.task("typescript-all", function (cb) {
 /**
  * Watch ts files from typescript .
  */
-gulp.task("srcTscWatch", function() {
+gulp.task("srcTscWatch", function () {
     // Reuse The TSC CLI from gulp to enable -w.
     process.argv[2] = "-w";
     process.argv[3] = "-p";
@@ -641,7 +641,7 @@ gulp.task("modules", ["modules-compile"], function () {
                     pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles)).
                     pipe(uncommentShader()).
                     pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".include.fx", true))
-            ]).pipe(concat(moduleName + "." + config.build.minFilename))
+            ]).pipe(concat(moduleName + '.js'))
                 .pipe(replace(extendsSearchRegex, ""))
                 .pipe(replace(decorateSearchRegex, ""))
                 .pipe(replace(referenceSearchRegex, ""))
@@ -656,10 +656,10 @@ gulp.task("modules", ["modules-compile"], function () {
 
             let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
             let dtsTask = gulp.src(dtsFiles)
-                .pipe(concat(moduleName + "." + config.build.declarationFilename))
-                .pipe(addDtsExport("BABYLON", "babylonjs/es6/" + moduleName))
-                .pipe(addDtsExport("BABYLON", "babylonjs/commonjs/" + moduleName, false, moduleName !== "core", config.workloads[moduleName].dependUpon))
-                .pipe(gulp.dest(config.build.outputDirectory + '/types/'));
+                .pipe(concat(moduleName + ".d.ts"))
+                //.pipe(addDtsExport("BABYLON", "babylonjs/es6/" + moduleName))
+                .pipe(addDtsExport("BABYLON", "babylonjs/" + moduleName, false, moduleName !== "core", config.workloads[moduleName].dependUpon))
+                .pipe(gulp.dest(config.build.outputDirectory + '/commonjs/'));
 
             tasks.push(jsTask, dtsTask);
         });
