@@ -99,6 +99,8 @@
         private _hdrCurrentLuminance: number = 1.0;
 
         private _floatTextureType: number;
+
+        @serialize()
         private _ratio: number;
 
         // Getters and setters
