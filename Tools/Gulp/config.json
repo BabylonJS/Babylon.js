@@ -176,6 +176,7 @@
                 "../../src/Math/babylon.math.js",
                 "../../src/Math/babylon.math.scalar.js",
                 "../../src/babylon.mixins.js",
+                "../../src/Engine/babylon.webgl2.js",
                 "../../src/Tools/babylon.decorators.js",
                 "../../src/Tools/babylon.observable.js",
                 "../../src/Tools/babylon.smartArray.js",
