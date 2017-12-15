@@ -216,6 +216,10 @@
             return SceneLoader._getPluginForExtension(extension).plugin;
         }
 
+        public static IsPluginForExtensionAvailable(extension: string): boolean {
+            return !!SceneLoader._registeredPlugins[extension];
+        }
+
         public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
             if (typeof plugin.extensions === "string") {
                 var extension = <string>plugin.extensions;
