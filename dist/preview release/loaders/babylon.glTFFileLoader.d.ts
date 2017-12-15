@@ -926,9 +926,7 @@ declare module BABYLON.GLTF2 {
             [name: string]: GLTFLoaderExtension;
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
-        private static _progressEventFactory;
-        private static _createProgressEventByConstructor(name, data);
-        private static _createProgressEventByDocument(name, data);
+        private static _createProgressEvent;
         constructor(parent: GLTFFileLoader);
         dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;

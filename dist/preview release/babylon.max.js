@@ -5808,6 +5808,22 @@ var BABYLON;
         return LoadFileError;
     }(Error));
     BABYLON.LoadFileError = LoadFileError;
+    var RetryStrategy = /** @class */ (function () {
+        function RetryStrategy() {
+        }
+        RetryStrategy.ExponentialBackoff = function (maxRetries, baseInterval) {
+            if (maxRetries === void 0) { maxRetries = 3; }
+            if (baseInterval === void 0) { baseInterval = 500; }
+            return function (url, request, retryIndex) {
+                if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
+                    return -1;
+                }
+                return Math.pow(2, retryIndex) * baseInterval;
+            };
+        };
+        return RetryStrategy;
+    }());
+    BABYLON.RetryStrategy = RetryStrategy;
     // Screenshots
     var screenshotCanvas;
     var cloneValue = function (source, destinationObject) {
@@ -6198,11 +6214,13 @@ var BABYLON;
             }
             return img;
         };
-        Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError) {
+        Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError, onRetry, retryStrategy) {
+            if (retryStrategy === void 0) { retryStrategy = null; }
             url = Tools.CleanUrl(url);
             url = Tools.PreprocessUrl(url);
             var request = null;
-            var noIndexedDB = function () {
+            var noIndexedDB = function (retryIndex) {
+                var oldRequest = request;
                 request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;
                 request.open('GET', loadUrl, true);
@@ -6219,19 +6237,29 @@ var BABYLON;
                         req.onreadystatechange = function () { }; //some browsers have issues where onreadystatechange can be called multiple times with the same value
                         if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
                             callback(!useArrayBuffer ? req.responseText : req.response, req.responseURL);
+                            return;
+                        }
+                        retryStrategy = retryStrategy || Tools.DefaultRetryStrategy;
+                        if (retryStrategy) {
+                            var waitTime = retryStrategy(loadUrl, req, retryIndex || 0);
+                            if (waitTime !== -1) {
+                                setTimeout(function () { return noIndexedDB((retryIndex || 0) + 1); }, waitTime);
+                                return;
+                            }
+                        }
+                        var e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
+                        if (onError) {
+                            onError(req, e);
                         }
                         else {
-                            var e = new LoadFileError("Error status: " + req.status + " - Unable to load " + loadUrl, req);
-                            if (onError) {
-                                onError(req, e);
-                            }
-                            else {
-                                throw e;
-                            }
+                            throw e;
                         }
                     }
                 };
-                request.send(null);
+                request.send();
+                if (oldRequest && onRetry) {
+                    onRetry(oldRequest, request);
+                }
             };
             var loadFromIndexedDB = function () {
                 if (database) {
@@ -6962,6 +6990,7 @@ var BABYLON;
             return hash;
         };
         Tools.BaseUrl = "";
+        Tools.DefaultRetryStrategy = RetryStrategy.ExponentialBackoff();
         /**
          * Default behaviour for cors in the application.
          * It can be a string if the expected behavior is identical in the entire app.
@@ -53736,6 +53765,9 @@ var BABYLON;
         SceneLoader.GetPluginForExtension = function (extension) {
             return SceneLoader._getPluginForExtension(extension).plugin;
         };
+        SceneLoader.IsPluginForExtensionAvailable = function (extension) {
+            return !!SceneLoader._registeredPlugins[extension];
+        };
         SceneLoader.RegisterPlugin = function (plugin) {
             if (typeof plugin.extensions === "string") {
                 var extension = plugin.extensions;
@@ -57982,7 +58014,7 @@ var BABYLON;
             var path;
             var filename;
             // Checking if GLB loader is present
-            if (BABYLON.SceneLoader.GetPluginForExtension("glb")) {
+            if (BABYLON.SceneLoader.IsPluginForExtensionAvailable("glb")) {
                 // Determine the device specific folder based on the ID suffix
                 var device = 'default';
                 if (this.id && !forceDefault) {
