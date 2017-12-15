@@ -1,5 +1,8 @@
 @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
 @import url(https://fonts.googleapis.com/css?family=Inconsolata);
+
+@import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
+@import url(https://fonts.googleapis.com/css?family=Inconsolata);
 .insp-wrapper {
   user-select: none;
   display: flex;
@@ -14,7 +17,10 @@
  * - a refresh tool - refresh the whole panel
  * - a popup tool - Open the inspector in a new panel
  * ...
- */ }
+ */
+  /*
+* 1. Set to 0 height and width, and remove border for a slider without a thumb
+*/ }
   .insp-wrapper .gutter {
     background-color: #2c2c2c; }
     .insp-wrapper .gutter.gutter-vertical:not(.blocked) {
@@ -23,6 +29,7 @@
       cursor: ew-resize; }
   .insp-wrapper .insp-right-panel {
     width: 750px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     flex-shrink: 0; }
@@ -87,7 +94,8 @@
     .insp-wrapper .tab-panel .texture-image {
       max-height: 400px; }
     .insp-wrapper .tab-panel .scene-actions {
-      overflow-y: auto; }
+      overflow-y: auto;
+      padding-left: 5px; }
       .insp-wrapper .tab-panel .scene-actions .actions-title {
         font-size: 1.1em;
         padding-bottom: 10px;
@@ -265,6 +273,10 @@
         display: inline-block;
         font-family: 'FontAwesome', sans-serif;
         content: "\f054"; }
+      .insp-wrapper .insp-tree .line.unfolded.transformNode > span:first-of-type {
+        color: #f29766; }
+      .insp-wrapper .insp-tree .line.folded.transformNode > span:first-of-type {
+        color: #f29766; }
       .insp-wrapper .insp-tree .line .line-content {
         padding-left: 15px; }
         .insp-wrapper .insp-tree .line .line-content:hover {
@@ -277,12 +289,16 @@
     overflow-x: auto;
     color: #ccc;
     font-family: "Inconsolata", sans-serif; }
+    .insp-wrapper .insp-details .details {
+      padding-left: 5px; }
     .insp-wrapper .insp-details .base-row, .insp-wrapper .insp-details .row, .insp-wrapper .insp-details .header-row {
       display: flex;
       width: 100%; }
       .insp-wrapper .insp-details .base-row .base-property, .insp-wrapper .insp-details .row .base-property, .insp-wrapper .insp-details .header-row .base-property, .insp-wrapper .insp-details .base-row .prop-name, .insp-wrapper .insp-details .row .prop-name, .insp-wrapper .insp-details .header-row .prop-name, .insp-wrapper .insp-details .base-row .prop-value, .insp-wrapper .insp-details .row .prop-value, .insp-wrapper .insp-details .header-row .prop-value {
-        word-wrap: break-word;
-        padding: 2px 0 2px 0; }
+        padding: 2px 0 2px 0;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden; }
       .insp-wrapper .insp-details .base-row .prop-name, .insp-wrapper .insp-details .row .prop-name, .insp-wrapper .insp-details .header-row .prop-name {
         width: 35%; }
       .insp-wrapper .insp-details .base-row .prop-value, .insp-wrapper .insp-details .row .prop-value, .insp-wrapper .insp-details .header-row .prop-value {
@@ -323,6 +339,8 @@
       height: 10px;
       display: inline-block;
       margin-left: 5px; }
+    .insp-wrapper .insp-details .color-element {
+      top: 2px; }
     .insp-wrapper .insp-details .texture-element {
       color: #f29766;
       margin-left: 10px; }
@@ -421,3 +439,55 @@
       color: #b3b3b3;
       padding: 3px 0 3px 10px;
       margin: 6px 0 6px 0; }
+  .insp-wrapper input[type="range"] {
+    margin: auto;
+    -webkit-appearance: none;
+    position: relative;
+    overflow: hidden;
+    height: 15px;
+    width: 50%;
+    cursor: pointer;
+    border-radius: 0;
+    /* iOS */ }
+  .insp-wrapper ::-webkit-slider-runnable-track {
+    background: #ddd; }
+  .insp-wrapper ::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    /* 1 */
+    height: 15px;
+    /* 1 */
+    background: #fff;
+    box-shadow: -100vw 0 0 100vw dodgerblue;
+    border: 0px solid #999;
+    /* 1 */ }
+  .insp-wrapper ::-moz-range-track {
+    height: 15px;
+    background: #ddd; }
+  .insp-wrapper ::-moz-range-thumb {
+    background: #fff;
+    height: 15px;
+    width: 20px;
+    border: 0px solid #999;
+    border-radius: 0 !important;
+    box-shadow: -100vw 0 0 100vw dodgerblue;
+    box-sizing: border-box; }
+  .insp-wrapper ::-ms-fill-lower {
+    background: dodgerblue; }
+  .insp-wrapper ::-ms-thumb {
+    background: #fff;
+    border: 0px solid #999;
+    height: 15px;
+    width: 20px;
+    box-sizing: border-box; }
+  .insp-wrapper ::-ms-ticks-after {
+    display: none; }
+  .insp-wrapper ::-ms-ticks-before {
+    display: none; }
+  .insp-wrapper ::-ms-track {
+    background: #ddd;
+    color: transparent;
+    height: 15px;
+    border: none; }
+  .insp-wrapper ::-ms-tooltip {
+    display: none; }

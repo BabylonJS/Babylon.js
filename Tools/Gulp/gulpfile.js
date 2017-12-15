@@ -482,12 +482,26 @@ gulp.task("typescript-all", function (cb) {
 });
 
 /**
+ * Watch ts files from typescript .
+ */
+gulp.task("srcTscWatch", function() {
+    // Reuse The TSC CLI from gulp to enable -w.
+    process.argv[2] = "-w";
+    process.argv[3] = "-p";
+    process.argv[4] = "../../src/tsconfig.json";
+    require("./node_modules/typescript/lib/tsc.js");
+});
+
+/**
  * Watch ts files and fire repective tasks.
  */
-gulp.task("watch", [], function () {
+gulp.task("watch", ["srcTscWatch"], function () {
     forceCompile = true;
     var interval = 1000;
-    var tasks = [gulp.watch(config.typescript, { interval: interval }, ["typescript-compile"])];
+
+    // Keep during Prod Tests of srcTscWatch.
+    // var tasks = [gulp.watch(config.typescript, { interval: interval }, ["typescript-compile"])];
+    var tasks = [];
 
     config.modules.map(function (module) {
         config[module].libraries.map(function (library) {

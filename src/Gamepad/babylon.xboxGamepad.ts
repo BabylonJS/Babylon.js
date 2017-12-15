@@ -265,5 +265,13 @@
                 this.dPadRight = this.browserGamepad.buttons[15].value;
             }
         }
+
+        public dispose(){
+            super.dispose();
+            this.onButtonDownObservable.clear();
+            this.onButtonUpObservable.clear();
+            this.onPadDownObservable.clear();
+            this.onPadUpObservable.clear();
+        }
     }
 }

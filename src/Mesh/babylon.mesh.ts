@@ -149,6 +149,17 @@
             return this._source;
         }
 
+        public get isUnIndexed(): boolean {
+            return this._unIndexed;
+        }
+
+        public set isUnIndexed(value: boolean) {
+            if (this._unIndexed !== value) {
+                this._unIndexed = value;
+                this._markSubMeshesAsAttributesDirty();
+            }
+        }
+
         /**
          * @constructor
          * @param {string} name The value used by scene.getMeshByName() to do a lookup.
@@ -1050,25 +1061,14 @@
             let scene = this.getScene();
             let engine = scene.getEngine();
 
-            // Draw order
-            switch (fillMode) {
-                case Material.PointFillMode:
-                    engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    break;
-                case Material.WireFrameFillMode:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
-                    }
-                    break;
-
-                default:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(true, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
-                    }
+            if (this._unIndexed || fillMode == Material.PointFillMode) {
+                // or triangles as points
+                engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+            } else if (fillMode == Material.WireFrameFillMode) {
+                // Triangles as wireframe
+                engine.drawElementsType(fillMode, 0, subMesh.linesIndexCount, instancesCount);
+            } else {
+                engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
 
             if (scene._isAlternateRenderingEnabled && !alternate) {
@@ -1582,7 +1582,7 @@
          * Modifies the mesh geometry according to its own current World Matrix.  
          * The mesh World Matrix is then reset.
          * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
-         * tuto : tuto : http://doc.babylonjs.com/tutorials/How_Rotations_and_Translations_Work#baking-transform 
+         * tuto : tuto : http://doc.babylonjs.com/resources/baking_transformations
          * Note that, under the hood, this method sets a new VertexBuffer each call.   
          * Returns the Mesh.  
          */
@@ -2115,6 +2115,7 @@
             }
 
             // Geometry
+            serializationObject.isUnIndexed = this.isUnIndexed;
             var geometry = this._geometry;
             if (geometry) {
                 var geometryId = geometry.id;
@@ -2174,6 +2175,7 @@
                 var instance = this.instances[index];
                 var serializationInstance: any = {
                     name: instance.name,
+                    id: instance.id,
                     position: instance.position.asArray(),
                     scaling: instance.scaling.asArray()
                 };
@@ -2374,6 +2376,7 @@
             }
 
             // Geometry
+            mesh.isUnIndexed = !!parsedMesh.isUnIndexed;
             mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
 
             if (parsedMesh.delayLoadingFile) {
@@ -2473,7 +2476,6 @@
                 mesh.layerMask = 0x0FFFFFFF;
             }
 
-
             // Physics
             if (parsedMesh.physicsImpostor) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
@@ -2488,6 +2490,10 @@
                 for (var index = 0; index < parsedMesh.instances.length; index++) {
                     var parsedInstance = parsedMesh.instances[index];
                     var instance = mesh.createInstance(parsedInstance.name);
+
+                    if (parsedInstance.id) {
+                        instance.id = parsedInstance.id;
+                    }
 
                     if (Tags) {
                         Tags.AddTagsTo(instance, parsedInstance.tags);
