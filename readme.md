@@ -57,7 +57,7 @@ To add a module install the respected package. A list of extra packages and thei
 
 ## Preview release
 
-**3.1-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
+Preview version of **3.2** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
 If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
 
 ## Documentation
